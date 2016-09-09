@@ -108,7 +108,7 @@ public final class Store extends DataStore {
     /**
      * The separator between ordinate values in a coordinate.
      */
-    private static final char ORDINATE_SEPARATOR = ' ';
+    static final char ORDINATE_SEPARATOR = ' ';
 
     /**
      * The prefix for elements in the {@code @columns} line that specify the data type.
@@ -129,6 +129,7 @@ public final class Store extends DataStore {
     /**
      * The character encoding, or {@code null} if unspecified (in which case the platform default is assumed).
      * Note that the default value is different than the moving feature specification, which requires UTF-8.
+     * See "Departures from Moving Features specification" in package javadoc.
      */
     private final Charset encoding;
 
@@ -151,7 +152,7 @@ public final class Store extends DataStore {
      *
      * @see #parseFeatureType(List)
      */
-    private final FeatureType featureType;
+    final FeatureType featureType;
 
     /**
      * {@code true} if {@link #featureType} contains a trajectory column.
@@ -506,158 +507,176 @@ public final class Store extends DataStore {
      * @todo Needs to reset the position when doing another pass on the features.
      */
     public Stream<Feature> getFeatures() {
-        return StreamSupport.stream(new Spliterator<Feature>() {
-            /**
-             * Guarantees that we will not return null element.
-             */
-            @Override
-            public int characteristics() {
-                return NONNULL;
-            }
+        return StreamSupport.stream(new Iter(), false);
+    }
 
-            /**
-             * We do not know the number of features.
-             */
-            @Override
-            public long estimateSize() {
-                return Long.MAX_VALUE;
-            }
+    /**
+     * Implementation of the iterator returned by {@link #getFeatures()}.
+     */
+    private final class Iter implements Spliterator<Feature> {
+        /**
+         * Converters from string representations to the values to store in the {@link #values} array.
+         */
+        private final ObjectConverter<String,?>[] converters;
 
-            /**
-             * Current implementation can not split this iterator.
-             */
-            @Override
-            public Spliterator<Feature> trySplit() {
-                return null;
-            }
+        /**
+         * All values found in a row. We need to remember those values between different executions
+         * of the {@link #tryAdvance(Consumer)} method because the Moving Feature Specification said:
+         * "If the value equals the previous value, the text for the value can be omitted."
+         */
+        private final Object[] values;
 
-            /**
-             * Returns the error message for a file that can not be parsed.
-             */
-            private String canNotParse() {
-                return errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", filename);
-            }
+        /**
+         * Name of the property where to store a value.
+         */
+        private final String[] propertyNames;
 
-            /**
-             * Executes the given action only on the next feature, if any.
-             */
-            @Override
-            public boolean tryAdvance(final Consumer<? super Feature> action) {
-                try {
-                    return read(action, false);
-                } catch (IOException | IllegalArgumentException | DateTimeException e) {
-                    throw new BackingStoreException(canNotParse(), e);
-                }
-            }
-
-            /**
-             * Executes the given action only on all remaining features.
-             */
-            @Override
-            public void forEachRemaining(final Consumer<? super Feature> action) {
-                try {
-                    read(action, true);
-                } catch (IOException | IllegalArgumentException | DateTimeException e) {
-                    throw new BackingStoreException(canNotParse(), e);
-                }
-            }
-
-            /**
-             * Executes the given action for the next feature or for all remaining features.
-             *
-             * @param  action  the action to execute.
-             * @param  all     {@code true} for executing the given action on all remaining features.
-             * @return {@code false} if there is no remaining feature after this method call.
-             * @throws IOException if an I/O error occurred while reading a feature.
-             * @throws IllegalArgumentException if parsing of a number failed, or other error.
-             * @throws DateTimeException if parsing of a date failed.
-             */
-            @SuppressWarnings({"unchecked", "rawtypes", "fallthrough"})
-            private boolean read(final Consumer<? super Feature> action, boolean all) throws IOException {
-                final Collection<? extends PropertyType> properties = featureType.getProperties(false);
-                final ObjectConverter<String,?>[] converters = new ObjectConverter[properties.size()];
-                final String[]     propertyNames   = new String[converters.length];
-                final boolean      hasTrajectories = Store.this.hasTrajectories;
-                final TimeEncoding timeEncoding    = Store.this.timeEncoding;
-                final List<String> values          = new ArrayList<>();
-                int i = -1;
-                for (final PropertyType p : properties) {
-                    propertyNames[++i] = p.getName().tip().toString();
-                    switch (i) {    // This switch shall follow the same cases than the swith in the loop.
-                        case 1:
-                        case 2: if (timeEncoding != null) continue;     // else fall through
-                        case 3: if (hasTrajectories) continue;
-                    }
-                    converters[i] = ObjectConverters.find(String.class, ((AttributeType) p).getValueClass());
-                }
+        /**
+         * Creates a new iterator.
+         */
+        @SuppressWarnings({"unchecked", "rawtypes", "fallthrough"})
+        Iter() {
+            final Collection<? extends PropertyType> properties = featureType.getProperties(true);
+            converters    = new ObjectConverter[properties.size()];
+            values        = new Object[converters.length];
+            propertyNames = new String[converters.length];
+            int i = -1;
+            for (final PropertyType p : properties) {
+                propertyNames[++i] = p.getName().tip().toString();
                 /*
-                 * Above lines prepared the constants. Now parse all lines.
-                 * TODO: We should move the code below this point in a custom Iterator implementation.
+                 * According Moving Features specification:
+                 *   Column 0 is the feature identifier (mfidref). There is nothing special to do here.
+                 *   Column 1 is the start time.
+                 *   Column 2 is the end time.
+                 *   Column 3 is the trajectory.
+                 *   Columns 4+ are custom attributes.
                  */
-                String line;
-                while ((line = source.readLine()) != null) {
-                    split(line, values);
-                    final int length = Math.min(propertyNames.length, values.size());
-                    if (length != 0) {
-                        final Feature feature = featureType.newInstance();
-                        for (i=0; i<length; i++) {
-                            final String text = values.get(i);
-                            final String name = propertyNames[i];
-                            final Object value;
-                            /*
-                             * According Moving Features specification:
-                             *   Column 0 is the feature identifier (mfidref). There is nothing special to do here.
-                             *   Column 1 is the start time.
-                             *   Column 2 is the end time.
-                             *   Column 3 is the trajectory.
-                             *   Columns 4+ are custom attributes.
-                             *
-                             * TODO: we should replace that switch case by custom ObjectConverter.
-                             */
-                            switch (i) {
-                                case 1:
-                                case 2: {
-                                    if (timeEncoding != null) {
-                                        if (timeEncoding == TimeEncoding.ABSOLUTE) {
-                                            value = Instant.parse(text).toEpochMilli();
-                                        } else {
-                                            value = Instant.ofEpochMilli(timeEncoding.toMillis(Double.parseDouble(text)));
-                                        }
-                                        break;
-                                    }
-                                    /*
-                                     * If there is no time columns, then this column may the trajectory (note that allowing
-                                     * CSV files without time is obviously a departure from Moving Features specification.
-                                     * The intend is to have a CSV format applicable to other features than moving ones).
-                                     * Fall through in order to process trajectory.
-                                     */
-                                }
-                                case 3: {
-                                    if (hasTrajectories) {
-                                        value = CharSequences.parseDoubles(text, ORDINATE_SEPARATOR);
-                                        break;
-                                    }
-                                    /*
-                                     * If there is no trajectory columns, than this column is a custum attribute.
-                                     * CSV files without trajectories are not compliant with Moving Feature spec.,
-                                     * but we try to keep this reader a little bit more generic.
-                                     */
-                                }
-                                default: {
-                                    value = converters[i].apply(text);
-                                    break;
-                                }
-                            }
-                            feature.setPropertyValue(name, value);
+                final ObjectConverter<String,?> c;
+                switch (i) {
+                    case 1: // Fall through
+                    case 2: {
+                        if (timeEncoding != null) {
+                            c = timeEncoding;
+                            break;
                         }
-                        action.accept(feature);
-                        if (!all) return true;
+                        /*
+                         * If there is no time columns, then this column may be the trajectory (note that allowing
+                         * CSV files without time is obviously a departure from Moving Features specification.
+                         * The intend is to have a CSV format applicable to other features than moving ones).
+                         * Fall through in order to process trajectory.
+                         */
                     }
-                    values.clear();
+                    case 3: {
+                        if (hasTrajectories) {
+                            c = GeometryParser.INSTANCE;
+                            break;
+                        }
+                        /*
+                         * If there is no trajectory columns, than this column is a custum attribute.
+                         * CSV files without trajectories are not compliant with Moving Feature spec.,
+                         * but we try to keep this reader a little bit more generic.
+                         */
+                    }
+                    default: {
+                        c = ObjectConverters.find(String.class, ((AttributeType) p).getValueClass());
+                        break;
+                    }
                 }
-                return false;
+                converters[i] = c;
             }
-        }, false);
+        }
+
+        /**
+         * Executes the given action for the next feature or for all remaining features.
+         *
+         * @param  action  the action to execute.
+         * @param  all     {@code true} for executing the given action on all remaining features.
+         * @return {@code false} if there is no remaining feature after this method call.
+         * @throws IOException if an I/O error occurred while reading a feature.
+         * @throws IllegalArgumentException if parsing of a number failed, or other error.
+         * @throws DateTimeException if parsing of a date failed.
+         */
+        private boolean read(final Consumer<? super Feature> action, boolean all) throws IOException {
+            final FixedSizeList elements = new FixedSizeList(values);
+            String line;
+            while ((line = source.readLine()) != null) {
+                split(line, elements);
+                final Feature feature = featureType.newInstance();
+                int i, n = elements.size();
+                for (i=0; i<n; i++) {
+                    values[i] = converters[i].apply((String) values[i]);
+                    feature.setPropertyValue(propertyNames[i], values[i]);
+                }
+                n = values.length;
+                for (; i<n; i++) {
+                    // For omitted elements, reuse previous value.
+                    feature.setPropertyValue(propertyNames[i], values[i]);
+                }
+                action.accept(feature);
+                if (!all) return true;
+                elements.clear();
+            }
+            return false;
+        }
+
+        /**
+         * Executes the given action only on the next feature, if any.
+         */
+        @Override
+        public boolean tryAdvance(final Consumer<? super Feature> action) {
+            try {
+                synchronized (Store.this) {
+                    return read(action, false);
+                }
+            } catch (IOException | IllegalArgumentException | DateTimeException e) {
+                throw new BackingStoreException(canNotParse(), e);
+            }
+        }
+
+        /**
+         * Executes the given action only on all remaining features.
+         */
+        @Override
+        public void forEachRemaining(final Consumer<? super Feature> action) {
+            try {
+                synchronized (Store.this) {
+                    read(action, true);
+                }
+            } catch (IOException | IllegalArgumentException | DateTimeException e) {
+                throw new BackingStoreException(canNotParse(), e);
+            }
+        }
+
+        /**
+         * Returns the error message for a file that can not be parsed.
+         */
+        private String canNotParse() {
+            return errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", filename);
+        }
+
+        /**
+         * Current implementation can not split this iterator.
+         */
+        @Override
+        public Spliterator<Feature> trySplit() {
+            return null;
+        }
+
+        /**
+         * We do not know the number of features.
+         */
+        @Override
+        public long estimateSize() {
+            return Long.MAX_VALUE;
+        }
+
+        /**
+         * Guarantees that we will not return null element.
+         */
+        @Override
+        public int characteristics() {
+            return NONNULL;
+        }
     }
 
     /**
@@ -667,10 +686,10 @@ public final class Store extends DataStore {
      * @param line      the line to parse.
      * @param elements  an initially empty list where to add elements.
      */
-    static void split(final String line, final List<String> elements) {
+    static void split(final String line, final List<? super String> elements) {
         int startAt = 0;
-        boolean hasQuotes = false;
-        boolean isQuoting = false;
+        boolean isQuoting = false;        // If a quote has been opened and not yet closed.
+        boolean hasQuotes = false;        // If the value contains at least one quote (not used for quoting the value).
         final int length = line.length();
         for (int i=0; i<length; i++) {
             switch (line.charAt(i)) {
@@ -685,7 +704,9 @@ public final class Store extends DataStore {
                 }
                 case SEPARATOR: {
                     if (!isQuoting) {
-                        elements.add(decode(line, startAt, i, hasQuotes));
+                        if (!elements.add(decode(line, startAt, i, hasQuotes))) {
+                            return;     // Reached the maximal capacity of the list.
+                        }
                         startAt = i+1;
                         hasQuotes = false;
                     }
@@ -699,9 +720,15 @@ public final class Store extends DataStore {
     /**
      * Extracts a substring from the given line and replaces double quotes by single quotes.
      *
-     * @todo Needs also to check escape characters {@code \s \t \b &lt; &gt; &amp; &quot; &apos;}.
-     * @todo Should modify double quote policy: process only if the text had quotes at the beginning and end.
-     *       Those "todo" should be done only when we detected that the CSV file is a moving features file.
+     * <div class="section">Departure from Moving Features specification</div>
+     * The Moving Features specification said:
+     *
+     *   <blockquote>Some characters may need to be escaped here. {@literal <} (less than), {@literal >}
+     *   (greater than), " (double quotation), ‘ (single quotation), and {@literal &} (ampersand) must be
+     *   replaced with the entity references defined in XML. Space, tab, and comma are written in escape
+     *   sequences \\s, \\t, and \\b, respectively.</blockquote>
+     *
+     * This part of the specification is currently ignored (its purpose is still unclear).
      */
     private static String decode(CharSequence text, final int lower, final int upper, final boolean hasQuotes) {
         if (hasQuotes) {

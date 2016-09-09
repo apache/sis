@@ -27,10 +27,15 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports
+import java.time.Instant;
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 
 
 /**
@@ -47,12 +52,19 @@ public final class StoreTest extends TestCase {
      * Derived from the example provided in OGC 14-084r2.
      */
     private static final String TEST_DATA =
-            "@stboundedby, urn:ogc:def:crs:CRS:1.3:84, 2D,  50.23 9.23 , 50.31 9.27,  2012-01-17T12:33:41Z, 2012-01-17T12:37:00Z, sec\n" +
+            "@stboundedby, urn:ogc:def:crs:CRS:1.3:84, 2D,  50.23 9.23,  50.31 9.27,  2012-01-17T12:33:41Z, 2012-01-17T12:37:00Z, sec\n" +
             "@columns, mfidref, trajectory, state,xsd:string, \"\"\"type\"\" code\",xsd:integer\n" +
-            "a,10,150,11.0 2.0 12.0 3.0,walking,1\n" +
-            "b,10,190,10.0 2.0 11.0 3.0,walking,2\n" +
-            "a,150,190,12.0 3.0 10.0 3.0,walking,2\n" +
-            "c,10,190,12.0 1.0 10.0 2.0 11.0 3.0,vehicle,1\n";
+            "a,  10, 150, 11.0 2.0 12.0 3.0, walking, 1\n" +
+            "b,  10, 190, 10.0 2.0 11.0 3.0, walking, 2\n" +
+            "a, 150, 190, 12.0 3.0 10.0 3.0, walking, 2\n" +
+            "c,  10, 190, 12.0 1.0 10.0 2.0 11.0 3.0, vehicle, 1\n";
+
+    /**
+     * Returns the instant for the given time at the day of the test.
+     */
+    private static Instant instant(final String time) {
+        return date("2012-01-17 " + time).toInstant();
+    }
 
     /**
      * Tests {@link Store#getMetadata()}.
@@ -75,31 +87,61 @@ public final class StoreTest extends TestCase {
     }
 
     /**
-     * Tests {@link Store#getFeatures()}.
+     * Verifies the feature type, then tests {@link Store#getFeatures()}.
      *
      * @throws DataStoreException if an error occurred while parsing the data.
      */
     @Test
     public void testGetFeatures() throws DataStoreException {
         try (Store store = new Store(new StorageConnector(new StringReader(TEST_DATA)))) {
+            verifyFeatureType(store.featureType);
             final Iterator<Feature> it = store.getFeatures().iterator();
-            assertFeatureEquals(it.next(), "a", new double[] {11, 2, 12, 3},        "walking", 1);
-            assertFeatureEquals(it.next(), "b", new double[] {10, 2, 11, 3},        "walking", 2);
-            assertFeatureEquals(it.next(), "a", new double[] {12, 3, 10, 3},        "walking", 2);
-            assertFeatureEquals(it.next(), "c", new double[] {12, 1, 10, 2, 11, 3}, "vehicle", 1);
+            assertPropertyEquals(it.next(), "a", "12:33:51", "12:36:11", new double[] {11, 2, 12, 3},        "walking", 1);
+            assertPropertyEquals(it.next(), "b", "12:33:51", "12:36:51", new double[] {10, 2, 11, 3},        "walking", 2);
+            assertPropertyEquals(it.next(), "a", "12:36:11", "12:36:51", new double[] {12, 3, 10, 3},        "walking", 2);
+            assertPropertyEquals(it.next(), "c", "12:33:51", "12:36:51", new double[] {12, 1, 10, 2, 11, 3}, "vehicle", 1);
             assertFalse(it.hasNext());
         }
     }
 
     /**
-     * Asserts that the given feature has the given properties.
+     * Verifies that the feature type is equal to the expected one.
      */
-    private static void assertFeatureEquals(final Feature f, final String mfidref,
-            final double[] trajectory, final String state, final int typeCode)
+    private static void verifyFeatureType(final FeatureType type) {
+        final Iterator<? extends PropertyType> it = type.getProperties(true).iterator();
+        assertPropertyTypeEquals((AttributeType<?>) it.next(), "mfidref",       String.class,   1);
+        assertPropertyTypeEquals((AttributeType<?>) it.next(), "startTime",     Instant.class,  1);
+        assertPropertyTypeEquals((AttributeType<?>) it.next(), "endTime",       Instant.class,  1);
+        assertPropertyTypeEquals((AttributeType<?>) it.next(), "trajectory",    double[].class, 1);
+        assertPropertyTypeEquals((AttributeType<?>) it.next(), "state",         String.class,   0);
+        assertPropertyTypeEquals((AttributeType<?>) it.next(), "\"type\" code", Integer.class,  0);
+        assertFalse(it.hasNext());
+    }
+
+    /**
+     * Asserts that the given property type has the given information.
+     */
+    private static void assertPropertyTypeEquals(final AttributeType<?> p,
+            final String name, final Class<?> valueClass, final int minOccurs)
     {
-        assertEquals     ("mfidref",    mfidref,  f.getPropertyValue("mfidref"));
-        assertEquals     ("state",      state,    f.getPropertyValue("state"));
-        assertEquals     ("typeCode",   typeCode, f.getPropertyValue("\"type\" code"));
+        assertEquals("name",       name,       p.getName().toString());
+        assertEquals("valueClass", valueClass, p.getValueClass());
+        assertEquals("minOccurs",  minOccurs,  p.getMinimumOccurs());
+        assertEquals("maxOccurs",  1,          p.getMaximumOccurs());
+    }
+
+    /**
+     * Asserts that the property of the given name in the given feature has expected information.
+     */
+    private static void assertPropertyEquals(final Feature f, final String mfidref,
+            final String startTime, final String endTime, final double[] trajectory,
+            final String state, final int typeCode)
+    {
+        assertEquals     ("mfidref",    mfidref,               f.getPropertyValue("mfidref"));
+        assertEquals     ("startTime",  instant(startTime),    f.getPropertyValue("startTime"));
+        assertEquals     ("endTime",    instant(endTime),      f.getPropertyValue("endTime"));
+        assertEquals     ("state",      state,                 f.getPropertyValue("state"));
+        assertEquals     ("typeCode",   typeCode,              f.getPropertyValue("\"type\" code"));
         assertArrayEquals("trajectory", trajectory, (double[]) f.getPropertyValue("trajectory"), STRICT);
     }
 }
