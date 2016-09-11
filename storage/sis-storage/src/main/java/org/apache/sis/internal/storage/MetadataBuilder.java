@@ -177,7 +177,7 @@ public class MetadataBuilder {
     /**
      * Information about content type for groups of attributes for a specific range dimension, or {@code null} if none.
      */
-    private DefaultAttributeGroup attributGroup;
+    private DefaultAttributeGroup attributeGroup;
 
     /**
      * The characteristic of each dimension (layer) included in the resource, or {@code null} if none.
@@ -333,9 +333,9 @@ public class MetadataBuilder {
             attributGroup().getAttributes().add(sampleDimension);
             sampleDimension = null;
         }
-        if (attributGroup != null) {
-            coverageDescription().getAttributeGroups().add(attributGroup);
-            attributGroup = null;
+        if (attributeGroup != null) {
+            coverageDescription().getAttributeGroups().add(attributeGroup);
+            attributeGroup = null;
         }
         if (coverageDescription != null) {
             metadata().getContentInfo().add(coverageDescription);
@@ -524,10 +524,10 @@ public class MetadataBuilder {
      * @return the attribut group (never {@code null}).
      */
     private DefaultAttributeGroup attributGroup() {
-        if (attributGroup == null) {
-            attributGroup = new DefaultAttributeGroup();
+        if (attributeGroup == null) {
+            attributeGroup = new DefaultAttributeGroup();
         }
-        return attributGroup;
+        return attributeGroup;
     }
 
     /**
@@ -544,12 +544,15 @@ public class MetadataBuilder {
 
     /**
      * Creates the feature descriptions object if it does not already exists, then returns it.
+     * This method sets the {@code includedWithDataset} property to {@code true} because the
+     * metadata built by this helper class are typically encoded together with the data.
      *
      * @return the feature descriptions (never {@code null}).
      */
     private DefaultFeatureCatalogueDescription featureDescription() {
         if (featureDescription == null) {
             featureDescription = new DefaultFeatureCatalogueDescription();
+            featureDescription.setIncludedWithDataset(true);
         }
         return featureDescription;
     }
