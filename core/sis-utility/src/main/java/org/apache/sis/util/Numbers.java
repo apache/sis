@@ -138,9 +138,8 @@ public final class Numbers extends Static {
     /**
      * Returns {@code true} if the given {@code type} is a floating point type.
      *
-     * @param  type The type to test (may be {@code null}).
-     * @return {@code true} if {@code type} is the primitive or wrapper class of
-     *         {@link Float} or {@link Double}.
+     * @param  type  the type to test (may be {@code null}).
+     * @return {@code true} if {@code type} is the primitive or wrapper class of {@link Float} or {@link Double}.
      *
      * @see #isInteger(Class)
      */
@@ -154,7 +153,7 @@ public final class Numbers extends Static {
      * {@link Long}, {@code long}, {@link Integer}, {@code int}, {@link Short}, {@code short},
      * {@link Byte}, {@code byte} and {@link BigInteger}.
      *
-     * @param  type The type to test (may be {@code null}).
+     * @param  type  the type to test (may be {@code null}).
      * @return {@code true} if {@code type} is an integer type.
      *
      * @see #isFloat(Class)
@@ -168,8 +167,8 @@ public final class Numbers extends Static {
      * Returns the number of bits used by primitive of the specified type.
      * The given type must be a primitive type or its wrapper class.
      *
-     * @param  type The primitive type (may be {@code null}).
-     * @return The number of bits, or 0 if {@code type} is null.
+     * @param  type  the primitive type (may be {@code null}).
+     * @return the number of bits, or 0 if {@code type} is null.
      * @throws IllegalArgumentException if the given type is unknown.
      */
     public static int primitiveBitCount(final Class<?> type) throws IllegalArgumentException {
@@ -190,8 +189,8 @@ public final class Numbers extends Static {
      * Changes a primitive class to its wrapper (for example {@code int} to {@link Integer}).
      * If the specified class is not a primitive type, then it is returned unchanged.
      *
-     * @param  type The primitive type (may be {@code null}).
-     * @return The type as a wrapper.
+     * @param  type  the primitive type (may be {@code null}).
+     * @return the type as a wrapper.
      *
      * @see #wrapperToPrimitive(Class)
      */
@@ -204,8 +203,8 @@ public final class Numbers extends Static {
      * Changes a wrapper class to its primitive (for example {@link Integer} to {@code int}).
      * If the specified class is not a wrapper type, then it is returned unchanged.
      *
-     * @param  type The wrapper type (may be {@code null}).
-     * @return The type as a primitive.
+     * @param  type  the wrapper type (may be {@code null}).
+     * @return the type as a primitive.
      *
      * @see #primitiveToWrapper(Class)
      */
@@ -222,10 +221,10 @@ public final class Numbers extends Static {
      * <p>If one of the given argument is null, then this method returns the class of the
      * non-null argument. If both arguments are null, then this method returns {@code null}.</p>
      *
-     * @param  n1 The first number, or {@code null}.
-     * @param  n2 The second number, or {@code null}.
-     * @return The widest type of the given numbers, or {@code null} if not {@code n1} and {@code n2} are null.
-     * @throws IllegalArgumentException If a number is not of a known type.
+     * @param  n1  the first number, or {@code null}.
+     * @param  n2  the second number, or {@code null}.
+     * @return the widest type of the given numbers, or {@code null} if not {@code n1} and {@code n2} are null.
+     * @throws IllegalArgumentException if a number is not of a known type.
      *
      * @see #widestClass(Number, Number)
      * @see #narrowestClass(Number, Number)
@@ -253,10 +252,10 @@ public final class Numbers extends Static {
      *
      * returns {@code Long.class}.
      *
-     * @param  c1 The first number type, or {@code null}.
-     * @param  c2 The second number type, or {@code null}.
-     * @return The widest of the given types, or {@code null} if both {@code c1} and {@code c2} are null.
-     * @throws IllegalArgumentException If one of the given types is unknown.
+     * @param  c1  the first number type, or {@code null}.
+     * @param  c2  the second number type, or {@code null}.
+     * @return the widest of the given types, or {@code null} if both {@code c1} and {@code c2} are null.
+     * @throws IllegalArgumentException if one of the given types is unknown.
      *
      * @see #widestClass(Class, Class)
      * @see #narrowestClass(Number, Number)
@@ -283,10 +282,10 @@ public final class Numbers extends Static {
      * of any of {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}
      * {@link Double}, {@link BigInteger} or {@link BigDecimal} types.
      *
-     * @param  n1 The first number.
-     * @param  n2 The second number.
-     * @return The narrowest type of the given numbers.
-     * @throws IllegalArgumentException If a number is not of a known type.
+     * @param  n1  the first number.
+     * @param  n2  the second number.
+     * @return the narrowest type of the given numbers.
+     * @throws IllegalArgumentException if a number is not of a known type.
      *
      * @see #narrowestClass(Class, Class)
      * @see #widestClass(Class, Class)
@@ -314,10 +313,10 @@ public final class Numbers extends Static {
      *
      * returns {@code Short.class}.
      *
-     * @param  c1 The first number type, or {@code null}.
-     * @param  c2 The second number type, or {@code null}.
-     * @return The narrowest of the given types, or {@code null} if both {@code c1} and {@code c2} are null.
-     * @throws IllegalArgumentException If one of the given types is unknown.
+     * @param  c1  the first number type, or {@code null}.
+     * @param  c2  the second number type, or {@code null}.
+     * @return the narrowest of the given types, or {@code null} if both {@code c1} and {@code c2} are null.
+     * @throws IllegalArgumentException if one of the given types is unknown.
      *
      * @see #narrowestClass(Number, Number)
      * @see #widestClass(Class, Class)
@@ -358,8 +357,8 @@ public final class Numbers extends Static {
      *   <li>Otherwise this method returns {@code Long.class};</li>
      * </ul>
      *
-     * @param  value The value to be wrapped in a finer (if possible) {@link Number}.
-     * @return The narrowest type capable to hold the given value.
+     * @param  value  the value to be wrapped in a finer (if possible) {@link Number}.
+     * @return the narrowest type capable to hold the given value.
      *
      * @see #narrowestNumber(Number)
      */
@@ -395,8 +394,8 @@ public final class Numbers extends Static {
      *     return cast(value, narrowestClass(value));
      * }
      *
-     * @param  value The value to be wrapped in a finer (if possible) {@link Number}.
-     * @return The narrowest type capable to hold the given value.
+     * @param  value  the value to be wrapped in a finer (if possible) {@link Number}.
+     * @return the narrowest type capable to hold the given value.
      *
      * @see #narrowestClass(Number)
      * @see #cast(Number, Class)
@@ -452,8 +451,8 @@ public final class Numbers extends Static {
     /**
      * Returns the smallest number capable to hold the specified value.
      *
-     * @param  value The value to be wrapped in a {@link Number}.
-     * @return The narrowest type capable to hold the given value.
+     * @param  value  the value to be wrapped in a {@link Number}.
+     * @return the narrowest type capable to hold the given value.
      * @throws NumberFormatException if the given value can not be parsed as a number.
      *
      * @see #narrowestNumber(Number)
@@ -492,12 +491,11 @@ public final class Numbers extends Static {
      * then the behavior depends on the implementation of the corresponding
      * {@code Number.fooValue()} method - typically, the value is just rounded or truncated.
      *
-     * @param  <N>    The class to cast to.
-     * @param  number The number to cast, or {@code null}.
-     * @param  type   The destination type.
-     * @return The number casted to the given type, or {@code null} if the given value was null.
-     * @throws IllegalArgumentException If the given type is not one of the primitive
-     *         wrappers for numeric types.
+     * @param  <N>     the class to cast to.
+     * @param  number  the number to cast, or {@code null}.
+     * @param  type    the destination type.
+     * @return the number casted to the given type, or {@code null} if the given value was null.
+     * @throws IllegalArgumentException if the given type is not one of the primitive wrappers for numeric types.
      */
     @SuppressWarnings("unchecked")
     public static <N extends Number> N cast(final Number number, final Class<N> type)
@@ -553,13 +551,12 @@ public final class Numbers extends Static {
      * Furthermore, the given value shall be convertible to the given class without precision lost,
      * otherwise an {@link IllegalArgumentException} will be thrown.
      *
-     * @param  <N> The wrapper class.
-     * @param  value The value to wrap.
-     * @param  type The desired wrapper class.
-     * @return The value wrapped in an object of the given class.
-     * @throws IllegalArgumentException If the given type is not one of the primitive
-     *         wrappers for numeric types, or if the given value can not be wrapped in
-     *         an instance of the given class without precision lost.
+     * @param  <N>    the wrapper class.
+     * @param  value  the value to wrap.
+     * @param  type   the desired wrapper class.
+     * @return the value wrapped in an object of the given class.
+     * @throws IllegalArgumentException if the given type is not one of the primitive wrappers for numeric types,
+     *         or if the given value can not be wrapped in an instance of the given class without precision lost.
      */
     @SuppressWarnings("unchecked")
     public static <N extends Number> N wrap(final double value, final Class<N> type)
@@ -584,11 +581,11 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Converts the specified string into a value object. The value object can be an instance of
-     * {@link BigDecimal}, {@link BigInteger},
+     * Converts the specified string into a value object.
+     * The value object can be an instance of {@link BigDecimal}, {@link BigInteger},
      * {@link Double}, {@link Float}, {@link Long}, {@link Integer}, {@link Short}, {@link Byte},
-     * {@link Boolean}, {@link Character} or {@link String} according the specified type. This
-     * method makes the following choice:
+     * {@link Boolean}, {@link Character} or {@link String} according the specified type.
+     * This method makes the following choice:
      *
      * <ul>
      *   <li>If the given type is {@code Double.class}, then this method returns
@@ -598,13 +595,13 @@ public final class Numbers extends Static {
      *   <li>And likewise for all remaining known types.</li>
      * </ul>
      *
-     * @param  <T> The requested type.
-     * @param  value the value to parse.
-     * @param  type The requested type.
-     * @return The value object, or {@code null} if {@code value} was null.
+     * @param  <T>    the requested type.
+     * @param  value  the value to parse.
+     * @param  type   the requested type.
+     * @return the value object, or {@code null} if {@code value} was null.
      * @throws IllegalArgumentException if {@code type} is not a recognized type.
-     * @throws NumberFormatException if {@code type} is a subclass of {@link Number} and the
-     *         string value is not parsable as a number of the specified type.
+     * @throws NumberFormatException if {@code type} is a subclass of {@link Number}
+     *         and the string value is not parsable as a number of the specified type.
      */
     @SuppressWarnings("unchecked")
     public static <T> T valueOf(final String value, final Class<T> type)
@@ -667,9 +664,9 @@ public final class Numbers extends Static {
      * extended to array and collection types because those objects can also be seen as
      * mathematical concepts.
      *
-     * @param  <T> The compile-time type of the requested object.
-     * @param  type The type of the object for which to get a nil value.
-     * @return An object of the given type which represents a nil value, or {@code null}.
+     * @param  <T>   the compile-time type of the requested object.
+     * @param  type  the type of the object for which to get a nil value.
+     * @return an object of the given type which represents a nil value, or {@code null}.
      *
      * @see org.apache.sis.xml.NilObject
      */

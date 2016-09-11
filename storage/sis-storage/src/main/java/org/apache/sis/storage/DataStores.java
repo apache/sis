@@ -80,9 +80,9 @@ public final class DataStores extends Static {
     /**
      * Returns the MIME type of the storage file format, or {@code null} if unknown or not applicable.
      *
-     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @return The storage MIME type, or {@code null} if unknown or not applicable.
-     * @throws DataStoreException If an error occurred while opening the storage.
+     * @param  storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @return the storage MIME type, or {@code null} if unknown or not applicable.
+     * @throws DataStoreException if an error occurred while opening the storage.
      */
     public static String probeContentType(final Object storage) throws DataStoreException {
         return registry().probeContentType(storage);
@@ -102,10 +102,10 @@ public final class DataStores extends Static {
      *   <li>An existing {@link StorageConnector} instance.</li>
      * </ul>
      *
-     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @return The object to use for reading geospatial data from the given storage.
+     * @param  storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @return the object to use for reading geospatial data from the given storage.
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
-     * @throws DataStoreException If an error occurred while opening the storage.
+     * @throws DataStoreException if an error occurred while opening the storage.
      */
     public static DataStore open(final Object storage) throws UnsupportedStorageException, DataStoreException {
         return registry().open(storage);
