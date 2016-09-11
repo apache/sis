@@ -46,18 +46,21 @@ import org.opengis.feature.AttributeType;
  * @version 0.8
  * @module
  */
-public final class StoreTest extends TestCase {
+public final strictfp class StoreTest extends TestCase {
     /**
      * An example of Moving Features file.
      * Derived from the example provided in OGC 14-084r2.
      */
-    private static final String TEST_DATA =
+    static StringReader testData() {
+        return new StringReader(
             "@stboundedby, urn:ogc:def:crs:CRS:1.3:84, 2D,  50.23 9.23,  50.31 9.27,  2012-01-17T12:33:41Z, 2012-01-17T12:37:00Z, sec\n" +
             "@columns, mfidref, trajectory, state,xsd:string, \"\"\"type\"\" code\",xsd:integer\n" +
+            "@foliation,Time\n" +
             "a,  10, 150, 11.0 2.0 12.0 3.0, walking, 1\n" +
             "b,  10, 190, 10.0 2.0 11.0 3.0, walking, 2\n" +
-            "a, 150, 190, 12.0 3.0 10.0 3.0, walking, 2\n" +
-            "c,  10, 190, 12.0 1.0 10.0 2.0 11.0 3.0, vehicle, 1\n";
+            "a, 150, 190, 12.0 3.0 10.0 3.0\n" +                        // Omitted values are same as previous line.
+            "c,  10, 190, 12.0 1.0 10.0 2.0 11.0 3.0, vehicle, 1\n");
+    }
 
     /**
      * Returns the instant for the given time at the day of the test.
@@ -74,7 +77,7 @@ public final class StoreTest extends TestCase {
     @Test
     public void testGetMetadata() throws DataStoreException {
         final Metadata metadata;
-        try (Store store = new Store(new StorageConnector(new StringReader(TEST_DATA)))) {
+        try (Store store = new Store(new StorageConnector(testData()))) {
             metadata = store.getMetadata();
         }
         final Extent extent = getSingleton(getSingleton(metadata.getIdentificationInfo()).getExtents());
@@ -93,8 +96,9 @@ public final class StoreTest extends TestCase {
      */
     @Test
     public void testGetFeatures() throws DataStoreException {
-        try (Store store = new Store(new StorageConnector(new StringReader(TEST_DATA)))) {
+        try (Store store = new Store(new StorageConnector(testData()))) {
             verifyFeatureType(store.featureType);
+            assertEquals("foliation", Foliation.TIME, store.foliation);
             final Iterator<Feature> it = store.getFeatures().iterator();
             assertPropertyEquals(it.next(), "a", "12:33:51", "12:36:11", new double[] {11, 2, 12, 3},        "walking", 1);
             assertPropertyEquals(it.next(), "b", "12:33:51", "12:36:51", new double[] {10, 2, 11, 3},        "walking", 2);

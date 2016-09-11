@@ -93,7 +93,7 @@ public final class Store extends DataStore {
     /**
      * The character at the beginning of metadata lines.
      */
-    private static final char METADATA = '@';
+    static final char METADATA = '@';
 
     /**
      * The quote character. Quotes inside quoted texts must be doubled.
@@ -103,7 +103,7 @@ public final class Store extends DataStore {
     /**
      * The column separator.
      */
-    private static final char SEPARATOR = ',';
+    static final char SEPARATOR = ',';
 
     /**
      * The separator between ordinate values in a coordinate.
@@ -164,7 +164,7 @@ public final class Store extends DataStore {
      *
      * @see #parseFoliation(List)
      */
-    private final Foliation foliation;
+    final Foliation foliation;
 
     /**
      * Specifies how time is encoded in the CSV file, or {@code null} if there is no time.
@@ -441,7 +441,12 @@ public final class Store extends DataStore {
             }
             properties.add(createProperty(name, type, minOccurrence));
         }
-        return new DefaultFeatureType(Collections.singletonMap(DefaultFeatureType.NAME_KEY, filename),
+        String name = filename;
+        final int s = name.lastIndexOf('.');
+        if (s > 0) {                            // Exclude 0 because shall not be the first character.
+            name = name.substring(0, s);
+        }
+        return new DefaultFeatureType(Collections.singletonMap(DefaultFeatureType.NAME_KEY, name),
                 false, null, properties.toArray(new PropertyType[properties.size()]));
     }
 
@@ -482,7 +487,7 @@ public final class Store extends DataStore {
         if (metadata == null) {
             final MetadataBuilder builder = new MetadataBuilder();
             builder.add(encoding);
-            builder.addFormat("CSV");
+            builder.addFormat(timeEncoding != null && hasTrajectories ? "CSV/MF" : "CSV");
             builder.add(ScopeCode.DATASET);
             try {
                 builder.addExtent(envelope);
@@ -589,6 +594,11 @@ public final class Store extends DataStore {
         /**
          * Executes the given action for the next feature or for all remaining features.
          *
+         * <p><b>Multi-threading:</b>
+         * There is no need for {@code synchronize(Store.this)} statement since this method uses only final and
+         * either immutable or thread-safe objects from {@link Store}. The only object that need synchronization
+         * is {@link Store#source}, which is already synchronized.</p>
+         *
          * @param  action  the action to execute.
          * @param  all     {@code true} for executing the given action on all remaining features.
          * @return {@code false} if there is no remaining feature after this method call.
@@ -625,23 +635,19 @@ public final class Store extends DataStore {
         @Override
         public boolean tryAdvance(final Consumer<? super Feature> action) {
             try {
-                synchronized (Store.this) {
-                    return read(action, false);
-                }
+                return read(action, false);
             } catch (IOException | IllegalArgumentException | DateTimeException e) {
                 throw new BackingStoreException(canNotParse(), e);
             }
         }
 
         /**
-         * Executes the given action only on all remaining features.
+         * Executes the given action on all remaining features.
          */
         @Override
         public void forEachRemaining(final Consumer<? super Feature> action) {
             try {
-                synchronized (Store.this) {
-                    read(action, true);
-                }
+                read(action, true);
             } catch (IOException | IllegalArgumentException | DateTimeException e) {
                 throw new BackingStoreException(canNotParse(), e);
             }

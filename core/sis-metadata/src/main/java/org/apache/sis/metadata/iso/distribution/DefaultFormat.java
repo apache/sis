@@ -119,10 +119,10 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *   <tr><td>PNG</td>     <td>PNG (Portable Network Graphics) Specification</td></tr>
      * </table>
      *
-     * @param  name     the name of the data transfer format(s), or {@code null}.
+     * @param  name     the abbreviated name of the data transfer format, or {@code null}.
      * @param  version  the version of the format (date, number, <i>etc.</i>), or {@code null}.
      */
-    public DefaultFormat(final CharSequence name, final CharSequence version) {
+    public DefaultFormat(CharSequence name, final CharSequence version) {
         if (name != null || version != null) {
             final DefaultCitation citation = new DefaultCitation();
             if (name != null) {
@@ -140,6 +140,9 @@ public class DefaultFormat extends ISOMetadata implements Format {
                     title = "PNG (Portable Network Graphics) Specification";
                 } else if (keyword.equalsIgnoreCase("CSV")) {
                     title = "Common Format and MIME Type for Comma-Separated Values (CSV) Files";
+                } else if (keyword.equalsIgnoreCase("CSV/MF")) {    // Not yet documented format.
+                    title = "OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)";
+                    name  = "CSV";
                 }
                 citation.setTitle(Types.toInternationalString(title));
                 citation.setAlternateTitles(Collections.singleton(Types.toInternationalString(name)));
