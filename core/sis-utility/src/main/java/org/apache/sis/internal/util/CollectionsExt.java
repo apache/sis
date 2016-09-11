@@ -547,6 +547,7 @@ public final class CollectionsExt extends Static {
      *   <li>If the value is null, then this method returns an {@linkplain Collections#emptyList() empty list}.</li>
      *   <li>If the value is an instance of {@link Collection}, then it is returned unchanged.</li>
      *   <li>If the value is an array of objects, then it is returned {@linkplain Arrays#asList(Object[]) as a list}.</li>
+     *   <li>If the value is an array of primitive type, then it is returned as a list of their wrapper class.</li>
      *   <li>If the value is an instance of {@link Iterable}, {@link Iterator} or {@link Enumeration}, copies the values in a new list.</li>
      *   <li>Otherwise the value is returned as a {@linkplain Collections#singletonList(Object) singleton list}.</li>
      * </ul>
@@ -571,8 +572,29 @@ public final class CollectionsExt extends Static {
         if (value instanceof Collection<?>) {
             return (Collection<?>) value;
         }
-        if (value instanceof Object[]) {
-            return Arrays.asList((Object[]) value);
+        if (value.getClass().isArray()) {
+            if (value instanceof Object[]) {
+                return Arrays.asList((Object[]) value);
+            } else {
+                return new AbstractList<Object>() {
+                    /** Returns the number of elements in the backing array. */
+                    @Override public int size() {
+                        return Array.getLength(value);
+                    }
+
+                    /** Returns the element at the given index. Primitive numbers as returned as instance of their wrapper class. */
+                    @Override public Object get(final int index) {
+                        return Array.get(value, index);
+                    }
+
+                    /** Sets the element at the given index. Primitive numbers shall be given as instance of their wrapper class. */
+                    @Override public Object set(final int index, final Object value) {
+                        final Object old = Array.get(value, index);
+                        Array.set(value, index, value);
+                        return old;
+                    }
+                };
+            }
         }
         if (value instanceof Iterable<?>) {
             final List<Object> list = new ArrayList<>();
