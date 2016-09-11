@@ -63,7 +63,7 @@ final class DataStoreRegistry {
     /**
      * Creates a new registry which will look for data stores accessible to the given class loader.
      *
-     * @param loader The class loader to use for loading {@link DataStoreProvider} implementations.
+     * @param  loader  the class loader to use for loading {@link DataStoreProvider} implementations.
      */
     public DataStoreRegistry(final ClassLoader loader) {
         ArgumentChecks.ensureNonNull("loader", loader);
@@ -73,9 +73,9 @@ final class DataStoreRegistry {
     /**
      * Returns the MIME type of the storage file format, or {@code null} if unknown or not applicable.
      *
-     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @return The storage MIME type, or {@code null} if unknown or not applicable.
-     * @throws DataStoreException If an error occurred while opening the storage.
+     * @param  storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @return the storage MIME type, or {@code null} if unknown or not applicable.
+     * @throws DataStoreException if an error occurred while opening the storage.
      */
     public String probeContentType(final Object storage) throws DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
@@ -97,10 +97,10 @@ final class DataStoreRegistry {
      *   <li>An existing {@link StorageConnector} instance.</li>
      * </ul>
      *
-     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @return The object to use for reading geospatial data from the given storage.
+     * @param  storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @return the object to use for reading geospatial data from the given storage.
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
-     * @throws DataStoreException If an error occurred while opening the storage.
+     * @throws DataStoreException if an error occurred while opening the storage.
      */
     public DataStore open(final Object storage) throws UnsupportedStorageException, DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
@@ -110,10 +110,10 @@ final class DataStoreRegistry {
     /**
      * Implementation of {@link #probeContentType(Object)} and {@link #open(Object)}.
      *
-     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @param  open {@code true} for creating a {@link DataStore}, or {@code false} if not needed.
+     * @param  storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @param  open     {@code true} for creating a {@link DataStore}, or {@code false} if not needed.
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
-     * @throws DataStoreException If an error occurred while opening the storage.
+     * @throws DataStoreException if an error occurred while opening the storage.
      */
     private ProbeProviderPair lookup(final Object storage, final boolean open) throws DataStoreException {
         StorageConnector connector;

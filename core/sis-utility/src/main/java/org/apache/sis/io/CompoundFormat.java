@@ -112,8 +112,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * {@link Locale#ROOT} if this format shall parse and format "unlocalized" strings.
      * See {@link #getLocale()} for more information about the {@code ROOT} locale.
      *
-     * @param locale   The locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
-     * @param timezone The timezone, or {@code null} for UTC.
+     * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
+     * @param  timezone  the timezone, or {@code null} for UTC.
      */
     protected CompoundFormat(final Locale locale, final TimeZone timezone) {
         this.locale   = (locale != null) ? locale : Locale.ROOT;
@@ -130,7 +130,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *   <li>Format {@link Date} instances using the ISO pattern instead than the English one.</li>
      * </ul>
      *
-     * @return The locale of this {@code Format}, or {@code Locale.ROOT} for unlocalized format.
+     * @return the locale of this {@code Format}, or {@code Locale.ROOT} for unlocalized format.
      */
     @Override
     public Locale getLocale() {
@@ -155,8 +155,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *
      * For subclasses that do not override this method, the default implementation returns {@link #getLocale()}.
      *
-     * @param  category The category for which a locale is desired.
-     * @return The locale for the given category (never {@code null}).
+     * @param  category  the category for which a locale is desired.
+     * @return the locale for the given category (never {@code null}).
      *
      * @since 0.4
      */
@@ -168,7 +168,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * Returns the timezone used by this format.
      *
-     * @return The timezone used for this format, or UTC for unlocalized format.
+     * @return the timezone used for this format, or UTC for unlocalized format.
      */
     public TimeZone getTimeZone() {
         return timezone != null ? (TimeZone) timezone.clone() : TimeZone.getTimeZone(UTC);
@@ -186,7 +186,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *   </ul>
      * </div>
      *
-     * @return The base type of values parsed and formatted by this {@code Format} instance.
+     * @return the base type of values parsed and formatted by this {@code Format} instance.
      */
     public abstract Class<? extends T> getValueType();
 
@@ -222,10 +222,10 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * This error offset policy is a consequence of the compound nature of {@code CompoundFormat},
      * since the exception may have been produced by a call to {@link Format#parseObject(String)}.
      *
-     * @param  text The character sequence for the object to parse.
-     * @param  pos  The position where to start the parsing.
-     * @return The parsed object.
-     * @throws ParseException If an error occurred while parsing the object.
+     * @param  text  the character sequence for the object to parse.
+     * @param  pos   the position where to start the parsing.
+     * @return the parsed object.
+     * @throws ParseException if an error occurred while parsing the object.
      */
     public abstract T parse(CharSequence text, ParsePosition pos) throws ParseException;
 
@@ -253,9 +253,9 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * In case of failure, the {@linkplain ParseException exception error offset} is added
      * to the {@code pos} error index.
      *
-     * @param  text The string representation of the object to parse.
-     * @param  pos  The position where to start the parsing.
-     * @return The parsed object, or {@code null} if the given string can not be parsed.
+     * @param  text  the string representation of the object to parse.
+     * @param  pos   the position where to start the parsing.
+     * @return the parsed object, or {@code null} if the given string can not be parsed.
      */
     @Override
     public T parseObject(final String text, final ParsePosition pos) {
@@ -280,9 +280,9 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * and {@code isISOControl(…)} done in this {@code parseObject(…)} method is more permissive since it encompasses
      * all whitespace characters, plus non-breaking spaces and non-white ISO controls.</div>
      *
-     * @param  text The string representation of the object to parse.
-     * @return The parsed object.
-     * @throws ParseException If an error occurred while parsing the object.
+     * @param  text  the string representation of the object to parse.
+     * @return the parsed object.
+     * @throws ParseException if an error occurred while parsing the object.
      */
     @Override
     public T parseObject(final String text) throws ParseException {
@@ -306,9 +306,9 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * Writes a textual representation of the given object in the given stream or buffer.
      *
-     * @param  object      The object to format.
-     * @param  toAppendTo  Where to format the object.
-     * @throws IOException If an error occurred while writing to the given appendable.
+     * @param  object      the object to format.
+     * @param  toAppendTo  where to format the object.
+     * @throws IOException if an error occurred while writing to the given appendable.
      */
     public abstract void format(T object, Appendable toAppendTo) throws IOException;
 
@@ -323,10 +323,10 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * method and performs some I/O operation outside the given {@link StringBuffer}. However this is not the intended
      * usage of this class and implementors should avoid such unexpected I/O operation.</div>
      *
-     * @param  object      The object to format.
-     * @param  toAppendTo  Where to format the object.
-     * @param  pos         Ignored in current implementation.
-     * @return             The given buffer, returned for convenience.
+     * @param  object      the object to format.
+     * @param  toAppendTo  where to format the object.
+     * @param  pos         ignored in current implementation.
+     * @return the given buffer, returned for convenience.
      */
     @Override
     public StringBuffer format(final Object object, final StringBuffer toAppendTo, final FieldPosition pos) {
@@ -360,14 +360,14 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * See {@link #createFormat(Class)} for the list of value types recognized by the default
      * {@code CompoundFormat} implementation.
      *
-     * @param  valueType The base type of values to parse or format, or {@code null} if unknown.
-     * @return The format to use for parsing and formatting values of the given type or any
-     *         parent type, or {@code null} if none.
+     * @param  valueType  the base type of values to parse or format, or {@code null} if unknown.
+     * @return the format to use for parsing and formatting values of the given type or any parent type,
+     *         or {@code null} if none.
      */
     protected Format getFormat(final Class<?> valueType) {
         Format format = null;
         Map<Class<?>,Format> formats = this.formats;
-        for (Class<?> type=valueType; type!=null; type=type.getSuperclass()) {
+        for (Class<?> type = valueType; type != null; type = type.getSuperclass()) {
             if (formats != null) {
                 format = formats.get(type);
                 if (format != null) {
@@ -416,9 +416,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * sub-types. For example a subclass may choose to format {@link Double} values differently
      * than other types of number.
      *
-     * @param  valueType The base type of values to parse or format.
-     * @return The format to use for parsing of formatting values of the given type,
-     *         or {@code null} if none.
+     * @param  valueType  the base type of values to parse or format.
+     * @return the format to use for parsing of formatting values of the given type, or {@code null} if none.
      */
     protected Format createFormat(final Class<?> valueType) {
         /*
@@ -462,7 +461,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * Returns a clone of this format.
      *
-     * @return A clone of this format.
+     * @return a clone of this format.
      */
     @Override
     public CompoundFormat<T> clone() {

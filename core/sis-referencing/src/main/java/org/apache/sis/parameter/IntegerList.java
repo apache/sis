@@ -49,7 +49,7 @@ final class IntegerList {
     /**
      * Creates a list of integers backed by the given array.
      *
-     * @param array The integer values as a Java array.
+     * @param array the integer values as a Java array.
      */
     public IntegerList(final Object array) {
         final StringJoiner builder = new StringJoiner(" ");
