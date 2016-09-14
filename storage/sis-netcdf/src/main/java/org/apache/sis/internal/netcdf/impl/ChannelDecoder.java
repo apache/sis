@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Pattern;
-import java.time.Instant;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -39,6 +38,7 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.iso.DefaultNameSpace;
@@ -51,6 +51,7 @@ import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
 import java.util.function.Function;
+import java.time.DateTimeException;
 
 
 /**
@@ -106,7 +107,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #numberToDate(String, Number[])
      */
-    private static final Pattern TIME_UNIT_PATTERN = Pattern.compile("(?i)\\bsince\\b");
+    private static final Pattern TIME_UNIT_PATTERN = Pattern.compile("\\s+since\\s+", Pattern.CASE_INSENSITIVE);
 
     /*
      * NOTE: the names of the static constants below this point match the names used in the Backus-Naur Form (BNF)
@@ -638,9 +639,9 @@ public final class ChannelDecoder extends Decoder {
     public Date dateValue(final String name) throws IOException {
         final Attribute attribute = findAttribute(name);
         if (attribute != null) {
-            if (attribute.value instanceof String) try {
-                return Date.from(Instant.parse(Attribute.dateToISO((String) attribute.value)));
-            } catch (IllegalArgumentException e) {
+            if (attribute.value instanceof CharSequence) try {
+                return StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse((CharSequence) attribute.value));
+            } catch (DateTimeException | ArithmeticException e) {
                 listeners.warning(null, e);
             }
         }
@@ -651,8 +652,8 @@ public final class ChannelDecoder extends Decoder {
      * Converts the given numerical values to date, using the information provided in the given unit symbol.
      * The unit symbol is typically a string like <cite>"days since 1970-01-01T00:00:00Z"</cite>.
      *
-     * @param  values  the values to convert. May contains {@code null} elements.
-     * @return the converted values. May contains {@code null} elements.
+     * @param  values  the values to convert. May contain {@code null} elements.
+     * @return the converted values. May contain {@code null} elements.
      * @throws IOException {@inheritDoc}
      */
     @Override
@@ -661,14 +662,14 @@ public final class ChannelDecoder extends Decoder {
         final String[] parts = TIME_UNIT_PATTERN.split(symbol);
         if (parts.length == 2) try {
             final UnitConverter converter = Units.valueOf(parts[0]).getConverterToAny(Units.MILLISECOND);
-            final long epoch = Instant.parse(Attribute.dateToISO(parts[1])).toEpochMilli();
+            final long epoch = StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse(parts[1])).getTime();
             for (int i=0; i<values.length; i++) {
                 final Number value = values[i];
                 if (value != null) {
                     dates[i] = new Date(epoch + Math.round(converter.convert(value.doubleValue())));
                 }
             }
-        } catch (ConversionException | IllegalArgumentException e) {
+        } catch (ConversionException | DateTimeException | ArithmeticException e) {
             listeners.warning(null, e);
         }
         return dates;
