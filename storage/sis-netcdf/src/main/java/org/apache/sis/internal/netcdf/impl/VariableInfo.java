@@ -138,14 +138,14 @@ final class VariableInfo extends Variable {
     /**
      * Creates a new variable.
      *
-     * @param input         The channel together with a buffer for reading the variable data.
-     * @param name          The variable name.
-     * @param dimensions    The dimensions of this variable.
-     * @param allDimensions All dimensions in the NetCDF files.
-     * @param attributes    The attributes associates to the variable, or an empty map if none.
-     * @param dataType      The type of data, as one of the {@code BYTE} and similar constants defined in this class.
-     * @param size          The variable size, used for verification purpose only.
-     * @param offset        The offset where the variable data begins in the NetCDF file.
+     * @param  input          the channel together with a buffer for reading the variable data.
+     * @param  name           the variable name.
+     * @param  dimensions     the dimensions of this variable.
+     * @param  allDimensions  all dimensions in the NetCDF files.
+     * @param  attributes     the attributes associates to the variable, or an empty map if none.
+     * @param  dataType       the type of data, as one of the {@code BYTE} and similar constants defined in this class.
+     * @param  size           the variable size, used for verification purpose only.
+     * @param  offset         the offset where the variable data begins in the NetCDF file.
      */
     VariableInfo(final ChannelDataInput input, final String name,
             final Dimension[] dimensions, final Dimension[] allDimensions,
@@ -279,7 +279,7 @@ final class VariableInfo extends Variable {
      * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
      * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
      *
-     * @return The number of grid cells for each dimension, as unsigned integers.
+     * @return the number of grid cells for each dimension, as unsigned integers.
      */
     @Override
     public int[] getGridEnvelope() {
@@ -332,10 +332,10 @@ final class VariableInfo extends Variable {
     /**
      * Reads a sub-sampled sub-area of the variable.
      *
-     * @param  areaLower   Index of the first value to read along each dimension, as unsigned integers.
-     * @param  areaUpper   Index after the last value to read along each dimension, as unsigned integers.
-     * @param  subsampling Sub-sampling along each dimension. 1 means no sub-sampling.
-     * @return The data as an array of a Java primitive type.
+     * @param  areaLower    index of the first value to read along each dimension, as unsigned integers.
+     * @param  areaUpper    index after the last value to read along each dimension, as unsigned integers.
+     * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
+     * @return the data as an array of a Java primitive type.
      */
     @Override
     public Object read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException {

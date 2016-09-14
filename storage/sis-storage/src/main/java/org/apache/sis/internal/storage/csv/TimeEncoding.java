@@ -20,8 +20,12 @@ import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Duration;
 import org.opengis.referencing.datum.TemporalDatum;
+import org.apache.sis.internal.converter.SurjectiveConverter;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.measure.Units;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.Instant;
 
 
 /**
@@ -31,10 +35,10 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
-final class TimeEncoding {
+class TimeEncoding extends SurjectiveConverter<String,Instant> {
     /**
      * The temporal coordinate reference system to use for {@link #ABSOLUTE} time encoding.
      */
@@ -43,7 +47,11 @@ final class TimeEncoding {
     /**
      * Times are formatted as ISO dates.
      */
-    static final TimeEncoding ABSOLUTE = new TimeEncoding(DEFAULT.datum(), NonSI.DAY);
+    static final TimeEncoding ABSOLUTE = new TimeEncoding(DEFAULT.datum(), NonSI.DAY) {
+        @Override public Instant apply(final String time) {
+            return Instant.parse(time);
+        }
+    };
 
     /**
      * Date of value zero on the time axis, in milliseconds since January 1st 1970 at midnight UTC.
@@ -64,22 +72,41 @@ final class TimeEncoding {
     }
 
     /**
-     * Converts the given timestamp to the values used in the temporal coordinate reference system.
-     *
-     * @param time Number of milliseconds elapsed since January 1st, 1970 midnight UTC.
-     * @return The value to use with the temporal coordinate reference system.
+     * Returns the type of values to convert.
      */
-    final double toCRS(final long time) {
-        return (time - origin) / interval;
+    @Override
+    public final Class<String> getSourceClass() {
+        return String.class;
     }
 
     /**
-     * Reverse of {@link #toCRS(long)}.
-     *
-     * @param time The value used with the temporal coordinate reference system.
-     * @return Number of milliseconds elapsed since January 1st, 1970 midnight UTC.
+     * Returns the type of converted values.
      */
-    final long toMillis(final double time) {
-        return Math.round(time * interval) + origin;
+    @Override
+    public final Class<Instant> getTargetClass() {
+        return Instant.class;
+    }
+
+    /**
+     * Returns the instant for the given string, which is usually a time elapsed since the CRS temporal origin.
+     *
+     * @param  time  the string representation of the time to parse, often as a number since the CRS temporal origin.
+     * @return the instant parsed from the given string.
+     */
+    @Override
+    public Instant apply(final String time) {
+        final double value = Double.parseDouble(time) * interval;
+        final long millis = Math.round(value);
+        return Instant.ofEpochMilli(millis + origin).plusNanos(Math.round((value - millis)*1E6));
+    }
+
+    /**
+     * Converts the given timestamp to the values used in the temporal coordinate reference system.
+     *
+     * @param  time  number of milliseconds elapsed since January 1st, 1970 midnight UTC.
+     * @return the value to use with the temporal coordinate reference system.
+     */
+    final double toCRS(final long time) {
+        return (time - origin) / interval;
     }
 }

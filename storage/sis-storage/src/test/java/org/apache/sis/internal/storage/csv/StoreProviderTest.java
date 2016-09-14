@@ -14,8 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.netcdf.impl;
+package org.apache.sis.internal.storage.csv;
 
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -23,21 +26,23 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link Attribute} class.
+ * Tests {@link StoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from 0.3)
+ * @since   0.8
  * @version 0.8
  * @module
  */
-public final strictfp class AttributeTest extends TestCase {
+public final strictfp class StoreProviderTest extends TestCase {
     /**
-     * Tests the {@link Attribute#numberValues()} method.
+     * Tests {@link StoreProvider#probeContent(StorageConnector)} method.
+     *
+     * @throws DataStoreException if en error occurred while reading the CSV file.
      */
     @Test
-    public void testNumberValues() {
-        final Attribute a = new Attribute("aName", new float[] {10, 20, 1});
-        assertArrayEquals("numberValues", new Number[] { 10f,    20f,    1f  }, a.numberValues());
-        assertArrayEquals("stringValues", new String[] {"10.0", "20.0", "1.0"}, a.stringValues());
+    public void testProbeContent() throws DataStoreException {
+        final StoreProvider p = new StoreProvider();
+        final StorageConnector c = new StorageConnector(StoreTest.testData());
+        assertEquals(ProbeResult.SUPPORTED, p.probeContent(c));
     }
 }

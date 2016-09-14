@@ -57,28 +57,28 @@ public abstract class Variable {
     /**
      * Returns the name of this variable, or {@code null} if none.
      *
-     * @return The name of this variable, or {@code null}.
+     * @return the name of this variable, or {@code null}.
      */
     public abstract String getName();
 
     /**
      * Returns the description of this variable, or {@code null} if none.
      *
-     * @return The description of this variable, or {@code null}.
+     * @return the description of this variable, or {@code null}.
      */
     public abstract String getDescription();
 
     /**
      * Returns the unit of measurement as a string, or {@code null} if none.
      *
-     * @return The unit of measurement, or {@code null}.
+     * @return the unit of measurement, or {@code null}.
      */
     public abstract String getUnitsString();
 
     /**
      * Returns the variable data type, as a primitive type if possible.
      *
-     * @return The variable data type, or {@code null} if unknown.
+     * @return the variable data type, or {@code null} if unknown.
      */
     public abstract Class<?> getDataType();
 
@@ -87,7 +87,7 @@ public abstract class Variable {
      * followed by the span of each dimension (in unit of grid cells) between brackets.
      * Example: {@code "short[180][360]"}.
      *
-     * @return The name of the variable data type.
+     * @return the name of the variable data type.
      */
     public final String getDataTypeName() {
         final StringBuilder buffer = new StringBuilder(20);
@@ -107,7 +107,7 @@ public abstract class Variable {
      * This is the value to be returned by {@link java.awt.image.SampleModel#getDataType()} for the Java2D rasters
      * created from this variable data.
      *
-     * @return The Java2D data type, or {@link DataBuffer#TYPE_UNDEFINED} if this variable data type
+     * @return the Java2D data type, or {@link DataBuffer#TYPE_UNDEFINED} if this variable data type
      *         can not be mapped to a Java2D data type.
      */
     public final int getRasterDataType() {
@@ -148,7 +148,7 @@ public abstract class Variable {
      *       with images.</li>
      * </ul>
      *
-     * @param  minSpan Minimal span (in unit of grid cells) along the dimensions.
+     * @param  minSpan minimal span (in unit of grid cells) along the dimensions.
      * @return {@code true} if the variable can be considered a coverage.
      */
     public final boolean isCoverage(final int minSpan) {
@@ -176,7 +176,7 @@ public abstract class Variable {
      * Returns the names of the dimensions of this variable, in the order they are declared in the NetCDF file.
      * The dimensions are those of the grid, not the dimensions of the coordinate system.
      *
-     * @return The names of all dimension of the grid, in NetCDF order (reverse of "natural" order).
+     * @return the names of all dimension of the grid, in NetCDF order (reverse of "natural" order).
      */
     public abstract String[] getGridDimensionNames();
 
@@ -187,7 +187,7 @@ public abstract class Variable {
      * <p>In ISO 19123 terminology, this method returns the upper corner of the grid envelope plus one.
      * The lower corner is always (0,0,…,0).</p>
      *
-     * @return The number of grid cells for each dimension, in NetCDF order (reverse of "natural" order).
+     * @return the number of grid cells for each dimension, in NetCDF order (reverse of "natural" order).
      */
     public abstract int[] getGridEnvelope();
 
@@ -205,7 +205,7 @@ public abstract class Variable {
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      *
-     * @return The data as an array of a Java primitive type.
+     * @return the data as an array of a Java primitive type.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
@@ -221,10 +221,10 @@ public abstract class Variable {
      *       to {@code Integer.toUnsignedLong(getGridEnvelope()[i])} exclusive.</li>
      * </ul>
      *
-     * @param  areaLower   Index of the first value to read along each dimension.
-     * @param  areaUpper   Index after the last value to read along each dimension.
-     * @param  subsampling Sub-sampling along each dimension. 1 means no sub-sampling.
-     * @return The data as an array of a Java primitive type.
+     * @param  areaLower    index of the first value to read along each dimension.
+     * @param  areaUpper    index after the last value to read along each dimension.
+     * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
+     * @return the data as an array of a Java primitive type.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
@@ -233,7 +233,7 @@ public abstract class Variable {
     /**
      * Returns a string representation of this variable for debugging purpose.
      *
-     * @return A string representation of this variable.
+     * @return a string representation of this variable.
      */
     @Debug
     @Override

@@ -85,6 +85,7 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("OverlyStrongTypeCast")
 @DependsOn(PropertyInformationTest.class)
 public final strictfp class PropertyAccessorTest extends TestCase {
     /**

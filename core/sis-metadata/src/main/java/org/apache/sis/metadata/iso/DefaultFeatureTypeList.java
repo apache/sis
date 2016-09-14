@@ -71,8 +71,8 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
     /**
      * Creates a feature type list initialized to the given values.
      *
-     * @param spatialObject The instance of a type defined in the spatial schema, or {@code null} if none.
-     * @param spatialSchemaName The name of the spatial schema used, or {@code null} if none.
+     * @param spatialObject  the instance of a type defined in the spatial schema, or {@code null} if none.
+     * @param spatialSchemaName  the name of the spatial schema used, or {@code null} if none.
      */
     public DefaultFeatureTypeList(final String spatialObject, final String spatialSchemaName) {
         this.spatialObject     = spatialObject;
@@ -84,7 +84,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param object the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(FeatureTypeList)
      */
@@ -110,8 +110,8 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultFeatureTypeList castOrCopy(final FeatureTypeList object) {
@@ -124,7 +124,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
     /**
      * Instance of a type defined in the spatial schema.
      *
-     * @return Instance of a type defined in the spatial schema, or {@code null}.
+     * @return instance of a type defined in the spatial schema, or {@code null}.
      */
     @Override
     @XmlElement(name = "spatialObject", required = true)
@@ -135,7 +135,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
     /**
      * Sets the instance of a type defined in the spatial schema.
      *
-     * @param newValue The new spatial object.
+     * @param newValue  the new spatial object.
      */
     public void setSpatialObject(final String newValue) {
         checkWritePermission();
@@ -145,7 +145,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
     /**
      * Name of the spatial schema used.
      *
-     * @return Name of the spatial schema used, or {@code null}.
+     * @return name of the spatial schema used, or {@code null}.
      */
     @Override
     @XmlElement(name = "spatialSchemaName", required = true)
@@ -156,7 +156,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
     /**
      * Sets the name of the spatial schema used.
      *
-     * @param newValue The new spatial schema.
+     * @param newValue  the new spatial schema.
      */
     public void setSpatialSchemaName(final String newValue) {
         checkWritePermission();

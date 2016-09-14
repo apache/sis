@@ -20,6 +20,7 @@ import java.util.Formatter;
 import java.util.FormattableFlags;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 
 
@@ -55,11 +56,11 @@ public final class Utilities extends Static {
      *   <li>Note that {@code '_'} is valid both in {@code xsd:ID} and Unicode identifier.</li>
      * </ul>
      *
-     * @param  appendTo    The buffer where to append the valid characters.
-     * @param  separator   The separator to append before the valid characters, or 0 if none.
-     * @param  text        The text from which to get the valid character to append in the given buffer.
-     * @param  accepted    Additional characters to accept (e.g. {@code "-."}), or an empty string if none.
-     * @param  toLowerCase {@code true} for converting the characters to lower case.
+     * @param  appendTo     the buffer where to append the valid characters.
+     * @param  separator    the separator to append before the valid characters, or 0 if none.
+     * @param  text         the text from which to get the valid character to append in the given buffer.
+     * @param  accepted     additional characters to accept (e.g. {@code "-."}), or an empty string if none.
+     * @param  toLowerCase  {@code true} for converting the characters to lower case.
      * @return {@code true} if at least one character has been added to the buffer.
      */
     public static boolean appendUnicodeIdentifier(final StringBuilder appendTo, final char separator,
@@ -91,13 +92,57 @@ public final class Utilities extends Static {
     }
 
     /**
+     * Returns a string with the same content than the given string, but in upper case and containing only the
+     * filtered characters. If the given string already matches the criterion, then it is returned unchanged
+     * without creation of any temporary object.
+     *
+     * <p>This method is useful before call to an {@code Enum.valueOf(String)} method, for making the search
+     * a little bit more tolerant.</p>
+     *
+     * <p>This method is not in public API because conversion to upper-cases should be locale-dependent.</p>
+     *
+     * @param  text     the text to filter.
+     * @param  filter   the filter to apply.
+     * @return the filtered text.
+     *
+     * @since 0.8
+     */
+    public static String toUpperCase(final String text, final Characters.Filter filter) {
+        final int length = text.length();
+        int c, i = 0;
+        while (true) {
+            if (i >= length) {
+                return text;
+            }
+            c = text.codePointAt(i);
+            if (!filter.contains(c) || Character.toUpperCase(c) != c) {
+                break;
+            }
+            i += Character.charCount(c);
+        }
+        /*
+         * At this point we found that characters starting from index i does not match the criterion.
+         * Copy what we have checked so far in the buffer, then add next characters one-by-one.
+         */
+        final StringBuilder buffer = new StringBuilder(length).append(text, 0, i);
+        while (i < length) {
+            c = text.codePointAt(i);
+            if (filter.contains(c)) {
+                buffer.appendCodePoint(Character.toUpperCase(c));
+            }
+            i += Character.charCount(c);
+        }
+        return buffer.toString();
+    }
+
+    /**
      * Returns a string representation of an instance of the given class having the given properties.
      * This is a convenience method for implementation of {@link Object#toString()} methods that are
      * used mostly for debugging purpose.
      *
-     * @param  classe     The class to format.
-     * @param  properties The (<var>key</var>=<var>value</var>) pairs.
-     * @return A string representation of an instance of the given class having the given properties.
+     * @param  classe      the class to format.
+     * @param  properties  the (<var>key</var>=<var>value</var>) pairs.
+     * @return a string representation of an instance of the given class having the given properties.
      *
      * @since 0.4
      */
@@ -125,11 +170,11 @@ public final class Utilities extends Static {
      * Formats the given character sequence to the given formatter. This method takes in account
      * the {@link FormattableFlags#UPPERCASE} and {@link FormattableFlags#LEFT_JUSTIFY} flags.
      *
-     * @param formatter The formatter in which to format the value.
-     * @param flags     The formatting flags.
-     * @param width     Minimal number of characters to write, padding with {@code ' '} if necessary.
-     * @param precision Number of characters to keep before truncation, or -1 if no limit.
-     * @param value     The text to format.
+     * @param formatter  the formatter in which to format the value.
+     * @param flags      the formatting flags.
+     * @param width      minimal number of characters to write, padding with {@code ' '} if necessary.
+     * @param precision  number of characters to keep before truncation, or -1 if no limit.
+     * @param value      the text to format.
      */
     public static void formatTo(final Formatter formatter, final int flags,
             int width, int precision, String value)
@@ -140,7 +185,7 @@ public final class Utilities extends Static {
         if (isUpperCase && width > 0) {
             // May change the string length in some locales.
             value = value.toUpperCase(formatter.locale());
-            isUpperCase = false; // Because conversion has already been done.
+            isUpperCase = false;                            // Because conversion has already been done.
         }
         int length = value.length();
         if (precision >= 0) {

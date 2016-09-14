@@ -177,8 +177,8 @@ final class MetadataReader {
     /**
      * Creates a new <cite>NetCDF to ISO</cite> mapper for the given source.
      *
-     * @param  decoder The source of NetCDF attributes.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @param  decoder  the source of NetCDF attributes.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     MetadataReader(final Decoder decoder) throws IOException {
         this.decoder = decoder;
@@ -198,7 +198,7 @@ final class MetadataReader {
     /**
      * Returns the localized error resource bundle for the locale given by {@link #getLocale()}.
      *
-     * @return The localized error resource bundle.
+     * @return the localized error resource bundle.
      */
     private Errors errors() {
         return Errors.getResources(decoder.listeners.getLocale());
@@ -298,8 +298,8 @@ final class MetadataReader {
      * Returns {@code true} if the given NetCDF attribute is either null or equals to one
      * of the values in the given collection.
      *
-     * @param metadata  The value stored in the metadata object.
-     * @param attribute The value parsed from the NetCDF file.
+     * @param  metadata   the value stored in the metadata object.
+     * @param  attribute  the value parsed from the NetCDF file.
      */
     private static boolean canShare(final Collection<String> metadata, final String attribute) {
         return (attribute == null) || metadata.contains(attribute);
@@ -308,8 +308,8 @@ final class MetadataReader {
     /**
      * Returns {@code true} if the given URL is null, or if the given resource contains that URL.
      *
-     * @param resource  The value stored in the metadata object.
-     * @param url       The value parsed from the NetCDF file.
+     * @param  resource  the value stored in the metadata object.
+     * @param  url       the value parsed from the NetCDF file.
      */
     private static boolean canShare(final OnlineResource resource, final String url) {
         return (url == null) || (resource != null && canShare(resource.getLinkage().toString(), url));
@@ -318,8 +318,8 @@ final class MetadataReader {
     /**
      * Returns {@code true} if the given email is null, or if the given address contains that email.
      *
-     * @param address  The value stored in the metadata object.
-     * @param email    The value parsed from the NetCDF file.
+     * @param  address  the value stored in the metadata object.
+     * @param  email    the value parsed from the NetCDF file.
      */
     private static boolean canShare(final Address address, final String email) {
         return (email == null) || (address != null && canShare(address.getElectronicMailAddresses(), email));
@@ -330,8 +330,8 @@ final class MetadataReader {
      * declares the URL as a mandatory attribute, this method will ignore all other attributes
      * if the given URL is null.
      *
-     * @param  url The URL (mandatory - if {@code null}, no resource will be created).
-     * @return The online resource, or {@code null} if the URL was null.
+     * @param  url  the URL (mandatory - if {@code null}, no resource will be created).
+     * @return the online resource, or {@code null} if the URL was null.
      */
     private OnlineResource createOnlineResource(final String url) {
         if (url != null) try {
@@ -379,10 +379,10 @@ final class MetadataReader {
      * <p>Implementation note: this method tries to reuse the existing {@link #pointOfContact} instance,
      * or part of it, if it is suitable.</p>
      *
-     * @param  keys The group of attribute names to use for fetching the values.
+     * @param  keys  the group of attribute names to use for fetching the values.
      * @param  isPointOfContact {@code true} for forcing the role to {@link Role#POINT_OF_CONTACT}.
-     * @return The responsible party, or {@code null} if none.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @return the responsible party, or {@code null} if none.
+     * @throws IOException if an I/O operation was necessary but failed.
      *
      * @see AttributeNames#CREATOR
      * @see AttributeNames#CONTRIBUTOR
@@ -469,8 +469,8 @@ final class MetadataReader {
      * Creates a {@code Citation} element if at least one of the required attributes is non-null.
      * This method will reuse the {@link #pointOfContact} field, if non-null and suitable.
      *
-     * @param  identifier The citation {@code <gmd:identifier>} attribute.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @param  identifier  the citation {@code <gmd:identifier>} attribute.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     private Citation createCitation(final Identifier identifier) throws IOException {
         String title = stringValue(TITLE);
@@ -518,9 +518,9 @@ final class MetadataReader {
      * Creates a {@code DataIdentification} element if at least one of the required attributes is non-null.
      * This method will reuse the {@link #pointOfContact} value, if non-null and suitable.
      *
-     * @param  identifier The citation {@code <gmd:identifier>} attribute.
-     * @param  publisher  The publisher names, built by the caller in an opportunist way.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @param  identifier  the citation {@code <gmd:identifier>} attribute.
+     * @param  publisher   the publisher names, built by the caller in an opportunist way.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     private DataIdentification createIdentificationInfo(final Identifier identifier,
             final Set<InternationalString> publisher) throws IOException
@@ -611,7 +611,7 @@ final class MetadataReader {
      * For more consistent results, the caller should restrict the {@linkplain Decoder#setSearchPath
      * search path} to a single group before invoking this method.
      *
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     private Keywords createKeywords(final KeywordType type, final boolean standard) throws IOException {
         final String list = stringValue(standard ? STANDARD_NAME : KEYWORDS);
@@ -640,9 +640,9 @@ final class MetadataReader {
     /**
      * Creates a {@code <gmd:spatialRepresentationInfo>} element from the given grid geometries.
      *
-     * @param  cs The grid geometry (related to the NetCDF coordinate system).
-     * @return The grid spatial representation info.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @param  cs  the grid geometry (related to the NetCDF coordinate system).
+     * @return the grid spatial representation info.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     private GridSpatialRepresentation createSpatialRepresentationInfo(final GridGeometry cs) throws IOException {
         final DefaultGridSpatialRepresentation grid = new DefaultGridSpatialRepresentation();
@@ -785,8 +785,8 @@ final class MetadataReader {
     /**
      * Creates a {@code <gmd:contentInfo>} elements from all applicable NetCDF attributes.
      *
-     * @return The content information.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @return the content information.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     private Collection<DefaultCoverageDescription> createContentInfo() throws IOException {
         final Map<List<String>, DefaultCoverageDescription> contents = new HashMap<>(4);
@@ -845,9 +845,9 @@ final class MetadataReader {
     /**
      * Creates a {@code <gmd:dimension>} element from the given variable.
      *
-     * @param  variable The NetCDF variable.
-     * @return The sample dimension information.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @param  variable  the NetCDF variable.
+     * @return the sample dimension information.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     private Band createSampleDimension(final Variable variable) throws IOException {
         final DefaultBand band = new DefaultBand();
@@ -878,13 +878,13 @@ final class MetadataReader {
      * <p><b>Note:</b> ISO 19115 range elements are approximatively equivalent to
      * {@link org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</p>
      *
-     * @param  variable The NetCDF variable.
-     * @param  name     One of the elements in the {@link AttributeNames#FLAG_NAMES} attribute, or {@code null}.
-     * @param  meaning  One of the elements in the {@link AttributeNames#FLAG_MEANINGS} attribute or {@code null}.
-     * @param  mask     One of the elements in the {@link AttributeNames#FLAG_MASKS} attribute or {@code null}.
-     * @param  value    One of the elements in the {@link AttributeNames#FLAG_VALUES} attribute or {@code null}.
-     * @return The sample dimension information or {@code null} if none.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @param  variable  the NetCDF variable.
+     * @param  name      one of the elements in the {@link AttributeNames#FLAG_NAMES} attribute, or {@code null}.
+     * @param  meaning   one of the elements in the {@link AttributeNames#FLAG_MEANINGS} attribute or {@code null}.
+     * @param  mask      one of the elements in the {@link AttributeNames#FLAG_MASKS} attribute or {@code null}.
+     * @param  value     one of the elements in the {@link AttributeNames#FLAG_VALUES} attribute or {@code null}.
+     * @return the sample dimension information or {@code null} if none.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     private RangeElementDescription createRangeElementDescription(final Variable variable,
             final String name, final String meaning, final Number mask, final Number value) throws IOException
@@ -909,8 +909,8 @@ final class MetadataReader {
      *   <li>{@value #IDENTIFIER}, or {@link ucar.nc2.NetcdfFile#getId()} if no identifier attribute was found.</li>
      * </ul>
      *
-     * @return The globally unique identifier, or {@code null} if none.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @return the globally unique identifier, or {@code null} if none.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     private Identifier getFileIdentifier() throws IOException {
         String identifier = stringValue(IDENTIFIER);
@@ -927,8 +927,8 @@ final class MetadataReader {
     /**
      * Creates an ISO {@code Metadata} object from the information found in the NetCDF file.
      *
-     * @return The ISO metadata object.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @return the ISO metadata object.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     public Metadata read() throws IOException {
         final DefaultMetadata metadata = new DefaultMetadata();

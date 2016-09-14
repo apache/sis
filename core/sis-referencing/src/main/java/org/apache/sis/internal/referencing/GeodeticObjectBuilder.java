@@ -163,7 +163,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      *
      * This method can be invoked only once.
      *
-     * @param  name Name of the conversion method.
+     * @param  name  name of the conversion method.
      * @return {@code this}, for method call chaining.
      * @throws FactoryException if the operation method of the given name can not be obtained.
      */
@@ -180,8 +180,8 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * Sets the name of the conversion to use for creating a {@code ProjectedCRS} or {@code DerivedCRS}.
      * This name is for information purpose; its value does not impact the numerical results of coordinate operations.
      *
-     * @param  name The name to give to the conversion.
-     * @return {@code this}, for method call chaining.
+     * @param  name  the name to give to the conversion.
+     * @return {@code this}, for method calls chaining.
      */
     public GeodeticObjectBuilder setConversionName(final String name) {
         conversionName = name;
@@ -201,10 +201,10 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * Sets the value of a numeric parameter. The {@link #setConversionMethod(String)} method must have been invoked
      * exactly once before this method. Calls to this {@code setParameter(…)} can be repeated as many times as needed.
      *
-     * @param  name  The parameter name.
-     * @param  value The value to give to the parameter.
-     * @param  unit  Unit of measurement for the given value.
-     * @return {@code this}, for method call chaining.
+     * @param  name   the parameter name.
+     * @param  value  the value to give to the parameter.
+     * @param  unit   unit of measurement for the given value.
+     * @return {@code this}, for method calls chaining.
      * @throws IllegalStateException if {@link #setConversionMethod(String)} has not been invoked before this method.
      * @throws ParameterNotFoundException if there is no parameter of the given name.
      * @throws InvalidParameterValueException if the parameter does not accept the given value.
@@ -238,10 +238,10 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
      * </table></blockquote>
      *
-     * @param  isUTM      If {@code true}, the given central meridian will be snapped to the central meridian of a UTM zone.
-     * @param  latitude   The latitude in the center of the desired projection.
-     * @param  longitude  The longitude in the center of the desired projection.
-     * @return {@code this}, for method call chaining.
+     * @param  isUTM      if {@code true}, the given central meridian will be snapped to the central meridian of a UTM zone.
+     * @param  latitude   the latitude in the center of the desired projection.
+     * @param  longitude  the longitude in the center of the desired projection.
+     * @return {@code this}, for method calls chaining.
      * @throws FactoryException if the operation method for the Transverse Mercator projection can not be obtained.
      */
     public GeodeticObjectBuilder setTransverseMercator(boolean isUTM, double latitude, double longitude)
@@ -277,9 +277,9 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * }
      * </div>
      *
-     * @param  baseCRS Coordinate reference system to base the derived CRS on.
-     * @param  derivedCS The coordinate system for the derived CRS.
-     * @return The projected CRS.
+     * @param  baseCRS    coordinate reference system to base the derived CRS on.
+     * @param  derivedCS  the coordinate system for the derived CRS.
+     * @return the projected CRS.
      * @throws FactoryException if an error occurred while building the projected CRS.
      */
     public ProjectedCRS createProjectedCRS(final GeographicCRS baseCRS, final CartesianCS derivedCS) throws FactoryException {
@@ -313,9 +313,9 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * Creates a temporal CRS from the given origin and temporal unit. For this method, the CRS name is optional:
      * if no {@code addName(…)} method has been invoked, then a default name will be used.
      *
-     * @param  origin The epoch in milliseconds since January 1st, 1970 at midnight UTC.
-     * @param  unit The unit of measurement.
-     * @return A temporal CRS using the given origin and units.
+     * @param  origin  the epoch in milliseconds since January 1st, 1970 at midnight UTC.
+     * @param  unit    the unit of measurement.
+     * @return a temporal CRS using the given origin and units.
      * @throws FactoryException if an error occurred while building the temporal CRS.
      */
     public TemporalCRS createTemporalCRS(final Date origin, final Unit<Duration> unit) throws FactoryException {
@@ -377,8 +377,8 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * Creates a compound CRS, but we special processing for (two-dimensional Geographic + ellipsoidal heights) tupples.
      * If any such tupple is found, a three-dimensional geographic CRS is created instead than the compound CRS.
      *
-     * @param  components ordered array of {@code CoordinateReferenceSystem} objects.
-     * @return The coordinate reference system for the given properties.
+     * @param  components  ordered array of {@code CoordinateReferenceSystem} objects.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      */
     public CoordinateReferenceSystem createCompoundCRS(final CoordinateReferenceSystem... components) throws FactoryException {

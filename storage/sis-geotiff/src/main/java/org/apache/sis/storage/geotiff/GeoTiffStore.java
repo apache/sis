@@ -100,7 +100,7 @@ public class GeoTiffStore extends DataStore {
             while ((dir = reader.getImageFileDirectory(n++)) != null) {
                 dir.completeMetadata(reader.metadata, locale);
             }
-            metadata = reader.metadata.result();
+            metadata = reader.metadata.build(true);
         } catch (IOException e) {
             throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
         } catch (ArithmeticException e) {

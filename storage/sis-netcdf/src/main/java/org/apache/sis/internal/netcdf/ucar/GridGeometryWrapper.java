@@ -53,7 +53,7 @@ final class GridGeometryWrapper extends GridGeometry {
     /**
      * Creates a new grid geometry for the given NetCDF coordinate system.
      *
-     * @param cs The NetCDF coordinate system, or {@code null} if none.
+     * @param  cs  the NetCDF coordinate system, or {@code null} if none.
      */
     GridGeometryWrapper(final CoordinateSystem cs) {
         netcdfCS = cs;
