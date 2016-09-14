@@ -14,14 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.internal.jdk8;
+
+import java.util.Objects;
+
 
 /**
- * Implementation of the {@link org.apache.sis.internal.netcdf} API
- * as wrappers around the UCAR NetCDF library.
- *
- * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
- * @version 0.8
- * @module
+ * Placeholder for the {@link java.util.stream.StreamSupport} class.
  */
-package org.apache.sis.internal.netcdf.ucar;
+public final class StreamSupport {
+    /**
+     * Do not allow instantiation of this class.
+     */
+    private StreamSupport() {
+    }
+
+    /**
+     * Wraps the given iterator in a stream.
+     *
+     * @param   <T>       type of values.
+     * @param   it        the iterator to wrap.
+     * @param   parallel  ignored.
+     * @return  given iterator wrapped in a stream.
+     */
+    public static <T> Stream<T> stream(final Spliterator<T> it, boolean parallel) {
+        Objects.requireNonNull(it);
+        return new Stream<>(it);
+    }
+}

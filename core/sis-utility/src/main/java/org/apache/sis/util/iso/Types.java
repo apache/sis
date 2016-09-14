@@ -177,8 +177,8 @@ public final class Types extends Static {
      * </ul>
      * </div>
      *
-     * @param  code The code for which to get the class name, or {@code null}.
-     * @return The ISO (preferred) or Java (fallback) class name, or {@code null} if the given code is null.
+     * @param  code  the code for which to get the class name, or {@code null}.
+     * @return the ISO (preferred) or Java (fallback) class name, or {@code null} if the given code is null.
      */
     public static String getListName(final ControlledVocabulary code) {
         if (code == null) {
@@ -202,9 +202,8 @@ public final class Types extends Static {
      * </ul>
      * </div>
      *
-     * @param  code The code for which to get the name, or {@code null}.
-     * @return The UML identifiers or programmatic name for the given code,
-     *         or {@code null} if the given code is null.
+     * @param  code  the code for which to get the name, or {@code null}.
+     * @return the UML identifiers or programmatic name for the given code, or {@code null} if the given code is null.
      *
      * @see #getCodeLabel(ControlledVocabulary)
      * @see #getCodeTitle(ControlledVocabulary)
@@ -237,8 +236,8 @@ public final class Types extends Static {
      * </ul>
      * </div>
      *
-     * @param  code The code from which to get a title, or {@code null}.
-     * @return A unlocalized title for the given code, or {@code null} if the given code is null.
+     * @param  code  the code from which to get a title, or {@code null}.
+     * @return a unlocalized title for the given code, or {@code null} if the given code is null.
      *
      * @see #getCodeName(ControlledVocabulary)
      * @see #getCodeTitle(ControlledVocabulary)
@@ -269,8 +268,8 @@ public final class Types extends Static {
      * with the {@link #forCodeTitle(CharSequence)} method. See <cite>Substituting a free text by a code list</cite>
      * in this class javadoc for more information.</p>
      *
-     * @param  code The code for which to get the title, or {@code null}.
-     * @return The title, or {@code null} if the given code is null.
+     * @param  code  the code for which to get the title, or {@code null}.
+     * @return the title, or {@code null} if the given code is null.
      *
      * @see #getDescription(ControlledVocabulary)
      * @see #forCodeTitle(CharSequence)
@@ -284,8 +283,8 @@ public final class Types extends Static {
      * For a description of the code list as a whole instead than a particular code,
      * see {@link Types#getDescription(Class)}.
      *
-     * @param  code The code for which to get the localized description, or {@code null}.
-     * @return The description, or {@code null} if none or if the given code is null.
+     * @param  code  the code for which to get the localized description, or {@code null}.
+     * @return the description, or {@code null} if none or if the given code is null.
      *
      * @see #getCodeTitle(ControlledVocabulary)
      * @see #getDescription(Class)
@@ -304,8 +303,8 @@ public final class Types extends Static {
      * Returns a description for the given class, or {@code null} if none.
      * This method can be used for GeoAPI interfaces or {@link CodeList}.
      *
-     * @param  type The GeoAPI interface or code list from which to get the description, or {@code null}.
-     * @return The description, or {@code null} if none or if the given type is {@code null}.
+     * @param  type  the GeoAPI interface or code list from which to get the description, or {@code null}.
+     * @return the description, or {@code null} if none or if the given type is {@code null}.
      *
      * @see #getDescription(ControlledVocabulary)
      */
@@ -326,9 +325,9 @@ public final class Types extends Static {
      * be a UML identifier. If any of the input argument is {@code null}, then
      * this method returns {@code null}.
      *
-     * @param  type     The GeoAPI interface from which to get the description of a property, or {@code null}.
-     * @param  property The ISO name of the property for which to get the description, or {@code null}.
-     * @return The description, or {@code null} if none or if the given type or property name is {@code null}.
+     * @param  type      the GeoAPI interface from which to get the description of a property, or {@code null}.
+     * @param  property  the ISO name of the property for which to get the description, or {@code null}.
+     * @return the description, or {@code null} if none or if the given type or property name is {@code null}.
      */
     public static InternationalString getDescription(final Class<?> type, final String property) {
         if (property != null) {
@@ -367,8 +366,8 @@ public final class Types extends Static {
         /**
          * Creates a new international string from the specified resource bundle and key.
          *
-         * @param resources The name of the resource bundle, as a fully qualified class name.
-         * @param key       The key for the resource to fetch.
+         * @param resources  the name of the resource bundle, as a fully qualified class name.
+         * @param key        the key for the resource to fetch.
          */
         Description(final String resources, final String key) {
             super(resources, key);
@@ -441,7 +440,7 @@ public final class Types extends Static {
         /**
          * Creates a new international string for the given code list element.
          *
-         * @param code The code list for which to create a title.
+         * @param  code  the code list for which to create a title.
          */
         CodeTitle(final ControlledVocabulary code) {
             super("org.opengis.metadata.CodeLists", resourceKey(code));
@@ -460,8 +459,8 @@ public final class Types extends Static {
     /**
      * Returns the resource name for the given GeoAPI type, or {@code null} if none.
      *
-     * @param  classname The fully qualified name of the GeoAPI type.
-     * @return The resource bundle to load, or {@code null} if none.
+     * @param  classname  the fully qualified name of the GeoAPI type.
+     * @return the resource bundle to load, or {@code null} if none.
      */
     static String getResources(final String classname) {
         String resources = "org.opengis.metadata.Descriptions";
@@ -481,9 +480,9 @@ public final class Types extends Static {
      * This method works with both {@link Enum} and {@link CodeList}. However if the type is known to be an
      * {@code Enum}, then the standard {@link Class#getEnumConstants()} method is more efficient.</div>
      *
-     * @param <T> The compile-time type given as the {@code codeType} parameter.
-     * @param codeType The type of code list or enumeration.
-     * @return The list of values for the given code list or enumeration, or an empty array if none.
+     * @param  <T>       the compile-time type given as the {@code codeType} parameter.
+     * @param  codeType  the type of code list or enumeration.
+     * @return the list of values for the given code list or enumeration, or an empty array if none.
      *
      * @see Class#getEnumConstants()
      */
@@ -522,8 +521,8 @@ public final class Types extends Static {
      * Only identifiers for the stable part of GeoAPI are recognized. This method does not handle
      * the identifiers for the {@code geoapi-pending} module.
      *
-     * @param  identifier The ISO {@linkplain UML} identifier, or {@code null}.
-     * @return The GeoAPI interface, or {@code null} if the given identifier is {@code null} or unknown.
+     * @param  identifier  the ISO {@linkplain UML} identifier, or {@code null}.
+     * @return the GeoAPI interface, or {@code null} if the given identifier is {@code null} or unknown.
      */
     public static synchronized Class<?> forStandardName(final String identifier) {
         if (identifier == null) {
@@ -573,10 +572,10 @@ public final class Types extends Static {
      * If there is no match, this method returns {@code null} — it does not thrown an exception,
      * unless the given class is not an enumeration.
      *
-     * @param <T>      The compile-time type given as the {@code enumType} parameter.
-     * @param enumType The type of enumeration.
-     * @param name     The name of the enumeration value to obtain, or {@code null}.
-     * @return A value matching the given name, or {@code null} if the name is null
+     * @param  <T>       the compile-time type given as the {@code enumType} parameter.
+     * @param  enumType  the type of enumeration.
+     * @param  name      the name of the enumeration value to obtain, or {@code null}.
+     * @return a value matching the given name, or {@code null} if the name is null
      *         or if no matching enumeration is found.
      *
      * @see Enum#valueOf(Class, String)
@@ -625,11 +624,11 @@ public final class Types extends Static {
      * If no match is found, then a new code is created only if the {@code canCreate} argument is {@code true}.
      * Otherwise this method returns {@code null}.
      *
-     * @param <T>        The compile-time type given as the {@code codeType} parameter.
-     * @param codeType   The type of code list.
-     * @param name       The name of the code to obtain, or {@code null}.
-     * @param canCreate  {@code true} if this method is allowed to create new code.
-     * @return A code matching the given name, or {@code null} if the name is null
+     * @param  <T>        the compile-time type given as the {@code codeType} parameter.
+     * @param  codeType   the type of code list.
+     * @param  name       the name of the code to obtain, or {@code null}.
+     * @param  canCreate  {@code true} if this method is allowed to create new code.
+     * @return a code matching the given name, or {@code null} if the name is null
      *         or if no matching code is found and {@code canCreate} is {@code false}.
      *
      * @see #getCodeName(ControlledVocabulary)
@@ -653,8 +652,8 @@ public final class Types extends Static {
      *   <li>Otherwise returns {@code null}.</li>
      * </ul>
      *
-     * @param  title The title for which to get a code or enumeration value, or {@code null}.
-     * @return The code or enumeration value associated with the given title, or {@code null}.
+     * @param  title  the title for which to get a code or enumeration value, or {@code null}.
+     * @return the code or enumeration value associated with the given title, or {@code null}.
      *
      * @since 0.7
      *
@@ -682,11 +681,11 @@ public final class Types extends Static {
      *   <li>The value for the decoded locale is added in the international string to be returned.</li>
      * </ul>
      *
-     * @param  properties The map from which to get the string values for an international string, or {@code null}.
-     * @param  prefix     The prefix of keys to use for creating the international string.
-     * @return The international string, or {@code null} if the given map is null or does not contain values
+     * @param  properties  the map from which to get the string values for an international string, or {@code null}.
+     * @param  prefix      the prefix of keys to use for creating the international string.
+     * @return the international string, or {@code null} if the given map is null or does not contain values
      *         associated to keys starting with the given prefix.
-     * @throws IllegalArgumentException If a key starts by the given prefix and:
+     * @throws IllegalArgumentException if a key starts by the given prefix and:
      *         <ul>
      *           <li>The key suffix is an illegal {@link Locale} code,</li>
      *           <li>or the value associated to that key is a not a {@link CharSequence}.</li>
@@ -778,9 +777,8 @@ public final class Types extends Static {
      * Otherwise, this method copies the {@link InternationalString#toString()} value in a new
      * {@link SimpleInternationalString} instance and returns it.
      *
-     * @param  string The characters sequence to convert, or {@code null}.
-     * @return The given sequence as an international string,
-     *         or {@code null} if the given sequence was null.
+     * @param  string  the characters sequence to convert, or {@code null}.
+     * @return the given sequence as an international string, or {@code null} if the given sequence was null.
      *
      * @see DefaultNameFactory#createInternationalString(Map)
      */
@@ -801,8 +799,8 @@ public final class Types extends Static {
      * <p>If a defensive copy of the {@code strings} array is wanted, then the caller needs to check
      * if the returned array is the same instance than the one given in argument to this method.</p>
      *
-     * @param  strings The characters sequences to convert, or {@code null}.
-     * @return The given array as an array of type {@code InternationalString[]},
+     * @param  strings  the characters sequences to convert, or {@code null}.
+     * @return the given array as an array of type {@code InternationalString[]},
      *         or {@code null} if the given array was null.
      */
     public static InternationalString[] toInternationalStrings(final CharSequence... strings) {

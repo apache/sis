@@ -140,7 +140,7 @@ final class Store extends DataStore {
      * @throws DataStoreException if an error occurred during the parsing process.
      */
     @Override
-    public Metadata getMetadata() throws DataStoreException {
+    public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
             parse();
             DefaultMetadata md = null;
@@ -161,7 +161,7 @@ final class Store extends DataStore {
      * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
-    public void close() throws DataStoreException {
+    public synchronized void close() throws DataStoreException {
         final Reader s = source;
         source = null;                  // Cleared first in case of failure.
         objects.clear();

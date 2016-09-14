@@ -151,7 +151,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ImageDescription)
      */
@@ -186,8 +186,8 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultImageDescription castOrCopy(final ImageDescription object) {
@@ -198,13 +198,13 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Returns the illumination elevation measured in degrees clockwise from the target plane at
-     * intersection of the optical line of sight with the Earth's surface.
+     * Returns the illumination elevation measured in degrees clockwise from the target plane
+     * at intersection of the optical line of sight with the Earth's surface.
      * For images from a scanning device, refer to the centre pixel of the image.
      *
      * <p>The horizon is at 0°, straight up has an elevation of 90°.</p>
      *
-     * @return A value between -90° and +90°, or {@code null} if unspecified.
+     * @return a value between -90° and +90°, or {@code null} if unspecified.
      */
     @Override
     @ValueRange(minimum = -90, maximum = +90)
@@ -214,11 +214,11 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Sets the illumination elevation measured in degrees clockwise from the target plane at
-     * intersection of the optical line of sight with the Earth's surface. For images from a
-     * scanning device, refer to the centre pixel of the image.
+     * Sets the illumination elevation measured in degrees clockwise from the target plane
+     * at intersection of the optical line of sight with the Earth's surface.
+     * For images from a scanning device, refer to the centre pixel of the image.
      *
-     * @param newValue The new illumination elevation angle, or {@code null}.
+     * @param  newValue  the new illumination elevation angle, or {@code null}.
      * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setIlluminationElevationAngle(final Double newValue) {
@@ -229,10 +229,10 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Returns the illumination azimuth measured in degrees clockwise from true north at the time
-     * the image is taken. For images from a scanning device, refer to the centre pixel of the image.
+     * Returns the illumination azimuth measured in degrees clockwise from true north at the time the image is taken.
+     * For images from a scanning device, refer to the centre pixel of the image.
      *
-     * @return A value between 0° and 360°, or {@code null} if unspecified.
+     * @return a value between 0° and 360°, or {@code null} if unspecified.
      */
     @Override
     @ValueRange(minimum = 0, maximum = 360)
@@ -242,10 +242,10 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Sets the illumination azimuth measured in degrees clockwise from true north at the time the
-     * image is taken. For images from a scanning device, refer to the centre pixel of the image.
+     * Sets the illumination azimuth measured in degrees clockwise from true north at the time the image is taken.
+     * For images from a scanning device, refer to the centre pixel of the image.
      *
-     * @param newValue The new illumination azimuth angle, or {@code null}.
+     * @param  newValue  the new illumination azimuth angle, or {@code null}.
      * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setIlluminationAzimuthAngle(final Double newValue) {
@@ -258,7 +258,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Returns the conditions which affected the image.
      *
-     * @return Conditions which affected the image, or {@code null} if unspecified.
+     * @return conditions which affected the image, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "imagingCondition")
@@ -269,7 +269,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Sets the conditions that affected the image.
      *
-     * @param newValue The new imaging condition.
+     * @param  newValue  the new imaging condition.
      */
     public void setImagingCondition(final ImagingCondition newValue) {
         checkWritePermission();
@@ -279,7 +279,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Returns a code in producer’s codespace that specifies the image quality.
      *
-     * @return The image quality, or {@code null} if unspecified.
+     * @return the image quality, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "imageQualityCode")
@@ -290,7 +290,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Sets a code in producer’s codespace that specifies the image quality.
      *
-     * @param newValue The new image quality code.
+     * @param  newValue  the new image quality code.
      */
     public void setImageQualityCode(final Identifier newValue) {
         checkWritePermission();
@@ -300,7 +300,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Returns the area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.
      *
-     * @return A value between 0 and 100, or {@code null} if unspecified.
+     * @return a value between 0 and 100, or {@code null} if unspecified.
      */
     @Override
     @ValueRange(minimum = 0, maximum = 100)
@@ -312,7 +312,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Sets the area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.
      *
-     * @param newValue The new cloud cover percentage, or {@code null}.
+     * @param  newValue  the new cloud cover percentage, or {@code null}.
      * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setCloudCoverPercentage(final Double newValue) {
@@ -326,8 +326,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * Returns the image distributor's code that identifies the level of radiometric and geometric
      * processing that has been applied.
      *
-     * @return The level of radiometric and geometric processing that has been applied,
-     *         or {@code null} if unspecified.
+     * @return the level of radiometric and geometric processing that has been applied, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "processingLevelCode")
@@ -339,7 +338,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * Sets the image distributor's code that identifies the level of radiometric and geometric
      * processing that has been applied.
      *
-     * @param newValue The new processing level code.
+     * @param  newValue  the new processing level code.
      */
     @Override
     public void setProcessingLevelCode(final Identifier newValue) {
@@ -349,8 +348,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Returns the count of the number of lossy compression cycles performed on the image.
      *
-     * @return The number of lossy compression cycles performed on the image,
-     *         or {@code null} if unspecified.
+     * @return the number of lossy compression cycles performed on the image, or {@code null} if unspecified.
      */
     @Override
     @ValueRange(minimum = 0)
@@ -362,7 +360,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Sets the count of the number the number of lossy compression cycles performed on the image.
      *
-     * @param newValue The new compression generation quantity.
+     * @param  newValue  the new compression generation quantity.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setCompressionGenerationQuantity(final Integer newValue) {
@@ -375,8 +373,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Returns the indication of whether or not triangulation has been performed upon the image.
      *
-     * @return Whether or not triangulation has been performed upon the image,
-     *         or {@code null} if unspecified.
+     * @return whether or not triangulation has been performed upon the image, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "triangulationIndicator")
@@ -387,7 +384,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Sets the indication of whether or not triangulation has been performed upon the image.
      *
-     * @param newValue The new triangulation indicator.
+     * @param  newValue  the new triangulation indicator.
      */
     public void setTriangulationIndicator(final Boolean newValue) {
         checkWritePermission();
@@ -398,8 +395,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * Returns the indication of whether or not the radiometric calibration information for
      * generating the radiometrically calibrated standard data product is available.
      *
-     * @return Whether or not the radiometric calibration information is available,
-     *         or {@code null} if unspecified.
+     * @return whether or not the radiometric calibration information is available, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "radiometricCalibrationDataAvailability")
@@ -411,7 +407,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * Sets the indication of whether or not the radiometric calibration information for generating
      * the radiometrically calibrated standard data product is available.
      *
-     * @param newValue {@code true} if radiometric calibration data are available.
+     * @param  newValue  {@code true} if radiometric calibration data are available.
      */
     public void setRadiometricCalibrationDataAvailable(final Boolean newValue) {
         checkWritePermission();
@@ -419,11 +415,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Returns the indication of whether or not constants are available which allow for camera
-     * calibration corrections.
+     * Returns the indication of whether or not constants are available which allow for camera calibration corrections.
      *
-     * @return Whether or not constants are available for camera calibration corrections,
-     *         or {@code null} if unspecified.
+     * @return whether or not constants are available for camera calibration corrections, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "cameraCalibrationInformationAvailability")
@@ -432,10 +426,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Sets the indication of whether or not constants are available which allow for camera
-     * calibration corrections.
+     * Sets the indication of whether or not constants are available which allow for camera calibration corrections.
      *
-     * @param newValue {@code true} if camera calibration information are available.
+     * @param  newValue  {@code true} if camera calibration information are available.
      */
     public void setCameraCalibrationInformationAvailable(final Boolean newValue) {
         checkWritePermission();
@@ -445,8 +438,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Returns the indication of whether or not Calibration Reseau information is available.
      *
-     * @return Whether or not Calibration Reseau information is available,
-     *         or {@code null} if unspecified.
+     * @return whether or not Calibration Reseau information is available, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "filmDistortionInformationAvailability")
@@ -457,7 +449,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Sets the indication of whether or not Calibration Reseau information is available.
      *
-     * @param newValue {@code true} if film distortion information are available.
+     * @param  newValue  {@code true} if film distortion information are available.
      */
     public void setFilmDistortionInformationAvailable(final Boolean newValue) {
         checkWritePermission();
@@ -467,8 +459,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Returns the indication of whether or not lens aberration correction information is available.
      *
-     * @return Whether or not lens aberration correction information is available,
-     *         or {@code null} if unspecified.
+     * @return whether or not lens aberration correction information is available, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "lensDistortionInformationAvailability")
@@ -479,7 +470,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Sets the indication of whether or not lens aberration correction information is available.
      *
-     * @param newValue {@code true} if lens distortion information are available.
+     * @param  newValue  {@code true} if lens distortion information are available.
      */
     public void setLensDistortionInformationAvailable(final Boolean newValue) {
         checkWritePermission();

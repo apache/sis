@@ -143,10 +143,11 @@ public final class JDK8 {
     }
 
     /**
-     * Returns the sum of the given numbers.
+     * Safe sum of the given numbers.
+     *
      * @param  x  first value to add.
      * @param  y  second value to add.
-     * @return the result.
+     * @return the sum.
      * @throws ArithmeticException if the result overflows.
      *
      * @since 0.8
@@ -158,10 +159,11 @@ public final class JDK8 {
     }
 
     /**
-     * Returns the product of the arguments,
+     * Safe product of the arguments.
+     *
      * @param  x  first value to multiply.
      * @param  y  second value to multiply.
-     * @return the result.
+     * @return the product.
      * @throws ArithmeticException if the result overflows (Note: not implemented in this placeholder).
      *
      * @since 0.8

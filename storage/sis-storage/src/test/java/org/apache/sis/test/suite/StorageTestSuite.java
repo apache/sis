@@ -45,6 +45,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.xml.StoreTest.class,
     org.apache.sis.internal.storage.wkt.StoreProviderTest.class,
     org.apache.sis.internal.storage.wkt.StoreTest.class,
+    org.apache.sis.internal.storage.csv.StoreProviderTest.class,
     org.apache.sis.internal.storage.csv.StoreTest.class,
     org.apache.sis.storage.DataStoresTest.class,
     org.apache.sis.index.GeoHashCoderTest.class

@@ -14,14 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.internal.jdk8;
+
 
 /**
- * Implementation of the {@link org.apache.sis.internal.netcdf} API
- * as wrappers around the UCAR NetCDF library.
+ * Placeholder for the {@link java.util.function.Consumer} interface.
  *
- * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
- * @version 0.8
- * @module
+ * @param <T> type of values to accept.
  */
-package org.apache.sis.internal.netcdf.ucar;
+public interface Consumer<T> {
+    /**
+     * Performs an action on the given value.
+     *
+     * @param t the value on which to perform an action.
+     */
+    void accept(T t);
+}

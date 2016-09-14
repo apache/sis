@@ -168,6 +168,7 @@ public final strictfp class NumbersTest extends TestCase {
      * Tests {@link Numbers#narrowestNumber(Number)}.
      */
     @Test
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testNarrowestNumber() {
         assertEquals(Byte   .valueOf((byte)   127),  narrowestNumber(    127.0));
         assertEquals(Short  .valueOf((short)  128),  narrowestNumber(    128.0));
@@ -186,6 +187,7 @@ public final strictfp class NumbersTest extends TestCase {
      */
     @Test
     public void testCast() {
+        @SuppressWarnings("UnnecessaryBoxing")
         final Integer value = new Integer(10); // Intentionally a new instance.
         assertEquals(Byte   .valueOf((byte)   10), cast(value, Byte   .class));
         assertEquals(Short  .valueOf((short)  10), cast(value, Short  .class));

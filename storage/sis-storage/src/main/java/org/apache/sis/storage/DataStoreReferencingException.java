@@ -18,33 +18,35 @@ package org.apache.sis.storage;
 
 
 /**
- * Thrown when a store can not be read because the stream contains invalid data.
- * It may be for example a logical inconsistency, or a reference not found,
- * or an unsupported file format version, <i>etc.</i>
- *
- * <div class="note"><b>Note:</b>
- * exceptions that are caused by {@link java.io.IOException} or {@link java.sql.SQLException}
- * should generally be wrapped by another type of {@link DataStoreException}, unless the data
- * store can determine that the error was caused by a problem with the stream content rather
- * than some I/O problems.</div>
+ * Thrown when a data store failed to construct the coordinate reference system (CRS)
+ * or other positioning information. This exception is typically (but not necessarily)
+ * caused by {@link org.opengis.referencing.FactoryException} or
+ * {@link org.opengis.referencing.operation.TransformException}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-public class DataStoreContentException extends DataStoreException {
+public class DataStoreReferencingException extends DataStoreException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 3469934460013440211L;
+    private static final long serialVersionUID = 2671737996817267335L;
+
+    /**
+     * Creates an exception with no cause and no details message.
+     */
+    public DataStoreReferencingException() {
+        super();
+    }
 
     /**
      * Creates an exception with the specified details message.
      *
      * @param message  the detail message.
      */
-    public DataStoreContentException(String message) {
+    public DataStoreReferencingException(final String message) {
         super(message);
     }
 
@@ -53,7 +55,7 @@ public class DataStoreContentException extends DataStoreException {
      *
      * @param cause  the cause for this exception.
      */
-    public DataStoreContentException(Throwable cause) {
+    public DataStoreReferencingException(final Throwable cause) {
         super(cause);
     }
 
@@ -63,7 +65,7 @@ public class DataStoreContentException extends DataStoreException {
      * @param message  the detail message.
      * @param cause    the cause for this exception.
      */
-    public DataStoreContentException(String message, Throwable cause) {
+    public DataStoreReferencingException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

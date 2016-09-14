@@ -17,9 +17,10 @@
 package org.apache.sis.internal.util;
 
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.Characters;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**
@@ -27,7 +28,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public final strictfp class UtilitiesTest extends TestCase {
@@ -37,5 +38,16 @@ public final strictfp class UtilitiesTest extends TestCase {
     @Test
     public void testToString() {
         assertEquals("Number[base=“decimal”, value=20]", Utilities.toString(Number.class, "base", "decimal", "value", 20));
+    }
+
+    /**
+     * Tests the {@link Utilities#toUpperCase(String, Characters.Filter)} method.
+     */
+    @Test
+    public void testToUpperCase() {
+        final String expected = "WGS84";
+        assertSame  (expected, Utilities.toUpperCase(expected, Characters.Filter.LETTERS_AND_DIGITS));
+        assertEquals(expected, Utilities.toUpperCase("WGS 84", Characters.Filter.LETTERS_AND_DIGITS));
+        assertEquals(expected, Utilities.toUpperCase("wgs 84", Characters.Filter.LETTERS_AND_DIGITS));
     }
 }

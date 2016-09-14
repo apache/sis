@@ -43,8 +43,8 @@ public class StoreTypeDetector extends FileTypeDetector {
     /**
      * Probes the given file by delegating to {@link DataStores#probeContentType(Object)}.
      *
-     * @param  path the path to the file to probe.
-     * @return The content type or {@code null} if the file type is not recognized.
+     * @param  path  the path to the file to probe.
+     * @return the content type or {@code null} if the file type is not recognized.
      * @throws IOException if an I/O error occurs while reading the file.
      *
      * @see java.nio.file.Files#probeContentType(Path)

@@ -63,10 +63,10 @@ final class ArrayConverter<S,T> extends SystemConverter<S,T> {
     /**
      * Creates a new converter for the given source and target classes.
      *
-     * @param sourceClass The {@linkplain #getSourceClass() source class}.
-     * @param targetClass The {@linkplain #getTargetClass() target class}.
-     * @param converter   The converter for array elements. The source and target types shall be
-     *                    the array component types of {@code <S>} and {@code <T>}.
+     * @param  sourceClass  the {@linkplain #getSourceClass() source class}.
+     * @param  targetClass  the {@linkplain #getTargetClass() target class}.
+     * @param  converter    the converter for array elements. The source and target types shall be
+     *                      the array component types of {@code <S>} and {@code <T>}.
      */
     ArrayConverter(final Class<S> sourceClass, final Class<T> targetClass, final ObjectConverter<?,?> converter) {
         super(sourceClass, targetClass);
