@@ -187,10 +187,10 @@ public final class ChannelDecoder extends Decoder {
      * Creates a new decoder for the given file.
      * This constructor parses immediately the header.
      *
-     * @param  listeners Where to send the warnings.
-     * @param  input     The channel and the buffer from where data are read.
-     * @throws IOException If an error occurred while reading the channel.
-     * @throws DataStoreException If the content of the given channel is not a NetCDF file.
+     * @param  listeners  where to send the warnings.
+     * @param  input      the channel and the buffer from where data are read.
+     * @throws IOException if an error occurred while reading the channel.
+     * @throws DataStoreException if the content of the given channel is not a NetCDF file.
      */
     public ChannelDecoder(final WarningListeners<?> listeners, final ChannelDataInput input)
             throws IOException, DataStoreException
@@ -244,9 +244,9 @@ public final class ChannelDecoder extends Decoder {
     /**
      * Return the localized name of the given tag.
      *
-     * @param  tag One of {@link #DIMENSION}, {@link #VARIABLE} or {@link #ATTRIBUTE} constants.
-     * @return The localized name of the given tag, or its hexadecimal number if the given value is not
-     *         one of the expected constants.
+     * @param  tag  one of {@link #DIMENSION}, {@link #VARIABLE} or {@link #ATTRIBUTE} constants.
+     * @return the localized name of the given tag, or its hexadecimal number if the given value
+     *         is not one of the expected constants.
      */
     private static String tagName(final int tag) {
         final short key;
@@ -262,7 +262,7 @@ public final class ChannelDecoder extends Decoder {
     /**
      * Returns the localized error resource bundle for the locale given by {@link #getLocale()}.
      *
-     * @return The localized error resource bundle.
+     * @return the localized error resource bundle.
      */
     private Errors errors() {
         return Errors.getResources(listeners.getLocale());
@@ -295,10 +295,10 @@ public final class ChannelDecoder extends Decoder {
      * <p>The NetCDF format add padding after bytes, characters and short integers in order to align
      * the data on multiple of 4 bytes. This method adds such padding to the number of bytes to read.</p>
      *
-     * @param  n        The number of elements to read.
-     * @param  dataSize The size of each element, in bytes.
-     * @param  name     The name of the element to read, used only in case of error for formatting the message.
-     * @return The number of bytes to read, rounded to the next multiple of 4.
+     * @param  n         the number of elements to read.
+     * @param  dataSize  the size of each element, in bytes.
+     * @param  name      the name of the element to read, used only in case of error for formatting the message.
+     * @return the number of bytes to read, rounded to the next multiple of 4.
      */
     private int ensureBufferContains(final int n, final int dataSize, String name) throws IOException, DataStoreException {
         // (n+3) & ~3  is a trick for rounding 'n' to the next multiple of 4.
@@ -344,7 +344,7 @@ public final class ChannelDecoder extends Decoder {
      * <p>If the value is a {@code String}, then leading and trailing spaces and control characters have been trimmed
      * by {@link String#trim()}.</p>
      *
-     * @return The value, or {@code null} if it was an empty string or an empty array.
+     * @return the value, or {@code null} if it was an empty string or an empty array.
      */
     private Object readValues(final String name, final int type, final int length) throws IOException, DataStoreException {
         if (length == 0) {
@@ -406,8 +406,8 @@ public final class ChannelDecoder extends Decoder {
      *   <li>The dimension length   (use {@link #readInt()})</li>
      * </ul>
      *
-     * @param nelems The number of dimensions to read.
-     * @return The dimensions in the order they are declared in the NetCDF file.
+     * @param  nelems  the number of dimensions to read.
+     * @return the dimensions in the order they are declared in the NetCDF file.
      */
     private Dimension[] readDimensions(final int nelems) throws IOException, DataStoreException {
         final Dimension[] dimensions = new Dimension[nelems];
@@ -439,7 +439,7 @@ public final class ChannelDecoder extends Decoder {
      * If the value is a {@code String}, then leading and trailing spaces and control characters
      * have been trimmed by {@link String#trim()}.
      *
-     * @param nelems The number of attributes to read.
+     * @param  nelems  the number of attributes to read.
      */
     private Attribute[] readAttributes(final int nelems) throws IOException, DataStoreException {
         final Attribute[] attributes = new Attribute[nelems];
@@ -471,8 +471,8 @@ public final class ChannelDecoder extends Decoder {
      *   <li>Offset where data begins   (use {@link #readOffset()})</li>
      * </ul>
      *
-     * @param nelems     The number of variables to read.
-     * @param dimensions The dimensions previously read by {@link #readDimensions(int)}.
+     * @param  nelems      the number of variables to read.
+     * @param  dimensions  the dimensions previously read by {@link #readDimensions(int)}.
      */
     private VariableInfo[] readVariables(final int nelems, final Dimension[] dimensions)
             throws IOException, DataStoreException
@@ -524,11 +524,11 @@ public final class ChannelDecoder extends Decoder {
      * <p>Code searching in the returned map shall ask for the original (non lower-case) name
      * <strong>before</strong> to ask for the lower-cases version of that name.</p>
      *
-     * @param  <E>          The type of elements.
-     * @param  elements     The elements to store in the map, or {@code null} if none.
-     * @param  nameFunction The function for computing a name from an element.
-     * @return A (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
-     * @throws DataStoreException If the same name is used for more than one element.
+     * @param  <E>           the type of elements.
+     * @param  elements      the elements to store in the map, or {@code null} if none.
+     * @param  nameFunction  the function for computing a name from an element.
+     * @return a (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
+     * @throws DataStoreException if the same name is used for more than one element.
      *
      * @see #findAttribute(String)
      */
@@ -578,8 +578,8 @@ public final class ChannelDecoder extends Decoder {
      * The {@code name} argument is typically (but is not restricted too) one of
      * the constants defined in the {@link AttributeNames} class.
      *
-     * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute, or {@code null} if none.
+     * @param  name  the name of the attribute to search, or {@code null}.
+     * @return the attribute, or {@code null} if none.
      */
     private Attribute findAttribute(final String name) {
         Attribute attribute = attributeMap.get(name);
@@ -595,8 +595,8 @@ public final class ChannelDecoder extends Decoder {
     /**
      * Returns the value for the attribute of the given name, or {@code null} if none.
      *
-     * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or empty or if the given name was null.
+     * @param  name  the name of the attribute to search, or {@code null}.
+     * @return the attribute value, or {@code null} if none or empty or if the given name was null.
      * @throws IOException {@inheritDoc}
      */
     @Override
@@ -651,8 +651,8 @@ public final class ChannelDecoder extends Decoder {
      * Converts the given numerical values to date, using the information provided in the given unit symbol.
      * The unit symbol is typically a string like <cite>"days since 1970-01-01T00:00:00Z"</cite>.
      *
-     * @param  values The values to convert. May contains {@code null} elements.
-     * @return The converted values. May contains {@code null} elements.
+     * @param  values  the values to convert. May contains {@code null} elements.
+     * @return the converted values. May contains {@code null} elements.
      * @throws IOException {@inheritDoc}
      */
     @Override
@@ -753,7 +753,7 @@ nextVar:    for (final VariableInfo variable : variables) {
     /**
      * Closes the channel.
      *
-     * @throws IOException If an error occurred while closing the channel.
+     * @throws IOException if an error occurred while closing the channel.
      */
     @Override
     public void close() throws IOException {

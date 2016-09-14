@@ -62,8 +62,8 @@ final class GridGeometryInfo extends GridGeometry {
     /**
      * Constructs a new grid geometry information.
      *
-     * @param domain Describes the input values of the "grid to CRS" conversion.
-     * @param range  The output values of the "grid to CRS" conversion.
+     * @param  domain  describes the input values of the "grid to CRS" conversion.
+     * @param  range   the output values of the "grid to CRS" conversion.
      */
     GridGeometryInfo(final Dimension[] domain, final VariableInfo[] range) {
         this.domain = domain;

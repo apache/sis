@@ -137,9 +137,11 @@ public final class Numbers extends Static {
 
     /**
      * Returns {@code true} if the given {@code type} is a floating point type.
+     * The list of floating point types include primitive and wrapper classes of
+     * {@link Float} and {@link Double}, together with the {@link BigDecimal} class.
      *
      * @param  type  the type to test (may be {@code null}).
-     * @return {@code true} if {@code type} is the primitive or wrapper class of {@link Float} or {@link Double}.
+     * @return {@code true} if {@code type} is one of the known types capable to represent floating point numbers.
      *
      * @see #isInteger(Class)
      */
@@ -414,16 +416,18 @@ public final class Numbers extends Static {
                 final float  floatValue  = (float) doubleValue;
                 isFloat = (doubleToLongBits(floatValue) == doubleToLongBits(doubleValue));
                 if (doubleValue != longValue) {
-                    candidate = isFloat ? ((Number) Float   .valueOf(floatValue))
-                                        : ((Number) Numerics.valueOf(doubleValue));
+                    // Do not use "isFloat ? … : …" operator as it inserts undesired automatic auto-(un)boxing.
+                    if (isFloat) candidate = Float   .valueOf(floatValue);
+                    else         candidate = Numerics.valueOf(doubleValue);
                     break;
                 }
                 // Fall through everywhere.
             }
             case LONG: {
                 if (((int) longValue) != longValue) {
-                    candidate = isFloat ? ((Number) Float.valueOf((float) longValue))
-                                        : ((Number) Long.valueOf(longValue));
+                    // Do not use "isFloat ? … : …" operator as it inserts undesired automatic auto-(un)boxing.
+                    if (isFloat) candidate = Float.valueOf(longValue);
+                    else         candidate = Long .valueOf(longValue);
                     break;
                 }
             }
