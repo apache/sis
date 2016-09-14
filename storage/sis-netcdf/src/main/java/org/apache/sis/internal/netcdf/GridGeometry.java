@@ -36,7 +36,7 @@ public abstract class GridGeometry {
      * Returns the number of dimensions in the grid.
      * This is the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> transform.
      *
-     * @return Number of grid dimensions.
+     * @return number of grid dimensions.
      */
     public abstract int getSourceDimensions();
 
@@ -45,7 +45,7 @@ public abstract class GridGeometry {
      * This is the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> transform.
      * It should also be equal to the size of the list returned by {@link #getAxes()}.
      *
-     * @return Number of CRS dimensions.
+     * @return number of CRS dimensions.
      */
     public abstract int getTargetDimensions();
 
@@ -53,7 +53,7 @@ public abstract class GridGeometry {
      * Returns the axes of the coordinate reference system. The size of this list is expected equals to the
      * value returned by {@link #getTargetDimensions()}, however the caller should be robust to inconsistencies.
      *
-     * @return The CRS axes, in NetCDF order (reverse of "natural" order).
+     * @return the CRS axes, in NetCDF order (reverse of "natural" order).
      */
     public abstract Axis[] getAxes();
 
@@ -62,9 +62,9 @@ public abstract class GridGeometry {
      * This is a callback method for {@link #getAxes()}. In the NetCDF UCAR API, this method maps directly
      * to {@link ucar.nc2.dataset.CoordinateAxis2D#getCoordValue(int, int)}.
      *
-     * @param  j The fastest varying (right-most) index.
-     * @param  i The slowest varying (left-most) index.
-     * @return The coordinate at the given index, or {@link Double#NaN} if it can not be computed.
+     * @param  j  the fastest varying (right-most) index.
+     * @param  i  the slowest varying (left-most) index.
+     * @return the coordinate at the given index, or {@link Double#NaN} if it can not be computed.
      */
     protected abstract double coordinateForCurrentAxis(final int j, final int i);
 }

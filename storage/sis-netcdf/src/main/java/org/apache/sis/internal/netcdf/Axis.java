@@ -63,10 +63,10 @@ public final class Axis {
      * In the particular case where the number of dimensions is equals to 2, this
      * constructor will detects by itself which grid dimension varies fastest.
      *
-     * @param owner            Provides callback for the conversion from grid coordinates to geodetic coordinates.
-     * @param attributeNames   The attributes to use for fetching dimension information, or {@code null} if unknown.
-     * @param sourceDimensions The index of the grid dimension associated to this axis.
-     * @param sourceSizes      The number of cell elements along that axis.
+     * @param owner             provides callback for the conversion from grid coordinates to geodetic coordinates.
+     * @param attributeNames    the attributes to use for fetching dimension information, or {@code null} if unknown.
+     * @param sourceDimensions  the index of the grid dimension associated to this axis.
+     * @param sourceSizes       the number of cell elements along that axis.
      */
     public Axis(final GridGeometry owner, final AttributeNames.Dimension attributeNames,
             final int[] sourceDimensions, final int[] sourceSizes)

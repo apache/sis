@@ -57,8 +57,8 @@ final class Attribute {
     /**
      * Creates a new attribute of the given name and value.
      *
-     * @param name  The attribute name (can not be null).
-     * @param value The value (trimmed if a {@code String}).
+     * @param  name   the attribute name (can not be null).
+     * @param  value  the value (trimmed if a {@code String}).
      */
     Attribute(final String name, final Object value) {
         this.name  = name;
@@ -108,8 +108,8 @@ final class Attribute {
      * For example missing minutes or seconds fields are automatically added. The intend is to turn
      * a NetCDF date into something parseable by {@code java.util.time} or {@code javax.xml.bind}.
      *
-     * @param  date The date to parse, or {@code null}.
-     * @return The date modified if needed or {@code null} if the given string was {@code null}.
+     * @param  date  the date to parse, or {@code null}.
+     * @return the date modified if needed or {@code null} if the given string was {@code null}.
      *
      * @since 0.5 (derived from 0.3)
      */
@@ -168,7 +168,7 @@ final class Attribute {
             int indexOfLastDigit = 0;
             for (int i=modified.length(); --i >= 0;) {
                 char c = modified.charAt(i);
-                final boolean isDigit = (c >= '0' && c <= '9'); // Do not use Character.isDigit(char).
+                final boolean isDigit = (c >= '0' && c <= '9');         // Do not use Character.isDigit(char).
                 if (indexOfLastDigit == 0) {
                     // We were not scaning a number. Check if we are now starting doing so.
                     if (isDigit) {

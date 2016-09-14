@@ -44,8 +44,8 @@ final class Dimension {
     /**
      * Creates a new dimension of the given name and length.
      *
-     * @param name   The dimension name.
-     * @param length The number of grid cell value along this dimension, as an unsigned number.
+     * @param name    the dimension name.
+     * @param length  the number of grid cell value along this dimension, as an unsigned number.
      */
     Dimension(final String name, final int length) {
         this.name   = name;
