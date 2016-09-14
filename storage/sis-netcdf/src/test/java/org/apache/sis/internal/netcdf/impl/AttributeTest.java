@@ -19,7 +19,7 @@ package org.apache.sis.internal.netcdf.impl;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**
@@ -27,21 +27,17 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5 (derived from 0.3)
- * @version 0.5
+ * @version 0.8
  * @module
  */
 public final strictfp class AttributeTest extends TestCase {
     /**
-     * Tests the {@link Attribute#dateToISO(String)} method.
+     * Tests the {@link Attribute#numberValues()} method.
      */
     @Test
-    public void testDateToISO() {
-        assertEquals("2009-01-01T06:00:00+01:00", Attribute.dateToISO("2009-01-01T06:00:00+01:00"));
-        assertEquals("2005-09-22T04:30:15Z",      Attribute.dateToISO("2005-09-22T04:30:15Z"));
-        assertEquals("2005-09-22T04:30:15Z",      Attribute.dateToISO("2005-09-22T04:30:15"));
-        assertEquals("2005-09-22T04:30:00Z",      Attribute.dateToISO("2005-09-22T04:30"));
-        assertEquals("2005-09-22T04:00:00Z",      Attribute.dateToISO("2005-09-22T04"));
-        assertEquals("2005-09-22T00:00:00Z",      Attribute.dateToISO("2005-09-22"));
-        assertEquals("2005-09-22T00:00:00Z",      Attribute.dateToISO("2005-9-22"));
+    public void testNumberValues() {
+        final Attribute a = new Attribute("aName", new float[] {10, 20, 1});
+        assertArrayEquals("numberValues", new Number[] { 10f,    20f,    1f  }, a.numberValues());
+        assertArrayEquals("stringValues", new String[] {"10.0", "20.0", "1.0"}, a.stringValues());
     }
 }

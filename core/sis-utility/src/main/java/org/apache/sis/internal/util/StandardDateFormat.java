@@ -85,14 +85,15 @@ public final class StandardDateFormat extends DateFormat {
      * The thread-safe instance to use for reading and formatting dates.
      * Only the year is mandatory, all other fields are optional.
      */
-    public static final DateTimeFormatter FORMAT =
-            new DateTimeFormatterBuilder()     .appendValue(ChronoField.YEAR,             4)    // Proleptic year (use negative number if needed).
+    public static final DateTimeFormatter FORMAT = new DateTimeFormatterBuilder()
+            // parseLenient() is for allowing fields with one digit instead of two.
+            .parseLenient()                    .appendValue(ChronoField.YEAR,             4)    // Proleptic year (use negative number if needed).
             .optionalStart().appendLiteral('-').appendValue(ChronoField.MONTH_OF_YEAR,    2)
             .optionalStart().appendLiteral('-').appendValue(ChronoField.DAY_OF_MONTH,     2)
             .optionalStart().appendLiteral('T').appendValue(ChronoField.HOUR_OF_DAY,      2)
             .optionalStart().appendLiteral(':').appendValue(ChronoField.MINUTE_OF_HOUR,   2)
             .optionalStart().appendLiteral(':').appendValue(ChronoField.SECOND_OF_MINUTE, 2)
-                            .parseLenient() .appendFraction(ChronoField.MILLI_OF_SECOND, 3, 3, true)
+                                               .appendFraction(ChronoField.MILLI_OF_SECOND, 3, 3, true)
             .optionalEnd().optionalEnd().optionalEnd()    // Move back to the optional block of HOUR_OF_DAY.
             .optionalStart().appendOffsetId()
             .toFormatter(Locale.ROOT);
@@ -149,15 +150,18 @@ public final class StandardDateFormat extends DateFormat {
         if (temporal == null) {
             return null;
         }
-        final long millis;
+        long millis;
         if (temporal instanceof Instant) {
             millis = ((Instant) temporal).toEpochMilli();
         } else if (temporal.isSupported(ChronoField.INSTANT_SECONDS)) {
-            millis = Math.addExact(Math.multiplyExact(temporal.getLong(ChronoField.INSTANT_SECONDS), 1000),
-                            temporal.get(ChronoField.NANO_OF_SECOND) / 1000000);
+            millis = Math.multiplyExact(temporal.getLong(ChronoField.INSTANT_SECONDS), 1000);
+            millis = Math.addExact(millis, temporal.getLong(ChronoField.NANO_OF_SECOND) / 1000000);
         } else {
             // Note that the timezone may be unknown here. We assume UTC.
             millis = Math.multiplyExact(temporal.getLong(ChronoField.EPOCH_DAY), MILLISECONDS_PER_DAY);
+            if (temporal.isSupported(ChronoField.MILLI_OF_DAY)) {
+                millis = Math.addExact(millis, temporal.getLong(ChronoField.MILLI_OF_DAY));
+            }
         }
         return new Date(millis);
     }
