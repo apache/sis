@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
+import org.apache.sis.internal.netcdf.DataType;
 import java.util.Set;
 import java.util.Map;
 import java.util.LinkedHashSet;
@@ -186,7 +187,16 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Creates a new decoder for the given file.
-     * This constructor parses immediately the header.
+     * This constructor parses immediately the header, which shall have the following structure:
+     *
+     * <ul>
+     *   <li>Magic number:   'C','D','F'</li>
+     *   <li>Version number: 1 or 2</li>
+     *   <li>Number of records</li>
+     *   <li>List of NetCDF dimensions  (see {@link #readDimensions(int)})</li>
+     *   <li>List of global attributes  (see {@link #readAttributes(int)})</li>
+     *   <li>List of variables          (see {@link #readVariables(int, Dimension[])})</li>
+     * </ul>
      *
      * @param  listeners  where to send the warnings.
      * @param  input      the channel and the buffer from where data are read.
@@ -288,31 +298,22 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Makes sure that the buffer contains at least <var>n</var> remaining elements of the given size.
-     * If the buffer does not have enough bytes available, more bytes will be read from the channel.
-     * If the buffer capacity is not sufficient for reading the given amount of data, an exception
-     * is thrown.
+     * Aligns position in the stream after reading the given amount of bytes.
+     * This method should be invoked only for {@link DataType#BYTE} and {@link DataType#CHAR}.
      *
-     * <p>The NetCDF format add padding after bytes, characters and short integers in order to align
-     * the data on multiple of 4 bytes. This method adds such padding to the number of bytes to read.</p>
+     * <p>The NetCDF format adds padding after bytes, characters and short integers in order to align the data
+     * on multiple of 4 bytes. This method is used for adding such padding to the number of bytes to read.</p>
      *
-     * @param  n         the number of elements to read.
-     * @param  dataSize  the size of each element, in bytes.
-     * @param  name      the name of the element to read, used only in case of error for formatting the message.
-     * @return the number of bytes to read, rounded to the next multiple of 4.
+     * @param  length   number of byte reads.
+     * @throws IOException if an error occurred while skipping bytes.
      */
-    private int ensureBufferContains(final int n, final int dataSize, String name) throws IOException, DataStoreException {
-        // (n+3) & ~3  is a trick for rounding 'n' to the next multiple of 4.
-        final long size = (Integer.toUnsignedLong(n) * dataSize + 3) & ~3;
-        if (size > input.buffer.capacity()) {
-            name = input.filename + DefaultNameSpace.DEFAULT_SEPARATOR + name;
-            final Errors errors = errors();
-            throw new DataStoreContentException(n < 0 ?
-                    errors.getString(Errors.Keys.NegativeArrayLength_1, name) :
-                    errors.getString(Errors.Keys.ExcessiveListSize_2, name, n));
+    private void align(int length) throws IOException {
+        length &= 3;
+        if (length != 0) {
+            length = 4 - length;
+            input.ensureBufferContains(length);
+            input.buffer.position(input.buffer.position() + length);
         }
-        input.ensureBufferContains((int) size);
-        return (int) size;
     }
 
     /**
@@ -323,17 +324,18 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Reads a string from the buffer in the {@value #NAME_ENCODING}. This is suitable for the dimension,
+     * Reads a string from the channel in the {@value #NAME_ENCODING}. This is suitable for the dimension,
      * variable and attribute names in the header. Note that attribute value may have a different encoding.
+     *
+     * @param  length  number of bytes to read. The number of bytes actually read may be greater.
      */
     private String readName() throws IOException, DataStoreException {
         final int length = input.readInt();
         if (length < 0) {
             throw malformedHeader();
         }
-        final int size = ensureBufferContains(length, 1, "<name>");
         final String text = input.readString(length, NAME_ENCODING);
-        input.buffer.position(input.buffer.position() + (size - length));
+        align(length);
         return text;
     }
 
@@ -347,56 +349,61 @@ public final class ChannelDecoder extends Decoder {
      *
      * @return the value, or {@code null} if it was an empty string or an empty array.
      */
-    private Object readValues(final String name, final int type, final int length) throws IOException, DataStoreException {
+    private Object readValues(final DataType type, final int length) throws IOException, DataStoreException {
         if (length == 0) {
             return null;
         }
-        final ByteBuffer buffer = input.buffer;
-        final int size = ensureBufferContains(length, VariableInfo.sizeOf(type), name);
-        final int position = buffer.position(); // Must be after 'ensureBufferContains'
-        final Object result;
+        if (length < 0 || type == null) {
+            throw malformedHeader();
+        }
         switch (type) {
-            case VariableInfo.CHAR: {
-                final String text = input.readString(length, encoding).trim();
-                result = text.isEmpty() ? null : text;
-                break;
+            case CHAR: {
+                final String text = input.readString(length, encoding);
+                align(length);
+                return text.isEmpty() ? null : text;
             }
-            case VariableInfo.BYTE: {
+            case BYTE:
+            case UBYTE: {
                 final byte[] array = new byte[length];
-                buffer.get(array);
-                result = array;
-                break;
+                input.readFully(array);
+                align(length);
+                return array;
             }
-            case VariableInfo.SHORT: {
+            case SHORT:
+            case USHORT: {
                 final short[] array = new short[length];
-                buffer.asShortBuffer().get(array);
-                result = array;
-                break;
+                input.readFully(array, 0, length);
+                if ((length & 1) != 0) {
+                    input.readShort();      // For byte alignment.
+                }
+                return array;
             }
-            case VariableInfo.INT: {
+            case INT:
+            case UINT: {
                 final int[] array = new int[length];
-                buffer.asIntBuffer().get(array);
-                result = array;
-                break;
+                input.readFully(array, 0, length);
+                return array;
             }
-            case VariableInfo.FLOAT: {
+            case INT64:
+            case UINT64: {
+                final long[] array = new long[length];
+                input.readFully(array, 0, length);
+                return array;
+            }
+            case FLOAT: {
                 final float[] array = new float[length];
-                buffer.asFloatBuffer().get(array);
-                result = array;
-                break;
+                input.readFully(array, 0, length);
+                return array;
             }
-            case VariableInfo.DOUBLE: {
+            case DOUBLE: {
                 final double[] array = new double[length];
-                buffer.asDoubleBuffer().get(array);
-                result = array;
-                break;
+                input.readFully(array, 0, length);
+                return array;
             }
             default: {
                 throw malformedHeader();
             }
         }
-        buffer.position(position + size);
-        return result;
     }
 
     /**
@@ -447,7 +454,7 @@ public final class ChannelDecoder extends Decoder {
         int count = 0;
         for (int i=0; i<nelems; i++) {
             final String name = readName();
-            final Object value = readValues(name, input.readInt(), input.readInt());
+            final Object value = readValues(DataType.valueOf(input.readInt()), input.readInt());
             if (value != null) {
                 attributes[count++] = new Attribute(name, value);
             }
@@ -512,7 +519,7 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
             variables[j] = new VariableInfo(input, name, varDims, dimensions,
-                    toMap(attributes, Attribute.NAME_FUNCTION), input.readInt(), input.readInt(), readOffset());
+                    toMap(attributes, Attribute.NAME_FUNCTION), DataType.valueOf(input.readInt()), input.readInt(), readOffset());
         }
         return variables;
     }

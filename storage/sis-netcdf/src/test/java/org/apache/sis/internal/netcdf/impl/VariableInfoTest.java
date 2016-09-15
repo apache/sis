@@ -38,7 +38,7 @@ public final strictfp class VariableInfoTest extends VariableTest {
     /**
      * Creates a new decoder for dataset of the given name.
      *
-     * @return The decoder for the given dataset.
+     * @return the decoder for the given dataset.
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
      */
