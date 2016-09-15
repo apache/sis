@@ -17,15 +17,21 @@
 package org.apache.sis.internal.netcdf.impl;
 
 import java.lang.reflect.Array;
-import org.apache.sis.util.Debug;
-import org.apache.sis.util.Utilities;
-
-// Branch-dependent imports
-import java.util.function.Function;
+import org.apache.sis.util.CharSequences;
 
 
 /**
- * Attribute found in a NetCDF file.
+ * Static methods about attributes found in a NetCDF file.
+ * Values can be:
+ *
+ * <ul>
+ *   <li>a {@link String}</li>
+ *   <li>A {@link Number}</li>
+ *   <li>an array of primitive type</li>
+ * </ul>
+ *
+ * If the value is a {@code String}, then leading and trailing spaces and control characters
+ * should be trimmed by {@link String#trim()}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -35,49 +41,33 @@ import java.util.function.Function;
  */
 final class Attribute {
     /**
-     * The function for obtaining the name of an attribute.
+     * The array to be returned by {@link #numberValues(Object)} when the given value is null.
      */
-    static final Function<Attribute,String> NAME_FUNCTION = (Attribute value1) -> value1.name;
+    private static final Number[] EMPTY = new Number[0];
 
     /**
-     * The attribute name.
+     * Do not allow instantiation of this class.
      */
-    final String name;
-
-    /**
-     * The value, either as a {@link String} or as an array of primitive type.
-     * Never {@code null} and never an empty string or empty array.
-     *
-     * <p>If the value is a {@code String}, then leading and trailing spaces and control characters
-     * have been trimmed by {@link String#trim()}.</p>
-     */
-    final Object value;
-
-    /**
-     * Creates a new attribute of the given name and value.
-     *
-     * @param  name   the attribute name (can not be null).
-     * @param  value  the value (trimmed if a {@code String}).
-     */
-    Attribute(final String name, final Object value) {
-        this.name  = name;
-        this.value = value;
+    private Attribute() {
     }
 
     /**
-     * Returns the attribute values as an array of {@link String}.
+     * Returns the attribute values as an array of {@link String}s, or an empty array if none.
      *
      * @see VariableInfo#getAttributeValues(String, boolean)
      */
-    final String[] stringValues() {
-        if (value instanceof String) {
-            return new String[] {(String) value};
+    static String[] stringValues(final Object value) {
+        if (value == null) {
+            return CharSequences.EMPTY_ARRAY;
         }
-        final String[] values = new String[Array.getLength(value)];
-        for (int i=0; i<values.length; i++) {
-            values[i] = Array.get(value, i).toString();
+        if (value.getClass().isArray()) {
+            final String[] values = new String[Array.getLength(value)];
+            for (int i=0; i<values.length; i++) {
+                values[i] = Array.get(value, i).toString();
+            }
+            return values;
         }
-        return values;
+        return new String[] {value.toString()};
     }
 
     /**
@@ -85,12 +75,21 @@ final class Attribute {
      *
      * @see VariableInfo#getAttributeValues(String, boolean)
      */
-    final Number[] numberValues() {
-        final Number[] values = new Number[(value instanceof String) ? 0 : Array.getLength(value)];
-        for (int i=0; i<values.length; i++) {
-            values[i] = (Number) Array.get(value, i);
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    static Number[] numberValues(final Object value) {
+        if (value != null) {
+            if (value.getClass().isArray()) {
+                final Number[] values = new Number[Array.getLength(value)];
+                for (int i=0; i<values.length; i++) {
+                    values[i] = (Number) Array.get(value, i);
+                }
+                return values;
+            }
+            if (value instanceof Number) {
+                return new Number[] {(Number) value};
+            }
         }
-        return values;
+        return EMPTY;
     }
 
     /**
@@ -98,16 +97,7 @@ final class Attribute {
      *
      * @see VariableInfo#isUnsigned()
      */
-    final boolean booleanValue() {
+    static boolean booleanValue(final Object value) {
         return (value instanceof String) && Boolean.valueOf((String) value);
-    }
-
-    /**
-     * A string representation of this dimension for debugging purpose only.
-     */
-    @Debug
-    @Override
-    public String toString() {
-        return name + " = " + Utilities.deepToString(value);
     }
 }

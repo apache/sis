@@ -18,7 +18,9 @@ package org.apache.sis.internal.util;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Set;
@@ -29,14 +31,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
 import org.apache.sis.util.collection.CodeListSet;
-import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-
-// Branch-dependent imports
-import java.util.function.Function;
 
 
 /**
@@ -44,7 +42,7 @@ import java.util.function.Function;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public final strictfp class CollectionsExtTest extends TestCase {
@@ -122,23 +120,28 @@ public final strictfp class CollectionsExtTest extends TestCase {
     }
 
     /**
-     * Tests {@link CollectionsExt#toCaseInsensitiveNameMap(Collection, Function, Locale)}.
+     * Tests {@link CollectionsExt#toCaseInsensitiveNameMap(Collection, Locale)}.
      */
     @Test
     public void testToCaseInsensitiveNameMap() {
-        final Function<String,String> nameFunction = ObjectConverters.identity(String.class);
+        final List<Map.Entry<String,String>> elements = new ArrayList<>();
+        elements.add(new AbstractMap.SimpleEntry<>("AA", "AA"));
+        elements.add(new AbstractMap.SimpleEntry<>("Aa", "Aa"));
+        elements.add(new AbstractMap.SimpleEntry<>("BB", "BB"));
+        elements.add(new AbstractMap.SimpleEntry<>("bb", "bb"));
+        elements.add(new AbstractMap.SimpleEntry<>("CC", "CC"));
+
         final Map<String,String> expected = new HashMap<>();
         assertNull(expected.put("AA", "AA"));
-        assertNull(expected.put("Aa", "Aa")); // No mapping for "aa", because of ambiguity between "AA" and "Aa".
+        assertNull(expected.put("Aa", "Aa"));   // No mapping for "aa", because of ambiguity between "AA" and "Aa".
         assertNull(expected.put("BB", "BB"));
         assertNull(expected.put("bb", "bb"));
         assertNull(expected.put("CC", "CC"));
-        assertNull(expected.put("cc", "CC")); // Automatically added.
+        assertNull(expected.put("cc", "CC"));   // Automatically added.
 
-        final List<String> elements = Arrays.asList("AA", "Aa", "BB", "bb", "CC");
         for (int i=0; i<10; i++) {
             Collections.shuffle(elements);
-            assertMapEquals(expected, CollectionsExt.toCaseInsensitiveNameMap(elements, nameFunction, Locale.ROOT));
+            assertMapEquals(expected, CollectionsExt.toCaseInsensitiveNameMap(elements, Locale.ROOT));
         }
     }
 

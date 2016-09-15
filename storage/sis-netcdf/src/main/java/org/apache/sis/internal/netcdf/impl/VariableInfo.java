@@ -77,7 +77,7 @@ final class VariableInfo extends Variable {
     /**
      * The attributes associates to the variable, or an empty map if none.
      */
-    private final Map<String,Attribute> attributes;
+    private final Map<String,Object> attributes;
 
     /**
      * The NetCDF type of data, or {@code null} if unknown.
@@ -103,13 +103,12 @@ final class VariableInfo extends Variable {
      * @param  offset         the offset where the variable data begins in the NetCDF file.
      */
     VariableInfo(final ChannelDataInput input, final String name,
-            final Dimension[] dimensions, final Dimension[] allDimensions,
-            final Map<String,Attribute> attributes, DataType dataType, final int size, final long offset)
-            throws DataStoreException
+            final Dimension[] dimensions, final Dimension[] allDimensions, final Map<String,Object> attributes,
+            DataType dataType, final int size, final long offset) throws DataStoreException
     {
-        final Attribute attribute = attributes.get(CDM.UNSIGNED);
-        if (attribute != null) {
-            dataType = dataType.unsigned(attribute.booleanValue());
+        final Object isUnsigned = attributes.get(CDM.UNSIGNED);
+        if (isUnsigned != null) {
+            dataType = dataType.unsigned(Attribute.booleanValue(isUnsigned));
         }
         this.name          = name;
         this.dimensions    = dimensions;
@@ -143,9 +142,9 @@ final class VariableInfo extends Variable {
     @Override
     public String getDescription() {
         for (final String attributeName : DESCRIPTION_ATTRIBUTES) {
-            final Attribute attribute = attributes.get(attributeName);
-            if (attribute != null && attribute.value instanceof String) {
-                return (String) attribute.value;
+            final Object value = attributes.get(attributeName);
+            if (value instanceof String) {
+                return (String) value;
             }
         }
         return null;
@@ -156,11 +155,8 @@ final class VariableInfo extends Variable {
      */
     @Override
     public String getUnitsString() {
-        final Attribute attribute = attributes.get(CDM.UNITS);
-        if (attribute != null && attribute.value instanceof String) {
-            return (String) attribute.value;
-        }
-        return null;
+        final Object value = attributes.get(CDM.UNITS);
+        return (value instanceof String) ? (String) value : null;
     }
 
     /**
@@ -179,13 +175,10 @@ final class VariableInfo extends Variable {
      */
     @Override
     public boolean isCoordinateSystemAxis() {
-        String name = this.name;
-        final Attribute attribute = attributes.get(_CoordinateVariableAlias);
-        if (attribute != null && attribute.value instanceof String) {
-            name = (String) attribute.value;
-        }
+        final Object value = attributes.get(_CoordinateVariableAlias);
+        final String alias = (value instanceof String) ? (String) value : name;
         for (final Dimension dimension : allDimensions) {
-            if (name.equals(dimension.name)) {
+            if (alias.equals(dimension.name)) {
                 // This variable is a dimension of another variable.
                 return true;
             }
@@ -197,11 +190,8 @@ final class VariableInfo extends Variable {
      * Returns the value of the {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
      */
     final String getAxisType() {
-        final Attribute attribute = attributes.get(_Coordinate.AxisType);
-        if (attribute != null && attribute.value instanceof String) {
-            return (String) attribute.value;
-        }
-        return null;
+        final Object value = attributes.get(_Coordinate.AxisType);
+        return (value instanceof String) ? (String) value : null;
     }
 
     /**
@@ -239,11 +229,8 @@ final class VariableInfo extends Variable {
      */
     @Override
     public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
-        Attribute attribute = attributes.get(attributeName);
-        if (attribute != null) {
-            return numeric ? attribute.numberValues() : attribute.stringValues();
-        }
-        return new Object[0];
+        final Object value = attributes.get(attributeName);
+        return numeric ? Attribute.numberValues(value) : Attribute.stringValues(value);
     }
 
     /**
