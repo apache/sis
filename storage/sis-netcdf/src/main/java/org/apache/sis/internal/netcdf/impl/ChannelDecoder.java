@@ -16,24 +16,24 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
-import org.apache.sis.internal.netcdf.DataType;
 import java.util.Set;
 import java.util.Map;
+import java.util.AbstractMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
-import java.lang.reflect.Array;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
-import org.opengis.parameter.InvalidParameterCardinalityException;
+import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
@@ -46,12 +46,10 @@ import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.WarningListeners;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
-import java.util.function.Function;
 import java.time.DateTimeException;
 
 
@@ -176,7 +174,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #findAttribute(String)
      */
-    private final Map<String,Attribute> attributeMap;
+    private final Map<String,Object> attributeMap;
 
     /**
      * The grid geometries, created when first needed.
@@ -231,9 +229,9 @@ public final class ChannelDecoder extends Decoder {
          * Read the dimension, attribute and variable declarations. We expect exactly 3 lists,
          * where any of them can be flagged as absent by a long (64 bits) 0.
          */
-        Dimension[]    dimensions = null;
-        VariableInfo[] variables  = null;
-        Attribute[]    attributes = null;
+        Dimension[]        dimensions = null;
+        VariableInfo[]     variables  = null;
+        Map<String,Object> attributes = null;
         for (int i=0; i<3; i++) {
             final long tn = input.readLong(); // Combination of tag and nelems
             if (tn != 0) {
@@ -248,7 +246,7 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
         }
-        attributeMap = toMap(attributes, Attribute.NAME_FUNCTION);
+        attributeMap = attributes;
         this.variables = variables;
     }
 
@@ -449,17 +447,16 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  nelems  the number of attributes to read.
      */
-    private Attribute[] readAttributes(final int nelems) throws IOException, DataStoreException {
-        final Attribute[] attributes = new Attribute[nelems];
-        int count = 0;
-        for (int i=0; i<nelems; i++) {
+    private Map<String,Object> readAttributes(int nelems) throws IOException, DataStoreException {
+        final List<Map.Entry<String,Object>> attributes = new ArrayList<>(nelems);
+        while (--nelems >= 0) {
             final String name = readName();
             final Object value = readValues(DataType.valueOf(input.readInt()), input.readInt());
             if (value != null) {
-                attributes[count++] = new Attribute(name, value);
+                attributes.add(new AbstractMap.SimpleEntry<>(name, value));
             }
         }
-        return ArraysExt.resize(attributes, count);
+        return CollectionsExt.toCaseInsensitiveNameMap(attributes, NAME_LOCALE);
     }
 
     /**
@@ -506,7 +503,7 @@ public final class ChannelDecoder extends Decoder {
              * Following block is almost a copy-and-paste of similar block in the contructor,
              * but with less cases in the "switch" statements.
              */
-            Attribute[] attributes = null;
+            Map<String,Object> attributes = null;
             final long tn = input.readLong();
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
@@ -518,34 +515,10 @@ public final class ChannelDecoder extends Decoder {
                     default:        throw malformedHeader();
                 }
             }
-            variables[j] = new VariableInfo(input, name, varDims, dimensions,
-                    toMap(attributes, Attribute.NAME_FUNCTION), DataType.valueOf(input.readInt()), input.readInt(), readOffset());
+            variables[j] = new VariableInfo(input, name, varDims, dimensions, attributes,
+                    DataType.valueOf(input.readInt()), input.readInt(), readOffset());
         }
         return variables;
-    }
-
-    /**
-     * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given array of elements.
-     * If the name of an element is not all lower cases, then this method also adds an entry for the
-     * lower cases version of that name in order to allow case-insensitive searches.
-     *
-     * <p>Code searching in the returned map shall ask for the original (non lower-case) name
-     * <strong>before</strong> to ask for the lower-cases version of that name.</p>
-     *
-     * @param  <E>           the type of elements.
-     * @param  elements      the elements to store in the map, or {@code null} if none.
-     * @param  nameFunction  the function for computing a name from an element.
-     * @return a (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
-     * @throws DataStoreException if the same name is used for more than one element.
-     *
-     * @see #findAttribute(String)
-     */
-    private <E> Map<String,E> toMap(final E[] elements, final Function<E,String> nameFunction) throws DataStoreException {
-        try {
-            return CollectionsExt.toCaseInsensitiveNameMap(Arrays.asList(elements), nameFunction, NAME_LOCALE);
-        } catch (InvalidParameterCardinalityException e) {
-            throw new DataStoreContentException(errors().getString(Errors.Keys.ValueAlreadyDefined_1, e.getParameterName()));
-        }
     }
 
 
@@ -587,17 +560,17 @@ public final class ChannelDecoder extends Decoder {
      * the constants defined in the {@link AttributeNames} class.
      *
      * @param  name  the name of the attribute to search, or {@code null}.
-     * @return the attribute, or {@code null} if none.
+     * @return the attribute value, or {@code null} if none.
      */
-    private Attribute findAttribute(final String name) {
-        Attribute attribute = attributeMap.get(name);
-        if (attribute == null && name != null) {
+    private Object findAttribute(final String name) {
+        Object value = attributeMap.get(name);
+        if (value == null && name != null) {
             final String lower = name.toLowerCase(NAME_LOCALE);
             if (lower != name) { // Identity comparison is ok since this check is only an optimization for a common case.
-                attribute = attributeMap.get(lower);
+                value = attributeMap.get(lower);
             }
         }
-        return attribute;
+        return value;
     }
 
     /**
@@ -609,11 +582,8 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     public String stringValue(final String name) throws IOException {
-        final Attribute attribute = findAttribute(name);
-        if (attribute != null) {
-            return attribute.value.toString();
-        }
-        return null;
+        final Object value = findAttribute(name);
+        return (value != null) ? value.toString() : null;
     }
 
     /**
@@ -625,14 +595,12 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     public Number numericValue(final String name) throws IOException {
-        final Attribute attribute = findAttribute(name);
-        if (attribute != null && attribute.value != null) {
-            if (attribute.value instanceof String) {
-                return parseNumber((String) attribute.value);
-            }
-            return (Number) Array.get(attribute.value, 0);
+        final Object value = findAttribute(name);
+        if (value instanceof String) {
+            return parseNumber((String) value);
         }
-        return null;
+        final Number[] v = Attribute.numberValues(value);
+        return (v.length != 0) ? v[0] : null;
     }
 
     /**
@@ -644,13 +612,11 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     public Date dateValue(final String name) throws IOException {
-        final Attribute attribute = findAttribute(name);
-        if (attribute != null) {
-            if (attribute.value instanceof CharSequence) try {
-                return StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse((CharSequence) attribute.value));
-            } catch (DateTimeException | ArithmeticException e) {
-                listeners.warning(null, e);
-            }
+        final Object value = findAttribute(name);
+        if (value instanceof CharSequence) try {
+            return StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse((CharSequence) value));
+        } catch (DateTimeException | ArithmeticException e) {
+            listeners.warning(null, e);
         }
         return null;
     }

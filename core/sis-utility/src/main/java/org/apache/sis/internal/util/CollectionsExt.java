@@ -27,9 +27,6 @@ import org.opengis.parameter.InvalidParameterCardinalityException;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
-// Branch-dependent imports
-import java.util.function.Function;
-
 
 /**
  * Static methods working on {@link Collection} objects.
@@ -701,60 +698,46 @@ public final class CollectionsExt extends Static {
      * <strong>before</strong> to ask for the lower-cases version of that name.</p>
      *
      * @param  <E>           the type of elements.
-     * @param  elements      the elements to store in the map, or {@code null} if none.
-     * @param  nameFunction  the function for computing a name from an element.
+     * @param  entries       the entries to store in the map, or {@code null} if none.
      * @param  namesLocale   the locale to use for creating the "all lower cases" names.
      * @return a (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
      * @throws InvalidParameterCardinalityException if the same name is used for more than one element.
      */
-    public static <E> Map<String,E> toCaseInsensitiveNameMap(final Collection<? extends E> elements,
-            final Function<E,String> nameFunction, final Locale namesLocale)
+    public static <E> Map<String,E> toCaseInsensitiveNameMap(
+            final Collection<Map.Entry<String,E>> entries, final Locale namesLocale)
     {
-        if (elements == null) {
+        if (entries == null) {
             return Collections.emptyMap();
         }
-        final Map<String,E> map = new HashMap<>(hashMapCapacity(elements.size()));
-        Set<String> excludes = null;
-        for (final E e : elements) {
-            final String name = nameFunction.apply(e);
-            E old = map.put(name, e);
-            if (old != null) {
+        final Map<String,E> map = new HashMap<>(hashMapCapacity(entries.size()));
+        final Set<String> generated = new HashSet<>();
+        for (final Map.Entry<String, ? extends E> entry : entries) {
+            final String name = entry.getKey();
+            final E value = entry.getValue();
+            E old = map.put(name, value);
+            if (old != null && !generated.remove(name)) {
                 /*
                  * If two elements use exactly the same name, this is considered an error. Otherwise the previous
                  * mapping was using a lower case name version of its original name, so we can discard that lower
                  * case version (the original name is still present in the map).
                  */
-                final String oldName = nameFunction.apply(old);
-                if (Objects.equals(name, oldName)) {
-                    throw new InvalidParameterCardinalityException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, name), name);
-                }
+                throw new InvalidParameterCardinalityException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, name), name);
             }
             /*
              * Add lower-cases versions of the above element names, only if that name is not already used.
              * If a name was already used, then the original mapping will have precedence.
              */
             final String lower = name.toLowerCase(namesLocale);
-            if (!name.equals(lower) && (excludes == null || !excludes.contains(lower))) {
-                old = map.put(lower, e);
-                if (old != null) {
-                    final String oldName = nameFunction.apply(old);
-                    if (lower.equals(oldName)) {
-                        /*
-                         * An entry already exists with a lower case name. Keep that previous entry unchanged.
-                         */
-                        map.put(oldName, old);
-                    } else {
-                        /*
-                         * Two entries having non-lower case names got the same name after conversion to
-                         * lower cases. Retains none of them, since doing so would introduce an ambiguity.
-                         * Remember that we can not use that lower cases name for any other entries.
-                         */
-                        map.remove(lower);
-                        if (excludes == null) {
-                            excludes = new HashSet<>();
-                        }
-                        excludes.add(lower);
-                    }
+            if (!name.equals(lower)) {
+                if (generated.add(lower)) {
+                    map.putIfAbsent(lower, value);
+                } else {
+                    /*
+                     * Two entries having non-lower case names got the same name after conversion to
+                     * lower cases. Retains none of them, since doing so would introduce an ambiguity.
+                     * Remember that we can not use that lower cases name for any other entries.
+                     */
+                    map.remove(lower);
                 }
             }
         }
