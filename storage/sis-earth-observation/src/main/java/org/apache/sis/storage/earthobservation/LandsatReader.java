@@ -218,11 +218,6 @@ final class LandsatReader {
     private final MetadataBuilder metadata;
 
     /**
-     * The locale to use for formatting warning or error messages.
-     */
-    private final Locale locale;
-
-    /**
      * Where to send the warnings.
      */
     private final WarningListeners<?> listeners;
@@ -300,12 +295,10 @@ final class LandsatReader {
      * Creates a new metadata parser.
      *
      * @param  filename   an identifier of the file being read, or {@code null} if unknown.
-     * @param  locale     the locale to use for formatting warning or error messages.
      * @param  listeners  where to sent warnings that may occur during the parsing process.
      */
-    LandsatReader(final String filename, final Locale locale, final WarningListeners<?> listeners) {
+    LandsatReader(final String filename, final WarningListeners<?> listeners) {
         this.filename  = filename;
-        this.locale    = locale;
         this.listeners = listeners;
         this.metadata  = new MetadataBuilder();
         this.bands     = new DefaultBand[BAND_NAMES.length];
@@ -992,7 +985,7 @@ final class LandsatReader {
      * Returns the filename to show in error messages, or a localized "unnamed" word if none.
      */
     private String getFilename() {
-        return (filename != null) ? filename : Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed);
+        return (filename != null) ? filename : Vocabulary.getResources(listeners.getLocale()).getString(Vocabulary.Keys.Unnamed);
     }
 
     /**
@@ -1025,6 +1018,6 @@ final class LandsatReader {
      * Returns the resources to use for formatting error messages.
      */
     private Errors errors() {
-        return Errors.getResources(locale);
+        return Errors.getResources(listeners.getLocale());
     }
 }

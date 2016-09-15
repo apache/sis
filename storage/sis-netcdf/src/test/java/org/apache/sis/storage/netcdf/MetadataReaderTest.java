@@ -67,7 +67,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
      * Reads the metadata using the UCAR library and compares
      * its string representation with the expected one.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException if an I/O error occurred.
      */
     @Test
     public void testUCAR() throws IOException {

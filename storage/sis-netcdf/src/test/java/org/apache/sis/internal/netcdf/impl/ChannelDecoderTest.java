@@ -45,7 +45,7 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
     /**
      * Creates a new decoder for dataset of the given name.
      *
-     * @return The decoder for the given name.
+     * @return the decoder for the given name.
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
      */
@@ -65,8 +65,8 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
      *   <li>{@link #LANDSAT} for a NetCDF binary file.</li>
      * </ul>
      *
-     * @param  name The file name as one of the above-cited constants.
-     * @return The decoder for the given name.
+     * @param  name  the file name as one of the above-cited constants.
+     * @return the decoder for the given name.
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
      */

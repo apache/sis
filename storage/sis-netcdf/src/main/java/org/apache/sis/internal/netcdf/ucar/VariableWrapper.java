@@ -24,6 +24,7 @@ import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
+import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -82,20 +83,24 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the variable data type, as a primitive type if possible.
-     * This method may return {@code null} (UCAR code seems to allow that).
+     * Returns the variable data type.
+     * This method may return {@code null} if the datatype is unknown.
      */
     @Override
-    public Class<?> getDataType() {
-        return variable.getDataType().getPrimitiveClassType();
-    }
-
-    /**
-     * Returns {@code true} if the integer values shall be considered as unsigned.
-     */
-    @Override
-    public boolean isUnsigned() {
-        return variable.isUnsigned();
+    public DataType getDataType() {
+        final DataType type;
+        switch (variable.getDataType()) {
+            case STRING: type = DataType.STRING; break;
+            case CHAR:   type = DataType.CHAR;   break;
+            case BYTE:   type = DataType.BYTE;   break;
+            case SHORT:  type = DataType.SHORT;  break;
+            case INT:    type = DataType.INT;    break;
+            case LONG:   type = DataType.INT64;  break;
+            case FLOAT:  type = DataType.FLOAT;  break;
+            case DOUBLE: type = DataType.DOUBLE; break;
+            default: return null;
+        }
+        return type.unsigned(variable.isUnsigned());
     }
 
     /**

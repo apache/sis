@@ -21,6 +21,7 @@ import java.io.IOException;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
+import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.HyperRectangleReader;
@@ -53,52 +54,6 @@ final class VariableInfo extends Variable {
     };
 
     /**
-     * The NetCDF type of data. Number of bits and endianness are same as in the Java language except {@code CHAR},
-     * which is defined as an unsigned 8-bits value.
-     */
-    static final int BYTE=1, CHAR=2, SHORT=3, INT=4, FLOAT=5, DOUBLE=6;
-
-    /**
-     * Mapping from the NetCDF data type to the enumeration used by our {@link Numbers} class.
-     */
-    private static final byte[] NUMBER_TYPES = new byte[] {
-        Numbers.BYTE,
-        Numbers.BYTE,       // NOT Numbers.CHARACTER
-        Numbers.SHORT,
-        Numbers.INTEGER,
-        Numbers.FLOAT,
-        Numbers.DOUBLE,
-    };
-
-    /**
-     * The size in bytes of the above constants.
-     *
-     * @see #sizeOf(int)
-     */
-    private static final byte[] SIZES = new byte[] {
-        Byte   .BYTES,
-        Byte   .BYTES,      // NOT Character.BYTES
-        Short  .BYTES,
-        Integer.BYTES,
-        Float  .BYTES,
-        Double .BYTES,
-    };
-
-    /**
-     * The Java primitive type of the above constants.
-     *
-     * @see #getDataType()
-     */
-    private static final Class<?>[] TYPES = new Class<?>[] {
-       byte  .class,
-       char  .class,
-       short .class,
-       int   .class,
-       float .class,
-       double.class
-    };
-
-    /**
      * Helper class for reading a sub-area with a sub-sampling,
      * or {@code null} if {@code dataType} is not a supported type.
      */
@@ -125,9 +80,9 @@ final class VariableInfo extends Variable {
     private final Map<String,Attribute> attributes;
 
     /**
-     * The type of data, as one of the {@code BYTE}, {@code SHORT} and similar constants defined in this class.
+     * The NetCDF type of data, or {@code null} if unknown.
      */
-    private final int dataType;
+    private final DataType dataType;
 
     /**
      * The grid geometry associated to this variable,
@@ -143,15 +98,19 @@ final class VariableInfo extends Variable {
      * @param  dimensions     the dimensions of this variable.
      * @param  allDimensions  all dimensions in the NetCDF files.
      * @param  attributes     the attributes associates to the variable, or an empty map if none.
-     * @param  dataType       the type of data, as one of the {@code BYTE} and similar constants defined in this class.
+     * @param  dataType       the NetCDF type of data, or {@code null} if unknown.
      * @param  size           the variable size, used for verification purpose only.
      * @param  offset         the offset where the variable data begins in the NetCDF file.
      */
     VariableInfo(final ChannelDataInput input, final String name,
             final Dimension[] dimensions, final Dimension[] allDimensions,
-            final Map<String,Attribute> attributes, int dataType, final int size, final long offset)
+            final Map<String,Attribute> attributes, DataType dataType, final int size, final long offset)
             throws DataStoreException
     {
+        final Attribute attribute = attributes.get(CDM.UNSIGNED);
+        if (attribute != null) {
+            dataType = dataType.unsigned(attribute.booleanValue());
+        }
         this.name          = name;
         this.dimensions    = dimensions;
         this.allDimensions = allDimensions;
@@ -161,8 +120,8 @@ final class VariableInfo extends Variable {
          * The 'size' value is provided in the NetCDF files, but doesn't need to be stored since it
          * is redundant with the dimension lengths and is not large enough for big variables anyway.
          */
-        if (--dataType >= 0 && dataType < NUMBER_TYPES.length) {
-            reader = new HyperRectangleReader(NUMBER_TYPES[dataType], input, offset);
+        if (dataType != null && dataType.number >= Numbers.BYTE && dataType.number <= Numbers.DOUBLE) {
+            reader = new HyperRectangleReader(dataType.number, input, offset);
         } else {
             reader = null;
         }
@@ -205,30 +164,13 @@ final class VariableInfo extends Variable {
     }
 
     /**
-     * Returns the type of data as a Java primitive type if possible,
-     * or {@code null} if the data type is unknown to this method.
+     * Returns the type of data, or {@code null} if the data type is unknown to this method.
+     * If this variable has a {@code "_Unsigned = true"} attribute, then the returned data type
+     * will be a unsigned variant.
      */
     @Override
-    public Class<?> getDataType() {
-        final int i = dataType - 1;
-        return (i >= 0 && i < TYPES.length) ? TYPES[i] : null;
-    }
-
-    /**
-     * Returns the size of the given data type, or 0 if unknown.
-     */
-    static int sizeOf(int datatype) {
-        return (--datatype >= 0 && datatype < SIZES.length) ? SIZES[datatype] : 0;
-    }
-
-    /**
-     * Returns {@code true} if the integer values shall be considered as unsigned.
-     * Current implementation searches for an {@code "_Unsigned = true"} attribute.
-     */
-    @Override
-    public boolean isUnsigned() {
-        final Attribute attribute = attributes.get(CDM.UNSIGNED);
-        return (attribute != null) && attribute.booleanValue();
+    public DataType getDataType() {
+        return dataType;
     }
 
     /**
