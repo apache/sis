@@ -17,14 +17,16 @@
 package org.apache.sis.storage.netcdf;
 
 /*
- * All imports below except "CF" are for javadoc only. The "CF" import is used only
- * for its static final String constants, which are inlined by javac. Consequently
- * the compiled file of this class should have no dependency to the UCAR packages.
+ * All imports below except "CF" and "ACDD" are for javadoc only.
+ * The "CF" and "ACDD" imports are used only for its static final String constants,
+ * which are inlined by javac. Consequently the compiled file of this class should
+ * have no dependency to the UCAR packages.
  */
 import java.io.Serializable;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.VariableSimpleIF;
 import ucar.nc2.constants.CF;
+import ucar.nc2.constants.ACDD;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.*;
@@ -128,7 +130,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 public class AttributeNames {
@@ -145,7 +147,7 @@ public class AttributeNames {
      * @see NetcdfFile#getTitle()
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#title_Attribute">UCAR reference</a>
      */
-    public static final String TITLE = "title";
+    public static final String TITLE = ACDD.title;
 
     /**
      * The {@value} attribute name for a paragraph describing the dataset
@@ -157,7 +159,7 @@ public class AttributeNames {
      *
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#summary_Attribute">UCAR reference</a>
      */
-    public static final String SUMMARY = "summary";
+    public static final String SUMMARY = ACDD.summary;
 
     /**
      * The {@value} attribute name for an identifier (<em>Recommended</em>).
@@ -176,7 +178,7 @@ public class AttributeNames {
      * @see NetcdfFile#getId()
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#id_Attribute">UCAR reference</a>
      */
-    public static final String IDENTIFIER = "id";
+    public static final String IDENTIFIER = ACDD.id;
 
     /**
      * The {@value} attribute name for the identifier authority (<em>Recommended</em>).
@@ -195,7 +197,7 @@ public class AttributeNames {
      * @see MetadataReader#getFileIdentifier()
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#id_Attribute">UCAR reference</a>
      */
-    public static final String NAMING_AUTHORITY = "naming_authority";
+    public static final String NAMING_AUTHORITY = ACDD.naming_authority;
 
     /**
      * The {@value} attribute name for a long descriptive name for the variable taken from a controlled
@@ -227,7 +229,7 @@ public class AttributeNames {
      * @see #VOCABULARY
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#standard_name_vocabulary_Attribute">UCAR reference</a>
      */
-    public static final String STANDARD_NAME_VOCABULARY = "standard_name_vocabulary";
+    public static final String STANDARD_NAME_VOCABULARY = ACDD.standard_name_vocabulary;
 
     /**
      * The {@value} attribute name for a comma separated list of key words and phrases
@@ -242,7 +244,7 @@ public class AttributeNames {
      * @see #STANDARD_NAME
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#keywords_Attribute">UCAR reference</a>
      */
-    public static final String KEYWORDS = "keywords";
+    public static final String KEYWORDS = ACDD.keywords;
 
     /**
      * The {@value} attribute name for the guideline for the words/phrases in the
@@ -258,7 +260,7 @@ public class AttributeNames {
      * @see #STANDARD_NAME_VOCABULARY
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#keywords_vocabulary_Attribute">UCAR reference</a>
      */
-    public static final String VOCABULARY = "keywords_vocabulary";
+    public static final String VOCABULARY = ACDD.keywords_vocabulary;
 
     /**
      * The {@value} attribute name for a high-level geographic data thematic classification.
@@ -291,7 +293,7 @@ public class AttributeNames {
      * @see SpatialRepresentationType
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#cdm_data_type_Attribute">UCAR reference</a>
      */
-    public static final String DATA_TYPE = "cdm_data_type";
+    public static final String DATA_TYPE = ACDD.cdm_data_type;
 
     /**
      * The {@value} attribute name for providing an audit trail for modifications to the
@@ -304,7 +306,7 @@ public class AttributeNames {
      *
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#history_Attribute">UCAR reference</a>
      */
-    public static final String HISTORY = "history";
+    public static final String HISTORY = ACDD.history;
 
     /**
      * The {@value} attribute name for miscellaneous information about the data
@@ -316,7 +318,7 @@ public class AttributeNames {
      *
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#comment_Attribute">UCAR reference</a>
      */
-    public static final String COMMENT = "comment";
+    public static final String COMMENT = ACDD.comment;
 
     /**
      * The {@value} attribute name for the date on which the metadata was created
@@ -340,7 +342,7 @@ public class AttributeNames {
      *
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#date_created_Attribute">UCAR reference</a>
      */
-    public static final String DATE_CREATED = "date_created";
+    public static final String DATE_CREATED = ACDD.date_created;
 
     /**
      * The {@value} attribute name for the date on which this data was last modified
@@ -354,7 +356,7 @@ public class AttributeNames {
      *
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#date_modified_Attribute">UCAR reference</a>
      */
-    public static final String DATE_MODIFIED = "date_modified";
+    public static final String DATE_MODIFIED = ACDD.date_modified;
 
     /**
      * The {@value} attribute name for a date on which this data was formally issued
@@ -523,8 +525,8 @@ public class AttributeNames {
      * @see #PUBLISHER
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#creator_name_Attribute">UCAR reference</a>
      */
-    public static final Responsible CREATOR = new Responsible("creator_name",
-            "institution", "creator_url", "creator_email", null, Role.ORIGINATOR);
+    public static final Responsible CREATOR = new Responsible(ACDD.creator_name,
+            "institution", ACDD.creator_url, ACDD.creator_email, null, Role.ORIGINATOR);
 
     /**
      * The set of attribute names for the contributor (<em>Suggested</em>).
@@ -556,8 +558,8 @@ public class AttributeNames {
      * @see #CONTRIBUTOR
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#publisher_name_Attribute">UCAR reference</a>
      */
-    public static final Responsible PUBLISHER = new Responsible("publisher_name",
-            null, "publisher_url", "publisher_email", null, Role.PUBLISHER);
+    public static final Responsible PUBLISHER = new Responsible(ACDD.publisher_name,
+            null, ACDD.publisher_url, ACDD.publisher_email, null, Role.PUBLISHER);
 
     /**
      * The {@value} attribute name for the scientific project that produced the data
@@ -602,7 +604,7 @@ public class AttributeNames {
      *
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#processing_level_Attribute">UCAR reference</a>
      */
-    public static final String PROCESSING_LEVEL = "processing_level";
+    public static final String PROCESSING_LEVEL = ACDD.processing_level;
 
     /**
      * The {@value} attribute name for a place to acknowledge various type of support for
@@ -627,7 +629,7 @@ public class AttributeNames {
      *
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#license_Attribute">UCAR reference</a>
      */
-    public static final String LICENSE = "license";
+    public static final String LICENSE = ACDD.license;
 
     /**
      * The {@value} attribute name for the access constraints applied to assure the protection of
@@ -831,8 +833,7 @@ public class AttributeNames {
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#geospatial_lat_min_Attribute">UCAR reference</a>
      */
     public static final Dimension LATITUDE = new Dimension(DimensionNameType.ROW,
-            "geospatial_lat_min", "geospatial_lat_max", null,
-            "geospatial_lat_resolution", "geospatial_lat_units", null);
+            ACDD.LAT_MIN, ACDD.LAT_MAX, null, ACDD.LAT_RESOLUTION, ACDD.LAT_UNITS, null);
 
     /**
      * The set of attribute names for the minimal and maximal longitudes of the bounding box,
@@ -856,8 +857,7 @@ public class AttributeNames {
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#geospatial_lon_min_Attribute">UCAR reference</a>
      */
     public static final Dimension LONGITUDE = new Dimension(DimensionNameType.COLUMN,
-            "geospatial_lon_min", "geospatial_lon_max", null,
-            "geospatial_lon_resolution", "geospatial_lon_units", null);
+            ACDD.LON_MIN, ACDD.LON_MAX, null, ACDD.LON_RESOLUTION, ACDD.LON_UNITS, null);
 
     /**
      * The set of attribute names for the minimal and maximal elevations of the bounding box,
@@ -881,8 +881,7 @@ public class AttributeNames {
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#geospatial_vertical_min_Attribute">UCAR reference</a>
      */
     public static final Dimension VERTICAL = new Dimension(DimensionNameType.VERTICAL,
-            "geospatial_vertical_min", "geospatial_vertical_max", null,
-            "geospatial_vertical_resolution", "geospatial_vertical_units", "geospatial_vertical_positive");
+            ACDD.VERT_MIN, ACDD.VERT_MAX, null, ACDD.VERT_RESOLUTION, ACDD.VERT_UNITS, ACDD.VERT_IS_POSITIVE);
 
     /**
      * The set of attribute names for the start and end times of the bounding box, resolution and
@@ -904,8 +903,7 @@ public class AttributeNames {
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#time_coverage_start_Attribute">UCAR reference</a>
      */
     public static final Dimension TIME = new Dimension(DimensionNameType.TIME,
-            "time_coverage_start", "time_coverage_end", "time_coverage_duration",
-            "time_coverage_resolution", "time_coverage_units", null);
+            ACDD.TIME_START, ACDD.TIME_END, ACDD.TIME_DURATION, ACDD.TIME_RESOLUTION, "time_coverage_units", null);
 
     /**
      * The {@value} attribute name for the designation associated with a range element.
@@ -932,9 +930,9 @@ public class AttributeNames {
     public static final String FLAG_MASKS = "flag_masks";
 
     /**
-     * The {@value} attribute name for sample values to be flagged. The {@linkplain #FLAG_MASKS
-     * flag masks}, flag values and {@linkplain #FLAG_MEANINGS flag meaning} attributes, used
-     * together, describe a blend of independent boolean conditions and enumerated status codes.
+     * The {@value} attribute name for sample values to be flagged. The {@linkplain #FLAG_MASKS flag masks},
+     * flag values and {@linkplain #FLAG_MEANINGS flag meaning} attributes, used together, describe a blend
+     * of independent boolean conditions and enumerated status codes.
      * A flagged condition is identified by a bitwise AND of the variable value and each flag masks
      * value; a result that matches the flag values value indicates a true condition.
      *
