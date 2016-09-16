@@ -19,6 +19,7 @@ package org.apache.sis.internal.netcdf.ucar;
 import java.util.Date;
 import java.util.List;
 import java.util.EnumSet;
+import java.util.Formatter;
 import java.io.IOException;
 import ucar.nc2.Group;
 import ucar.nc2.Dimension;
@@ -32,12 +33,17 @@ import ucar.nc2.units.DateUnit;
 import ucar.nc2.time.Calendar;
 import ucar.nc2.time.CalendarDate;
 import ucar.nc2.time.CalendarDateFormatter;
+import ucar.nc2.ft.FeatureDataset;
+import ucar.nc2.ft.FeatureDatasetPoint;
+import ucar.nc2.ft.FeatureDatasetFactoryManager;
+import ucar.nc2.ft.FeatureCollection;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.netcdf.DiscreteSampling;
 
 
 /**
@@ -45,7 +51,7 @@ import org.apache.sis.internal.netcdf.GridGeometry;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 public final class DecoderWrapper extends Decoder implements CancelTask {
@@ -76,6 +82,11 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     private transient Variable[] variables;
 
     /**
+     * The discrete sampling features, or {@code null} if none.
+     */
+    private transient FeatureDataset features;
+
+    /**
      * The grid geometries, computed when first needed.
      *
      * @see #getGridGeometries()
@@ -102,6 +113,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @param  filename   the name of the NetCDF file from which to read data.
      * @throws IOException if an error occurred while opening the NetCDF file.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public DecoderWrapper(final WarningListeners<?> listeners, final String filename) throws IOException {
         super(listeners);
         file = NetcdfDataset.openDataset(filename, false, this);
@@ -310,6 +322,30 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
+     * If this decoder can handle the file content as features, returns handlers for them.
+     *
+     * @return {@inheritDoc}
+     * @throws IOException if an I/O operation was necessary but failed.
+     */
+    @Override
+    @SuppressWarnings("null")
+    public DiscreteSampling[] getDiscreteSampling() throws IOException {
+        if (features == null && file instanceof NetcdfDataset) {
+            features = FeatureDatasetFactoryManager.wrap(null, (NetcdfDataset) file, this,
+                    new Formatter(new LogAdapter(listeners), listeners.getLocale()));
+        }
+        List<FeatureCollection> fc = null;
+        if (features instanceof FeatureDatasetPoint) {
+            fc = ((FeatureDatasetPoint) features).getPointFeatureCollectionList();
+        }
+        final FeaturesWrapper[] wrappers = new FeaturesWrapper[(fc != null) ? fc.size() : 0];
+        for (int i=0; i<wrappers.length; i++) {
+            wrappers[i] = new FeaturesWrapper(fc.get(i));
+        }
+        return wrappers;
+    }
+
+    /**
      * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
      * This method returns a direct reference to an internal array - do not modify.
      *
@@ -375,6 +411,10 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public void close() throws IOException {
+        if (features != null) {
+            features.close();
+            features = null;
+        }
         file.close();
     }
 

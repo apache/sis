@@ -37,6 +37,7 @@ import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.StandardDateFormat;
@@ -48,6 +49,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.Debug;
 import org.apache.sis.measure.Units;
+import ucar.nc2.constants.CF;
 
 // Branch-dependent imports
 import java.time.DateTimeException;
@@ -167,7 +169,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #getVariables()
      */
-    private final VariableInfo[] variables;
+    final VariableInfo[] variables;
 
     /**
      * The attributes found in the NetCDF file.
@@ -545,11 +547,9 @@ public final class ChannelDecoder extends Decoder {
      * <p>Current implementation does nothing, since the NetCDF binary files that {@code ChannelDecoder}
      * can read do not have groups anyway. Future SIS implementations may honor the given group names if
      * groups support is added.</p>
-     *
-     * @throws IOException {@inheritDoc}
      */
     @Override
-    public void setSearchPath(final String... groupNames) throws IOException {
+    public void setSearchPath(final String... groupNames) {
     }
 
     /**
@@ -558,10 +558,9 @@ public final class ChannelDecoder extends Decoder {
      * groups which have been found in the NetCDF file are returned by this method.
      *
      * @return {@inheritDoc}
-     * @throws IOException {@inheritDoc}
      */
     @Override
-    public String[] getSearchPath() throws IOException {
+    public String[] getSearchPath() {
         return new String[1];
     }
 
@@ -589,10 +588,9 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none or empty or if the given name was null.
-     * @throws IOException {@inheritDoc}
      */
     @Override
-    public String stringValue(final String name) throws IOException {
+    public String stringValue(final String name) {
         final Object value = findAttribute(name);
         return (value != null) ? value.toString() : null;
     }
@@ -602,10 +600,9 @@ public final class ChannelDecoder extends Decoder {
      * If there is more than one numeric value, only the first one is returned.
      *
      * @return {@inheritDoc}
-     * @throws IOException {@inheritDoc}
      */
     @Override
-    public Number numericValue(final String name) throws IOException {
+    public Number numericValue(final String name) {
         final Object value = findAttribute(name);
         if (value instanceof String) {
             return parseNumber((String) value);
@@ -619,10 +616,9 @@ public final class ChannelDecoder extends Decoder {
      * If there is more than one numeric value, only the first one is returned.
      *
      * @return {@inheritDoc}
-     * @throws IOException {@inheritDoc}
      */
     @Override
-    public Date dateValue(final String name) throws IOException {
+    public Date dateValue(final String name) {
         final Object value = findAttribute(name);
         if (value instanceof CharSequence) try {
             return StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse((CharSequence) value));
@@ -638,10 +634,9 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  values  the values to convert. May contain {@code null} elements.
      * @return the converted values. May contain {@code null} elements.
-     * @throws IOException {@inheritDoc}
      */
     @Override
-    public Date[] numberToDate(final String symbol, final Number... values) throws IOException {
+    public Date[] numberToDate(final String symbol, final Number... values) {
         final Date[] dates = new Date[values.length];
         final String[] parts = TIME_UNIT_PATTERN.split(symbol);
         if (parts.length == 2) try {
@@ -664,12 +659,24 @@ public final class ChannelDecoder extends Decoder {
      * This method returns a direct reference to an internal array - do not modify.
      *
      * @return {@inheritDoc}
-     * @throws IOException {@inheritDoc}
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Variable[] getVariables() throws IOException {
+    public Variable[] getVariables() {
         return variables;
+    }
+
+    /**
+     * If this decoder can handle the file content as features, returns handlers for them.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DiscreteSampling[] getDiscreteSampling() {
+        if ("trajectory".equalsIgnoreCase(stringValue(CF.FEATURE_TYPE))) {
+            return FeaturesInfo.create(this);
+        }
+        return new FeaturesInfo[0];
     }
 
     /**
@@ -677,11 +684,10 @@ public final class ChannelDecoder extends Decoder {
      * This method returns a direct reference to an internal array - do not modify.
      *
      * @return {@inheritDoc}
-     * @throws IOException {@inheritDoc}
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public GridGeometry[] getGridGeometries() throws IOException {
+    public GridGeometry[] getGridGeometries() {
         if (gridGeometries == null) {
             /*
              * First, find all variables which are used as coordinate system axis. The keys are the

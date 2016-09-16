@@ -21,6 +21,7 @@ import org.opengis.wrapper.netcdf.IOTestCase;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.util.Version;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
@@ -31,7 +32,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -62,5 +63,20 @@ public final strictfp class NetcdfStoreTest extends IOTestCase {
             assertSame("Should be cached.", metadata, store.getMetadata());
         }
         MetadataReaderTest.compareToExpected(metadata);
+    }
+
+    /**
+     * Tests {@link Decoder#getConventionVersion()}.
+     *
+     * @throws DataStoreException if an error occurred while reading the NetCDF file.
+     */
+    @Test
+    public void testGetConventionVersion() throws DataStoreException {
+        final Version version;
+        try (NetcdfStore store = create(LANDSAT)) {
+            version = store.getConventionVersion();
+        }
+        assertEquals("major", 1, version.getMajor());
+        assertEquals("minor", 0, version.getMinor());
     }
 }
