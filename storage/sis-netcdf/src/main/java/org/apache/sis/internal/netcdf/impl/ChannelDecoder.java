@@ -354,6 +354,19 @@ public final class ChannelDecoder extends Decoder {
         if (length < 0 || type == null) {
             throw malformedHeader();
         }
+        if (length == 1) {
+            switch (type) {
+                case BYTE:   {final byte  v =         input.readByte();          align(1); return v;}
+                case UBYTE:  {final short v = (short) input.readUnsignedByte();  align(1); return v;}
+                case SHORT:  {final short v =         input.readShort();         align(2); return v;}
+                case USHORT: {final int   v =         input.readUnsignedShort(); align(2); return v;}
+                case INT:    return input.readInt();
+                case INT64:  return input.readLong();
+                case UINT:   return input.readUnsignedInt();
+                case FLOAT:  return input.readFloat();
+                case DOUBLE: return input.readDouble();
+            }
+        }
         switch (type) {
             case CHAR: {
                 final String text = input.readString(length, encoding);
@@ -371,9 +384,7 @@ public final class ChannelDecoder extends Decoder {
             case USHORT: {
                 final short[] array = new short[length];
                 input.readFully(array, 0, length);
-                if ((length & 1) != 0) {
-                    input.readShort();      // For byte alignment.
-                }
+                align(length << 1);
                 return array;
             }
             case INT:
@@ -599,7 +610,7 @@ public final class ChannelDecoder extends Decoder {
         if (value instanceof String) {
             return parseNumber((String) value);
         }
-        final Number[] v = Attribute.numberValues(value);
+        final Number[] v = VariableInfo.numberValues(value);
         return (v.length != 0) ? v[0] : null;
     }
 

@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Map;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
@@ -29,6 +30,7 @@ import org.apache.sis.internal.storage.Region;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Numbers;
 
 
@@ -42,6 +44,11 @@ import org.apache.sis.util.Numbers;
  * @module
  */
 final class VariableInfo extends Variable {
+    /**
+     * The array to be returned by {@link #numberValues(Object)} when the given value is null.
+     */
+    private static final Number[] EMPTY = new Number[0];
+
     /**
      * The names of attributes where to look for the description to be returned by {@link #getDescription()}.
      * We use the same attributes than the one documented in the {@link ucar.nc2.Variable#getDescription()} javadoc.
@@ -76,6 +83,20 @@ final class VariableInfo extends Variable {
 
     /**
      * The attributes associates to the variable, or an empty map if none.
+     * Values can be:
+     *
+     * <ul>
+     *   <li>a {@link String}</li>
+     *   <li>A {@link Number}</li>
+     *   <li>an array of primitive type</li>
+     * </ul>
+     *
+     * If the value is a {@code String}, then leading and trailing spaces and control characters
+     * should be trimmed by {@link String#trim()}.
+     *
+     * @see #stringValues(Object)
+     * @see #numberValues(Object)
+     * @see #booleanValue(Object)
      */
     private final Map<String,Object> attributes;
 
@@ -108,7 +129,7 @@ final class VariableInfo extends Variable {
     {
         final Object isUnsigned = attributes.get(CDM.UNSIGNED);
         if (isUnsigned != null) {
-            dataType = dataType.unsigned(Attribute.booleanValue(isUnsigned));
+            dataType = dataType.unsigned(booleanValue(isUnsigned));
         }
         this.name          = name;
         this.dimensions    = dimensions;
@@ -230,7 +251,58 @@ final class VariableInfo extends Variable {
     @Override
     public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
         final Object value = attributes.get(attributeName);
-        return numeric ? Attribute.numberValues(value) : Attribute.stringValues(value);
+        return numeric ? numberValues(value) : stringValues(value);
+    }
+
+    /**
+     * Returns the attribute values as an array of {@link String}s, or an empty array if none.
+     * The given argument is typically a value of the {@link #attributes} map.
+     *
+     * @see #getAttributeValues(String, boolean)
+     */
+    static String[] stringValues(final Object value) {
+        if (value == null) {
+            return CharSequences.EMPTY_ARRAY;
+        }
+        if (value.getClass().isArray()) {
+            final String[] values = new String[Array.getLength(value)];
+            for (int i=0; i<values.length; i++) {
+                values[i] = Array.get(value, i).toString();
+            }
+            return values;
+        }
+        return new String[] {value.toString()};
+    }
+
+    /**
+     * Returns the attribute values as an array of {@link Number}, or an empty array if none.
+     * The given argument is typically a value of the {@link #attributes} map.
+     *
+     * @see #getAttributeValues(String, boolean)
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    static Number[] numberValues(final Object value) {
+        if (value != null) {
+            if (value.getClass().isArray()) {
+                final Number[] values = new Number[Array.getLength(value)];
+                for (int i=0; i<values.length; i++) {
+                    values[i] = (Number) Array.get(value, i);
+                }
+                return values;
+            }
+            if (value instanceof Number) {
+                return new Number[] {(Number) value};
+            }
+        }
+        return EMPTY;
+    }
+
+    /**
+     * Returns the attribute value as a boolean, or {@code false} if the attribute is not a boolean.
+     * The given argument is typically a value of the {@link #attributes} map.
+     */
+    private static boolean booleanValue(final Object value) {
+        return (value instanceof String) && Boolean.valueOf((String) value);
     }
 
     /**
