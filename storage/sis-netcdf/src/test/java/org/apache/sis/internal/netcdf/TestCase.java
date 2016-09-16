@@ -124,7 +124,7 @@ public abstract strictfp class TestCase extends IOTestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     protected final Decoder selectDataset(final String name) throws IOException, DataStoreException {
-        synchronized (DECODERS) { // Paranoiac safety, but should not be used in multi-threads environment.
+        synchronized (DECODERS) {               // Paranoiac safety, but should not be used in multi-threads environment.
             decoder = DECODERS.get(name);
             if (decoder == null) {
                 decoder = createDecoder(name);
@@ -132,7 +132,7 @@ public abstract strictfp class TestCase extends IOTestCase {
                 assertNull(DECODERS.put(name, decoder));
             }
             decoder.setSearchPath(GLOBAL);
-            return decoder; // Reminder: Decoder instances are not thread-safe.
+            return decoder;                     // Reminder: Decoder instances are not thread-safe.
         }
     }
 
@@ -145,7 +145,7 @@ public abstract strictfp class TestCase extends IOTestCase {
     @AfterClass
     public static void closeAllDecoders() throws IOException {
         Throwable failure = null;
-        synchronized (DECODERS) { // Paranoiac safety.
+        synchronized (DECODERS) {               // Paranoiac safety.
             final Iterator<Decoder> it = DECODERS.values().iterator();
             while (it.hasNext()) {
                 final Decoder decoder = it.next();
