@@ -21,6 +21,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import javax.measure.unit.Unit;
 import org.apache.sis.measure.Units;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 
 // Branch-dependent imports
@@ -59,6 +60,13 @@ public abstract class Decoder implements Closeable {
         Objects.requireNonNull(listeners);
         this.listeners = listeners;
     }
+
+    /**
+     * Returns a filename for information purpose only. This is used for formatting error messages.
+     *
+     * @return a filename to report in warning or error messages.
+     */
+    public abstract String getFilename();
 
     /**
      * Defines the groups where to search for named attributes, in preference order.
@@ -197,8 +205,9 @@ public abstract class Decoder implements Closeable {
      *
      * @return a handler for the features, or an empty array if none.
      * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
      */
-    public abstract DiscreteSampling[] getDiscreteSampling() throws IOException;
+    public abstract DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException;
 
     /**
      * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.

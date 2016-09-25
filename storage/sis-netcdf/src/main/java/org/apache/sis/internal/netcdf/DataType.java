@@ -26,8 +26,9 @@ import org.apache.sis.util.Numbers;
  * related to the NetCDF standard as below:
  *
  * <ul>
- *   <li>The NetCDF numerical code is the {@link #ordinal()} plus 1.</li>
- *   <li>The CDL reserved word is the {@link #name()} is lower case.</li>
+ *   <li>The NetCDF numerical code is the {@link #ordinal()}.</li>
+ *   <li>The CDL reserved word is the {@link #name()} is lower case,
+ *       except for {@link #UNKNOWN} which is not a valid CDL type.</li>
  * </ul>
  *
  * The unsigned data types are not defined in NetCDF classical version. However those data types
@@ -42,79 +43,89 @@ import org.apache.sis.util.Numbers;
  */
 public enum DataType {
     /**
+     * The enumeration for unknown data type. This is not a valid NetCDF type.
+     */
+    UNKNOWN(Numbers.OTHER, false, false, (byte) 0, DataBuffer.TYPE_UNDEFINED),
+
+    /**
      * 8 bits signed integer (NetCDF type 1).
      * Can be made unsigned by assigning the “_Unsigned” attribute to a NetCDF variable.
      */
-    BYTE(Numbers.BYTE, false, (byte) 7, DataBuffer.TYPE_BYTE),
+    BYTE(Numbers.BYTE, true, false, (byte) 7, DataBuffer.TYPE_BYTE),
 
     /**
      * Character type as unsigned 8 bits (NetCDF type 2).
      * Encoding can be specified by assigning the “_Encoding” attribute to a NetCDF variable.
      */
-    CHAR(Numbers.BYTE, true, (byte) 2, DataBuffer.TYPE_UNDEFINED),        // NOT Numbers.CHARACTER
+    CHAR(Numbers.BYTE, false, true, (byte) 2, DataBuffer.TYPE_UNDEFINED),        // NOT Numbers.CHARACTER
 
     /**
      * 16 bits signed integer (NetCDF type 3).
      */
-    SHORT(Numbers.SHORT, false, (byte) 8, DataBuffer.TYPE_SHORT),
+    SHORT(Numbers.SHORT, true, false, (byte) 8, DataBuffer.TYPE_SHORT),
 
     /**
      * 32 bits signed integer (NetCDF type 4).
      * This is also called "long", but that name is deprecated.
      */
-    INT(Numbers.INTEGER, false, (byte) 9, DataBuffer.TYPE_INT),
+    INT(Numbers.INTEGER, true, false, (byte) 9, DataBuffer.TYPE_INT),
 
     /**
      * 32 bits floating point number (NetCDF type 5)
      * This is also called "real".
      */
-    FLOAT(Numbers.FLOAT, false, (byte) 5, DataBuffer.TYPE_FLOAT),
+    FLOAT(Numbers.FLOAT, false, false, (byte) 5, DataBuffer.TYPE_FLOAT),
 
     /**
      * 64 bits floating point number (NetCDF type 6).
      */
-    DOUBLE(Numbers.DOUBLE, false, (byte) 6, DataBuffer.TYPE_DOUBLE),
+    DOUBLE(Numbers.DOUBLE, false, false, (byte) 6, DataBuffer.TYPE_DOUBLE),
 
     /**
      * 8 bits unsigned integer (NetCDF type 7).
      * Not available in NetCDF classic format.
      */
-    UBYTE(Numbers.BYTE, true, (byte) 1, DataBuffer.TYPE_BYTE),
+    UBYTE(Numbers.BYTE, true, true, (byte) 1, DataBuffer.TYPE_BYTE),
 
     /**
      * 16 bits unsigned integer (NetCDF type 8).
      * Not available in NetCDF classic format.
      */
-    USHORT(Numbers.SHORT, true, (byte) 3, DataBuffer.TYPE_USHORT),
+    USHORT(Numbers.SHORT, true, true, (byte) 3, DataBuffer.TYPE_USHORT),
 
     /**
      * 43 bits unsigned integer (NetCDF type 9).
      * Not available in NetCDF classic format.
      */
-    UINT(Numbers.INTEGER, true, (byte) 4, DataBuffer.TYPE_INT),
+    UINT(Numbers.INTEGER, true, true, (byte) 4, DataBuffer.TYPE_INT),
 
     /**
      * 64 bits signed integer (NetCDF type 10).
      * Not available in NetCDF classic format.
      */
-    INT64(Numbers.LONG, false, (byte) 11, DataBuffer.TYPE_UNDEFINED),
+    INT64(Numbers.LONG, true, false, (byte) 11, DataBuffer.TYPE_UNDEFINED),
 
     /**
      * 64 bits unsigned integer (NetCDF type 11).
      * Not available in NetCDF classic format.
      */
-    UINT64(Numbers.LONG, true, (byte) 10, DataBuffer.TYPE_UNDEFINED),
+    UINT64(Numbers.LONG, true, true, (byte) 10, DataBuffer.TYPE_UNDEFINED),
 
     /**
      * Character string (NetCDF type 12).
      * Not available in NetCDF classic format.
      */
-    STRING(Numbers.OTHER, false, (byte) 12, DataBuffer.TYPE_UNDEFINED);
+    STRING(Numbers.OTHER, false, false, (byte) 12, DataBuffer.TYPE_UNDEFINED);
 
     /**
      * Mapping from the NetCDF data type to the enumeration used by our {@link Numbers} class.
      */
     public final byte number;
+
+    /**
+     * {@code true} for data type that are signed or unsigned integers.
+     */
+    public final boolean isInteger;
 
     /**
      * {@code false} for signed data type (the default), or {@code true} for unsigned data type.
@@ -140,8 +151,11 @@ public enum DataType {
     /**
      * Creates a new enumeration.
      */
-    private DataType(final byte number, final boolean isUnsigned, final byte opposite, final int rasterDataType) {
+    private DataType(final byte number, final boolean isInteger, final boolean isUnsigned,
+            final byte opposite, final int rasterDataType)
+    {
         this.number         = number;
+        this.isInteger      = isInteger;
         this.isUnsigned     = isUnsigned;
         this.opposite       = opposite;
         this.rasterDataType = rasterDataType;
@@ -165,12 +179,12 @@ public enum DataType {
     private static final DataType[] VALUES = values();
 
     /**
-     * Returns the enumeration value for the given NetCDF code, or {@code null} if the given code is unknown.
+     * Returns the enumeration value for the given NetCDF code, or {@link #UNKNOWN} if the given code is unknown.
      *
      * @param  code  the NetCDF code.
-     * @return enumeration value for the give NetCDF code, or {@code null} if the given code is unknown.
+     * @return enumeration value for the give NetCDF code.
      */
-    public static DataType valueOf(int code) {
-        return (--code >= 0 && code < VALUES.length) ? VALUES[code] : null;
+    public static DataType valueOf(final int code) {
+        return (code >= 0 && code < VALUES.length) ? VALUES[code] : UNKNOWN;
     }
 }
