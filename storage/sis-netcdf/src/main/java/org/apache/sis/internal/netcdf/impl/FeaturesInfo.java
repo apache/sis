@@ -18,7 +18,13 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.io.IOException;
+import org.apache.sis.math.Vector;
+import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.collection.IntegerList;
+import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CF;
 
 
@@ -33,21 +39,88 @@ import ucar.nc2.constants.CF;
  */
 final class FeaturesInfo extends DiscreteSampling {
     /**
-     * Creates a new discrete sampling parser for features identified by the given variable.
+     * The number of instances for each feature.
      */
-    private FeaturesInfo(final ChannelDecoder decoder, final VariableInfo identifiers) {
-        // TODO
+    private final IntegerList counts;
+
+    /**
+     * The moving feature identifiers ("mfIdRef").
+     */
+    private final VariableInfo identifiers;
+
+    /**
+     * Creates a new discrete sampling parser for features identified by the given variable.
+     *
+     * @param  cpf          the count of instances per feature.
+     * @param  identifiers  the feature identifiers.
+     */
+    private FeaturesInfo(final Vector cpf, final VariableInfo identifiers) {
+        final int n = cpf.size();
+        int max = 1;
+        for (int i=0; i<n; i++) {
+            final int v = cpf.intValue(i);
+            if (v > max) max = v;
+        }
+        counts = new IntegerList(n, max);
+        for (int i=0; i<n; i++) {
+            counts.addInt(cpf.intValue(i));
+        }
+        this.identifiers = identifiers;
+        final Object role = identifiers.getAttributeValue(CF.CF_ROLE);
+        if (role instanceof String && ((String) role).equalsIgnoreCase(CF.TRAJECTORY_ID)) {
+            // TODO
+        }
     }
 
     /**
-     * Creates new discrete sampling parsers.
+     * Creates new discrete sampling parsers from the attribute values found in the given decoder.
      */
-    static FeaturesInfo[] create(final ChannelDecoder decoder) {
-        final List<FeaturesInfo> features = new ArrayList<>();
-        for (final VariableInfo v : decoder.variables) {
-            for (final Object role : v.getAttributeValues(CF.CF_ROLE, false)) {
-                if (role instanceof String && ((String) role).equalsIgnoreCase(CF.TRAJECTORY_ID)) {
-                    features.add(new FeaturesInfo(decoder, v));
+    static FeaturesInfo[] create(final ChannelDecoder decoder) throws IOException, DataStoreException {
+        final List<FeaturesInfo> features = new ArrayList<>(3);     // Will usually contain at most one element.
+search: for (final VariableInfo counts : decoder.variables) {
+            if (counts.dimensions.length == 1 && counts.getDataType().isInteger) {
+                final Object sampleDimName = counts.getAttributeValue(CF.SAMPLE_DIMENSION);
+                if (sampleDimName instanceof String) {
+                    /*
+                     * Any one-dimensional integer variable having a "sample_dimension" attribute string value
+                     * will be taken as an indication that we have Discrete Sampling Geometries. That variable
+                     * shall be counting the number of feature instances, and another variable having the same
+                     * dimension (optionally plus a character dimension) shall give the feature identifiers.
+                     */
+                    final Dimension featureDimension = counts.dimensions[0];
+                    final VariableInfo identifiers = decoder.findVariable(featureDimension.name);
+                    if (identifiers == null) {
+                        decoder.listeners.warning(decoder.errors().getString(Errors.Keys.VariableNotFound_2,
+                                decoder.getFilename(), featureDimension.name), null);
+                        continue;
+                    }
+                    for (int i=0; i<identifiers.dimensions.length; i++) {
+                        final boolean isValid;
+                        switch (i) {
+                            case 0:  isValid = (identifiers.dimensions[0] == featureDimension); break;
+                            case 1:  isValid = (identifiers.getDataType() == DataType.CHAR); break;
+                            default: isValid = false; break;                    // Too many dimensions
+                        }
+                        if (!isValid) {
+                            decoder.listeners.warning(decoder.errors().getString(
+                                    Errors.Keys.UnexpectedDimensionForVariable_4,
+                                    decoder.getFilename(), identifiers.getName(),
+                                    featureDimension.getName(), identifiers.dimensions[i].name), null);
+                            continue search;
+                        }
+                    }
+                    /*
+                     * The "sample_dimension" attribute value shall be the name of a dimension.
+                     * Those dimensions are associated to other variables (not the count one),
+                     * but the 'findDimension' method below searches in all dimensions.
+                     */
+                    final Dimension sampleDim = counts.findDimension((String) sampleDimName);
+                    if (sampleDim == null) {
+                        decoder.listeners.warning(decoder.errors().getString(Errors.Keys.DimensionNotFound_3,
+                                decoder.getFilename(), counts.getName(), sampleDimName), null);
+                        continue;
+                    }
+                    features.add(new FeaturesInfo(counts.read(), identifiers));
                 }
             }
         }

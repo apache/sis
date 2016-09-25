@@ -192,7 +192,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
 
     /**
      * Computes the latitude using equation 3-18 from Synder, followed by iterative resolution of Synder 3-16.
-     * If theory, the series expansion given by equation 3-18 (φ ≈ c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(8β)) should
+     * In theory, the series expansion given by equation 3-18 (φ ≈ c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(8β)) should
      * be used in replacement of the iterative method. However in practice the series expansion seems to not
      * have a sufficient amount of terms for achieving the centimetric precision, so we "finish" it by the
      * iterative method. The series expansion is nevertheless useful for reducing the number of iterations.

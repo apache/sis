@@ -32,6 +32,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.math.Vector;
 
 
 /**
@@ -72,14 +73,16 @@ final class VariableInfo extends Variable {
     private final String name;
 
     /**
-     * The dimensions of this variable.
+     * The dimensions of this variable, in order. When iterating over the values stored in this variable
+     * (a flattened one-dimensional sequence of values), index in the domain of {@code dimensions[0]}
+     * varies faster, followed by index in the domain of {@code dimensions[1]}, <i>etc.</i>
      */
     final Dimension[] dimensions;
 
     /**
      * All dimensions in the NetCDF files.
      */
-    private final Dimension[] allDimensions;
+    private final Map<String,Dimension> allDimensions;
 
     /**
      * The attributes associates to the variable, or an empty map if none.
@@ -112,6 +115,15 @@ final class VariableInfo extends Variable {
     GridGeometryInfo gridGeometry;
 
     /**
+     * {@code true} if this variable seems to be a coordinate system axis, as determined by comparing its name
+     * with the name of all dimensions in the NetCDF file. This information is computed at construction time
+     * because requested more than once.
+     *
+     * @see #isCoordinateSystemAxis()
+     */
+    private final boolean isCoordinateSystemAxis;
+
+    /**
      * Creates a new variable.
      *
      * @param  input          the channel together with a buffer for reading the variable data.
@@ -123,9 +135,14 @@ final class VariableInfo extends Variable {
      * @param  size           the variable size, used for verification purpose only.
      * @param  offset         the offset where the variable data begins in the NetCDF file.
      */
-    VariableInfo(final ChannelDataInput input, final String name,
-            final Dimension[] dimensions, final Dimension[] allDimensions, final Map<String,Object> attributes,
-            DataType dataType, final int size, final long offset) throws DataStoreException
+    VariableInfo(final ChannelDataInput      input,
+                 final String                name,
+                 final Dimension[]           dimensions,
+                 final Map<String,Dimension> allDimensions,
+                 final Map<String,Object>    attributes,
+                       DataType              dataType,
+                 final int                   size,
+                 final long                  offset) throws DataStoreException
     {
         final Object isUnsigned = attributes.get(CDM.UNSIGNED);
         if (isUnsigned != null) {
@@ -145,6 +162,23 @@ final class VariableInfo extends Variable {
         } else {
             reader = null;
         }
+        /*
+         * If the "_CoordinateAliasForDimension" attribute is defined, then its value will be used
+         * instead of the variable name when determining if the variable is a coordinate system axis.
+         * "_CoordinateVariableAlias" seems to be a legacy attribute name for the same purpose.
+         */
+        if (dimensions.length == 1) {
+            Object value = getAttributeValue(_Coordinate.AliasForDimension, "_coordinatealiasfordimension");
+            if (value == null) {
+                value = getAttributeValue("_CoordinateVariableAlias", "_coordinatevariablealias");
+                if (value == null) {
+                    value = name;
+                }
+            }
+            isCoordinateSystemAxis = dimensions[0].name.equals(value);
+        } else {
+            isCoordinateSystemAxis = false;
+        }
     }
 
     /**
@@ -163,7 +197,7 @@ final class VariableInfo extends Variable {
     @Override
     public String getDescription() {
         for (final String attributeName : DESCRIPTION_ATTRIBUTES) {
-            final Object value = attributes.get(attributeName);
+            final Object value = getAttributeValue(attributeName);
             if (value instanceof String) {
                 return (String) value;
             }
@@ -176,12 +210,12 @@ final class VariableInfo extends Variable {
      */
     @Override
     public String getUnitsString() {
-        final Object value = attributes.get(CDM.UNITS);
+        final Object value = getAttributeValue(CDM.UNITS);
         return (value instanceof String) ? (String) value : null;
     }
 
     /**
-     * Returns the type of data, or {@code null} if the data type is unknown to this method.
+     * Returns the type of data, or {@code UNKNOWN} if the data type is unknown to this method.
      * If this variable has a {@code "_Unsigned = true"} attribute, then the returned data type
      * will be a unsigned variant.
      */
@@ -196,22 +230,14 @@ final class VariableInfo extends Variable {
      */
     @Override
     public boolean isCoordinateSystemAxis() {
-        final Object value = attributes.get(_CoordinateVariableAlias);
-        final String alias = (value instanceof String) ? (String) value : name;
-        for (final Dimension dimension : allDimensions) {
-            if (alias.equals(dimension.name)) {
-                // This variable is a dimension of another variable.
-                return true;
-            }
-        }
-        return false;
+        return isCoordinateSystemAxis;
     }
 
     /**
      * Returns the value of the {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
      */
     final String getAxisType() {
-        final Object value = attributes.get(_Coordinate.AxisType);
+        final Object value = getAttributeValue(_Coordinate.AxisType, "_coordinateaxistype");
         return (value instanceof String) ? (String) value : null;
     }
 
@@ -244,13 +270,61 @@ final class VariableInfo extends Variable {
     }
 
     /**
+     * Returns the dimension of the given name (eventually ignoring case), or {@code null} if none.
+     * This method searches in all dimensions found in the NetCDF file,
+     * regardless of whether the dimension is used by this variable or not.
+     * The search will ignore case only if no exact match is found for the given name.
+     *
+     * @param  dimName  the name of the dimension to search.
+     * @return dimension of the given name, or {@code null} if none.
+     */
+    final Dimension findDimension(final String dimName) {
+        Dimension dim = allDimensions.get(dimName);         // Give precedence to exact match before to ignore case.
+        if (dim == null) {
+            final String lower = dimName.toLowerCase(ChannelDecoder.NAME_LOCALE);
+            if (lower != dimName) {                         // Identity comparison is okay here.
+                dim = allDimensions.get(lower);
+            }
+        }
+        return dim;
+    }
+
+    /**
+     * Returns the value of the given attribute, or {@code null} if none.
+     * This method should be invoked only for hard-coded names that mix lower-case and upper-case letters.
+     *
+     * @param  attributeName  name of attribute to search, in the expected case.
+     * @param  lowerCase      the all lower-case variant of {@code attributeName}.
+     * @return variable attribute value of the given name, or {@code null} if none.
+     */
+    private Object getAttributeValue(final String attributeName, final String lowerCase) {
+        Object value = attributes.get(attributeName);
+        if (value == null) {
+            value = attributes.get(lowerCase);
+        }
+        return value;
+    }
+
+    /**
+     * Returns the value of the given attribute, or {@code null} if none.
+     * This method does not search the lower-case variant of the given name because the argument given to this method
+     * is usually a hard-coded value from {@link CF} or {@link CDM} conventions, which are already in lower-cases.
+     *
+     * @param  attributeName  name of attribute to search, in the expected case.
+     * @return variable attribute value of the given name, or {@code null} if none.
+     */
+    final Object getAttributeValue(final String attributeName) {
+        return attributes.get(attributeName);
+    }
+
+    /**
      * Returns the sequence of values for the given attribute, or an empty array if none.
      * The elements will be of class {@link String} if {@code numeric} is {@code false},
      * or {@link Number} if {@code numeric} is {@code true}.
      */
     @Override
     public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
-        final Object value = attributes.get(attributeName);
+        final Object value = getAttributeValue(attributeName);
         return numeric ? numberValues(value) : stringValues(value);
     }
 
@@ -309,7 +383,7 @@ final class VariableInfo extends Variable {
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      */
     @Override
-    public Object read() throws IOException, DataStoreException {
+    public Vector read() throws IOException, DataStoreException {
         if (reader == null) {
             throw new DataStoreContentException(unknownType());
         }
@@ -327,7 +401,7 @@ final class VariableInfo extends Variable {
             sub [i] = 1;
             size[i] = dimensions[(dimension - 1) - i].length();
         }
-        return reader.read(new Region(size, new long[dimension], size, sub));
+        return Vector.create(reader.read(new Region(size, new long[dimension], size, sub)), dataType.isUnsigned);
     }
 
     /**
@@ -339,7 +413,7 @@ final class VariableInfo extends Variable {
      * @return the data as an array of a Java primitive type.
      */
     @Override
-    public Object read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException {
+    public Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException {
         if (reader == null) {
             throw new DataStoreContentException(unknownType());
         }
@@ -374,7 +448,7 @@ final class VariableInfo extends Variable {
             sub  [i] = subsampling[j];
             size [i] = dimensions[j].length();
         }
-        return reader.read(new Region(size, lower, upper, sub));
+        return Vector.create(reader.read(new Region(size, lower, upper, sub)), dataType.isUnsigned);
     }
 
     /**

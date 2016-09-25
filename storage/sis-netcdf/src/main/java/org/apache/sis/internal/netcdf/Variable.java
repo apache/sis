@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
 import java.awt.image.DataBuffer;
+import org.apache.sis.math.Vector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.Debug;
 
@@ -31,21 +32,11 @@ import org.apache.sis.util.Debug;
  * @version 0.8
  * @module
  */
-public abstract class Variable {
+public abstract class Variable extends NamedElement {
     /**
      * Minimal number of dimension for accepting a variable as a coverage variable.
      */
     public static final int MIN_DIMENSION = 2;
-
-    /**
-     * The {@value} attribute name, used by {@link #isCoordinateSystemAxis()} implementations.
-     * If this attribute is defined, then that name will be used as the variable name when
-     * determining if the variable is a coordinate system axis.
-     *
-     * <p>This constants may be removed in any future SIS version if it is added to the
-     * {@link ucar.nc2.constants._Coordinate} class.</p>
-     */
-    protected static final String _CoordinateVariableAlias = "_CoordinateVariableAlias";
 
     /**
      * Creates a new variable.
@@ -58,6 +49,7 @@ public abstract class Variable {
      *
      * @return the name of this variable, or {@code null}.
      */
+    @Override
     public abstract String getName();
 
     /**
@@ -77,7 +69,7 @@ public abstract class Variable {
     /**
      * Returns the variable data type.
      *
-     * @return the variable data type, or {@code null} if unknown.
+     * @return the variable data type, or {@code UNKNOWN} if unknown.
      */
     public abstract DataType getDataType();
 
@@ -127,7 +119,7 @@ public abstract class Variable {
         }
         if (numVectors >= MIN_DIMENSION) {
             final DataType dataType = getDataType();
-            if (dataType != null && dataType.rasterDataType != DataBuffer.TYPE_UNDEFINED) {
+            if (dataType.rasterDataType != DataBuffer.TYPE_UNDEFINED) {
                 return !isCoordinateSystemAxis();
             }
         }
@@ -179,7 +171,7 @@ public abstract class Variable {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract Object read() throws IOException, DataStoreException;
+    public abstract Vector read() throws IOException, DataStoreException;
 
     /**
      * Reads a sub-sampled sub-area of the variable.
@@ -198,7 +190,7 @@ public abstract class Variable {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract Object read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException;
+    public abstract Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException;
 
     /**
      * Returns a string representation of this variable for debugging purpose.

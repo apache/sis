@@ -54,7 +54,7 @@ public final strictfp class DataTypeTest extends TestCase {
      * Verifies the ordinal value of the given data type.
      */
     private static void verifyOrdinal(final int codeNetCDF, final DataType type) {
-        assertEquals(type.name(), codeNetCDF, type.ordinal() + 1);
+        assertEquals(type.name(), codeNetCDF, type.ordinal());
         assertSame("DataType.valueOf(int)", type, DataType.valueOf(codeNetCDF));
     }
 

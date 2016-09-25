@@ -246,6 +246,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short DependencyNotFound_3 = 235;
 
         /**
+         * Dimension “{2}” declared by attribute “{1}” is not found in the “{0}” file.
+         */
+        public static final short DimensionNotFound_3 = 238;
+
+        /**
          * The “{0}” file points to a directory instead of a regular file.
          */
         public static final short DirectoryNotExpected_1 = 165;
@@ -1062,6 +1067,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnexpectedDimensionForCS_1 = 212;
 
         /**
+         * Variable “{1}” in file “{0}” has a dimension “{3}” while we expected “{2}”.
+         */
+        public static final short UnexpectedDimensionForVariable_4 = 239;
+
+        /**
          * Unexpected end of file while reading “{0}”.
          */
         public static final short UnexpectedEndOfFile_1 = 109;
@@ -1261,6 +1271,11 @@ public final class Errors extends IndexedResourceBundle {
          * Value ‘{0}’ = {3} is invalid. Expected a value in the [{1} … {2}] range.
          */
         public static final short ValueOutOfRange_4 = 133;
+
+        /**
+         * Variable “{1}” is not found in the “{0}” file.
+         */
+        public static final short VariableNotFound_2 = 240;
     }
 
     /**

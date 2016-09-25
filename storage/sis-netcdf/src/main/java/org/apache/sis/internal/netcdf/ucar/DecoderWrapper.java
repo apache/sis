@@ -22,7 +22,6 @@ import java.util.EnumSet;
 import java.util.Formatter;
 import java.io.IOException;
 import ucar.nc2.Group;
-import ucar.nc2.Dimension;
 import ucar.nc2.Attribute;
 import ucar.nc2.VariableIF;
 import ucar.nc2.NetcdfFile;
@@ -117,6 +116,16 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     public DecoderWrapper(final WarningListeners<?> listeners, final String filename) throws IOException {
         super(listeners);
         file = NetcdfDataset.openDataset(filename, false, this);
+    }
+
+    /**
+     * Returns a filename for information purpose only. This is used for formatting error messages.
+     *
+     * @return a filename to report in warning or error messages.
+     */
+    @Override
+    public String getFilename() {
+        return file.getLocation();
     }
 
     /**
@@ -311,11 +320,10 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @SuppressWarnings({"ReturnOfCollectionOrArrayField", "null"})
     public Variable[] getVariables() {
         if (variables == null) {
-            final List<Dimension> dimensions = file.getDimensions();
             final List<? extends VariableIF> all = file.getVariables();
             variables = new Variable[(all != null) ? all.size() : 0];
             for (int i=0; i<variables.length; i++) {
-                variables[i] = new VariableWrapper(all.get(i), dimensions);
+                variables[i] = new VariableWrapper(all.get(i));
             }
         }
         return variables;
@@ -425,6 +433,6 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @Debug
     @Override
     public String toString() {
-        return "UCAR driver: “" + file.getLocation() + '”';
+        return "UCAR driver: “" + getFilename() + '”';
     }
 }

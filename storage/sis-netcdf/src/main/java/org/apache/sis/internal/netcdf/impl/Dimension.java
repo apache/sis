@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
+import org.apache.sis.internal.netcdf.NamedElement;
 import org.apache.sis.util.Debug;
 
 
@@ -27,10 +28,10 @@ import org.apache.sis.util.Debug;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
-final class Dimension {
+final class Dimension extends NamedElement {
     /**
      * The dimension name.
      */
@@ -50,6 +51,14 @@ final class Dimension {
     Dimension(final String name, final int length) {
         this.name   = name;
         this.length = length;
+    }
+
+    /**
+     * Returns the name of this NetCDF dimension.
+     */
+    @Override
+    public String getName() {
+        return name;
     }
 
     /**
