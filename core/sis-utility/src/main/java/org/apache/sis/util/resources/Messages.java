@@ -28,7 +28,7 @@ import org.opengis.util.InternationalString;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public final class Messages extends IndexedResourceBundle {
@@ -289,7 +289,7 @@ public final class Messages extends IndexedResourceBundle {
     /**
      * Constructs a new resource bundle loading data from the given UTF file.
      *
-     * @param resources The path of the binary file containing resources, or {@code null} if
+     * @param resources  the path of the binary file containing resources, or {@code null} if
      *        there is no resources. The resources may be a file or an entry in a JAR file.
      */
     Messages(final URL resources) {
@@ -298,17 +298,19 @@ public final class Messages extends IndexedResourceBundle {
 
     /**
      * Returns the handle for the {@code Keys} constants.
+     *
+     * @return a handler for the constants declared in the inner {@code Keys} class.
      */
     @Override
-    final KeyConstants getKeyConstants() {
+    protected KeyConstants getKeyConstants() {
         return Keys.INSTANCE;
     }
 
     /**
      * Returns resources in the given locale.
      *
-     * @param  locale The locale, or {@code null} for the default locale.
-     * @return Resources in the given locale.
+     * @param  locale  the locale, or {@code null} for the default locale.
+     * @return resources in the given locale.
      * @throws MissingResourceException if resources can't be found.
      */
     public static Messages getResources(final Locale locale) throws MissingResourceException {
@@ -318,9 +320,9 @@ public final class Messages extends IndexedResourceBundle {
     /**
      * Gets a string for the given key from this resource bundle or one of its parents.
      *
-     * @param  key The key for the desired string.
-     * @return The string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key  the key for the desired string.
+     * @return the string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short key) throws MissingResourceException {
         return getResources(null).getString(key);
@@ -330,10 +332,10 @@ public final class Messages extends IndexedResourceBundle {
      * Gets a string for the given key are replace all occurrence of "{0}"
      * with values of {@code arg0}.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 Value to substitute to "{0}".
-     * @return The formatted string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute to "{0}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short  key,
                                 final Object arg0) throws MissingResourceException
@@ -345,11 +347,11 @@ public final class Messages extends IndexedResourceBundle {
      * Gets a string for the given key are replace all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 Value to substitute to "{0}".
-     * @param  arg1 Value to substitute to "{1}".
-     * @return The formatted string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute to "{0}".
+     * @param  arg1  value to substitute to "{1}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short  key,
                                 final Object arg0,
@@ -362,12 +364,12 @@ public final class Messages extends IndexedResourceBundle {
      * Gets a string for the given key are replace all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 Value to substitute to "{0}".
-     * @param  arg1 Value to substitute to "{1}".
-     * @param  arg2 Value to substitute to "{2}".
-     * @return The formatted string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute to "{0}".
+     * @param  arg1  value to substitute to "{1}".
+     * @param  arg2  value to substitute to "{2}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short  key,
                                 final Object arg0,
@@ -381,13 +383,13 @@ public final class Messages extends IndexedResourceBundle {
      * Gets a string for the given key are replace all occurrence of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 Value to substitute to "{0}".
-     * @param  arg1 Value to substitute to "{1}".
-     * @param  arg2 Value to substitute to "{2}".
-     * @param  arg3 Value to substitute to "{3}".
-     * @return The formatted string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute to "{0}".
+     * @param  arg1  value to substitute to "{1}".
+     * @param  arg2  value to substitute to "{2}".
+     * @param  arg3  value to substitute to "{3}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short  key,
                                 final Object arg0,
@@ -417,8 +419,8 @@ public final class Messages extends IndexedResourceBundle {
      * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
      * when a {@link InternationalString#toString(Locale)} method is invoked.
      *
-     * @param  key The key for the desired string.
-     * @return An international string for the given key.
+     * @param  key  the key for the desired string.
+     * @return an international string for the given key.
      */
     public static InternationalString formatInternational(final short key) {
         return new International(key);
@@ -434,9 +436,9 @@ public final class Messages extends IndexedResourceBundle {
      * of a temporary array. There is no risk of confusion since the two methods delegate their
      * work to the same {@code format} method anyway.</div>
      *
-     * @param  key The key for the desired string.
-     * @param  arg Values to substitute to "{0}".
-     * @return An international string for the given key.
+     * @param  key  the key for the desired string.
+     * @param  arg  values to substitute to "{0}".
+     * @return an international string for the given key.
      */
     public static InternationalString formatInternational(final short key, final Object arg) {
         return new International(key, arg);
@@ -447,9 +449,9 @@ public final class Messages extends IndexedResourceBundle {
      * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
      * when a {@link InternationalString#toString(Locale)} method is invoked.
      *
-     * @param  key  The key for the desired string.
-     * @param  args Values to substitute to "{0}", "{1}", <i>etc</i>.
-     * @return An international string for the given key.
+     * @param  key   the key for the desired string.
+     * @param  args  values to substitute to "{0}", "{1}", <i>etc</i>.
+     * @return an international string for the given key.
      */
     public static InternationalString formatInternational(final short key, final Object... args) {
         return new International(key, args);
