@@ -37,7 +37,7 @@ import org.opengis.util.InternationalString;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public final class Errors extends IndexedResourceBundle {
@@ -1290,9 +1290,11 @@ public final class Errors extends IndexedResourceBundle {
 
     /**
      * Returns the handle for the {@code Keys} constants.
+     *
+     * @return a handler for the constants declared in the inner {@code Keys} class.
      */
     @Override
-    final KeyConstants getKeyConstants() {
+    protected KeyConstants getKeyConstants() {
         return Keys.INSTANCE;
     }
 
@@ -1312,7 +1314,7 @@ public final class Errors extends IndexedResourceBundle {
      * for the {@link #LOCALE_KEY} entry. If the given map is null, or contains no entry for the locale key,
      * or the value is not an instance of {@link Locale}, then this method fallback on the default locale.
      *
-     * @param  properties the map of properties, or {@code null} if none.
+     * @param  properties  the map of properties, or {@code null} if none.
      * @return resources in the given locale.
      * @throws MissingResourceException if resources can't be found.
      *
@@ -1325,7 +1327,7 @@ public final class Errors extends IndexedResourceBundle {
     /**
      * Gets a string for the given key from this resource bundle or one of its parents.
      *
-     * @param  key the key for the desired string.
+     * @param  key  the key for the desired string.
      * @return the string for the given key.
      * @throws MissingResourceException if no object for the given key can be found.
      */
