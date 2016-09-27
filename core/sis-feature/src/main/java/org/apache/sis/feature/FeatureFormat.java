@@ -253,6 +253,12 @@ header: for (int i=0; ; i++) {
         for (final PropertyType propertyType : featureType.getProperties(true)) {
             Object value = null;
             if (feature != null) {
+                if (!(propertyType instanceof AttributeType<?>) &&
+                    !(propertyType instanceof FeatureAssociationRole) &&
+                    !DefaultFeatureType.isParameterlessOperation(propertyType))
+                {
+                    continue;
+                }
                 value = feature.getPropertyValue(propertyType.getName().toString());
                 if (value == null) {
                     if (propertyType instanceof AttributeType &&
@@ -295,7 +301,7 @@ header: for (int i=0; ; i++) {
             final int minimumOccurs, maximumOccurs;         // Negative values mean no cardinality.
             final IdentifiedType resultType;                // Result of operation if applicable.
             if (propertyType instanceof Operation) {
-                resultType = ((Operation) propertyType).getResult();
+                resultType = ((Operation) propertyType).getResult();                // May be null
             } else {
                 resultType = propertyType;
             }
@@ -313,7 +319,7 @@ header: for (int i=0; ; i++) {
                 valueType     = toString(DefaultAssociationRole.getValueTypeName(pt));
                 valueClass    = Feature.class;
             } else {
-                valueType  = toString(resultType.getName());
+                valueType  = (resultType != null) ? toString(resultType.getName()) : "";
                 valueClass = null;
                 minimumOccurs = -1;
                 maximumOccurs = -1;

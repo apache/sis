@@ -584,7 +584,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *
      * @see #OPERATION_INDEX
      */
-    private static boolean isParameterlessOperation(final PropertyType type) {
+    static boolean isParameterlessOperation(final PropertyType type) {
         if (type instanceof Operation) {
             final ParameterDescriptorGroup parameters = ((Operation) type).getParameters();
             return ((parameters == null) || parameters.descriptors().isEmpty())
