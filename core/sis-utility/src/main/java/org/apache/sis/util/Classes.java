@@ -104,9 +104,9 @@ public final class Classes extends Static {
      *       class augmented by the given amount of dimensions.</li>
      * </ul>
      *
-     * @param  element The type of elements in the array.
-     * @param  dimension The change of dimension, as a negative or positive number.
-     * @return The type of an array of the given element type augmented by the given
+     * @param  element    the type of elements in the array.
+     * @param  dimension  the change of dimension, as a negative or positive number.
+     * @return the type of an array of the given element type augmented by the given
      *         number of dimensions (which may be negative), or {@code null}.
      */
     public static Class<?> changeArrayDimension(Class<?> element, int dimension) {
@@ -159,8 +159,8 @@ public final class Classes extends Static {
      *   <li>{@code Set} returns {@code null} because that collection is un-parameterized.</li>
      * </ul>
      *
-     * @param  field The field for which to obtain the parameterized type.
-     * @return The upper bound of parameterized type, or {@code null} if the given field
+     * @param  field  the field for which to obtain the parameterized type.
+     * @return the upper bound of parameterized type, or {@code null} if the given field
      *         is not of a parameterized type.
      */
     public static Class<?> boundOfParameterizedProperty(final Field field) {
@@ -178,9 +178,9 @@ public final class Classes extends Static {
      * We do not provide a method working from a {@link Class} instance because of the way
      * parameterized types are implemented in Java (by erasure).</p>
      *
-     * @param  method The getter or setter method for which to obtain the parameterized type.
-     * @return The upper bound of parameterized type, or {@code null} if the given method
-     *         do not operate on an object of a parameterized type.
+     * @param  method  the getter or setter method for which to obtain the parameterized type.
+     * @return the upper bound of parameterized type, or {@code null} if the given method
+     *         does not operate on an object of a parameterized type.
      */
     public static Class<?> boundOfParameterizedProperty(final Method method) {
         Class<?> c = getActualTypeArgument(method.getGenericReturnType());
@@ -224,7 +224,7 @@ public final class Classes extends Static {
                 if (type instanceof Class<?>) {
                     return changeArrayDimension((Class<?>) type, dimension);
                 }
-                break; // Unknown type.
+                break;                                      // Unknown type.
             }
         }
         return null;
@@ -242,9 +242,9 @@ public final class Classes extends Static {
      *
      * doesn't seem to work if {@link Number} is replaced by a parameterized type {@code T}.
      *
-     * @param  <T> The type of the given object.
-     * @param  object The object for which to get the class, or {@code null}.
-     * @return The class of the given object, or {@code null} if the given object was null.
+     * @param  <T>     the type of the given object.
+     * @param  object  the object for which to get the class, or {@code null}.
+     * @return the class of the given object, or {@code null} if the given object was null.
      */
     @SuppressWarnings("unchecked")
     @Workaround(library="JDK", version="1.7")
@@ -259,9 +259,9 @@ public final class Classes extends Static {
      *
      * <p>Note that interfaces are not included in the returned set.</p>
      *
-     * @param  <T> The base type of elements in the given collection.
-     * @param  objects The collection of objects.
-     * @return The set of classes of all objects in the given collection.
+     * @param  <T>      the base type of elements in the given collection.
+     * @param  objects  the collection of objects.
+     * @return the set of classes of all objects in the given collection.
      */
     private static <T> Set<Class<? extends T>> getClasses(final Iterable<? extends T> objects) {
         final Set<Class<? extends T>> types = new LinkedHashSet<>();
@@ -278,10 +278,10 @@ public final class Classes extends Static {
      * the returned set will contains {@link java.util.List} (which is implemented directly)
      * together with its parent interfaces {@link Collection} and {@link Iterable}.
      *
-     * @param  <T>  The compile-time type of the {@code Class} argument.
-     * @param  type The class or interface for which to get all implemented interfaces.
-     * @return All implemented interfaces (not including the given {@code type} if it was an
-     *         interface), or an empty array if none.
+     * @param  <T>   the compile-time type of the {@code Class} argument.
+     * @param  type  the class or interface for which to get all implemented interfaces.
+     * @return all implemented interfaces (not including the given {@code type} if it was an interface),
+     *         or an empty array if none.
      *
      * @see Class#getInterfaces()
      */
@@ -304,9 +304,9 @@ public final class Classes extends Static {
      *       while they can not cast {@code Set<Class<? super T>>} to {@code Set<Class<?>>}.</li>
      * </ul>
      *
-     * @param  type The class or interface for which to get all implemented interfaces.
-     * @return All implemented interfaces (not including the given {@code type} if it was an
-     *         interface), or {@code null} if none. Callers can freely modify the returned set.
+     * @param  type  the class or interface for which to get all implemented interfaces.
+     * @return all implemented interfaces (not including the given {@code type} if it was an interface),
+     *         or {@code null} if none. Callers can freely modify the returned set.
      */
     static Set<Class<?>> getInterfaceSet(Class<?> type) {
         Set<Class<?>> interfaces = null;
@@ -320,9 +320,9 @@ public final class Classes extends Static {
     /**
      * Adds to the given set every interfaces implemented by the given class or interface.
      *
-     * @param  type  The type for which to add the interfaces in the given set.
-     * @param  addTo The set where to add interfaces, or {@code null} if not yet created.
-     * @return The given set (may be {@code null}), or a new set if the given set was null
+     * @param  type   the type for which to add the interfaces in the given set.
+     * @param  addTo  the set where to add interfaces, or {@code null} if not yet created.
+     * @return the given set (may be {@code null}), or a new set if the given set was null
      *         and at least one interface has been found.
      */
     private static Set<Class<?>> getInterfaceSet(final Class<?> type, Set<Class<?>> addTo) {
@@ -349,10 +349,10 @@ public final class Classes extends Static {
      * {@code getLeafInterfaces(ArrayList.class, Collection.class)} returns an array of length 1
      * containing {@code List.class}.
      *
-     * @param  <T>  The type of the {@code baseInterface} class argument.
-     * @param  type A class for which the implemented interfaces are desired.
-     * @param  baseInterface The base type of the interfaces to search.
-     * @return The leaf interfaces matching the given criterion, or an empty array if none.
+     * @param  <T>   the type of the {@code baseInterface} class argument.
+     * @param  type  a class for which the implemented interfaces are desired, or {@code null}.
+     * @param  baseInterface  the base type of the interfaces to search.
+     * @return the leaf interfaces matching the given criterion, or an empty array if none.
      */
     @SuppressWarnings("unchecked")
     public static <T> Class<? extends T>[] getLeafInterfaces(Class<?> type, final Class<T> baseInterface) {
@@ -398,8 +398,8 @@ next:       for (final Class<?> candidate : candidates) {
      *
      * <p>This method searches for classes only, not interfaces.</p>
      *
-     * @param  objects A collection of objects. May contains duplicated values and null values.
-     * @return The most specialized class, or {@code null} if the given collection does not contain
+     * @param  objects  a collection of objects. May contains duplicated values and null values.
+     * @return the most specialized class, or {@code null} if the given collection does not contain
      *         at least one non-null element.
      */
     public static Class<?> findSpecializedClass(final Iterable<?> objects) {
@@ -427,8 +427,8 @@ next:       for (final Class<?> candidate : candidates) {
      * This method is not public in order to make sure that it contains only classes, not
      * interfaces, since our implementation is not designed for multi-inheritances.
      *
-     * @param  types The collection where to search for a common parent.
-     * @return The common parent, or {@code null} if the given collection is empty.
+     * @param  types  the collection where to search for a common parent.
+     * @return the common parent, or {@code null} if the given collection is empty.
      */
     private static Class<?> common(final Set<Class<?>> types) {
         final Iterator<Class<?>> it = types.iterator();
@@ -450,8 +450,8 @@ next:       for (final Class<?> candidate : candidates) {
      *
      * <p>This method searches for classes only, not interfaces.</p>
      *
-     * @param  objects A collection of objects. May contains duplicated values and null values.
-     * @return The most specific class common to all supplied objects, or {@code null} if the
+     * @param  objects  a collection of objects. May contains duplicated values and null values.
+     * @return the most specific class common to all supplied objects, or {@code null} if the
      *         given collection does not contain at least one non-null element.
      */
     public static Class<?> findCommonClass(final Iterable<?> objects) {
@@ -467,9 +467,9 @@ next:       for (final Class<?> candidate : candidates) {
      *
      * <p>This method considers classes only, not the interfaces.</p>
      *
-     * @param  c1 The first class, or {@code null}.
-     * @param  c2 The second class, or {@code null}.
-     * @return The most specific class common to the supplied classes, or {@code null}
+     * @param  c1  the first class, or {@code null}.
+     * @param  c2  the second class, or {@code null}.
+     * @return the most specific class common to the supplied classes, or {@code null}
      *         if both {@code c1} and {@code c2} are null.
      */
     public static Class<?> findCommonClass(Class<?> c1, Class<?> c2) {
@@ -494,9 +494,9 @@ next:       for (final Class<?> candidate : candidates) {
      * {@link Collection} interface, then the returned set will contains the {@code Collection}
      * type but not the {@link Iterable} type, since it is implied by the collection type.
      *
-     * @param  c1 The first class.
-     * @param  c2 The second class.
-     * @return The interfaces common to both classes, or an empty set if none.
+     * @param  c1  the first class.
+     * @param  c2  the second class.
+     * @return the interfaces common to both classes, or an empty set if none.
      *         Callers can freely modify the returned set.
      */
     public static Set<Class<?>> findCommonInterfaces(final Class<?> c1, final Class<?> c2) {
@@ -534,9 +534,9 @@ next:       for (final Class<?> candidate : candidates) {
      * }
      * </div>
      *
-     * @param object1 The first object to check for interfaces.
-     * @param object2 The second object to check for interfaces.
-     * @param baseInterface The parent of all interfaces to check.
+     * @param object1  the first object to check for interfaces.
+     * @param object2  the second object to check for interfaces.
+     * @param baseInterface  the parent of all interfaces to check.
      * @return {@code true} if both objects implement the same set of interfaces,
      *         considering only sub-interfaces of {@code baseInterface}.
      */
@@ -614,8 +614,8 @@ cmp:    for (final Class<?> c : c1) {
      *   </tr>
      * </table>
      *
-     * @param  classe The object class (may be {@code null}).
-     * @return The simple name with outer class name (if any) of the first non-anonymous
+     * @param  classe  the object class (may be {@code null}).
+     * @return the simple name with outer class name (if any) of the first non-anonymous
      *         class in the hierarchy, or {@code "<*>"} if the given class is null.
      *
      * @see #getShortClassName(Object)
@@ -642,8 +642,8 @@ cmp:    for (final Class<?> c : c1) {
      * {@code null} value. See {@link #getShortName(Class)} for more information on the class name returned by
      * this method.
      *
-     * @param  object The object (may be {@code null}).
-     * @return The simple class name with outer class name (if any) of the first non-anonymous
+     * @param  object  the object (may be {@code null}).
+     * @return the simple class name with outer class name (if any) of the first non-anonymous
      *         class in the hierarchy, or {@code "<*>"} if the given object is null.
      *
      * @see #getShortName(Class)
@@ -666,8 +666,8 @@ cmp:    for (final Class<?> c : c1) {
      *   <li>Any null element in the {@code allowedTypes} array are silently ignored.</li>
      * </ul>
      *
-     * @param  type The type to be tested, or {@code null}.
-     * @param  allowedTypes The allowed types.
+     * @param  type  the type to be tested, or {@code null}.
+     * @param  allowedTypes  the allowed types.
      * @return {@code true} if the given type is assignable to one of the allowed types.
      */
     public static boolean isAssignableToAny(final Class<?> type, final Class<?>... allowedTypes) {
@@ -707,7 +707,7 @@ cmp:    for (final Class<?> c : c1) {
      *
      * <p>Those conditions may be updated in any future SIS version.</p>
      *
-     * @param  method The method to inspect.
+     * @param  method  the method to inspect.
      * @return {@code true} if the given method may possibly be a non-deprecated getter method.
      */
     public static boolean isPossibleGetter(final Method method) {
