@@ -742,7 +742,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             throws InvalidParameterNameException, InvalidParameterValueException
     {
         final Integer ZERO = 0;
-        final Map<String,Integer> occurrences = new HashMap<String,Integer>();
+        final Map<String,Integer> occurrences = new HashMap<>();
         for (final GeneralParameterValue value : values.values()) {
             final String name = value.getDescriptor().getName().getCode();
             final int occurrence = JDK8.getOrDefault(occurrences, name, ZERO);

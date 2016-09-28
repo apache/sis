@@ -65,7 +65,7 @@ public final class Geometries extends Static {
             ymin = envt.getMethod("getMinY", (Class[]) null);
             xmax = envt.getMethod("getMaxX", (Class[]) null);
             ymax = envt.getMethod("getMaxY", (Class[]) null);
-        } catch (Exception e) {     // (ClassNotFoundException | NoSuchMethodException) on the JDK7 branch.
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
             Logging.getLogger(Loggers.GEOMETRY).log(Level.CONFIG, e.toString());
             type = null;
             genv = null;
@@ -125,7 +125,7 @@ public final class Geometries extends Static {
                 ymin = (Double) MIN_Y.invoke(env, (Object[]) null);
                 xmax = (Double) MAX_X.invoke(env, (Object[]) null);
                 ymax = (Double) MAX_Y.invoke(env, (Object[]) null);
-            } catch (Exception e) {                                     // (ReflectiveOperationException) on JDK7 branch.
+            } catch (ReflectiveOperationException e) {
                 if (e instanceof InvocationTargetException) {
                     final Throwable cause = e.getCause();
                     if (cause instanceof RuntimeException) {

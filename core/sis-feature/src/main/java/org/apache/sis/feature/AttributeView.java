@@ -22,7 +22,7 @@ import java.util.Collections;
 import org.opengis.util.GenericName;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -74,9 +74,9 @@ class AttributeView<V> extends AbstractAttribute<V> {
      */
     static <V> AbstractAttribute<V> create(final AbstractFeature feature, final DefaultAttributeType<V> type) {
         if (isSingleton(type.getMaximumOccurs())) {
-            return new Singleton<V>(feature, type);
+            return new Singleton<>(feature, type);
         } else {
-            return new AttributeView<V>(feature, type);
+            return new AttributeView<>(feature, type);
         }
     }
 

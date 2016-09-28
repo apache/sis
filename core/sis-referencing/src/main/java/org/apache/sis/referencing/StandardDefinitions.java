@@ -101,7 +101,7 @@ final class StandardDefinitions {
      * @return The map of properties to give to constructors or factory methods.
      */
     private static Map<String,Object> properties(final int code, final String name, final String alias, final boolean world) {
-        final Map<String,Object> map = new HashMap<String,Object>(8);
+        final Map<String,Object> map = new HashMap<>(8);
         if (code != 0) {
             map.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
         }
@@ -242,7 +242,7 @@ final class StandardDefinitions {
      * If an other prime meridian is desired, the EPSG database shall be used.
      */
     static PrimeMeridian primeMeridian() {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         properties.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, "Greenwich")); // Name is fixed by ISO 19111.
         properties.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, GREENWICH));
         return new DefaultPrimeMeridian(properties, 0, NonSI.DEGREE_ANGLE);

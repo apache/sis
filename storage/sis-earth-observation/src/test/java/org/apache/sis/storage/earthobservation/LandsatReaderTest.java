@@ -53,12 +53,10 @@ public class LandsatReaderTest extends TestCase {
     @Test
     public void testRead() throws IOException, DataStoreException {
         final Metadata actual;
-        final BufferedReader in = new BufferedReader(new InputStreamReader(
-                LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8"));
-        try {
-            actual = new LandsatReader(in, new EmptyWarningListeners<LandsatReader>(Locale.US, Modules.EARTH_OBSERVATION)).read();
-        } finally {
-            in.close();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(
+                LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
+        {
+            actual = new LandsatReader(in, new EmptyWarningListeners<>(Locale.US, Modules.EARTH_OBSERVATION)).read();
         }
         final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
         assertMultilinesEquals(

@@ -47,7 +47,7 @@ public final class CodeColorizer {
     /**
      * Lists of Java keywords.
      */
-    public static final Set<String> JAVA_KEYWORDS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+    public static final Set<String> JAVA_KEYWORDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
         "abstract", "continue", "for",        "new",        "switch",
         "assert",   "default",  "goto",       "package",    "synchronized",
         "boolean",  "do",       "if",         "private",    "this",
@@ -106,23 +106,20 @@ public final class CodeColorizer {
      */
     public CodeColorizer(final Document document) throws IOException, BookException {
         this.document = document;
-        identifierSpecifiers = new HashMap<String,Specifier>(1000);
+        identifierSpecifiers = new HashMap<>(1000);
         for (final Specifier specifier : Specifier.values()) {
             final String filename = specifier.name() + ".lst";
             final InputStream in = CodeColorizer.class.getResourceAsStream(filename);
             if (in == null) {
                 throw new FileNotFoundException(filename);
             }
-            final BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-            try {
+            try (final BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
                 String line;
                 while ((line = r.readLine()) != null) {
                     if (identifierSpecifiers.put(line, specifier) != null) {
                         throw new BookException(line + " is defined twice in " + specifier);
                     }
                 }
-            } finally {
-                r.close();
             }
         }
     }

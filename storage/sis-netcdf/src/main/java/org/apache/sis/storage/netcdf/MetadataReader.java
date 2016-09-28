@@ -280,7 +280,7 @@ final class MetadataReader {
     private static <T> Set<T> addIfNonNull(Set<T> collection, final T element) {
         if (element != null) {
             if (collection == null) {
-                collection = new LinkedHashSet<T>(4);
+                collection = new LinkedHashSet<>(4);
             }
             collection.add(element);
         }
@@ -616,7 +616,7 @@ final class MetadataReader {
         final String list = stringValue(standard ? STANDARD_NAME : KEYWORDS);
         DefaultKeywords keywords = null;
         if (list != null) {
-            final Set<InternationalString> words = new LinkedHashSet<InternationalString>();
+            final Set<InternationalString> words = new LinkedHashSet<>();
             for (String keyword : list.split(KEYWORD_SEPARATOR)) {
                 keyword = keyword.trim();
                 if (!keyword.isEmpty()) {
@@ -788,8 +788,7 @@ final class MetadataReader {
      * @throws IOException If an I/O operation was necessary but failed.
      */
     private Collection<DefaultCoverageDescription> createContentInfo() throws IOException {
-        final Map<List<String>, DefaultCoverageDescription> contents =
-                new HashMap<List<String>, DefaultCoverageDescription>(4);
+        final Map<List<String>, DefaultCoverageDescription> contents = new HashMap<>(4);
         final String processingLevel = stringValue(PROCESSING_LEVEL);
         for (final Variable variable : decoder.getVariables()) {
             if (!variable.isCoverage(2)) {

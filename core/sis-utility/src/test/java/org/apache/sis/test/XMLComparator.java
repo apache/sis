@@ -49,9 +49,6 @@ import static org.opengis.test.Assert.*;
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Compares the XML document produced by a test method with the expected XML document.
@@ -87,7 +84,7 @@ public strictfp class XMLComparator {
      *
      * @see #substitutePrefix(String)
      */
-    private static final Map<String, String> PREFIX_URL = new HashMap<String, String>(16);
+    private static final Map<String, String> PREFIX_URL = new HashMap<>(16);
     static {
         final Map<String,String> map = PREFIX_URL;
         map.put("xmlns", "http://www.w3.org/2000/xmlns"); // No trailing slash.
@@ -209,11 +206,8 @@ public strictfp class XMLComparator {
             expectedDoc = (Node) expected;
         } else {
             builder = newDocumentBuilder();
-            final InputStream stream = toInputStream(expected);
-            try {
+            try (InputStream stream = toInputStream(expected)) {
                 expectedDoc = builder.parse(stream);
-            } finally {
-                stream.close();
             }
         }
         if (actual instanceof Node) {
@@ -222,15 +216,12 @@ public strictfp class XMLComparator {
             if (builder == null) {
                 builder = newDocumentBuilder();
             }
-            final InputStream stream = toInputStream(actual);
-            try {
+            try (InputStream stream = toInputStream(actual)) {
                 actualDoc = builder.parse(stream);
-            } finally {
-                stream.close();
             }
         }
-        ignoredAttributes = new HashSet<String>();
-        ignoredNodes      = new HashSet<String>();
+        ignoredAttributes = new HashSet<>();
+        ignoredNodes      = new HashSet<>();
     }
 
     /**
@@ -640,7 +631,7 @@ public strictfp class XMLComparator {
             if (abs(doubleValue(expected) - doubleValue(actual)) <= tolerance) {
                 return;
             }
-            final String lineSeparator = JDK7.lineSeparator();
+            final String lineSeparator = System.lineSeparator();
             final StringBuilder buffer = new StringBuilder(1024).append("Expected ")
                     .append(propertyName).append(" \"")
                     .append(expected).append("\" but got \"")
@@ -664,7 +655,6 @@ public strictfp class XMLComparator {
      * returns {@code NaN}. This is used only if a {@linkplain #tolerance} threshold greater
      * than zero has been provided.
      */
-    @SuppressWarnings("unchecked")
     private static double doubleValue(final Comparable<?> property) {
         if (property instanceof Number) {
             return ((Number) property).doubleValue();
@@ -686,7 +676,7 @@ public strictfp class XMLComparator {
      * @return         An error message containing the expected and actual node.
      */
     protected String formatErrorMessage(final Node expected, final Node result) {
-        final String lineSeparator = JDK7.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final StringBuilder buffer = new StringBuilder(256).append("Nodes are not equal:").append(lineSeparator);
         formatErrorMessage(buffer, expected, result, lineSeparator);
         return buffer.toString();
@@ -723,7 +713,7 @@ public strictfp class XMLComparator {
     private static List<String> formatHierarchy(final StringBuilder buffer, Node node,
             final List<String> expected, final String lineSeparator)
     {
-        final List<String> hierarchy = new ArrayList<String>();
+        final List<String> hierarchy = new ArrayList<>();
         while (node != null) {
             hierarchy.add(node.getNodeName());
             if (node instanceof Attr) {

@@ -218,7 +218,7 @@ public class DefaultAssociationRole extends FieldType {
                      * this desired feature in an association of the 'creating' feature, instead than beeing
                      * the 'creating' feature itself. This is a little bit unusual, but not illegal.
                      */
-                    final List<DefaultFeatureType> deferred = new ArrayList<DefaultFeatureType>();
+                    final List<DefaultFeatureType> deferred = new ArrayList<>();
                     resolved = search(creating, name, deferred);
                     if (resolved == null) {
                         /*
@@ -306,7 +306,7 @@ public class DefaultAssociationRole extends FieldType {
      * @return the feature of the given name, or {@code null} if none.
      */
     private static DefaultFeatureType deepSearch(final List<DefaultFeatureType> deferred, final GenericName name) {
-        final Map<FeatureType,Boolean> done = new IdentityHashMap<FeatureType,Boolean>(8);
+        final Map<FeatureType,Boolean> done = new IdentityHashMap<>(8);
         for (int i=0; i<deferred.size();) {
             DefaultFeatureType valueType = deferred.get(i++);
             if (done.put(valueType, Boolean.TRUE) == null) {

@@ -19,8 +19,8 @@ package org.apache.sis.test;
 import org.apache.sis.internal.system.DataDirectory;
 
 // Branch-specific imports
-import org.apache.sis.internal.jdk7.Path;
-import org.apache.sis.internal.jdk7.Files;
+import java.nio.file.Path;
+import java.nio.file.Files;
 
 
 /**

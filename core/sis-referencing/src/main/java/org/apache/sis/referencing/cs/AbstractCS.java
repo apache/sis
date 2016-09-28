@@ -332,7 +332,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     public synchronized AbstractCS forConvention(final AxesConvention convention) {
         ensureNonNull("convention", convention);
         if (derived == null) {
-            derived = new EnumMap<AxesConvention,AbstractCS>(AxesConvention.class);
+            derived = new EnumMap<>(AxesConvention.class);
         }
         AbstractCS cs = derived.get(convention);
         if (cs == null) {

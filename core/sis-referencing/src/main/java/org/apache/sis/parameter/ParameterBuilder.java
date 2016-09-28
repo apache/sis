@@ -268,7 +268,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
         } else if (Number.class.isAssignableFrom(valueClass)) {
             valueDomain = new NumberRange((Class) valueClass, (Number) minimumValue, true, (Number) maximumValue, true);
         } else {
-            valueDomain = new Range<T>(valueClass, minimumValue, true, maximumValue, true);
+            valueDomain = new Range<>(valueClass, minimumValue, true, maximumValue, true);
         }
         return create(valueClass, valueDomain, null, defaultValue);
     }
@@ -319,7 +319,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
         final ParameterDescriptor<T> descriptor;
         onCreate(false);
         try {
-            descriptor = new DefaultParameterDescriptor<T>(properties, required ? 1 : 0, 1,
+            descriptor = new DefaultParameterDescriptor<>(properties, required ? 1 : 0, 1,
                     valueClass, valueDomain, validValues, defaultValue);
         } finally {
             onCreate(true);

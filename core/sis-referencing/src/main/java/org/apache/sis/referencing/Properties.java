@@ -79,7 +79,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
      * The mapping from key names to the index expected by the {@link #getAt(IdentifiedObject, int)} method.
      * This map shall not be modified after construction (for multi-thread safety without synchronization).
      */
-    private static final Map<String,Integer> INDICES = new HashMap<String,Integer>(16);
+    private static final Map<String,Integer> INDICES = new HashMap<>(16);
     static {
         for (int i=0; i<KEYS.length; i++) {
             if (INDICES.put(KEYS[i], i) != null) {

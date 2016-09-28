@@ -59,10 +59,10 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      * plus the EPSG factory.
      */
     static final MultiAuthoritiesFactory ALL = new MultiAuthoritiesFactory(
-            new AuthorityFactories<CRSAuthorityFactory>(CRSAuthorityFactory.class),
-            new AuthorityFactories<CSAuthorityFactory>(CSAuthorityFactory.class),
-            new AuthorityFactories<DatumAuthorityFactory>(DatumAuthorityFactory.class),
-            new AuthorityFactories<CoordinateOperationAuthorityFactory>(CoordinateOperationAuthorityFactory.class))
+            new AuthorityFactories<>(CRSAuthorityFactory.class),
+            new AuthorityFactories<>(CSAuthorityFactory.class),
+            new AuthorityFactories<>(DatumAuthorityFactory.class),
+            new AuthorityFactories<>(CoordinateOperationAuthorityFactory.class))
     {
         /** Anonymous constructor */ {
             setLenient(true);

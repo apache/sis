@@ -29,9 +29,6 @@ import org.apache.sis.internal.util.X364;
 
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
-// Related to JK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * An {@link Appendable} which formats the text as a table suitable for displaying in devices using
@@ -144,7 +141,7 @@ public class TableAppender extends Appender implements Flushable {
      * <code>{@linkplain Cell#text} == null</code> means that we need to move
      * to the next line.
      */
-    private final List<Cell> cells = new ArrayList<Cell>();
+    private final List<Cell> cells = new ArrayList<>();
 
     /**
      * Alignment for current and next cells.
@@ -800,7 +797,7 @@ public class TableAppender extends Appender implements Flushable {
                     out.append(isLastColumn ? rightBorder : columnSeparator);
                 }
                 if (lineSeparator == null) {
-                    lineSeparator = JDK7.lineSeparator();
+                    lineSeparator = System.lineSeparator();
                 }
                 out.append(lineSeparator);
             }

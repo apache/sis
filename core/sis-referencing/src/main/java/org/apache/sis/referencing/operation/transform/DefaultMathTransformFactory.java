@@ -304,11 +304,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     public DefaultMathTransformFactory(final Iterable<? extends OperationMethod> methods) {
         ArgumentChecks.ensureNonNull("methods", methods);
         this.methods  = methods;
-        methodsByName = new ConcurrentHashMap<String, OperationMethod>();
-        methodsByType = new IdentityHashMap<Class<?>, OperationMethodSet>();
-        lastMethod    = new ThreadLocal<OperationMethod>();
-        pool          = new WeakHashSet<MathTransform>(MathTransform.class);
-        parser        = new AtomicReference<Parser>();
+        methodsByName = new ConcurrentHashMap<>();
+        methodsByType = new IdentityHashMap<>();
+        lastMethod    = new ThreadLocal<>();
+        pool          = new WeakHashSet<>(MathTransform.class);
+        parser        = new AtomicReference<>();
     }
 
     /**
@@ -662,9 +662,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 } else {
                     return CoordinateSystems.swapAndScaleAxes(specified, normalized);
                 }
-            } catch (IllegalArgumentException cause) {
-                throw new InvalidGeodeticParameterException(cause.getLocalizedMessage(), cause);
-            } catch (ConversionException cause) {
+            } catch (IllegalArgumentException | ConversionException cause) {
                 throw new InvalidGeodeticParameterException(cause.getLocalizedMessage(), cause);
             }
         }
@@ -798,7 +796,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                         mismatchedParam = bp;
                         mismatchedValue = b;
                     }
-                } catch (RuntimeException e) {  // (IllegalArgumentException | IllegalStateException) on the JDK7 branch.
+                } catch (IllegalArgumentException | IllegalStateException e) {
                     /*
                      * Parameter not found, or is not numeric, or unit of measurement is not linear.
                      * Do not touch to the parameters. We will see if createParameterizedTransform(…)
@@ -808,7 +806,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     if (failure == null) {
                         failure = e;
                     } else {
-                        // failure.addSuppressed(e) on the JDK7 branch.
+                        failure.addSuppressed(e);
                     }
                 }
                 final boolean isIvfDefinitive;
@@ -915,7 +913,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                         if (p.getValue() == null) {
                             p.setValue(sourceCS.getDimension());
                         }
-                    } catch (RuntimeException e) {  // (IllegalArgumentException | IllegalStateException e) on the JDK7 branch.
+                    } catch (IllegalArgumentException | IllegalStateException e) {
                         failure = e;
                     }
                     failure = setEllipsoid(getSourceEllipsoid(), "src_semi_major", "src_semi_minor", false, failure);
@@ -1008,8 +1006,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 method = getOperationMethod(methodName);
                 Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
                         DefaultMathTransformFactory.class, "createParameterizedTransform", exception);
-            } catch (IllegalStateException e) {
-                failure = e;
             }
             if (!(method instanceof MathTransformProvider)) {
                 throw new NoSuchIdentifierException(Errors.format(          // For now, handle like an unknown operation.
@@ -1031,7 +1027,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     method     = context.provider;
                 }
                 transform = ((MathTransformProvider) method).createMathTransform(this, parameters);
-            } catch (RuntimeException exception) {  // (IllegalArgumentException | IllegalStateException) on the JDK7 branch.
+            } catch (IllegalArgumentException | IllegalStateException exception) {
                 throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
             }
             /*
@@ -1047,7 +1043,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             }
         } catch (FactoryException e) {
             if (failure != null) {
-                // e.addSuppressed(failure) on the JDK7 branch.
+                e.addSuppressed(failure);
             }
             throw e;
         } finally {
@@ -1344,7 +1340,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 parserConstructor = c;
             }
             p = c.newInstance(this);
-        } catch (Exception e) {                     // (ReflectiveOperationException) on JDK7 branch.
+        } catch (ReflectiveOperationException e) {
             throw new FactoryException(e);
         }
         /*

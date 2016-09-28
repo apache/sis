@@ -24,8 +24,8 @@ import org.apache.sis.internal.system.DataDirectory;
 import static org.junit.Assume.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Files;
-import org.apache.sis.internal.jdk7.Path;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 
 /**

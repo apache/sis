@@ -30,7 +30,7 @@ import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.CheckedArrayList;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -207,7 +207,6 @@ public abstract class AbstractFeature implements Serializable {
      * @param  value  the value to wrap.
      * @return A {@code Property} wrapping the given value.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
     final Property createProperty(final String name, final Object value) {
         final AbstractIdentifiedType pt = type.getProperty(name);
         if (pt instanceof DefaultAttributeType<?>) {
@@ -606,7 +605,7 @@ public abstract class AbstractFeature implements Serializable {
      */
     @SuppressWarnings("unchecked")
     private static <V> Collection<V> singletonList(final Class<V> valueClass, final int minimumOccurs, final Object value) {
-        final CheckedArrayList<V> values = new CheckedArrayList<V>(valueClass, Math.max(minimumOccurs, 4));
+        final CheckedArrayList<V> values = new CheckedArrayList<>(valueClass, Math.max(minimumOccurs, 4));
         values.add((V) value); // Type will be checked by CheckedArrayList.
         return values;
     }

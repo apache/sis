@@ -24,7 +24,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.xml.XLink;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

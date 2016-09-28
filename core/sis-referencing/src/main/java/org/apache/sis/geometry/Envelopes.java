@@ -628,7 +628,7 @@ public final class Envelopes extends Static {
                     if (warning == null) {
                         warning = exception;
                     } else {
-                        // warning.addSuppressed(exception) on the JDK7 branch.
+                        warning.addSuppressed(exception);
                     }
                     continue;
                 }
@@ -706,7 +706,7 @@ public final class Envelopes extends Static {
                             if (warning == null) {
                                 warning = exception;
                             } else {
-                                // warning.addSuppressed(exception) on the JDK7 branch.
+                                warning.addSuppressed(exception);
                             }
                             continue;
                         }

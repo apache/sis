@@ -46,16 +46,13 @@ import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.ChannelImageInputStream;
 import org.apache.sis.setup.OptionKey;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Information for creating a connection to a {@link DataStore} in read and/or write mode.
  * {@code StorageConnector} wraps an input {@link Object}, which can be any of the following types:
  *
  * <ul>
- *   <li>A {@link java.io.File} for a file or a directory.</li>
+ *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} for a file or a directory.</li>
  *   <li>A {@link java.net.URI} or a {@link java.net.URL} to a distant resource.</li>
  *   <li>A {@link CharSequence} interpreted as a filename or a URL.</li>
  *   <li>A {@link java.nio.channels.Channel}, {@link DataInput}, {@link InputStream} or {@link Reader}.</li>
@@ -228,8 +225,8 @@ public class StorageConnector implements Serializable {
      * the following choices based on the type of the {@linkplain #getStorage() storage} object:
      *
      * <ul>
-     *   <li>For {@link java.io.File}, {@link java.net.URI} or {@link java.net.URL}
-     *       instances, this method uses dedicated API.</li>
+     *   <li>For {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URI} or {@link java.net.URL}
+     *       instances, this method uses dedicated API like {@link java.nio.file.Path#getFileName()}.</li>
      *   <li>For {@link CharSequence} instances, this method gets a string representation of the storage object
      *       and returns the part after the last {@code '/'} character or platform-dependent name separator.</li>
      *   <li>For instances of unknown type, this method builds a string representation using the class name.
@@ -253,7 +250,7 @@ public class StorageConnector implements Serializable {
      * the following choices based on the type of the {@linkplain #getStorage() storage} object:
      *
      * <ul>
-     *   <li>For {@link java.io.File}, {@link java.net.URI}, {@link java.net.URL} or
+     *   <li>For {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URI}, {@link java.net.URL} or
      *       {@link CharSequence} instances, this method returns the string after the last {@code '.'} character
      *       in the filename, provided that the {@code '.'} is not the first filename character. This may be an
      *       empty string if the filename has no extension, but never {@code null}.</li>
@@ -277,7 +274,7 @@ public class StorageConnector implements Serializable {
      * <ul>
      *   <li>{@link String}:
      *     <ul>
-     *       <li>If the {@linkplain #getStorage() storage} object is an instance of the
+     *       <li>If the {@linkplain #getStorage() storage} object is an instance of the {@link java.nio.file.Path},
      *           {@link java.io.File}, {@link java.net.URL}, {@link java.net.URI} or {@link CharSequence} types,
      *           returns the string representation of their path.</li>
      *
@@ -298,7 +295,7 @@ public class StorageConnector implements Serializable {
      *           (including the {@link ImageInputStream} and {@link javax.imageio.stream.ImageOutputStream} types),
      *           then it is returned unchanged.</li>
      *
-     *       <li>Otherwise if the input is an instance of {@link java.io.File},
+     *       <li>Otherwise if the input is an instance of {@link java.nio.file.Path}, {@link java.io.File},
      *           {@link java.net.URI}, {@link java.net.URL}, {@link CharSequence}, {@link InputStream} or
      *           {@link java.nio.channels.ReadableByteChannel}, then an {@link ImageInputStream} backed by a
      *           {@link ByteBuffer} is created when first needed and returned.</li>
@@ -381,7 +378,7 @@ public class StorageConnector implements Serializable {
                 return (view != Void.TYPE) ? type.cast(view) : null;
             }
         } else {
-            views = new IdentityHashMap<Class<?>, Object>();
+            views = new IdentityHashMap<>();
         }
         /*
          * Special case for DataInput and ByteBuffer, because those values are created together.
@@ -715,7 +712,7 @@ public class StorageConnector implements Serializable {
      */
     private void addViewToClose(final Object input, final Object delegate) {
         if (viewsToClose == null) {
-            viewsToClose = new IdentityHashMap<Object,Object>(4);
+            viewsToClose = new IdentityHashMap<>(4);
         }
         if (viewsToClose.put(input, delegate) != null) {
             throw new AssertionError(input);
@@ -745,8 +742,8 @@ public class StorageConnector implements Serializable {
         viewsToClose = Collections.emptyMap();
         views        = Collections.emptyMap();
         if (toClose == null) {
-            if (storage != view && JDK7.isAutoCloseable(storage)) try {
-                JDK7.close(storage);
+            if (storage != view && storage instanceof AutoCloseable) try {
+                ((AutoCloseable) storage).close();
             } catch (Exception e) {
                 throw new DataStoreException(e);
             }
@@ -774,7 +771,7 @@ public class StorageConnector implements Serializable {
              * Those wrappers shall not be closed. For example if the caller does not want to close the
              * InputStream view, then we shall not close the InputStreamReader wrapper neither.
              */
-            final Queue<Object> deferred = new LinkedList<Object>();
+            final Queue<Object> deferred = new LinkedList<>();
             Object doNotClose = view;
             do {
                 final Iterator<Map.Entry<Object,Object>> it = toClose.entrySet().iterator();
@@ -809,13 +806,13 @@ public class StorageConnector implements Serializable {
          */
         DataStoreException failure = null;
         for (final Object c : toClose.keySet()) {
-            if (JDK7.isAutoCloseable(c)) try {
-                JDK7.close(c);
+            if (c instanceof AutoCloseable) try {
+                ((AutoCloseable) c).close();
             } catch (Exception e) {
                 if (failure == null) {
                     failure = new DataStoreException(e);
                 } else {
-                    // failure.addSuppressed(e) on the JDK7 branch.
+                    failure.addSuppressed(e);
                 }
             }
         }

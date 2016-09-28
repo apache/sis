@@ -59,7 +59,7 @@ public class ObjectFactory {
      */
     @XmlElementDecl(name = "AbstractObject", namespace = Namespaces.GML)
     public JAXBElement<Object> createObject(final Object value) {
-        return new JAXBElement<Object>(AbstractObject_QNAME, Object.class, null, value);
+        return new JAXBElement<>(AbstractObject_QNAME, Object.class, null, value);
     }
 
     /**
@@ -77,7 +77,7 @@ public class ObjectFactory {
             substitutionHeadName = "AbstractObject",
             substitutionHeadNamespace = Namespaces.GML) // Not necessary according javadoc, but appears to be in practice (JAXB 2.1 bug?)
     public JAXBElement<Object> createAbstractGML(final Object value) {
-        return new JAXBElement<Object>(AbstractGML_QNAME, Object.class, null, value);
+        return new JAXBElement<>(AbstractGML_QNAME, Object.class, null, value);
     }
 
     /**
@@ -95,6 +95,6 @@ public class ObjectFactory {
             substitutionHeadName = "AbstractGML",
             substitutionHeadNamespace = Namespaces.GML) // Not necessary according javadoc, but appears to be in practice (JAXB 2.1 bug?)
     public JAXBElement<Object> createAbstractGeometry(final Object value) {
-        return new JAXBElement<Object>(AbstractGeometry_QNAME, Object.class, null, value);
+        return new JAXBElement<>(AbstractGeometry_QNAME, Object.class, null, value);
     }
 }

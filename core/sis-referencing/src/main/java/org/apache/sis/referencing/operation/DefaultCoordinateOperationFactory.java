@@ -159,7 +159,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         } else {
             String key   = null;
             Object value = null;
-            properties   = new HashMap<String,Object>(properties);
+            properties   = new HashMap<>(properties);
             /*
              * Following use of properties is an undocumented feature for now. Current version documents only
              * MathTransformFactory because math transforms are intimately related to coordinate operations.
@@ -178,8 +178,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         if (factory != null) {
             mtFactory = factory;
         }
-        pool = new WeakHashSet<IdentifiedObject>(IdentifiedObject.class);
-        cache = new Cache<CRSPair,CoordinateOperation>(12, 50, true);
+        pool = new WeakHashSet<>(IdentifiedObject.class);
+        cache = new Cache<>(12, 50, true);
     }
 
     /**

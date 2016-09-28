@@ -569,7 +569,7 @@ abstract class AuthorityFactoryProxy<T> {
      */
     private static final Map<String, AuthorityFactoryProxy<?>> BY_URN_TYPE;
     static {
-        final Map<String, AuthorityFactoryProxy<?>> map = new HashMap<String, AuthorityFactoryProxy<?>>(14);
+        final Map<String, AuthorityFactoryProxy<?>> map = new HashMap<>(14);
         map.put("crs",                  CRS);
         map.put("datum",                DATUM);
         map.put("ellipsoid",            ELLIPSOID);

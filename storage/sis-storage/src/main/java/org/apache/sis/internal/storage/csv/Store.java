@@ -62,6 +62,7 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.internal.jdk8.Instant;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
+import org.apache.sis.internal.jdk8.DateTimeException;
 import org.apache.sis.setup.OptionKey;
 
 
@@ -188,7 +189,7 @@ public final class Store extends DataStore {
         DefaultFeatureType featureType = null;
         Foliation foliation = null;
         try {
-            final List<String> elements = new ArrayList<String>();
+            final List<String> elements = new ArrayList<>();
             source.mark(1024);
             String line;
             while ((line = source.readLine()) != null) {
@@ -199,15 +200,15 @@ public final class Store extends DataStore {
                 if (c != METADATA) break;
                 split(line, elements);
                 final String keyword = elements.get(0);
-                /*switch (k)*/ {
-                    final String k = keyword.toLowerCase(Locale.US);
-                    if (k.equals("@stboundedby")) {
+                switch (keyword.toLowerCase(Locale.US)) {
+                    case "@stboundedby": {
                         if (envelope != null) {
                             throw new DataStoreContentException(duplicated("@stboundedby"));
                         }
                         envelope = parseEnvelope(elements);
+                        break;
                     }
-                    else if (k.equals("@columns")) {
+                    case "@columns": {
                         if (featureType != null) {
                             throw new DataStoreContentException(duplicated("@columns"));
                         }
@@ -215,32 +216,35 @@ public final class Store extends DataStore {
                         if (foliation == null) {
                             foliation = Foliation.TIME;
                         }
+                        break;
                     }
-                    else if (k.equals("@foliation")) {
+                    case "@foliation": {
                         if (foliation != null) {
                             throw new DataStoreContentException(duplicated("@foliation"));
                         }
                         foliation = parseFoliation(elements);
+                        break;
                     }
-                    else {
+                    default: {
                         final LogRecord record = errors().getLogRecord(Level.WARNING, Errors.Keys.UnknownKeyword_1, keyword);
                         record.setSourceClassName(Store.class.getName());
                         record.setSourceMethodName("parseHeader");
                         listeners.warning(record);
+                        break;
                     }
                 }
                 elements.clear();
                 source.mark(1024);
             }
             source.reset();
-        } catch (Exception e) {     // This is a multi-catch on the JDK7 branch.
+        } catch (IOException | FactoryException | IllegalArgumentException | DateTimeException e) {
             throw new DataStoreException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", name), e);
         }
         this.encoding    = connector.getOption(OptionKey.ENCODING);
         this.envelope    = envelope;
         this.featureType = featureType;
         this.foliation   = foliation;
-        this.features    = new ArrayList<AbstractFeature>();
+        this.features    = new ArrayList<>();
     }
 
     /**
@@ -268,21 +272,15 @@ public final class Store extends DataStore {
         GeneralEnvelope envelope      = null;
         switch (elements.size()) {
             default:final String unit = elements.get(7);
-                    /*switch (k)*/ {
-                        final String k = unit.toLowerCase(Locale.US);
-                        if (k.isEmpty() || k.equals("sec") || k.equals("second")) {
-                            /* Already SI.SECOND. */
-                        } else if (k.equals("minute")) {
-                            timeUnit = NonSI.MINUTE;
-                        } else if (k.equals("hour")) {
-                            timeUnit = NonSI.HOUR;
-                        } else if (k.equals("day")) {
-                            timeUnit = NonSI.DAY;
-                        } else if (k.equals("absolute")) {
-                            isTimeAbsolute = true;
-                        } else {
-                            throw new DataStoreContentException(errors().getString(Errors.Keys.UnknownUnit_1, unit));
-                        }
+                    switch (unit.toLowerCase(Locale.US)) {
+                        case "":
+                        case "sec":
+                        case "second":   /* Already SI.SECOND. */ break;
+                        case "minute":   timeUnit = NonSI.MINUTE; break;
+                        case "hour":     timeUnit = NonSI.HOUR;   break;
+                        case "day":      timeUnit = NonSI.DAY;    break;
+                        case "absolute": isTimeAbsolute = true;   break;
+                        default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnknownUnit_1, unit));
                     }
                     // Fall through
             case 7: endTime     = Instant      .parse(       elements.get(6));
@@ -290,16 +288,12 @@ public final class Store extends DataStore {
             case 5: upperCorner = CharSequences.parseDoubles(elements.get(4), ORDINATE_SEPARATOR);
             case 4: lowerCorner = CharSequences.parseDoubles(elements.get(3), ORDINATE_SEPARATOR);
             case 3: final String dimension = elements.get(2);
-                    /* switch (k)*/ {
-                        final String k = dimension.toUpperCase(Locale.US);
-                        if (k.isEmpty() || k.equals("2D")) {
-                            // Default to 2D.
-                        } else if (k.equals("3D")) {
-                            is3D = true;
-                        } else {
-                            throw new DataStoreContentException(errors().getString(
+                    switch (dimension.toUpperCase(Locale.US)) {
+                        case "":   // Default to 2D.
+                        case "2D": break;
+                        case "3D": is3D = true; break;
+                        default: throw new DataStoreContentException(errors().getString(
                                         Errors.Keys.IllegalCoordinateSystem_1, dimension));
-                        }
                     }
                     // Fall through
             case 2: crs = CRS.forCode(elements.get(1));
@@ -378,7 +372,7 @@ public final class Store extends DataStore {
      */
     private DefaultFeatureType parseFeatureType(final List<String> elements) throws DataStoreException {
         final int size = elements.size();
-        final List<AbstractIdentifiedType> properties = new ArrayList<AbstractIdentifiedType>();
+        final List<AbstractIdentifiedType> properties = new ArrayList<>();
         for (int i=1; i<size; i++) {
             final String name = elements.get(i);
             Class<?> type = null;
@@ -386,22 +380,14 @@ public final class Store extends DataStore {
                 String tn = elements.get(i);
                 if (!tn.isEmpty() && tn.regionMatches(true, 0, TYPE_PREFIX, 0, TYPE_PREFIX.length())) {
                     String st = tn.substring(TYPE_PREFIX.length()).toLowerCase(Locale.US);
-                    /*switch (st)*/ {
-                        if (st.equals("boolean")) {
-                            type = Boolean.class;
-                        } else if (st.equals("decimal")) {
-                            type = Double.class;
-                        } else if (st.equals("integer")) {
-                            type = Integer.class;
-                        } else if (st.equals("string")) {
-                            type = String.class;
-                        } else if (st.equals("datetime")) {
-                            type = Instant.class;
-                        } else if (st.equals("anyuri")) {
-                            type = URI.class;
-                        } else {
-                            throw new DataStoreContentException(errors().getString(Errors.Keys.UnknownType_1, tn));
-                        }
+                    switch (st) {
+                        case "boolean":  type = Boolean.class; break;
+                        case "decimal":  type = Double .class; break;
+                        case "integer":  type = Integer.class; break;
+                        case "string":   type = String .class; break;
+                        case "datetime": type = Instant.class; break;
+                        case "anyuri":   type = URI    .class; break;
+                        default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnknownType_1, tn));
                     }
                 }
             }
@@ -445,7 +431,7 @@ public final class Store extends DataStore {
      * Creates a property type for the given name and type.
      */
     private static AbstractIdentifiedType createProperty(final String name, final Class<?> type, final int minOccurrence) {
-        return new DefaultAttributeType(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name), type, minOccurrence, 1, null);
+        return new DefaultAttributeType<>(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name), type, minOccurrence, 1, null);
     }
 
     /**
@@ -505,7 +491,7 @@ public final class Store extends DataStore {
             final String[]     propertyNames   = new String[converters.length];
             final boolean      hasTrajectories = this.hasTrajectories;
             final TimeEncoding timeEncoding    = this.timeEncoding;
-            final List<String> values          = new ArrayList<String>();
+            final List<String> values          = new ArrayList<>();
             int i = -1;
             for (final AbstractIdentifiedType p : properties) {
                 propertyNames[++i] = p.getName().tip().toString();
@@ -580,7 +566,7 @@ public final class Store extends DataStore {
                 }
                 values.clear();
             }
-        } catch (Exception e) {     // Multi-catch on the JDK7 branch.
+        } catch (IOException | IllegalArgumentException | DateTimeException e) {
             throw new DataStoreException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", name), e);
         }
         return features.iterator();

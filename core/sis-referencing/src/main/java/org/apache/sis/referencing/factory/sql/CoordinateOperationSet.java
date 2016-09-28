@@ -49,7 +49,7 @@ final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperati
      */
     CoordinateOperationSet(final AuthorityFactory factory) {
         super(factory, CoordinateOperation.class);
-        projections = new HashMap<String,Integer>();
+        projections = new HashMap<>();
     }
 
     /**

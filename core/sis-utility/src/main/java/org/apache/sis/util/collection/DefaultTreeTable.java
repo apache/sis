@@ -33,7 +33,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -157,7 +157,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         switch (columns.length) {
             case 0:  map = Collections.emptyMap(); break;
             case 1:  map = null; break; // Will be created inside the loop (common case).
-            default: map = new LinkedHashMap<TableColumn<?>,Integer>(hashMapCapacity(columns.length)); break;
+            default: map = new LinkedHashMap<>(hashMapCapacity(columns.length)); break;
         }
         for (int i=0; i<columns.length; i++) {
             final TableColumn<?> column = columns[i];

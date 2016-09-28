@@ -98,7 +98,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * The pool of ranges created by the {@code create(…)} methods.
      */
     @SuppressWarnings("unchecked")
-    private static final WeakHashSet<NumberRange<?>> POOL = new WeakHashSet<NumberRange<?>>((Class) NumberRange.class);
+    private static final WeakHashSet<NumberRange<?>> POOL = new WeakHashSet<>((Class) NumberRange.class);
 
     /**
      * Returns a unique instance of the given range, except if the range is empty.
@@ -129,7 +129,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Byte> create(final byte minValue, final boolean isMinIncluded,
                                            final byte maxValue, final boolean isMaxIncluded)
     {
-        return unique(new NumberRange<Byte>(Byte.class,
+        return unique(new NumberRange<>(Byte.class,
                 Byte.valueOf(minValue), isMinIncluded,
                 Byte.valueOf(maxValue), isMaxIncluded));
     }
@@ -147,7 +147,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Short> create(final short minValue, final boolean isMinIncluded,
                                             final short maxValue, final boolean isMaxIncluded)
     {
-        return unique(new NumberRange<Short>(Short.class,
+        return unique(new NumberRange<>(Short.class,
                 Short.valueOf(minValue), isMinIncluded,
                 Short.valueOf(maxValue), isMaxIncluded));
     }
@@ -167,7 +167,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Integer> create(final int minValue, final boolean isMinIncluded,
                                               final int maxValue, final boolean isMaxIncluded)
     {
-        return unique(new NumberRange<Integer>(Integer.class,
+        return unique(new NumberRange<>(Integer.class,
                 Integer.valueOf(minValue), isMinIncluded,
                 Integer.valueOf(maxValue), isMaxIncluded));
     }
@@ -185,7 +185,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Long> create(final long minValue, final boolean isMinIncluded,
                                            final long maxValue, final boolean isMaxIncluded)
     {
-        return unique(new NumberRange<Long>(Long.class,
+        return unique(new NumberRange<>(Long.class,
                 Long.valueOf(minValue), isMinIncluded,
                 Long.valueOf(maxValue), isMaxIncluded));
     }
@@ -204,7 +204,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Float> create(final float minValue, final boolean isMinIncluded,
                                             final float maxValue, final boolean isMaxIncluded)
     {
-        return unique(new NumberRange<Float>(Float.class,
+        return unique(new NumberRange<>(Float.class,
                 valueOf("minValue", minValue, Float.NEGATIVE_INFINITY), isMinIncluded,
                 valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), isMaxIncluded));
     }
@@ -234,7 +234,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     public static NumberRange<Double> create(final double minValue, final boolean isMinIncluded,
                                              final double maxValue, final boolean isMaxIncluded)
     {
-        return unique(new NumberRange<Double>(Double.class,
+        return unique(new NumberRange<>(Double.class,
                 valueOf("minValue", minValue, Double.NEGATIVE_INFINITY), isMinIncluded,
                 valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), isMaxIncluded));
     }
@@ -268,7 +268,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @since 0.5
      */
     public static NumberRange<Integer> createLeftBounded(final int minValue, final boolean isMinIncluded) {
-        return unique(new NumberRange<Integer>(Integer.class, Integer.valueOf(minValue), isMinIncluded, null, false));
+        return unique(new NumberRange<>(Integer.class, Integer.valueOf(minValue), isMinIncluded, null, false));
     }
 
     /**
@@ -324,7 +324,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
         }
         // The constructor will ensure that the range element type is a subclass of Number.
         // Do not invoke unique(NumberRange) because the returned range is often temporary.
-        return new NumberRange<N>(range);
+        return new NumberRange<>(range);
     }
 
     /**
@@ -397,7 +397,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     Range<E> create(final E minValue, final boolean isMinIncluded,
                     final E maxValue, final boolean isMaxIncluded)
     {
-        return new NumberRange<E>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
+        return new NumberRange<>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
     }
 
     /**
@@ -420,7 +420,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
         if (range.elementType == type) {
             return (NumberRange<N>) range;
         }
-        return new NumberRange<N>(type, range);
+        return new NumberRange<>(type, range);
     }
 
     /**
@@ -442,7 +442,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
         if (elementType == type) {
             return (NumberRange<N>) this;
         }
-        return new NumberRange<N>(type, this);
+        return new NumberRange<>(type, this);
     }
 
     /**

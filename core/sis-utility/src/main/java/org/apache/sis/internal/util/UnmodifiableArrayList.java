@@ -24,7 +24,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.CheckedContainer;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -116,7 +116,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      *         array was null.
      */
     public static <E> UnmodifiableArrayList<E> wrap(final E[] array) {          // NOT "E..." - see javadoc.
-        return (array != null) ? new UnmodifiableArrayList<E>(array) : null;
+        return (array != null) ? new UnmodifiableArrayList<>(array) : null;
     }
 
     /**
@@ -142,9 +142,9 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      */
     public static <E> UnmodifiableArrayList<E> wrap(final E[] array, final int lower, final int upper) {
         if (lower == 0 && upper == array.length) {
-            return new UnmodifiableArrayList<E>(array);
+            return new UnmodifiableArrayList<>(array);
         }
-        return new UnmodifiableArrayList.SubList<E>(array, lower, upper - lower);
+        return new UnmodifiableArrayList.SubList<>(array, lower, upper - lower);
     }
 
     /**
@@ -301,7 +301,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
             throws IndexOutOfBoundsException
     {
         ArgumentChecks.ensureValidIndexRange(size(), lower, upper);
-        return new SubList<E>(array, lower + lower(), upper - lower);
+        return new SubList<>(array, lower + lower(), upper - lower);
     }
 
     /**

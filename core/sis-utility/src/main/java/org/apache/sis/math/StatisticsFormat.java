@@ -93,7 +93,9 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * @return A statistics format instance for the current default locale.
      */
     public static StatisticsFormat getInstance() {
-        return getInstance(Locale.getDefault());
+        return new StatisticsFormat(
+                Locale.getDefault(Locale.Category.FORMAT),
+                Locale.getDefault(Locale.Category.DISPLAY), null);
     }
 
     /**
@@ -118,6 +120,28 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     public StatisticsFormat(final Locale locale, final Locale headerLocale, final TimeZone timezone) {
         super(locale, timezone);
         this.headerLocale = (headerLocale != null) ? headerLocale : Locale.ROOT;
+    }
+
+    /**
+     * Returns the locale for the given category. This method implements the following mapping:
+     *
+     * <ul>
+     *   <li>{@link java.util.Locale.Category#DISPLAY} — the {@code headerLocale} given at construction time.</li>
+     *   <li>{@link java.util.Locale.Category#FORMAT} — the {@code locale} given at construction time,
+     *       used for all values below the header row.</li>
+     * </ul>
+     *
+     * @param  category The category for which a locale is desired.
+     * @return The locale for the given category (never {@code null}).
+     *
+     * @since 0.4
+     */
+    @Override
+    public Locale getLocale(final Locale.Category category) {
+        if (category == Locale.Category.DISPLAY) {
+            return headerLocale;
+        }
+        return super.getLocale(category);
     }
 
     /**
@@ -233,7 +257,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      */
     @Override
     public void format(Statistics stats, final Appendable toAppendTo) throws IOException {
-        final List<Statistics> list = new ArrayList<Statistics>(3);
+        final List<Statistics> list = new ArrayList<>(3);
         while (stats != null) {
             list.add(stats);
             stats = stats.differences();

@@ -123,14 +123,11 @@ final class Rewriter {
         modified = false;
         this.file = file;
         content.setLength(0);
-        final Reader in = new InputStreamReader(new FileInputStream(file), ENCODING);
-        try {
+        try (final Reader in = new InputStreamReader(new FileInputStream(file), ENCODING)) {
             int n;
             while ((n = in.read(buffer)) >= 0) {
                 content.append(buffer, 0, n);
             }
-        } finally {
-            in.close();
         }
     }
 
@@ -140,11 +137,8 @@ final class Rewriter {
      */
     private void save() throws IOException {
         if (modified) {
-            final Writer out = new OutputStreamWriter(new FileOutputStream(file), ENCODING);
-            try {
+            try (final Writer out = new OutputStreamWriter(new FileOutputStream(file), ENCODING)) {
                 out.append(content);
-            } finally {
-                out.close();
             }
         }
     }

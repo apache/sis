@@ -199,12 +199,12 @@ final class BursaWolfInfo {
     static void filter(final GeodeticAuthorityFactory factory, final BursaWolfInfo[] candidates,
             final List<BursaWolfInfo> addTo) throws FactoryException
     {
-        final Map<Integer,ExtentSelector<BursaWolfInfo>> added = new LinkedHashMap<Integer,ExtentSelector<BursaWolfInfo>>();
+        final Map<Integer,ExtentSelector<BursaWolfInfo>> added = new LinkedHashMap<>();
         for (BursaWolfInfo candidate : candidates) {
             final Integer target = candidate.target;
             ExtentSelector<BursaWolfInfo> selector = added.get(target);
             if (selector == null) {
-                selector = new ExtentSelector<BursaWolfInfo>(null);
+                selector = new ExtentSelector<>(null);
                 added.put(target, selector);
             }
             selector.evaluate(candidate.getDomainOfValidity(factory), candidate);

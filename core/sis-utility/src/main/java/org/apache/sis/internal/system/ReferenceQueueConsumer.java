@@ -56,7 +56,7 @@ public final class ReferenceQueueConsumer extends DaemonThread {
      * {@link Reference} constructors as documented in the class javadoc. Those {@code Reference}
      * sub-classes <strong>must</strong> implement the {@link Disposable} interface.
      */
-    public static final ReferenceQueue<Object> QUEUE = new ReferenceQueue<Object>();
+    public static final ReferenceQueue<Object> QUEUE = new ReferenceQueue<>();
 
     /**
      * Creates the singleton instance of the {@code ReferenceQueueConsumer} thread.

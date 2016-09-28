@@ -36,10 +36,7 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
      */
     @Test
     public void operators() throws SQLException {
-        Connection connection = connect();
-        Statement stmt = connection.createStatement();
-        DBFRecordBasedResultSet rs = (DBFRecordBasedResultSet)stmt.executeQuery("SELECT * FROM SignedBikeRoute");
-        try {
+        try(Connection connection = connect(); Statement stmt = connection.createStatement(); DBFRecordBasedResultSet rs = (DBFRecordBasedResultSet)stmt.executeQuery("SELECT * FROM SignedBikeRoute")) {
             rs.next();
 
             assertTrue("FNODE_ = 1199", new ConditionalClauseResolver("FNODE_", 1199L, "=").isVerified(rs));
@@ -63,10 +60,6 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
             assertTrue("SHAPE_LEN = 43.0881492571", new ConditionalClauseResolver("SHAPE_LEN", 43.0881492571, "=").isVerified(rs));
             assertTrue("SHAPE_LEN > 43.088", new ConditionalClauseResolver("SHAPE_LEN", 43.088, ">").isVerified(rs));
             assertFalse("SHAPE_LEN < 43.0881492571", new ConditionalClauseResolver("SHAPE_LEN", 43.0881492571, "<").isVerified(rs));
-        } finally {
-            rs.close();
-            stmt.close();
-            connection.close();
         }
     }
 
@@ -147,10 +140,7 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
     private void checkAndCount(String whereCondition, ResultSetPredicate<ResultSet> condition, int countExpected) throws SQLException {
         String sql = "SELECT * FROM SignedBikeRoute WHERE " + whereCondition;
 
-        Connection connection = connect();
-        Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        try {
+        try(Connection connection = connect(); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             int count = 0;
 
             while(rs.next()) {
@@ -160,10 +150,6 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
 
             if (countExpected != -1)
                 assertEquals("Wrong number of records red by : " + sql, countExpected, count);
-        } finally {
-            rs.close();
-            stmt.close();
-            connection.close();
         }
     }
 }

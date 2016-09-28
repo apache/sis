@@ -157,8 +157,7 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
         final File    manifestFile = new File(sourceDirectory, manifestName);
         final File[]          jars = outputDirectory.listFiles(this);
         final File[]          rdbs = sourceDirectory.listFiles(this);
-        final ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipFile));
-        try {
+        try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipFile))) {
             out.setLevel(9);
             if (manifestFile.isFile()) {
                 copyFiltered(manifestFile, out, manifestName);
@@ -207,21 +206,16 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
                     }
                     if (packer != null && name.endsWith(".jar")) {
                         name = name.substring(0, name.length()-3) + "pack";
-                        final JarFile jar = new FilteredJarFile(file);
-                        try {
+                        try (JarFile jar = new FilteredJarFile(file)) {
                             out.putNextEntry(new ZipEntry(name));
                             packer.pack(jar, out);
                             out.closeEntry();
-                        } finally {
-                            jar.close();
                         }
                     } else {
                         copy(file, out, name);
                     }
                 }
             }
-        } finally {
-            out.close();
         }
     }
 
@@ -243,15 +237,12 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
             entry.setCrc(getCRC32(file));
         }
         out.putNextEntry(entry);
-        final InputStream in = new FileInputStream(file);
-        try {
+        try (InputStream in = new FileInputStream(file)) {
             final byte[] buffer = new byte[4*1024];
             int length;
             while ((length = in.read(buffer)) >= 0) {
                 out.write(buffer, 0, length);
             }
-        } finally {
-            in.close();
         }
         out.closeEntry();
     }
@@ -266,8 +257,7 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
         final ZipEntry entry = new ZipEntry(name);
         out.putNextEntry(entry);
         final Writer writer = new OutputStreamWriter(out, ENCODING);
-        final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), ENCODING));
-        try {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), ENCODING))) {
             String line; while ((line=in.readLine()) != null) {
                 int r=-1; while ((r=line.indexOf(SUBSTITUTE, r+1)) >= 0) {
                     line = line.substring(0, r) + finalName + line.substring(r + SUBSTITUTE.length());
@@ -275,8 +265,6 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
                 writer.write(line);
                 writer.write('\n');
             }
-        } finally {
-            in.close();
         }
         writer.flush();
         out.closeEntry();
@@ -287,15 +275,12 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
      */
     private static long getCRC32(final File file) throws IOException {
         final CRC32 crc = new CRC32();
-        final InputStream in = new FileInputStream(file);
-        try {
+        try (InputStream in = new FileInputStream(file)) {
             final byte[] buffer = new byte[4*1024];
             int length;
             while ((length = in.read(buffer)) >= 0) {
                 crc.update(buffer, 0, length);
             }
-        } finally {
-            in.close();
         }
         return crc.getValue();
     }

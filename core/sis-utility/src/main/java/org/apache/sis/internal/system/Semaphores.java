@@ -68,7 +68,7 @@ public final class Semaphores {
     /**
      * The flags per running thread.
      */
-    private static final ThreadLocal<Semaphores> FLAGS = new ThreadLocal<Semaphores>();
+    private static final ThreadLocal<Semaphores> FLAGS = new ThreadLocal<>();
 
     /**
      * The bit flags.

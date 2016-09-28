@@ -80,7 +80,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
      */
     @BeforeClass
     public static void createMarshallerPool() throws JAXBException {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(XML.LOCALE, Locale.UK));
         assertNull(properties.put(XML.TIMEZONE, UTC));
         pool = new MarshallerPool(JAXBContext.newInstance(MetadataMock.class), properties);

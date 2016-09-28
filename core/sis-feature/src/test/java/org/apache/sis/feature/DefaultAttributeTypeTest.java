@@ -64,7 +64,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
         assertNull(identification.put(DefaultAttributeType.DEFINITION_KEY  + "_fr", "Le nom de la ville."));
         assertNull(identification.put(DefaultAttributeType.DEFINITION_KEY  + "_ja", "都市の名前。"));
         assertNull(identification.put(DefaultAttributeType.DESCRIPTION_KEY, "Some verbose description."));
-        final DefaultAttributeType<String> city = new DefaultAttributeType<String>(identification,
+        final DefaultAttributeType<String> city = new DefaultAttributeType<>(identification,
                 String.class, 1, 1, "Utopia");
         identification.clear();
         return city;
@@ -79,7 +79,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
         assertNull(identification.put(DefaultAttributeType.NAME_KEY, "population"));
         // We may add more properties here in a future version.
 
-        final DefaultAttributeType<Integer> population = new DefaultAttributeType<Integer>(
+        final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
                 identification, Integer.class, 1, 1, null);
         identification.clear();
         return population;
@@ -103,7 +103,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      * @return An attribute type for university names.
      */
     public static DefaultAttributeType<String> universities() {
-        return new DefaultAttributeType<String>(
+        return new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, "universities"),
                 String.class, 0, Integer.MAX_VALUE, null);
     }
@@ -113,8 +113,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      * This is the kind of attribute created by the ShapeFile reader.
      */
     static DefaultAttributeType<String> attribute(final String name) {
-        return new DefaultAttributeType<String>(singletonMap(DefaultAttributeType.NAME_KEY, name),
-                String.class, 1, 1, null);
+        return new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, name), String.class, 1, 1, null);
     }
 
     /**
@@ -153,7 +152,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
     @Test
     @SuppressWarnings("ObjectEqualsNull")
     public void testEquals() {
-        final Map<String,Object> identification = new HashMap<String,Object>(4);
+        final Map<String,Object> identification = new HashMap<>(4);
         final DefaultAttributeType<Integer> a1 = population(identification);
         final DefaultAttributeType<Integer> a2 = population(identification);
         assertFalse ("equals",   a1.equals(null));

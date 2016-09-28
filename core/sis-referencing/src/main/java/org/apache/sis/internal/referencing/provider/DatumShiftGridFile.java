@@ -32,8 +32,7 @@ import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 
 // Branch-specific imports
-import java.io.File;
-import org.apache.sis.internal.jdk7.Path;
+import java.nio.file.Path;
 import org.apache.sis.internal.jdk8.JDK8;
 
 
@@ -201,7 +200,7 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
         for (final GeneralParameterDescriptor gd : descriptor.descriptors()) {
             if (gd instanceof ParameterDescriptor<?>) {
                 final ParameterDescriptor<?> d = (ParameterDescriptor<?>) gd;
-                if (File.class.isAssignableFrom(d.getValueClass())) {
+                if (Path.class.isAssignableFrom(d.getValueClass())) {
                     parameters.getOrCreate(d).setValue(files[i]);
                     if (++i == files.length) break;
                 }
@@ -318,7 +317,7 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
          */
         @Override
         final DatumShiftGridFile<C,T> setData(final Object[] other) {
-            return new Float<C,T>(this, (float[][]) other);
+            return new Float<>(this, (float[][]) other);
         }
 
         /**

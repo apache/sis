@@ -65,11 +65,8 @@ public final class StoreTest extends TestCase {
     @org.junit.Ignore("Pending completion of sis-referencing")
     public void testGetMetadata() throws DataStoreException {
         final Metadata metadata;
-        Store store = new Store(new StorageConnector(new StringReader(TEST_DATA)));
-        try {
+        try (Store store = new Store(new StorageConnector(new StringReader(TEST_DATA)))) {
             metadata = store.getMetadata();
-        } finally {
-            store.close();
         }
         final AbstractIdentification id = (AbstractIdentification) getSingleton(metadata.getIdentificationInfo());
         final SpatialTemporalExtent extent = (SpatialTemporalExtent) getSingleton(getSingleton(id.getExtents()).getTemporalElements());
@@ -89,16 +86,13 @@ public final class StoreTest extends TestCase {
      */
     @Test
     public void testGetFeatures() throws DataStoreException {
-        Store store = new Store(new StorageConnector(new StringReader(TEST_DATA)));
-        try {
+        try (Store store = new Store(new StorageConnector(new StringReader(TEST_DATA)))) {
             final Iterator<AbstractFeature> it = store.getFeatures();
             assertFeatureEquals(it.next(), "a", new double[] {11, 2, 12, 3},        "walking", 1);
             assertFeatureEquals(it.next(), "b", new double[] {10, 2, 11, 3},        "walking", 2);
             assertFeatureEquals(it.next(), "a", new double[] {12, 3, 10, 3},        "walking", 2);
             assertFeatureEquals(it.next(), "c", new double[] {12, 1, 10, 2, 11, 3}, "vehicle", 1);
             assertFalse(it.hasNext());
-        } finally {
-            store.close();
         }
     }
 

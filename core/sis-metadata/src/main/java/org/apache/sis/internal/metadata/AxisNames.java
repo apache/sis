@@ -145,7 +145,7 @@ public final class AxisNames {
      */
     private static final Map<String,String> VALUES;
     static {
-        final Map<String,String> values = new HashMap<String,String>(22);
+        final Map<String,String> values = new HashMap<>(22);    // 18 elements + 25%, rounded to highest integer.
         final StringBuilder buffer = new StringBuilder(22);     // Length of the longuest string: "Gravity-related height"
         try {
             for (final Field f : AxisNames.class.getFields()) {

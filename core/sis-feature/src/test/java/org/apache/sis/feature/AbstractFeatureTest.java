@@ -54,7 +54,7 @@ public final strictfp class AbstractFeatureTest extends FeatureTestCase {
          * If a feature backed by a {@code java.util.Map} is really wanted, then {@link SparseFeature} should
          * be considered.
          */
-        private HashMap<String,Object> values = new HashMap<String,Object>();
+        private HashMap<String,Object> values = new HashMap<>();
 
         /**
          * Creates a new feature of the given type. This constructor adds immediately the default values into
@@ -66,7 +66,7 @@ public final strictfp class AbstractFeatureTest extends FeatureTestCase {
                 if (pt instanceof DefaultAttributeType<?>) {
                     Object value = ((DefaultAttributeType<?>) pt).getDefaultValue();
                     if (isMultiValued(pt)) {
-                        value = new ArrayList<Object>(PropertyView.singletonOrEmpty(value));
+                        value = new ArrayList<>(PropertyView.singletonOrEmpty(value));
                     }
                     if (value != null) {
                         values.put(pt.getName().toString(), value);
@@ -105,7 +105,7 @@ public final strictfp class AbstractFeatureTest extends FeatureTestCase {
             final AbstractIdentifiedType type = getType().getProperty(name);
             final boolean isMultiValued = isMultiValued(type);
             if (isMultiValued && !(value instanceof Collection<?>)) {
-                value = new ArrayList<Object>(PropertyView.singletonOrEmpty(value));
+                value = new ArrayList<>(PropertyView.singletonOrEmpty(value));
             }
             if (value != null) {
                 final Class<?> base;

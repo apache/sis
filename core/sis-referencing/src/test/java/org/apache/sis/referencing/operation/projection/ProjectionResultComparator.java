@@ -113,7 +113,7 @@ final strictfp class ProjectionResultComparator extends NormalizedProjection {
                 final Object elliptical;
                 try {
                     elliptical = ellipticalClass.getDeclaredConstructor(ellipticalClass).newInstance(spherical);
-                } catch (Exception e) {  // ReflectiveOperationException on the JDK7 branch.
+                } catch (ReflectiveOperationException e) {
                     throw new AssertionError(e);    // Considered as a test failure.
                 }
                 /*

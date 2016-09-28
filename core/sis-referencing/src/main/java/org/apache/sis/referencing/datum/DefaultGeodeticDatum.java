@@ -52,7 +52,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -418,7 +418,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      */
     public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum, final Extent areaOfInterest) {
         ensureNonNull("targetDatum", targetDatum);
-        final ExtentSelector<BursaWolfParameters> selector = new ExtentSelector<BursaWolfParameters>(areaOfInterest);
+        final ExtentSelector<BursaWolfParameters> selector = new ExtentSelector<>(areaOfInterest);
         BursaWolfParameters candidate = select(targetDatum, selector);
         if (candidate != null) {
             return createTransformation(candidate, areaOfInterest);

@@ -24,9 +24,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.WarningListeners;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.AutoCloseable;
-
 
 /**
  * Manages a series of features, coverages or sensor data.
@@ -44,8 +41,7 @@ import org.apache.sis.internal.jdk7.AutoCloseable;
  *
  * @see DataStores#open(Object)
  */
-@AutoCloseable
-public abstract class DataStore implements Localized {
+public abstract class DataStore implements Localized, AutoCloseable {
     /**
      * The locale to use for formatting warnings.
      *
@@ -63,8 +59,8 @@ public abstract class DataStore implements Localized {
      * Creates a new instance with initially no listener.
      */
     protected DataStore() {
-        locale = Locale.getDefault();
-        listeners = new WarningListeners<DataStore>(this);
+        locale = Locale.getDefault(Locale.Category.DISPLAY);
+        listeners = new WarningListeners<>(this);
     }
 
     /**
@@ -147,5 +143,6 @@ public abstract class DataStore implements Localized {
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */
+    @Override
     public abstract void close() throws DataStoreException;
 }

@@ -103,13 +103,13 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final DataIdentification identification = new DataIdentification() {
             @Override public InternationalString getAbstract() {
-                Map<Locale, String> names = new HashMap<Locale, String>();
+                Map<Locale, String> names = new HashMap<>();
                 names.put(Locale.ENGLISH, "Description");
                 return factory.createInternationalString(names);
             }
 
             @Override public InternationalString getEnvironmentDescription() {
-                Map<Locale, String> names = new HashMap<Locale, String>();
+                Map<Locale, String> names = new HashMap<>();
                 names.put(Locale.ENGLISH, "Environment");
                 return factory.createInternationalString(names);
             }

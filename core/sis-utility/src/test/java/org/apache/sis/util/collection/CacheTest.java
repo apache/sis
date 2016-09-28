@@ -85,7 +85,7 @@ public final strictfp class CacheTest extends TestCase {
     public void testPutAndUnlock() {
         final String key   = "The key";
         final String value = "The value";
-        final Cache<String,String> cache = new Cache<String,String>();
+        final Cache<String,String> cache = new Cache<>();
         assertTrue("No initial value expected.", cache.isEmpty());
         assertNull("No initial value expected.", cache.peek(key));
 
@@ -96,7 +96,7 @@ public final strictfp class CacheTest extends TestCase {
         assertEquals(1,              cache.size());
         assertEquals(value,          cache.peek(key));
         assertEquals(singleton(key), cache.keySet());
-        assertEquals(singleton(new SimpleEntry<String,String>(key, value)), cache.entrySet());
+        assertEquals(singleton(new SimpleEntry<>(key, value)), cache.entrySet());
     }
 
     /**
@@ -112,7 +112,7 @@ public final strictfp class CacheTest extends TestCase {
         final String  valueByMainThread =  "valueByMainThread";
         final String   keyByOtherThread =   "keyByOtherThread";
         final String valueByOtherThread = "valueByOtherThread";
-        final Cache<String,String> cache = new Cache<String,String>();
+        final Cache<String,String> cache = new Cache<>();
         final class OtherThread extends Thread {
             /**
              * If an error occurred, the cause. It may be an {@link AssertionError}.
@@ -150,7 +150,7 @@ public final strictfp class CacheTest extends TestCase {
                     if (failure == null) {
                         failure = e;
                     } else {
-                        // The JDK7 branch invokes Throwable.addSuppressed(…) here.
+                        failure.addSuppressed(e);
                     }
                 }
             }
@@ -174,7 +174,7 @@ public final strictfp class CacheTest extends TestCase {
         /*
          * Checks the map content.
          */
-        final Map<String,String> expected = new HashMap<String,String>(4);
+        final Map<String,String> expected = new HashMap<>(4);
         assertNull(expected.put( keyByMainThread,  valueByMainThread));
         assertNull(expected.put(keyByOtherThread, valueByOtherThread));
         assertMapEquals(expected, cache);
@@ -210,8 +210,8 @@ public final strictfp class CacheTest extends TestCase {
     @DependsOnMethod("testThreadBlocking")
     public void stress() throws InterruptedException {
         final int count = 5000;
-        final Cache<Integer,Integer> cache = new Cache<Integer,Integer>();
-        final AtomicReference<Throwable> failures = new AtomicReference<Throwable>();
+        final Cache<Integer,Integer> cache = new Cache<>();
+        final AtomicReference<Throwable> failures = new AtomicReference<>();
         final class WriterThread extends Thread {
             /**
              * Incremented every time a value has been added. This is not the number of time the
@@ -244,7 +244,7 @@ public final strictfp class CacheTest extends TestCase {
                         assertEquals(expected, value);
                     } catch (Throwable e) {
                         if (!failures.compareAndSet(null, e)) {
-                            // The JDK7 branch invokes Throwable.addSuppressed(…) here.
+                            failures.get().addSuppressed(e);
                         }
                         continue;
                     }

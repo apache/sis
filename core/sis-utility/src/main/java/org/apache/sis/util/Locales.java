@@ -24,10 +24,10 @@ import java.util.TreeMap;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.MissingResourceException;
+import java.util.IllformedLocaleException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
 
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
@@ -58,7 +58,7 @@ public final class Locales extends Static {
     private static final Map<Locale,Locale> POOL;
     static {
         final Locale[] locales = Locale.getAvailableLocales();
-        POOL = new HashMap<Locale,Locale>(hashMapCapacity(locales.length));
+        POOL = new HashMap<>(hashMapCapacity(locales.length));
         for (final Locale lc : locales) {
             POOL.put(lc, lc);
         }
@@ -104,7 +104,7 @@ public final class Locales extends Static {
     private static final short[] ISO3, ISO2;
     static {
         final Short CONFLICT = 0;                           // Sentinal value for conflicts (paranoiac safety).
-        final Map<Short,Short> map = new TreeMap<Short,Short>();
+        final Map<Short,Short> map = new TreeMap<>();
         for (final Locale locale : POOL.values()) {
             short type = LANGUAGE;                          // 0 for language, or leftmost bit set for country.
             do { // Executed exactly twice: once for language, than once for country.
@@ -211,7 +211,7 @@ filter: for (final Locale locale : locales) {
      * @return The languages, without country or variant information.
      */
     private static Locale[] getLanguages(final Locale... locales) {
-        final Set<String> codes = new LinkedHashSet<String>(hashMapCapacity(locales.length));
+        final Set<String> codes = new LinkedHashSet<>(hashMapCapacity(locales.length));
         for (final Locale locale : locales) {
             codes.add(locale.getLanguage());
         }
@@ -234,11 +234,11 @@ filter: for (final Locale locale : locales) {
      *
      * @param  code The language code, optionally followed by country code and variant.
      * @return The language for the given code (never {@code null}).
-     * @throws RuntimeException If the given code is not valid ({@code IllformedLocaleException} on the JDK7 branch).
+     * @throws IllformedLocaleException If the given code is not valid.
      *
      * @see Locale#forLanguageTag(String)
      */
-    public static Locale parse(final String code) {
+    public static Locale parse(final String code) throws IllformedLocaleException {
         return parse(code, 0);
     }
 
@@ -256,22 +256,24 @@ filter: for (final Locale locale : locales) {
      * @param  code The language code, which may be followed by country code.
      * @param  fromIndex Index of the first character to parse.
      * @return The language for the given code (never {@code null}).
-     * @throws RuntimeException If the given code is not valid ({@code IllformedLocaleException} on the JDK7 branch).
+     * @throws IllformedLocaleException If the given code is not valid.
      *
      * @see Locale#forLanguageTag(String)
      * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
      */
-    public static Locale parse(final String code, final int fromIndex) {
+    public static Locale parse(final String code, final int fromIndex) throws IllformedLocaleException {
         ArgumentChecks.ensureNonNull("code", code);
         ArgumentChecks.ensurePositive("fromIndex", fromIndex);
         int p1 = code.indexOf('_', fromIndex);
-        // JDK7 branch contains a code here with the following comment:
+        int i  = code.indexOf('-', fromIndex);
+        if (i >= 0 && (p1 < 0 || i < p1)) {
             /*
              * IETF BCP 47 language tag string. This syntax uses the '-' separator instead of '_'.
              * Note that the '_' character is illegal for the language code, but is legal for the
              * variant. Consequently we require the '-' character to appear before the first '_'.
              */
-        // End of JDK7-specific.
+            return unique(new Locale.Builder().setLanguageTag(code).build());
+        }
         /*
          * Old syntax (e.g. "en_US"). Split in (language, country, variant) components,
          * then convert the 3-letters codes to the 2-letters ones.
@@ -292,29 +294,7 @@ filter: for (final Locale locale : locales) {
         language = (String) trimWhitespaces(code, fromIndex, p1);
         language = toISO2(language, LANGUAGE);
         country  = toISO2(country,  COUNTRY);
-        if (language.length() > 8 || !isAlphaNumeric(language) ||
-             country.length() > 3 || !isAlphaNumeric(country))
-        {
-            throw new RuntimeException( // IllformedLocaleException (indirectly) on the JDK7 branch.
-                    Errors.format(Errors.Keys.IllegalLanguageCode_1, code.substring(fromIndex)));
-        }
-        return unique(new Locale(language, country, variant));
-    }
-
-    /**
-     * Returns {@code true} if the given text contains only Latin alphabetic or numeric characters.
-     * We use this method for simulating the check performed by {@code Locale.Builder} on JDK7. Our
-     * test is not as accurate as the JDK7 one however - we are more permissive. But it is not our
-     * intend to reproduce all the JDK7 syntax checks here.
-     */
-    private static boolean isAlphaNumeric(final String text) {
-        for (int i=text.length(); --i>=0;) {
-            final char c = text.charAt(i);
-            if (!(c >= 'A' && c <= 'Z') && !(c >= 'a' && c <= 'z') && !(c >= '0' && c <= '9')) {
-                return false;
-            }
-        }
-        return true;
+        return unique(new Locale.Builder().setLanguage(language).setRegion(country).setVariant(variant).build());
     }
 
     /**

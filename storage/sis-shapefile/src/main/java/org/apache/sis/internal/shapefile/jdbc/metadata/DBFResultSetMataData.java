@@ -20,6 +20,7 @@ import java.io.File;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.Objects;
 import java.util.logging.Level;
 
 import org.apache.sis.internal.shapefile.jdbc.AbstractJDBC;
@@ -27,10 +28,6 @@ import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
 import org.apache.sis.internal.shapefile.jdbc.resultset.*;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
  * ResultSet Metadata.
@@ -95,16 +92,13 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     @Override public boolean isAutoIncrement(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("isAutoIncrement", column);
 
-        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column);
-        try {
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
             return rsDatabase.getString("TYPE_NAME").equals("AUTO_INCREMENT");
         }
         catch(SQLNoSuchFieldException e) {
             // We encounter an internal API error in this case.
             String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "TYPE_NAME", e.getMessage());
             throw new RuntimeException(message, e);
-        } finally {
-            rsDatabase.close();
         }
     }
 
@@ -132,15 +126,12 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     @Override public boolean isCurrency(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("isCurrency", column);
 
-        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column);
-        try {
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
             return rsDatabase.getString("TYPE_NAME").equals("CURRENCY");
         }
         catch(SQLNoSuchFieldException e) {
             String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "TYPE_NAME", e.getMessage());
             throw new RuntimeException(message, e);
-        } finally {
-            rsDatabase.close();
         }
     }
 
@@ -168,47 +159,43 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     @Override public int getColumnDisplaySize(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getColumnDisplaySize", column);
 
-        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column);
-        try {
-            final String v = rsDatabase.getString("TYPE_NAME");
-            if (v.equals("AUTO_INCREMENT") ||
-                v.equals("CHAR") ||
-                v.equals("INTEGER"))
-            {
-                return rsDatabase.getInt("COLUMN_SIZE");
-            }
-            if (v.equals("DATE")) {
-                return 8;
-            }
-            if (v.equals("DOUBLE") ||
-                v.equals("FLOAT") ||
-                v.equals("DECIMAL"))
-            {
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
+            switch(rsDatabase.getString("TYPE_NAME")) {
+                case "AUTO_INCREMENT":
+                case "CHAR":
+                case "INTEGER":
+                   return rsDatabase.getInt("COLUMN_SIZE");
+
+                case "DATE":
+                    return 8;
+
                 // Add decimal separator for decimal numbers.
-                return rsDatabase.getInt("COLUMN_SIZE") + 1;
-            }
-            if (v.equals("BOOLEAN")) {
-                return 5; // Translation for true, false, null.
-            }
-            if (v.equals("CURRENCY") ||
-                v.equals("DATETIME") ||
-                v.equals("TIMESTAMP") ||
-                v.equals("MEMO") ||
-                v.equals("PICTURE") ||
-                v.equals("VARIFIELD") ||
-                v.equals("VARIANT") ||
-                v.equals("UNKNOWN"))
-            {
+                case "DOUBLE":
+                case "FLOAT":
+                case "DECIMAL":
+                    return rsDatabase.getInt("COLUMN_SIZE") + 1;
+
+                case "BOOLEAN":
+                    return 5; // Translation for true, false, null.
+
                 // Unhandled types default to field length.
-                return rsDatabase.getInt("COLUMN_SIZE");
+                case "CURRENCY":
+                case "DATETIME":
+                case "TIMESTAMP":
+                case "MEMO":
+                case "PICTURE":
+                case "VARIFIELD":
+                case "VARIANT":
+                case "UNKNOWN":
+                    return rsDatabase.getInt("COLUMN_SIZE");
+
+                default:
+                    return rsDatabase.getInt("COLUMN_SIZE");
             }
-            return rsDatabase.getInt("COLUMN_SIZE");
         }
         catch(SQLNoSuchFieldException e) {
             String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "TYPE_NAME", e.getMessage());
             throw new RuntimeException(message, e);
-        } finally {
-            rsDatabase.close();
         }
     }
 
@@ -220,15 +207,12 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     @Override public String getColumnLabel(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getColumnLabel", column);
 
-        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column);
-        try {
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
             return rsDatabase.getString("COLUMN_NAME");
         }
         catch(SQLNoSuchFieldException e) {
             String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "COLUMN_NAME", e.getMessage());
             throw new RuntimeException(message, e);
-        } finally {
-            rsDatabase.close();
         }
     }
 
@@ -240,15 +224,12 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     @Override public String getColumnName(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getColumnName", column);
 
-        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column);
-        try {
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
             return rsDatabase.getString("COLUMN_NAME");
         }
         catch(SQLNoSuchFieldException e) {
             String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "COLUMN_NAME", e.getMessage());
             throw new RuntimeException(message, e);
-        } finally {
-            rsDatabase.close();
         }
     }
 
@@ -268,15 +249,12 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     @Override public int getPrecision(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getPrecision", column);
 
-        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column);
-        try {
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
             return rsDatabase.getInt("COLUMN_SIZE");
         }
         catch(SQLNoSuchFieldException e) {
             String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "COLUMN_SIZE", e.getMessage());
             throw new RuntimeException(message, e);
-        } finally {
-            rsDatabase.close();
         }
     }
 
@@ -288,15 +266,12 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     @Override public int getScale(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getScale", column);
 
-        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column);
-        try {
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
             return rsDatabase.getInt("DECIMAL_DIGITS");
         }
         catch(SQLNoSuchFieldException e) {
             String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "DECIMAL_DIGITS", e.getMessage());
             throw new RuntimeException(message, e);
-        } finally {
-            rsDatabase.close();
         }
     }
 
@@ -329,15 +304,12 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     @Override public int getColumnType(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getColumnType", column);
 
-        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column);
-        try {
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
             return rsDatabase.getInt("DATA_TYPE");
         }
         catch(SQLNoSuchFieldException e) {
             String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "DATA_TYPE", e.getMessage());
             throw new RuntimeException(message, e);
-        } finally {
-            rsDatabase.close();
         }
     }
 
@@ -349,15 +321,12 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     @Override public String getColumnTypeName(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getColumnTypeName", column);
 
-        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column);
-        try {
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
             return rsDatabase.getString("TYPE_NAME");
         }
         catch(SQLNoSuchFieldException e) {
             String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "TYPE_NAME", e.getMessage());
             throw new RuntimeException(message, e);
-        } finally {
-            rsDatabase.close();
         }
     }
 
@@ -394,65 +363,64 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     @Override public String getColumnClassName(int column) throws SQLFeatureNotSupportedException, SQLIllegalColumnIndexException, SQLConnectionClosedException {
         logStep("getColumnClassName", column);
 
-        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column);
-        try {
-            final String v = rsDatabase.getString("TYPE_NAME");
-            if (v.equals("AUTO_INCREMENT"))
-                return Integer.class.getName();
+        try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = desc(column)) {
+            switch(rsDatabase.getString("TYPE_NAME")) {
+                case "AUTO_INCREMENT":
+                    return Integer.class.getName();
 
-            if (v.equals("CHAR"))
-                return String.class.getName();
+                case "CHAR":
+                    return String.class.getName();
 
-            if (v.equals("INTEGER"))
-               return Integer.class.getName();
+                case "INTEGER":
+                   return Integer.class.getName();
 
-            if (v.equals("DATE"))
-                return java.sql.Date.class.getName();
+                case "DATE":
+                    return java.sql.Date.class.getName();
 
-            if (v.equals("DOUBLE"))
-                return Double.class.getName();
+                case "DOUBLE":
+                    return Double.class.getName();
 
-            if (v.equals("FLOAT"))
-                return Float.class.getName();
+                case "FLOAT":
+                    return Float.class.getName();
 
-            if (v.equals("DECIMAL"))
-                return Double.class.getName();
+                case "DECIMAL":
+                    return Double.class.getName();
 
-            if (v.equals("BOOLEAN"))
-                return Boolean.class.getName();
+                case "BOOLEAN":
+                    return Boolean.class.getName();
 
-            if (v.equals("CURRENCY"))
-                return Double.class.getName();
+                case "CURRENCY":
+                    return Double.class.getName();
 
-            if (v.equals("DATETIME"))
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on DateTime");
+                case "DATETIME":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on DateTime");
 
-            if (v.equals("TIMESTAMP"))
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on TimeStamp");
+                case "TIMESTAMP":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on TimeStamp");
 
-            if (v.equals("MEMO"))
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Memo");
+                case "MEMO":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Memo");
 
-            if (v.equals("PICTURE"))
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Picture");
+                case "PICTURE":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Picture");
 
-            if (v.equals("VARIFIELD"))
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on VariField");
+                case "VARIFIELD":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on VariField");
 
-            if (v.equals("VARIANT"))
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Variant");
+                case "VARIANT":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Variant");
 
-            if (v.equals("UNKNOWN"))
-                throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on " + rsDatabase.getString("TYPE_NAME"));
+                case "UNKNOWN":
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on " + rsDatabase.getString("TYPE_NAME"));
 
-            throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on " + rsDatabase.getString("TYPE_NAME"));
+                default:
+                    throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on " + rsDatabase.getString("TYPE_NAME"));
+            }
         }
         catch(SQLNoSuchFieldException e) {
             // We encounter an internal API error in this case.
             String message = format(Level.SEVERE, "assert.expected_databasemetadata_not_found", "TYPE_NAME", e.getMessage());
             throw new RuntimeException(message, e);
-        } finally {
-            rsDatabase.close();
         }
     }
 
@@ -492,7 +460,7 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
             try {
                 rsDatabase.next();
             }
-            catch(java.sql.SQLException e) {
+            catch(SQLNoResultException e) {
                 // We encounter an internal API error in this case.
                 rsDatabase.close();
                 String message = format(Level.SEVERE, "assert.less_column_in_metadata_than_expected", column, getColumnCount());

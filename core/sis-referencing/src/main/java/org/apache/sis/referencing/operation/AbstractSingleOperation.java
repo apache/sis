@@ -57,7 +57,7 @@ import org.apache.sis.util.ComparisonMode;
 import static org.apache.sis.util.Utilities.deepEquals;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -469,8 +469,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
              * because Apache SIS infers the type from the actual parameter value. The 'merge' method
              * below puts those information together.
              */
-            final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements =
-                    new IdentityHashMap<GeneralParameterDescriptor,GeneralParameterDescriptor>(4);
+            final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
             final GeneralParameterDescriptor[] merged = CC_OperationParameterGroup.merge(
                     method.getParameters().descriptors(),
                     Parameters.getDescriptors(values),

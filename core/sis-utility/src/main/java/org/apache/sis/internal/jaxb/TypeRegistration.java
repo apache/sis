@@ -91,7 +91,7 @@ public abstract class TypeRegistration {
          * 1) It would cache the TypeRegistration instances, which are not needed after this method call.
          * 2) The ClassLoader between different invocations may be different in an OSGi context.
          */
-        final ArrayList<Class<?>> types = new ArrayList<Class<?>>();
+        final ArrayList<Class<?>> types = new ArrayList<>();
         for (final TypeRegistration t : DefaultFactories.createServiceLoader(TypeRegistration.class)) {
             t.getTypes(types);
         }
@@ -115,7 +115,7 @@ public abstract class TypeRegistration {
             }
         }
         final JAXBContext instance = JAXBContext.newInstance(defaultClassesToBeBound());
-        context = new WeakReference<JAXBContext>(instance);
+        context = new WeakReference<>(instance);
         return instance;
     }
 }

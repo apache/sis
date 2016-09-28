@@ -223,17 +223,24 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     @Override
     protected String getExpectedXmlElementName(final Class<?> enclosing, final UML uml) {
         String name = super.getExpectedXmlElementName(enclosing, uml);
-        /*switch (name)*/ {
-            if (name.equals("MD_Scope")) {      // ISO 19115:2014
+        switch (name) {
+            case "MD_Scope": {      // ISO 19115:2014
                 name = "DQ_Scope";  // ISO 19115:2003
-            } else if (name.equals("distributedComputingPlatform")) {
+                break;
+            }
+            case "distributedComputingPlatform": {
                 name = "DCP";
-            } else if (name.equals("stepDateTime")) {
+                break;
+            }
+            case "stepDateTime": {
                 name = "dateTime";
-            } else if (name.equals("locale")) {
+                break;
+            }
+            case "locale": {
                 if (enclosing == org.opengis.metadata.content.FeatureCatalogueDescription.class) {
                     name = "language";
                 }
+                break;
             }
         }
         return name;
@@ -268,19 +275,19 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     @Override
     protected String getExpectedXmlTypeForElement(final Class<?> type, final Class<?> impl) {
         final String rootName = type.getAnnotation(UML.class).identifier();
-        /* switch (rootName) */ { // "String in switch" on the JDK7 branch.
+        switch (rootName) {
             // We don't know yet what is the type of this one.
-            if (rootName.equals("MD_FeatureTypeList")) {
+            case "MD_FeatureTypeList": {
                 return null;
             }
             // Following prefix was changed in ISO 19115 corrigendum,
             // but ISO 19139 still use the old prefix.
-            if (rootName.equals("SV_ServiceIdentification")) {
+            case "SV_ServiceIdentification": {
                 return "MD_ServiceIdentification_Type";
             }
             // Following prefix was changed in ISO 19115:2014,
             // but ISO 19139 still use the old prefix.
-            if (rootName.equals("MD_Scope")) {
+            case "MD_Scope": {
                 return "DQ_Scope_Type";
             }
         }

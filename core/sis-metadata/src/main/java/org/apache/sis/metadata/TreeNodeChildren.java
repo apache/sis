@@ -26,9 +26,6 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * The collection of children to be returned by {@link TreeNode#getChildren()}.
@@ -401,7 +398,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
                         if (nextValue != null) {
                             subIterator = ((Iterable<?>) nextValue).iterator();
                         } else {
-                            subIterator = Collections.emptySet().iterator();
+                            subIterator = Collections.emptyIterator();
                             // Null collections are illegal (it shall be empty collections instead),
                             // but we try to keep the iterator robut to ill-formed metadata, because
                             // we want AbstractMetadata.toString() to work so we can spot problems.
@@ -535,7 +532,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     @Debug
     @Override
     public String toString() {
-        final String lineSeparator = JDK7.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final StringBuilder buffer = new StringBuilder(512);
         parent.toString(buffer);
         buffer.append(lineSeparator);

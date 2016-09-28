@@ -67,7 +67,7 @@ public class StoreProvider extends DataStoreProvider {
          */
         private Peek() {
             super(14);
-            final Set<String> s = new HashSet<String>(22);
+            final Set<String> s = new HashSet<>(22);
             s.add(WKTKeywords.GeodeticCRS);
             s.add(WKTKeywords.GeodCRS);
             s.add(WKTKeywords.GeogCS);

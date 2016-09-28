@@ -30,7 +30,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 import org.apache.sis.internal.jdk8.UncheckedIOException;
 
 
@@ -90,7 +90,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      * @param  identification  the map given by user to sub-class constructor.
      */
     final Map<String,Object> resultIdentification(final Map<String,?> identification) {
-        final Map<String,Object> properties = new HashMap<String,Object>(6);
+        final Map<String,Object> properties = new HashMap<>(6);
         for (final Map.Entry<String,?> entry : identification.entrySet()) {
             final String key = entry.getKey();
             if (key != null && key.startsWith(RESULT_PREFIX)) {

@@ -116,7 +116,7 @@ final class DatumShiftGridCompressed<C extends Quantity, T extends Quantity> ext
             }
             data[dim] = compressed;
         }
-        return new DatumShiftGridCompressed<C,T>(grid, averages, data, scale);
+        return new DatumShiftGridCompressed<>(grid, averages, data, scale);
     }
 
     /**
@@ -124,7 +124,7 @@ final class DatumShiftGridCompressed<C extends Quantity, T extends Quantity> ext
      */
     @Override
     final DatumShiftGridFile<C,T> setData(final Object[] other) {
-        return new DatumShiftGridCompressed<C,T>(this, averages, (short[][]) other, scale);
+        return new DatumShiftGridCompressed<>(this, averages, (short[][]) other, scale);
     }
 
     /**

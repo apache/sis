@@ -182,7 +182,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<Integer> EPSG = new CitationConstant.Authority<Integer>(Constants.EPSG);
+    public static final IdentifierSpace<Integer> EPSG = new CitationConstant.Authority<>(Constants.EPSG);
 
     /**
      * The authority for identifiers of objects defined by the
@@ -266,7 +266,7 @@ public final class Citations extends Static {
      * @see #EPSG
      * @see #ESRI
      */
-    public static final IdentifierSpace<String> OGC = new CitationConstant.Authority<String>(Constants.OGC);
+    public static final IdentifierSpace<String> OGC = new CitationConstant.Authority<>(Constants.OGC);
 
     /**
      * The authority for identifiers of objects defined by <a href="http://www.esri.com">ESRI</a>.
@@ -301,7 +301,7 @@ public final class Citations extends Static {
      * @see #OGC
      * @see #EPSG
      */
-    public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<String>("ESRI");
+    public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<>("ESRI");
 
     /**
      * The authority for identifiers of objects defined by the
@@ -333,7 +333,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<String> NETCDF = new CitationConstant.Authority<String>("NetCDF");
+    public static final IdentifierSpace<String> NETCDF = new CitationConstant.Authority<>("NetCDF");
 
     /**
      * The authority for identifiers of objects defined by the
@@ -348,7 +348,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<Integer> GEOTIFF = new CitationConstant.Authority<Integer>("GeoTIFF");
+    public static final IdentifierSpace<Integer> GEOTIFF = new CitationConstant.Authority<>("GeoTIFF");
 
     /**
      * The authority for identifiers of objects defined by the <a href="http://trac.osgeo.org/proj/">Proj.4</a> project.
@@ -361,7 +361,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<String> PROJ4 = new CitationConstant.Authority<String>("Proj4");
+    public static final IdentifierSpace<String> PROJ4 = new CitationConstant.Authority<>("Proj4");
 
     /**
      * The authority for identifiers of objects defined by MapInfo.
@@ -374,7 +374,7 @@ public final class Citations extends Static {
      *
      * @since 0.6
      */
-    public static final IdentifierSpace<Integer> MAP_INFO = new CitationConstant.Authority<Integer>("MapInfo");
+    public static final IdentifierSpace<Integer> MAP_INFO = new CitationConstant.Authority<>("MapInfo");
 
     /**
      * The <a href="http://www.iho.int/iho_pubs/standard/S-57Ed3.1/31Main.pdf">IHO transfer standard
@@ -388,7 +388,7 @@ public final class Citations extends Static {
      *
      * @since 0.6
      */
-    public static final IdentifierSpace<Integer> S57 = new CitationConstant.Authority<Integer>("S57");
+    public static final IdentifierSpace<Integer> S57 = new CitationConstant.Authority<>("S57");
 
     /**
      * The <cite>International Standard Book Number</cite> (ISBN) defined by ISO-2108.
@@ -403,7 +403,7 @@ public final class Citations extends Static {
      *
      * @see DefaultCitation#getISBN()
      */
-    public static final IdentifierSpace<String> ISBN = new NonMarshalledAuthority<String>("ISBN", NonMarshalledAuthority.ISBN);
+    public static final IdentifierSpace<String> ISBN = new NonMarshalledAuthority<>("ISBN", NonMarshalledAuthority.ISBN);
 
     /**
      * The <cite>International Standard Serial Number</cite> (ISSN) defined by ISO-3297.
@@ -418,7 +418,7 @@ public final class Citations extends Static {
      *
      * @see DefaultCitation#getISSN()
      */
-    public static final IdentifierSpace<String> ISSN = new NonMarshalledAuthority<String>("ISSN", NonMarshalledAuthority.ISSN);
+    public static final IdentifierSpace<String> ISSN = new NonMarshalledAuthority<>("ISSN", NonMarshalledAuthority.ISSN);
 
     /**
      * The codespace of objects that are specific to the <a href="http://sis.apache.org">Apache SIS</a> project.

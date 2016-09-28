@@ -42,7 +42,7 @@ public final strictfp class OtherLocalesTest extends TestCase {
      */
     @Test
     public void testFilter() {
-        final Collection<Locale> languages = new LinkedHashSet<Locale>();
+        final Collection<Locale> languages = new LinkedHashSet<>();
         final Collection<Locale> otherLocales = OtherLocales.filter(languages);
         assertEquals("size", 0, otherLocales.size());
         /*
@@ -119,7 +119,7 @@ public final strictfp class OtherLocalesTest extends TestCase {
         assertSame("Shall set value in-place.", locales, OtherLocales.setFirst(locales, GERMAN));
         assertArrayEquals(new Locale[] {GERMAN, JAPANESE, FRENCH}, locales.toArray());
 
-        locales = new LinkedHashSet<Locale>(Arrays.asList(ENGLISH, JAPANESE, FRENCH));
+        locales = new LinkedHashSet<>(Arrays.asList(ENGLISH, JAPANESE, FRENCH));
         locales = OtherLocales.setFirst(locales, ITALIAN);
         assertArrayEquals(new Locale[] {ITALIAN, JAPANESE, FRENCH}, locales.toArray());
 

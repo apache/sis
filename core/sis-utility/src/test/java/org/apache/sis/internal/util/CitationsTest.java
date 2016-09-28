@@ -29,7 +29,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 
 
 /**
@@ -70,8 +69,8 @@ public final strictfp class CitationsTest extends TestCase {
      */
     @Test
     public void testHasCommonIdentifier() {
-        final List<Identifier> id1 = new ArrayList<Identifier>(3);
-        final List<Identifier> id2 = new ArrayList<Identifier>(2);
+        final List<Identifier> id1 = new ArrayList<>(3);
+        final List<Identifier> id2 = new ArrayList<>(2);
         assertNull(Citations.hasCommonIdentifier(id1, id2));
         /*
          * Add codes for two Operation Methods which are implemented in Apache SIS by the same class:
@@ -128,8 +127,6 @@ public final strictfp class CitationsTest extends TestCase {
     @Test
     @DependsOnMethod("testGetIdentifier")
     public void testGetCodeSpace() {
-        assumeTrue(Character.isIdentifierIgnorable('\u2060')
-                && Character.isIdentifierIgnorable('\u200B'));
         final SimpleCitation citation = new SimpleCitation(" Valid\u2060Id\u200Bentifier ");
         assertEquals("ValidIdentifier", Citations.getCodeSpace(citation));
 

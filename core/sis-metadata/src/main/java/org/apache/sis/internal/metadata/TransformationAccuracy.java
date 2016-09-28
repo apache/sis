@@ -55,8 +55,7 @@ public final class TransformationAccuracy extends Static {
     /**
      * Cache the positional accuracies. Most coordinate operation use a small set of accuracy values.
      */
-    private static final WeakValueHashMap<Double,PositionalAccuracy> CACHE =
-            new WeakValueHashMap<Double,PositionalAccuracy>(Double.class);
+    private static final WeakValueHashMap<Double,PositionalAccuracy> CACHE = new WeakValueHashMap<>(Double.class);
 
     /**
      * Do not allow instantiation of this class.

@@ -43,7 +43,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -340,7 +340,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     public List<ParameterValueGroup> groups(final String name) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
         final ParameterValueList values = this.values; // Protect against accidental changes.
-        final List<ParameterValueGroup> groups = new ArrayList<ParameterValueGroup>(4);
+        final List<ParameterValueGroup> groups = new ArrayList<>(4);
         final int size = values.size();
         for (int i=0; i<size; i++) {
             final GeneralParameterDescriptor descriptor = values.descriptor(i);
@@ -443,7 +443,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         if (!mode.isIgnoringMetadata()) {
             return Utilities.deepEquals(expected.values(), actual.values(), mode);
         }
-        final List<GeneralParameterValue> values = new LinkedList<GeneralParameterValue>(expected.values());
+        final List<GeneralParameterValue> values = new LinkedList<>(expected.values());
 scan:   for (final GeneralParameterValue param : actual.values()) {
             final Iterator<GeneralParameterValue> it = values.iterator();
             while (it.hasNext()) {
@@ -567,8 +567,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
          * <gml:parameterValue> element. The implementation is known to be DefaultParameterDescriptorGroup
          * because this is the type declared in the JAXBContext and in adapters.
          */
-        final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements =
-                new IdentityHashMap<GeneralParameterDescriptor,GeneralParameterDescriptor>(4);
+        final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
         ((DefaultParameterDescriptorGroup) addTo.descriptor).merge(getDescriptors(parameters), replacements);
         addTo.clear();  // Because references to parameter descriptors have changed.
         setValues(parameters, replacements, addTo);

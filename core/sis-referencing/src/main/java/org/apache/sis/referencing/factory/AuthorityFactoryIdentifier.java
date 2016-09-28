@@ -35,7 +35,7 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.metadata.NameMeaning;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

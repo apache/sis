@@ -44,7 +44,7 @@ public final strictfp class WKTKeywordsTest extends TestCase {
      * @throws ReflectiveOperationException should never happen.
      */
     @Test
-    public void verifyConstantValues() throws Exception {
+    public void verifyConstantValues() throws ReflectiveOperationException {
         for (final Field field : WKTKeywords.class.getDeclaredFields()) {
             final String name = field.getName();
             final int modifiers = field.getModifiers();

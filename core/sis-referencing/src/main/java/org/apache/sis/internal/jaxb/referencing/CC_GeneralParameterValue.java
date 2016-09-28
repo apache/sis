@@ -87,7 +87,6 @@ public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParam
         @XmlElement(name = "ParameterValue",      type = DefaultParameterValue.class),
         @XmlElement(name = "ParameterValueGroup", type = DefaultParameterValueGroup.class)
     })
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public GeneralParameterValue getElement() {
         final GeneralParameterValue metadata = this.metadata;
         if (metadata instanceof DefaultParameterValue<?>) {
@@ -97,7 +96,7 @@ public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParam
             return (DefaultParameterValueGroup) metadata;
         }
         if (metadata instanceof ParameterValue) {
-            return new DefaultParameterValue((ParameterValue<?>) metadata);
+            return new DefaultParameterValue<>((ParameterValue<?>) metadata);
         }
         if (metadata instanceof ParameterValueGroup) {
             return new DefaultParameterValueGroup((ParameterValueGroup) metadata);

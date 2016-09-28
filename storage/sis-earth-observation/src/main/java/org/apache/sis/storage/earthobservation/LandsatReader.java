@@ -158,7 +158,7 @@ final class LandsatReader {
             throws IOException, DataStoreException
     {
         this.listeners = listeners;
-        properties = new HashMap<String,String>();
+        properties = new HashMap<>();
         String line;
         while ((line = reader.readLine()) != null) {
             line = line.trim();

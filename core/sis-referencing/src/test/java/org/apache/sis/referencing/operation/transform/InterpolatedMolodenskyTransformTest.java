@@ -118,8 +118,7 @@ public final strictfp class InterpolatedMolodenskyTransformTest extends Interpol
                 "    Parameter[“Semi-major axis length difference”, -112.2, Id[“EPSG”, 8654]],\n" +
                 "    Parameter[“Flattening difference”, -5.4738838833299144E-5, Id[“EPSG”, 8655]],\n" +
                 "    ParameterFile[“Geocentric translation file”, “\\E.*\\W\\Q" +
-                                   FranceGeocentricInterpolationTest.TEST_FILE + "”, Id[“EPSG”, 8727],\n" +
-                "      Remark[“\\E.*\\Q”]],\n" +
+                                   FranceGeocentricInterpolationTest.TEST_FILE + "”, Id[“EPSG”, 8727]],\n" +
                 "    Parameter[“dim”, 2]],\n" +
                 "  Param_MT[“Affine parametric transformation”,\n" +
                 "    Parameter[“A0”, 57.29577951308232, Id[“EPSG”, 8623]],\n" +      // Radians to degrees conversion

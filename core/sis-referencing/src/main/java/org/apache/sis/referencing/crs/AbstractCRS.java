@@ -45,7 +45,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -302,7 +302,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     final AbstractCRS setCached(final AxesConvention convention, AbstractCRS crs) {
         assert Thread.holdsLock(this);
         if (forConvention == null) {
-            forConvention = new EnumMap<AxesConvention,AbstractCRS>(AxesConvention.class);
+            forConvention = new EnumMap<>(AxesConvention.class);
         } else if (crs != this) {
             for (final AbstractCRS existing : forConvention.values()) {
                 if (crs.equals(existing)) {

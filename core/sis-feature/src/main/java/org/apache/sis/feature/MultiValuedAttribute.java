@@ -67,7 +67,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
      */
     public MultiValuedAttribute(final DefaultAttributeType<V> type) {
         super(type);
-        values = new CheckedArrayList<V>(type.getValueClass());
+        values = new CheckedArrayList<>(type.getValueClass());
         final V value = type.getDefaultValue();
         if (value != null) {
             values.add(value);
@@ -86,7 +86,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
         super(type);
         final Class<V> valueClass = type.getValueClass();
         if (values == null) {
-            this.values = new CheckedArrayList<V>(valueClass);
+            this.values = new CheckedArrayList<>(valueClass);
         } else {
             final Class<?> actual = ((CheckedContainer<?>) values).getElementType();
             if (actual == valueClass) {

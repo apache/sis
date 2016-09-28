@@ -24,15 +24,12 @@ import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 
 import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
  * Common implemented features of all ResultSets : those based on a record, but also those returning results forged in memory.
@@ -375,6 +372,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
      * Defaults to the index-based version of this method.
      * The given column name is mapped to a column index by {@link #findColumn(String)}.
      */
+    @Override
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
         return getObject(findColumn(columnLabel), type);
     }

@@ -83,7 +83,7 @@ final class PackOutput implements Closeable {
      *
      * @see #isMergeAllowed(String)
      */
-    private final Set<String> entriesDone = new HashSet<String>();
+    private final Set<String> entriesDone = new HashSet<>();
 
     /**
      * Returns {@code true} if entries of the given name are allowed to be concatenated
@@ -147,8 +147,7 @@ final class PackOutput implements Closeable {
         for (final File input : inputJARs.keySet()) {
             if (!input.getName().startsWith("sis-")) {
                 String packageName = null;
-                final JarFile jar = new JarFile(input, false);
-                try {
+                try (JarFile jar = new JarFile(input, false)) {
                     final Enumeration<JarEntry> entries = jar.entries();
                     while (entries.hasMoreElements()) {
                         final JarEntry entry = entries.nextElement();
@@ -183,8 +182,6 @@ final class PackOutput implements Closeable {
                             manifest.getEntries().put(packageName, attributes);
                         }
                     }
-                } finally {
-                    jar.close();
                 }
             }
         }
@@ -219,8 +216,7 @@ final class PackOutput implements Closeable {
         for (final Iterator<Map.Entry<File,PackInput>> it = inputJARs.entrySet().iterator(); it.hasNext();) {
             final Map.Entry<File,PackInput> inputJAR = it.next();
             it.remove(); // Needs to be removed before the inner loop below.
-            final PackInput input = inputJAR.getValue();
-            try {
+            try (PackInput input = inputJAR.getValue()) {
                 for (JarEntry entry; (entry = input.nextEntry()) != null;) {
                     final String name = entry.getName();
                     boolean isMergeAllowed = false;
@@ -245,8 +241,6 @@ final class PackOutput implements Closeable {
                     }
                     outputStream.closeEntry();
                 }
-            } finally {
-                input.close();
             }
         }
     }
@@ -332,16 +326,10 @@ final class PackOutput implements Closeable {
         p.put(DEFLATE_HINT,       TRUE);            // Ignore all JAR deflation requests.
         p.put(UNKNOWN_ATTRIBUTE,  ERROR);           // Throw an error if an attribute is unrecognized
         p.put(CODE_ATTRIBUTE_PFX+"LocalVariableTable", STRIP);        // discard debug attributes.
-        final JarFile jarFile = new JarFile(inputFile);
-        try {
-            final OutputStream deflater = new GZIPOutputStream(out);
-            try {
+        try (JarFile jarFile = new JarFile(inputFile)) {
+            try (OutputStream deflater = new GZIPOutputStream(out)) {
                 packer.pack(jarFile, deflater);
-            } finally {
-                deflater.close();
             }
-        } finally {
-            jarFile.close();
         }
         if (!inputFile.delete()) {
             throw new IOException("Can't delete temporary file: " + inputFile);

@@ -37,8 +37,8 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
+import java.util.Objects;
 import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -130,7 +130,7 @@ final class EnvelopeOperation extends AbstractOperation {
          * The map values will be the default Coordinate Reference System, or null if none.
          */
         boolean characterizedByCRS = false;
-        final Map<String,CoordinateReferenceSystem> names = new LinkedHashMap<String,CoordinateReferenceSystem>(4);
+        final Map<String,CoordinateReferenceSystem> names = new LinkedHashMap<>(4);
         for (AbstractIdentifiedType property : geometryAttributes) {
             if (AttributeConvention.isGeometryAttribute(property)) {
                 final GenericName name = property.getName();
@@ -193,7 +193,7 @@ final class EnvelopeOperation extends AbstractOperation {
                 }
             }
         }
-        resultType = FeatureOperations.POOL.unique(new DefaultAttributeType<Envelope>(
+        resultType = FeatureOperations.POOL.unique(new DefaultAttributeType<>(
                 resultIdentification(identification), Envelope.class, 1, 1, null));
         this.crs = crs;
     }

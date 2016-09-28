@@ -130,7 +130,7 @@ final class SubOperationInfo {
                                 if (failure == null) {
                                     failure = exception;
                                 } else {
-                                    // failure.addSuppressed(exception) on the JDK7 branch.
+                                    failure.addSuppressed(exception);
                                 }
                                 continue;
                             }

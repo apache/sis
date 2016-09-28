@@ -357,7 +357,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Identifier> getIdentifiers() {
         if (identifiers == null) {
-            identifiers = new CheckedArrayList<Identifier>(Identifier.class);
+            identifiers = new CheckedArrayList<>(Identifier.class);
         }
         return identifiers;
     }

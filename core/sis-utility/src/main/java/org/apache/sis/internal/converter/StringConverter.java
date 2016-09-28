@@ -18,9 +18,11 @@ package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
+import java.util.IllformedLocaleException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
+import java.nio.file.InvalidPathException;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Numbers;
@@ -94,7 +96,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * To be overridden by classes which need a specialized instance.
      */
     ObjectConverter<T, String> createInverse() {
-        return new ObjectToString<T>(targetClass, this);
+        return new ObjectToString<>(targetClass, this);
     }
 
     /**
@@ -238,10 +240,10 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
         /** See {@link StringConverter} for the conversion table. */
         @Override java.lang.Boolean doConvert(final String source) throws UnconvertibleObjectException {
-            // "String in switch" in the JDK7 branch.
-            final String lower = source.toLowerCase(java.util.Locale.US);
-            if (lower.equals("true")  || lower.equals("yes") || lower.equals("on")  || lower.equals("1")) return java.lang.Boolean.TRUE;
-            if (lower.equals("false") || lower.equals("no")  || lower.equals("off") || lower.equals("0")) return java.lang.Boolean.FALSE;
+            switch (source.toLowerCase(java.util.Locale.ROOT)) {
+                case "true":  case "yes": case "on":  case "1": return java.lang.Boolean.TRUE;
+                case "false": case "no":  case "off": case "0": return java.lang.Boolean.FALSE;
+            }
             throw new UnconvertibleObjectException(formatErrorMessage(source));
         }
     }
@@ -250,7 +252,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         private static final long serialVersionUID = -794933131690043494L;
         public Locale() {super(java.util.Locale.class);}                            // Instantiated by ServiceLoader.
 
-        @Override java.util.Locale doConvert(String source) {
+        @Override java.util.Locale doConvert(String source) throws IllformedLocaleException {
             return Locales.parse(source);
         }
     }
@@ -270,6 +272,15 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
         @Override java.io.File doConvert(String source) {
             return new java.io.File(source);
+        }
+    }
+
+    public static final class Path extends StringConverter<java.nio.file.Path> {
+        private static final long serialVersionUID = -1737315635965906042L;
+        public Path() {super(java.nio.file.Path.class);}                            // Instantiated by ServiceLoader.
+
+        @Override java.nio.file.Path doConvert(String source) throws InvalidPathException {
+            return java.nio.file.Paths.get(source);
         }
     }
 
@@ -352,7 +363,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
         /** Invoked by the constructor for creating the inverse converter. */
         @Override ObjectConverter<T, String> createInverse() {
-            return new ObjectToString.CodeList<T>(targetClass, this);
+            return new ObjectToString.CodeList<>(targetClass, this);
         }
     }
 
@@ -384,7 +395,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
         /** Invoked by the constructor for creating the inverse converter. */
         @Override ObjectConverter<T, String> createInverse() {
-            return new ObjectToString.Enum<T>(targetClass, this);
+            return new ObjectToString.Enum<>(targetClass, this);
         }
     }
 }

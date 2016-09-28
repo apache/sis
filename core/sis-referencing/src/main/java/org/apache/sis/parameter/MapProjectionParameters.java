@@ -34,7 +34,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.metadata.iso.citation.Citations.NETCDF;
 
 // Branch-specific imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -168,7 +168,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * This is used in some NetCDF files instead of {@code SEMI_MAJOR} and {@code SEMI_MINOR}.
          * This is not a standard parameter.
          */
-        static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<Double>(
+        static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
                 InverseFlattening.toMap(Constants.EARTH_RADIUS), 0, 1, Double.class,
                 MeasurementRange.createGreaterThan(0.0, SI.METRE), null, null);
 
@@ -252,7 +252,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * This is used in some NetCDF files instead of {@code SEMI_MINOR}.
          * This is not a standard parameter.
          */
-        static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<Double>(
+        static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
                 toMap(Constants.INVERSE_FLATTENING), 0, 1, Double.class,
                 MeasurementRange.createGreaterThan(0.0, Unit.ONE), null, null);
 
@@ -370,7 +370,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * All names known to Apache SIS for the "is IVF definitive" parameter.
          * This is not a standard parameter.
          */
-        static final ParameterDescriptor<Boolean> DESCRIPTOR = new DefaultParameterDescriptor<Boolean>(
+        static final ParameterDescriptor<Boolean> DESCRIPTOR = new DefaultParameterDescriptor<>(
                 InverseFlattening.toMap(Constants.IS_IVF_DEFINITIVE), 0, 1, Boolean.class, null, null, Boolean.FALSE);
 
         /**
@@ -434,7 +434,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * This is used in some NetCDF files instead of {@link #STANDARD_PARALLEL_1} and
          * {@link #STANDARD_PARALLEL_2}. This is not a standard parameter.
          */
-        static final ParameterDescriptor<double[]> DESCRIPTOR = new DefaultParameterDescriptor<double[]>(
+        static final ParameterDescriptor<double[]> DESCRIPTOR = new DefaultParameterDescriptor<>(
                 InverseFlattening.toMap(Constants.STANDARD_PARALLEL),
                 0, 1, double[].class, null, null, null);
 

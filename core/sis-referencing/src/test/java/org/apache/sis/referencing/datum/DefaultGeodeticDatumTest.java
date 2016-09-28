@@ -64,7 +64,7 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
      */
     @Test
     public void testCreateAndSerialize() {
-        final Map<String,Object> properties = new HashMap<String,Object>();
+        final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put(DefaultEllipsoid.NAME_KEY, "Asteroid"));
         final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createEllipsoid(properties, 1200, 1000, SI.METRE);
 
@@ -127,7 +127,7 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     @Test
     @DependsOnMethod("testCreateAndSerialize")
     public void testGetPositionVectorTransformation() {
-        final Map<String,Object> properties = new HashMap<String,Object>();
+        final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put(DefaultGeodeticDatum.NAME_KEY, "Invalid dummy datum"));
         /*
          * Associate two BursaWolfParameters, one valid only in a local area and the other one

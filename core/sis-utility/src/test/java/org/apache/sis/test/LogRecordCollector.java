@@ -27,9 +27,6 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.io.TableAppender;
 import org.junit.runner.Description;
 
-// Branch-specific imports
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Collects who emitted logging messages during the execution of a test suite.
@@ -56,7 +53,7 @@ final class LogRecordCollector extends Handler {
      *   <li>Logging level</li>
      * </ul>
      */
-    private final List<String> records = new ArrayList<String>();
+    private final List<String> records = new ArrayList<>();
 
     /**
      * The description of the test currently running.
@@ -119,7 +116,7 @@ final class LogRecordCollector extends Handler {
      */
     final void report(final Appendable out) throws IOException {
         synchronized (records) {
-            final String lineSeparator = JDK7.lineSeparator();
+            final String lineSeparator = System.lineSeparator();
             if (!records.isEmpty()) {
                 out.append(lineSeparator)
                    .append("The following tests have logged messages at level INFO or higher:").append(lineSeparator)

@@ -69,11 +69,11 @@ public class MergedProperties extends AbstractMap<String,Object> {
     @Override
     protected EntryIterator<String,Object> entryIterator() {
         if (merge == null) {
-            merge = new HashMap<String,Object>(defaultProperties);
+            merge = new HashMap<>(defaultProperties);
             merge.putAll(properties);
             merge.remove(null);
         }
-        return new IteratorAdapter<String,Object>(merge);    // That iterator will skip null values.
+        return new IteratorAdapter<>(merge);    // That iterator will skip null values.
     }
 
     /**

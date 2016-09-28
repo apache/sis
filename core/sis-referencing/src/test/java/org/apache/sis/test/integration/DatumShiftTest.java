@@ -30,7 +30,7 @@ import org.junit.Test;
 import static org.apache.sis.test.Assume.*;
 
 // Branch-specific imports
-import org.apache.sis.internal.jdk7.Path;
+import java.nio.file.Path;
 
 
 /**

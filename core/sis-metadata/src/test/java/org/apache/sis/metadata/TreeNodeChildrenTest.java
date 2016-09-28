@@ -370,7 +370,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
      * @param children The collection from which to remove elements.
      */
     private static void testRemove(final Random random, final TreeNodeChildren children) {
-        final List<TreeTable.Node> reference = new ArrayList<TreeTable.Node>(children);
+        final List<TreeTable.Node> reference = new ArrayList<>(children);
         assertFalse("The collection shall not be initially empty.", reference.isEmpty());
         do {
             final Iterator<TreeTable.Node> rit = reference.iterator(); // The reference iterator.

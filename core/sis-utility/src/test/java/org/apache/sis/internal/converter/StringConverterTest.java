@@ -42,7 +42,9 @@ import org.junit.Test;
 import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -258,6 +260,17 @@ public final strictfp class StringConverterTest extends TestCase {
     }
 
     /**
+     * Tests conversions to {@link Path}.
+     */
+    @Test
+    public void testPath() {
+        final ObjectConverter<String,Path> c = new StringConverter.Path();
+        final String path = "home/user/index.txt".replace('/', File.separatorChar);
+        runInvertibleConversion(c, path, Paths.get(path));
+        assertSerializedEquals(c);
+    }
+
+    /**
      * Tests conversions to {@link URI}.
      *
      * @throws URISyntaxException Should never happen.
@@ -296,7 +309,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testCodeList() {
-        final ObjectConverter<String, OnLineFunction> c = new StringConverter.CodeList<OnLineFunction>(OnLineFunction.class);
+        final ObjectConverter<String, OnLineFunction> c = new StringConverter.CodeList<>(OnLineFunction.class);
         runInvertibleConversion(c, "OFFLINE_ACCESS", OnLineFunction.OFFLINE_ACCESS);
         tryUnconvertibleValue(c);
         assertSerializedEquals(c);
@@ -309,7 +322,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testEnum() {
-        final ObjectConverter<String, ElementType> c = new StringConverter.Enum<ElementType>(ElementType.class);
+        final ObjectConverter<String, ElementType> c = new StringConverter.Enum<>(ElementType.class);
         runInvertibleConversion(c, "PACKAGE", ElementType.PACKAGE);
         tryUnconvertibleValue(c);
         assertSerializedEquals(c);

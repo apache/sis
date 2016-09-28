@@ -94,7 +94,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      * @return A new parameter instance for the given name and value.
      */
     private static Watcher<Integer> createOptional(final String name, final int value) {
-        final Watcher<Integer> parameter = new Watcher<Integer>(
+        final Watcher<Integer> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.createSimpleOptional(name, Integer.class));
         parameter.setValue(value, null);
         return parameter;
@@ -109,7 +109,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      * @return A new parameter instance for the given name and value.
      */
     private static Watcher<Double> create(final String name, final double value, final Unit<?> unit) {
-        final Watcher<Double> parameter = new Watcher<Double>(DefaultParameterDescriptorTest.create(
+        final Watcher<Double> parameter = new Watcher<>(DefaultParameterDescriptorTest.create(
                 name, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN, unit));
         parameter.setValue(value, unit);
         return parameter;
@@ -179,7 +179,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @Test
     @DependsOnMethod("testInteger")
     public void testBoundedInteger() {
-        final Watcher<Integer> parameter = new Watcher<Integer>(
+        final Watcher<Integer> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.create("Bounded param", -30, +40, 15));
         assertEquals(Integer.class, parameter.getDescriptor().getValueClass());
         assertEquals(      "value", Integer.valueOf(15), parameter.getValue());
@@ -299,7 +299,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @Test
     @DependsOnMethod("testMeasure")
     public void testBoundedDouble() {
-        final Watcher<Double> parameter = new Watcher<Double>(
+        final Watcher<Double> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.create("Bounded param", -30.0, +40.0, 15.0, null));
         assertEquals(Double.class, parameter.getDescriptor().getValueClass());
         assertEquals(      "value", Double.valueOf(15), parameter.getValue());
@@ -343,7 +343,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @Test
     @DependsOnMethod({"testMeasure", "testBoundedDouble"})
     public void testBoundedMeasure() {
-        final Watcher<Double> parameter = new Watcher<Double>(
+        final Watcher<Double> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.create("Length measure", 4, 20, 12, SI.METRE));
         assertEquals("value",    Double.valueOf(12), parameter.getValue());
         assertEquals("intValue", 12,                 parameter.intValue());
@@ -390,7 +390,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @Test
     public void testArray() {
         double[] values = {5, 10, 15};
-        final Watcher<double[]> parameter = new Watcher<double[]>(
+        final Watcher<double[]> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.createForArray("myValues", 4, 4000, SI.METRE));
         parameter.setValue(values);
         assertArrayEquals(values, parameter.getValue(), 0);
@@ -435,7 +435,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
         };
         final ParameterDescriptor<AxisDirection> descriptor = DefaultParameterDescriptorTest.create(
                 "Direction", AxisDirection.class, directions, AxisDirection.NORTH);
-        final DefaultParameterValue<AxisDirection> parameter = new DefaultParameterValue<AxisDirection>(descriptor);
+        final DefaultParameterValue<AxisDirection> parameter = new DefaultParameterValue<>(descriptor);
         validate(parameter);
 
         assertEquals     ("name",         "Direction",         descriptor.getName().getCode());
@@ -627,7 +627,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @Test
     @DependsOnMethod("testWKT")
     public void testIdentifiedParameterWKT() {
-        final Watcher<Double> parameter = new Watcher<Double>(DefaultParameterDescriptorTest.createEPSG("A0", Constants.EPSG_A0));
+        final Watcher<Double> parameter = new Watcher<>(DefaultParameterDescriptorTest.createEPSG("A0", Constants.EPSG_A0));
         assertWktEquals(Convention.WKT2, "PARAMETER[“A0”, null, ID[“EPSG”, 8623]]", parameter);
     }
 }

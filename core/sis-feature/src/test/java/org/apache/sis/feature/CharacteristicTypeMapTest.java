@@ -44,9 +44,9 @@ public final strictfp class CharacteristicTypeMapTest extends TestCase {
      */
     public static DefaultAttributeType<Float> temperature() {
         final DefaultAttributeType<?> units, accuracy;
-        units    = new DefaultAttributeType<String>(singletonMap(NAME_KEY, "units"),      String.class, 1, 1, "°C", (DefaultAttributeType[]) null);
-        accuracy = new DefaultAttributeType<Float> (singletonMap(NAME_KEY, "accuracy"),    Float.class, 1, 1, 0.1f, (DefaultAttributeType[]) null);
-        return     new DefaultAttributeType<Float> (singletonMap(NAME_KEY, "temperature"), Float.class, 1, 1, null, accuracy, units);
+        units    = new DefaultAttributeType<>(singletonMap(NAME_KEY, "units"),      String.class, 1, 1, "°C", (DefaultAttributeType[]) null);
+        accuracy = new DefaultAttributeType<>(singletonMap(NAME_KEY, "accuracy"),    Float.class, 1, 1, 0.1f, (DefaultAttributeType[]) null);
+        return     new DefaultAttributeType<>(singletonMap(NAME_KEY, "temperature"), Float.class, 1, 1, null, accuracy, units);
     }
 
     /**
@@ -91,8 +91,8 @@ public final strictfp class CharacteristicTypeMapTest extends TestCase {
         assertArrayEquals("keySet", new String[] {"accuracy", "units"}, characteristics.keySet().toArray());
         assertArrayEquals("values", new Object[] { accuracy ,  units }, characteristics.values().toArray());
         assertArrayEquals("entrySet", new Object[] {
-                new SimpleEntry<String,DefaultAttributeType<?>>("accuracy", accuracy),
-                new SimpleEntry<String,DefaultAttributeType<?>>("units",    units)
+                new SimpleEntry<>("accuracy", accuracy),
+                new SimpleEntry<>("units",    units)
             }, characteristics.entrySet().toArray());
     }
 

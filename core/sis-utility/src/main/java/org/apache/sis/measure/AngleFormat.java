@@ -42,7 +42,7 @@ import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 import org.apache.sis.internal.jdk8.JDK8;
 
 
@@ -398,7 +398,7 @@ public class AngleFormat extends Format implements Localized {
      * Constructs a new {@code AngleFormat} for the default pattern and the current default locale.
      */
     public AngleFormat() {
-        this(Locale.getDefault());
+        this(Locale.getDefault(Locale.Category.FORMAT));
     }
 
     /**
@@ -429,7 +429,7 @@ public class AngleFormat extends Format implements Localized {
      * @throws IllegalArgumentException If the specified pattern is illegal.
      */
     public AngleFormat(final String pattern) throws IllegalArgumentException {
-        this(pattern, Locale.getDefault());
+        this(pattern, Locale.getDefault(Locale.Category.FORMAT));
     }
 
     /**

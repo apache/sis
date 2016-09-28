@@ -33,10 +33,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.util.CollectionsExt;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.JDK7;
 import org.apache.sis.internal.simple.SimpleAttributeType;
-
 
 /**
  * Holds a {@code Record} definition in a way more convenient for Apache SIS than
@@ -151,7 +148,7 @@ abstract class RecordDefinition { // Intentionally not Serializable.
     final Type[] computeTransientFields(final Map<? extends MemberName, ? extends Type> memberTypes) {
         final int size = memberTypes.size();
         members       = new MemberName[size];
-        memberIndices = new LinkedHashMap<MemberName,Integer>(Containers.hashMapCapacity(size));
+        memberIndices = new LinkedHashMap<>(Containers.hashMapCapacity(size));
         final Type[] types = new Type[size];
         int i = 0;
         for (final Map.Entry<? extends MemberName, ? extends Type> entry : memberTypes.entrySet()) {
@@ -242,7 +239,7 @@ abstract class RecordDefinition { // Intentionally not Serializable.
      */
     final String toString(final String head, final Object values) {
         final StringBuilder buffer = new StringBuilder(250);
-        final String lineSeparator = JDK7.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final String[] names = new String[size()];
         int width = 0;
         buffer.append(head).append("[“").append(getRecordType().getTypeName()).append("”] {").append(lineSeparator);

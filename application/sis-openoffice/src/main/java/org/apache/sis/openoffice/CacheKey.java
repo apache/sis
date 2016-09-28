@@ -20,7 +20,7 @@ import java.util.Arrays;
 import org.apache.sis.util.collection.Cache;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -37,7 +37,7 @@ final class CacheKey<T> {
     /**
      * The cache shared by all formulas.
      */
-    private static final Cache<CacheKey<?>,Object> cache = new Cache<CacheKey<?>,Object>(32, 10, true);
+    private static final Cache<CacheKey<?>, Object> cache = new Cache<>(32, 10, true);
 
     /**
      * The type of cached value.

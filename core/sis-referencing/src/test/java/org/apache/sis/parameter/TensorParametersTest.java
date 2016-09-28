@@ -97,7 +97,7 @@ public strictfp class TensorParametersTest extends TestCase {
     @SuppressWarnings("unchecked")
     public TensorParametersTest() {
         if (WKT1 == null) {
-            WKT1 = new TensorParameters<Double>(Double.class, "elt_", "_",
+            WKT1 = new TensorParameters<>(Double.class, "elt_", "_",
                     TensorParameters.WKT1.getDimensionDescriptor(0),
                     TensorParameters.WKT1.getDimensionDescriptor(1));
         }

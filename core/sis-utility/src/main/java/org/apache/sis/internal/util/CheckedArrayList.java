@@ -108,7 +108,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
         if (collection instanceof CheckedArrayList<?> && ((CheckedArrayList<?>) collection).type == type) {
             return (CheckedArrayList<E>) collection;
         } else {
-            final CheckedArrayList<E> list = new CheckedArrayList<E>(type, collection.size());
+            final CheckedArrayList<E> list = new CheckedArrayList<>(type, collection.size());
             list.addAll((Collection) collection); // addAll will perform the type checks.
             return list;
         }
@@ -215,7 +215,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
         }
         // Not-so-unsafe cast: we verified in the above loop that all elements are instance of E.
         // The array itself may not be an instance of E[], but this is not important for Mediator.
-        return new Mediator<E>(ArraysExt.resize((E[]) array, count));
+        return new Mediator<>(ArraysExt.resize((E[]) array, count));
     }
 
     /**

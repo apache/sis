@@ -225,8 +225,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
             if (replacement != null) {
                 if (p instanceof ParameterValue<?>) {
                     final ParameterValue<?> source = (ParameterValue<?>) p;
-                    @SuppressWarnings({"unchecked", "rawtypes"})
-                    final ParameterValue<?> target = new DefaultParameterValue((ParameterDescriptor<?>) replacement);
+                    final ParameterValue<?> target = new DefaultParameterValue<>((ParameterDescriptor<?>) replacement);
                     final Object value = source.getValue();
                     final Unit<?> unit = source.getUnit();
                     if (unit == null) {

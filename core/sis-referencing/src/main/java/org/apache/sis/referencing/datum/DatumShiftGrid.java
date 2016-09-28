@@ -38,7 +38,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

@@ -83,9 +83,6 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
 
-// Branch-specific imports
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Provides support methods for formatting a <cite>Well Known Text</cite> (WKT).
@@ -198,7 +195,7 @@ public class Formatter implements Localized {
      *
      * @see #getEnclosingElement(int)
      */
-    private final List<FormattableObject> enclosingElements = new ArrayList<FormattableObject>();
+    private final List<FormattableObject> enclosingElements = new ArrayList<>();
 
     /**
      * The contextual units for writing lengths, angles or other type of measurements.
@@ -209,7 +206,7 @@ public class Formatter implements Localized {
      * @see #addContextualUnit(Unit)
      * @see #toContextualUnit(Unit)
      */
-    private final Map<Unit<?>, Unit<?>> units = new HashMap<Unit<?>, Unit<?>>(4);
+    private final Map<Unit<?>, Unit<?>> units = new HashMap<>(4);
 
     /**
      * A bits mask of elements which defined a contextual units.
@@ -341,7 +338,7 @@ public class Formatter implements Localized {
         ArgumentChecks.ensureNonNull("convention",  convention);
         ArgumentChecks.ensureNonNull("symbols",     symbols);
         ArgumentChecks.ensureBetween("indentation", WKTFormat.SINGLE_LINE, Byte.MAX_VALUE, indentation);
-        this.locale        = Locale.getDefault();
+        this.locale        = Locale.getDefault(Locale.Category.DISPLAY);
         this.convention    = convention;
         this.authority     = convention.getNameAuthority();
         this.symbols       = symbols.immutable();
@@ -562,7 +559,7 @@ public class Formatter implements Localized {
                 buffer.append(symbols.getSeparator());
             }
         } else if (requestNewLine) {
-            buffer.append(JDK7.lineSeparator()).append(CharSequences.spaces(margin));
+            buffer.append(System.lineSeparator()).append(CharSequences.spaces(margin));
         }
         requestNewLine = false;
     }
@@ -1618,7 +1615,7 @@ public class Formatter implements Localized {
         final Warnings warnings = this.warnings;                    // Protect against accidental changes.
         if (warnings != null) {
             final StringBuffer buffer = this.buffer;
-            final String ln = JDK7.lineSeparator();
+            final String ln = System.lineSeparator();
             buffer.append(ln).append(ln);
             if (colors != null) {
                 buffer.append(X364.BACKGROUND_RED.sequence()).append(X364.BOLD.sequence()).append(' ');
@@ -1629,7 +1626,7 @@ public class Formatter implements Localized {
             }
             buffer.append(ln);
             final int n = warnings.getNumMessages();
-            final Set<String> done = new HashSet<String>();
+            final Set<String> done = new HashSet<>();
             for (int i=0; i<n; i++) {
                 String message = Exceptions.getLocalizedMessage(warnings.getException(i), locale);
                 if (message == null) {

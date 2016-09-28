@@ -25,7 +25,7 @@ import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
 
 // Branch-dependent imports
-import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 
 
 /**
@@ -112,8 +112,8 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
      */
     @Override
     public final long length() throws IOException {
-        if (channel instanceof FileChannel) {
-            return ((FileChannel) channel).size();
+        if (channel instanceof SeekableByteChannel) {
+            return ((SeekableByteChannel) channel).size();
         }
         return -1;
     }

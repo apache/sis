@@ -33,7 +33,7 @@ import org.apache.sis.util.Debug;
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
 // Branch-dependent imports
-import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 
 
 /**
@@ -847,14 +847,14 @@ public class ChannelDataInput extends ChannelData {
              * Requested position is inside the current limits of the buffer.
              */
             buffer.position((int) p);
-        } else if (channel instanceof FileChannel) {
+        } else if (channel instanceof SeekableByteChannel) {
             /*
              * Requested position is outside the current limits of the buffer,
              * but we can set the new position directly in the channel. Note
              * that StorageConnector.rewind() needs the buffer content to be
              * valid as a result of this seek, so we reload it immediately.
              */
-            ((FileChannel) channel).position(channelOffset + position);
+            ((SeekableByteChannel) channel).position(channelOffset + position);
             bufferOffset = position;
             buffer.clear().limit(0);
         } else if (p >= 0) {

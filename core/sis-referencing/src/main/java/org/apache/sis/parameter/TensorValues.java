@@ -148,7 +148,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")
     public ParameterValueGroup clone() {
-        return new TensorValues<E>(this, true);
+        return new TensorValues<>(this, true);
     }
 
     /**
@@ -156,7 +156,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public ParameterValueGroup createValue() {
-        return new TensorValues<E>(this, false);
+        return new TensorValues<>(this, false);
     }
 
     /**
@@ -306,7 +306,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public List<GeneralParameterValue> values() {
-        final List<GeneralParameterValue> addTo = new ArrayList<GeneralParameterValue>();
+        final List<GeneralParameterValue> addTo = new ArrayList<>();
         for (final ParameterValue<Integer> dimension : dimensions) {
             if (!isOmitted(dimension)) {
                 addTo.add(dimension);

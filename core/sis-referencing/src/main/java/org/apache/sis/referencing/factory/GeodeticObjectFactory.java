@@ -257,8 +257,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
             properties = CollectionsExt.compact(new HashMap<String,Object>(properties));
         }
         defaultProperties = properties;
-        pool = new WeakHashSet<AbstractIdentifiedObject>(AbstractIdentifiedObject.class);
-        parser = new AtomicReference<Parser>();
+        pool = new WeakHashSet<>(AbstractIdentifiedObject.class);
+        parser = new AtomicReference<>();
     }
 
     /**
@@ -1637,7 +1637,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
                 parserConstructor = c;
             }
             p = c.newInstance(defaultProperties, this, getMathTransformFactory());
-        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+        } catch (ReflectiveOperationException e) {
             throw new FactoryException(e);
         }
         final Object object;

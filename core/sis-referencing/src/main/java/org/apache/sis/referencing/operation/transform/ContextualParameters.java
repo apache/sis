@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.GeneralParameterValue;
@@ -53,9 +54,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -536,8 +534,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * Some WKT parsers other than SIS may also require the parameter values to be listed in that specific
          * order. We proceed by first copying all parameters in a temporary HashMap:
          */
-        final Map<ParameterDescriptor<?>, ParameterValue<?>> parameters =
-                new IdentityHashMap<ParameterDescriptor<?>, ParameterValue<?>>(values.length);
+        final Map<ParameterDescriptor<?>, ParameterValue<?>> parameters = new IdentityHashMap<>(values.length);
         for (ParameterValue<?> p : values) {
             if (p == null) {
                 break;                      // The first null value in the array indicates the end of sequence.
@@ -588,7 +585,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @throws ParameterNotFoundException if there is no parameter of the given name.
      */
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public synchronized ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
         final GeneralParameterDescriptor desc = descriptor.descriptor(name);
         if (!(desc instanceof ParameterDescriptor<?>)) {
@@ -601,7 +597,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         for (int i=0; i < values.length; i++) {
             ParameterValue<?> p = values[i];
             if (p == null) {
-                values[i] = p = new ContextualParameter((ParameterDescriptor<?>) desc);
+                values[i] = p = new ContextualParameter<>((ParameterDescriptor<?>) desc);
                 return p;
             }
             if (p.getDescriptor() == desc) {                    // Identity comparison should be okay here.

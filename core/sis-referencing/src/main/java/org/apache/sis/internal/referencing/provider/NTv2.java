@@ -51,12 +51,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 
 // Branch-dependent imports
-import java.io.File;
-import org.opengis.util.InternationalString;
-import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.internal.jdk7.Files;
-import org.apache.sis.internal.jdk7.Path;
-import org.apache.sis.internal.jdk7.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import org.apache.sis.internal.jdk8.JDK8;
 
 
@@ -78,18 +75,10 @@ public final class NTv2 extends AbstractProvider {
     private static final long serialVersionUID = -4027618007780159180L;
 
     /**
-     * Warns the user that the parameter type will change from {@link File}
-     * to {@link java.nio.file.Path} when Apache SIS will upgrade to Java 7.
-     */
-    static final InternationalString WARNING = new SimpleInternationalString(
-            "The parameter type will change from ‘java.io.File’ to ‘java.nio.file.Path’ " +
-            "when Apache SIS will upgrade to Java 7.");
-
-    /**
      * The operation parameter descriptor for the <cite>"Latitude and longitude difference file"</cite> parameter value.
      * The file extension is typically {@code ".gsb"}. There is no default value.
      */
-    private static final ParameterDescriptor<File> FILE;
+    private static final ParameterDescriptor<Path> FILE;
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -100,7 +89,7 @@ public final class NTv2 extends AbstractProvider {
         FILE = builder
                 .addIdentifier("8656")
                 .addName("Latitude and longitude difference file")
-                .setRemarks(WARNING).create(File.class, null);
+                .create(Path.class, null);
         PARAMETERS = builder
                 .addIdentifier("9615")
                 .addName("NTv2")
@@ -138,8 +127,7 @@ public final class NTv2 extends AbstractProvider {
             throws ParameterNotFoundException, FactoryException
     {
         final Parameters pg = Parameters.castOrWrap(values);
-        return InterpolatedTransform.createGeodeticTransformation(factory,
-                getOrLoad(Path.castOrCopy(pg.getMandatoryValue(FILE))));
+        return InterpolatedTransform.createGeodeticTransformation(factory, getOrLoad(pg.getMandatoryValue(FILE)));
     }
 
     /**
@@ -157,17 +145,12 @@ public final class NTv2 extends AbstractProvider {
             try {
                 grid = handler.peek();
                 if (grid == null) {
-                    try {
-                        final ReadableByteChannel in = Files.newByteChannel(resolved);
-                        try {
-                            DatumShiftGridLoader.log(NTv2.class, file);
-                            final Loader loader = new Loader(in, file);
-                            grid = loader.readGrid();
-                            loader.reportWarnings();
-                        } finally {
-                            in.close();
-                        }
-                    } catch (Exception e) {     // Multi-catch on the JDK7 branch.
+                    try (final ReadableByteChannel in = Files.newByteChannel(resolved)) {
+                        DatumShiftGridLoader.log(NTv2.class, file);
+                        final Loader loader = new Loader(in, file);
+                        grid = loader.readGrid();
+                        loader.reportWarnings();
+                    } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
                         throw DatumShiftGridLoader.canNotLoad("NTv2", file, e);
                     }
                     grid = grid.useSharedData();
@@ -213,7 +196,7 @@ public final class NTv2 extends AbstractProvider {
          */
         private static final Map<String,Integer> TYPES;
         static {
-            final Map<String,Integer> types = new HashMap<String,Integer>(32);
+            final Map<String,Integer> types = new HashMap<>(32);
             final Integer string  = STRING_TYPE;    // Autoboxing
             final Integer integer = INTEGER_TYPE;
             final Integer real    = DOUBLE_TYPE;
@@ -271,7 +254,7 @@ public final class NTv2 extends AbstractProvider {
          */
         Loader(final ReadableByteChannel channel, final Path file) throws IOException, FactoryException {
             super(channel, ByteBuffer.allocate(4096), file);
-            this.header = new LinkedHashMap<String,Object>();
+            this.header = new LinkedHashMap<>();
             ensureBufferContains(RECORD_LENGTH);
             if (isLittleEndian(buffer.getInt(KEY_LENGTH))) {
                 buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -348,7 +331,7 @@ public final class NTv2 extends AbstractProvider {
              * sign of longitude translations; instead, this reversal will be handled by grid.coordinateToGrid
              * MathTransform and its inverse.
              */
-            final DatumShiftGridFile.Float<Angle,Angle> grid = new DatumShiftGridFile.Float<Angle,Angle>(2,
+            final DatumShiftGridFile.Float<Angle,Angle> grid = new DatumShiftGridFile.Float<>(2,
                     unit, unit, true, -xmin, ymin, -dx, dy, width, height, PARAMETERS, file);
             @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] tx = grid.offsets[0];
             @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] ty = grid.offsets[1];

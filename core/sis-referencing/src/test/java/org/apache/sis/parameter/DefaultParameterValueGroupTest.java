@@ -72,12 +72,11 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
      * and assigns to them an integer value in sequence with the given step. For example if {@code step} is 10,
      * then this method will create parameters with values 10, 20, 30 and 40.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     private DefaultParameterValue<?>[] createValues(final int step) {
         final List<GeneralParameterDescriptor> descriptors = descriptor.descriptors();
         final DefaultParameterValue<?>[] parameters = new DefaultParameterValue<?>[descriptors.size()];
         for (int i=0; i<parameters.length;) {
-            parameters[i] = new DefaultParameterValue((ParameterDescriptor<?>) descriptors.get(i));
+            parameters[i] = new DefaultParameterValue<>((ParameterDescriptor<?>) descriptors.get(i));
             parameters[i].setValue(++i * step);
         }
         return parameters;
@@ -240,8 +239,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
     @DependsOnMethod({"testValuesAddAll", "testAddGroup", "testEqualsAndHashCode"})
     public void testValuesAddAllWithSubgroups() {
         final DefaultParameterDescriptorGroup group, subGroup;
-        final List<GeneralParameterDescriptor> descriptors =
-                new ArrayList<GeneralParameterDescriptor>(descriptor.descriptors());
+        final List<GeneralParameterDescriptor> descriptors = new ArrayList<>(descriptor.descriptors());
         subGroup = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "theSubGroup"),
                 2, 4, descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]));
         descriptors.add(subGroup);
@@ -266,7 +264,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         g1.parameter("Mandatory 1").setValue(3);
         g2.parameter( "Optional 4").setValue(7);
         g3.parameter("Mandatory 2").setValue(5);
-        final List<GeneralParameterValue> expected = new ArrayList<GeneralParameterValue>(6);
+        final List<GeneralParameterValue> expected = new ArrayList<>(6);
         assertTrue(expected.add(v2));
         assertTrue(expected.add(v3));
         assertTrue(expected.add(g1));
@@ -297,7 +295,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
     public void testValuesAddWrongParameter() {
         final DefaultParameterValueGroup    group = createGroup(10);
         final List<GeneralParameterValue>  values = group.values();
-        final ParameterValue<Integer> nonExistent = new DefaultParameterDescriptor<Integer>(
+        final ParameterValue<Integer> nonExistent = new DefaultParameterDescriptor<>(
                 singletonMap(NAME_KEY, "Optional 5"), 0, 1, Integer.class, null, null, null).createValue();
         try {
             values.add(nonExistent);
@@ -426,7 +424,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
     public void testEqualsIgnoreMetadata() {
         final DefaultParameterValueGroup g1 = createGroup(10);
         final DefaultParameterValueGroup g2 = new DefaultParameterValueGroup(g1.getDescriptor());
-        final List<GeneralParameterValue> values = new ArrayList<GeneralParameterValue>(g1.values());
+        final List<GeneralParameterValue> values = new ArrayList<>(g1.values());
         Collections.swap(values, 2, 3);
         g2.values().addAll(values);
 

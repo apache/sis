@@ -112,10 +112,10 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
     private static DefaultParameterDescriptor<Integer> create(final String name, final String remarks,
             final boolean mandatory, final Integer defaultValue)
     {
-        final Map<String,String> properties = new HashMap<String,String>(4);
+        final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, name));
         assertNull(properties.put(DefaultParameterDescriptor.REMARKS_KEY, remarks));
-        return new DefaultParameterDescriptor<Integer>(properties, mandatory ? 1 : 0, 1, Integer.class, null, null, defaultValue);
+        return new DefaultParameterDescriptor<>(properties, mandatory ? 1 : 0, 1, Integer.class, null, null, defaultValue);
     }
 
     /**
@@ -186,7 +186,7 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
     @Test
     @DependsOnMethod("testParameterSubstitution")
     public void testGroupSubstitution() throws JAXBException {
-        final Map<String,String> properties = new HashMap<String,String>(4);
+        final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, "Group"));
         final ParameterDescriptorGroup provided = new DefaultParameterDescriptorGroup(properties, 1, 2,
                 unmarshal("Parameter A", null),
@@ -213,7 +213,7 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
     @Test
     @DependsOnMethod({"testGroupSubstitution", "testParameterMerge"})
     public void testGroupMergeBecauseDifferentProperties() throws JAXBException {
-        final Map<String,String> properties = new HashMap<String,String>(4);
+        final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, "Group"));
         final ParameterDescriptorGroup provided = new DefaultParameterDescriptorGroup(properties, 1, 2,
                 unmarshal("Parameter A", "Remarks A."),
@@ -254,7 +254,7 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
     @Test
     @DependsOnMethod("testGroupMergeBecauseDifferentProperties")
     public void testGroupMergeBecauseMissingParameter() throws JAXBException {
-        final Map<String,String> properties = new HashMap<String,String>(4);
+        final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, "Group"));
         final ParameterDescriptorGroup provided = new DefaultParameterDescriptorGroup(properties, 1, 2,
                 unmarshal("Parameter A", null),
@@ -296,7 +296,7 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
     @Test
     @DependsOnMethod("testGroupMergeBecauseDifferentProperties")
     public void testGroupMergeBecauseExtraParameter() throws JAXBException {
-        final Map<String,String> properties = new HashMap<String,String>(4);
+        final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, "Group"));
         final ParameterDescriptorGroup provided = new DefaultParameterDescriptorGroup(properties, 1, 2,
                 unmarshal("Parameter A", "Remarks A."),

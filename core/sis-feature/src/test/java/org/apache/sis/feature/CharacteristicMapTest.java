@@ -43,7 +43,7 @@ public final strictfp class CharacteristicMapTest extends TestCase {
      * @return A {@code "temperature"} attribute with two characteristics: {@code "accuracy"} and {@code "units"}.
      */
     public static AbstractAttribute<Float> temperature() {
-        return new SingletonAttribute<Float>(CharacteristicTypeMapTest.temperature(), 20f);
+        return new SingletonAttribute<>(CharacteristicTypeMapTest.temperature(), 20f);
     }
 
     /**
@@ -53,9 +53,8 @@ public final strictfp class CharacteristicMapTest extends TestCase {
      * @param  name Either {@code "accuracy"} or {@code "units"}.
      * @return An attribute for the given name.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})    // Not needed on JDK7 branch.
     private static AbstractAttribute<?> create(final AbstractAttribute<?> temperature, final String name) {
-        return new SingletonAttribute(((DefaultAttributeType<?>) temperature.getType()).characteristics().get(name));
+        return new SingletonAttribute<>(((DefaultAttributeType<?>) temperature.getType()).characteristics().get(name));
     }
 
     /**
@@ -276,8 +275,8 @@ public final strictfp class CharacteristicMapTest extends TestCase {
         assertArrayEquals("keySet", new String[] {"accuracy", "units"}, characteristics.keySet().toArray());
         assertArrayEquals("values", new Object[] { accuracy ,  units }, characteristics.values().toArray());
         assertArrayEquals("entrySet", new Object[] {
-                new SimpleEntry<String,AbstractAttribute<?>>("accuracy", accuracy),
-                new SimpleEntry<String,AbstractAttribute<?>>("units",    units)
+                new SimpleEntry<>("accuracy", accuracy),
+                new SimpleEntry<>("units",    units)
             }, characteristics.entrySet().toArray());
     }
 

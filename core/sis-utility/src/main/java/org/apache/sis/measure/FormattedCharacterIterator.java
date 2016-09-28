@@ -155,7 +155,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      */
     FormattedCharacterIterator(final CharSequence text) {
         super(text);
-        attributes = new IdentityHashMap<Attribute,Entry>(8);
+        attributes = new IdentityHashMap<>(8);
     }
 
     /**
@@ -314,7 +314,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      * {@code getRunStart(Set)} and {@code getRunLimit(Set)} methods.
      */
     private Collection<Entry> entries(final Set<? extends Attribute> requested) {
-        final Collection<Entry> entries = new ArrayList<Entry>(requested.size());
+        final Collection<Entry> entries = new ArrayList<>(requested.size());
         for (final Attribute r : requested) {
             final Entry e = attributes.get(r);
             if (e != null) {

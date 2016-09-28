@@ -90,7 +90,7 @@ public final strictfp class OptionKeyTest extends TestCase {
      */
     @Test
     public void testSubclassSerialization() {
-        final CustomKey<Integer> key = new CustomKey<Integer>("key", Integer.class);
+        final CustomKey<Integer> key = new CustomKey<>("key", Integer.class);
         assertNotSame(key, assertSerializedEquals(key));
     }
 }

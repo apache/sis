@@ -50,9 +50,9 @@ public final strictfp class PropertySingletonTest extends TestCase {
      * Creates a new test case.
      */
     public PropertySingletonTest() {
-        attribute = new SingletonAttribute<Integer>(new DefaultAttributeType<Integer>(
+        attribute = new SingletonAttribute<>(new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, "test"), Integer.class, 0, 1, null));
-        singleton = new PropertySingleton<Integer>(attribute);
+        singleton = new PropertySingleton<>(attribute);
     }
 
     /**

@@ -63,7 +63,7 @@ import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Path;
+import java.nio.file.Path;
 
 
 /**
@@ -184,8 +184,8 @@ public enum About {
         if (locale != null) {
             formatLocale = locale;
         } else {
-            locale       = Locale.getDefault();
-            formatLocale = locale; // On the JDK7 branch, this is not necessarily the same.
+            locale       = Locale.getDefault(Locale.Category.DISPLAY);
+            formatLocale = Locale.getDefault(Locale.Category.FORMAT);
         }
         String userHome = null;
         String javaHome = null;
@@ -508,7 +508,7 @@ pathTree:   for (int j=0; ; j++) {
      * @return The paths, or {@code null} if none.
      */
     private static Map<File,CharSequence> classpath(final String paths, final boolean asDirectories) {
-        final Map<File,CharSequence> files = new LinkedHashMap<File,CharSequence>();
+        final Map<File,CharSequence> files = new LinkedHashMap<>();
         return classpath(paths, null, asDirectories, files) ? files : null;
     }
 
@@ -577,8 +577,7 @@ pathTree:   for (int j=0; ; j++) {
             }
             final File file = entry.getKey();
             if (file.isFile() && file.canRead()) {
-                try {
-                    final JarFile jar = new JarFile(file);
+                try (final JarFile jar = new JarFile(file)) {
                     final Manifest manifest = jar.getManifest();
                     if (manifest != null) {
                         final Attributes attributes = manifest.getMainAttributes();
@@ -602,12 +601,11 @@ pathTree:   for (int j=0; ; j++) {
                             }
                         }
                     }
-                    jar.close();
                 } catch (IOException e) {
                     if (error == null) {
                         error = e;
                     } else {
-                        // error.addSuppressed(e) on JDK7 branch.
+                        error.addSuppressed(e);
                     }
                 }
             }

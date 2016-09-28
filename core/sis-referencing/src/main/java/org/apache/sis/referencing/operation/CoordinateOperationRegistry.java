@@ -76,7 +76,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.internal.jdk8.Predicate;
 
@@ -335,16 +335,13 @@ class CoordinateOperationRegistry {
                     }
                     return operation;
                 }
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException | ConversionException e) {
                 String message = Errors.format(Errors.Keys.CanNotInstantiate_1, new CRSPair(sourceCRS, targetCRS));
                 String details = e.getLocalizedMessage();
                 if (details != null) {
                     message = message + ' ' + details;
                 }
                 throw new FactoryException(message, e);
-            } catch (ConversionException e) {
-                throw new FactoryException(Errors.format(
-                        Errors.Keys.CanNotInstantiate_1, new CRSPair(sourceCRS, targetCRS)), e);
             }
         }
     }
@@ -405,15 +402,12 @@ class CoordinateOperationRegistry {
                     return null;
                 }
             }
-        } catch (NoSuchAuthorityCodeException exception) {
+        } catch (NoSuchAuthorityCodeException | MissingFactoryResourceException exception) {
             /*
              * sourceCode or targetCode is unknown to the underlying authority factory.
              * Ignores the exception and fallback on the generic algorithm provided by
              * CoordinateOperationFinder.
              */
-            log(exception);
-            return null;
-        } catch (MissingFactoryResourceException exception) {
             log(exception);
             return null;
         }
@@ -714,7 +708,7 @@ class CoordinateOperationRegistry {
         CoordinateReferenceSystem crs;
         if (Utilities.equalsApproximatively(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
         if (Utilities.equalsApproximatively(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
-        final Map<String,Object> properties = new HashMap<String,Object>(derivedFrom(operation));
+        final Map<String,Object> properties = new HashMap<>(derivedFrom(operation));
         /*
          * Determine whether the operation to create is a Conversion or a Transformation
          * (could also be a Conversion subtype like Projection, but this is less important).
@@ -748,11 +742,8 @@ class CoordinateOperationRegistry {
                     try {
                         method = factorySIS.getOperationMethod(method.getName().getCode());
                         method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
-                    } catch (NoSuchIdentifierException se) {
-                        // ex.addSuppressed(se) on the JDK7 branch.
-                        throw ex;
-                    } catch (IllegalArgumentException se) {
-                        // ex.addSuppressed(se) on the JDK7 branch.
+                    } catch (NoSuchIdentifierException | IllegalArgumentException se) {
+                        ex.addSuppressed(se);
                         throw ex;
                     }
                 }
@@ -791,7 +782,7 @@ class CoordinateOperationRegistry {
                                                   final CoordinateOperation operation)
             throws IllegalArgumentException, FactoryException
     {
-        final List<CoordinateOperation> operations = new ArrayList<CoordinateOperation>();
+        final List<CoordinateOperation> operations = new ArrayList<>();
         if (operation instanceof ConcatenatedOperation) {
             operations.addAll(((ConcatenatedOperation) operation).getOperations());
         } else {
@@ -970,7 +961,7 @@ class CoordinateOperationRegistry {
      * @return a modifiable map containing the given name. Callers can put other entries in this map.
      */
     static Map<String,Object> properties(final Identifier name) {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         properties.put(CoordinateOperation.NAME_KEY, name);
         if ((name == DATUM_SHIFT) || (name == ELLIPSOID_CHANGE)) {
             properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, new PositionalAccuracy[] {

@@ -33,7 +33,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -175,7 +175,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * Initializes the transient fields.
      */
     private void init() {
-        childs = new WeakValueHashMap<String,Object>(String.class);
+        childs = new WeakValueHashMap<>(String.class);
     }
 
     /**

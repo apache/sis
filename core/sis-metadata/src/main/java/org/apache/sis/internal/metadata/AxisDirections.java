@@ -100,7 +100,7 @@ public final class AxisDirections extends Static {
      * For each direction, the opposite direction.
      * This map shall be immutable after construction.
      */
-    private static final Map<AxisDirection,AxisDirection> OPPOSITES = new HashMap<AxisDirection,AxisDirection>(20);
+    private static final Map<AxisDirection,AxisDirection> OPPOSITES = new HashMap<>(20);
     static {
         put(OTHER,             OTHER);
         put(NORTH,             SOUTH);
@@ -132,7 +132,7 @@ public final class AxisDirections extends Static {
      * Proposed abbreviations for some axis directions.
      * This map shall be immutable after construction.
      */
-    private static final Map<AxisDirection,String> ABBREVIATIONS = new HashMap<AxisDirection,String>(12);
+    private static final Map<AxisDirection,String> ABBREVIATIONS = new HashMap<>(12);
     static {
         final Map<AxisDirection,String> m = ABBREVIATIONS;
         m.put(FUTURE,            "t");

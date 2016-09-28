@@ -104,7 +104,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     @BeforeClass
     public static void createFactory() throws FactoryException {
         final GeodeticObjectFactory f = new GeodeticObjectFactory();
-        final Map<String,Object> properties = new HashMap<String,Object>(6);
+        final Map<String,Object> properties = new HashMap<>(6);
         assertNull(properties.put("datumFactory", f));
         assertNull(properties.put("csFactory", f));
         assertNull(properties.put("crsFactory", f));

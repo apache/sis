@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.util.Citations;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -101,13 +101,13 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
             final int ordinal = ((NonMarshalledAuthority) authority).ordinal;
             switch (ordinal) {
                 case NonMarshalledAuthority.ID: {
-                    return new SpecializedIdentifier<String>(IdentifierSpace.ID, code);
+                    return new SpecializedIdentifier<>(IdentifierSpace.ID, code);
                 }
                 case NonMarshalledAuthority.UUID: {
                     final Context context = Context.current();
                     final ValueConverter converter = Context.converter(context);
                     try {
-                        return new SpecializedIdentifier<UUID>(IdentifierSpace.UUID, converter.toUUID(context, code));
+                        return new SpecializedIdentifier<>(IdentifierSpace.UUID, converter.toUUID(context, code));
                     } catch (IllegalArgumentException e) {
                         parseFailure(context, code, UUID.class, e);
                         break;
@@ -125,11 +125,11 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
                         break;
                     }
                     if (ordinal == NonMarshalledAuthority.HREF) {
-                        return new SpecializedIdentifier<URI>(IdentifierSpace.HREF, href);
+                        return new SpecializedIdentifier<>(IdentifierSpace.HREF, href);
                     }
                     final XLink xlink = new XLink();
                     xlink.setHRef(href);
-                    return new SpecializedIdentifier<XLink>(IdentifierSpace.XLINK, xlink);
+                    return new SpecializedIdentifier<>(IdentifierSpace.XLINK, xlink);
                 }
             }
         }

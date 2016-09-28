@@ -129,7 +129,7 @@ public final strictfp class ClassesTest extends TestCase {
      */
     @Test
     public void testFindCommonParent() {
-        final Set<Object> types = new HashSet<Object>();
+        final Set<Object> types = new HashSet<>();
 
         assertTrue(types.add(new NotSerializableException()));
         assertEquals(NotSerializableException.class, findCommonClass     (types));

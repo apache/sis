@@ -112,7 +112,7 @@ public final class FeatureOperations extends Static {
     /**
      * The pool of operations or operation dependencies created so far, for sharing exiting instances.
      */
-    static final WeakHashSet<AbstractIdentifiedType> POOL = new WeakHashSet<AbstractIdentifiedType>(AbstractIdentifiedType.class);
+    static final WeakHashSet<AbstractIdentifiedType> POOL = new WeakHashSet<>(AbstractIdentifiedType.class);
 
     /**
      * Do not allow instantiation of this class.

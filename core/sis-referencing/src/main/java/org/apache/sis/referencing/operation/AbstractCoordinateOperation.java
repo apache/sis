@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.measure.converter.ConversionException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
@@ -66,7 +67,7 @@ import org.apache.sis.internal.system.Loggers;
 import static org.apache.sis.util.Utilities.deepEquals;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -820,7 +821,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                                     CoordinateSystems.swapAndScaleAxes(that.getTargetCRS().getCoordinateSystem(),
                                                                        this.getTargetCRS().getCoordinateSystem()));
                             tr2 = MathTransforms.concatenate(before, tr2, after);
-                        } catch (Exception e) {    // (ConversionException | RuntimeException) on the JDK7 branch.
+                        } catch (ConversionException | RuntimeException e) {
                             Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
                                     AbstractCoordinateOperation.class, "equals", e);
                         }

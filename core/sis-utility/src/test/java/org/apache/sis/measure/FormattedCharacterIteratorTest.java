@@ -112,7 +112,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
      * @param withNumberFields {@code true} for including the keys for {@code NumberFormat} fields.
      */
     private static Set<Attribute> getAllAttributeKeys(final boolean withNumberFields) {
-        final Set<Attribute> keys = new HashSet<Attribute>(8);
+        final Set<Attribute> keys = new HashSet<>(8);
         assertTrue(keys.add(DEGREES));
         assertTrue(keys.add(MINUTES));
         assertTrue(keys.add(SECONDS));

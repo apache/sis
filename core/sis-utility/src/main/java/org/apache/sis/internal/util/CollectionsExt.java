@@ -28,7 +28,6 @@ import org.opengis.parameter.InvalidParameterCardinalityException;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 import org.apache.sis.internal.jdk8.Function;
 
 
@@ -136,6 +135,7 @@ public final class CollectionsExt extends Static {
      *
      * @since 0.6
      */
+    @SafeVarargs
     public static <T> Set<T> nonEmptySet(final T... elements) {
         final Set<T> asSet = immutableSet(true, elements);
         return (asSet != null && asSet.isEmpty()) ? null : asSet;
@@ -234,7 +234,7 @@ public final class CollectionsExt extends Static {
         final Class<?> valueType = value.getClass();
         if (valueType.isArray()) {
             if (type.isAssignableFrom(valueType)) {
-                final Set<E> set = new LinkedHashSet<E>(Arrays.asList((E[]) value));
+                final Set<E> set = new LinkedHashSet<>(Arrays.asList((E[]) value));
                 set.remove(null);
                 return set.toArray(emptyArray);
             }
@@ -266,7 +266,7 @@ public final class CollectionsExt extends Static {
         if (Enum.class.isAssignableFrom(type)) {
             return EnumSet.noneOf((Class) type);
         }
-        return new LinkedHashSet<E>(hashMapCapacity(count));
+        return new LinkedHashSet<>(hashMapCapacity(count));
     }
 
     /**
@@ -282,6 +282,7 @@ public final class CollectionsExt extends Static {
      *
      * @see Collections#unmodifiableSet(Set)
      */
+    @SafeVarargs
     @SuppressWarnings("fallthrough")
     public static <E> Set<E> immutableSet(final boolean excludeNull, final E... array) {
         if (array == null) {
@@ -299,7 +300,7 @@ public final class CollectionsExt extends Static {
                 return Collections.emptySet();
             }
             default: {
-                final Set<E> set = new LinkedHashSet<E>(Arrays.asList(array));
+                final Set<E> set = new LinkedHashSet<>(Arrays.asList(array));
                 if (excludeNull) {
                     set.remove(null);
                 }
@@ -418,7 +419,7 @@ public final class CollectionsExt extends Static {
                 if (type == TreeSet.class) {
                     return (Collection<E>) ((TreeSet<E>) collection).clone();
                 }
-                return new TreeSet<E>(collection);
+                return new TreeSet<>(collection);
             }
             if (type == HashSet.class || type == LinkedHashSet.class) {
                 return (Collection<E>) ((HashSet<E>) collection).clone();
@@ -429,18 +430,18 @@ public final class CollectionsExt extends Static {
             if (collection instanceof CodeListSet<?>) {
                 return ((CodeListSet) collection).clone();
             }
-            return new LinkedHashSet<E>(collection);
+            return new LinkedHashSet<>(collection);
         }
         if (collection instanceof Queue<?>) {
             if (type == LinkedList.class) {
                 return (Collection<E>) ((LinkedList<E>) collection).clone();
             }
-            return new LinkedList<E>(collection);
+            return new LinkedList<>(collection);
         }
         if (type == ArrayList.class) {
             return (Collection<E>) ((ArrayList<E>) collection).clone();
         }
-        return new ArrayList<E>(collection);
+        return new ArrayList<>(collection);
     }
 
     /**
@@ -475,12 +476,12 @@ public final class CollectionsExt extends Static {
             if (type == TreeMap.class) {
                 return (Map<K,V>) ((TreeMap<K,V>) map).clone();
             }
-            return new TreeMap<K,V>(map);
+            return new TreeMap<>(map);
         }
         if (type == HashMap.class || type == LinkedHashMap.class) {
             return (Map<K,V>) ((HashMap<K,V>) map).clone();
         }
-        return new LinkedHashMap<K,V>(map);
+        return new LinkedHashMap<>(map);
     }
 
     /**
@@ -561,7 +562,7 @@ public final class CollectionsExt extends Static {
             return Arrays.asList((Object[]) value);
         }
         if (value instanceof Iterable<?>) {
-            final List<Object> list = new ArrayList<Object>();
+            final List<Object> list = new ArrayList<>();
             for (final Object element : (Iterable<?>) value) {
                 list.add(element);
             }
@@ -569,7 +570,7 @@ public final class CollectionsExt extends Static {
         }
         if (value instanceof Iterator<?>) {
             final Iterator<?> it = (Iterator<?>) value;
-            final List<Object> list = new ArrayList<Object>();
+            final List<Object> list = new ArrayList<>();
             while (it.hasNext()) {
                 list.add(it.next());
             }
@@ -605,7 +606,7 @@ public final class CollectionsExt extends Static {
         if (collection instanceof List<?>) {
             return (List<T>) collection;
         }
-        return new ArrayList<T>(collection);
+        return new ArrayList<>(collection);
     }
 
     /**
@@ -647,7 +648,7 @@ public final class CollectionsExt extends Static {
             return singleton;
         }
         if (values.size() <= 1) {
-            values = new ArrayList<V>(values);
+            values = new ArrayList<>(values);
             if (map.put(key, values) != singleton) {
                 throw new ConcurrentModificationException();
             }
@@ -677,7 +678,7 @@ public final class CollectionsExt extends Static {
         if (elements == null) {
             return Collections.emptyMap();
         }
-        final Map<String,E> map = new HashMap<String,E>(hashMapCapacity(elements.size()));
+        final Map<String,E> map = new HashMap<>(hashMapCapacity(elements.size()));
         Set<String> excludes = null;
         for (final E e : elements) {
             final String name = nameFunction.apply(e);
@@ -715,7 +716,7 @@ public final class CollectionsExt extends Static {
                          */
                         map.remove(lower);
                         if (excludes == null) {
-                            excludes = new HashSet<String>();
+                            excludes = new HashSet<>();
                         }
                         excludes.add(lower);
                     }

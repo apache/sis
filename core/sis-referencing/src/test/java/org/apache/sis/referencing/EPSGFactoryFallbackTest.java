@@ -198,7 +198,7 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
         final CRSAuthorityFactory EPSG = (CRSAuthorityFactory) AuthorityFactories.EPSG();
         try {
             setEPSGFactory(EPSGFactoryFallback.INSTANCE);
-            final ArrayList<String> codes = new ArrayList<String>(EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CoordinateReferenceSystem.class));
+            final ArrayList<String> codes = new ArrayList<>(EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CoordinateReferenceSystem.class));
             Collections.shuffle(codes, TestUtilities.createRandomNumberGenerator());
             for (final String code : codes) {
                 final CoordinateReferenceSystem crs = EPSGFactoryFallback.INSTANCE.createCoordinateReferenceSystem(code);

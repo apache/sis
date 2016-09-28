@@ -204,9 +204,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
                 return factory.createConcatenatedTransform(before,
                        factory.createConcatenatedTransform(tr, after));
             }
-        } catch (IllegalArgumentException e) {
-            cause = e;
-        } catch (ConversionException e) {
+        } catch (IllegalArgumentException | ConversionException e) {
             cause = e;
         }
         throw new OperationNotFoundException(Errors.format(Errors.Keys.CoordinateOperationNotFound_2,

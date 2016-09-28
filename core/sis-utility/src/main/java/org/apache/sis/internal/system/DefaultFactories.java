@@ -42,7 +42,7 @@ public final class DefaultFactories extends SystemListener {
     /**
      * Cache of factories which are found by {@code META-INF/services}.
      */
-    private static final Map<Class<?>, Object> FACTORIES = new IdentityHashMap<Class<?>, Object>(4);
+    private static final Map<Class<?>, Object> FACTORIES = new IdentityHashMap<>(4);
     static {
         SystemListener.add(new DefaultFactories());
     }
@@ -205,7 +205,7 @@ public final class DefaultFactories extends SystemListener {
     private static ClassLoader getContextClassLoader() throws SecurityException {
         final Thread thread = Thread.currentThread();
         ClassLoader loader = thread.getContextClassLoader();
-        final Set<ClassLoader> parents = new HashSet<ClassLoader>();
+        final Set<ClassLoader> parents = new HashSet<>();
         for (ClassLoader c = loader; c != null; c = c.getParent()) {
             parents.add(c);
         }
@@ -222,7 +222,7 @@ public final class DefaultFactories extends SystemListener {
                         c = c.getParent();
                     }
                 }
-            } catch (Exception e) {     // This is (SecurityException | ClassNotFoundException) on the JDK7 branch.
+            } catch (SecurityException | ClassNotFoundException e) {
                 if (!warnings) {
                     warnings = true;
                     Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM),

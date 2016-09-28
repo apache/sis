@@ -53,7 +53,7 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
      * Returns the properties map to be used in argument to test methods.
      */
     private static Map<String,Object> properties() {
-        final Map<String,Object> properties = new HashMap<String,Object>();
+        final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put(CODE_KEY,            "This is a code"));
         assertNull(properties.put(AUTHORITY_KEY,       "This is an authority"));
         assertNull(properties.put(VERSION_KEY,         "This is a version"));

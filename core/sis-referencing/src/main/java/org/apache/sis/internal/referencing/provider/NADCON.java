@@ -43,10 +43,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DataDirectory;
 
 // Branch-dependent imports
-import java.io.File;
-import org.apache.sis.internal.jdk7.Path;
-import org.apache.sis.internal.jdk7.Paths;
-import org.apache.sis.internal.jdk7.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 
 
 /**
@@ -76,13 +75,13 @@ public final class NADCON extends AbstractProvider {
      * The operation parameter descriptor for the <cite>"Latitude difference file"</cite> parameter value.
      * The default value is {@code "conus.las"}.
      */
-    private static final ParameterDescriptor<File> LATITUDE;
+    private static final ParameterDescriptor<Path> LATITUDE;
 
     /**
      * The operation parameter descriptor for the <cite>"Longitude difference file"</cite> parameter value.
      * The default value is {@code "conus.los"}.
      */
-    private static final ParameterDescriptor<File> LONGITUDE;
+    private static final ParameterDescriptor<Path> LONGITUDE;
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -93,11 +92,11 @@ public final class NADCON extends AbstractProvider {
         LATITUDE = builder
                 .addIdentifier("8657")
                 .addName("Latitude difference file")
-                .setRemarks(NTv2.WARNING).create(File.class, Paths.get("conus.las"));
+                .create(Path.class, Paths.get("conus.las"));
         LONGITUDE = builder
                 .addIdentifier("8658")
                 .addName("Longitude difference file")
-                .setRemarks(NTv2.WARNING).create(File.class, Paths.get("conus.los"));
+                .create(Path.class, Paths.get("conus.los"));
         PARAMETERS = builder
                 .addIdentifier("9613")
                 .addName("NADCON")
@@ -136,8 +135,7 @@ public final class NADCON extends AbstractProvider {
     {
         final Parameters pg  = Parameters.castOrWrap(values);
         return InterpolatedTransform.createGeodeticTransformation(factory,
-                getOrLoad(Path.castOrCopy(pg.getMandatoryValue(LATITUDE)),
-                          Path.castOrCopy(pg.getMandatoryValue(LONGITUDE))));
+                getOrLoad(pg.getMandatoryValue(LATITUDE), pg.getMandatoryValue(LONGITUDE)));
     }
 
     /**
@@ -153,7 +151,7 @@ public final class NADCON extends AbstractProvider {
     {
         final Path rlat = DataDirectory.DATUM_CHANGES.resolve(latitudeShifts).toAbsolutePath();
         final Path rlon = DataDirectory.DATUM_CHANGES.resolve(longitudeShifts).toAbsolutePath();
-        final Object key = new AbstractMap.SimpleImmutableEntry<Path,Path>(rlat, rlon);
+        final Object key = new AbstractMap.SimpleImmutableEntry<>(rlat, rlon);
         DatumShiftGridFile<?,?> grid = DatumShiftGridFile.CACHE.peek(key);
         if (grid == null) {
             final Cache.Handler<DatumShiftGridFile<?,?>> handler = DatumShiftGridFile.CACHE.lock(key);
@@ -166,24 +164,18 @@ public final class NADCON extends AbstractProvider {
                         // Note: buffer size must be divisible by the size of 'float' data type.
                         final ByteBuffer buffer = ByteBuffer.allocate(4096).order(ByteOrder.LITTLE_ENDIAN);
                         final FloatBuffer fb = buffer.asFloatBuffer();
-                        ReadableByteChannel in = Files.newByteChannel(rlat);
-                        try {
+                        try (final ReadableByteChannel in = Files.newByteChannel(rlat)) {
                             DatumShiftGridLoader.log(NADCON.class, CharSequences.commonPrefix(
                                     latitudeShifts.toString(), longitudeShifts.toString()).toString() + '…');
                             loader = new Loader(in, buffer, file);
                             loader.readGrid(fb, null, longitudeShifts);
-                        } finally {
-                            in.close();
                         }
                         buffer.clear();
                         file = longitudeShifts;
-                        in = Files.newByteChannel(rlon);
-                        try {
+                        try (final ReadableByteChannel in = Files.newByteChannel(rlon)) {
                             new Loader(in, buffer, file).readGrid(fb, loader, null);
-                        } finally {
-                            in.close();
                         }
-                    } catch (Exception e) {     // Multi-catch on the JDK7 branch.
+                    } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
                         throw DatumShiftGridLoader.canNotLoad("NADCON", file, e);
                     }
                     grid = DatumShiftGridCompressed.compress(loader.grid, null, loader.grid.accuracy);
@@ -400,7 +392,7 @@ public final class NADCON extends AbstractProvider {
             if (latitudeShifts == null) {
                 dim   = 1;                          // Dimension of latitudes.
                 scale = DEGREES_TO_SECONDS * Δy;    // NADCON shifts are positive north.
-                grid  = new DatumShiftGridFile.Float<Angle,Angle>(2, NonSI.DEGREE_ANGLE, NonSI.DEGREE_ANGLE,
+                grid  = new DatumShiftGridFile.Float<>(2, NonSI.DEGREE_ANGLE, NonSI.DEGREE_ANGLE,
                         true, x0, y0, Δx, Δy, nx, ny, PARAMETERS, file, longitudeShifts);
                 grid.accuracy = SECOND_PRECISION / DEGREES_TO_SECONDS;
             } else {

@@ -37,9 +37,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Vocabulary;
 
-// Branch-specific imports
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Warnings that occurred during a <cite>Well Known Text</cite> (WKT) parsing or formatting.
@@ -188,13 +185,13 @@ public final class Warnings implements Localized, Serializable {
     final void add(final InternationalString message, final Exception cause, final String[] source) {
         assert (message != null) || (cause != null);
         if (messages == null) {
-            messages = new ArrayList<Object>(4);                                    // We expect few items.
+            messages = new ArrayList<>(4);                          // We expect few items.
         }
         messages.add(message);
         messages.add(cause);
         if (cause != null) {
             if (exceptionSources == null) {
-                exceptionSources = new LinkedHashMap<Exception, String[]>(4);       // We expect few items.
+                exceptionSources = new LinkedHashMap<>(4);          // We expect few items.
             }
             exceptionSources.put(cause, source);
         }
@@ -208,7 +205,7 @@ public final class Warnings implements Localized, Serializable {
         if (!published) {
             ignoredElements = ignoredElements.isEmpty()
                     ? Collections.<String, List<String>>emptyMap()
-                    : new LinkedHashMap<String, List<String>>(ignoredElements);
+                    : new LinkedHashMap<>(ignoredElements);
             published = true;
         }
     }
@@ -351,7 +348,7 @@ public final class Warnings implements Localized, Serializable {
      */
     public String toString(final Locale locale) {
         final StringBuilder buffer = new StringBuilder(250);
-        final String lineSeparator = JDK7.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final Messages resources   = Messages.getResources(locale);
         buffer.append(resources.getString(isParsing ? Messages.Keys.IncompleteParsing_1
                                                     : Messages.Keys.NonConformFormatting_1, root));

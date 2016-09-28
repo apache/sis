@@ -24,9 +24,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Tests the {@link Exceptions} utility methods.
@@ -42,7 +39,7 @@ public final strictfp class ExceptionsTest extends TestCase {
      */
     @Test
     public void testFormatChainedMessages() {
-        final String lineSeparator = JDK7.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final FileNotFoundException cause = new FileNotFoundException("MisingFile.txt");
         cause.initCause(new IOException("Disk is not mounted."));
         final Exception e = new Exception("Can not find “MisingFile.txt”.", cause);

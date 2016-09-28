@@ -210,7 +210,7 @@ public class MetadataStandard implements Serializable {
         ensureNonNull("dependencies",     dependencies);
         this.citation         = citation;
         this.interfacePackage = interfacePackage.getName() + '.';
-        this.accessors        = new ConcurrentHashMap<Class<?>,Object>(); // Also defined in readObject(…)
+        this.accessors        = new ConcurrentHashMap<>(); // Also defined in readObject(…)
         if (dependencies.length == 0) {
             this.dependencies = null;
         } else {
@@ -232,7 +232,7 @@ public class MetadataStandard implements Serializable {
     MetadataStandard(final String citation, final String interfacePackage, final MetadataStandard[] dependencies) {
         this.citation         = new SimpleCitation(citation);
         this.interfacePackage = interfacePackage;
-        this.accessors        = new ConcurrentHashMap<Class<?>,Object>();
+        this.accessors        = new ConcurrentHashMap<>();
         this.dependencies     = dependencies; // No clone, since this constructor is for internal use only.
     }
 
@@ -447,7 +447,7 @@ public class MetadataStandard implements Serializable {
                  * Gets every interfaces from the supplied package in declaration order,
                  * including the ones declared in the super-class.
                  */
-                final Set<Class<?>> interfaces = new LinkedHashSet<Class<?>>();
+                final Set<Class<?>> interfaces = new LinkedHashSet<>();
                 for (Class<?> t=type; t!=null; t=t.getSuperclass()) {
                     getInterfaces(t, interfaces);
                 }
@@ -973,13 +973,12 @@ public class MetadataStandard implements Serializable {
      * Assigns a {@link ConcurrentMap} instance to the given field.
      * Used on deserialization only.
      */
-    @SuppressWarnings("rawtypes")
     final void setMapForField(final Class<?> classe, final String name) {
         try {
             final Field field = classe.getDeclaredField(name);
             field.setAccessible(true);
-            field.set(this, new ConcurrentHashMap());
-        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+            field.set(this, new ConcurrentHashMap<>());
+        } catch (ReflectiveOperationException e) {
             throw new AssertionError(e); // Should never happen (tested by MetadataStandardTest).
         }
     }

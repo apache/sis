@@ -186,13 +186,10 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final File output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            final OutputStream s = new BufferedOutputStream(new FileOutputStream(output));
-            try {
+            try (OutputStream s = new BufferedOutputStream(new FileOutputStream(output))) {
                 marshal(object, XMLOutputFactory.createXMLStreamWriter(s, getEncoding()), version);
-            } finally {
-                s.close();
             }
-        } catch (Exception e) { // (IOException | XMLStreamException) on the JDK7 branch.
+        } catch (IOException | XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             // Marshalling to the default GML version.

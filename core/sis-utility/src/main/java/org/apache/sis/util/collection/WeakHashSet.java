@@ -30,7 +30,7 @@ import org.apache.sis.util.NullArgumentException;
 import static org.apache.sis.util.collection.WeakEntry.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

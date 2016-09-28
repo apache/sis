@@ -85,9 +85,8 @@ final class FilteredJarFile extends JarFile {
         if (!ze.getName().equals(JarFile.MANIFEST_NAME)) {
             return in;
         }
-        final List<String> lines = new ArrayList<String>();
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(in, MANIFEST_ENCODING));
-        try {
+        final List<String> lines = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, MANIFEST_ENCODING))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.trim().startsWith("SHA1-Digest:")) {
@@ -101,8 +100,6 @@ final class FilteredJarFile extends JarFile {
                 }
                 lines.add(line);
             }
-        } finally {
-            reader.close();
         }
         /*
          * 'in' has been closed at this point (indirectly, by closing the reader).

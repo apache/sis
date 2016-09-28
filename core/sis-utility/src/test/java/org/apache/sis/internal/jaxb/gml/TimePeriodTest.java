@@ -71,7 +71,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      */
     @BeforeClass
     public static void createMarshallerPool() throws JAXBException {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(XML.LOCALE, Locale.FRANCE));
         assertNull(properties.put(XML.TIMEZONE, "CET"));
         pool = new MarshallerPool(JAXBContext.newInstance(TimeInstant.class, TimePeriod.class), properties);

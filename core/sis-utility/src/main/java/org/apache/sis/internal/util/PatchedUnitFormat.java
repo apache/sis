@@ -63,7 +63,7 @@ public final class PatchedUnitFormat extends Format {
      * @param entries The (unit, symbol) pairs.
      */
     public static void init(final Object... entries) {
-        final Map<Unit<?>,String> symbols = new HashMap<Unit<?>,String>(8);
+        final Map<Unit<?>,String> symbols = new HashMap<>(8);
         for (int i=0; i<entries.length; i++) {
             final String uom;
             if (symbols.put((Unit<?>) entries[i], uom = (String) entries[++i]) != null) {

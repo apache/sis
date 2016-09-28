@@ -59,7 +59,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
     private static DefaultGeocentricCRS createCRS(final String name, final GeodeticDatum datum) {
         Map<String,?> properties = IdentifiedObjects.getProperties(datum, DefaultGeocentricCRS.IDENTIFIERS_KEY);
         if (name != null) {
-            final Map<String,Object> copy = new HashMap<String,Object>(properties);
+            final Map<String,Object> copy = new HashMap<>(properties);
             copy.put(DefaultGeocentricCRS.NAME_KEY, name);
             properties = copy;
         }
@@ -93,7 +93,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
          * did not bothered to define a specialized MathTransform class for our case. So we will help
          * a little bit DefaultTransformation by telling it the parameters that we used.
          */
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String, Object> properties = new HashMap<>(4);
         properties.put(DefaultTransformation.NAME_KEY, "Tokyo to JGD2000 (GSI)");
         properties.put(ReferencingServices.PARAMETERS_KEY, pg);
         return new DefaultTransformation(properties,

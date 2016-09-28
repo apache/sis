@@ -77,7 +77,7 @@ public final strictfp class SingleOperationMarshallingTest extends XMLTestCase {
         };
         builder.addName(null, "Mercator (1SP)");
         final ParameterDescriptorGroup descriptor = builder.createGroup(parameters);
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         properties.put(DefaultOperationMethod.NAME_KEY, descriptor.getName());
         properties.put(DefaultOperationMethod.FORMULA_KEY, new DefaultFormula("See EPSG guide."));
         return new DefaultOperationMethod(properties, 2, 2, descriptor);

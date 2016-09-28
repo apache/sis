@@ -303,7 +303,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     public void testCustomAttribute() {
         feature = createFeature(DefaultFeatureTypeTest.city());
         final AbstractAttribute<String> wrong = SingletonAttributeTest.parliament();
-        final CustomAttribute<String> city = new CustomAttribute<String>(Features.cast(
+        final CustomAttribute<String> city = new CustomAttribute<>(Features.cast(
                 (DefaultAttributeType<?>) feature.getType().getProperty("city"), String.class));
 
         feature.setProperty(city);

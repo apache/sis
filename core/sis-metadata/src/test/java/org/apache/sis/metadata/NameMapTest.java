@@ -52,21 +52,21 @@ public final strictfp class NameMapTest extends TestCase {
         final Map<String,String> map = MetadataStandard.ISO_19115.asNameMap(
                 Citation.class, KeyNamePolicy.UML_IDENTIFIER, KeyNamePolicy.JAVABEANS_PROPERTY);
         assertArrayEquals(new Object[] {
-            new SimpleEntry<String,String>("title",                 "title"),
-            new SimpleEntry<String,String>("alternateTitle",        "alternateTitles"),
-            new SimpleEntry<String,String>("date",                  "dates"),
-            new SimpleEntry<String,String>("edition",               "edition"),
-            new SimpleEntry<String,String>("editionDate",           "editionDate"),
-            new SimpleEntry<String,String>("identifier",            "identifiers"),
-            new SimpleEntry<String,String>("citedResponsibleParty", "citedResponsibleParties"),
-            new SimpleEntry<String,String>("presentationForm",      "presentationForms"),
-            new SimpleEntry<String,String>("series",                "series"),
-            new SimpleEntry<String,String>("otherCitationDetails",  "otherCitationDetails"),
-//          new SimpleEntry<String,String>("collectiveTitle",       "collectiveTitle"),  -- deprecated as of ISO 19115:2014
-            new SimpleEntry<String,String>("ISBN",                  "ISBN"),
-            new SimpleEntry<String,String>("ISSN",                  "ISSN"),
-            new SimpleEntry<String,String>("graphic",               "graphics"),
-            new SimpleEntry<String,String>("onlineResource",        "onlineResources")
+            new SimpleEntry<>("title",                 "title"),
+            new SimpleEntry<>("alternateTitle",        "alternateTitles"),
+            new SimpleEntry<>("date",                  "dates"),
+            new SimpleEntry<>("edition",               "edition"),
+            new SimpleEntry<>("editionDate",           "editionDate"),
+            new SimpleEntry<>("identifier",            "identifiers"),
+            new SimpleEntry<>("citedResponsibleParty", "citedResponsibleParties"),
+            new SimpleEntry<>("presentationForm",      "presentationForms"),
+            new SimpleEntry<>("series",                "series"),
+            new SimpleEntry<>("otherCitationDetails",  "otherCitationDetails"),
+//          new SimpleEntry<>("collectiveTitle",       "collectiveTitle"),  -- deprecated as of ISO 19115:2014
+            new SimpleEntry<>("ISBN",                  "ISBN"),
+            new SimpleEntry<>("ISSN",                  "ISSN"),
+            new SimpleEntry<>("graphic",               "graphics"),
+            new SimpleEntry<>("onlineResource",        "onlineResources")
         }, map.entrySet().toArray());
 
         assertEquals("alternateTitles", map.get("alternateTitle"));
@@ -78,7 +78,7 @@ public final strictfp class NameMapTest extends TestCase {
      */
     @Test
     public void testSentences() {
-        final Map<String,String> map, expected = new HashMap<String,String>();
+        final Map<String,String> map, expected = new HashMap<>();
         map = MetadataStandard.ISO_19115.asNameMap(EnvironmentalRecord.class, JAVABEANS_PROPERTY, SENTENCE);
         assertNull(expected.put("averageAirTemperature",    "Average air temperature"));
         assertNull(expected.put("maxAltitude",              "Max altitude"));

@@ -58,7 +58,7 @@ final class UnitsMap extends Static {
      * avoid loading the {@code SexagesimalConverter} class before needed, since their
      * constants appear in this map.
      */
-    static final Map<Unit<?>,Integer> EPSG_CODES = new HashMap<Unit<?>,Integer>(20);
+    static final Map<Unit<?>,Integer> EPSG_CODES = new HashMap<>(20);
     static {
         final byte[] codes = {1, 2, 30, 36, 101, 102, 103, 104, 105, 108, 109, 111, 110, (byte) 201, (byte) 202};
         for (final byte c : codes) {
@@ -70,7 +70,7 @@ final class UnitsMap extends Static {
     /**
      * A few units commonly used in GIS.
      */
-    private static final Map<Unit<?>,Unit<?>> COMMONS = new HashMap<Unit<?>,Unit<?>>(48);
+    private static final Map<Unit<?>,Unit<?>> COMMONS = new HashMap<>(48);
     static {
         COMMONS.put(MILLISECOND, MILLISECOND);
         boolean nonSI = false;

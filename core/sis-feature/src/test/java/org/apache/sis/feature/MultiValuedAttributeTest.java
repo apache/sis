@@ -41,7 +41,7 @@ public final strictfp class MultiValuedAttributeTest extends TestCase {
      * The cardinality is [0 … ∞].
      */
     static MultiValuedAttribute<String> universities() {
-        return new MultiValuedAttribute<String>(DefaultAttributeTypeTest.universities());
+        return new MultiValuedAttribute<>(DefaultAttributeTypeTest.universities());
     }
 
     /**
@@ -49,7 +49,7 @@ public final strictfp class MultiValuedAttributeTest extends TestCase {
      * This attribute has no default value.
      */
     private static MultiValuedAttribute<Integer> population() {
-        return new MultiValuedAttribute<Integer>(DefaultAttributeTypeTest.population(new HashMap<String,Object>(4)));
+        return new MultiValuedAttribute<>(DefaultAttributeTypeTest.population(new HashMap<String,Object>(4)));
     }
 
     /**
@@ -106,7 +106,7 @@ public final strictfp class MultiValuedAttributeTest extends TestCase {
     @Test
     @DependsOnMethod("testValue")
     public void testDefaultValue() {
-        final AbstractAttribute<String> attribute = new MultiValuedAttribute<String>(DefaultAttributeTypeTest.city());
+        final AbstractAttribute<String> attribute = new MultiValuedAttribute<>(DefaultAttributeTypeTest.city());
         assertEquals     ("value",                "Utopia",  attribute.getValue());
         assertArrayEquals("values", new String[] {"Utopia"}, attribute.getValues().toArray());
 

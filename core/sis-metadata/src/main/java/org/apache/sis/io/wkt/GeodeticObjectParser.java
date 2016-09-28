@@ -161,12 +161,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * A map of properties to be given to the factory constructor methods.
      * This map will be recycled for each object to be parsed.
      */
-    private final Map<String,Object> properties = new HashMap<String,Object>(4);
+    private final Map<String,Object> properties = new HashMap<>(4);
 
     /**
      * Order of coordinate system axes. Used only if {@code AXIS[…]} elements contain {@code ORDER[…]} sub-element.
      */
-    private final Map<CoordinateSystemAxis,Integer> axisOrder = new IdentityHashMap<CoordinateSystemAxis,Integer>(4);
+    private final Map<CoordinateSystemAxis,Integer> axisOrder = new IdentityHashMap<>(4);
 
     /**
      * The last vertical CRS found during the parsing, or {@code null} if none.
@@ -302,6 +302,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     verticalElements = verticalElements.complete(crsFactory, csFactory);
                 } catch (FactoryException e) {
                     if (ex == null) ex = e;
+                    else ex.addSuppressed(e);
                 }
                 if (verticalElements != null) {
                     warning(null, (String) null, Errors.formatInternational(Errors.Keys.CanNotAssignUnitToDimension_2,
@@ -661,9 +662,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (verify == null) {
             try {
                 verify = parseUnit(name);
-            } catch (IllegalArgumentException e) {
-                log(new LogRecord(Level.FINE, e.toString()));
-            } catch (ParseException e) {
+            } catch (IllegalArgumentException | ParseException e) {
                 log(new LogRecord(Level.FINE, e.toString()));
             }
             if (verify != null) try {
@@ -736,7 +735,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 final String expected = type;
                 type         = element.pullVoidElement("type").keyword;
                 dimension    = element.pullInteger("dimension");
-                csProperties = new HashMap<String,Object>(parseMetadataAndClose(element, "CS", null));
+                csProperties = new HashMap<>(parseMetadataAndClose(element, "CS", null));
                 if (expected != null) {
                     if (!expected.equalsIgnoreCase(type)) {
                         throw new LocalizedParseException(errorLocale, Errors.Keys.UnexpectedValueInElement_2,
@@ -771,7 +770,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         CoordinateSystemAxis[] axes = null;
         CoordinateSystemAxis axis = parseAxis(type == null ? MANDATORY : OPTIONAL, parent, type, defaultUnit);
         if (axis != null) {
-            final List<CoordinateSystemAxis> list = new ArrayList<CoordinateSystemAxis>(dimension + 2);
+            final List<CoordinateSystemAxis> list = new ArrayList<>(dimension + 2);
             do {
                 list.add(axis);
                 axis = parseAxis(list.size() < dimension ? MANDATORY : OPTIONAL, parent, type, defaultUnit);
@@ -797,12 +796,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             AxisDirection dy = AxisDirection.NORTH;
             AxisDirection direction = null;                 // Depth, height or time axis direction.
             Unit<?> unit = defaultUnit;                     // Depth, height or time axis unit.
-            /*switch (type)*/ {
+            switch (type) {
                 /*
                  * Cartesian — we can create axes only for geodetic datum, in which case the axes are for
                  * two-dimensional Projected or three-dimensional Geocentric CRS.
                  */
-                if (type.equals(WKTKeywords.Cartesian)) {
+                case WKTKeywords.Cartesian: {
                     if (!(datum instanceof GeodeticDatum)) {
                         throw parent.missingComponent(WKTKeywords.Axis);
                     }
@@ -819,6 +818,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                         nz   = AxisNames.ELLIPSOIDAL_HEIGHT;
                         unit = SI.METRE;
                     }
+                    break;
                 }
                 /*
                  * Ellipsoidal — can be two- or three- dimensional, in which case the height can
@@ -827,7 +827,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  *   - WKT 1 said explicitely that the default order is (longitude, latitude).
                  *   - WKT 2 has no default, and allows only (latitude, longitude) order.
                  */
-                else if (type.equals(WKTKeywords.ellipsoidal)) {
+                case WKTKeywords.ellipsoidal: {
                     if (defaultUnit == null) {
                         throw parent.missingComponent(WKTKeywords.AngleUnit);
                     }
@@ -844,12 +844,13 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                         nz   = AxisNames.ELLIPSOIDAL_HEIGHT;
                         unit = SI.METRE;
                     }
+                    break;
                 }
                 /*
                  * Vertical — the default name and symbol depends on whether this is depth,
                  * geoidal height, ellipsoidal height (non-standard) or other kind of heights.
                  */
-                else if (type.equals(WKTKeywords.vertical)) {
+                case WKTKeywords.vertical: {
                     if (defaultUnit == null) {
                         throw parent.missingComponent(WKTKeywords.Unit);
                     }
@@ -871,33 +872,36 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                             nz = AxisNames.ELLIPSOIDAL_HEIGHT;
                         }
                     }
+                    break;
                 }
                 /*
                  * Temporal — axis name and abbreviation not yet specified by ISO 19111.
                  */
-                else if (type.equals(WKTKeywords.temporal)) {
+                case WKTKeywords.temporal: {
                     if (defaultUnit == null) {
                         throw parent.missingComponent(WKTKeywords.TimeUnit);
                     }
                     direction = AxisDirection.FUTURE;
                     nz = "Time";
                     z = "t";
+                    break;
                 }
                 /*
                  * Parametric — axis name and abbreviation not yet specified by ISO 19111_2.
                  */
-                else if (type.equals(WKTKeywords.parametric)) {
+                case WKTKeywords.parametric: {
                     if (defaultUnit == null) {
                         throw parent.missingComponent(WKTKeywords.ParametricUnit);
                     }
                     direction = AxisDirection.OTHER;
                     nz = "Parametric";
                     z = "p";
+                    break;
                 }
                 /*
                  * Unknown CS type — we can not guess which axes to create.
                  */
-                else {
+                default: {
                     throw parent.missingComponent(WKTKeywords.Axis);
                 }
             }
@@ -933,64 +937,60 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         /*
          * Finally, delegate to the factory method corresponding to the CS type and the number of axes.
          */
-        /*switch (type)*/ {
-            if (type.equals(WKTKeywords.ellipsoidal)) {
+        switch (type) {
+            case WKTKeywords.ellipsoidal: {
                 switch (axes.length) {
                     case 2: return csFactory.createEllipsoidalCS(csProperties, axes[0], axes[1]);
                     case 3: return csFactory.createEllipsoidalCS(csProperties, axes[0], axes[1], axes[2]);
                 }
                 dimension = (axes.length < 2) ? 2 : 3;                      // For error message.
+                break;
             }
-            else if (type.equals(WKTKeywords.Cartesian)) {
+            case WKTKeywords.Cartesian: {
                 switch (axes.length) {
                     case 2: return csFactory.createCartesianCS(csProperties, axes[0], axes[1]);
                     case 3: return csFactory.createCartesianCS(csProperties, axes[0], axes[1], axes[2]);
                 }
                 dimension = (axes.length < 2) ? 2 : 3;                      // For error message.
+                break;
             }
-            else if (type.equals(WKTKeywords.affine)) {
+            case WKTKeywords.affine: {
                 switch (axes.length) {
                     case 2: return csFactory.createAffineCS(csProperties, axes[0], axes[1]);
                     case 3: return csFactory.createAffineCS(csProperties, axes[0], axes[1], axes[2]);
                 }
                 dimension = (axes.length < 2) ? 2 : 3;                      // For error message.
+                break;
             }
-            else if (type.equals(WKTKeywords.vertical)) {
-                if (axes.length == (dimension = 1)) {
-                    return csFactory.createVerticalCS(csProperties, axes[0]);
-                }
+            case WKTKeywords.vertical: {
+                if (axes.length != (dimension = 1)) break;
+                return csFactory.createVerticalCS(csProperties, axes[0]);
             }
-            else if (type.equals(WKTKeywords.temporal)) {
-                if (axes.length == (dimension = 1)) {
-                    return csFactory.createTimeCS(csProperties, axes[0]);
-                }
+            case WKTKeywords.temporal: {
+                if (axes.length != (dimension = 1)) break;
+                return csFactory.createTimeCS(csProperties, axes[0]);
             }
-            else if (type.equals(WKTKeywords.linear)) {
-                if (axes.length == (dimension = 1)) {
-                    return csFactory.createLinearCS(csProperties, axes[0]);
-                }
+            case WKTKeywords.linear: {
+                if (axes.length != (dimension = 1)) break;
+                return csFactory.createLinearCS(csProperties, axes[0]);
             }
-            else if (type.equals(WKTKeywords.polar)) {
-                if (axes.length == (dimension = 2)) {
-                    return csFactory.createPolarCS(csProperties, axes[0], axes[1]);
-                }
+            case WKTKeywords.polar: {
+                if (axes.length != (dimension = 2)) break;
+                return csFactory.createPolarCS(csProperties, axes[0], axes[1]);
             }
-            else if (type.equals(WKTKeywords.cylindrical)) {
-                if (axes.length == (dimension = 3)) {
-                    return csFactory.createCylindricalCS(csProperties, axes[0], axes[1], axes[2]);
-                }
+            case WKTKeywords.cylindrical: {
+                if (axes.length != (dimension = 3)) break;
+                return csFactory.createCylindricalCS(csProperties, axes[0], axes[1], axes[2]);
             }
-            else if (type.equals(WKTKeywords.spherical)) {
-                if (axes.length == (dimension = 3)) {
-                    return csFactory.createSphericalCS(csProperties, axes[0], axes[1], axes[2]);
-                }
+            case WKTKeywords.spherical: {
+                if (axes.length != (dimension = 3)) break;
+                return csFactory.createSphericalCS(csProperties, axes[0], axes[1], axes[2]);
             }
-            else if (type.equals(WKTKeywords.parametric)) {
-                if (axes.length == (dimension = 1)) {
-                    return referencing.createParametricCS(csProperties, axes[0], csFactory);
-                }
+            case WKTKeywords.parametric: {
+                if (axes.length != (dimension = 1)) break;
+                return referencing.createParametricCS(csProperties, axes[0], csFactory);
             }
-            else {
+            default: {
                 warning(parent, WKTKeywords.CS, Errors.formatInternational(Errors.Keys.UnknownType_1, type), null);
                 return referencing.createAbstractCS(csProperties, axes);
             }
@@ -1301,7 +1301,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             return referencing.getOperationMethod(opFactory, mtFactory, name);
         } catch (FactoryException e) {
             if (suppressed != null) {
-//              e.addSuppressed(suppressed);    // Not available on JDK6.
+                e.addSuppressed(suppressed);
             }
             throw element.parseFailed(e);
         }
@@ -2177,7 +2177,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final String  name = element.pullString("name");
         CoordinateReferenceSystem crs;
-        final List<CoordinateReferenceSystem> components = new ArrayList<CoordinateReferenceSystem>(4);
+        final List<CoordinateReferenceSystem> components = new ArrayList<>(4);
         while ((crs = parseCoordinateReferenceSystem(element, components.size() < 2)) != null) {
             components.add(crs);
         }
@@ -2241,9 +2241,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              */
             properties.put("conversion.name", name);
             return referencing.createDerivedCRS(properties, (SingleCRS) baseCRS, method, toBase.inverse(), derivedCS);
-        } catch (FactoryException exception) {
-            throw element.parseFailed(exception);
-        } catch (NoninvertibleTransformException exception) {
+        } catch (FactoryException | NoninvertibleTransformException exception) {
             throw element.parseFailed(exception);
         }
     }

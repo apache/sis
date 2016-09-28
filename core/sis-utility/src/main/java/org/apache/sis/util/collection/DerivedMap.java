@@ -117,14 +117,14 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         final Set<FunctionProperty> vp = valueConverter.properties();
         if (kp.contains(FunctionProperty.INVERTIBLE)) {
             if (vp.contains(FunctionProperty.INVERTIBLE)) {
-                return new Invertible<SK,SV,K,V>(storage, keyConverter, valueConverter);
+                return new Invertible<>(storage, keyConverter, valueConverter);
             }
-            return new InvertibleKey<SK,SV,K,V>(storage, keyConverter, valueConverter);
+            return new InvertibleKey<>(storage, keyConverter, valueConverter);
         }
         if (vp.contains(FunctionProperty.INVERTIBLE)) {
-            return new InvertibleValue<SK,SV,K,V>(storage, keyConverter, valueConverter);
+            return new InvertibleValue<>(storage, keyConverter, valueConverter);
         }
-        return new DerivedMap<SK,SV,K,V>(storage, keyConverter, valueConverter);
+        return new DerivedMap<>(storage, keyConverter, valueConverter);
     }
 
     /**
@@ -293,7 +293,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         @Override
         public ObjectConverter<Entry<K,V>, Entry<SK,SV>> inverse() {
             if (inverse == null) {
-                inverse = new DerivedMap<K,V,SK,SV>(null, keyInverse, valueInverse);
+                inverse = new DerivedMap<>(null, keyInverse, valueInverse);
             }
             return inverse;
         }
@@ -363,7 +363,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
     public final Entry<K,V> apply(final Entry<SK,SV> entry) {
         final K key   =   keyConverter.apply(entry.getKey());
         final V value = valueConverter.apply(entry.getValue());
-        return (key != null) ? new SimpleEntry<K,V>(key, value) : null;
+        return (key != null) ? new SimpleEntry<>(key, value) : null;
     }
 
     /**

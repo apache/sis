@@ -22,9 +22,6 @@ import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Base class for writing filtered characters to another {@link Appendable}.
@@ -160,11 +157,11 @@ abstract class Appender implements Appendable {
      * @throws IOException If an error occurred while appending the code point.
      */
     final void appendCodePoint(final int c) throws IOException {
-        if (JDK7.isBmpCodePoint(c)) {
+        if (Character.isBmpCodePoint(c)) {
             out.append((char) c);
         } else if (Character.isSupplementaryCodePoint(c)) {
-            out.append(JDK7.highSurrogate(c))
-               .append(JDK7. lowSurrogate(c));
+            out.append(Character.highSurrogate(c))
+               .append(Character. lowSurrogate(c));
         } else {
             throw new CharConversionException();
         }

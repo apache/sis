@@ -27,7 +27,7 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

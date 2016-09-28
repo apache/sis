@@ -32,9 +32,7 @@ import org.apache.sis.util.Workaround;
  * @module
  */
 @Workaround(library = "JDK", version = "1.8")
-final strictfp class MemoryCacheImageOutputStream extends javax.imageio.stream.MemoryCacheImageOutputStream
-        implements java.io.Closeable    // Needed on JDK 6 only.
-{
+final strictfp class MemoryCacheImageOutputStream extends javax.imageio.stream.MemoryCacheImageOutputStream {
     /**
      * Creates a new instance which will write the data in the given stream.
      */

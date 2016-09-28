@@ -139,7 +139,7 @@ public final class NilReason implements Serializable {
     /**
      * The pool of other nil reasons created up to date.
      */
-    private static final WeakHashSet<NilReason> POOL = new WeakHashSet<NilReason>(NilReason.class);
+    private static final WeakHashSet<NilReason> POOL = new WeakHashSet<>(NilReason.class);
 
     /**
      * Either the XML value as a {@code String} (including the explanation if the prefix
@@ -389,7 +389,7 @@ public final class NilReason implements Serializable {
          * ReferenceQueueConsumer thread is shared by all the SIS library.
          */
         if (nilObjects == null) {
-            nilObjects = new WeakValueHashMap<Class<?>, Object>((Class) Class.class);
+            nilObjects = new WeakValueHashMap<>((Class) Class.class);
         }
         Object object = nilObjects.get(type);
         if (object == null) {

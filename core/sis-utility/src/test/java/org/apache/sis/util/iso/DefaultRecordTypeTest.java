@@ -68,7 +68,7 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
      * Creates a new record type from the current values of private fields.
      */
     private DefaultRecordType create() throws IllegalArgumentException {
-        final Type memberType = new SimpleAttributeType<Integer>(memberTypeName, Integer.class);
+        final Type memberType = new SimpleAttributeType<>(memberTypeName, Integer.class);
         return new DefaultRecordType(recordTypeName, container, Collections.singletonMap(memberName, memberType));
     }
 

@@ -50,7 +50,7 @@ final class RecursivityGuard<V> extends ThreadLocal<Map<Object,V>> {
      * The recursivity guard to use during {@code hashCode()} computations.
      * The values have no meaning for this map; only the keys matter.
      */
-    static final RecursivityGuard<Object> HASH_CODES = new RecursivityGuard<Object>();
+    static final RecursivityGuard<Object> HASH_CODES = new RecursivityGuard<>();
 
     /**
      * Creates a new thread-local map.
@@ -63,6 +63,6 @@ final class RecursivityGuard<V> extends ThreadLocal<Map<Object,V>> {
      */
     @Override
     protected Map<Object,V> initialValue() {
-        return new IdentityHashMap<Object,V>();
+        return new IdentityHashMap<>();
     }
 }

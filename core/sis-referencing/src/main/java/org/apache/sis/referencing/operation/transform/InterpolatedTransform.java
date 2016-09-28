@@ -41,7 +41,7 @@ import org.apache.sis.internal.referencing.provider.NTv2;
 import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
 
 // Branch-specific imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -421,7 +421,6 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * Creates an inverse transform.
          */
         Inverse() {
-            InterpolatedTransform.this.super();
             tolerance = grid.getCellPrecision();
             if (!(tolerance > 0)) {         // Use ! for catching NaN.
                 throw new IllegalArgumentException(Errors.format(

@@ -62,7 +62,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
      */
     public MultiValuedAssociation(final DefaultAssociationRole role) {
         super(role);
-        values = new CheckedArrayList<AbstractFeature>(AbstractFeature.class);
+        values = new CheckedArrayList<>(AbstractFeature.class);
     }
 
     /**
@@ -74,7 +74,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
     MultiValuedAssociation(final DefaultAssociationRole role, final Object values) {
         super(role);
         if (values == null) {
-            this.values = new CheckedArrayList<AbstractFeature>(AbstractFeature.class);
+            this.values = new CheckedArrayList<>(AbstractFeature.class);
         } else {
             this.values = CheckedArrayList.castOrCopy((CheckedArrayList<?>) values, AbstractFeature.class);
         }

@@ -36,12 +36,12 @@ public final strictfp class SerializableTableColumn<V> extends TableColumn<V> im
     /**
      * A constant for column of latitudes as floating point value.
      */
-    public static final TableColumn<Float> LATITUDE = new SerializableTableColumn<Float>("LATITUDE", Float.class, "Latitude");
+    public static final TableColumn<Float> LATITUDE = new SerializableTableColumn<>("LATITUDE", Float.class, "Latitude");
 
     /**
      * A constant for column of longitudes as floating point value.
      */
-    public static final TableColumn<Float> LONGITUDE = new SerializableTableColumn<Float>("LONGITUDE", Float.class, "Longitude");
+    public static final TableColumn<Float> LONGITUDE = new SerializableTableColumn<>("LONGITUDE", Float.class, "Longitude");
 
     /**
      * The programmatic name of the static final field holding this constant.

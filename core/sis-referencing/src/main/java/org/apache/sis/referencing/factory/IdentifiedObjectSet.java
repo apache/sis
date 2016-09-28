@@ -44,8 +44,7 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-import org.apache.sis.internal.jdk7.JDK7;
+import java.util.Objects;
 import org.apache.sis.internal.jdk8.JDK8;
 
 
@@ -96,7 +95,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * <p><b>Note:</b> using {@code ConcurrentHahMap} would be more efficient.
      * But the later does not support null values and does not preserve insertion order.</p>
      */
-    final Map<String,T> objects = new LinkedHashMap<String,T>();
+    final Map<String,T> objects = new LinkedHashMap<>();
 
     /**
      * The {@link #objects} keys, created for iteration purpose when first needed and cleared when the map is modified.
@@ -228,7 +227,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
     public void setAuthorityCodes(final String... codes) {
         synchronized (objects) {
             this.codes = null;
-            final Map<String,T> copy = new HashMap<String,T>(objects);
+            final Map<String,T> copy = new HashMap<>(objects);
             objects.clear();
             for (final String code : codes) {
                 objects.put(code, copy.get(code));
@@ -566,7 +565,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * Returns the message to format below the logging for giving the cause of an error.
      */
     private static String getCause(Throwable cause) {
-        final String lineSeparator = JDK7.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final StringBuilder trace = new StringBuilder(180);
         while (cause != null) {
             trace.append(lineSeparator).append("  • ").append(Classes.getShortClassName(cause));

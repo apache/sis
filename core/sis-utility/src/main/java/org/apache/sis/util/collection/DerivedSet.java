@@ -87,11 +87,11 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
         final Set<FunctionProperty> properties = converter.properties();
         if (properties.contains(FunctionProperty.INVERTIBLE)) {
             if (FunctionProperty.isBijective(properties)) {
-                return new Bijective<S,E>(storage, converter);
+                return new Bijective<>(storage, converter);
             }
-            return new Invertible<S,E>(storage, converter);
+            return new Invertible<>(storage, converter);
         }
-        return new DerivedSet<S,E>(storage, converter);
+        return new DerivedSet<>(storage, converter);
     }
 
     /**
@@ -121,7 +121,7 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
      */
     @Override
     public final Iterator<E> iterator() {
-        return new DerivedIterator<S,E>(storage.iterator(), converter);
+        return new DerivedIterator<>(storage.iterator(), converter);
     }
 
     /**

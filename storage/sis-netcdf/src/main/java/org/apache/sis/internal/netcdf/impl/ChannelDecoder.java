@@ -668,9 +668,7 @@ public final class ChannelDecoder extends Decoder {
                     dates[i] = new Date(epoch + Math.round(converter.convert(value.doubleValue())));
                 }
             }
-        } catch (ConversionException e) {
-            listeners.warning(null, e);
-        } catch (IllegalArgumentException e) {
+        } catch (ConversionException | IllegalArgumentException e) {
             listeners.warning(null, e);
         }
         return dates;
@@ -705,7 +703,7 @@ public final class ChannelDecoder extends Decoder {
              * grid dimensions which are the domain of the variable (i.e. the sources of the conversion
              * from grid coordinates to CRS coordinates).
              */
-            final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<Dimension, List<VariableInfo>>();
+            final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {
                 if (variable.isCoordinateSystemAxis()) {
                     for (final Dimension dimension : variable.dimensions) {
@@ -719,8 +717,8 @@ public final class ChannelDecoder extends Decoder {
              * and consequently the same axes, so we will remember the previously created instances in order
              * to share them.
              */
-            final Set<VariableInfo> axes = new LinkedHashSet<VariableInfo>(4);
-            final Map<List<Dimension>, GridGeometryInfo> dimsToGG = new LinkedHashMap<List<Dimension>, GridGeometryInfo>();
+            final Set<VariableInfo> axes = new LinkedHashSet<>(4);
+            final Map<List<Dimension>, GridGeometryInfo> dimsToGG = new LinkedHashMap<>();
 nextVar:    for (final VariableInfo variable : variables) {
                 if (variable.isCoordinateSystemAxis()) {
                     continue;

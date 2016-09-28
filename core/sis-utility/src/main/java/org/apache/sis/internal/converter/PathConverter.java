@@ -27,6 +27,10 @@ import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 
+// Branch-specific import
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 
 /**
  * Handles conversions between {@link Path}, {@link File}, {@link URI} and {@link URL} objects.
@@ -92,6 +96,66 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     abstract T doConvert(S source) throws Exception;
 
     /**
+     * Converter from {@link Path} to {@link URI}.
+     */
+    public static final class PathURI extends PathConverter<Path,URI> {
+        private static final long serialVersionUID = 740202123888081482L;
+        static final PathURI INSTANCE = new PathURI();
+        public PathURI() {super(Path.class, URI.class);}        // Instantiated by ServiceLoader.
+
+        @Override public ObjectConverter<Path,URI> unique()  {return INSTANCE;}
+        @Override public ObjectConverter<URI,Path> inverse() {return URIPath.INSTANCE;}
+        @Override public URI doConvert(final Path source) {
+            return source.toUri();
+        }
+    }
+
+    /**
+     * Converter from {@link Path} to {@link URL}.
+     */
+    public static final class PathURL extends PathConverter<Path,URL> {
+        private static final long serialVersionUID = -289518201451769080L;
+        static final PathURL INSTANCE = new PathURL();
+        public PathURL() {super(Path.class, URL.class);}        // Instantiated by ServiceLoader.
+
+        @Override public ObjectConverter<Path,URL> unique()  {return INSTANCE;}
+        @Override public ObjectConverter<URL,Path> inverse() {return URLPath.INSTANCE;}
+        @Override public URL doConvert(final Path source) throws MalformedURLException {
+            return source.toUri().toURL();
+        }
+    }
+
+    /**
+     * Converter from {@link Path} to {@link File}.
+     */
+    public static final class PathFile extends PathConverter<Path,File> {
+        private static final long serialVersionUID = 452241851474627778L;
+        static final PathFile INSTANCE = new PathFile();
+        public PathFile() {super(Path.class, File.class);}      // Instantiated by ServiceLoader.
+
+        @Override public ObjectConverter<Path,File> unique()  {return INSTANCE;}
+        @Override public ObjectConverter<File,Path> inverse() {return FilePath.INSTANCE;}
+        @Override public File doConvert(final Path source) throws UnsupportedOperationException {
+            return source.toFile();
+        }
+    }
+
+    /**
+     * Converter from {@link File} to {@link Path}.
+     */
+    public static final class FilePath extends PathConverter<File,Path> {
+        private static final long serialVersionUID = 6420947028493989549L;
+        static final FilePath INSTANCE = new FilePath();
+        public FilePath() {super(File.class, Path.class);}      // Instantiated by ServiceLoader.
+
+        @Override public ObjectConverter<File,Path> unique()  {return INSTANCE;}
+        @Override public ObjectConverter<Path,File> inverse() {return PathFile.INSTANCE;}
+        @Override public Path doConvert(final File source) {
+            return source.toPath();
+        }
+    }
+
+    /**
      * Converter from {@link File} to {@link URI}.
      * This converter changes relative paths to absolute paths.
      */
@@ -119,6 +183,36 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
         @Override public ObjectConverter<URL,File> inverse() {return URLFile.INSTANCE;}
         @Override public URL doConvert(final File source) throws MalformedURLException {
             return source.toURI().toURL();
+        }
+    }
+
+    /**
+     * Converter from {@link URL} to {@link Path}.
+     */
+    public static final class URLPath extends PathConverter<URL,Path> {
+        private static final long serialVersionUID = 4030502499990629230L;
+        static final URLPath INSTANCE = new URLPath();
+        public URLPath() {super(URL.class, Path.class);}        // Instantiated by ServiceLoader.
+
+        @Override public ObjectConverter<URL,Path> unique()  {return INSTANCE;}
+        @Override public ObjectConverter<Path,URL> inverse() {return PathURL.INSTANCE;}
+        @Override public Path doConvert(final URL source) throws URISyntaxException {
+            return Paths.get(source.toURI());
+        }
+    }
+
+    /**
+     * Converter from {@link URI} to {@link Path}.
+     */
+    public static final class URIPath extends PathConverter<URI,Path> {
+        private static final long serialVersionUID = 5935532794533554151L;
+        static final URIPath INSTANCE = new URIPath();
+        public URIPath() {super(URI.class, Path.class);}        // Instantiated by ServiceLoader.
+
+        @Override public ObjectConverter<URI,Path> unique()  {return INSTANCE;}
+        @Override public ObjectConverter<Path,URI> inverse() {return PathURI.INSTANCE;}
+        @Override public Path doConvert(final URI source) throws IllegalArgumentException {
+            return Paths.get(source);
         }
     }
 

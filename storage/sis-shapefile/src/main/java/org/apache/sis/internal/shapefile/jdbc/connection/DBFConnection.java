@@ -28,9 +28,6 @@ import org.apache.sis.internal.shapefile.jdbc.metadata.DBFDatabaseMetaData;
 import org.apache.sis.internal.shapefile.jdbc.resultset.*;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
  * Connection to a DBF database.
@@ -44,7 +41,7 @@ public class DBFConnection extends AbstractConnection {
     final File databaseFile;
 
     /** Opened statement. */
-    private HashSet<DBFStatement> openedStatements = new HashSet<DBFStatement>();
+    private HashSet<DBFStatement> openedStatements = new HashSet<>();
 
     /** ByteReader. */
     private Dbase3ByteReader byteReader;
@@ -242,7 +239,7 @@ public class DBFConnection extends AbstractConnection {
                 }
             }
         }
-        catch(java.sql.SQLException e) {
+        catch(SQLNoResultException e) {
             // if we run out of bound of the ResultSet, the boolean returned by next() has not been checked well, and it's an internal error.
             rs.close();
             throw new RuntimeException(e.getMessage(), e);
@@ -275,7 +272,7 @@ public class DBFConnection extends AbstractConnection {
             try {
                 rs.next();
             }
-            catch(java.sql.SQLException e) {
+            catch(SQLNoResultException e) {
                 // We encounter an internal API error in this case.
                 rs.close();
                 throw new RuntimeException(e.getMessage(), e);

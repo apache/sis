@@ -29,7 +29,7 @@ import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Numbers;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -174,7 +174,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     Range<E> create(final E minValue, final boolean isMinIncluded,
                     final E maxValue, final boolean isMaxIncluded)
     {
-        return new Range<E>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
+        return new Range<>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
     }
 
     /**
@@ -616,7 +616,6 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * only one digit. This method assumes that we have verified that the element type
      * is an integer type before to invoke this method.
      */
-    @SuppressWarnings("unchecked")
     private static boolean isCompact(final Comparable<?> value, final boolean ifNull) {
         if (value == null) {
             return ifNull;

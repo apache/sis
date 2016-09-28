@@ -58,7 +58,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
      * All converters registered in a test case. Only the converter type and properties
      * will be verified; no conversion or serialization shall be attempted.
      */
-    private final Deque<ObjectConverter<?,?>> converters = new ArrayDeque<ObjectConverter<?,?>>();
+    private final Deque<ObjectConverter<?,?>> converters = new ArrayDeque<>();
 
     /**
      * Registers a converter to test.
@@ -319,7 +319,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
          * Expected side-effect: none
          */
         assertAllConvertersAreRegistered();
-        register(new NumberConverter<Number,Float>(Number.class, Float.class));
+        register(new NumberConverter<>(Number.class, Float.class));
         assertSameConverterForTarget(Float.class);
         assertMultilinesEquals("After NumberConverter.Float",
             "ConverterRegistry\n" +
@@ -341,7 +341,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
      */
     @Test
     public void testArrayOfWrapperTypes() {
-        register(new NumberConverter<Float,Double>(Float.class, Double.class));
+        register(new NumberConverter<>(Float.class, Double.class));
         final ObjectConverter<?,?> converter = registry.find(Float[].class, Double[].class);
         assertInstanceOf("Array conversions", ArrayConverter.class, converter);
         assertEquals(Float [].class, converter.getSourceClass());
@@ -355,7 +355,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
     @Test
     @DependsOnMethod("testArrayOfWrapperTypes")
     public void testArrayOfPrimitiveTypes() {
-        register(new NumberConverter<Float,Double>(Float.class, Double.class));
+        register(new NumberConverter<>(Float.class, Double.class));
         final ObjectConverter<?,?> converter = registry.find(float[].class, double[].class);
         assertInstanceOf("Array conversions", ArrayConverter.class, converter);
         assertEquals(float [].class, converter.getSourceClass());

@@ -125,7 +125,7 @@ public final class LanguageCode extends GO_CharacterString {
                 return marshalLocale;
             }
         }
-        return Locale.getDefault();
+        return Locale.getDefault(Locale.Category.DISPLAY);
     }
 
     /**

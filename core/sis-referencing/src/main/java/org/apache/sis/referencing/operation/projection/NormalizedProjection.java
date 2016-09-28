@@ -54,7 +54,7 @@ import org.apache.sis.util.resources.Errors;
 import static java.lang.Math.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 import org.opengis.referencing.ReferenceIdentifier;
 
 
@@ -175,7 +175,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * used only by {@link #getParameterDescriptors()}, which is itself invoked mostly for debugging purpose.</p>
      */
     @Debug
-    private static final Map<Class<?>,ParameterDescriptorGroup> DESCRIPTORS = new HashMap<Class<?>,ParameterDescriptorGroup>();
+    private static final Map<Class<?>,ParameterDescriptorGroup> DESCRIPTORS = new HashMap<>();
 
     /**
      * The parameters used for creating this projection. They are used for formatting <cite>Well Known Text</cite> (WKT)

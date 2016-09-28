@@ -119,7 +119,7 @@ public abstract class AbstractDatabaseMetaData extends AbstractJDBC implements D
     /**
      * @see java.sql.DatabaseMetaData#getPseudoColumns(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
-    public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+    @Override public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
         throw unsupportedOperation("getPseudoColumns", catalog, schemaPattern, tableNamePattern, columnNamePattern);
     }
 

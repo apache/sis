@@ -293,12 +293,12 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     {
         if (baseCRS != null && derivedCS != null) {
             final String type = getType(baseCRS, derivedCS);
-            if (type != null) {
-                if (WKTKeywords.GeodeticCRS   .equals(type)) return new Geodetic  (properties, (GeodeticCRS)   baseCRS, conversion,                derivedCS);
-                if (WKTKeywords.VerticalCRS   .equals(type)) return new Vertical  (properties, (VerticalCRS)   baseCRS, conversion,   (VerticalCS) derivedCS);
-                if (WKTKeywords.TimeCRS       .equals(type)) return new Temporal  (properties, (TemporalCRS)   baseCRS, conversion,       (TimeCS) derivedCS);
-                if (WKTKeywords.ParametricCRS .equals(type)) return new Parametric(properties, (ParametricCRS) baseCRS, conversion, (DefaultParametricCS) derivedCS);
-                if (WKTKeywords.EngineeringCRS.equals(type)) {
+            if (type != null) switch (type) {
+                case WKTKeywords.GeodeticCRS:   return new Geodetic  (properties, (GeodeticCRS)   baseCRS, conversion,                derivedCS);
+                case WKTKeywords.VerticalCRS:   return new Vertical  (properties, (VerticalCRS)   baseCRS, conversion,   (VerticalCS) derivedCS);
+                case WKTKeywords.TimeCRS:       return new Temporal  (properties, (TemporalCRS)   baseCRS, conversion,       (TimeCS) derivedCS);
+                case WKTKeywords.ParametricCRS: return new Parametric(properties, (ParametricCRS) baseCRS, conversion, (DefaultParametricCS) derivedCS);
+                case WKTKeywords.EngineeringCRS: {
                     /*
                      * This case may happen for baseCRS of kind GeodeticCRS, ProjectedCRS or EngineeringCRS.
                      * But only the later is associated to EngineeringDatum; the two formers are associated
@@ -310,6 +310,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                     if (baseCRS instanceof EngineeringCRS) {
                         return new Engineering(properties, (EngineeringCRS) baseCRS, conversion, derivedCS);
                     }
+                    break;
                 }
             }
         }
@@ -347,16 +348,17 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     {
         if (baseCRS != null && derivedCS != null) {
             final String type = getType(baseCRS, derivedCS);
-            if (type != null) {
-                if (WKTKeywords.GeodeticCRS   .equals(type)) return new Geodetic  (properties, (GeodeticCRS)   baseCRS, interpolationCRS, method, baseToDerived,                derivedCS);
-                if (WKTKeywords.VerticalCRS   .equals(type)) return new Vertical  (properties, (VerticalCRS)   baseCRS, interpolationCRS, method, baseToDerived,   (VerticalCS) derivedCS);
-                if (WKTKeywords.TimeCRS       .equals(type)) return new Temporal  (properties, (TemporalCRS)   baseCRS, interpolationCRS, method, baseToDerived,       (TimeCS) derivedCS);
-                if (WKTKeywords.ParametricCRS .equals(type)) return new Parametric(properties, (ParametricCRS) baseCRS, interpolationCRS, method, baseToDerived, (DefaultParametricCS) derivedCS);
-                if (WKTKeywords.EngineeringCRS.equals(type)) {
+            if (type != null) switch (type) {
+                case WKTKeywords.GeodeticCRS:   return new Geodetic  (properties, (GeodeticCRS)   baseCRS, interpolationCRS, method, baseToDerived,                derivedCS);
+                case WKTKeywords.VerticalCRS:   return new Vertical  (properties, (VerticalCRS)   baseCRS, interpolationCRS, method, baseToDerived,  (VerticalCS)  derivedCS);
+                case WKTKeywords.TimeCRS:       return new Temporal  (properties, (TemporalCRS)   baseCRS, interpolationCRS, method, baseToDerived,      (TimeCS)  derivedCS);
+                case WKTKeywords.ParametricCRS: return new Parametric(properties, (ParametricCRS) baseCRS, interpolationCRS, method, baseToDerived, (DefaultParametricCS) derivedCS);
+                case WKTKeywords.EngineeringCRS: {
                     if (baseCRS instanceof EngineeringCRS) {
                         // See the comment in create(Map, SingleCRS, Conversion, CoordinateSystem)
                         return new Engineering(properties, (EngineeringCRS) baseCRS, interpolationCRS, method, baseToDerived, derivedCS);
                     }
+                    break;
                 }
             }
         }
@@ -378,12 +380,12 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (DefaultDerivedCRS) object;
         } else {
             final String type = getType((SingleCRS) object.getBaseCRS(), object.getCoordinateSystem());
-            if (type != null) {
-                if (WKTKeywords.GeodeticCRS   .equals(type)) return new Geodetic   (object);
-                if (WKTKeywords.VerticalCRS   .equals(type)) return new Vertical   (object);
-                if (WKTKeywords.TimeCRS       .equals(type)) return new Temporal   (object);
-                if (WKTKeywords.ParametricCRS .equals(type)) return new Parametric (object);
-                if (WKTKeywords.EngineeringCRS.equals(type)) return new Engineering(object);
+            if (type != null) switch (type) {
+                case WKTKeywords.GeodeticCRS:    return new Geodetic   (object);
+                case WKTKeywords.VerticalCRS:    return new Vertical   (object);
+                case WKTKeywords.TimeCRS:        return new Temporal   (object);
+                case WKTKeywords.ParametricCRS:  return new Parametric (object);
+                case WKTKeywords.EngineeringCRS: return new Engineering(object);
             }
             return new DefaultDerivedCRS(object);
         }
@@ -594,10 +596,12 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         if (longKeyword == null) {
             return null;
         }
-             if (longKeyword.equals(WKTKeywords.GeodeticCRS))    shortKeyword = WKTKeywords.GeodCRS;
-        else if (longKeyword.equals(WKTKeywords.VerticalCRS))    shortKeyword = WKTKeywords.VertCRS;
-        else if (longKeyword.equals(WKTKeywords.EngineeringCRS)) shortKeyword = WKTKeywords.EngCRS;
-        else return longKeyword;
+        switch (longKeyword) {
+            case WKTKeywords.GeodeticCRS:    shortKeyword = WKTKeywords.GeodCRS; break;
+            case WKTKeywords.VerticalCRS:    shortKeyword = WKTKeywords.VertCRS; break;
+            case WKTKeywords.EngineeringCRS: shortKeyword = WKTKeywords.EngCRS;  break;
+            default: return longKeyword;
+        }
         return formatter.shortOrLong(shortKeyword, longKeyword);
     }
 

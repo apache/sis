@@ -138,6 +138,34 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     }
 
     /**
+     * Returns the locale for the given category. Subclasses may override this method in order to assign
+     * different roles to the different locale categories. A typical (but not mandatory) mapping is:
+     *
+     * <ul>
+     *   <li>{@link java.util.Locale.Category#FORMAT} specifies the locale to use for numbers, dates and angles formatting.</li>
+     *   <li>{@link java.util.Locale.Category#DISPLAY} specifies the locale to use for {@link org.opengis.util.CodeList} labels
+     *       and {@link org.opengis.util.InternationalString} contents.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Example:</b>
+     * The ISO 19162 (<cite>Well Known Text</cite>) standard requires a number format similar to the one defined by
+     * {@code Locale.ROOT} while it allows informative texts (remarks, <i>etc.</i>) to be formatted according the
+     * user's locale. Consequently {@code WKTFormat} fixes (usually) the locale for {@code Category.FORMAT} to
+     * {@code Locale.ROOT} and let {@code Category.DISPLAY} be any locale.</div>
+     *
+     * For subclasses that do not override this method, the default implementation returns {@link #getLocale()}.
+     *
+     * @param  category The category for which a locale is desired.
+     * @return The locale for the given category (never {@code null}).
+     *
+     * @since 0.4
+     */
+    public Locale getLocale(final Locale.Category category) {
+        ArgumentChecks.ensureNonNull("category", category);
+        return getLocale();
+    }
+
+    /**
      * Returns the timezone used by this format.
      *
      * @return The timezone used for this format, or UTC for unlocalized format.
@@ -272,7 +300,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             } while (Character.isSpaceChar(c) || Character.isISOControl(c));
             pos.setErrorIndex(i);
         }
-        throw new LocalizedParseException(getLocale(), getValueType(), text, pos);
+        throw new LocalizedParseException(getLocale(Locale.Category.DISPLAY), getValueType(), text, pos);
     }
 
     /**
@@ -352,7 +380,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             format = createFormat(type);
             if (format != null) {
                 if (formats == null) {
-                    this.formats = formats = new IdentityHashMap<Class<?>,Format>(4);
+                    this.formats = formats = new IdentityHashMap<>(4);
                 }
                 formats.put(type, format);
                 break;
@@ -398,7 +426,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
          * documented in this method javadoc. But actually it is not, since the call to
          * DefaultFormat.getInstance(…) will indirectly perform this kind of comparison.
          */
-        final Locale locale = getLocale();
+        final Locale locale = getLocale(Locale.Category.FORMAT);
         if (Number.class.isAssignableFrom(valueType)) {
             if (Locale.ROOT.equals(locale)) {
                 return DefaultFormat.getInstance(valueType);
@@ -441,7 +469,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
         @SuppressWarnings("unchecked")
         final CompoundFormat<T> clone = (CompoundFormat<T>) super.clone();
         if (clone.formats != null) {
-            clone.formats = new IdentityHashMap<Class<?>,Format>(clone.formats);
+            clone.formats = new IdentityHashMap<>(clone.formats);
             for (final Map.Entry<Class<?>,Format> entry : clone.formats.entrySet()) {
                 entry.setValue((Format) entry.getValue().clone());
             }

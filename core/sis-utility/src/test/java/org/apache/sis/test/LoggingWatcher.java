@@ -67,7 +67,7 @@ public final strictfp class LoggingWatcher extends TestWatchman implements Filte
     /**
      * The logged messages.
      */
-    private final Queue<String> messages = new LinkedList<String>();
+    private final Queue<String> messages = new LinkedList<>();
 
     /**
      * The logger to watch.

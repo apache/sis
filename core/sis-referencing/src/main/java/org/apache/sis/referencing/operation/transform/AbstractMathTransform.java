@@ -451,6 +451,7 @@ public abstract class AbstractMathTransform extends FormattableObject
                     failure = exception; // Keep only the first failure.
                     blockStart = srcOff;
                 } else {
+                    failure.addSuppressed(exception);
                     if (Math.abs(srcOff - blockStart) > MAXIMUM_BUFFER_SIZE) {
                         failureCount = 0; // We started a new block of coordinates.
                         blockStart = srcOff;
@@ -586,6 +587,8 @@ public abstract class AbstractMathTransform extends FormattableObject
                     throw exception;
                 } else if (failure == null) {
                     failure = exception; // Keep only the first exception.
+                } else {
+                    failure.addSuppressed(exception);
                 }
             }
             for (int i=0; i<dstStop; i++) {
@@ -648,6 +651,8 @@ public abstract class AbstractMathTransform extends FormattableObject
                     throw exception;
                 } else if (failure == null) {
                     failure = exception;
+                } else {
+                    failure.addSuppressed(exception);
                 }
             }
             for (int i=0; i<dstLength; i++) {
@@ -721,6 +726,8 @@ public abstract class AbstractMathTransform extends FormattableObject
                     throw exception;
                 } else if (failure == null) {
                     failure = exception;
+                } else {
+                    failure.addSuppressed(exception);
                 }
             }
             dstOff += dstLength;

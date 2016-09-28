@@ -104,7 +104,7 @@ public class Colors implements Cloneable, Serializable {
      * Creates a new, initially empty, set of colors.
      */
     public Colors() {
-        map = new EnumMap<ElementKind,X364>(ElementKind.class);
+        map = new EnumMap<>(ElementKind.class);
     }
 
     /**
@@ -113,7 +113,7 @@ public class Colors implements Cloneable, Serializable {
      * @param colors The set of colors to copy.
      */
     public Colors(final Colors colors) {
-        map = new EnumMap<ElementKind,X364>(colors.map);
+        map = new EnumMap<>(colors.map);
     }
 
     /**

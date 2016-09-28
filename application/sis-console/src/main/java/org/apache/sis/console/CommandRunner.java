@@ -160,8 +160,8 @@ abstract class CommandRunner {
     {
         boolean isTest = false;
         this.validOptions = validOptions;
-        options = new EnumMap<Option,String>(Option.class);
-        files = new ArrayList<String>(arguments.length);
+        options = new EnumMap<>(Option.class);
+        files = new ArrayList<>(arguments.length);
         for (int i=0; i<arguments.length; i++) {
             final String arg = arguments[i];
             if (i == commandIndex) {
@@ -200,7 +200,7 @@ abstract class CommandRunner {
             debug = options.containsKey(option = Option.DEBUG);
 
             value = options.get(option = Option.LOCALE);
-            locale = (value != null) ? Locales.parse(value) : Locale.getDefault();
+            locale = (value != null) ? Locales.parse(value) : Locale.getDefault(Locale.Category.DISPLAY);
 
             value = options.get(option = Option.TIMEZONE);
             timezone = (value != null) ? TimeZone.getTimeZone(value) : TimeZone.getDefault();

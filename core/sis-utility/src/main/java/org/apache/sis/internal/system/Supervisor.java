@@ -193,7 +193,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
      */
     private String getDescription(final String resourceKey) {
         return ResourceBundle.getBundle("org.apache.sis.internal.system.Descriptions",
-                Locale.getDefault(),
+                Locale.getDefault(Locale.Category.DISPLAY),
                 Supervisor.class.getClassLoader()).getString(resourceKey);
     }
 

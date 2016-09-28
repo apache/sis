@@ -225,9 +225,9 @@ public abstract class Builder<B extends Builder<B>> {
      */
     protected Builder() {
         assert verifyParameterizedType(getClass());
-        properties  = new HashMap<String,Object>(8);
-        aliases     = new ArrayList<GenericName>();  // Will often stay empty (default constructor handles those cases well).
-        identifiers = new ArrayList<ReferenceIdentifier>();
+        properties  = new HashMap<>(8);
+        aliases     = new ArrayList<>();  // Will often stay empty (default constructor handles those cases well).
+        identifiers = new ArrayList<>();
     }
 
     /**

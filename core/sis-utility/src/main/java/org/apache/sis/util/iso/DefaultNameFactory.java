@@ -105,7 +105,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * Creates a new factory.
      */
     public DefaultNameFactory() {
-        pool = new WeakHashSet<GenericName>(GenericName.class);
+        pool = new WeakHashSet<>(GenericName.class);
     }
 
     /**
@@ -296,7 +296,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
             separator = DEFAULT_SEPARATOR_STRING;
         }
         final int s = separator.length();
-        final List<String> names = new ArrayList<String>();
+        final List<String> names = new ArrayList<>();
         int lower = 0;
         final String string = name.toString();
         while (true) {

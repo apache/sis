@@ -83,8 +83,7 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
         final String artifactBase = FINALNAME_PREFIX + version;
         try {
             final File targetFile = new File(distributionDirectory(targetDirectory), artifactBase + ".zip");
-            final ZipArchiveOutputStream zip = new ZipArchiveOutputStream(targetFile);
-            try {
+            try (ZipArchiveOutputStream zip = new ZipArchiveOutputStream(targetFile)) {
                 zip.setLevel(9);
                 appendRecursively(sourceDirectory, artifactBase, zip, new byte[8192]);
                 /*
@@ -106,8 +105,6 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
                         zip.closeArchiveEntry();
                     }
                 });
-            } finally {
-                zip.close();
             }
         } catch (IOException e) {
             throw new MojoExecutionException(e.getLocalizedMessage(), e);
@@ -132,14 +129,11 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
         }
         out.putArchiveEntry(entry);
         if (!entry.isDirectory()) {
-            final FileInputStream in = new FileInputStream(file);
-            try {
+            try (FileInputStream in = new FileInputStream(file)) {
                 int n;
                 while ((n = in.read(buffer)) >= 0) {
                     out.write(buffer, 0, n);
                 }
-            } finally {
-                in.close();
             }
         }
         out.closeArchiveEntry();

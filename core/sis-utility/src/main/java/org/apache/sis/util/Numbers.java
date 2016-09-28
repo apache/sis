@@ -65,7 +65,7 @@ public final class Numbers extends Static {
      * But maybe the most interesting property is that it allocates less objects since {@code IdentityHashMap}
      * implementation doesn't need the chain of objects created by {@code HashMap}.</div>
      */
-    private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<Class<?>,Numbers>(11);
+    private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<>(11);
     static {
         new Numbers(BigDecimal.class, true, false, BIG_DECIMAL);
         new Numbers(BigInteger.class, false, true, BIG_INTEGER);

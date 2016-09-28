@@ -23,7 +23,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

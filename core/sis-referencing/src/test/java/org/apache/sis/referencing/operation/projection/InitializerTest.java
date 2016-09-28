@@ -72,7 +72,7 @@ public final strictfp class InitializerTest extends TestCase{
          * to do that since this map is provided by the ObliqueStereographic class itself.
          */
         final EnumMap<NormalizedProjection.ParameterRole, ParameterDescriptor<Double>> roles =
-                new EnumMap<NormalizedProjection.ParameterRole, ParameterDescriptor<Double>>(NormalizedProjection.ParameterRole.class);
+                new EnumMap<>(NormalizedProjection.ParameterRole.class);
         roles.put(NormalizedProjection.ParameterRole.CENTRAL_MERIDIAN, ObliqueStereographic.LONGITUDE_OF_ORIGIN);
         roles.put(NormalizedProjection.ParameterRole.SCALE_FACTOR,     ObliqueStereographic.SCALE_FACTOR);
         roles.put(NormalizedProjection.ParameterRole.FALSE_EASTING,    ObliqueStereographic.FALSE_EASTING);

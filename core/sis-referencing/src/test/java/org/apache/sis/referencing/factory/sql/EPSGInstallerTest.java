@@ -157,11 +157,8 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         try {
             createAndTest(ds, scripts);
         } finally {
-            final Connection c = ds.getConnection(); Statement s = c.createStatement();
-            try {
+            try (Connection c = ds.getConnection(); Statement s = c.createStatement()) {
                 s.execute("SHUTDOWN");
-            } finally {
-                c.close();
             }
         }
         loggings.assertNextLogContains("EPSG", "jdbc:hsqldb:mem:test");
@@ -175,14 +172,13 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     private void createAndTest(final DataSource ds, final InstallationScriptProvider scriptProvider)
             throws SQLException, FactoryException
     {
-        final Map<String,Object> properties = new HashMap<String,Object>();
+        final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put("dataSource", ds));
         assertNull(properties.put("scriptProvider", scriptProvider));
         assertEquals("Should not contain EPSG tables before we created them.", 0, countCRSTables(ds));
         loggings.assertNoUnexpectedLog();       // Should not yet have logged anything at this point.
 
-        final EPSGFactory factory = new EPSGFactory(properties);
-        try {
+        try (EPSGFactory factory = new EPSGFactory(properties)) {
             /*
              * Fetch the "WGS 84" coordinate reference system.
              */
@@ -207,11 +203,9 @@ public final strictfp class EPSGInstallerTest extends TestCase {
              * should not be included. The intend is to verify that the fields
              * of type BOOLEAN have been properly handled.
              */
-            codes = new HashSet<String>(codes);
+            codes = new HashSet<>(codes);
             assertTrue ("4979", codes.contains("4979"));
             assertFalse("4329", codes.contains("4329"));
-        } finally {
-            factory.close();
         }
         assertEquals("Should contain EPSG tables after we created them.", 1, countCRSTables(ds));
     }
@@ -222,20 +216,14 @@ public final strictfp class EPSGInstallerTest extends TestCase {
      */
     private static int countCRSTables(final DataSource ds) throws SQLException {
         int count = 0;
-        final Connection c = ds.getConnection();
-        try {
-            final ResultSet r = c.getMetaData().getTables(null, null, "Coordinate Reference System", null);
-            try {
+        try (Connection c = ds.getConnection()) {
+            try (ResultSet r = c.getMetaData().getTables(null, null, "Coordinate Reference System", null)) {
                 while (r.next()) {
                     final String schema = r.getString("TABLE_SCHEM");
                     assertTrue(schema, "EPSG".equalsIgnoreCase(schema));
                     count++;
                 }
-            } finally {
-                r.close();
             }
-        } finally {
-            c.close();
         }
         return count;
     }

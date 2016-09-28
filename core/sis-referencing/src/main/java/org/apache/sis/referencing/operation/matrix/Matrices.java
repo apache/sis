@@ -34,8 +34,7 @@ import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.JDK7;
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -1134,7 +1133,7 @@ public final class Matrices extends Static {
          * Now append the formatted elements with the appropriate amount of spaces before each value,
          * and trailling zeros after each value except ±0, ±1, NaN and infinities.
          */
-        final String   lineSeparator = JDK7.lineSeparator();
+        final String   lineSeparator = System.lineSeparator();
         final CharSequence whiteLine = CharSequences.spaces(totalWidth);
         final StringBuilder   buffer = new StringBuilder((totalWidth + 2 + lineSeparator.length()) * (numRow + 2));
         buffer.append('┌').append(whiteLine).append('┐').append(lineSeparator);

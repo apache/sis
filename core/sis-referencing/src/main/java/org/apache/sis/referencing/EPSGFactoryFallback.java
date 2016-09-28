@@ -124,7 +124,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
         final boolean geographic = type.isAssignableFrom(GeographicCRS.class);
         final boolean geocentric = type.isAssignableFrom(GeocentricCRS.class);
         final boolean projected  = type.isAssignableFrom(ProjectedCRS .class);
-        final Set<String> codes = new LinkedHashSet<String>();
+        final Set<String> codes = new LinkedHashSet<>();
         if (pm) codes.add(StandardDefinitions.GREENWICH);
         for (final CommonCRS crs : CommonCRS.values()) {
             if (ellipsoid)  add(codes, crs.ellipsoid);

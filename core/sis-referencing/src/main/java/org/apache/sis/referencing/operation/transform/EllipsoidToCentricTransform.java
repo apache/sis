@@ -794,7 +794,6 @@ next:   while (--numPts >= 0) {
          * Creates the inverse of the enclosing transform.
          */
         Inverse() {
-            EllipsoidToCentricTransform.this.super();
         }
 
         /**

@@ -71,7 +71,7 @@ final strictfp class RandomFailureTransform extends PseudoTransform {
         super(4,3);
         this.denominator = denominator;
         random = new Random(891914828L * denominator);
-        failures = new HashSet<Integer>();
+        failures = new HashSet<>();
     }
 
     /**

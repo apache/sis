@@ -31,7 +31,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -71,14 +71,14 @@ public abstract class TypeBuilder implements Localized {
      * @param builder  the builder from which to copy information.
      */
     TypeBuilder(final TypeBuilder builder) {
-        identification = new HashMap<String,Object>(builder.identification);
+        identification = new HashMap<>(builder.identification);
     }
 
     /**
      * Creates a new builder initialized to the values of an existing type.
      */
     TypeBuilder(final AbstractIdentifiedType template, final Locale locale) {
-        identification = new HashMap<String,Object>(4);
+        identification = new HashMap<>(4);
         putIfNonNull(Errors.LOCALE_KEY, locale);
         if (template != null) {
             putIfNonNull(AbstractIdentifiedType.NAME_KEY,        template.getName());

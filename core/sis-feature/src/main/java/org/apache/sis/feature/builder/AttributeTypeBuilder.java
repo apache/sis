@@ -38,7 +38,7 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -128,7 +128,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     AttributeTypeBuilder(final FeatureTypeBuilder owner, final Class<V> valueClass) {
         super(owner, null);
         this.valueClass = valueClass;
-        characteristics = new ArrayList<CharacteristicTypeBuilder<?>>();
+        characteristics = new ArrayList<>();
     }
 
     /**
@@ -144,9 +144,9 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
         valueClass    = template.getValueClass();
         defaultValue  = template.getDefaultValue();
         final Map<String, DefaultAttributeType<?>> tc = template.characteristics();
-        characteristics = new ArrayList<CharacteristicTypeBuilder<?>>(tc.size());
+        characteristics = new ArrayList<>(tc.size());
         for (final DefaultAttributeType<?> c : tc.values()) {
-            characteristics.add(new CharacteristicTypeBuilder(this, c));
+            characteristics.add(new CharacteristicTypeBuilder<>(this, c));
         }
     }
 
@@ -269,7 +269,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
         if (type == valueClass) {
             return (AttributeTypeBuilder<N>) this;
         }
-        final AttributeTypeBuilder<N> newb = new AttributeTypeBuilder<N>(this, type);
+        final AttributeTypeBuilder<N> newb = new AttributeTypeBuilder<>(this, type);
         for (final CharacteristicTypeBuilder<?> c : characteristics) {
             c.owner(newb);
         }
@@ -335,6 +335,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @see #characteristics()
      * @see AttributeConvention#VALID_VALUES_CHARACTERISTIC
      */
+    @SafeVarargs
     public final AttributeTypeBuilder<V> setValidValues(final V... values) {
         return setCharacteristic(AttributeConvention.VALID_VALUES_CHARACTERISTIC,
                 Set.class, CollectionsExt.immutableSet(false, values));
@@ -459,7 +460,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      */
     public <C> CharacteristicTypeBuilder<C> addCharacteristic(final Class<C> type) {
         ensureNonNull("type", type);
-        final CharacteristicTypeBuilder<C> characteristic = new CharacteristicTypeBuilder<C>(this, type);
+        final CharacteristicTypeBuilder<C> characteristic = new CharacteristicTypeBuilder<>(this, type);
         characteristics.add(characteristic);
         clearCache();
         return characteristic;
@@ -481,7 +482,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      */
     public <C> CharacteristicTypeBuilder<C> addCharacteristic(final DefaultAttributeType<C> template) {
         ensureNonNull("template", template);
-        final CharacteristicTypeBuilder<C> characteristic = new CharacteristicTypeBuilder<C>(this, template);
+        final CharacteristicTypeBuilder<C> characteristic = new CharacteristicTypeBuilder<>(this, template);
         characteristics.add(characteristic);
         clearCache();
         return characteristic;
@@ -502,7 +503,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @see #setCRS(CoordinateReferenceSystem)
      */
     public List<CharacteristicTypeBuilder<?>> characteristics() {
-        return new RemoveOnlyList<CharacteristicTypeBuilder<?>>(characteristics);
+        return new RemoveOnlyList<>(characteristics);
     }
 
     /**
@@ -703,7 +704,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
             for (int i=0; i<chrts.length; i++) {
                 chrts[i] = characteristics.get(i).build();
             }
-            property = new DefaultAttributeType<V>(identification(), valueClass, minimumOccurs, maximumOccurs, defaultValue, chrts);
+            property = new DefaultAttributeType<>(identification(), valueClass, minimumOccurs, maximumOccurs, defaultValue, chrts);
         }
         return property;
     }

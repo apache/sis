@@ -171,7 +171,7 @@ public final strictfp class HardCodedDatum {
      * Creates a map of properties for the given name and EPSG code.
      */
     private static Map<String,?> properties(final String name, final String code, final CharSequence scope) {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         properties.put(NAME_KEY, name);
         if (code != null) {
             properties.put(IDENTIFIERS_KEY, new NamedIdentifier(HardCodedCitations.EPSG, code));

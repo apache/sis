@@ -127,7 +127,7 @@ final class IdentifierCommand extends MetadataCommand {
         if (metadata != null) {
             final List<Row> rows;
             if (metadata instanceof DefaultMetadata) {
-                rows = new ArrayList<Row>();
+                rows = new ArrayList<>();
                 final Identifier id = ((DefaultMetadata) metadata).getMetadataIdentifier();
                 if (id instanceof DefaultIdentifier) {
                     CharSequence desc = ((DefaultIdentifier) id).getDescription();

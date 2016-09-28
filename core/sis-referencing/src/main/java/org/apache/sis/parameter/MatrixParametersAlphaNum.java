@@ -103,7 +103,7 @@ final class MatrixParametersAlphaNum extends MatrixParameters {
              */
             return wkt;
         }
-        final Map<String,Object> properties = new HashMap<String,Object>(6);
+        final Map<String,Object> properties = new HashMap<>(6);
         /*
          * Declare the EPSG identifier only for A0, A1, A2, B0, B1 and B2.
          */
@@ -114,7 +114,7 @@ final class MatrixParametersAlphaNum extends MatrixParameters {
         }
         properties.put(ParameterDescriptor.NAME_KEY, name);
         properties.put(ParameterDescriptor.ALIAS_KEY, wkt.getName());
-        return new DefaultParameterDescriptor<Double>(properties, 0, 1, Double.class, null, null, wkt.getDefaultValue());
+        return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, wkt.getDefaultValue());
     }
 
     /**

@@ -78,7 +78,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
      */
     public static void main(final String[] args) throws IOException {
         final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
-        final List<OperationMethod> methods = new ArrayList<OperationMethod>(factory.getAvailableMethods(SingleOperation.class));
+        final List<OperationMethod> methods = new ArrayList<>(factory.getAvailableMethods(SingleOperation.class));
         JDK8.removeIf(methods, new org.apache.sis.internal.jdk8.Predicate<OperationMethod>() {
             @Override public boolean test(OperationMethod method) {
                 return method.getClass().getName().endsWith("Mock");
@@ -95,14 +95,11 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
                 return c;
             }
         });
-        final CoordinateOperationMethods writer = new CoordinateOperationMethods();
-        try {
+        try (final CoordinateOperationMethods writer = new CoordinateOperationMethods()) {
             writer.writeIndex(methods);
             for (final OperationMethod method : methods) {
                 writer.write(method);
             }
-        } finally {
-            writer.close();
         }
     }
 
@@ -329,7 +326,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
         println("th class=\"sep\"", "Remarks");
         println("th class=\"sep\" colspan=\"3\"", "Value domain");
         println("th class=\"sep\"", "Default");
-        final Map<String,Integer> footnotes = new LinkedHashMap<String,Integer>();
+        final Map<String, Integer> footnotes = new LinkedHashMap<>();
         for (final GeneralParameterDescriptor gp : group.descriptors()) {
             if (isDeprecated(gp)) {
                 continue;   // Hide deprecated parameters.
@@ -419,7 +416,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
     public static Map<String, DefaultGeographicBoundingBox> computeUnionOfAllDomainOfValidity(
             final CRSAuthorityFactory factory) throws FactoryException
     {
-        final Map<String, DefaultGeographicBoundingBox> domainOfValidity = new HashMap<String, DefaultGeographicBoundingBox>();
+        final Map<String, DefaultGeographicBoundingBox> domainOfValidity = new HashMap<>();
         for (final String code : factory.getAuthorityCodes(GeneralDerivedCRS.class)) {
             final CoordinateReferenceSystem crs;
             try {

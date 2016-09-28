@@ -98,11 +98,11 @@ public abstract class MapProjection extends AbstractProvider {
             new NamedIdentifier(Citations.GEOTIFF, "SemiMajor"),
             new NamedIdentifier(Citations.PROJ4,   "a")
         };
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         properties.put(AUTHORITY_KEY, Citations.OGC);
         properties.put(NAME_KEY,      Constants.SEMI_MAJOR);
         properties.put(ALIAS_KEY,     aliases);
-        SEMI_MAJOR = new DefaultParameterDescriptor<Double>(properties, 1, 1, Double.class, valueDomain, null, null);
+        SEMI_MAJOR = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class, valueDomain, null, null);
         /*
          * Change in-place the name and aliases (we do not need to create new objects)
          * before to create the SEMI_MINOR descriptor.
@@ -112,14 +112,14 @@ public abstract class MapProjection extends AbstractProvider {
         aliases[1] = new NamedIdentifier(Citations.NETCDF,  "semi_minor_axis");
         aliases[2] = new NamedIdentifier(Citations.GEOTIFF, "SemiMinor");
         aliases[3] = new NamedIdentifier(Citations.PROJ4,   "b");
-        SEMI_MINOR = new DefaultParameterDescriptor<Double>(properties, 1, 1, Double.class, valueDomain, null, null);
+        SEMI_MINOR = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class, valueDomain, null, null);
         /*
          * SIS-specific parameter for debugging purpose only.
          */
         properties.clear();
         properties.put(AUTHORITY_KEY, Citations.SIS);
         properties.put(NAME_KEY, "eccentricity");
-        ECCENTRICITY = new DefaultParameterDescriptor<Double>(properties, 1, 1, Double.class,
+        ECCENTRICITY = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class,
                 MeasurementRange.create(0d, true, 1d, true, null), null, null);
     }
 

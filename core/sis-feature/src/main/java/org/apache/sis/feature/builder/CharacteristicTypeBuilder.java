@@ -23,7 +23,7 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -212,7 +212,7 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
         if (type == valueClass) {
             return (CharacteristicTypeBuilder<N>) this;
         }
-        final CharacteristicTypeBuilder<N> newb = new CharacteristicTypeBuilder<N>(this, type);
+        final CharacteristicTypeBuilder<N> newb = new CharacteristicTypeBuilder<>(this, type);
         owner.characteristics.set(owner.characteristics.lastIndexOf(this), newb);
         // Note: a negative lastIndexOf(old) would be a bug in our algorithm.
         owner = null;
@@ -293,7 +293,7 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     @Override
     public DefaultAttributeType<V> build() {
         if (characteristic == null) {
-            characteristic = new DefaultAttributeType<V>(identification(), valueClass, 0, 1, defaultValue);
+            characteristic = new DefaultAttributeType<>(identification(), valueClass, 0, 1, defaultValue);
         }
         return characteristic;
     }

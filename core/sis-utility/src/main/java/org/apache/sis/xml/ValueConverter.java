@@ -21,6 +21,7 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.util.MissingResourceException;
+import java.util.IllformedLocaleException;
 import java.util.Locale;
 import java.util.UUID;
 import java.nio.charset.Charset;
@@ -253,16 +254,15 @@ public class ValueConverter {
      * @param  value The string to convert to a locale, or {@code null}.
      * @return The converted locale, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws RuntimeException If the given string can not be converted to a locale
-     *         ({@code IllformedLocaleException} on the JDK7 branch).
+     * @throws IllformedLocaleException If the given string can not be converted to a locale.
      *
      * @see Locales#parse(String)
      */
-    public Locale toLocale(final MarshalContext context, String value) {
+    public Locale toLocale(final MarshalContext context, String value) throws IllformedLocaleException {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
             return Locales.parse(value);
-        } catch (RuntimeException e) { // IllformedLocaleException on the JDK7 branch.
+        } catch (IllformedLocaleException e) {
             if (!exceptionOccured(context, value, String.class, Locale.class, e)) {
                 throw e;
             }
@@ -435,12 +435,9 @@ public class ValueConverter {
     public URL toURL(final MarshalContext context, final URI value) throws MalformedURLException {
         if (value != null) try {
             return value.toURL();
-        } catch (Exception e) { // MalformedURLException | IllegalArgumentException
+        } catch (MalformedURLException | IllegalArgumentException e) {
             if (!exceptionOccured(context, value, URI.class, URL.class, e)) {
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException) e;
-                }
-                throw (MalformedURLException) e;
+                throw e;
             }
         }
         return null;

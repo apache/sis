@@ -38,10 +38,7 @@ import org.apache.sis.math.FunctionProperty;
  *
  * @see org.apache.sis.util.ObjectConverters#identity(Class)
  */
-public final class IdentityConverter<T, S extends T> extends SystemConverter<S,T> {
-    // JDK6 NOTE: Order of above <T> and <S> parameters is reversed compared to the
-    // JDK7 branch, because the JDK6 compiler does not supports forward reference.
-
+public final class IdentityConverter<S extends T, T> extends SystemConverter<S,T> {
     /**
      * For cross-version compatibility.
      */

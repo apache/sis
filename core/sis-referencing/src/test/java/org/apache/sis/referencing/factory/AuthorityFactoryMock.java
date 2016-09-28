@@ -52,9 +52,8 @@ import static org.junit.Assert.*;
  * @version 0.7
  * @module
  */
-@org.apache.sis.internal.jdk7.AutoCloseable
 public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
-        CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory
+        CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, AutoCloseable
 {
     /**
      * The authority.
@@ -108,7 +107,7 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
     @Override
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) {
         assertFalse("This factory has been closed.", isClosed());
-        final Set<String> codes = new LinkedHashSet<String>();
+        final Set<String> codes = new LinkedHashSet<>();
         if (type.isAssignableFrom(GeocentricCRS.class)) add(codes, 4979);
         if (type.isAssignableFrom(GeographicCRS.class)) add(codes, 84, 4326);
         if (type.isAssignableFrom(PrimeMeridian.class)) add(codes, 8901, 8903, 8914);
@@ -206,6 +205,7 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
     /**
      * Flags this factory as closed.
      */
+    @Override
     public synchronized void close() {
         closed = true;
     }

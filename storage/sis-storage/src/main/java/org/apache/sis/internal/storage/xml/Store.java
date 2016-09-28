@@ -151,9 +151,7 @@ final class Store extends DataStore {
             } finally {
                 in.close();
             }
-        } catch (JAXBException e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, name), e);
-        } catch (IOException e) {
+        } catch (JAXBException | IOException e) {
             throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, name), e);
         }
     }

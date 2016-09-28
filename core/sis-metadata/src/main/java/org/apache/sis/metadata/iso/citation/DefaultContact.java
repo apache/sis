@@ -269,7 +269,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
             if (newValue instanceof DefaultTelephone) {
                 newValues = ((DefaultTelephone) newValue).getOwner();
             } else {
-                newValues = new ArrayList<Telephone>(4);
+                newValues = new ArrayList<>(4);
                 for (String number : newValue.getVoices()) {
                     newValues.add(new DefaultTelephone(number, UnsupportedCodeList.VOICE));
                 }

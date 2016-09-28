@@ -71,7 +71,7 @@ import static org.apache.sis.util.collection.Containers.property;
 import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -144,7 +144,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *
      * @see #isHeuristicMatchForName(String)
      */
-    private static final Map<String,Object> ALIASES = new HashMap<String,Object>(12);
+    private static final Map<String,Object> ALIASES = new HashMap<>(12);
     static {
         final Boolean latitude  = Boolean.TRUE;
         final Boolean longitude = Boolean.FALSE;

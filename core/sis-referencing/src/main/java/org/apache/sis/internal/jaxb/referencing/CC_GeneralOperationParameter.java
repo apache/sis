@@ -259,7 +259,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
          * by the 'complete' descriptor. If the descriptor is a group, then this 'replacement' method will
          * be invoked recursively for each parameter in the group.
          */
-        final Map<String,Object> merged = new HashMap<String,Object>(expected);
+        final Map<String,Object> merged = new HashMap<>(expected);
         merged.putAll(actual);  // May overwrite pre-defined properties.
         mergeArrays(GeneralParameterDescriptor.ALIAS_KEY,       GenericName.class, provided.getAlias(), merged, complete.getName());
         mergeArrays(GeneralParameterDescriptor.IDENTIFIERS_KEY, ReferenceIdentifier.class, provided.getIdentifiers(), merged, null);
@@ -299,8 +299,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                                           boolean                            canSubstitute)
     {
         boolean isCompatible = true;
-        final Set<GeneralParameterDescriptor> included =
-                new HashSet<GeneralParameterDescriptor>(Containers.hashMapCapacity(provided.length));
+        final Set<GeneralParameterDescriptor> included = new HashSet<>(Containers.hashMapCapacity(provided.length));
         for (int i=0; i<provided.length; i++) {
             final GeneralParameterDescriptor p = provided[i];
             try {
@@ -371,7 +370,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                                                      final ParameterDescriptor<T> complete)
     {
         final Class<T> valueClass = complete.getValueClass();
-        return new DefaultParameterDescriptor<T>(merged,
+        return new DefaultParameterDescriptor<>(merged,
                 provided.getMinimumOccurs(),
                 provided.getMaximumOccurs(),
                 // Values below this point are not provided in GML documents,
@@ -398,7 +397,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
             if (size == 0) {
                 return false;
             }
-            final Set<NamedIdentifier> c = new HashSet<NamedIdentifier>(Containers.hashMapCapacity(size));
+            final Set<NamedIdentifier> c = new HashSet<>(Containers.hashMapCapacity(size));
             for (final T e : complete) {
                 c.add(toNamedIdentifier(e));
             }
@@ -434,7 +433,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                  *   2) Replace 'provided' instances by 'complete' instances, since the later
                  *      are sometime pre-defined instances defined as static final constants.
                  */
-                final Map<NamedIdentifier,T> c = new LinkedHashMap<NamedIdentifier,T>();
+                final Map<NamedIdentifier,T> c = new LinkedHashMap<>();
                 for (final T e : provided) c.put(toNamedIdentifier(e), e);
                 for (final T e : complete) c.put(toNamedIdentifier(e), e);
                 c.remove(toNamedIdentifier(remove));

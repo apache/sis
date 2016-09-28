@@ -22,10 +22,14 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Files;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.FileSystemNotFoundException;
 
 
 /**
@@ -89,8 +93,13 @@ final class MimeTypeCommand extends CommandRunner {
                 // If the URI is not absolute, we will not be able to convert to Path.
                 // Open as a String, leaving the conversion to DataStore implementations.
                 type = DataStores.probeContentType(file);
-            } else {
+            } else try {
+                type = Files.probeContentType(Paths.get(uri));
+            } catch (IllegalArgumentException | FileSystemNotFoundException e) {
                 type = DataStores.probeContentType(uri);
+            } catch (NoSuchFileException e) {
+                error(Errors.format(Errors.Keys.CanNotOpen_1, uri), e);
+                return Command.IO_EXCEPTION_EXIT_CODE;
             }
             /*
              * Output of Unix "file --mime-type" Unix command is of the form:

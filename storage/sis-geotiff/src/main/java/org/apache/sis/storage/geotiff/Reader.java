@@ -90,7 +90,7 @@ final class Reader extends GeoTIFF {
      * Positions of each <cite>Image File Directory</cite> (IFD) in this file.
      * Those positions are fetched when first needed.
      */
-    private final List<ImageFileDirectory> imageFileDirectories = new ArrayList<ImageFileDirectory>();
+    private final List<ImageFileDirectory> imageFileDirectories = new ArrayList<>();
 
     /**
      * Entries having a value that can not be read immediately, but instead have a pointer
@@ -100,7 +100,7 @@ final class Reader extends GeoTIFF {
      * we use a {@code LinkedList} because we will perform frequent additions and removals,
      * but no random access.</div>
      */
-    private final LinkedList<DeferredEntry> deferredEntries = new LinkedList<DeferredEntry>();
+    private final LinkedList<DeferredEntry> deferredEntries = new LinkedList<>();
 
     /**
      * Whether {@link #deferredEntries} needs to be stored. This flag is set to {@code true} when
@@ -264,9 +264,7 @@ final class Reader extends GeoTIFF {
                              * without value (count = 0) - in principle illegal but we make this reader tolerant.
                              */
                             error = dir.addEntry(this, tag, type, count);
-                        } catch (ParseException e) {
-                            error = e;
-                        } catch (RuntimeException e) {
+                        } catch (ParseException | RuntimeException e) {
                             error = e;
                         }
                         if (error != null) {
@@ -330,9 +328,7 @@ final class Reader extends GeoTIFF {
                 Object error;
                 try {
                     error = entry.owner.addEntry(this, entry.tag, entry.type, entry.count);
-                } catch (ParseException e) {
-                    error = e;
-                } catch (RuntimeException e) {
+                } catch (ParseException | RuntimeException e) {
                     error = e;
                 }
                 if (error != null) {

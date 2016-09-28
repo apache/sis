@@ -67,9 +67,7 @@ import org.apache.sis.internal.jdk8.Supplier;
  *                     return createMyObject(key);
  *                 }
  *             });
- *         } catch (MyCheckedException e) {
- *             throw e;
- *         } catch (RuntimeException e) {
+ *         } catch (MyCheckedException | RuntimeException e) {
  *             throw e;
  *         } catch (Exception e) {
  *             throw new UndeclaredThrowableException(e);
@@ -214,8 +212,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
         ArgumentChecks.ensureStrictlyPositive("initialCapacity", initialCapacity);
         ArgumentChecks.ensurePositive("costLimit", costLimit);
         initialCapacity = Containers.hashMapCapacity(initialCapacity);
-        this.map        = new ConcurrentHashMap<K,Object>(initialCapacity);
-        this.costs      = new LinkedHashMap<K,Integer>((int) Math.min(initialCapacity, costLimit), 0.75f, true);
+        this.map        = new ConcurrentHashMap<>(initialCapacity);
+        this.costs      = new LinkedHashMap<>((int) Math.min(initialCapacity, costLimit), 0.75f, true);
         this.costLimit  = costLimit;
         this.soft       = soft;
     }
@@ -480,7 +478,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                         ref.clear();                        // Prevents the reference from being enqueued.
                         DelayedExecutor.schedule(new Strong(key, result));
                     }
-                    return new Simple<V>(result);
+                    return new Simple<>(result);
                 }
                 /*
                  * The weak reference is invalid but not yet discarded (it looks like that this
@@ -522,7 +520,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                      * not be cached. This is okay since the value that we really want to cache is
                      * CoordinateOperation, which is associated to the first occurrence of that key.
                      */
-                    return new Simple<V>(null);
+                    return new Simple<>(null);
                 }
                 throw new IllegalStateException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, key));
             }
@@ -535,7 +533,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
         assert !isReservedType(value) : value;
         @SuppressWarnings("unchecked")
         final V result = (V) value;
-        return new Simple<V>(result);
+        return new Simple<>(result);
     }
 
     /**
@@ -786,8 +784,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                     final Object oldValue = map.get(oldKey);
                     if (oldValue != null && !isReservedType(oldValue)) {
                         @SuppressWarnings("unchecked")
-                        final Reference<V> ref = soft ? new Soft<K,V>(map, oldKey, (V) oldValue)
-                                                      : new Weak<K,V>(map, oldKey, (V) oldValue);
+                        final Reference<V> ref = soft ? new Soft<>(map, oldKey, (V) oldValue)
+                                                      : new Weak<>(map, oldKey, (V) oldValue);
                         if (!map.replace(oldKey, oldValue, ref)) {
                             ref.clear(); // Prevents the reference to be enqueued.
                         }
@@ -869,7 +867,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     @Override
     public Set<Entry<K,V>> entrySet() {
         final Set<Entry<K,V>> es = entries;
-        return (es != null) ? es : (entries = new CacheEntries<K,V>(map.entrySet()));
+        return (es != null) ? es : (entries = new CacheEntries<>(map.entrySet()));
     }
 
     /**

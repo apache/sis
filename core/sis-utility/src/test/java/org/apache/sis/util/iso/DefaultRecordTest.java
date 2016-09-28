@@ -53,7 +53,7 @@ public final strictfp class DefaultRecordTest extends TestCase {
     @BeforeClass
     public static void createRecordType() {
         final DefaultRecordSchema schema = new SerializableRecordSchema("MySchema");
-        final Map<CharSequence,Class<?>> members = new LinkedHashMap<CharSequence,Class<?>>(8);
+        final Map<CharSequence,Class<?>> members = new LinkedHashMap<>(8);
         assertNull(members.put("city",       String.class));
         assertNull(members.put("latitude",   Double.class));
         assertNull(members.put("longitude",  Double.class));
@@ -178,7 +178,7 @@ public final strictfp class DefaultRecordTest extends TestCase {
     @Test
     @DependsOnMethod({"testSetAll", "testToString", "testSerialization"})
     public void testPrimitiveType() {
-        final Map<CharSequence,Class<?>> members = new LinkedHashMap<CharSequence,Class<?>>(8);
+        final Map<CharSequence,Class<?>> members = new LinkedHashMap<>(8);
         assertNull(members.put("latitude",  Double.class));
         assertNull(members.put("longitude", Double.class));
         final DefaultRecord record = new DefaultRecord(

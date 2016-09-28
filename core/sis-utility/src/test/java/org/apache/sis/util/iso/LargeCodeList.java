@@ -37,7 +37,7 @@ public final strictfp class LargeCodeList  extends CodeList<LargeCodeList> {
     /**
      * List of all enumerations of this type.
      */
-    private static final List<LargeCodeList> VALUES = new ArrayList<LargeCodeList>(100);
+    private static final List<LargeCodeList> VALUES = new ArrayList<>(100);
 
     /**
      * Creates 100 code list elements.

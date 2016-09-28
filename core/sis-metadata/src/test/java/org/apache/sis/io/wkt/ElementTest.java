@@ -296,7 +296,7 @@ public final strictfp class ElementTest extends TestCase {
     @Test
     @DependsOnMethod({"testPullString", "testPullElement"})
     public void testFragments() throws ParseException {
-        sharedValues = new HashMap<Object,Object>();
+        sharedValues = new HashMap<>();
         Element frag = parse("Frag[“A”,“B”,“A”]");
         parser.fragments.put("MyFrag", frag);
         try {

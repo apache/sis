@@ -24,9 +24,6 @@ import org.junit.Before;
 import static org.junit.Assert.*;
 import static org.apache.sis.util.Characters.SOFT_HYPHEN;
 
-// Related to JK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Tests {@link LineAppender} implementation when used for wrapping lines to 80 characters.
@@ -84,7 +81,7 @@ public strictfp class WordWrapTest extends LineAppenderTest {
          */
         String insertedLineSeparator = lineSeparator;
         if (f instanceof SingleCharAppendable) {
-            insertedLineSeparator = JDK7.lineSeparator();
+            insertedLineSeparator = System.lineSeparator();
         }
         insertedLineSeparator = expectedLineSeparator(insertedLineSeparator);
         final String expectedLineSeparator = expectedLineSeparator(lineSeparator);

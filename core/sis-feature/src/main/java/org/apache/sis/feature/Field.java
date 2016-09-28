@@ -68,7 +68,7 @@ abstract class Field<V> extends Property {
      * @return The features or attribute values in a <cite>live</cite> collection.
      */
     public Collection<V> getValues() {
-        return new PropertySingleton<V>(this);
+        return new PropertySingleton<>(this);
     }
 
     /**

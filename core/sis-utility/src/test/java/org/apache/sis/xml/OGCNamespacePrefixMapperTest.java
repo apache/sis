@@ -48,11 +48,11 @@ public final strictfp class OGCNamespacePrefixMapperTest extends TestCase {
      * defined in the JDK class. This test is ignored if the Java framework running this test
      * is not the Oracle one (i.e. if it does not bundle the Sun internal JAXB implementation).
      *
-     * @throws Exception If an error occurred while invoking a method by
+     * @throws ReflectiveOperationException If an error occurred while invoking a method by
      *         the reflection API.
      */
     @Test
-    public void testInternalJAXB() throws Exception {
+    public void testInternalJAXB() throws ReflectiveOperationException {
         try {
             ensureOverrideMethods(new OGCNamespacePrefixMapper(null));
         } catch (NoClassDefFoundError e) {
@@ -65,11 +65,11 @@ public final strictfp class OGCNamespacePrefixMapperTest extends TestCase {
      * methods defined in the JAXB class. This test is ignored if the Java framework running
      * this test does not contains JAXB in its endorsed directory.
      *
-     * @throws Exception If an error occurred while invoking a method by
+     * @throws ReflectiveOperationException If an error occurred while invoking a method by
      *         the reflection API.
      */
     @Test
-    public void testEndorsedJAXB() throws Exception {
+    public void testEndorsedJAXB() throws ReflectiveOperationException {
         try {
             ensureOverrideMethods(new OGCNamespacePrefixMapper_Endorsed(null));
         } catch (NoClassDefFoundError e) {
@@ -86,10 +86,10 @@ public final strictfp class OGCNamespacePrefixMapperTest extends TestCase {
      *
      * @param  The {@code OGCNamespacePrefixMapper} or {@code OGCNamespacePrefixMapper_Endorsed}
      *         instance to check.
-     * @throws Exception If an error occurred while invoking a method by
+     * @throws ReflectiveOperationException If an error occurred while invoking a method by
      *         the reflection API.
      */
-    private void ensureOverrideMethods(final Object mapper) throws Exception {
+    private void ensureOverrideMethods(final Object mapper) throws ReflectiveOperationException {
         String preferredPrefix = "getPreferredPrefix_method_has_not_been_found";
         final Method[] methods = mapper.getClass().getSuperclass().getDeclaredMethods();
         /*

@@ -14,24 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jdk7;
+package org.apache.sis.internal.referencing.j2d;
+
+import org.opengis.referencing.operation.MathTransform2D;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 
 
 /**
- * Place holder for {@link java.nio.file.Path}.
- * This class exists only on the JDK6 branch of SIS.
+ * A two dimensional, linear transform.
+ * The intend of this interface is to resolve type conflict in the {@link #inverse()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-@SuppressWarnings("serial")
-public class InvalidPathException extends IllegalArgumentException {
+public interface LinearTransform2D extends MathTransform2D, LinearTransform {
     /**
-     * Creates a new exception.
+     * Returns the inverse transform, which shall be linear and two-dimensional.
+     *
+     * @return The inverse transform.
      */
-    InvalidPathException(final RuntimeException cause) {
-        super(cause);
-    }
+    @Override
+    LinearTransform2D inverse() throws NoninvertibleTransformException;
 }

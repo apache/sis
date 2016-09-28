@@ -57,7 +57,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.Utilities.deepEquals;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
+import java.nio.file.Path;
 
 
 /**
@@ -470,7 +471,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     /**
      * Returns a reference to a file or a part of a file containing one or more parameter values.
      * The default implementation can convert the following value types:
-     * {@link URI}, {@link URL}, {@link File}.
+     * {@link URI}, {@link URL}, {@link Path}, {@link File}.
      *
      * @return The reference to a file containing parameter values.
      * @throws InvalidParameterTypeException if the value is not a reference to a file or an URI.
@@ -487,6 +488,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         }
         if (value instanceof File) {
             return ((File) value).toURI();
+        }
+        if (value instanceof Path) {
+            return ((Path) value).toUri();
         }
         Exception cause = null;
         try {
@@ -507,7 +511,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Returns {@code true} if the given value is an instance of one of the types documented in {@link #valueFile()}.
      */
     private static boolean isFile(final Object value) {
-        return (value instanceof URI || value instanceof URL || value instanceof File);
+        return (value instanceof URI || value instanceof URL || value instanceof File || value instanceof Path);
     }
 
     /**
@@ -518,6 +522,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         if (value instanceof String) {
             final Class<?> type = descriptor.getValueClass();
             return (type == URI.class) || (type == URL.class)
+                   || Path.class.isAssignableFrom(type)
                    || File.class.isAssignableFrom(type);
         }
         return isFile(value);

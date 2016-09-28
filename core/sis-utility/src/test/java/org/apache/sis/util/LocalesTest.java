@@ -17,6 +17,7 @@
 package org.apache.sis.util;
 
 import java.util.Locale;
+import java.util.IllformedLocaleException;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -93,7 +94,6 @@ public final strictfp class LocalesTest extends TestCase {
      * This functionality is supported only on the JDK7 branch.
      */
     @Test
-    @org.junit.Ignore("Not supported on the JDK6 branch")
     public void testParseIETF() {
         assertEquals(Locale.JAPAN, Locales.parse("ja-JP"));
         assertEquals(new Locale("en", "US", "POSIX"), Locales.parse("en-US-x-lvariant-POSIX"));
@@ -107,7 +107,7 @@ public final strictfp class LocalesTest extends TestCase {
         try {
             Locales.parse("orange_APPLE");
             fail("Shall not parse invalid locale.");
-        } catch (RuntimeException e) { // IllformedLocaleException on the JDK7 branch.
+        } catch (IllformedLocaleException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("APPLE"));
         }

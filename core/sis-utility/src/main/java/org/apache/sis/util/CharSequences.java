@@ -23,10 +23,6 @@ import org.opengis.referencing.IdentifiedObject;    // For javadoc
 
 import static java.lang.Character.*;
 
-// Related to JDK7
-import static org.apache.sis.internal.jdk7.JDK7.lowSurrogate;
-import static org.apache.sis.internal.jdk7.JDK7.highSurrogate;
-
 
 /**
  * Static methods working with {@link CharSequence} instances. Some methods defined in this
@@ -2083,8 +2079,8 @@ cmp:    while (ia < lga) {
             ((StringBuilder) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
         } else if (src instanceof StringBuffer) {
             ((StringBuffer) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
-//      } else if (src instanceof CharBuffer) {
-// JDK7     ((CharBuffer) src).subSequence(srcOffset, srcOffset + length).get(dst, dstOffset, length);
+        } else if (src instanceof CharBuffer) {
+            ((CharBuffer) src).subSequence(srcOffset, srcOffset + length).get(dst, dstOffset, length);
         } else {
             // An other candidate could be javax.swing.text.Segment, but it
             // is probably not worth to introduce a Swing dependency for it.

@@ -46,7 +46,7 @@ public abstract strictfp class TestCase extends IOTestCase {
     /**
      * A dummy list of listeners which can be given to the {@link Decoder} constructor.
      */
-    public static EmptyWarningListeners<Decoder> LISTENERS = new EmptyWarningListeners<Decoder>(null, Modules.NETCDF);
+    public static EmptyWarningListeners<Decoder> LISTENERS = new EmptyWarningListeners<>(null, Modules.NETCDF);
 
     /**
      * The {@code searchPath} argument value to be given to the {@link Decoder#setSearchPath(String[])}
@@ -57,7 +57,7 @@ public abstract strictfp class TestCase extends IOTestCase {
     /**
      * The decoders cached by {@link #selectDataset(String)}.
      */
-    private static final Map<String,Decoder> DECODERS = new HashMap<String,Decoder>();
+    private static final Map<String,Decoder> DECODERS = new HashMap<>();
 
     /**
      * The decoder to test, which is set by {@link #selectDataset(String)}.
@@ -154,7 +154,7 @@ public abstract strictfp class TestCase extends IOTestCase {
                     if (failure == null) {
                         failure = e;
                     } else {
-                        // On JDK7 branch: failure.addSuppressed(e);
+                        failure.addSuppressed(e);
                     }
                 }
                 it.remove();

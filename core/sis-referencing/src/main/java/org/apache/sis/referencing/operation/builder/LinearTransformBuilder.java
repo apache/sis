@@ -32,9 +32,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Creates a linear (usually affine) transform which will map approximatively the given source points to
@@ -226,7 +223,7 @@ public class LinearTransformBuilder {
         }
         buffer.append(']');
         if (transform != null) {
-            final String lineSeparator = JDK7.lineSeparator();
+            final String lineSeparator = System.lineSeparator();
             buffer.append(':').append(lineSeparator);
             final TableAppender table = new TableAppender(buffer, " ");
             table.setMultiLinesCells(true);

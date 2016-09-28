@@ -689,7 +689,7 @@ public final class CRS extends Static {
                 singles = ((DefaultCompoundCRS) crs).getSingleComponents();
             } else {
                 final List<CoordinateReferenceSystem> elements = ((CompoundCRS) crs).getComponents();
-                singles = new ArrayList<SingleCRS>(elements.size());
+                singles = new ArrayList<>(elements.size());
                 ReferencingUtilities.getSingleComponents(elements, singles);
             }
         } else {

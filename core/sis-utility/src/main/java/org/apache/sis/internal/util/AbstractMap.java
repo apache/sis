@@ -27,7 +27,7 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -119,7 +119,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          * @return the entry at the current iterator position.
          */
         protected Entry<K,V> getEntry() {
-            return new java.util.AbstractMap.SimpleImmutableEntry<K,V>(getKey(), getValue());
+            return new java.util.AbstractMap.SimpleImmutableEntry<>(getKey(), getValue());
         }
 
         /**
@@ -371,7 +371,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             @Override public boolean     add(K e)           {return AbstractMap.this.addKey(e);}
             @Override public Iterator<K> iterator() {
                 final EntryIterator<K,V> it = entryIterator();
-                return (it != null) ? new Keys<K,V>(it) : Collections.<K>emptySet().iterator();
+                return (it != null) ? new Keys<>(it) : Collections.<K>emptyIterator();
             }
 
             /** Overridden for the same reason than {@link AbstractMap#equals(Object). */
@@ -418,7 +418,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             @Override public boolean     add(V e)           {return AbstractMap.this.addValue(e);}
             @Override public Iterator<V> iterator() {
                 final EntryIterator<K,V> it = entryIterator();
-                return (it != null) ? new Values<K,V>(it) : Collections.<V>emptySet().iterator();
+                return (it != null) ? new Values<>(it) : Collections.<V>emptyIterator();
             }
         };
     }
@@ -453,7 +453,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             /** Returns an iterator compliant to the Map contract. */
             @Override public Iterator<Entry<K,V>> iterator() {
                 final EntryIterator<K,V> it = entryIterator();
-                return (it != null) ? new Entries<K,V>(it) : Collections.<Entry<K,V>>emptySet().iterator();
+                return (it != null) ? new Entries<>(it) : Collections.<Entry<K,V>>emptyIterator();
             }
 
             /** Overridden for the same reason than {@link AbstractMap#equals(Object). */

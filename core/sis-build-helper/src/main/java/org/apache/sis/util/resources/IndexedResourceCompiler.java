@@ -103,13 +103,13 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * Integer IDs allocated to resource keys. This map will be shared for all languages
      * of a given resource bundle.
      */
-    private final Map<Integer,String> allocatedIDs = new HashMap<Integer,String>();
+    private final Map<Integer,String> allocatedIDs = new HashMap<>();
 
     /**
      * Resource keys and their localized values. This map will be cleared for each language
      * in a resource bundle.
      */
-    private final Map<Object,Object> resources = new HashMap<Object,Object>();
+    private final Map<Object,Object> resources = new HashMap<>();
 
     /**
      * The resources bundle base classes.
@@ -169,8 +169,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * @throws IOException If an error occurred while reading the source file.
      */
     private void loadKeyValues() throws IOException {
-        final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(bundleClass), JAVA_ENCODING));
-        try {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(bundleClass), JAVA_ENCODING))) {
             String line;
             while ((line = in.readLine()) != null) {
                 if ((line = line.trim()).startsWith(KEY_MODIFIERS)) {
@@ -189,8 +188,6 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
                     }
                 }
             }
-        } finally {
-            in.close();
         }
     }
 
@@ -274,12 +271,9 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      */
     private static Properties loadRawProperties(final File file) throws IOException {
         final Properties properties;
-        final InputStream input = new FileInputStream(file);
-        try {
+        try (InputStream input = new FileInputStream(file)) {
             properties = new Properties();
             properties.load(input);
-        } finally {
-            input.close();
         }
         return properties;
     }
@@ -439,15 +433,12 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
             throw new IOException("Can't create the " + directory + " directory.");
         }
         final int count = allocatedIDs.isEmpty() ? 0 : Collections.max(allocatedIDs.keySet()) + 1;
-        final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-        try {
+        try (DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
             out.writeInt(count);
             for (int i=0; i<count; i++) {
                 final String value = (String) resources.get(allocatedIDs.get(i));
                 out.writeUTF((value != null) ? value : "");
             }
-        } finally {
-            out.close();
         }
     }
 
@@ -478,8 +469,7 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
          * on the same line than the class declaration).
          */
         boolean modified;
-        final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), JAVA_ENCODING));
-        try {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), JAVA_ENCODING))) {
             for (int state=0; state<=2; state++) {
                 final String regex;
                 switch (state) {
@@ -584,15 +574,10 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
                     buffer.append(line).append(lineSeparator);
                 }
             }
-        } finally {
-            in.close();
         }
         if (modified) {
-            final Writer out = new OutputStreamWriter(new FileOutputStream(file), JAVA_ENCODING);
-            try {
+            try (Writer out = new OutputStreamWriter(new FileOutputStream(file), JAVA_ENCODING)) {
                 out.write(buffer.toString());
-            } finally {
-                out.close();
             }
         }
     }

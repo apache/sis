@@ -74,7 +74,7 @@ final class NameMap extends PropertyMap<String> {
                     // PropertyAccessor.name(int) never return null if the index is valid.
                     throw new NoSuchElementException();
                 }
-                return new SimpleImmutableEntry<String,String>(accessor.name(index++, keyPolicy), value);
+                return new SimpleImmutableEntry<>(accessor.name(index++, keyPolicy), value);
             }
         };
     }

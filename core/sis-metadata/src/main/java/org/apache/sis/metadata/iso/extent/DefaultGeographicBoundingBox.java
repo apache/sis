@@ -38,7 +38,7 @@ import org.apache.sis.xml.NilReason;
 import static java.lang.Double.doubleToLongBits;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

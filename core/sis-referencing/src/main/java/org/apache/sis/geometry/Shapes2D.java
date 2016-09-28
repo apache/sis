@@ -492,6 +492,8 @@ public final class Shapes2D extends Static {
             } catch (TransformException exception) {
                 if (warning == null) {
                     warning = exception;
+                } else {
+                    warning.addSuppressed(exception);
                 }
                 continue;
             }
@@ -556,6 +558,8 @@ public final class Shapes2D extends Static {
                 } catch (TransformException exception) {
                     if (warning == null) {
                         warning = exception;
+                    } else {
+                        warning.addSuppressed(exception);
                     }
                     continue;
                 }

@@ -135,11 +135,8 @@ class MetadataCommand extends CommandRunner {
      */
     final Object readMetadataOrCRS() throws DataStoreException, FactoryException {
         if (useStandardInput()) {
-            final DataStore store = DataStores.open(System.in);
-            try {
+            try (DataStore store = DataStores.open(System.in)) {
                 return store.getMetadata();
-            } finally {
-                store.close();
             }
         } else if (hasUnexpectedFileCount(1, 1)) {
             hasUnexpectedFileCount = true;
@@ -149,11 +146,8 @@ class MetadataCommand extends CommandRunner {
             if (CodeType.guess(file).isCRS) {
                 return CRS.forCode(file);
             } else {
-                final DataStore store = DataStores.open(file);
-                try {
+                try (DataStore store = DataStores.open(file)) {
                     return store.getMetadata();
-                } finally {
-                    store.close();
                 }
             }
         }

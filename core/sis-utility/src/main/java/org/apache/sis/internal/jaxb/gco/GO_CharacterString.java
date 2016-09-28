@@ -261,7 +261,7 @@ public class GO_CharacterString {
         } else {
             namespace = XMLConstants.NULL_NS_URI;
         }
-        return new JAXBElement<CodeListUID>(new QName(namespace, name), CodeListUID.class,
+        return new JAXBElement<>(new QName(namespace, name), CodeListUID.class,
                 new CodeListUID(Context.current(), code));
     }
 

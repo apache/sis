@@ -198,7 +198,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
         final TestClass testClass = getTestClass();
         final List<FrameworkMethod> depends = testClass.getAnnotatedMethods(DependsOnMethod.class);
         if (!isNullOrEmpty(depends)) {
-            final Set<String> dependencies = new HashSet<String>(hashMapCapacity(depends.size()));
+            final Set<String> dependencies = new HashSet<>(hashMapCapacity(depends.size()));
             for (final FrameworkMethod method : depends) {
                 for (final String value : method.getAnnotation(DependsOnMethod.class).value()) {
                     dependencies.add(value);
@@ -268,7 +268,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * @param methods The methods to sort.
      */
     private static void sortDependantTestsLast(final FrameworkMethod[] methods) {
-        final Set<String> dependencies = new HashSet<String>();
+        final Set<String> dependencies = new HashSet<>();
         int retryCount = methods.length;
         for (int i=methods.length-1; --i>=0;) {
             final FrameworkMethod method = methods[i];
@@ -385,12 +385,12 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      */
     final void addDependencyFailure(final String methodName) {
         if (methodDependencyFailures == null) {
-            methodDependencyFailures = new HashSet<String>();
+            methodDependencyFailures = new HashSet<>();
         }
         methodDependencyFailures.add(methodName);
         synchronized (TestRunner.class) {
             if (classDependencyFailures == null) {
-                classDependencyFailures = new HashSet<Class<?>>();
+                classDependencyFailures = new HashSet<>();
             }
             classDependencyFailures.add(getTestClass().getJavaClass());
         }

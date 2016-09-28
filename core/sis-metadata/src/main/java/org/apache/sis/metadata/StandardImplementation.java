@@ -89,7 +89,7 @@ final class StandardImplementation extends MetadataStandard {
         this.implementationPackage = implementationPackage;
         this.prefix                = prefix;
         this.acronyms              = acronyms;
-        this.implementations       = new IdentityHashMap<Class<?>,Class<?>>();
+        this.implementations       = new IdentityHashMap<>();
     }
 
     /**

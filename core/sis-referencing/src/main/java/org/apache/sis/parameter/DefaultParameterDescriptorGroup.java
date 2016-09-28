@@ -279,7 +279,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
         @Override public boolean contains(final Object object) {
             Set<GeneralParameterDescriptor> s = asSet;
             if (s == null) {
-                asSet = s = new HashSet<GeneralParameterDescriptor>(this); // No synchronization: not a big problem if created twice.
+                asSet = s = new HashSet<>(this); // No synchronization: not a big problem if created twice.
             }
             return s.contains(object);
         }

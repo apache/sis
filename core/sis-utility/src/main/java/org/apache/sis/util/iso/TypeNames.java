@@ -52,7 +52,7 @@ final class TypeNames {
      *
      * <p>This map shall not be modified after construction.</p>
      */
-    private static final Map<String,Class<?>> MAPPING = new LinkedHashMap<String,Class<?>>(16);
+    private static final Map<String,Class<?>> MAPPING = new LinkedHashMap<>(16);
     static {
         final Map<String,Class<?>> m = MAPPING;
         m.put("URI",       URI.class);

@@ -59,7 +59,7 @@ public final class PrimitiveTypeProperties {
      * <div class="section">Synchronization</div>
      * All accesses to this map shall be synchronized on the map object.
      */
-    private static final Map<Object,Object> SENTINEL_VALUES = new IdentityHashMap<Object,Object>();
+    private static final Map<Object,Object> SENTINEL_VALUES = new IdentityHashMap<>();
 
     /**
      * Do not allow instantiation of this class.

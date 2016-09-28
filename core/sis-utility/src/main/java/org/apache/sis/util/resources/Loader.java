@@ -116,7 +116,7 @@ final class Loader extends ResourceBundle.Control {
          */
         try {
             return (ResourceBundle) classe.getDeclaredConstructor(URL.class).newInstance(resources);
-        } catch (Exception e) { // The JDK7 branch uses multi-catches here.
+        } catch (NoSuchMethodException | InvocationTargetException e) {
             InstantiationException exception = new InstantiationException(Exceptions.getLocalizedMessage(e, locale));
             exception.initCause(e);
             throw exception;

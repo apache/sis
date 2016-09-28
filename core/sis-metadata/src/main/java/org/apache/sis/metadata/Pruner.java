@@ -45,7 +45,7 @@ final class Pruner {
      * If the final operation requested by the user is {@code prune()}, then this map will contain a mix of
      * {@code false} and {@code true} values since the operation will unconditionally walk through the entire tree.
      */
-    private static final RecursivityGuard<Boolean> MAPS = new RecursivityGuard<Boolean>();
+    private static final RecursivityGuard<Boolean> MAPS = new RecursivityGuard<>();
 
     /**
      * For internal usage only.

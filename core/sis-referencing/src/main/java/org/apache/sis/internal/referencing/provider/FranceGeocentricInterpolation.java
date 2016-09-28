@@ -56,9 +56,8 @@ import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTran
 import static java.lang.Float.parseFloat;
 
 // Branch-specific imports
-import java.io.File;
-import org.apache.sis.internal.jdk7.Path;
-import org.apache.sis.internal.jdk7.Paths;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.apache.sis.internal.jdk8.JDK8;
 
 
@@ -143,7 +142,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * The operation parameter descriptor for the <cite>Geocentric translation file</cite> parameter value.
      */
-    public static final ParameterDescriptor<File> FILE;
+    public static final ParameterDescriptor<Path> FILE;
 
     /**
      * The group of all parameters expected by this coordinate operation. The only parameter formally defined by EPSG
@@ -156,7 +155,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
         FILE = builder
                 .addIdentifier("8727")
                 .addName("Geocentric translation file")
-                .setRemarks(NTv2.WARNING).create(File.class, Paths.get(DEFAULT));
+                .create(Path.class, Paths.get(DEFAULT));
         PARAMETERS = builder
                 .addIdentifier("9655")
                 .addName("France geocentric interpolation")
@@ -285,7 +284,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             default: throw new InvalidParameterValueException(Errors.format(
                             Errors.Keys.IllegalArgumentValue_2, "dim", dim), "dim", dim);
         }
-        final Path file = Path.castOrCopy(pg.getMandatoryValue(FILE));
+        final Path file = pg.getMandatoryValue(FILE);
         final DatumShiftGridFile<Angle,Length> grid = getOrLoad(file,
                 isRecognized(file) ? new double[] {TX, TY, TZ} : null, PRECISION);
         MathTransform tr = createGeodeticTransformation(factory,
@@ -334,16 +333,11 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             try {
                 grid = handler.peek();
                 if (grid == null) {
-                    try {
-                        final BufferedReader in = JDK8.newBufferedReader(resolved);
-                        try {
-                            DatumShiftGridLoader.log(FranceGeocentricInterpolation.class, file);
-                            final DatumShiftGridFile.Float<Angle,Length> g = load(in, file);
-                            grid = DatumShiftGridCompressed.compress(g, averages, scale);
-                        } finally {
-                            in.close();
-                        }
-                    } catch (Exception e) {     // Multi-catch on the JDK7 branch.
+                    try (final BufferedReader in = JDK8.newBufferedReader(resolved)) {
+                        DatumShiftGridLoader.log(FranceGeocentricInterpolation.class, file);
+                        final DatumShiftGridFile.Float<Angle,Length> g = load(in, file);
+                        grid = DatumShiftGridCompressed.compress(g, averages, scale);
+                    } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
                         // NumberFormatException, ArithmeticException, NoSuchElementException, possibly other.
                         throw DatumShiftGridLoader.canNotLoad(HEADER, file, e);
                     }
@@ -423,7 +417,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
                             Δy = gridGeometry[5];
                             nx = JDK8.toIntExact(Math.round((xf - x0) / Δx + 1));
                             ny = JDK8.toIntExact(Math.round((yf - y0) / Δy + 1));
-                            grid = new DatumShiftGridFile.Float<Angle,Length>(3,
+                            grid = new DatumShiftGridFile.Float<>(3,
                                     NonSI.DEGREE_ANGLE, SI.METRE, false,
                                     x0, y0, Δx, Δy, nx, ny, PARAMETERS, file);
                         }

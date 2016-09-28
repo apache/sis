@@ -264,7 +264,7 @@ public final class Classes extends Static {
      * @return The set of classes of all objects in the given collection.
      */
     private static <T> Set<Class<? extends T>> getClasses(final Iterable<? extends T> objects) {
-        final Set<Class<? extends T>> types = new LinkedHashSet<Class<? extends T>>();
+        final Set<Class<? extends T>> types = new LinkedHashSet<>();
         for (final T object : objects) {
             types.add(getClass(object));
         }
@@ -329,7 +329,7 @@ public final class Classes extends Static {
         final Class<?>[] interfaces = type.getInterfaces();
         for (final Class<?> candidate : interfaces) {
             if (addTo == null) {
-                addTo = new LinkedHashSet<Class<?>>(hashMapCapacity(interfaces.length));
+                addTo = new LinkedHashSet<>(hashMapCapacity(interfaces.length));
             }
             if (addTo.add(candidate)) {
                 getInterfaceSet(candidate, addTo);

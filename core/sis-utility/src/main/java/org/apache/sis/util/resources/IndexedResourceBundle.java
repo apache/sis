@@ -43,9 +43,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.PatchedUnitFormat;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * {@link ResourceBundle} implementation accepting integers instead of strings for resource keys.
@@ -239,7 +236,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 keyLength = Math.max(keyLength, key.length());
             }
         }
-        final String lineSeparator = JDK7.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final String[] values = ensureLoaded(null);
         for (int i=0; i<values.length; i++) {
             final String key   = keys  [i];
@@ -297,8 +294,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                     /*
                      * Loads resources from the UTF file.
                      */
-                    try {
-                        DataInputStream input = new DataInputStream(new BufferedInputStream(resources.openStream()));
+                    try (DataInputStream input = new DataInputStream(new BufferedInputStream(resources.openStream()))) {
                         values = new String[input.readInt()];
                         for (int i=0; i<values.length; i++) {
                             values[i] = input.readUTF();
@@ -306,7 +302,6 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                                 values[i] = null;
                             }
                         }
-                        input.close();
                     } catch (IOException exception) {
                         record.setLevel  (Level.WARNING);
                         record.setMessage(exception.getMessage()); // For administrator, use system locale.
@@ -364,7 +359,8 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
              */
             try {
                 keyID = getKeyConstants().getKeyValue(key);
-            } catch (Exception e) {
+            } catch (ReflectiveOperationException e) {
+                e.addSuppressed(exception);
                 Logging.recoverableException(Logging.getLogger(Loggers.LOCALIZATION), getClass(), "handleGetObject", e);
                 return null; // This is okay as of 'handleGetObject' contract.
             }

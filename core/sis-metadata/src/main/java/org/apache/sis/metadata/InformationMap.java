@@ -70,7 +70,7 @@ final class InformationMap extends PropertyMap<ExtendedElementInformation> {
                     // PropertyAccessor.information(int) never return null if the index is valid.
                     throw new NoSuchElementException();
                 }
-                return new SimpleImmutableEntry<String,ExtendedElementInformation>(accessor.name(index++, keyPolicy), value);
+                return new SimpleImmutableEntry<>(accessor.name(index++, keyPolicy), value);
             }
         };
     }

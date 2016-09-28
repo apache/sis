@@ -57,10 +57,10 @@ public final strictfp class AttributeConventionTest extends TestCase {
         final Map<String,?> properties = Collections.singletonMap(DefaultAttributeType.NAME_KEY, "geometry");
 
         assertFalse("AttributeType<Integer>", AttributeConvention.isGeometryAttribute(
-                new DefaultAttributeType<Integer>(properties, Integer.class, 1, 1, null)));
+                new DefaultAttributeType<>(properties, Integer.class, 1, 1, null)));
 
         assertTrue("AttributeType<Point>", AttributeConvention.isGeometryAttribute(
-                new DefaultAttributeType<Point>(properties, Point.class, 1, 1, null)));
+                new DefaultAttributeType<>(properties, Point.class, 1, 1, null)));
     }
 
     /**
@@ -70,18 +70,18 @@ public final strictfp class AttributeConventionTest extends TestCase {
     @Test
     public void testGetCrsCharacteristic() {
         final Map<String,?> properties = Collections.singletonMap(DefaultAttributeType.NAME_KEY, "geometry");
-        DefaultAttributeType<Point> type = new DefaultAttributeType<Point>(properties, Point.class, 1, 1, null);
+        DefaultAttributeType<Point> type = new DefaultAttributeType<>(properties, Point.class, 1, 1, null);
         assertFalse("characterizedByCRS",  AttributeConvention.characterizedByCRS(type));
         assertNull("getCRSCharacteristic", AttributeConvention.getCRSCharacteristic(type.newInstance()));
         /*
          * Creates an attribute associated to an attribute (i.e. a "characteristic") for storing
          * the Coordinate Reference System of the "geometry" attribute. Then test again.
          */
-        final DefaultAttributeType<CoordinateReferenceSystem> characteristic = new DefaultAttributeType<CoordinateReferenceSystem>(
+        final DefaultAttributeType<CoordinateReferenceSystem> characteristic = new DefaultAttributeType<>(
                 Collections.singletonMap(DefaultAttributeType.NAME_KEY, AttributeConvention.CRS_CHARACTERISTIC),
                 CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84);
 
-        type = new DefaultAttributeType<Point>(properties, Point.class, 1, 1, null, characteristic);
+        type = new DefaultAttributeType<>(properties, Point.class, 1, 1, null, characteristic);
         assertTrue("characterizedByCRS", AttributeConvention.characterizedByCRS(type));
         assertEquals(HardCodedCRS.WGS84, AttributeConvention.getCRSCharacteristic(type.newInstance()));
     }
@@ -93,18 +93,18 @@ public final strictfp class AttributeConventionTest extends TestCase {
     @Test
     public void testGetMaximalLengthCharacteristic() {
         final Map<String,?> properties = Collections.singletonMap(DefaultAttributeType.NAME_KEY, "name");
-        DefaultAttributeType<String> type = new DefaultAttributeType<String>(properties, String.class, 1, 1, null);
+        DefaultAttributeType<String> type = new DefaultAttributeType<>(properties, String.class, 1, 1, null);
         assertFalse("characterizedByMaximalLength",  AttributeConvention.characterizedByMaximalLength(type));
         assertNull("getMaximalLengthCharacteristic", AttributeConvention.getMaximalLengthCharacteristic(type.newInstance()));
         /*
          * Creates an attribute associated to an attribute (i.e. a "characteristic") for storing
          * the maximal length of the "name" attribute. Then test again.
          */
-        final DefaultAttributeType<Integer> characteristic = new DefaultAttributeType<Integer>(
+        final DefaultAttributeType<Integer> characteristic = new DefaultAttributeType<>(
                 Collections.singletonMap(DefaultAttributeType.NAME_KEY, AttributeConvention.MAXIMAL_LENGTH_CHARACTERISTIC),
                 Integer.class, 1, 1, 120);
 
-        type = new DefaultAttributeType<String>(properties, String.class, 1, 1, null, characteristic);
+        type = new DefaultAttributeType<>(properties, String.class, 1, 1, null, characteristic);
         assertTrue("characterizedByMaximalLength", AttributeConvention.characterizedByMaximalLength(type));
         assertEquals(Integer.valueOf(120), AttributeConvention.getMaximalLengthCharacteristic(type.newInstance()));
     }

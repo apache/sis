@@ -19,13 +19,10 @@ package org.apache.sis.internal.shapefile.jdbc;
 import java.io.*;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Objects;
 import java.util.logging.Level;
 
 import org.apache.sis.internal.shapefile.AutoChecker;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
  * Common byte reader.
@@ -36,7 +33,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @since   0.5
  * @module
  */
-public abstract class CommonByteReader<InvalidFormatException extends Exception, FNFException extends Exception> extends AutoChecker {
+public abstract class CommonByteReader<InvalidFormatException extends Exception, FNFException extends Exception> extends AutoChecker implements AutoCloseable  {
     /** The File. */
     private File file;
 
@@ -98,6 +95,7 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
      * Close the MappedByteReader.
      * @throws IOException if the close operation fails.
      */
+    @Override
     public void close() throws IOException {
         if (this.fc != null)
             this.fc.close();

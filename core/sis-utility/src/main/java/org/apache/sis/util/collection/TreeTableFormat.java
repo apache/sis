@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Currency;
 import java.io.IOException;
 import java.text.Format;
 import java.text.ParsePosition;
@@ -291,7 +292,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * Returns the locale to use for code lists, international strings and exception messages.
      */
     final Locale getDisplayLocale() {
-        return getLocale(); // Implemented as getLocale(Locale.Category.DISPLAY) on the JDK7 branch.
+        return getLocale(Locale.Category.DISPLAY);
     }
 
     /**
@@ -677,6 +678,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             } else if (value instanceof Charset) {
                 final Locale locale = getDisplayLocale();
                 text = (locale != Locale.ROOT) ? ((Charset) value).displayName(locale) : ((Charset) value).name();
+            } else if (value instanceof Currency) {
+                final Locale locale = getDisplayLocale();
+                text = (locale != Locale.ROOT) ? ((Currency) value).getDisplayName(locale) : value.toString();
             } else if (value instanceof Record) {
                 formatCollection(((Record) value).getAttributes().values(), recursive);
                 return;
@@ -828,7 +832,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             columns = c.toArray(new TableColumn<?>[c.size()]);
         }
         if (parentObjects == null) {
-            parentObjects = new IdentityHashMap<Object,Object>();
+            parentObjects = new IdentityHashMap<>();
         }
         try {
             final Writer out = new Writer(toAppendTo, columns, parentObjects);

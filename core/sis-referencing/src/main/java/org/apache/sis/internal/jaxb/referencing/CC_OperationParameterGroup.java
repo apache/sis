@@ -145,7 +145,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
             return fromValues;
         }
         final Map<String,GeneralParameterDescriptor> union =
-                new LinkedHashMap<String,GeneralParameterDescriptor>(Containers.hashMapCapacity(descriptors.size()));
+                new LinkedHashMap<>(Containers.hashMapCapacity(descriptors.size()));
         /*
          * Collect the descriptors declared explicitely in the ParameterDescriptorGroup. We should never have
          * two descriptors of the same name since the DefaultParameterDescriptorGroup constructor checked for
