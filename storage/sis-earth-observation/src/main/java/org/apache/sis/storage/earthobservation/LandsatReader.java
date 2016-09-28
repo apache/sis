@@ -955,8 +955,7 @@ final class LandsatReader {
             /*
              * Set information about all non-null bands. The bands are categorized in three groups:
              * PANCHROMATIC, REFLECTIVE and THERMAL. The group in which each band belong is encoded
-             * in the BAND_GROUPS bitmask. The maximum number of groups is the same than the maximum
-             * number of
+             * in the BAND_GROUPS bitmask.
              */
             final DefaultCoverageDescription content = (DefaultCoverageDescription) singletonOrNull(result.getContentInfo());
             if (content != null) {
