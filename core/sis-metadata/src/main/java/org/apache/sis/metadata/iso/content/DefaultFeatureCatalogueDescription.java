@@ -106,7 +106,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(FeatureCatalogueDescription)
      */
@@ -139,8 +139,8 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultFeatureCatalogueDescription castOrCopy(final FeatureCatalogueDescription object) {
@@ -153,7 +153,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Returns whether or not the cited feature catalogue complies with ISO 19110.
      *
-     * @return Whether or not the cited feature catalogue complies with ISO 19110, or {@code null}.
+     * @return whether or not the cited feature catalogue complies with ISO 19110, or {@code null}.
      */
     @Override
     @XmlElement(name = "complianceCode")
@@ -164,7 +164,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Sets whether or not the cited feature catalogue complies with ISO 19110.
      *
-     * @param newValue The new compliance value.
+     * @param  newValue  the new compliance value.
      */
     public void setCompliant(final Boolean newValue) {
         checkWritePermission();
@@ -174,7 +174,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Returns the language(s) used within the catalogue
      *
-     * @return Language(s) used within the catalogue.
+     * @return language(s) used within the catalogue.
      */
     @Override
     @XmlElement(name = "language")
@@ -185,7 +185,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Sets the language(s) used within the catalogue
      *
-     * @param newValues The new languages.
+     * @param  newValues  the new languages.
      */
     public void setLanguages(final Collection<? extends Locale> newValues) {
         languages = writeCollection(newValues, languages, Locale.class);
@@ -194,7 +194,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Returns whether or not the feature catalogue is included with the resource.
      *
-     * @return Whether or not the feature catalogue is included with the resource.
+     * @return whether or not the feature catalogue is included with the resource.
      */
     @Override
     @XmlElement(name = "includedWithDataset", required = true)
@@ -205,7 +205,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Sets whether or not the feature catalogue is included with the resource.
      *
-     * @param newValue {@code true} if the feature catalogue is included.
+     * @param  newValue  {@code true} if the feature catalogue is included.
      */
     public void setIncludedWithDataset(final boolean newValue) {
         checkWritePermission();
@@ -220,7 +220,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Subset of feature types occurring in resource.
+     * @return subset of feature types occurring in resource.
      *
      * @since 0.5
      */
@@ -237,7 +237,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @param newValues The new feature types.
+     * @param  newValues  the new feature types.
      *
      * @since 0.5
      */
@@ -248,7 +248,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Returns the names of {@linkplain #getFeatureTypes() feature types}.
      *
-     * @return The feature type names.
+     * @return the feature type names.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getFeatureTypeInfo()}.
      */
@@ -281,7 +281,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Sets the names of {@linkplain #getFeatureTypes() feature types}.
      *
-     * @param newValues The new feature type names.
+     * @param  newValues  the new feature type names.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setFeatureTypeInfo(Collection)}.
      */
@@ -294,7 +294,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Returns the complete bibliographic reference to one or more external feature catalogues.
      *
-     * @return Bibliographic reference to one or more external feature catalogues.
+     * @return bibliographic reference to one or more external feature catalogues.
      */
     @Override
     @XmlElement(name = "featureCatalogueCitation", required = true)
@@ -305,7 +305,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Sets the complete bibliographic reference to one or more external feature catalogues.
      *
-     * @param newValues The feature catalogue citations.
+     * @param  newValues  the feature catalogue citations.
      */
     public void setFeatureCatalogueCitations(final Collection<? extends Citation> newValues) {
         featureCatalogueCitations = writeCollection(newValues, featureCatalogueCitations, Citation.class);

@@ -17,9 +17,11 @@
 package org.apache.sis.internal.util;
 
 import java.text.ParseException;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.apache.sis.test.TestUtilities.date;
 import static org.junit.Assert.*;
 
 
@@ -41,19 +43,31 @@ public final strictfp class StandardDateFormatTest extends TestCase {
     }
 
     /**
-     * Tests {@link StandardDateFormat.Fix} class.
+     * Tests {@link StandardDateFormat#dateToISO(String, int, boolean)} method.
      */
     @Test
-    public void testAdaptText() {
-        StandardDateFormat.Fix fix = StandardDateFormat.Fix.apply("2016-06-27T16:48:12Z", 0, 0);
-        assertEquals("fix.input", "2016-06-27T16:48:12.000Z", fix.text);
-        assertEquals("An index before", 18, fix.adjustIndex(18));
-        assertEquals("An index after",  19, fix.adjustIndex(23));
+    public void testDateToISO() {
+        assertEquals("2009-01-01T06:00:00.000+01:00", StandardDateFormat.dateToISO("2009-01-01T06:00:00+01:00", 0, false));
+        assertEquals("2005-09-22T04:30:15.432Z",      StandardDateFormat.dateToISO("2005-09-22T04:30:15.4321Z", 0, false));
+        assertEquals("2005-09-22T04:30:15.432Z",      StandardDateFormat.dateToISO("2005-09-22T04:30:15.432Z",  0, false));
+        assertEquals("2005-09-22T04:30:15.000Z",      StandardDateFormat.dateToISO("2005-09-22T04:30:15Z",      0, false));
+        assertEquals("2005-09-22T04:30:15.000Z",      StandardDateFormat.dateToISO("2005-09-22T04:30:15",       0, false));
+        assertEquals("2005-09-22T04:30:00.000Z",      StandardDateFormat.dateToISO("2005-09-22T04:30",          0, false));
+        assertEquals("2005-09-22T04:00:00.000Z",      StandardDateFormat.dateToISO("2005-09-22T04",             0, false));
+        assertEquals("2005-09-22T00:00:00.000Z",      StandardDateFormat.dateToISO("2005-09-22",                0, false));
+        assertEquals("2005-09-22T00:00:00.000Z",      StandardDateFormat.dateToISO("2005-9-22",                 0, false));
 
-        fix = StandardDateFormat.Fix.apply("2016-06-27T16:48:12.48Z", 0, 0);
-        assertEquals("fix.input", "2016-06-27T16:48:12.480Z", fix.text);
-        assertEquals("An index before", 18, fix.adjustIndex(18));
-        assertEquals("An index after",  22, fix.adjustIndex(23));
+        String text = "2016-06-27T16:48:12Z";
+        String modified = StandardDateFormat.dateToISO(text, 0, false);
+        assertEquals("2016-06-27T16:48:12.000Z", modified);
+        assertEquals("An index before", 18, StandardDateFormat.adjustIndex(text, modified, 0, 18));
+        assertEquals("An index after",  19, StandardDateFormat.adjustIndex(text, modified, 0, 23));
+
+        text = "2016-06-27T16:48:12.48Z";
+        modified = StandardDateFormat.dateToISO(text, 0, false);
+        assertEquals("2016-06-27T16:48:12.480Z", modified);
+        assertEquals("An index before", 18, StandardDateFormat.adjustIndex(text, modified, 0, 18));
+        assertEquals("An index after",  22, StandardDateFormat.adjustIndex(text, modified, 0, 23));
     }
 
     /**
@@ -64,6 +78,7 @@ public final strictfp class StandardDateFormatTest extends TestCase {
      * @throws ParseException if an error occurred while parsing the date.
      */
     @Test
+    @DependsOnMethod("testDateToISO")
     public void testParse() throws ParseException {
         final long day = 1466985600000L;
         final StandardDateFormat f = new StandardDateFormat();
@@ -71,5 +86,14 @@ public final strictfp class StandardDateFormatTest extends TestCase {
         assertEquals("millis", day + ((16*60 + 48)*60 + 12)*1000,      f.parse("2016-06-27T16:48:12Z")   .getTime());
         assertEquals("millis", day,                                    f.parse("2016-06-27")             .getTime());
         assertEquals("millis", day + (( 3*60 +  2)*60 +  1)*1000 + 90, f.parse("2016-06-27T03:02:01.09Z").getTime());
+
+        assertEquals(date("2009-01-01 05:00:00"), f.parse("2009-01-01T06:00:00+01:00"));
+        assertEquals(date("2005-09-22 04:30:15"), f.parse("2005-09-22T04:30:15Z"));
+        assertEquals(date("2005-09-22 04:30:15"), f.parse("2005-09-22T04:30:15"));
+        assertEquals(date("2005-09-22 04:30:00"), f.parse("2005-09-22T04:30"));
+        assertEquals(date("2005-09-22 04:00:00"), f.parse("2005-09-22T04"));
+        assertEquals(date("2005-09-22 00:00:00"), f.parse("2005-09-22"));
+        assertEquals(date("2005-09-22 00:00:00"), f.parse("2005-9-22"));
+        assertEquals(date("1992-01-01 00:00:00"), f.parse("1992-1-1"));
     }
 }

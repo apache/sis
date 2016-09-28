@@ -85,4 +85,14 @@ public final class Instant extends Temporal {
     public Date toDate() {
         return new Date(millis);
     }
+
+    /**
+     * Returns a new instant with the given amount of nanoseconds added.
+     *
+     * @param   n  amount of nanoseconds to add to this instant.
+     * @return  an instant for a point in time after the given amount of nanoseconds.
+     */
+    public Instant plusNanos(final long n) {
+        return (n == 0) ? this : new Instant(JDK8.addExact(millis, n/1000000));
+    }
 }

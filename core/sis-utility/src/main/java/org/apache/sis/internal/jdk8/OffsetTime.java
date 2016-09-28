@@ -52,12 +52,12 @@ public final class OffsetTime extends Temporal {
      * @return the parsed date.
      * @throws DateTimeParseException if the text cannot be parsed.
      */
-    public static OffsetTime parse(String text) {
-        text = StandardDateFormat.fix(text, true);
+    public static OffsetTime parse(final CharSequence text) {
+        final String modified = StandardDateFormat.dateToISO(text, 0, true);
         final Date date;
         try {
             synchronized (FORMAT) {
-                date = FORMAT.parse(text);
+                date = FORMAT.parse(modified);
             }
         } catch (ParseException e) {
             throw new DateTimeParseException(e.getLocalizedMessage());

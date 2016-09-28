@@ -493,13 +493,12 @@ public class AttributeNames {
         /**
          * Creates a new set of attribute names. Any argument can be {@code null} if not applicable.
          *
-         * @param name        The attribute name for the responsible's name.
-         * @param institution The attribute name for the responsible's institution.
-         * @param url         The attribute name for the responsible's URL.
-         * @param email       The attribute name for the responsible's email address.
-         * @param role        The attribute name for the responsible's role.
-         * @param defaultRole The role to use as a fallback if no attribute value is associated to the
-         *                    {@code role} key.
+         * @param name         the attribute name for the responsible's name.
+         * @param institution  the attribute name for the responsible's institution.
+         * @param url          the attribute name for the responsible's URL.
+         * @param email        the attribute name for the responsible's email address.
+         * @param role         the attribute name for the responsible's role.
+         * @param defaultRole  the role to use as a fallback if no attribute value is associated to the {@code role} key.
          */
         public Responsible(final String name, final String institution, final String url, final String email,
                 final String role, final Role defaultRole)
@@ -789,13 +788,13 @@ public class AttributeNames {
         /**
          * Creates a new set of attribute names.
          *
-         * @param type       The default ISO-19115 dimension name type, or {@code null} if none.
-         * @param min        The attribute name for the minimal value of the bounding box.
-         * @param max        The attribute name for the maximal value of the bounding box.
-         * @param span       The attribute name for the difference between the minimal and maximal values.
-         * @param resolution The attribute name for a further refinement of the geospatial bounding box.
-         * @param units      The attribute name for the bounding box units of measurement.
-         * @param positive   The attribute name for indicating which direction is positive.
+         * @param type        the default ISO-19115 dimension name type, or {@code null} if none.
+         * @param min         the attribute name for the minimal value of the bounding box.
+         * @param max         the attribute name for the maximal value of the bounding box.
+         * @param span        the attribute name for the difference between the minimal and maximal values.
+         * @param resolution  the attribute name for a further refinement of the geospatial bounding box.
+         * @param units       the attribute name for the bounding box units of measurement.
+         * @param positive    the attribute name for indicating which direction is positive.
          */
         public Dimension(final DimensionNameType type, final String min, final String max, final String span,
                 final String resolution,final String units, final String positive)

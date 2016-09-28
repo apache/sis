@@ -168,11 +168,11 @@ final class Store extends DataStore {
      *
      * Other cases may be added in any future SIS version.
      *
-     * @return The metadata associated to the unmarshalled object, or {@code null} if none.
+     * @return the metadata associated to the unmarshalled object, or {@code null} if none.
      * @throws DataStoreException if an error occurred during the unmarshalling process.
      */
     @Override
-    public Metadata getMetadata() throws DataStoreException {
+    public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
             unmarshal();
             if (object instanceof Metadata) {
@@ -192,7 +192,7 @@ final class Store extends DataStore {
      * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
-    public void close() throws DataStoreException {
+    public synchronized void close() throws DataStoreException {
         object = null;
         final Closeable in = input(source);
         source = null;                          // Cleared first in case of failure.

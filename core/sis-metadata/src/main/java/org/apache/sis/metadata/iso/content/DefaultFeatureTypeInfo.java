@@ -89,7 +89,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
     /**
      * Constructs a feature type info initialized to the specified name.
      *
-     * @param featureTypeName Name of the feature type.
+     * @param  featureTypeName  name of the feature type.
      */
     public DefaultFeatureTypeInfo(final GenericName featureTypeName) {
         this.featureTypeName = featureTypeName;
@@ -107,7 +107,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public DefaultFeatureTypeInfo(final DefaultFeatureTypeInfo object) {
         super(object);
@@ -120,7 +120,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
     /**
      * Returns the name of the feature type.
      *
-     * @return Name of the feature type.
+     * @return name of the feature type.
      *
      * @see org.apache.sis.feature.DefaultFeatureType#getName()
      */
@@ -133,7 +133,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
     /**
      * Sets the name of the feature type.
      *
-     * @param newValue The new name.
+     * @param  newValue  the new name.
      */
     public void setFeatureTypeName(final GenericName newValue) {
         checkWritePermission();
@@ -143,7 +143,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
     /**
      * Returns the number of occurrence of feature instances for this feature types, or {@code null} if none.
      *
-     * @return The number of occurrence of feature instances for this feature types, or {@code null} if none.
+     * @return the number of occurrence of feature instances for this feature types, or {@code null} if none.
      */
     @ValueRange(minimum = 1)
     @XmlElement(name = "featureInstanceCount")
@@ -155,7 +155,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
     /**
      * Sets a new number of occurrence of feature instances for this feature types.
      *
-     * @param newValue the new number of occurrence.
+     * @param  newValue  the new number of occurrence.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setFeatureInstanceCount(final Integer newValue) {

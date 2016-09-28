@@ -18,7 +18,7 @@ package org.apache.sis.storage;
 
 
 /**
- * Thrown when a Data store is closed and can no more return data.
+ * Thrown when a data store is closed and can no more return data.
  *
  * @author  Marc Le Bihan
  * @version 0.6
@@ -26,23 +26,25 @@ package org.apache.sis.storage;
  * @module
  */
 public class DataStoreClosedException extends DataStoreException {
-    /** Serial UID. */
+    /**
+     * For cross-version compatibility.
+     */
     private static final long serialVersionUID = 7205119080377665796L;
 
     /**
-     * Constructs an exception with the specified details message.
+     * Creates an exception with the specified details message.
      *
-     * @param message Message of the exception.
+     * @param message  the detail message of the exception.
      */
     public DataStoreClosedException(String message) {
         super(message);
     }
 
     /**
-     * Constructs an exception with the specified details message and cause.
+     * Creates an exception with the specified details message and cause.
      *
-     * @param message Message of the exception.
-     * @param cause Root cause of the exception.
+     * @param message  the detail message of the exception.
+     * @param cause    the cause root for the exception.
      */
     public DataStoreClosedException(String message, Throwable cause) {
         super(message, cause);

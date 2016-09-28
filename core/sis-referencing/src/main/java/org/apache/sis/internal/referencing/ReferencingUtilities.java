@@ -24,11 +24,15 @@ import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.opengis.metadata.Identifier;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.opengis.util.FactoryException;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
@@ -37,6 +41,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
 
 import static java.util.Collections.singletonMap;
@@ -51,7 +56,7 @@ import static java.util.Collections.singletonMap;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class ReferencingUtilities extends Static {
@@ -369,5 +374,28 @@ public final class ReferencingUtilities extends Static {
             context.setTarget(targetCS);
         }
         return context;
+    }
+
+    /**
+     * Creates a projected CRS from the given parameters using the default factories.
+     *
+     * @param  properties   the name and other properties, to be given both to the conversion and the CRS.
+     * @param  baseCRS      the base geographic CRS.
+     * @param  parameters   the map projection parameters.
+     * @param  cs           the projected coordinate system.
+     * @return the projected coordinate reference system.
+     * @throws FactoryException if an error occurred while creating the CRS.
+     *
+     * @since 0.8
+     */
+    public static ProjectedCRS createProjectedCRS(final Map<String,String> properties,
+            final GeographicCRS baseCRS, final ParameterValueGroup parameters, final CartesianCS cs)
+            throws FactoryException
+    {
+        final DefaultCoordinateOperationFactory factory = DefaultFactories.forBuildin(
+                CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
+        return DefaultFactories.forBuildin(CRSFactory.class).createProjectedCRS(properties, baseCRS,
+                factory.createDefiningConversion(properties,
+                        factory.getOperationMethod(parameters.getDescriptor().getName().getCode()), parameters), cs);
     }
 }
