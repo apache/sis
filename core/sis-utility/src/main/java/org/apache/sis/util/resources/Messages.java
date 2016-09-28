@@ -406,10 +406,10 @@ public final class Messages extends IndexedResourceBundle {
     private static final class International extends ResourceInternationalString {
         private static final long serialVersionUID = 4553487496835099424L;
 
-        International(short key)                 {super(key);}
-        International(short key, Object args)    {super(key, args);}
-        @Override KeyConstants getKeyConstants() {return Keys.INSTANCE;}
-        @Override IndexedResourceBundle getBundle(final Locale locale) {
+        International(short key)                           {super(key);}
+        International(short key, Object args)              {super(key, args);}
+        @Override protected KeyConstants getKeyConstants() {return Keys.INSTANCE;}
+        @Override protected IndexedResourceBundle getBundle(final Locale locale) {
             return getResources(locale);
         }
     }
