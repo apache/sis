@@ -38,7 +38,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.quality.DefaultConformanceResult;
 import org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Messages;
 
 
 /**
@@ -97,7 +96,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
     public static final PositionalAccuracy DATUM_SHIFT_OMITTED;
     static {
         final InternationalString desc = Vocabulary.formatInternational(Vocabulary.Keys.TransformationAccuracy);
-        final InternationalString eval = Messages  .formatInternational(Messages.Keys.ConformanceMeansDatumShift);
+        final InternationalString eval = Resources .formatInternational(Resources.Keys.ConformanceMeansDatumShift);
         DATUM_SHIFT_APPLIED = new PositionalAccuracyConstant(desc, eval, true);
         DATUM_SHIFT_OMITTED = new PositionalAccuracyConstant(desc, eval, false);
     }

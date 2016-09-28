@@ -52,12 +52,12 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.internal.util.LazySynchronizedIterator;
 import org.apache.sis.internal.util.SetOfUnknownSize;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -1452,8 +1452,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          * No coordinate operation because of mismatched factories. This is not illegal (the result is an empty set)
          * but it is worth to notify the user because this case has some chances to be an user error.
          */
-        final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING,
-                Messages.Keys.MismatchedOperationFactories_2, sourceCRS, targetCRS);
+        final LogRecord record = Resources.getResources(null).getLogRecord(Level.WARNING,
+                Resources.Keys.MismatchedOperationFactories_2, sourceCRS, targetCRS);
         record.setLoggerName(Loggers.CRS_FACTORY);
         Logging.log(MultiAuthoritiesFactory.class, "createFromCoordinateReferenceSystemCodes", record);
         return super.createFromCoordinateReferenceSystemCodes(sourceCRS, targetCRS);

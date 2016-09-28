@@ -22,8 +22,8 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
-import org.apache.sis.util.resources.Messages;
 
 
 /**
@@ -59,7 +59,7 @@ public final class TransverseMercatorSouth extends AbstractMercator {
         final ParameterBuilder builder = builder();
         final ParameterDescriptor<Double> falseSouthing = createShift(builder
                 .addNamesAndIdentifiers(FALSE_NORTHING)
-                .setRemarks(Messages.formatInternational(Messages.Keys.MisnamedParameter_1, "False southing")));
+                .setRemarks(Resources.formatInternational(Resources.Keys.MisnamedParameter_1, "False southing")));
 
         PARAMETERS = builder
                 .addIdentifier(IDENTIFIER)

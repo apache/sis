@@ -14,24 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.resources;
+package org.apache.sis.internal.referencing;
 
 import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import javax.annotation.Generated;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.resources.KeyConstants;
+import org.apache.sis.util.resources.IndexedResourceBundle;
+import org.apache.sis.util.resources.ResourceInternationalString;
 
 
 /**
- * Locale-dependent resources for miscellaneous (often logging) messages.
+ * Warning and error messages that are specific to the {@code sis-referencing} module.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
+ * @since   0.8
  * @version 0.8
  * @module
  */
-public final class Messages extends IndexedResourceBundle {
+public final class Resources extends IndexedResourceBundle {
     /**
      * Resource keys. This class is used when compiling sources, but no dependencies to
      * {@code Keys} should appear in any resulting class files. Since the Java compiler
@@ -39,7 +42,7 @@ public final class Messages extends IndexedResourceBundle {
      * pools of compiled classes.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3
+     * @since   0.8
      * @module
      */
     @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
@@ -56,158 +59,80 @@ public final class Messages extends IndexedResourceBundle {
         }
 
         /**
-         * {0} “{1}” is already registered. The second instance will be ignored.
+         * Ambiguity between inverse flattening and semi minor axis length for “{0}”. Using inverse
+         * flattening.
          */
-        public static final short AlreadyRegistered_2 = 0;
+        public static final short AmbiguousEllipsoid_1 = 0;
 
         /**
-         * Can not create the {0} schema in database.
+         * This result indicates if a datum shift method has been applied.
          */
-        public static final short CanNotCreateSchema_1 = 1;
+        public static final short ConformanceMeansDatumShift = 1;
 
         /**
-         * Can not instantiate the object of type ‘{0}’ identified by “{1}”. Reason is:{2}
+         * This parameter is shown for completeness, but should never have a value different than {0}
+         * for this projection.
          */
-        public static final short CanNotInstantiateForIdentifier_3 = 2;
+        public static final short ConstantProjParameterValue_1 = 2;
 
         /**
-         * Changed the container capacity from {0} to {1} elements.
+         * Code “{0}” is deprecated and replaced by code {1}. Reason is: {2}
          */
-        public static final short ChangedContainerCapacity_2 = 3;
+        public static final short DeprecatedCode_3 = 3;
 
         /**
-         * Configuration of “{0}” received on {1} in {2} seconds.
+         * There is no factory for version {1} of “{0}” authority. Fallback on default version for
+         * objects creation.
          */
-        public static final short ConfigurationOf_3 = 4;
+        public static final short FallbackDefaultFactoryVersion_2 = 4;
 
         /**
-         * Created an instance of ‘{0}’ from the “{1}” identifier in {2} seconds.
+         * {0} geodetic dataset version {1} on “{2}” version {3}.
          */
-        public static final short CreateDurationFromIdentifier_3 = 5;
+        public static final short GeodeticDataBase_4 = 5;
 
         /**
-         * Created an instance of ‘{0}’ in {1} seconds.
+         * More than one service provider of type ‘{0}’ are declared for “{1}”. Only the first provider
+         * (an instance of ‘{2}’) will be used.
          */
-        public static final short CreateDuration_2 = 6;
+        public static final short IgnoredServiceProvider_3 = 6;
 
         /**
-         * Created an instance of ‘{0}’ named “{1}” with the “{2}” identifier.
+         * Inverse operation uses this parameter value with opposite sign.
          */
-        public static final short CreatedIdentifiedObject_3 = 7;
+        public static final short InverseOperationUsesOppositeSign = 7;
 
         /**
-         * Created an instance of ‘{0}’ named “{1}”.
+         * Inverse operation uses the same parameter value.
          */
-        public static final short CreatedNamedObject_2 = 8;
+        public static final short InverseOperationUsesSameSign = 8;
 
         /**
-         * Creating {0} schema in the “{1}” database.
+         * Loading datum shift file “{0}”.
          */
-        public static final short CreatingSchema_2 = 9;
+        public static final short LoadingDatumShiftFile_1 = 9;
 
         /**
-         * The {0} environment variable is defined, but the given “{1}” value is not an existing
-         * directory.
+         * The “{1}” parameter could have been omitted. But it has been given a value of {2} which does
+         * not match the definition of the “{0}” ellipsoid.
          */
-        public static final short DataDirectoryDoesNotExist_2 = 10;
+        public static final short MismatchedEllipsoidAxisLength_3 = 10;
 
         /**
-         * Apache SIS is not authorized to access the “{1}” sub-directory in the directory given by the
-         * {0} environment variable.
+         * No coordinate operation from “{0}” to “{1}” because of mismatched factories.
          */
-        public static final short DataDirectoryNotAccessible_2 = 11;
+        public static final short MismatchedOperationFactories_2 = 11;
 
         /**
-         * Apache SIS is not authorized to read information given by the “{0}” environment variable.
+         * Despite its name, this parameter is effectively “{0}”.
          */
-        public static final short DataDirectoryNotAuthorized_1 = 12;
+        public static final short MisnamedParameter_1 = 12;
 
         /**
-         * The “{1}” directory specified by the {0} environment variable exists but is not readable.
+         * This parameter borrowed from the “{0}” projection is not formally a parameter of this
+         * projection.
          */
-        public static final short DataDirectoryNotReadable_2 = 13;
-
-        /**
-         * The “{0}” environment variable is not set.
-         */
-        public static final short DataDirectoryNotSpecified_1 = 14;
-
-        /**
-         * Apache SIS can not write in the “{1}” directory given by the {0} environment variable.
-         */
-        public static final short DataDirectoryNotWritable_2 = 15;
-
-        /**
-         * Environment variable {0} specifies the “{1}” data directory.
-         */
-        public static final short DataDirectory_2 = 16;
-
-        /**
-         * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
-         * mutually exclusive.
-         */
-        public static final short DiscardedExclusiveProperty_2 = 17;
-
-        /**
-         * Ignored properties after the first occurrence of ‘{0}’.
-         */
-        public static final short IgnoredPropertiesAfterFirst_1 = 18;
-
-        /**
-         * Ignored property associated to ‘{0}’.
-         */
-        public static final short IgnoredPropertyAssociatedTo_1 = 19;
-
-        /**
-         * Parsing of “{0}” done, but some elements were ignored.
-         */
-        public static final short IncompleteParsing_1 = 20;
-
-        /**
-         * Inserted {0} records in {1} seconds.
-         */
-        public static final short InsertDuration_2 = 21;
-
-        /**
-         * No object associated to the “{0}” JNDI name.
-         */
-        public static final short JNDINotSpecified_1 = 22;
-
-        /**
-         * Text were discarded for some locales.
-         */
-        public static final short LocalesDiscarded = 23;
-
-        /**
-         * This “{0}” formatting is a departure from standard format.
-         */
-        public static final short NonConformFormatting_1 = 24;
-
-        /**
-         * Optional module “{0}” requested but not found.
-         */
-        public static final short OptionalModuleNotFound_1 = 25;
-
-        /**
-         * Property “{0}” is hidden by “{1}”.
-         */
-        public static final short PropertyHiddenBy_2 = 26;
-
-        /**
-         * The text contains unknown elements:
-         */
-        public static final short UnknownElementsInText = 27;
-
-        /**
-         * Loading of “{0}” done, but some records were ignored because of unrecognized keywords: {1}
-         */
-        public static final short UnknownKeywordInRecord_2 = 28;
-
-        /**
-         * Can not parse “{1}” as an instance of ‘{0}’. The value is stored as plain text instead, but
-         * will be ignored by some processing.
-         */
-        public static final short UnparsableValueStoredAsText_2 = 29;
+        public static final short NotFormalProjectionParameter_1 = 13;
     }
 
     /**
@@ -216,7 +141,7 @@ public final class Messages extends IndexedResourceBundle {
      * @param resources  the path of the binary file containing resources, or {@code null} if
      *        there is no resources. The resources may be a file or an entry in a JAR file.
      */
-    Messages(final URL resources) {
+    public Resources(final URL resources) {
         super(resources);
     }
 
@@ -237,8 +162,8 @@ public final class Messages extends IndexedResourceBundle {
      * @return resources in the given locale.
      * @throws MissingResourceException if resources can't be found.
      */
-    public static Messages getResources(final Locale locale) throws MissingResourceException {
-        return getBundle(Messages.class, locale);
+    public static Resources getResources(final Locale locale) throws MissingResourceException {
+        return getBundle(Resources.class, locale);
     }
 
     /**
