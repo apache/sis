@@ -138,6 +138,7 @@ public class WarningListeners<S> implements Localized {
     /**
      * Reports a warning represented by the given message and exception.
      * At least one of {@code message} and {@code exception} shall be non-null.
+     * If both are non-null, then the exception message will be concatenated after the given message.
      *
      * <div class="section">Stack trace omission</div>
      * If there is no registered listener, then the {@link #warning(LogRecord)} method will send the record to the

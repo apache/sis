@@ -35,11 +35,11 @@
  * ISO 19123 <cite>"grid envelope"</cite> and the ISO 19123 <cite>"range"</cite> is rather related
  * to the NetCDF variable minimum and maximum values. Trying to use OGC/ISO and NetCDF objects in
  * the same code appears to be <strong>very</strong> confusing. This isolation layer allows our code
- * use a more consistent vocabulary (compared to the rest of Apache SIS).</p>
+ * to use a more consistent vocabulary (compared to the rest of Apache SIS).</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 package org.apache.sis.internal.netcdf;

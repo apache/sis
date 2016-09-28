@@ -23,6 +23,10 @@ import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.Temporal;
+import org.apache.sis.internal.jdk8.DateTimeException;
+
 
 /**
  * A date format used for parsing dates in the {@code "yyyy-MM-dd'T'HH:mm:ss.SSSX"} pattern, but in which
@@ -95,6 +99,22 @@ public final class StandardDateFormat extends SimpleDateFormat {
      * The length of a day in number of milliseconds.
      */
     public static final int MILLISECONDS_PER_DAY = 24*60*60*1000;
+
+    /**
+     * Converts the given temporal object into a date.
+     * The given temporal object is typically the value parsed by {@link #FORMAT}.
+     *
+     * @param  temporal  the temporal object to convert, or {@code null}.
+     * @return the legacy date for the given temporal object, or {@code null} if the argument was null.
+     * @throws DateTimeException if a value for the field cannot be obtained.
+     * @throws ArithmeticException if the number of milliseconds is too large.
+     */
+    public static Date toDate(final Temporal temporal) {
+        if (temporal == null) {
+            return null;
+        }
+        return new Date(temporal.millis);
+    }
 
     /**
      * {@code true} if the user has invoked {@link #applyPattern(String)} or {@link #applyLocalizedPattern(String)}.
@@ -184,152 +204,148 @@ public final class StandardDateFormat extends SimpleDateFormat {
         if (isUserSpecifiedPattern) {
             return super.parse(text, position);
         }
-        final Fix fix = Fix.apply(text, position.getIndex(), 0);
-        if (fix == null) {
-            try {
-                super.applyPattern(SHORT_PATTERN);
-                return super.parse(text, position);
-            } finally {
-                super.applyPattern(PATTERN);
-            }
-        }
-        final Date date = super.parse(fix.text, position);
-        position.setIndex     (fix.adjustIndex(position.getIndex()));
-        position.setErrorIndex(fix.adjustIndex(position.getErrorIndex()));
+        final int fromIndex = position.getIndex();
+        final String modified = dateToISO(text, fromIndex, false);
+        position.setIndex(0);
+        final Date date = super.parse(modified, position);
+        position.setIndex     (adjustIndex(text, modified, fromIndex, position.getIndex()));
+        position.setErrorIndex(adjustIndex(text, modified, fromIndex, position.getErrorIndex()));
         return date;
     }
 
     /**
      * Modifies if needed a given input string in order to make it compliant with JDK7 implementation of
-     * {@code SimpleDateFormat}. That implementation expects the exact some number of fraction digits in
+     * {@code SimpleDateFormat}. That implementation expects the exact same number of fraction digits in
      * the second fields than specified by the {@code "ss.SSS"} part of the pattern. This method adds or
-     * removes fraction digits as needed.
+     * removes fraction digits as needed, and adds a {@code "Z"} suffix if the string has no timezone.
      *
-     * @param  text  the text to adapt.
-     * @param  time  {@code true} if parsing only a time, or {@code false} if parsing a day and a time.
+     * <p>The string returned by this method starts at {@code fromIndex} and stop after an arbitrary amount
+     * of characters (may be more characters than actually needed for parsing the date).</p>
+     *
+     * @param  text       the text to adapt.
+     * @param  fromIndex  index in {@code text} where to start the adaptation.
+     * @param  isTime     {@code true} if parsing only a time, or {@code false} if parsing a day and a time.
      * @return the modified input string, with second fraction digits added or removed.
      */
-    public static String fix(final String text, final boolean time) {
-        final Fix fix = Fix.apply(text, 0, time ? 1 : 0);
-        return (fix != null) ? fix.text : text;
+    @SuppressWarnings("fallthrough")
+    public static String dateToISO(final CharSequence text, int fromIndex, boolean isTime) {
+        if (text == null) {
+            return null;
+        }
+        final StringBuilder modified = new StringBuilder(30);
+        /*
+         * Copy characters from the given text to the buffer as long as it seems to be part of a date.
+         * We do not perform a strict check, so we may copy more characters than needed; it will be the
+         * DateFormat' job to tell to the caller where the date ends.
+         */
+        int numDigits = 0;
+        int missingTimeFields = 2;
+        boolean isFraction = false;
+        boolean isTimeZone = false;
+copy:   while (fromIndex < text.length()) {
+            char c = text.charAt(fromIndex++);
+            if (c >= '0' && c <= '9') {
+                if (++numDigits > NUM_FRACTION_DIGITS && isFraction) {
+                    continue;       // Ignore extraneous fraction digits.
+                }
+            } else {
+                switch (c) {
+                    default: {
+                        break copy;
+                    }
+                    case 'T': {
+                        if (isTime) break copy;
+                        isTime = true;
+                        break;
+                    }
+                    case ':': {
+                        if (!isTime | isFraction) break copy;
+                        missingTimeFields--;
+                        break;
+                    }
+                    case '.': {
+                        if (!isTime | isFraction | isTimeZone) break copy;
+                        isFraction = true;
+                        break;
+                    }
+                    case '-': {
+                        if (!isTime) break;      // Separator between year-month-day: nothing to do.
+                        // Otherwise timezone offset: same work than for the '+' case (fallthrough).
+                    }
+                    case '+':
+                    case 'Z': {
+                        if (!isTime | isTimeZone) break copy;
+                        if (!isFraction) {
+                            while (--missingTimeFields >= 0) {
+                                modified.append(":00");
+                            }
+                            modified.append('.');
+                            numDigits = 0;
+                        }
+                        while (numDigits < NUM_FRACTION_DIGITS) {
+                            modified.append('0');
+                            numDigits++;
+                        }
+                        isFraction = false;
+                        isTimeZone = true;
+                        break;
+                    }
+                }
+                if (numDigits == 1) {
+                    modified.insert(modified.length() - 1, '0');
+                }
+                numDigits = 0;
+            }
+            modified.append(c);
+        }
+        /*
+         * Check for missing time fields and time zone. For example if the given date is
+         * "2005-09-22T00:00", then this method will completes it as "2005-09-22T00:00:00".
+         * In addition, a 'Z' suffix will be appended if needed.
+         */
+        if (numDigits == 1) {
+            modified.insert(modified.length() - 1, '0');
+        }
+        if (!isTimeZone) {
+            if (!isTime) {
+                modified.append("T00");
+            }
+            if (!isFraction) {
+                while (--missingTimeFields >= 0) {
+                    modified.append(":00");
+                }
+                modified.append('.');
+                numDigits = 0;
+            }
+            while (numDigits < NUM_FRACTION_DIGITS) {
+                modified.append('0');
+                numDigits++;
+            }
+            modified.append('Z');
+        }
+        return modified.toString();
     }
 
     /**
-     * Implementation of {@link StandardDateFormat#fix(String)} method together with additional information.
+     * Maps an index in the modified string to the index in the original string.
+     *
+     * @param  text      the original text specified by the user.
+     * @param  modified  the modified text that has been parsed.
+     * @param  offset    index of the first {@code text} character copied in {@code modified}.
+     * @param  index     the index in the modified string.
+     * @return the corresponding index in the original text.
      */
-    static final class Fix {
-        /**
-         * The modified input string, with second fraction digits added or removed.
-         */
-        public final String text;
-
-        /**
-         * Index of the first character added or removed, or {@code input.length()} if none.
-         */
-        private final int lower;
-
-        /**
-         * Number of characters added (positive number) or removed (negative number).
-         */
-        final int change;
-
-        /**
-         * Wraps information about an input string that has been made parsable.
-         */
-        private Fix(final String text, final int lower, final int change) {
-            this.text   = text;
-            this.lower  = lower;
-            this.change = change;
-        }
-
-        /**
-         * Performs various adjustments for making the given text compliant with the format expected by
-         * a {@link SimpleDateFormat} using the {@value #PATTERN} pattern.
-         *
-         * @param  text       the text to adapt.
-         * @param  s          index in {@code text} where to start the parsing.
-         * @param  timeField  0 if parsing starts on days, 1 if starting on hours field,
-         *                    2 if starting on minutes field or 3 if starting on seconds field.
-         * @return information about the input string made parsable,
-         *         or {@code null} if the given text does not contain a time field.
-         */
-        static Fix apply(final String text, int s, int timeField) {
-            final int length = text.length();
-search:     while (s < length) {
-                char c = text.charAt(s);
-                if (c < '0' || c > '9') {
-                    switch (c) {
-                        default: {
-                            break search;
-                        }
-                        case '-': {
-                            if (timeField != 0) break search;
-                            break;
-                        }
-                        case 'T': {
-                            if (timeField != 0) break search;
-                            timeField = 1;
-                            break;
-                        }
-                        case ':': {
-                            if (timeField == 0 || ++timeField > 3) break search;
-                            break;
-                        }
-                        case '.': {
-                            if (timeField != 3) break search;
-                            /*
-                             * If the user specified too few or too many fraction digits, add or truncate.
-                             * If the number of digits is already the expected ones (which should be rare),
-                             * nevertheless create a new Fix instance for notifying the parse method that
-                             * the text contains a time.
-                             */
-                            final int start = ++s;
-                            while (s < length && (c = text.charAt(s)) >= '0' && c <= '9') s++;
-                            final int change = NUM_FRACTION_DIGITS - (s - start);
-                            if (change == 0) {
-                                return new Fix(text, length, 0);                    // See above comment.
-                            }
-                            final StringBuilder buffer = new StringBuilder(text);
-                            if (change >= 0) {
-                                for (int i = change; --i >= 0;) {
-                                    buffer.insert(s, '0');
-                                }
-                            } else {
-                                final int upper = s;
-                                s = start + NUM_FRACTION_DIGITS;
-                                buffer.delete(s, upper);
-                            }
-                            return new Fix(buffer.toString(), s, change);
-                        }
-                    }
-                }
-                s++;
-            }
-            /*
-             * If the user did not specified any fraction digits, add them.
-             * (NUM_FRACTION_DIGITS + 1) shall be the length of the inserted string.
-             */
-            final String time;
-            switch (timeField) {
-                default: return null;
-                case 1:  time = ":00:00.000"; break;
-                case 2:  time =    ":00.000"; break;
-                case 3:  time =       ".000"; break;
-            }
-            return new Fix(new StringBuilder(text).insert(s, time).toString(), s, time.length());
-        }
-
-        /**
-         * Map an index in the modified string to the index in the original string.
-         *
-         * @param  index  the index in the modified string.
-         * @return the corresponding index in the original string.
-         */
-        int adjustIndex(int index) {
-            if (index >= lower) {
-                index = Math.max(lower, index - change);
-            }
+    static int adjustIndex(final String text, final String modified, int offset, final int index) {
+        if (index < 0) {
             return index;
         }
+        if (!text.isEmpty()) {
+            for (int i=0; i<index; i++) {
+                if (modified.charAt(i) == text.charAt(offset)) {
+                    if (++offset >= text.length()) break;
+                }
+            }
+        }
+        return offset;
     }
 }

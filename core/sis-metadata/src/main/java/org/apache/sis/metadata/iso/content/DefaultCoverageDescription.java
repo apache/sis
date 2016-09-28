@@ -103,7 +103,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(CoverageDescription)
      */
@@ -135,8 +135,8 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultCoverageDescription castOrCopy(final CoverageDescription object) {
@@ -153,7 +153,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     /**
      * Returns the description of the attribute described by the measurement value.
      *
-     * @return Description of the attribute.
+     * @return description of the attribute.
      */
     @Override
     @XmlElement(name = "attributeDescription", required = true)
@@ -164,7 +164,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     /**
      * Sets the description of the attribute described by the measurement value.
      *
-     * @param newValue The new attribute description.
+     * @param  newValue  the new attribute description.
      */
     public void setAttributeDescription(final RecordType newValue) {
         checkWritePermission();
@@ -174,7 +174,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     /**
      * Returns an identifier for the level of processing that has been applied to the resource, or {@code null} if none.
      *
-     * @return Identifier for the level of processing that has been applied to the resource, or {@code null} if none.
+     * @return identifier for the level of processing that has been applied to the resource, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -187,7 +187,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     /**
      * Sets the identifier for the level of processing that has been applied to the resource.
      *
-     * @param newValue The new identifier for the level of processing.
+     * @param  newValue  the new identifier for the level of processing.
      *
      * @since 0.5
      */
@@ -204,7 +204,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Information on attribute groups of the resource.
+     * @return information on attribute groups of the resource.
      *
      * @since 0.5
      */
@@ -222,7 +222,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @param newValues The new information on attribute groups of the resource.
+     * @param  newValues  the new information on attribute groups of the resource.
      *
      * @since 0.5
      */
@@ -234,7 +234,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * Returns the type of information represented by the cell value.
      * This method fetches the value from the {@linkplain #getAttributeGroups() attribute groups}.
      *
-     * @return Type of information represented by the cell value, or {@code null}.
+     * @return type of information represented by the cell value, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#getContentTypes()}.
      */
@@ -267,7 +267,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * Sets the type of information represented by the cell value.
      * This method stores the value in the first writable {@linkplain #getAttributeGroups() attribute groups}.
      *
-     * @param newValue The new content type.
+     * @param  newValue  the new content type.
      *
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#setContentTypes(Collection)}.
      */
@@ -296,7 +296,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * Returns the information on the dimensions of the cell measurement value.
      * This method fetches the values from the first {@linkplain #getAttributeGroups() attribute groups}.
      *
-     * @return Dimensions of the cell measurement value.
+     * @return dimensions of the cell measurement value.
      *
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#getAttributes()}.
      */
@@ -333,7 +333,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * Sets the information on the dimensions of the cell measurement value.
      * This method stores the values in the {@linkplain #getAttributeGroups() attribute groups}.
      *
-     * @param newValues The new dimensions.
+     * @param  newValues  the new dimensions.
      *
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#setAttributes(Collection)}.
      */
@@ -346,7 +346,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     /**
      * Provides the description of the specific range elements of a coverage.
      *
-     * @return Description of the specific range elements of a coverage.
+     * @return description of the specific range elements of a coverage.
      */
     @Override
     @XmlElement(name = "rangeElementDescription", namespace = Namespaces.GMI)
@@ -357,7 +357,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     /**
      * Sets the description of the specific range elements of a coverage.
      *
-     * @param newValues The new range element description.
+     * @param  newValues  the new range element description.
      */
     public void setRangeElementDescriptions(final Collection<? extends RangeElementDescription> newValues) {
         rangeElementDescriptions = writeCollection(newValues, rangeElementDescriptions, RangeElementDescription.class);

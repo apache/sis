@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.jdk8;
 
+import org.apache.sis.internal.util.Numerics;
+
 
 /**
  * Placeholder for the {@link java.time.temporal.Temporal} interface.
@@ -24,12 +26,23 @@ public class Temporal {
     /**
      * Number of milliseconds since January 1st, 1970 midnight UTC.
      */
-    final long millis;
+    public final long millis;
 
     /**
      * For subclasses in this package only.
      */
     Temporal(final long millis) {
         this.millis = millis;
+    }
+
+    @Override
+    public int hashCode() {
+        return Numerics.hashCode(millis) ^ getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) return true;
+        return (other != null) && getClass().equals(other.getClass()) && millis == ((Temporal) other).millis;
     }
 }

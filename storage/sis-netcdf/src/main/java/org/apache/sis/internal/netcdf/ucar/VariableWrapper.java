@@ -190,10 +190,10 @@ final class VariableWrapper extends Variable {
     /**
      * Reads a sub-sampled sub-area of the variable.
      *
-     * @param  areaLower   Index of the first value to read along each dimension.
-     * @param  areaUpper   Index after the last value to read along each dimension.
-     * @param  subsampling Sub-sampling along each dimension. 1 means no sub-sampling.
-     * @return The data as an array of a Java primitive type.
+     * @param  areaLower    index of the first value to read along each dimension.
+     * @param  areaUpper    index after the last value to read along each dimension.
+     * @param  subsampling  sub-sampling along each dimension. 1 means no sub-sampling.
+     * @return the data as an array of a Java primitive type.
      */
     @Override
     public Object read(final int[] areaLower, final int[] areaUpper, final int[] subsampling)

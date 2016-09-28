@@ -50,7 +50,7 @@ public abstract class Decoder implements Closeable {
     /**
      * Creates a new decoder.
      *
-     * @param listeners Where to send the warnings.
+     * @param  listeners  where to send the warnings.
      */
     protected Decoder(final WarningListeners<?> listeners) {
         Objects.requireNonNull(listeners);
@@ -61,8 +61,8 @@ public abstract class Decoder implements Closeable {
      * Defines the groups where to search for named attributes, in preference order.
      * The {@code null} group name stands for the global attributes.
      *
-     * @param  groupNames The name of the group where to search, in preference order.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @param  groupNames  the name of the group where to search, in preference order.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     public abstract void setSearchPath(final String... groupNames) throws IOException;
 
@@ -71,8 +71,8 @@ public abstract class Decoder implements Closeable {
      * a subset of the array given to {@link #setSearchPath(String[])} since only the name of
      * groups which have been found in the NetCDF file are returned by this method.
      *
-     * @return The current search path.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @return the current search path.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     public abstract String[] getSearchPath() throws IOException;
 
@@ -81,26 +81,26 @@ public abstract class Decoder implements Closeable {
      * This method searches in the groups specified by the last call to {@link #setSearchPath(String[])}.
      * Null values and empty strings are ignored.
      *
-     * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or empty or if the given name was null.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @param  name  the name of the attribute to search, or {@code null}.
+     * @return the attribute value, or {@code null} if none or empty or if the given name was null.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     public abstract String stringValue(final String name) throws IOException;
 
     /**
      * Returns the value of the attribute of the given name as a number, or {@code null} if none.
      *
-     * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or unparsable or if the given name was null.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @param  name  the name of the attribute to search, or {@code null}.
+     * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     public abstract Number numericValue(final String name) throws IOException;
 
     /**
      * Convenience method for {@link #numericValue(String)} implementation.
      *
-     * @param  value The attribute value to parse.
-     * @return The parsed attribute value, or {@code null} if the given value can not be parsed.
+     * @param  value  the attribute value to parse.
+     * @return the parsed attribute value, or {@code null} if the given value can not be parsed.
      */
     protected final Number parseNumber(String value) {
         final int s = value.indexOf(' ');
@@ -120,18 +120,18 @@ public abstract class Decoder implements Closeable {
     /**
      * Returns the value of the attribute of the given name as a date, or {@code null} if none.
      *
-     * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or unparsable or if the given name was null.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @param  name  the name of the attribute to search, or {@code null}.
+     * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     public abstract Date dateValue(final String name) throws IOException;
 
     /**
      * Returns the value of the attribute of the given name as a unit of measurement, or {@code null} if none.
      *
-     * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or unparsable or if the given name was null.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @param  name  the name of the attribute to search, or {@code null}.
+     * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
+     * @throws IOException if an I/O operation was necessary but failed.
      *
      * @todo Current Units.valueOf(String) implementation ignore direction in "degrees_east" or "degrees_west".
      *       We may need to take that in account (with "degrees_west" to "degrees_east" converter that reverse
@@ -151,10 +151,10 @@ public abstract class Decoder implements Closeable {
      * Converts the given numerical values to date, using the information provided in the given unit symbol.
      * The unit symbol is typically a string like <cite>"days since 1970-01-01T00:00:00Z"</cite>.
      *
-     * @param  symbol The temporal unit name or symbol, followed by the epoch.
-     * @param  values The values to convert. May contains {@code null} elements.
-     * @return The converted values. May contains {@code null} elements.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @param  symbol  the temporal unit name or symbol, followed by the epoch.
+     * @param  values  the values to convert. May contains {@code null} elements.
+     * @return the converted values. May contains {@code null} elements.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     public abstract Date[] numberToDate(final String symbol, final Number... values) throws IOException;
 
@@ -163,8 +163,8 @@ public abstract class Decoder implements Closeable {
      * {@link ucar.nc2.NetcdfFile#getId()} method for that purpose, which we will use when
      * possible in case that {@code getId()} method is defined in an other way.
      *
-     * @return The global dataset identifier, or {@code null} if none.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @return the global dataset identifier, or {@code null} if none.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     public String getId() throws IOException {
         return stringValue("_Id");
@@ -175,8 +175,8 @@ public abstract class Decoder implements Closeable {
      * {@link ucar.nc2.NetcdfFile#getTitle()} method for that purpose, which we will use when
      * possible in case that {@code getTitle()} method is defined in an other way.
      *
-     * @return The dataset title, or {@code null} if none.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @return the dataset title, or {@code null} if none.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     public String getTitle() throws IOException {
         return stringValue("_Title");
@@ -186,8 +186,8 @@ public abstract class Decoder implements Closeable {
      * Returns all variables found in the NetCDF file.
      * This method may return a direct reference to an internal array - do not modify.
      *
-     * @return All variables, or an empty array if none.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @return all variables, or an empty array if none.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     public abstract Variable[] getVariables() throws IOException;
 
@@ -195,8 +195,8 @@ public abstract class Decoder implements Closeable {
      * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
      * This method may return a direct reference to an internal array - do not modify.
      *
-     * @return All grid geometries, or an empty array if none.
-     * @throws IOException If an I/O operation was necessary but failed.
+     * @return all grid geometries, or an empty array if none.
+     * @throws IOException if an I/O operation was necessary but failed.
      */
     public abstract GridGeometry[] getGridGeometries() throws IOException;
 }

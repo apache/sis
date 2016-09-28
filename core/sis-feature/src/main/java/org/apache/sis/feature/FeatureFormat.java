@@ -16,8 +16,6 @@
  */
 package org.apache.sis.feature;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -36,6 +34,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.referencing.IdentifiedObjects;
 
 // Branch-dependent imports
@@ -85,6 +84,16 @@ public class FeatureFormat extends TabularFormat<Object> {
      * The locale for international strings.
      */
     private final Locale displayLocale;
+
+    /**
+     * Maximal length of attribute values, in number of characters.
+     * If a value is longer than this length, it will be truncated.
+     *
+     * <p>This is defined as a static final variable for now because its value is approximative:
+     * it is a number of characters instead than a number of code points, and that length may be
+     * exceeded by a few characters if the overflow happen while appending the list separator.</p>
+     */
+    private static final int MAXIMAL_VALUE_LENGTH = 40;
 
     /**
      * Creates a new formatter for the default locale and timezone.
@@ -308,15 +317,14 @@ header: for (int i=0; ; i++) {
              * Column 3 - Value or default value.
              */
             if (value != null) {
-                final boolean isInstance = valueClass != null && valueClass.isInstance(value);
-                final Format format = isInstance ? getFormat(valueClass) : null;
-                final Iterator<?> it = (!isInstance && (value instanceof Collection<?>)
-                        ? (Iterable<?>) value : Collections.singleton(value)).iterator();
+                final Format format = getFormat(valueClass);                            // Null if valueClass is null.
+                final Iterator<?> it = CollectionsExt.toCollection(value).iterator();
                 String separator = "";
+                int length = 0;
                 while (it.hasNext()) {
                     value = it.next();
                     if (value != null) {
-                        if (format != null) {
+                        if (format != null && valueClass.isInstance(value)) {
                             value = format.format(value, buffer, dummyFP);
                         } else if (value instanceof AbstractFeature && propertyType instanceof DefaultAssociationRole) {
                             final String p = DefaultAssociationRole.getTitleProperty((DefaultAssociationRole) propertyType);
@@ -325,9 +333,10 @@ header: for (int i=0; ; i++) {
                                 if (value == null) continue;
                             }
                         }
-                        table.append(separator).append(formatValue(value));
+                        length = formatValue(value, table.append(separator), length);
                         buffer.setLength(0);
                         separator = ", ";
+                        if (length < 0) break;      // Value is too long, abandon remaining iterations.
                     }
                 }
             }
@@ -348,7 +357,7 @@ header: for (int i=0; ; i++) {
                             }
                         }
                         if (c != null) {
-                            table.append(" = ").append(formatValue(c));
+                            formatValue(c, table.append(" = "), 0);
                         }
                         separator = ", ";
                     }
@@ -378,19 +387,35 @@ header: for (int i=0; ; i++) {
     }
 
     /**
-     * Formats the given attribute value.
+     * Appends the given attribute value, in a truncated form if it exceed the maximal value length.
+     *
+     * @param  value   the value to append.
+     * @param  table   where to append the value.
+     * @param  length  number of characters appended before this method call in the current table cell.
+     * @return number of characters appended after this method call in the current table cell, or -1 if
+     *         the length exceed the maximal length (in which case the caller should break iteration).
      */
-    private String formatValue(final Object value) {
+    private int formatValue(final Object value, final TableAppender table, final int length) {
+        final String text;
         if (value instanceof InternationalString) {
-            return ((InternationalString) value).toString(displayLocale);
+            text = ((InternationalString) value).toString(displayLocale);
         } else if (value instanceof GenericName) {
-            return toString((GenericName) value);
+            text = toString((GenericName) value);
         } else if (value instanceof AbstractIdentifiedType) {
-            return toString(((AbstractIdentifiedType) value).getName());
+            text = toString(((AbstractIdentifiedType) value).getName());
         } else if (value instanceof IdentifiedObject) {
-            return IdentifiedObjects.getIdentifierOrName((IdentifiedObject) value);
+            text = IdentifiedObjects.getIdentifierOrName((IdentifiedObject) value);
+        } else {
+            text = value.toString();
         }
-        return value.toString();
+        final int remaining = MAXIMAL_VALUE_LENGTH - length;
+        if (remaining >= text.length()) {
+            table.append(text);
+            return length + text.length();
+        } else {
+            table.append(text, 0, Math.max(0, remaining - 1)).append('…');
+            return -1;
+        }
     }
 
     /**
