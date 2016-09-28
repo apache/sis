@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 
 import static java.lang.Math.*;
 
@@ -289,7 +289,7 @@ abstract class ConformalProjection extends NormalizedProjection {
                 return φ;
             }
         }
-        throw new ProjectionException(Errors.Keys.NoConvergence);
+        throw new ProjectionException(Resources.Keys.NoConvergence);
     }
 
     /**

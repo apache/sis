@@ -32,8 +32,8 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
@@ -100,7 +100,7 @@ public final class CoordinateSystems extends Static {
             assert candidate == AxisDirections.valueOf(meridian.toString());
             return candidate;
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownAxisDirection_1, name));
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownAxisDirection_1, name));
     }
 
     /**
@@ -287,7 +287,7 @@ public final class CoordinateSystems extends Static {
         ensureNonNull("sourceCS", sourceCS);
         ensureNonNull("targetCS", targetCS);
         if (!Classes.implementSameInterfaces(sourceCS.getClass(), targetCS.getClass(), CoordinateSystem.class)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleCoordinateSystemTypes));
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IncompatibleCoordinateSystemTypes));
         }
         final AxisDirection[] srcAxes = getAxisDirections(sourceCS);
         final AxisDirection[] dstAxes = getAxisDirections(targetCS);
@@ -327,8 +327,8 @@ public final class CoordinateSystems extends Static {
                 }
                 final UnitConverter converter = sourceUnit.getConverterToAny(targetUnit);
                 if (!(converter instanceof LinearConverter)) {
-                    throw new ConversionException(Errors.format(
-                              Errors.Keys.NonLinearUnitConversion_2, sourceUnit, targetUnit));
+                    throw new ConversionException(Resources.format(
+                              Resources.Keys.NonLinearUnitConversion_2, sourceUnit, targetUnit));
                 }
                 final double offset = converter.convert(0);
                 final double scale  = Units.derivative(converter, 0);

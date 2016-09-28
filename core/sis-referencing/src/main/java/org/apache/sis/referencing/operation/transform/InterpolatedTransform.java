@@ -35,6 +35,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.provider.NTv2;
@@ -145,7 +146,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
         }
         final Unit<T> unit = grid.getTranslationUnit();
         if (unit != grid.getCoordinateUnit()) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalUnitFor_2, "translation", unit));
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalUnitFor_2, "translation", unit));
         }
         dimension = grid.getTranslationDimensions();
         if (grid instanceof DatumShiftGridFile<?,?>) {
@@ -169,7 +170,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
         if (!unit.equals(normalized)) {
             final UnitConverter converter = normalized.getConverterTo(unit);
             if (!(converter instanceof LinearConverter)) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonLinearUnitConversion_2, normalized, unit));
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.NonLinearUnitConversion_2, normalized, unit));
             }
             final Double offset = converter.convert(0);
             final Double scale  = Units.derivative(converter, 0);
@@ -479,7 +480,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                     return null;
                 }
             } while (--it >= 0);
-            throw new TransformException(Errors.format(Errors.Keys.NoConvergence));
+            throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
         }
 
         /**
@@ -546,7 +547,7 @@ nextPoint:  while (--numPts >= 0) {
                         continue nextPoint;
                     }
                 } while (--it >= 0);
-                throw new TransformException(Errors.format(Errors.Keys.NoConvergence));
+                throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
             }
         }
     }

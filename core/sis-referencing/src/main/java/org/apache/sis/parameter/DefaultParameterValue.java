@@ -39,6 +39,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.jaxb.gml.MeasureList;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -543,7 +544,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Formats an error message for illegal method call for the current value type.
      */
     private String getClassTypeError() {
-        return Errors.format(Errors.Keys.IllegalOperationForValueClass_1,
+        return Resources.format(Resources.Keys.IllegalOperationForValueClass_1,
                 (descriptor != null) ? ((ParameterDescriptor<?>) descriptor).getValueClass() : "?");
     }
 

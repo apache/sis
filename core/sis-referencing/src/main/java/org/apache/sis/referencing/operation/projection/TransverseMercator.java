@@ -27,6 +27,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
@@ -333,7 +334,7 @@ public class TransverseMercator extends ConformalProjection {
              * using WGS84 ellipsoid. We do not need to reduce the limit for the spherical formulas,
              * because the mathematic are simpler and the function still smooth until 90°.
              */
-            throw new ProjectionException(Errors.Keys.OutsideDomainOfValidity);
+            throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
         }
         final double φ     = srcPts[srcOff+1];
         final double sinλ  = sin(λ);
@@ -577,7 +578,7 @@ public class TransverseMercator extends ConformalProjection {
             }
             p = c;
         }
-        throw new ProjectionException(Errors.Keys.NoConvergence);
+        throw new ProjectionException(Resources.Keys.NoConvergence);
     }
 
 
@@ -619,7 +620,7 @@ public class TransverseMercator extends ConformalProjection {
             final double λ = srcPts[srcOff  ];
             if (abs(λ) > PI/2) {
                 // See comment in the overridden class.
-                throw new ProjectionException(Errors.Keys.OutsideDomainOfValidity);
+                throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
             }
             final double φ    = srcPts[srcOff+1];
             final double sinλ = sin(λ);

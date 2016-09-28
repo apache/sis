@@ -34,6 +34,7 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.datum.Datum;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -281,8 +282,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         if (method != null) {
             return method;
         }
-        throw new NoSuchIdentifierException(Errors.getResources(defaultProperties)
-                .getString(Errors.Keys.NoSuchOperationMethod_1, name), name);
+        throw new NoSuchIdentifierException(Resources.getResources(defaultProperties)
+                .getString(Resources.Keys.NoSuchOperationMethod_1, name), name);
     }
 
     /**

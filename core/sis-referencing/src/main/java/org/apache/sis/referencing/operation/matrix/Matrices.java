@@ -31,6 +31,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 
 // Branch-dependent imports
@@ -255,8 +256,8 @@ public final class Matrices extends Static {
                 final AxisDirection srcDir = srcAxes[srcIndex];
                 if (search.equals(AxisDirections.absolute(srcDir))) {
                     if (hasFound) {
-                        throw new IllegalArgumentException(Errors.format(
-                                Errors.Keys.ColinearAxisDirections_2, srcDir, dstDir));
+                        throw new IllegalArgumentException(Resources.format(
+                                Resources.Keys.ColinearAxisDirections_2, srcDir, dstDir));
                     }
                     hasFound = true;
                     /*
@@ -279,8 +280,8 @@ public final class Matrices extends Static {
                 }
             }
             if (!hasFound) {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.CanNotMapAxisToDirection_2, "srcAxes", dstAxes[dstIndex]));
+                throw new IllegalArgumentException(Resources.format(
+                        Resources.Keys.CanNotMapAxisToDirection_1, dstAxes[dstIndex]));
             }
         }
         matrix.setElement(dstAxes.length, srcAxes.length, 1);

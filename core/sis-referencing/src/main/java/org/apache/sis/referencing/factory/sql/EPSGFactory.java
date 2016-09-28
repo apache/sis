@@ -38,6 +38,7 @@ import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.metadata.sql.Initializer;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
@@ -46,7 +47,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Localized;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -293,7 +293,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         if (message == null) {
             message = Classes.getShortClassName(e);
         }
-        return Errors.getResources(locale).getString(Errors.Keys.CanNotUseGeodeticParameters_2, Constants.EPSG, message);
+        return Resources.getResources(locale).getString(Resources.Keys.CanNotUseGeodeticParameters_2, Constants.EPSG, message);
     }
 
     /**

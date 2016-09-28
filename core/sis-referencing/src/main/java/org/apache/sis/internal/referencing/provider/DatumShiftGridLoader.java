@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.io.EOFException;
@@ -146,7 +147,7 @@ class DatumShiftGridLoader {
      * @param file   The grid file, as a {@link String} or a {@link Path}.
      */
     static void log(final Class<?> caller, final Object file) {
-        final LogRecord record = Resources.getResources(null).getLogRecord(Level.FINE, Resources.Keys.LoadingDatumShiftFile_1, file);
+        final LogRecord record = Resources.getResources((Locale) null).getLogRecord(Level.FINE, Resources.Keys.LoadingDatumShiftFile_1, file);
         record.setLoggerName(Loggers.COORDINATE_OPERATION);
         Logging.log(caller, "createMathTransform", record);
     }

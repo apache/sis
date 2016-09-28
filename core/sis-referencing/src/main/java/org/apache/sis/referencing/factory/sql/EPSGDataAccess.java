@@ -1663,7 +1663,7 @@ addURIs:    for (int i=0; ; i++) {
                     case "temporal": {
                         final Date originDate;
                         if (anchor == null || anchor.isEmpty()) {
-                            throw new FactoryDataException(error().getString(Errors.Keys.DatumOriginShallBeDate));
+                            throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate));
                         }
                         if (dateFormat == null) {
                             dateFormat = new StandardDateFormat();
@@ -1672,7 +1672,7 @@ addURIs:    for (int i=0; ; i++) {
                         try {
                             originDate = dateFormat.parse(anchor);
                         } catch (ParseException e) {
-                            throw new FactoryDataException(error().getString(Errors.Keys.DatumOriginShallBeDate), e);
+                            throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate), e);
                         }
                         datum = datumFactory.createTemporalDatum(properties, originDate);
                         break;
@@ -2173,7 +2173,7 @@ addURIs:    for (int i=0; ; i++) {
                     }
                 }
                 if (cs == null) {
-                    throw new FactoryDataException(error().getString(Errors.Keys.UnexpectedDimensionForCS_1, type));
+                    throw new FactoryDataException(resources().getString(Resources.Keys.UnexpectedDimensionForCS_1, type));
                 }
                 returnValue = ensureSingleton(cs, returnValue, code);
             }
@@ -3357,7 +3357,7 @@ next:               while (r.next()) {
      * @return An exception initialized with an error message built from the specified informations.
      */
     private NoSuchAuthorityCodeException noSuchAuthorityCode(final Class<?> type, final String code) {
-        return new NoSuchAuthorityCodeException(error().getString(Errors.Keys.NoSuchAuthorityCode_3,
+        return new NoSuchAuthorityCodeException(resources().getString(Resources.Keys.NoSuchAuthorityCode_3,
                 Constants.EPSG, type, code), Constants.EPSG, code, code);
     }
 
@@ -3373,6 +3373,13 @@ next:               while (r.next()) {
      */
     private Errors error() {
         return Errors.getResources(getLocale());
+    }
+
+    /**
+     * Minor shortcut for fetching the resources specific to the {@code sis-referencing} module.
+     */
+    private Resources resources() {
+        return Resources.getResources(getLocale());
     }
 
     /**

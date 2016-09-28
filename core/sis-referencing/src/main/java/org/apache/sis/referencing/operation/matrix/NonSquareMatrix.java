@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 
 
 /**
@@ -333,7 +333,7 @@ next:   do {
      * Returns the exception for a non-invertible transform.
      */
     private NoninvertibleMatrixException nonInvertible() {
-        return new NoninvertibleMatrixException(Errors.format(Errors.Keys.NonInvertibleMatrix_2, numRow, numCol));
+        return new NoninvertibleMatrixException(Resources.format(Resources.Keys.NonInvertibleMatrix_2, numRow, numCol));
     }
 
     /**
