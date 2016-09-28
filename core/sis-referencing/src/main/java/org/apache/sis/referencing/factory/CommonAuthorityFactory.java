@@ -46,6 +46,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Loggers;
@@ -333,7 +334,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                     }
                 }
                 if (!isRecognized) {
-                    throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnknownAuthority_1,
+                    throw new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.UnknownAuthority_1,
                             CharSequences.trimWhitespaces(code, 0, s)), Constants.OGC, code);
                 }
             }
@@ -679,7 +680,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             s = String.valueOf(code);
         }
         if (message == null) {
-            message = Errors.format(Errors.Keys.NoSuchAuthorityCode_3, Constants.EPSG, Unit.class, s);
+            message = Resources.format(Resources.Keys.NoSuchAuthorityCode_3, Constants.EPSG, Unit.class, s);
         }
         throw new NoSuchAuthorityCodeException(message, Constants.EPSG, s);
     }
@@ -713,7 +714,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * @return An exception initialized with an error message built from the specified informations.
      */
     private static NoSuchAuthorityCodeException noSuchAuthorityCode(String localCode, String code, Exception cause) {
-        return (NoSuchAuthorityCodeException) new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.NoSuchAuthorityCode_3,
+        return (NoSuchAuthorityCodeException) new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.NoSuchAuthorityCode_3,
                 Constants.OGC, CoordinateReferenceSystem.class, localCode),
                 Constants.OGC, localCode, code).initCause(cause);
     }

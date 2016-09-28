@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.measure.Angle;
 
 
@@ -196,8 +196,8 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
                  * they are not really for Cartesian CS because we do not know the grid geometry.
                  */
                 if (angle != null && Math.abs(angle.degrees()) != 90) {
-                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                            Errors.Keys.NonPerpendicularDirections_2, axis0, axis1));
+                    throw new IllegalArgumentException(Resources.getResources(properties).getString(
+                            Resources.Keys.NonPerpendicularDirections_2, axis0, axis1));
                 }
             }
         }

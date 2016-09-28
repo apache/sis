@@ -29,7 +29,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
@@ -364,7 +364,7 @@ public class ObliqueStereographic extends NormalizedProjection {
                 return;
             }
         }
-        throw new ProjectionException(Errors.Keys.NoConvergence);
+        throw new ProjectionException(Resources.Keys.NoConvergence);
     }
 
 

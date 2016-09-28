@@ -36,6 +36,7 @@ import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.provider.Geographic2Dto3D;
 import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
@@ -1060,7 +1061,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @return A default error message.
      */
     private static String notFoundMessage(final IdentifiedObject source, final IdentifiedObject target) {
-        return Errors.format(Errors.Keys.CoordinateOperationNotFound_2, CRSPair.label(source), CRSPair.label(target));
+        return Resources.format(Resources.Keys.CoordinateOperationNotFound_2, CRSPair.label(source), CRSPair.label(target));
     }
 
     /**
@@ -1071,6 +1072,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @return A default error message.
      */
     private static String canNotInvert(final GeneralDerivedCRS crs) {
-        return Errors.format(Errors.Keys.NonInvertibleOperation_1, crs.getConversionFromBase().getName().getCode());
+        return Resources.format(Resources.Keys.NonInvertibleOperation_1, crs.getConversionFromBase().getName().getCode());
     }
 }

@@ -25,14 +25,15 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.internal.referencing.Resources;
 
 import static java.lang.Math.abs;
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -248,7 +249,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
         if (targetDatum != null) {
             final PrimeMeridian actual = targetDatum.getPrimeMeridian();
             if (actual.getGreenwichLongitude() != 0 && !Utilities.equalsIgnoreMetadata(pm, actual)) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPrimeMeridian_2,
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedPrimeMeridian_2,
                         IdentifiedObjects.getName(pm, null), IdentifiedObjects.getName(actual, null)));
             }
         }
@@ -530,7 +531,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedMatrixSize_4, n, n, numRow, numCol));
         }
         if (!Matrices.isAffine(matrix)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotAnAffineTransform));
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.NotAnAffineTransform));
         }
         /*
          * Translation terms, taken "as-is".
@@ -567,7 +568,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
          */
         for (int j=0; j < SIZE-1; j++) {
             if (!(abs((matrix.getElement(j,j) - 1)*PPM - dS) <= tolerance)) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonUniformScale));
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.NonUniformScale));
             }
             for (int i = j+1; i < SIZE-1; i++) {
                 S.setFrom(RS);
@@ -577,7 +578,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
                 S.setFrom(RS);
                 S.inverseDivide(getNumber(matrix, i,j));        // Positive rotation term.
                 if (!(abs(value + S.value) <= tolerance)) {     // We expect r1 ≈ -r2
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.NotASkewSymmetricMatrix));
+                    throw new IllegalArgumentException(Resources.format(Resources.Keys.NotASkewSymmetricMatrix));
                 }
                 S.subtract(value, error);
                 S.multiply(0.5, 0);

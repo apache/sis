@@ -124,12 +124,13 @@ public final class ServicesForMetadata extends ReferencingServices {
 
     /**
      * Creates an exception message for a spatial, vertical or temporal dimension not found.
+     * The given key must be one of {@code Resources.Keys} constants.
      */
-    private static String dimensionNotFound(final short errorKey, final CoordinateReferenceSystem crs) {
+    private static String dimensionNotFound(final short resourceKey, final CoordinateReferenceSystem crs) {
         if (crs == null) {
             return Errors.format(Errors.Keys.UnspecifiedCRS);
         } else {
-            return Errors.format(errorKey, crs.getName());
+            return Resources.format(resourceKey, crs.getName());
         }
     }
 
@@ -159,7 +160,7 @@ public final class ServicesForMetadata extends ReferencingServices {
                 try {
                     operation = factory.createOperation(crs, normalizedCRS);
                 } catch (FactoryException e) {
-                    throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelopeToGeodetic), e);
+                    throw new TransformException(Resources.format(Resources.Keys.CanNotTransformEnvelopeToGeodetic), e);
                 }
                 envelope = Envelopes.transform(operation, envelope);
             }
@@ -244,7 +245,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             if (crs != null) {
                 normalizedCRS = CommonCRS.defaultGeographic();
             } else if (envelope.getDimension() != 2) {
-                throw new TransformException(dimensionNotFound(Errors.Keys.MissingHorizontalDimension_1, crs));
+                throw new TransformException(dimensionNotFound(Resources.Keys.MissingHorizontalDimension_1, crs));
             }
         }
         setGeographicExtent(envelope, target, crs, normalizedCRS);
@@ -263,7 +264,7 @@ public final class ServicesForMetadata extends ReferencingServices {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         final VerticalCRS verticalCRS = CRS.getVerticalComponent(crs, true);
         if (verticalCRS == null && envelope.getDimension() != 1) {
-            throw new TransformException(dimensionNotFound(Errors.Keys.MissingVerticalDimension_1, crs));
+            throw new TransformException(dimensionNotFound(Resources.Keys.MissingVerticalDimension_1, crs));
         }
         setVerticalExtent(envelope, target, crs, verticalCRS);
     }
@@ -281,7 +282,7 @@ public final class ServicesForMetadata extends ReferencingServices {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         final TemporalCRS temporalCRS = CRS.getTemporalComponent(crs);
         if (temporalCRS == null) { // Mandatory for the conversion from numbers to dates.
-            throw new TransformException(dimensionNotFound(Errors.Keys.MissingTemporalDimension_1, crs));
+            throw new TransformException(dimensionNotFound(Resources.Keys.MissingTemporalDimension_1, crs));
         }
         setTemporalExtent(envelope, target, crs, temporalCRS);
     }
@@ -302,7 +303,7 @@ public final class ServicesForMetadata extends ReferencingServices {
         final VerticalCRS verticalCRS = CRS.getVerticalComponent(crs, true);
         final TemporalCRS temporalCRS = CRS.getTemporalComponent(crs);
         if (horizontalCRS == null && verticalCRS == null && temporalCRS == null) {
-            throw new TransformException(dimensionNotFound(Errors.Keys.MissingSpatioTemporalDimension_1, crs));
+            throw new TransformException(dimensionNotFound(Resources.Keys.MissingSpatioTemporalDimension_1, crs));
         }
         /*
          * Try to set the geographic bounding box first, because this operation may fail with a
@@ -369,7 +370,7 @@ public final class ServicesForMetadata extends ReferencingServices {
         final VerticalCRS verticalCRS = CRS.getVerticalComponent(crs, true);
         final TemporalCRS temporalCRS = CRS.getTemporalComponent(crs);
         if (horizontalCRS == null && verticalCRS == null && temporalCRS == null) {
-            throw new TransformException(dimensionNotFound(Errors.Keys.MissingSpatioTemporalDimension_1, crs));
+            throw new TransformException(dimensionNotFound(Resources.Keys.MissingSpatioTemporalDimension_1, crs));
         }
         if (horizontalCRS != null) {
             final DefaultGeographicBoundingBox extent = new DefaultGeographicBoundingBox();

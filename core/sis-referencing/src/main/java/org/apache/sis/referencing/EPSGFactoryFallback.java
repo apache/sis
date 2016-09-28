@@ -39,11 +39,11 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Fallback;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultNameSpace;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
 
@@ -272,8 +272,8 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
             default:             type = IdentifiedObject.class; break;
         }
         final String authority = Constants.EPSG + "-subset";
-        final NoSuchAuthorityCodeException e = new NoSuchAuthorityCodeException(Errors.format(
-                Errors.Keys.NoSuchAuthorityCode_3, authority, type, code), authority, code);
+        final NoSuchAuthorityCodeException e = new NoSuchAuthorityCodeException(Resources.format(
+                Resources.Keys.NoSuchAuthorityCode_3, authority, type, code), authority, code);
         e.initCause(cause);
         throw e;
     }

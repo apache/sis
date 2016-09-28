@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.ConcurrentModificationException;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.measure.unit.Unit;
@@ -702,7 +703,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             return factory;
         }
         final String authority = request.getAuthorityAndVersion().toString();
-        throw new NoSuchAuthorityFactoryException(Errors.format(Errors.Keys.UnknownAuthority_1, authority), authority);
+        throw new NoSuchAuthorityFactoryException(Resources.format(Resources.Keys.UnknownAuthority_1, authority), authority);
     }
 
     /**
@@ -734,7 +735,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         final DefinitionURI uri = DefinitionURI.parse(code);
         if (uri != null) {
             if (uri.authority == null) {
-                throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.MissingAuthority_1, code), null, uri.code, code);
+                throw new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.MissingAuthority_1, code), null, uri.code, code);
             }
             final Class<? extends T> type = proxy.type;
             authority  = uri.authority;
@@ -763,7 +764,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             int end = CharSequences.skipTrailingWhitespaces(code, 0, afterAuthority);
             int start = CharSequences.skipLeadingWhitespaces(code, 0, end);
             if (start >= end) {
-                throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.MissingAuthority_1, code), null, code);
+                throw new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.MissingAuthority_1, code), null, code);
             }
             authority = code.substring(start, end);
             /*
@@ -1452,7 +1453,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          * No coordinate operation because of mismatched factories. This is not illegal (the result is an empty set)
          * but it is worth to notify the user because this case has some chances to be an user error.
          */
-        final LogRecord record = Resources.getResources(null).getLogRecord(Level.WARNING,
+        final LogRecord record = Resources.getResources((Locale) null).getLogRecord(Level.WARNING,
                 Resources.Keys.MismatchedOperationFactories_2, sourceCRS, targetCRS);
         record.setLoggerName(Loggers.CRS_FACTORY);
         Logging.log(MultiAuthoritiesFactory.class, "createFromCoordinateReferenceSystemCodes", record);

@@ -711,9 +711,9 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  properties  the map of properties, or {@code null} if none.
      * @return the locale found in the given map, or {@code null} if none.
      *
-     * @since 0.4
+     * @since 0.8
      */
-    static Locale getLocale(final Map<?,?> properties) {
+    protected static Locale getLocale(final Map<?,?> properties) {
         if (properties != null) {
             final Object candidate = properties.get(LOCALE_KEY);
             if (candidate instanceof Locale) {

@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
@@ -275,7 +275,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
             return Double.NaN;                      // Value "after" the pole.
         }
         // Value should have converged but did not.
-        throw new ProjectionException(Errors.format(Errors.Keys.NoConvergence));
+        throw new ProjectionException(Resources.Keys.NoConvergence);
     }
 
     /**

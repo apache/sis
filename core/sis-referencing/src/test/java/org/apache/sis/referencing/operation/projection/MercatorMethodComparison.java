@@ -23,7 +23,7 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
 import static java.lang.Math.*;     // Not StrictMath in this particular case.
@@ -171,7 +171,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         if (Double.isNaN(t)) {
             return Double.NaN;
         }
-        throw new ProjectionException(Errors.Keys.NoConvergence);
+        throw new ProjectionException(Resources.Keys.NoConvergence);
     }
 
     /**
