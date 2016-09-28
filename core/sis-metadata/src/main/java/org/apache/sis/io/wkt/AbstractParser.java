@@ -179,7 +179,7 @@ abstract class AbstractParser implements Parser {
             this.numberFormat = numberFormat;
             exponentSymbol = null;
         }
-        ignoredElements = new LinkedHashMap<String, List<String>>();
+        ignoredElements = new LinkedHashMap<>();
     }
 
     /**
@@ -348,6 +348,7 @@ abstract class AbstractParser implements Parser {
             try {
                 return Units.valueOf(text);
             } catch (IllegalArgumentException e2) {
+                e.addSuppressed(e2);
                 throw e;
             }
         }

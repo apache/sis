@@ -39,7 +39,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

@@ -17,7 +17,7 @@
 package org.apache.sis.internal.storage;
 
 import java.util.Set;
-import java.util.List;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Collections;
 import java.util.Arrays;
@@ -41,9 +41,14 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Modules;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Files;
-import org.apache.sis.internal.jdk7.StandardCharsets;
-import org.apache.sis.internal.jdk7.StandardOpenOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
+import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -65,7 +70,7 @@ public final class IOUtilities extends Static {
     /**
      * Options to be rejected by {@link #open(Object, String, OpenOption[])} for safety reasons.
      */
-    private static final List<String> ILLEGAL_OPTIONS = Arrays.asList( // EnumSet of StandardOpenOption on JDK7 branch
+    private static final Set<StandardOpenOption> ILLEGAL_OPTIONS = EnumSet.of(
             StandardOpenOption.APPEND, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.DELETE_ON_CLOSE);
 
     /**
@@ -108,6 +113,8 @@ public final class IOUtilities extends Static {
         final String name;
         if (path instanceof File) {
             name = ((File) path).getName();
+        } else if (path instanceof Path) {
+            name = ((Path) path).getFileName().toString();
         } else {
             char separator = '/';
             if (path instanceof URL) {
@@ -146,7 +153,7 @@ public final class IOUtilities extends Static {
     public static String toString(final Object path) {
         // For the following types, the string that we want can be obtained only by toString(),
         // or the class is final so we know that the toString(à behavior can not be changed.
-        if (path instanceof CharSequence || path instanceof URL || path instanceof URI) {
+        if (path instanceof CharSequence || path instanceof Path || path instanceof URL || path instanceof URI) {
             return path.toString();
         }
         // While toString() would work too on the default implementation, the following
@@ -302,6 +309,51 @@ public final class IOUtilities extends Static {
     }
 
     /**
+     * Converts a {@link URL} to a {@link Path}. This is equivalent to a call to the standard
+     * {@link URL#toURI()} method followed by a call to the {@link Paths#get(URI)} static method,
+     * except for the following functionalities:
+     *
+     * <ul>
+     *   <li>Optionally decodes the {@code "%XX"} sequences, where {@code "XX"} is a number.</li>
+     *   <li>Converts various exceptions into subclasses of {@link IOException}.</li>
+     * </ul>
+     *
+     * @param  url The URL to convert, or {@code null}.
+     * @param  encoding If the URL is encoded in a {@code application/x-www-form-urlencoded}
+     *         MIME format, the character encoding (normally {@code "UTF-8"}). If the URL is
+     *         not encoded, then {@code null}.
+     * @return The path for the given URL, or {@code null} if the given URL was null.
+     * @throws IOException if the URL can not be converted to a path.
+     *
+     * @see Paths#get(URI)
+     */
+    public static Path toPath(final URL url, final String encoding) throws IOException {
+        if (url == null) {
+            return null;
+        }
+        final URI uri = toURI(url, encoding);
+        try {
+            return Paths.get(uri);
+        } catch (IllegalArgumentException | FileSystemNotFoundException cause) {
+            final String message = Exceptions.formatChainedMessages(null,
+                    Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", url), cause);
+            /*
+             * If the exception is IllegalArgumentException, then the URI scheme has been recognized
+             * but the URI syntax is illegal for that file system. So we can consider that the URL is
+             * malformed in regard to the rules of that particular file system.
+             */
+            final IOException e;
+            if (cause instanceof IllegalArgumentException) {
+                e = new MalformedURLException(message);
+                e.initCause(cause);
+            } else {
+                e = new IOException(message, cause);
+            }
+            throw e;
+        }
+    }
+
+    /**
      * Parses the following path as a {@link File} if possible, or a {@link URL} otherwise.
      * In the special case where the given {@code path} is a URL using the {@code "file"} protocol,
      * the URL is converted to a {@link File} object using the given {@code encoding} for decoding
@@ -384,15 +436,15 @@ public final class IOUtilities extends Static {
      * @return The channel for the given input, or {@code null} if the given input is of unknown type.
      * @throws IOException If an error occurred while opening the given file.
      */
-    public static ReadableByteChannel open(Object input, final String encoding, Object... options) throws IOException {
+    public static ReadableByteChannel open(Object input, final String encoding, OpenOption... options) throws IOException {
         /*
          * Unconditionally verify the options, even if we may not use them.
          */
-        final Set<Object> optionSet;
+        final Set<OpenOption> optionSet;
         if (options == null || options.length == 0) {
-            optionSet = Collections.<Object>singleton(StandardOpenOption.READ);
+            optionSet = Collections.<OpenOption>singleton(StandardOpenOption.READ);
         } else {
-            optionSet = new HashSet<Object>(Arrays.asList(options));
+            optionSet = new HashSet<>(Arrays.asList(options));
             optionSet.add(StandardOpenOption.READ);
             if (optionSet.removeAll(ILLEGAL_OPTIONS)) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2,
@@ -414,15 +466,13 @@ public final class IOUtilities extends Static {
             }
             return Channels.newChannel((InputStream) input);
         }
-        // NOTE: Many comments below this point actually apply to the JDK7 branch.
-        //       We keep them here for making easier the synchonization between the branches.
         /*
          * In the following cases, we will try hard to convert to Path objects before to fallback
          * on File, URL or URI, because only Path instances allow us to use the given OpenOptions.
          */
         if (input instanceof URL) {
             try {
-                input = toFile((URL) input, encoding);
+                input = toPath((URL) input, encoding);
             } catch (IOException e) {
                 // This is normal if the URL uses HTTP or FTP protocol for instance.
                 // Log the exception at FINE level without stack trace. We will open
@@ -441,9 +491,14 @@ public final class IOUtilities extends Static {
                 // so we are better to check now and provide a more appropriate exception for this method.
                 throw new IOException(Errors.format(Errors.Keys.MissingSchemeInURI));
             } else try {
-                input = new File(uri);
-            } catch (IllegalArgumentException e) {
-                input = uri.toURL();
+                input = Paths.get(uri);
+            } catch (IllegalArgumentException | FileSystemNotFoundException e) {
+                try {
+                    input = uri.toURL();
+                } catch (MalformedURLException ioe) {
+                    ioe.addSuppressed(e);
+                    throw ioe;
+                }
                 // We have been able to convert to URL, but the given OpenOptions may not be used.
                 // Log the exception at FINE level without stack trace, because the exception is
                 // probably a normal behavior in this context.
@@ -452,6 +507,31 @@ public final class IOUtilities extends Static {
         } else {
             if (input instanceof CharSequence) { // Needs to be before the check for File or URL.
                 input = toFileOrURL(input.toString(), encoding);
+            }
+            /*
+             * If the input is a File or a CharSequence that we have been able to convert to a File,
+             * try to convert to a Path in order to be able to use the OpenOptions. Only if we fail
+             * to convert to a Path (which is unlikely), we will use directly the File.
+             */
+            if (input instanceof File) {
+                try {
+                    input = ((File) input).toPath();
+                } catch (InvalidPathException e) {
+                    // Unlikely to happen. But if it happens anyway, try to open the channel in a
+                    // way less surprising for the user (closer to the object he has specified).
+                    final ReadableByteChannel channel;
+                    try {
+                        channel = new FileInputStream((File) input).getChannel();
+                    } catch (IOException ioe) {
+                        ioe.addSuppressed(e);
+                        throw ioe;
+                    }
+                    // We have been able to create a channel, maybe not with the given OpenOptions.
+                    // But the exception was nevertheless unexpected, so log its stack trace in order
+                    // to allow the developer to check if there is something wrong.
+                    Logging.unexpectedException(Logging.getLogger(Modules.STORAGE), IOUtilities.class, "open", e);
+                    return channel;
+                }
             }
         }
         /*
@@ -462,8 +542,8 @@ public final class IOUtilities extends Static {
         if (input instanceof URL) {
             return Channels.newChannel(((URL) input).openStream());
         }
-        if (input instanceof File) {
-            return Files.newByteChannel((File) input, optionSet);
+        if (input instanceof Path) {
+            return Files.newByteChannel((Path) input, optionSet);
         }
         return null;
     }

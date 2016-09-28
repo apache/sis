@@ -110,8 +110,7 @@ public class TransverseMercator extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final boolean isSouth = identMatch(method, "(?i).*\\bSouth\\b.*", TransverseMercatorSouth.IDENTIFIER);
-        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles =
-                new EnumMap<ParameterRole, ParameterDescriptor<Double>>(ParameterRole.class);
+        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         ParameterRole xOffset = ParameterRole.FALSE_EASTING;
         ParameterRole yOffset = ParameterRole.FALSE_NORTHING;
         if (isSouth) {

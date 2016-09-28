@@ -118,7 +118,9 @@ public class Cloner {
             method = null;
             type = valueType;
         } catch (IllegalAccessException e) {
-            // JDK7 branch has the following: e.addSuppressed(security);
+            if (security != null) {
+                e.addSuppressed(security);
+            }
             throw fail(e, valueType);
         } catch (InvocationTargetException e) {
             rethrow(e.getCause());
@@ -180,13 +182,11 @@ public class Cloner {
                 if (Modifier.isPublic(m.getModifiers())) {
                     return m.invoke(object, (Object[]) null);
                 }
-            } catch (NoSuchMethodException e) {
+            } catch (NoSuchMethodException | IllegalAccessException e) {
                 /*
                  * Should never happen because all objects have a clone() method
                  * and we verified that the method is public.
                  */
-                throw new AssertionError(e);
-            } catch (IllegalAccessException e) {
                 throw new AssertionError(e);
             } catch (InvocationTargetException e) {
                 rethrow(e.getCause());

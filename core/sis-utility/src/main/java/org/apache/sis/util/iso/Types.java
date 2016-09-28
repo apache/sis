@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.util.IllformedLocaleException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -495,9 +496,7 @@ public final class Types extends Static {
                 throw (Error) cause;
             }
             throw new UndeclaredThrowableException(cause);
-        } catch (NoSuchMethodException e) {
-            values = Array.newInstance(codeType, 0);
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchMethodException | IllegalAccessException e) {
             values = Array.newInstance(codeType, 0);
         }
         return (T[]) values;
@@ -535,12 +534,10 @@ public final class Types extends Static {
             try {
                 props.load(in);
                 in.close();
-            } catch (IOException e) {
-                throw new BackingStoreException(e);
-            } catch (IllegalArgumentException e) {
+            } catch (IOException | IllegalArgumentException e) {
                 throw new BackingStoreException(e);
             }
-            typeForNames = new HashMap<Object,Object>(props);
+            typeForNames = new HashMap<>(props);
             JDK8.putIfAbsent(typeForNames, "MI_SensorTypeCode", "org.apache.sis.internal.metadata.SensorType");
         }
         final Object value = typeForNames.get(identifier);
@@ -743,7 +740,7 @@ public final class Types extends Static {
                 final int s = offset + 1;
                 try {
                     locale = Locales.parse(key, s);
-                } catch (RuntimeException e) { // IllformedLocaleException on the JDK7 branch.
+                } catch (IllformedLocaleException e) {
                     throw new IllegalArgumentException(Errors.getResources(properties).getString(
                             Errors.Keys.IllegalLanguageCode_1, '(' + key.substring(0, s) + '）' + key.substring(s), e));
                 }

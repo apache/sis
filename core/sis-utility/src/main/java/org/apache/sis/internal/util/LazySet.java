@@ -25,7 +25,7 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.internal.system.DefaultFactories;
 
 // Branch-specific imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

@@ -20,14 +20,12 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.system.Modules;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -140,6 +138,7 @@ public class DBFDriver extends AbstractJDBC implements Driver {
     /**
      * The logger used by this driver.
      */
+    @Override
     public Logger getParentLogger() {
         return super.getLogger();
     }

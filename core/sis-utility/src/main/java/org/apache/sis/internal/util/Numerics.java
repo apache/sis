@@ -42,7 +42,7 @@ public final class Numerics extends Static {
      * Some frequently used {@link Double} values. As of Java 7, those values do not
      * seem to be cached by {@link Double#valueOf(double)} like JDK does for integers.
      */
-    private static final Map<Object,Object> CACHE = new HashMap<Object,Object>(32);
+    private static final Map<Object,Object> CACHE = new HashMap<>(32);
     static {
         cache(   0);
         cache(   1);

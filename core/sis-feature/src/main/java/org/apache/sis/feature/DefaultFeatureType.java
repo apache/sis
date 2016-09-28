@@ -41,7 +41,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -273,7 +273,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
          * in case of duplicated values. Opportunistically verify for null values. The same verification could
          * be done in the scanPropertiesFrom(…) method, but doing it here produces a less confusing stacktrace.
          */
-        final List<AbstractIdentifiedType> sourceProperties = new ArrayList<AbstractIdentifiedType>(properties.length);
+        final List<AbstractIdentifiedType> sourceProperties = new ArrayList<>(properties.length);
         for (int i=0; i<properties.length; i++) {
             final AbstractIdentifiedType property = properties[i];
             ArgumentChecks.ensureNonNullElement("properties", i, property);
@@ -343,9 +343,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      */
     private void computeTransientFields(final List<AbstractIdentifiedType> properties) {
         final int capacity = Containers.hashMapCapacity(properties.size());
-        byName       = new LinkedHashMap<String,AbstractIdentifiedType>(capacity);
-        indices      = new LinkedHashMap<String,Integer>(capacity);
-        assignableTo = new HashSet<GenericName>(4);
+        byName       = new LinkedHashMap<>(capacity);
+        indices      = new LinkedHashMap<>(capacity);
+        assignableTo = new HashSet<>(4);
         assignableTo.add(super.getName());
         scanPropertiesFrom(this, properties);
         allProperties = UnmodifiableArrayList.wrap(byName.values().toArray(new AbstractIdentifiedType[byName.size()]));
@@ -389,7 +389,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
          *
          * In the 'aliases' map below, null values will be assigned to ambiguous short names.
          */
-        final Map<String, AbstractIdentifiedType> aliases = new LinkedHashMap<String, AbstractIdentifiedType>();
+        final Map<String, AbstractIdentifiedType> aliases = new LinkedHashMap<>();
         for (final AbstractIdentifiedType property : allProperties) {
             final GenericName name = property.getName();
             final LocalName tip = name.tip();
@@ -564,7 +564,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                     final DefaultFeatureType valueType = ((DefaultAssociationRole) property).getValueType();
                     if (valueType != this) {
                         if (previous == null) {
-                            previous = new IdentityHashMap<FeatureType,Boolean>(8);
+                            previous = new IdentityHashMap<>(8);
                         }
                         Boolean r = previous.put(valueType, Boolean.FALSE);
                         if (r == null) {

@@ -114,7 +114,7 @@ public abstract class Transliterator implements Serializable {
      */
     private static final Map<AxisDirection,String> CARTESIAN;
     static {
-        final Map<AxisDirection,String> m = new HashMap<AxisDirection,String>(12);
+        final Map<AxisDirection,String> m = new HashMap<>(12);
         m.put(AxisDirection.EAST,         AxisNames.EASTING);
         m.put(AxisDirection.WEST,         AxisNames.WESTING);
         m.put(AxisDirection.NORTH,        AxisNames.NORTHING);
@@ -263,22 +263,25 @@ public abstract class Transliterator implements Serializable {
      * @return The axis name to use. Can not be null.
      */
     public String toLongAxisName(final String csType, final AxisDirection direction, final String name) {
-        if (csType != null) /*switch (csType)*/ {
-            if (csType.equals(WKTKeywords.ellipsoidal)) {
+        if (csType != null) switch (csType) {
+            case WKTKeywords.ellipsoidal: {
                 if (isLatLong(AxisNames.LATITUDE,  name)) return AxisNames.GEODETIC_LATITUDE;
                 if (isLatLong(AxisNames.LONGITUDE, name)) return AxisNames.GEODETIC_LONGITUDE;
+                break;
             }
-            else if (csType.equals(WKTKeywords.spherical)) {
+            case WKTKeywords.spherical: {
                 if (isLatLong(AxisNames.LATITUDE,  name)) return AxisNames.SPHERICAL_LATITUDE;
                 if (isLatLong(AxisNames.LONGITUDE, name)) return AxisNames.SPHERICAL_LONGITUDE;
+                break;
             }
-            else if (csType.equals(WKTKeywords.Cartesian)) {
+            case WKTKeywords.Cartesian: {
                 if (name.length() <= 1) {
                     final String c = CARTESIAN.get(direction);
                     if (c != null) {
                         return c;
                     }
                 }
+                break;
             }
         }
         return AxisNames.toCamelCase(name);

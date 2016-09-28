@@ -40,9 +40,9 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @since   0.5
  * @module
  */
-public class MappedByteReader extends AbstractDbase3ByteReader {
+public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCloseable {
     /** List of field descriptors. */
-    private List<DBase3FieldDescriptor> fieldsDescriptors = new ArrayList<DBase3FieldDescriptor>();
+    private List<DBase3FieldDescriptor> fieldsDescriptors = new ArrayList<>();
 
     /** Connection properties. */
     private Properties info;
@@ -62,6 +62,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader {
         if (this.info != null) {
             // Sometimes, DBF files have a wrong charset, or more often : none, and you have to specify it.
             String recordCharset = (String)this.info.get("record_charset");
+
             if (recordCharset != null) {
                 Charset cs = Charset.forName(recordCharset);
                 setCharset(cs);
@@ -110,6 +111,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader {
 
         boolean isEOF = (eofCheck == 0x1A);
         this.log(Level.FINER, "log.delete_status", getRowNum(), eofCheck, isEOF ? "EOF" : "Active");
+
         if (eofCheck == 0x1A) {
             return false;
         }
@@ -141,7 +143,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader {
         /* byte isDeleted = */ getByteBuffer().get(); // denotes whether deleted or current
 
         // read first part of record
-        HashMap<String, byte[]> fieldsValues = new HashMap<String, byte[]>();
+        HashMap<String, byte[]> fieldsValues = new HashMap<>();
 
         for (DBase3FieldDescriptor fd : this.fieldsDescriptors) {
             byte[] data = new byte[fd.getLength()];
@@ -149,6 +151,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader {
 
             // Trim the bytes right.
             int length = data.length;
+
             while (length != 0 && JDK8.toUnsignedInt(data[length - 1]) <= ' ') {
                 length--;
             }

@@ -38,6 +38,9 @@ import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Version;
 
+// Branch-specific import
+import java.nio.file.NoSuchFileException;
+
 
 /**
  * The provider of {@link NetcdfStore} instances. Given a {@link StorageConnector} input,
@@ -162,7 +165,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                     if (cause instanceof DataStoreException) throw (DataStoreException) cause;
                     if (cause instanceof RuntimeException)   throw (RuntimeException)   cause;
                     if (cause instanceof Error)              throw (Error)              cause;
-                    if (cause instanceof FileNotFoundException) {
+                    if (cause instanceof FileNotFoundException || cause instanceof NoSuchFileException) {
                         /*
                          * Happen if the String argument uses any protocol not recognized by the UCAR library,
                          * in which case UCAR tries to open it as a file even if it is not a file. For example
@@ -230,9 +233,11 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             keepOpen = input;
         } catch (DataStoreException e) {
             final String path = storage.getStorageAs(String.class);
-            if (path != null) {
+            if (path != null) try {
                 decoder = createByReflection(listeners, path, false);
                 keepOpen = path;
+            } catch (IOException | DataStoreException s) {
+                e.addSuppressed(s);
             }
             throw e;
         } else {
@@ -285,7 +290,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             if (cause instanceof RuntimeException)   throw (RuntimeException)   cause;
             if (cause instanceof Error)              throw (Error)              cause;
             throw new UndeclaredThrowableException(cause); // Should never happen actually.
-        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+        } catch (ReflectiveOperationException e) {
             throw new AssertionError(e); // Should never happen (shall be verified by the JUnit tests).
         }
     }
@@ -321,7 +326,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                     createFromUCAR = wrapper.getConstructor(parameterTypes);
                     parameterTypes[1] = String.class;
                     createFromPath = wrapper.getConstructor(parameterTypes);
-                } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+                } catch (ReflectiveOperationException e) {
                     throw new AssertionError(e);        // Should never happen (shall be verified by the JUnit tests).
                 }
             }

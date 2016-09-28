@@ -209,7 +209,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * @see #getCodeSpaces()
      */
     private static final Set<String> CODESPACES = Collections.unmodifiableSet(
-            new LinkedHashSet<String>(Arrays.asList(Constants.OGC, Constants.CRS, "AUTO", AUTO2)));
+            new LinkedHashSet<>(Arrays.asList(Constants.OGC, Constants.CRS, "AUTO", AUTO2)));
 
     /**
      * The bit for saying that a namespace is the legacy {@code "AUTO"} namespace.
@@ -262,7 +262,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * Constructs a default factory for the {@code CRS} authority.
      */
     public CommonAuthorityFactory() {
-        codes = new LinkedHashMap<String,Class<?>>();
+        codes = new LinkedHashMap<>();
     }
 
     /**
@@ -291,7 +291,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     static String reformat(final String code) {
         try {
             return format(Integer.parseInt(code.substring(skipNamespace(code) & ~LEGACY_MASK)));
-        } catch (Exception e) {  // (NoSuchAuthorityCodeException | NumberFormatException) on the JDK7 branch.
+        } catch (NoSuchAuthorityCodeException | NumberFormatException e) {
             Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), CommonAuthorityFactory.class, "reformat", e);
             return null;
         }
@@ -695,7 +695,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                     csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "i"), "i", AxisDirection.EAST, NonSI.PIXEL),
                     csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "j"), "j", AxisDirection.SOUTH, NonSI.PIXEL));
 
-            final Map<String,Object> properties = new HashMap<String,Object>(4);
+            final Map<String,Object> properties = new HashMap<>(4);
             properties.put(EngineeringDatum.NAME_KEY, cs.getName());
             properties.put(EngineeringDatum.ANCHOR_POINT_KEY, "Origin is in upper left.");
             displayCRS = DefaultFactories.forBuildin(CRSFactory.class).createEngineeringCRS(properties,

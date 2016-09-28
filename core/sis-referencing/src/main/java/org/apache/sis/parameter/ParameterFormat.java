@@ -116,7 +116,7 @@ public class ParameterFormat extends TabularFormat<Object> {
     /**
      * An instance created when first needed and potentially shared.
      */
-    private static final AtomicReference<ParameterFormat> INSTANCE = new AtomicReference<ParameterFormat>();
+    private static final AtomicReference<ParameterFormat> INSTANCE = new AtomicReference<>();
 
     /**
      * The default column separator. User can change the separator
@@ -260,8 +260,8 @@ public class ParameterFormat extends TabularFormat<Object> {
      * Creates a new formatter for the default locale and timezone.
      */
     public ParameterFormat() {
-        super(Locale.getDefault(), TimeZone.getDefault());
-        displayLocale = super.getLocale(); // Implemented as Locale.getDefault(Locale.Category.DISPLAY) on the JDK7 branch.
+        super(Locale.getDefault(Locale.Category.FORMAT), TimeZone.getDefault());
+        displayLocale = Locale.getDefault(Locale.Category.DISPLAY);
         columnSeparator = SEPARATOR;
     }
 
@@ -286,6 +286,22 @@ public class ParameterFormat extends TabularFormat<Object> {
     @Override
     public final Class<Object> getValueType() {
         return Object.class;
+    }
+
+    /**
+     * Returns the locale for the given category.
+     *
+     * <ul>
+     *   <li>{@link java.util.Locale.Category#FORMAT} specifies the locale to use for values.</li>
+     *   <li>{@link java.util.Locale.Category#DISPLAY} specifies the locale to use for labels.</li>
+     * </ul>
+     *
+     * @param  category The category for which a locale is desired.
+     * @return The locale for the given category (never {@code null}).
+     */
+    @Override
+    public Locale getLocale(final Locale.Category category) {
+        return (category == Locale.Category.DISPLAY) ? displayLocale : super.getLocale(category);
     }
 
     /**
@@ -436,7 +452,7 @@ public class ParameterFormat extends TabularFormat<Object> {
         final boolean             showObligation = !isBrief || (values == null);
         final boolean             hasColors      = (colors != null);
         final String              lineSeparator  = this.lineSeparator;
-        final Map<String,Integer> remarks        = new LinkedHashMap<String,Integer>();
+        final Map<String,Integer> remarks        = new LinkedHashMap<>();
         final ParameterTableRow   header         = new ParameterTableRow(group, displayLocale, preferredCodespaces, remarks, isBrief);
         final String              groupCodespace = header.getCodeSpace();
         /*
@@ -448,7 +464,7 @@ public class ParameterFormat extends TabularFormat<Object> {
         int codespaceWidth = 0;
         final Collection<?> elements = (values != null) ? values.values() : group.descriptors();
         final Map<GeneralParameterDescriptor, ParameterTableRow> descriptorValues =
-                new LinkedHashMap<GeneralParameterDescriptor, ParameterTableRow>(hashMapCapacity(elements.size()));
+                new LinkedHashMap<>(hashMapCapacity(elements.size()));
         List<Object> deferredGroups = null; // To be created only if needed (it is usually not).
         for (final Object element : elements) {
             final GeneralParameterValue parameter;
@@ -462,7 +478,7 @@ public class ParameterFormat extends TabularFormat<Object> {
             }
             if (descriptor instanceof ParameterDescriptorGroup) {
                 if (deferredGroups == null) {
-                    deferredGroups = new ArrayList<Object>(4);
+                    deferredGroups = new ArrayList<>(4);
                 }
                 deferredGroups.add(element);
                 continue;
@@ -802,8 +818,8 @@ public class ParameterFormat extends TabularFormat<Object> {
          * the scope of some alias to be processed below.
          */
         boolean hasIdentifiers = false;
-        final List<String[]> rows = new ArrayList<String[]>();
-        final Map<String,Integer> columnIndices = new LinkedHashMap<String,Integer>();
+        final List<String[]> rows = new ArrayList<>();
+        final Map<String,Integer> columnIndices = new LinkedHashMap<>();
         columnIndices.put(null, 0); // See above comment for the meaning of "null" here.
         if (preferredCodespaces != null) {
             for (final String codespace : preferredCodespaces) {

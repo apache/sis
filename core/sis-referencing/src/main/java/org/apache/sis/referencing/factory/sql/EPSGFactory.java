@@ -256,7 +256,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         catalog        = (String)                     properties.get("catalog");
         scriptProvider = (InstallationScriptProvider) properties.get("scriptProvider");
         if (locale == null) {
-            locale = Locale.getDefault();
+            locale = Locale.getDefault(Locale.Category.DISPLAY);
         }
         this.locale = locale;
         if (ds == null) try {
@@ -369,8 +369,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      */
     public synchronized void install(final Connection connection) throws IOException, SQLException {
         ArgumentChecks.ensureNonNull("connection", connection);
-        final EPSGInstaller installer = new EPSGInstaller(connection);
-        try {
+        try (EPSGInstaller installer = new EPSGInstaller(connection)) {
             final boolean ac = connection.getAutoCommit();
             if (ac) {
                 connection.setAutoCommit(false);
@@ -396,15 +395,10 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                         connection.setAutoCommit(true);
                     }
                 }
-            } catch (IOException e) {
-                installer.logFailure(locale, e);
-                throw e;
-            } catch (SQLException e) {
+            } catch (IOException | SQLException e) {
                 installer.logFailure(locale, e);
                 throw e;
             }
-        } finally {
-            installer.close();
         }
     }
 
@@ -459,7 +453,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             if (connection != null) try {
                 connection.close();
             } catch (SQLException e2) {
-                // e.addSuppressed(e2) on the JDK7 branch.
+                e.addSuppressed(e2);
             }
             exception = new UnavailableFactoryException(message(e), e);
         }

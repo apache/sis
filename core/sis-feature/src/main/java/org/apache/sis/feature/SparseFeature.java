@@ -27,7 +27,7 @@ import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -106,7 +106,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     public SparseFeature(final DefaultFeatureType type) {
         super(type);
         indices = type.indices();
-        properties = new HashMap<Integer, Object>();
+        properties = new HashMap<>();
     }
 
     /**

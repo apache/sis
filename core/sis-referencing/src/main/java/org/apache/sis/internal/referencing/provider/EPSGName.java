@@ -114,7 +114,7 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
      * @return A map of properties for building the operation method.
      */
     public static Map<String,Object> properties(final int identifier, final String name, final GenericName nameOGC) {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         properties.put(IDENTIFIERS_KEY, identifier(identifier));
         properties.put(NAME_KEY, create(name));
         if (nameOGC != null) {

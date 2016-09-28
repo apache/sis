@@ -727,7 +727,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             }
             properties = Collections.emptyMap();
         }
-        final HashMap<String,Object> p = new HashMap<String,Object>(properties);
+        final HashMap<String,Object> p = new HashMap<>(properties);
         JDK8.putIfAbsent(p, CRS_FACTORY, crsFactory);
         JDK8.putIfAbsent(p, CS_FACTORY,  csFactory);
         properties = p;
@@ -795,12 +795,12 @@ public final class ServicesForMetadata extends ReferencingServices {
      */
     @Override
     public String getInformation(final String key, final Locale locale) {
-        /*switch (key)*/ {
+        switch (key) {
             /*
              * Get the version of the EPSG database and the version of the database software.
              * This operation can be relatively costly as it may open a JDBC connection.
              */
-            if (key.equals(Constants.EPSG)) {
+            case Constants.EPSG: {
                 final Citation authority;
                 try {
                     authority = CRS.getAuthorityFactory(Constants.EPSG).getAuthority();

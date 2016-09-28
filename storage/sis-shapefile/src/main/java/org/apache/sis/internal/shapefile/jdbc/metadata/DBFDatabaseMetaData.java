@@ -19,15 +19,12 @@ package org.apache.sis.internal.shapefile.jdbc.metadata;
 import java.io.File;
 import java.sql.*;
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.resultset.*;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
  * Database Metadata.
@@ -76,11 +73,8 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
      */
     @Override
     public ResultSet getColumns(@SuppressWarnings("unused") String catalog, @SuppressWarnings("unused") String schemaPattern, @SuppressWarnings("unused") String tableNamePattern, @SuppressWarnings("unused") String columnNamePattern) throws SQLConnectionClosedException {
-        DBFStatement stmt = (DBFStatement)this.connection.createStatement();
-        try {
+        try(DBFStatement stmt = (DBFStatement)this.connection.createStatement()) {
             return new DBFBuiltInMemoryResultSetForColumnsListing(stmt, this.connection.getFieldsDescriptors());
-        } finally {
-            stmt.close();
         }
     }
 
@@ -1292,7 +1286,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
     /**
      * @see java.sql.DatabaseMetaData#generatedKeyAlwaysReturned()
      */
-    public boolean generatedKeyAlwaysReturned() {
+    @Override public boolean generatedKeyAlwaysReturned() {
         logStep("generatedKeyAlwaysReturned");
         return false;
     }

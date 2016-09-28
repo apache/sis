@@ -94,7 +94,7 @@ final class AnglePattern {
      * @return the angle format for this pattern and the given locale.
      */
     private AngleFormat getAngleFormat(final Locale locale) {
-        final CacheKey<AngleFormat> key = new CacheKey<AngleFormat>(AngleFormat.class, pattern, locale, null);
+        final CacheKey<AngleFormat> key = new CacheKey<>(AngleFormat.class, pattern, locale, null);
         AngleFormat format = key.peek();
         if (format == null) {
             final Cache.Handler<AngleFormat> handler = key.lock();

@@ -95,7 +95,7 @@ final class PropertyComparator implements Comparator<Method> {
      */
     PropertyComparator(Class<?> implementation) {
         this.implementation = implementation;
-        order = new HashMap<Object,Integer>();
+        order = new HashMap<>();
         do {
             final XmlType xml = implementation.getAnnotation(XmlType.class);
             if (xml != null) {

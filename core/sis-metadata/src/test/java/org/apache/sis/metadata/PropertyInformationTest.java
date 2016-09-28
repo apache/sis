@@ -58,7 +58,7 @@ public final strictfp class PropertyInformationTest extends TestCase {
     private static <T> PropertyInformation<T> create(final Class<T> elementType, final String method,
             final String property) throws NoSuchMethodException
     {
-        return new PropertyInformation<T>(HardCodedCitations.ISO_19115, property,
+        return new PropertyInformation<>(HardCodedCitations.ISO_19115, property,
                 Citation.class.getMethod(method), elementType, null);
     }
 
@@ -140,7 +140,7 @@ public final strictfp class PropertyInformationTest extends TestCase {
     @Test
     @SuppressWarnings("UnnecessaryBoxing")
     public void testGetDomainValue() throws NoSuchMethodException {
-        final ExtendedElementInformation information = new PropertyInformation<Double>(HardCodedCitations.ISO_19115,
+        final ExtendedElementInformation information = new PropertyInformation<>(HardCodedCitations.ISO_19115,
                 "maxRelativeHumidity", EnvironmentalRecord.class.getMethod("getMaxRelativeHumidity"), Double.class,
                 DefaultEnvironmentalRecord.class.getMethod("getMaxRelativeHumidity").getAnnotation(ValueRange.class));
 

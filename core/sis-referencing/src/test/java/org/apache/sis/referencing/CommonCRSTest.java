@@ -73,7 +73,7 @@ public final strictfp class CommonCRSTest extends TestCase {
      */
     @Test
     public void ensureNoCodeCollision() {
-        final Map<Integer,Enum<?>> codes = new HashMap<Integer,Enum<?>>();
+        final Map<Integer,Enum<?>> codes = new HashMap<>();
         final CommonCRS[] values = CommonCRS.values();
         for (final CommonCRS crs : values) {
             assertNoCodeCollision(codes, crs, crs.geographic);

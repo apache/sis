@@ -26,7 +26,7 @@ import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
 // Branch-dependent imports
-import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 
 
 /**
@@ -121,7 +121,7 @@ public abstract class ChannelData {
     ChannelData(final String filename, final Channel channel, final ByteBuffer buffer) throws IOException {
         this.filename      = filename;
         this.buffer        = buffer;
-        this.channelOffset = (channel instanceof FileChannel) ? ((FileChannel) channel).position() : 0;
+        this.channelOffset = (channel instanceof SeekableByteChannel) ? ((SeekableByteChannel) channel).position() : 0;
     }
 
     /**

@@ -129,7 +129,7 @@ public final class IdentifiedObjects extends Static {
      *         specified authority has been found.
      */
     public static Set<String> getNames(final IdentifiedObject object, final Citation authority) {
-        final Set<String> names = new LinkedHashSet<String>(8);
+        final Set<String> names = new LinkedHashSet<>(8);
         getName(object, authority, names);
         return names;
     }

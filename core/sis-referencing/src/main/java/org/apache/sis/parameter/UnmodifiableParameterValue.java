@@ -68,7 +68,7 @@ final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
      */
     @SuppressWarnings("rawtypes")
     private static final WeakHashSet<UnmodifiableParameterValue> POOL =
-            new WeakHashSet<UnmodifiableParameterValue>(UnmodifiableParameterValue.class);
+            new WeakHashSet<>(UnmodifiableParameterValue.class);
 
     /**
      * Creates a new parameter with the same value than the given one.
@@ -89,7 +89,7 @@ final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
         if (parameter == null || parameter instanceof UnmodifiableParameterValue<?>) {
             return (UnmodifiableParameterValue<T>) parameter;
         } else {
-            return POOL.unique(new UnmodifiableParameterValue<T>(parameter));
+            return POOL.unique(new UnmodifiableParameterValue<>(parameter));
         }
     }
 
@@ -121,6 +121,6 @@ final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")
     public DefaultParameterValue<T> clone() {
-        return new DefaultParameterValue<T>(this);
+        return new DefaultParameterValue<>(this);
     }
 }

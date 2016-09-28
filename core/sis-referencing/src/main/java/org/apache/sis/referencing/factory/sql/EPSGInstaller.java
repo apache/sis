@@ -260,11 +260,8 @@ final class EPSGInstaller extends ScriptRunner {
         final String[] scripts = scriptProvider.getResourceNames(EPSG);
         int numRows = 0;
         for (int i=0; i<scripts.length; i++) {
-            final BufferedReader in = scriptProvider.openScript(EPSG, i);
-            try {
+            try (BufferedReader in = scriptProvider.openScript(EPSG, i)) {
                 numRows += run(scripts[i], in);
-            } finally {
-                in.close();
             }
         }
         time = System.nanoTime() - time;

@@ -133,7 +133,7 @@ public final class OtherLocales extends AbstractCollection<Locale> {
         if (Containers.isNullOrEmpty(otherLocales)) {
             merged = LegacyPropertyAdapter.asCollection(defaultLocale);
         } else {
-            merged = new ArrayList<Locale>(otherLocales.size() + 1);
+            merged = new ArrayList<>(otherLocales.size() + 1);
             if (defaultLocale == null) {
                 defaultLocale = Locale.getDefault();
                 if (otherLocales.contains(defaultLocale)) {
@@ -180,7 +180,7 @@ public final class OtherLocales extends AbstractCollection<Locale> {
             values.add(newValue);
         } else {
             if (!(values instanceof List<?>)) {
-                values = new ArrayList<T>(values);
+                values = new ArrayList<>(values);
             }
             ((List<T>) values).set(0, newValue);
         }

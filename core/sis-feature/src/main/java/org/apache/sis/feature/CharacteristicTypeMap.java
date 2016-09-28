@@ -52,7 +52,7 @@ final class CharacteristicTypeMap extends AbstractMap<String,DefaultAttributeTyp
      */
     @SuppressWarnings("unchecked")
     private static final WeakValueHashMap<DefaultAttributeType<?>[],CharacteristicTypeMap> SHARED =
-            new WeakValueHashMap<DefaultAttributeType<?>[],CharacteristicTypeMap>((Class) DefaultAttributeType[].class);
+            new WeakValueHashMap<>((Class) DefaultAttributeType[].class);
 
     /*
      * This class has intentionally no reference to the DefaultAttributeType for which we are providing characteristics.
@@ -108,7 +108,7 @@ final class CharacteristicTypeMap extends AbstractMap<String,DefaultAttributeTyp
     private CharacteristicTypeMap(final DefaultAttributeType<?> source, final DefaultAttributeType<?>[] characterizedBy) {
         this.characterizedBy = characterizedBy;
         int index = 0;
-        final Map<String,Integer> indices = new HashMap<String,Integer>(Containers.hashMapCapacity(characterizedBy.length));
+        final Map<String,Integer> indices = new HashMap<>(Containers.hashMapCapacity(characterizedBy.length));
         for (int i=0; i<characterizedBy.length; i++) {
             final DefaultAttributeType<?> attribute = characterizedBy[i];
             ensureNonNullElement("characterizedBy", i, attribute);

@@ -86,7 +86,7 @@ public final class ExcludedSet<E> extends AbstractSet<E> implements Serializable
      */
     @Override
     public Iterator<E> iterator() {
-        return Collections.<E>emptySet().iterator();
+        return Collections.emptyIterator();
     }
 
     /**

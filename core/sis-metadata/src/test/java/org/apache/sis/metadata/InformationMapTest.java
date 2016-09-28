@@ -68,7 +68,7 @@ public final strictfp class InformationMapTest extends TestCase {
         final Map<String,ExtendedElementInformation> descriptions = MetadataStandard.ISO_19115.asInformationMap(
                 EnvironmentalRecord.class, KeyNamePolicy.UML_IDENTIFIER);
 
-        final Set<String> expected = new HashSet<String>(Arrays.asList(
+        final Set<String> expected = new HashSet<>(Arrays.asList(
             "averageAirTemperature", "maxAltitude", "maxRelativeHumidity", "meteorologicalConditions"
         ));
         assertEquals(expected, descriptions.keySet());

@@ -28,6 +28,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
 import com.sun.javadoc.RootDoc;
 import com.sun.tools.doclets.formats.html.HtmlDoclet;
 
@@ -162,9 +164,9 @@ public final class Doclet extends HtmlDoclet {
              * Copy the standard CSS file, skipping the import of DejaVu font
              * since our custom CSS file does not use it.
              */
-            final BufferedReader in  = openReader(stylesheetFile);
-            final BufferedWriter out = openWriter(standardFile);
-            try {
+            try (final BufferedReader in  = openReader(stylesheetFile);
+                 final BufferedWriter out = openWriter(standardFile))
+            {
                 String line;
                 while ((line = in.readLine()) != null) {
                     if (!line.equals("@import url('resources/fonts/dejavu.css');")) {
@@ -172,17 +174,14 @@ public final class Doclet extends HtmlDoclet {
                         out.newLine();
                     }
                 }
-            } finally {
-                out.close();
-                in.close();
             }
         }
         /*
          * Copy the custom CSS file, skipping comments for more compact file.
          */
-        final BufferedReader in  = openReader(inputFile);
-        final BufferedWriter out = openWriter(stylesheetFile);
-        try {
+        try (final BufferedReader in  = openReader(inputFile);
+             final BufferedWriter out = openWriter(stylesheetFile))
+        {
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.length() < 2 || line.charAt(1) != '*') {
@@ -190,9 +189,6 @@ public final class Doclet extends HtmlDoclet {
                     out.newLine();
                 }
             }
-        } finally {
-            out.close();
-            in.close();
         }
     }
 
@@ -214,18 +210,27 @@ public final class Doclet extends HtmlDoclet {
                        !name.equals(STYLESHEET);
             }
         });
-        final byte[] buffer = new byte[4096];
-        for (final File input : inputFiles) {
-            final FileInputStream  in  = new FileInputStream(input);
-            final FileOutputStream out = new FileOutputStream(new File(outputDirectory, input.getName()));
-            try {
-                int c;
-                while ((c = in.read(buffer)) >= 0) {
-                    out.write(buffer, 0, c);
+        try {
+            for (final File input : inputFiles) {
+                final File output = new File(outputDirectory, input.getName());
+                if (!output.exists()) { // For avoiding a failure if the target exists.
+                    Files.createLink(output.toPath(), input.toPath());
                 }
-            } finally {
-                out.close();
-                in.close();
+            }
+        } catch (UnsupportedOperationException | FileSystemException e) {
+            /*
+             * If hard links are not supported, performs plain copy instead.
+             */
+            final byte[] buffer = new byte[4096];
+            for (final File input : inputFiles) {
+                try (final FileInputStream  in  = new FileInputStream(input);
+                     final FileOutputStream out = new FileOutputStream(new File(outputDirectory, input.getName())))
+                {
+                    int c;
+                    while ((c = in.read(buffer)) >= 0) {
+                        out.write(buffer, 0, c);
+                    }
+                }
             }
         }
     }

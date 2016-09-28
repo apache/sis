@@ -93,8 +93,8 @@ public final class ServicesForUtility extends MetadataServices {
         CharSequence     citedResponsibleParty = null;
         PresentationForm presentationForm      = null;
         Citation[]       copyFrom              = null;      // Copy citedResponsibleParty from those citations.
-        { // This is a switch(String) on the JDK7 branch
-            if (key.equals("ISO 19115-1")) {
+        switch (key) {
+            case "ISO 19115-1": {
                 title     = "Geographic Information — Metadata Part 1: Fundamentals";
                 edition   = "ISO 19115-1:2014(E)";
                 code      = "19115-1";
@@ -102,7 +102,9 @@ public final class ServicesForUtility extends MetadataServices {
                 version   = "2014(E)";
                 citedResponsibleParty = "International Organization for Standardization";
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
-            } else if (key.equals("ISO 19115-2")) {
+                break;
+            }
+            case "ISO 19115-2": {
                 title     = "Geographic Information — Metadata Part 2: Extensions for imagery and gridded data";
                 edition   = "ISO 19115-2:2009(E)";
                 code      = "19115-2";
@@ -110,7 +112,9 @@ public final class ServicesForUtility extends MetadataServices {
                 version   = "2009(E)";
                 copyFrom  = new Citation[] {Citations.ISO_19115.get(0)};
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
-            } else if (key.equals("WMS")) {
+                break;
+            }
+            case "WMS": {
                 title                = "Web Map Server";                                      // OGC title
                 alternateTitle       = "Geographic Information — Web map server interface";   // ISO title
                 alternateIdentifiers = new Identifier[] {
@@ -122,17 +126,23 @@ public final class ServicesForUtility extends MetadataServices {
                 codeSpace        = "OGC";
                 copyFrom         = new Citation[] {Citations.OGC, Citations.ISO_19115.get(0)};
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
-            } else if (key.equals(Constants.OGC)) {
+                break;
+            }
+            case Constants.OGC: {
                 title = "Identifiers in OGC namespace";
                 code = Constants.OGC;
                 citedResponsibleParty = "Open Geospatial Consortium";
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
-            } else if (key.equals(Constants.IOGP)) {                    // Not in public API (see Citations.IOGP javadoc)
+                break;
+            }
+            case Constants.IOGP: {                                      // Not in public API (see Citations.IOGP javadoc)
                 title = "Using the EPSG Geodetic Parameter Dataset";    // Geomatics Guidance Note number 7, part 1
                 code = Constants.IOGP;
                 copyFrom = new Citation[] {Citations.EPSG};
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
-            } else if (key.equals(Constants.EPSG)) {
+                break;
+            }
+            case Constants.EPSG: {
                 title     = "EPSG Geodetic Parameter Dataset";
                 code      = Constants.EPSG;
                 codeSpace = Constants.IOGP;
@@ -145,22 +155,32 @@ public final class ServicesForUtility extends MetadataServices {
                  * After we moved the content of this citation in a database,
                  * EPSGDataAccess.getAuthority() should use this citation as a template.
                  */
-            } else if (key.equals(Constants.SIS)) {
+                break;
+            }
+            case Constants.SIS: {
                 title = "Apache Spatial Information System";
                 code  = key;
-            } else if (key.equals("ISBN")) {
+                break;
+            }
+            case "ISBN": {
                 title = "International Standard Book Number";
                 alternateTitle = key;
-            } else if (key.equals("ISSN")) {
+                break;
+            }
+            case "ISSN": {
                 title = "International Standard Serial Number";
                 alternateTitle = key;
-            } else if (key.equals("Proj4")) {
-                title = "Proj.4";
-            } else if (key.equals("S57")) {
-                title = "S-57";
-            } else {
-                return super.createCitation(key);
+                break;
             }
+            case "Proj4": {
+                title = "Proj.4";
+                break;
+            }
+            case "S57": {
+                title = "S-57";
+                break;
+            }
+            default: return super.createCitation(key);
         }
         /*
          * Do not use the 'c.getFoo().add(foo)' pattern below. Use the 'c.setFoo(singleton(foo))' pattern instead.
@@ -206,8 +226,8 @@ public final class ServicesForUtility extends MetadataServices {
      */
     @Override
     public String getInformation(final String key, final Locale locale) {
-        /* switch (key) */ {
-            if (key.equals("DataSource")) {
+        switch (key) {
+            case "DataSource": {
                 Object server = null, database = null;
                 try {
                     final DataSource ds = Initializer.getDataSource();

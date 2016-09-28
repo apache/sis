@@ -114,7 +114,7 @@ public final class NameMeaning extends Static {
      *
      * @since 0.7
      */
-    private static final Map<String,String> AUTHORITIES = new HashMap<String,String>(12);
+    private static final Map<String,String> AUTHORITIES = new HashMap<>(12);
     static {
         add(Constants.EPSG);    // IOGP
         add(Constants.OGC);     // Open Geospatial Consortium

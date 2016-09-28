@@ -246,9 +246,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
             if (value != null) {
                 return value;
             }
-        } catch (ParameterNotFoundException e) {
-            // Ignore - this is okay for this method contract.
-        } catch (IllegalStateException e) {
+        } catch (ParameterNotFoundException | IllegalStateException e) {
             // Ignore - this is okay for this method contract.
         }
         return Double.NaN;

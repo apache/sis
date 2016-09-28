@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.AbstractMapEntry;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

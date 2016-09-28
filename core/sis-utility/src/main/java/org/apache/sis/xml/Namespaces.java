@@ -188,7 +188,7 @@ public final class Namespaces extends Static {
      */
     private static final Map<String,String> SPECIFIC_URLS;
     static {
-        final Map<String,String> p = new HashMap<String,String>(40);
+        final Map<String,String> p = new HashMap<>(40);
         p.put(XMLConstants.W3C_XML_SCHEMA_NS_URI,                         "xsd");
         p.put(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI,                "xsi");
         p.put("http://www.w3.org/2004/02/skos/core#",                    "skos");

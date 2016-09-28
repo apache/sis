@@ -39,8 +39,8 @@ import org.apache.sis.setup.InstallationResources;
 import static org.apache.sis.internal.util.Constants.EPSG;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.AccessDeniedException;
-import org.apache.sis.internal.jdk7.Path;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.Path;
 
 
 /**
@@ -99,7 +99,7 @@ public class ResourcesDownloader extends InstallationResources {
      * The localized answers expected from the users. Keys are words like "Yes" or "No"
      * and boolean values are the meaning of the keys.
      */
-    private final Map<String,Boolean> answers = new HashMap<String,Boolean>();
+    private final Map<String,Boolean> answers = new HashMap<>();
 
     /**
      * {@code true} if the user has accepted the EPSG terms of use, {@code false} if (s)he refused,

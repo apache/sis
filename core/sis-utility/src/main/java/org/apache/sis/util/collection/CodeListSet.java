@@ -72,7 +72,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * same code list type, this allows those instances to share the same arrays.
      */
     @SuppressWarnings("rawtypes")
-    private static final WeakHashSet<CodeList[]> POOL = new WeakHashSet<CodeList[]>(CodeList[].class);
+    private static final WeakHashSet<CodeList[]> POOL = new WeakHashSet<>(CodeList[].class);
 
     /**
      * The type of code list elements.

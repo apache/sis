@@ -180,7 +180,7 @@ public final class SystemRegistry extends ConverterRegistry {
          * CharSequence or Object), otherwise this converter would apply useless toString().
          */
         if (sourceClass == CharSequence.class) {
-            return (ObjectConverter<S,T>) new CharSequenceConverter<T>( // More checks in JDK7 branch.
+            return (ObjectConverter<S,T>) new CharSequenceConverter<>(
                     targetClass, find(String.class, targetClass));
         }
         /*
@@ -188,11 +188,11 @@ public final class SystemRegistry extends ConverterRegistry {
          */
         if (sourceClass == String.class) {
             if (CodeList.class.isAssignableFrom(targetClass)) {
-                return (ObjectConverter<S,T>) new StringConverter.CodeList( // More checks in JDK7 branch.
+                return (ObjectConverter<S,T>) new StringConverter.CodeList<>(
                         targetClass.asSubclass(CodeList.class));
             }
             if (targetClass.isEnum()) {
-                return (ObjectConverter<S,T>) new StringConverter.Enum( // More checks in JDK7 branch.
+                return (ObjectConverter<S,T>) new StringConverter.Enum<>(
                         targetClass.asSubclass(Enum.class));
             }
         }
@@ -201,12 +201,12 @@ public final class SystemRegistry extends ConverterRegistry {
          */
         if (sourceClass == Number.class || isSupportedNumber(sourceClass)) {
             if (isSupportedNumber(targetClass)) {
-                return (ObjectConverter<S,T>) new NumberConverter( // More checks in JDK7 branch.
+                return (ObjectConverter<S,T>) new NumberConverter<>(
                         sourceClass.asSubclass(Number.class),
                         targetClass.asSubclass(Number.class));
             }
             if (targetClass == Comparable.class) {
-                return (ObjectConverter<S,T>) new NumberConverter.Comparable( // More checks in JDK7 branch.
+                return (ObjectConverter<S,T>) new NumberConverter.Comparable<>(
                         sourceClass.asSubclass(Number.class));
             }
         }
@@ -214,7 +214,7 @@ public final class SystemRegistry extends ConverterRegistry {
          * From various objects to String.
          */
         if (targetClass == String.class) {
-            return (ObjectConverter<S,T>) new ObjectToString<S>(sourceClass, null);
+            return (ObjectConverter<S,T>) new ObjectToString<>(sourceClass, null);
         }
         return null;
     }

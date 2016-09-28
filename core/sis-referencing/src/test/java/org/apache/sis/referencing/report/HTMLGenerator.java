@@ -93,7 +93,7 @@ abstract strictfp class HTMLGenerator implements Closeable {
         if (file.exists()) {
             throw new IOException("File " + file.getAbsolutePath() + " already exists.");
         }
-        openedTags = new ArrayDeque<String>();
+        openedTags = new ArrayDeque<>();
         out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), ENCODING));
         out.write("<!DOCTYPE html>");
         out.newLine();

@@ -47,7 +47,7 @@ import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isPositive;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

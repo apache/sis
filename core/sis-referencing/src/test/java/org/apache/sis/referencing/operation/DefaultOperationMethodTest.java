@@ -64,7 +64,7 @@ public final strictfp class DefaultOperationMethodTest extends TestCase {
     static DefaultOperationMethod create(final String method, final String identifier, final String formula,
             final Integer dimension, final ParameterDescriptor<?>... parameters)
     {
-        final Map<String,Object> properties = new HashMap<String,Object>(8);
+        final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put(OperationMethod.NAME_KEY, method));
         assertNull(properties.put(ReferenceIdentifier.CODESPACE_KEY, "EPSG"));
         assertNull(properties.put(Identifier.AUTHORITY_KEY, Citations.EPSG));

@@ -58,7 +58,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      * @param identifier The value for the {@code "identifiers"} property.
      */
     private static Map<String,Object> properties(final Set<ReferenceIdentifier> identifiers) {
-        final Map<String,Object> properties = new HashMap<String,Object>(8);
+        final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put("name",       "GRS 1980"));
         assertNull(properties.put("identifiers", identifiers.toArray(new ReferenceIdentifier[identifiers.size()])));
         assertNull(properties.put("codespace",  "EPSG"));
@@ -102,7 +102,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testMissingName() {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(AbstractIdentifiedObject.REMARKS_KEY, "Not a name."));
         try {
             new AbstractIdentifiedObject(properties);
@@ -168,7 +168,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithSingleIdentifier")
     public void testWithManyIdentifiers() {
-        final Set<ReferenceIdentifier> identifiers = new LinkedHashSet<ReferenceIdentifier>(4);
+        final Set<ReferenceIdentifier> identifiers = new LinkedHashSet<>(4);
         assertTrue(identifiers.add(new NamedIdentifier(EPSG, "7019")));
         assertTrue(identifiers.add(new NamedIdentifier(EPSG, "IgnoreMe")));
         final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties(identifiers));
@@ -204,7 +204,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithManyIdentifiers")
     public void testIdentifierCollision() {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put("name", "GRS 1980"));
         assertNull(properties.put("identifiers", new NamedIdentifier(EPSG, "7019")));
         final AbstractIdentifiedObject o1 = new AbstractIdentifiedObject(properties);

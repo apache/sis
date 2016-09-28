@@ -391,7 +391,7 @@ public enum CommonCRS {
         this.southUTM   = southUTM;
         this.firstZone  = firstZone;
         this.lastZone   = lastZone;
-        cachedUTM = new HashMap<Integer,ProjectedCRS>();
+        cachedUTM = new HashMap<>();
     }
 
     /**
@@ -1572,7 +1572,7 @@ public enum CommonCRS {
      * Returns the same properties than the given object, except for the identifier which is set to the given code.
      */
     private static Map<String,?> properties(final IdentifiedObject template, final short code) {
-        final Map<String,Object> properties = new HashMap<String,Object>(IdentifiedObjects.getProperties(template, EXCLUDE));
+        final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(template, EXCLUDE));
         properties.put(GeographicCRS.IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
         return properties;
     }

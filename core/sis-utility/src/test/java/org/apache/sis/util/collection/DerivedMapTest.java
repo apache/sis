@@ -68,8 +68,8 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
      */
     @Test
     public void testNoExclusion() {
-        final Map<Integer,Integer> source = new HashMap<Integer,Integer>();
-        final Map<Integer,Integer> target = new HashMap<Integer,Integer>();
+        final Map<Integer,Integer> source = new HashMap<>();
+        final Map<Integer,Integer> target = new HashMap<>();
         final Map<Integer,Integer> tested = DerivedMap.create(source, this, new DerivedSetTest());
         fill(source, target);
         assertEquals(target.size(),     tested.size());
@@ -95,8 +95,8 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
      */
     @Test
     public void testWithExclusion() {
-        final Map<Integer,Integer> source = new HashMap<Integer,Integer>();
-        final Map<Integer,Integer> target = new HashMap<Integer,Integer>();
+        final Map<Integer,Integer> source = new HashMap<>();
+        final Map<Integer,Integer> target = new HashMap<>();
         final Map<Integer,Integer> tested = DerivedMap.create(source, this, new DerivedSetTest());
         fill(source, target);
         assertNull(source.put(EXCLUDED, 4));

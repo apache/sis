@@ -57,11 +57,8 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
     @Test
     public void testEmbedded() throws IOException, DataStoreException {
         final Metadata metadata;
-        final Decoder input = ChannelDecoderTest.createChannelDecoder(NCEP);
-        try {
+        try (Decoder input = ChannelDecoderTest.createChannelDecoder(NCEP)) {
             metadata = new MetadataReader(input).read();
-        } finally {
-            input.close();
         }
         compareToExpected(metadata);
     }
@@ -75,11 +72,8 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
     @Test
     public void testUCAR() throws IOException {
         final Metadata metadata;
-        final Decoder input = new DecoderWrapper(TestCase.LISTENERS, new NetcdfDataset(open(NCEP)));
-        try {
+        try (Decoder input = new DecoderWrapper(TestCase.LISTENERS, new NetcdfDataset(open(NCEP)))) {
             metadata = new MetadataReader(input).read();
-        } finally {
-            input.close();
         }
         compareToExpected(metadata);
     }

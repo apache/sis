@@ -62,7 +62,7 @@ public final strictfp class ConsistencyTest extends TestCase {
     /**
      * Codes to exclude for now.
      */
-    private static final Set<String> EXCLUDES = new HashSet<String>(Arrays.asList(
+    private static final Set<String> EXCLUDES = new HashSet<>(Arrays.asList(
             "CRS:1",            // Computer display
             "EPSG:5819"         // EPSG topocentric example A
     ));
@@ -97,10 +97,7 @@ public final strictfp class ConsistencyTest extends TestCase {
                 final CoordinateReferenceSystem crs;
                 try {
                     crs = CRS.forCode(code);
-                } catch (NoSuchIdentifierException e) {
-                    print(code, "WARNING", e.getLocalizedMessage());
-                    continue;
-                } catch (FactoryDataException e) {
+                } catch (NoSuchIdentifierException | FactoryDataException e) {
                     print(code, "WARNING", e.getLocalizedMessage());
                     continue;
                 }

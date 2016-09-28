@@ -47,7 +47,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -233,13 +233,13 @@ public class TensorParameters<E> implements Serializable {
         /*
          * For the WKT1 convention, the "num_row" and "num_col" parameters are mandatory.
          */
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         properties.put(Identifier.AUTHORITY_KEY, Citations.OGC);
         properties.put(Identifier.CODE_KEY, Constants.NUM_ROW);
-        ParameterDescriptor<Integer> numRow = new DefaultParameterDescriptor<Integer>(
+        ParameterDescriptor<Integer> numRow = new DefaultParameterDescriptor<>(
                 properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
         properties.put(Identifier.CODE_KEY, Constants.NUM_COL);
-        ParameterDescriptor<Integer> numCol = new DefaultParameterDescriptor<Integer>(
+        ParameterDescriptor<Integer> numCol = new DefaultParameterDescriptor<>(
                 properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
         WKT1 = new MatrixParameters(numRow, numCol);
         /*
@@ -247,9 +247,9 @@ public class TensorParameters<E> implements Serializable {
          * size if fixed to 3×3. However since we still need them, we will declare them as optional
          * and we will hide them from the descriptor unless the matrix size is different than 3×3.
          */
-        numRow = new DefaultParameterDescriptor<Integer>(IdentifiedObjects.getProperties(numRow),
+        numRow = new DefaultParameterDescriptor<>(IdentifiedObjects.getProperties(numRow),
                 0, 1, Integer.class, valueDomain, null, defaultSize);
-        numCol = new DefaultParameterDescriptor<Integer>(IdentifiedObjects.getProperties(numCol),
+        numCol = new DefaultParameterDescriptor<>(IdentifiedObjects.getProperties(numCol),
                 0, 1, Integer.class, valueDomain, null, defaultSize);
         ALPHANUM = new MatrixParametersAlphaNum(numRow, numCol);
     }
@@ -314,6 +314,7 @@ public class TensorParameters<E> implements Serializable {
      * @param dimensions  The parameter for the size of each dimension, usually in an array of length 2.
      *                    Length may be different if the caller wants to generalize usage of this class to tensors.
      */
+    @SafeVarargs
     @SuppressWarnings({"unchecked", "rawtypes"})
     public TensorParameters(final Class<E> elementType, final String prefix, final String separator,
             final ParameterDescriptor<Integer>... dimensions)
@@ -496,7 +497,7 @@ public class TensorParameters<E> implements Serializable {
     protected ParameterDescriptor<E> createElementDescriptor(final int[] indices) throws IllegalArgumentException {
         final Citation authority = dimensions[0].getName().getAuthority();
         final String name = indicesToName(indices);
-        return new DefaultParameterDescriptor<E>(
+        return new DefaultParameterDescriptor<>(
                 Collections.singletonMap(ParameterDescriptor.NAME_KEY, new NamedIdentifier(authority, name)),
                 0, 1, elementType, null, null, getDefaultValue(indices));
     }
@@ -726,7 +727,7 @@ public class TensorParameters<E> implements Serializable {
      * @return A new parameter group initialized to the default values.
      */
     public ParameterValueGroup createValueGroup(final Map<String,?> properties) {
-        return new TensorValues<E>(properties, this);
+        return new TensorValues<>(properties, this);
     }
 
     /**
@@ -744,7 +745,7 @@ public class TensorParameters<E> implements Serializable {
             throw new IllegalStateException();
         }
         ArgumentChecks.ensureNonNull("matrix", matrix);
-        final TensorValues<E> values = new TensorValues<E>(properties, this);
+        final TensorValues<E> values = new TensorValues<>(properties, this);
         values.setMatrix(matrix);
         return values;
     }
@@ -839,7 +840,7 @@ public class TensorParameters<E> implements Serializable {
             final Field field = TensorParameters.class.getDeclaredField("parameters");
             field.setAccessible(true);
             field.set(this, createCache());
-        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+        } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
         }
     }

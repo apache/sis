@@ -112,7 +112,7 @@ final class Normalizer implements Comparable<Normalizer> {
      *
      * @see #order(AxisDirection)
      */
-    private static final Map<AxisDirection,Integer> ORDER = new HashMap<AxisDirection,Integer>();
+    private static final Map<AxisDirection,Integer> ORDER = new HashMap<>();
     static {
         final Map<AxisDirection,Integer> m = ORDER;
         // Get ordinal of last compass direction defined by GeoAPI. We will continue on the horizontal plane.
@@ -236,7 +236,7 @@ final class Normalizer implements Comparable<Normalizer> {
         final String abbreviation = axis.getAbbreviation();
         final String newAbbr = sameDirection ? abbreviation :
                 AxisDirections.suggestAbbreviation(axis.getName().getCode(), newDir, newUnit);
-        final Map<String,Object> properties = new HashMap<String,Object>();
+        final Map<String,Object> properties = new HashMap<>();
         if (newAbbr.equals(abbreviation)) {
             properties.putAll(IdentifiedObjects.getProperties(axis, EXCLUDES));
         } else {
@@ -369,7 +369,7 @@ final class Normalizer implements Comparable<Normalizer> {
                     min -= offset;
                     max -= offset;
                     if (min < max) { // Paranoiac check, but also a way to filter NaN values when offset is infinite.
-                        final Map<String,Object> properties = new HashMap<String,Object>();
+                        final Map<String,Object> properties = new HashMap<>();
                         properties.putAll(IdentifiedObjects.getProperties(axis, EXCLUDES));
                         properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, min);
                         properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, max);

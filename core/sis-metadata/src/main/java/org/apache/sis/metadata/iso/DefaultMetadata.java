@@ -891,7 +891,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             if (newValue == null) {
                 return;
             }
-            newValues = new ArrayList<CitationDate>(1);
+            newValues = new ArrayList<>(1);
         } else {
             final Iterator<CitationDate> it = newValues.iterator();
             while (it.hasNext()) {
@@ -1015,7 +1015,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         checkWritePermission();
         final InternationalString i18n = (newValue != null) ? new SimpleInternationalString(newValue) : null;
         final List<Citation> newValues = (metadataStandards != null)
-                ? new ArrayList<Citation>(metadataStandards)
+                ? new ArrayList<>(metadataStandards)
                 : new ArrayList<Citation>(1);
         DefaultCitation citation = newValues.isEmpty() ? null : DefaultCitation.castOrCopy(newValues.get(0));
         if (citation == null) {

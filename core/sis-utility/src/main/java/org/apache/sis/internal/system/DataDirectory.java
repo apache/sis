@@ -25,10 +25,10 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Files;
-import org.apache.sis.internal.jdk7.Path;
-import org.apache.sis.internal.jdk7.Paths;
-import org.apache.sis.internal.jdk7.InvalidPathException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.InvalidPathException;
 
 
 /**

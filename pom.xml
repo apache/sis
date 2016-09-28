@@ -81,7 +81,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
 
   <ciManagement>
     <system>jenkins</system>
-    <url>https://builds.apache.org/job/sis-trunk</url>
+    <url>https://builds.apache.org/job/sis-jdk7</url>
   </ciManagement>
 
   <issueManagement>
@@ -422,7 +422,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>javax</groupId>
         <artifactId>javaee-api</artifactId>
-        <version>6.0</version>
+        <version>7.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -447,7 +447,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-jdk14</artifactId>
-        <version>1.7.5</version>                <!-- Must matches the version used by NetCDF. -->
+        <version>1.7.7</version>                <!-- Must matches the version used by NetCDF. -->
         <scope>runtime</scope>                  <!-- Should never be needed at compile time.  -->
       </dependency>
     </dependencies>
@@ -473,14 +473,14 @@ Apache SIS is a free software, Java language library for developing geospatial a
          The last properties in this list depend on the Apache SIS branch.
        =================================================================== -->
   <properties>
-    <netcdf.version>4.4.2</netcdf.version>          <!-- Last version compatible with JDK6. -->
+    <netcdf.version>4.6.5</netcdf.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>
 
     <!-- Following properties are branch-specific -->
-    <maven.compile.source>1.6</maven.compile.source>
-    <maven.compile.target>1.6</maven.compile.target>
+    <maven.compile.source>1.7</maven.compile.source>
+    <maven.compile.target>1.7</maven.compile.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
     <geoapi.version>3.0.0</geoapi.version>
   </properties>
@@ -558,7 +558,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <encoding>${project.build.sourceEncoding}</encoding>
           <useIncrementalCompilation>false</useIncrementalCompilation> <!-- https://jira.codehaus.org/browse/MCOMPILER-209 -->
           <compilerArgs>
-            <arg>-Xlint</arg>
+            <arg>-Xlint:all</arg>
           </compilerArgs>
         </configuration>
       </plugin>
@@ -636,7 +636,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.5.4</version>                                <!-- Last version compatible with JDK6. -->
+        <version>3.0.1</version>
         <extensions>true</extensions>
         <configuration>
           <excludeDependencies>true</excludeDependencies>
@@ -647,7 +647,37 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </plugin>
 
       <!-- Checkstype configuration
-           Omitted from the JDK6 branch because Checkstyle requires a higher JDK version. -->
+           Legal note: Checkstyle is under LGPL license, but it is okay to use it only for
+           the build if it is downloaded by Maven (not included in Apache SIS distribution).
+           See http://www.apache.org/legal/resolved.html#prohibited
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.17</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <skip>${skipTests}</skip> <!-- When skipping tests, skip also checkstyle verification. -->
+              <encoding>${project.build.sourceEncoding}</encoding>
+              <consoleOutput>true</consoleOutput>
+              <checkstyleRules>
+                <module name="Checker">
+                  <module name="FileTabCharacter"/>     <!-- Checks that there are no tab characters in the file. -->
+                  <module name="NewlineAtEndOfFile"/>   <!-- Checks that there is a newline at the end of each file. -->
+                  <module name="TreeWalker">
+                    <module name="RedundantImport"/>    <!-- Checks for redundant import statements. -->
+                    <module name="GenericWhitespace"/>  <!-- Checks that the whitespace around the Generic tokens follow the typical convention. -->
+                  </module>
+                </module>
+              </checkstyleRules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
       <!-- JavaDoc configuration. -->
       <plugin>
@@ -768,12 +798,12 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.9.1</version>                              <!-- Last version compatible with JDK6. -->
+          <version>1.10</version>
         </plugin>
         <plugin>
-          <groupId>org.mortbay.jetty</groupId>
+          <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
-          <version>8.1.16.v20140903</version>                   <!-- Versions 9.0.* require JDK 7 -->
+          <version>9.2.13.v20150730</version>           <!-- Versions 9.3.* require JDK 8 -->
         </plugin>
       </plugins>
     </pluginManagement>

@@ -68,13 +68,13 @@ public final class FeatureMemoryBenchmark {
      * @param isSimple In the case of non-SIS implementation, whether we use simple features or complex features.
      */
     private FeatureMemoryBenchmark(final boolean useSIS, final boolean isSimple) {
-        features = new ArrayList<Object>(100000);
+        features = new ArrayList<>(100000);
         this.isSimple = isSimple;
         if (useSIS) {
-            type = new DefaultFeatureType           (singletonMap("name", "City"), false, null,
-                    new DefaultAttributeType<String>(singletonMap("name", "city"),     String.class, 1, 1, null),
-                    new DefaultAttributeType<Float> (singletonMap("name", "longitude"), Float.class, 1, 1, null),
-                    new DefaultAttributeType<Float> (singletonMap("name", "latitude"),  Float.class, 1, 1, null));
+            type = new DefaultFeatureType     (singletonMap("name", "City"), false, null,
+                    new DefaultAttributeType<>(singletonMap("name", "city"),     String.class, 1, 1, null),
+                    new DefaultAttributeType<>(singletonMap("name", "longitude"), Float.class, 1, 1, null),
+                    new DefaultAttributeType<>(singletonMap("name", "latitude"),  Float.class, 1, 1, null));
         } else {
             type = null;
         }
@@ -86,14 +86,14 @@ public final class FeatureMemoryBenchmark {
      * The old feature implementation.
      */
     private static final class SimpleFeature {
-        final HashMap<String,Object> attributes = new HashMap<String,Object>(8);
+        final HashMap<String, Object> attributes = new HashMap<>(8);
     }
 
     /**
      * A more complete feature implementation.
      */
     private static final class ComplexFeature {
-        final HashMap<String, List<Property>> properties = new HashMap<String, List<Property>>(8);
+        final HashMap<String, List<Property>> properties = new HashMap<>(8);
     }
 
     /**
@@ -107,7 +107,7 @@ public final class FeatureMemoryBenchmark {
         }
 
         static List<Property> asList(final Object value) {
-            final List<Property> list = new ArrayList<Property>(2);
+            final List<Property> list = new ArrayList<>(2);
             list.add(new Property(value));
             return list;
         }

@@ -22,7 +22,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

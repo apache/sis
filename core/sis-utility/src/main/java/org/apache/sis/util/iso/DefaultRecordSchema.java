@@ -135,8 +135,8 @@ public class DefaultRecordSchema implements RecordSchema {
         }
         this.nameFactory    = nameFactory;
         this.namespace      = nameFactory.createNameSpace(nameFactory.createLocalName(parent, schemaName), null);
-        this.description    = new WeakValueHashMap<TypeName,RecordType>(TypeName.class);
-        this.attributeTypes = new ConcurrentHashMap<Class<?>,Type>();
+        this.description    = new WeakValueHashMap<>(TypeName.class);
+        this.attributeTypes = new ConcurrentHashMap<>();
     }
 
     /**
@@ -204,7 +204,6 @@ public class DefaultRecordSchema implements RecordSchema {
      * @param  valueClass The value class to represent as an attribute type.
      * @return Attribute type for the given value class.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     final Type toAttributeType(final Class<?> valueClass) {
         if (!TypeNames.isValid(valueClass)) {
             return null;
@@ -215,7 +214,7 @@ public class DefaultRecordSchema implements RecordSchema {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "valueClass", "void"));
             }
             final TypeName name = nameFactory.toTypeName(valueClass);
-            type = new SimpleAttributeType(name, valueClass);
+            type = new SimpleAttributeType<>(name, valueClass);
             final Type old = attributeTypes.putIfAbsent(valueClass, type);
             if (old != null) {      // May happen if the type has been computed concurrently.
                 return old;

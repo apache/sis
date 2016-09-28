@@ -42,7 +42,7 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.internal.converter.SurjectiveConverter;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -197,7 +197,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
         this.typeName  = typeName;
         this.container = container;
         final NameSpace namespace = nameFactory.createNameSpace(typeName, null);
-        final Map<MemberName,Type> memberTypes = new LinkedHashMap<MemberName,Type>(Containers.hashMapCapacity(members.size()));
+        final Map<MemberName,Type> memberTypes = new LinkedHashMap<>(Containers.hashMapCapacity(members.size()));
         for (final Map.Entry<? extends CharSequence, ? extends Type> entry : members.entrySet()) {
             final Type         type   = entry.getValue();
             final CharSequence name   = entry.getKey();
@@ -220,7 +220,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         final int size = in.readInt();
-        final Map<MemberName,Type> members = new LinkedHashMap<MemberName,Type>(Containers.hashMapCapacity(size));
+        final Map<MemberName,Type> members = new LinkedHashMap<>(Containers.hashMapCapacity(size));
         for (int i=0; i<size; i++) {
             final MemberName member = (MemberName) in.readObject();
             final Type type = (Type) in.readObject();

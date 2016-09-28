@@ -39,7 +39,7 @@ final class ObjectPair {
      */
     static final ThreadLocal<Set<ObjectPair>> CURRENT = new ThreadLocal<Set<ObjectPair>>() {
         @Override protected Set<ObjectPair> initialValue() {
-            return new HashSet<ObjectPair>();
+            return new HashSet<>();
         }
     };
 

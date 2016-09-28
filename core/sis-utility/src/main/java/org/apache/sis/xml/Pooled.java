@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.ConcurrentModificationException;
+import java.util.IllformedLocaleException;
 import java.util.Locale;
 import java.util.TimeZone;
 import javax.xml.validation.Schema;
@@ -175,7 +176,7 @@ abstract class Pooled {
      */
     Pooled(final boolean internal) {
         this.internal = internal;
-        initialProperties = new LinkedHashMap<Object,Object>();
+        initialProperties = new LinkedHashMap<>();
     }
 
     /**
@@ -185,7 +186,7 @@ abstract class Pooled {
      * @param template The {@link PooledTemplate} from which to get the initial values.
      */
     Pooled(final Pooled template) {
-        initialProperties = new LinkedHashMap<Object,Object>();
+        initialProperties = new LinkedHashMap<>();
         internal = template.internal;
     }
 
@@ -324,20 +325,20 @@ abstract class Pooled {
      */
     public final void setProperty(String name, final Object value) throws PropertyException {
         try {
-            /* switch (name) */ {
-                if (name.equals(XML.LOCALE)) {
+            switch (name) {
+                case XML.LOCALE: {
                     locale = (value instanceof CharSequence) ? Locales.parse(value.toString()) : (Locale) value;
                     return;
                 }
-                if (name.equals(XML.TIMEZONE)) {
+                case XML.TIMEZONE: {
                     timezone = (value instanceof CharSequence) ? TimeZone.getTimeZone(value.toString()) : (TimeZone) value;
                     return;
                 }
-                if (name.equals(XML.SCHEMAS)) {
+                case XML.SCHEMAS: {
                     final Map<?,?> map = (Map<?,?>) value;
                     Map<String,String> copy = null;
                     if (map != null) {
-                        copy = new HashMap<String,String>(4);
+                        copy = new HashMap<>(4);
                         for (final String key : SCHEMA_KEYS) {
                             final Object schema = map.get(key);
                             if (schema != null) {
@@ -353,19 +354,19 @@ abstract class Pooled {
                     schemas = copy;
                     return;
                 }
-                if (name.equals(XML.GML_VERSION)) {
+                case XML.GML_VERSION: {
                     versionGML = (value instanceof CharSequence) ? new Version(value.toString()) : (Version) value;
                     return;
                 }
-                if (name.equals(XML.RESOLVER)) {
+                case XML.RESOLVER: {
                     resolver = (ReferenceResolver) value;
                     return;
                 }
-                if (name.equals(XML.CONVERTER)) {
+                case XML.CONVERTER: {
                     converter = (ValueConverter) value;
                     return;
                 }
-                if (name.equals(XML.STRING_SUBSTITUTES)) {
+                case XML.STRING_SUBSTITUTES: {
                     bitMasks &= ~(Context.SUBSTITUTE_LANGUAGE |
                                   Context.SUBSTITUTE_COUNTRY  |
                                   Context.SUBSTITUTE_FILENAME |
@@ -385,11 +386,11 @@ abstract class Pooled {
                     }
                     return;
                 }
-                if (name.equals(XML.WARNING_LISTENER)) {
+                case XML.WARNING_LISTENER: {
                     warningListener = (WarningListener<?>) value;
                     return;
                 }
-                if (name.equals(LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS)) {
+                case LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS: {
                     xmlnsReplaceCode = 0;
                     if (value != null) {
                         xmlnsReplaceCode = ((Boolean) value) ? (byte) 1 : (byte) 2;
@@ -397,7 +398,7 @@ abstract class Pooled {
                     return;
                 }
             }
-        } catch (RuntimeException e) { // (ClassCastException | IllformedLocaleException) on the JDK7 branch.
+        } catch (ClassCastException | IllformedLocaleException e) {
             throw new PropertyException(Errors.format(
                     Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass()), e);
         }
@@ -419,15 +420,15 @@ abstract class Pooled {
      * A method which is common to both {@code Marshaller} and {@code Unmarshaller}.
      */
     public final Object getProperty(final String name) throws PropertyException {
-        /*switch (name)*/ {
-            if (name.equals(XML.LOCALE))           return locale;
-            if (name.equals(XML.TIMEZONE))         return timezone;
-            if (name.equals(XML.SCHEMAS))          return schemas;
-            if (name.equals(XML.GML_VERSION))      return versionGML;
-            if (name.equals(XML.RESOLVER))         return resolver;
-            if (name.equals(XML.CONVERTER))        return converter;
-            if (name.equals(XML.WARNING_LISTENER)) return warningListener;
-            if (name.equals(XML.STRING_SUBSTITUTES)) {
+        switch (name) {
+            case XML.LOCALE:           return locale;
+            case XML.TIMEZONE:         return timezone;
+            case XML.SCHEMAS:          return schemas;
+            case XML.GML_VERSION:      return versionGML;
+            case XML.RESOLVER:         return resolver;
+            case XML.CONVERTER:        return converter;
+            case XML.WARNING_LISTENER: return warningListener;
+            case XML.STRING_SUBSTITUTES: {
                 int n = 0;
                 final String[] substitutes = new String[4];
                 if ((bitMasks & Context.SUBSTITUTE_LANGUAGE) != 0) substitutes[n++] = "language";
@@ -436,14 +437,16 @@ abstract class Pooled {
                 if ((bitMasks & Context.SUBSTITUTE_MIMETYPE) != 0) substitutes[n++] = "mimetype";
                 return (n != 0) ? ArraysExt.resize(substitutes, n) : null;
             }
-            if (name.equals(LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS)) {
+            case LegacyNamespaces.APPLY_NAMESPACE_REPLACEMENTS: {
                 switch (xmlnsReplaceCode) {
                     case 1:  return Boolean.TRUE;
                     case 2:  return Boolean.FALSE;
                     default: return null;
                 }
             }
-            return getStandardProperty(convertPropertyKey(name));
+            default: {
+                return getStandardProperty(convertPropertyKey(name));
+            }
         }
     }
 

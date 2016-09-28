@@ -93,6 +93,7 @@ public final class Containers extends Static {
      *
      * @see java.util.Arrays#asList(Object[])
      */
+    @SafeVarargs
     public static <E> List<? extends E> unmodifiableList(final E... array) {
         return UnmodifiableArrayList.wrap(array);
     }

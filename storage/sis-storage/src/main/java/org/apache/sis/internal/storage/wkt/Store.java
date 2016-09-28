@@ -77,7 +77,7 @@ final class Store extends DataStore {
      * @throws DataStoreException if an error occurred while opening the stream.
      */
     public Store(final StorageConnector connector) throws DataStoreException {
-        objects = new ArrayList<Object>();
+        objects = new ArrayList<>();
         name    = connector.getStorageName();
         source  = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(source);
@@ -126,9 +126,7 @@ final class Store extends DataStore {
                     listeners.warning(record);
                 }
             } while (pos.getIndex() < wkt.length());
-        } catch (IOException e) {                                       // Multi-catch on the JDK7 branch.
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotParseFile_2, "WKT", name), e);
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             throw new DataStoreException(Errors.format(Errors.Keys.CanNotParseFile_2, "WKT", name), e);
         }
     }

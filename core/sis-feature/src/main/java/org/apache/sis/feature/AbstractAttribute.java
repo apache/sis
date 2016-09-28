@@ -33,7 +33,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**
@@ -122,8 +121,8 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
     public static <V> AbstractAttribute<V> create(final DefaultAttributeType<V> type) {
         ArgumentChecks.ensureNonNull("type", type);
         return isSingleton(type.getMaximumOccurs())
-               ? new SingletonAttribute<V>(type)
-               : new MultiValuedAttribute<V>(type);
+               ? new SingletonAttribute<>(type)
+               : new MultiValuedAttribute<>(type);
     }
 
     /**
@@ -138,8 +137,8 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
     static <V> AbstractAttribute<V> create(final DefaultAttributeType<V> type, final Object value) {
         ArgumentChecks.ensureNonNull("type", type);
         return isSingleton(type.getMaximumOccurs())
-               ? new SingletonAttribute<V>(type, value)
-               : new MultiValuedAttribute<V>(type, value);
+               ? new SingletonAttribute<>(type, value)
+               : new MultiValuedAttribute<>(type, value);
     }
 
     /**
@@ -465,7 +464,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
         final StringBuilder buffer = FieldType.toString("Attribute", type.getName(),
                 Classes.getShortName(type.getValueClass()), getValues().iterator());
         if (characteristics != null && !characteristics.isEmpty()) {
-            buffer.append(JDK7.lineSeparator());
+            buffer.append(System.lineSeparator());
             String separator = "└─ characteristics: ";
             for (final Map.Entry<String,AbstractAttribute<?>> entry : characteristics.entrySet()) {
                 buffer.append(separator).append(entry.getKey()).append('=').append(entry.getValue().getValue());

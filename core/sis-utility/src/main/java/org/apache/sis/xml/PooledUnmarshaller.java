@@ -179,13 +179,10 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public Object unmarshal(final URL input) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            final InputStream s = input.openStream();
-            try {
+            try (final InputStream s = input.openStream()) {
                 return unmarshal(XMLInputFactory.createXMLStreamReader(s), version);
-            } finally {
-                s.close();
             }
-        } catch (Exception e) { // (IOException | XMLStreamException) on the JDK7 branch.
+        } catch (IOException | XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             final Context context = begin();
@@ -204,13 +201,10 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public Object unmarshal(final File input) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            final InputStream s = new BufferedInputStream(new FileInputStream(input));
-            try {
+            try (final InputStream s = new BufferedInputStream(new FileInputStream(input))) {
                 return unmarshal(XMLInputFactory.createXMLStreamReader(s), version);
-            } finally {
-                s.close();
             }
-        } catch (Exception e) { // (IOException | XMLStreamException) on the JDK7 branch.
+        } catch (IOException | XMLStreamException e) {
             throw new JAXBException(e);
         } else {
             final Context context = begin();

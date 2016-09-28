@@ -293,6 +293,7 @@ abstract class AbstractStatement extends AbstractJDBC implements Statement {
     /**
      * Unsupported by default.
      */
+    @Override
     public void closeOnCompletion() throws SQLException {
         throw unsupportedOperation("closeOnCompletion");
     }
@@ -300,6 +301,7 @@ abstract class AbstractStatement extends AbstractJDBC implements Statement {
     /**
      * Unsupported by default.
      */
+    @Override
     public boolean isCloseOnCompletion() throws SQLException {
         throw unsupportedOperation("isCloseOnCompletion");
     }

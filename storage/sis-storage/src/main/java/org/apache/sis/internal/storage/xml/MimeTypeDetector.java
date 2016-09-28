@@ -46,7 +46,7 @@ abstract class MimeTypeDetector {
      * The mapping from XML namespace to MIME type.
      * This map shall be read-only, since we do not synchronize it.
      */
-    private static final Map<String,String> TYPES = new HashMap<String,String>();
+    private static final Map<String,String> TYPES = new HashMap<>();
     static {
         TYPES.put(Namespaces.GML, "application/gml+xml");
         TYPES.put(Namespaces.GMD, "application/vnd.iso.19139+xml");

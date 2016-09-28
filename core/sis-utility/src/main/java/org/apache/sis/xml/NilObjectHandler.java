@@ -34,7 +34,7 @@ import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -67,7 +67,7 @@ final class NilObjectHandler implements InvocationHandler {
      * or modify identifiers.
      */
     NilObjectHandler(final Identifier[] identifiers) {
-        final List<Identifier> asList = new ArrayList<Identifier>(identifiers.length);
+        final List<Identifier> asList = new ArrayList<>(identifiers.length);
         for (final Identifier identifier : identifiers) {
             if (identifier != null) {
                 asList.add(identifier);
@@ -127,21 +127,21 @@ final class NilObjectHandler implements InvocationHandler {
     public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
         final String name = method.getName();
         if (args == null) {
-            /*switch (name)*/ {
-                if ("getNilReason".equals(name)) {
+            switch (name) {
+                case "getNilReason": {
                     return (attribute instanceof NilReason) ? (NilReason) attribute : null;
                 }
-                if ("getIdentifierMap".equals(name)) {
+                case "getIdentifierMap": {
                     return (attribute instanceof IdentifierMap) ? (IdentifierMap) attribute : null;
                 }
-                if ("getIdentifiers".equals(name)) {
+                case "getIdentifiers": {
                     return (attribute instanceof IdentifierMapAdapter) ?
                             ((IdentifierMapAdapter) attribute).identifiers : null;
                 }
-                if ("toString".equals(name)) {
+                case "toString": {
                     return getInterface(proxy).getSimpleName() + '[' + attribute + ']';
                 }
-                if ("hashCode".equals(name)) {
+                case "hashCode": {
                     return ~attribute.hashCode();
                 }
             }

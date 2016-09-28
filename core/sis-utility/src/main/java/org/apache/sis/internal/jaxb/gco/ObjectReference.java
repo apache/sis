@@ -103,8 +103,8 @@ final class ObjectReference {
                 // Creates an empty instance with the identifiers.
                 int count = 0;
                 SpecializedIdentifier<?>[] identifiers  = new SpecializedIdentifier<?>[2];
-                if (uuid  != null) identifiers[count++] = new SpecializedIdentifier<UUID> (IdentifierSpace.UUID,  uuid);
-                if (xlink != null) identifiers[count++] = new SpecializedIdentifier<XLink>(IdentifierSpace.XLINK, xlink);
+                if (uuid  != null) identifiers[count++] = new SpecializedIdentifier<>(IdentifierSpace.UUID,  uuid);
+                if (xlink != null) identifiers[count++] = new SpecializedIdentifier<>(IdentifierSpace.XLINK, xlink);
                 identifiers = ArraysExt.resize(identifiers, count);
                 metadata = resolver.newIdentifiedObject(context, type, identifiers);
             }

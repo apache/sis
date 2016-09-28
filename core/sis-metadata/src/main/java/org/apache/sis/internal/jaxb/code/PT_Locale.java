@@ -134,7 +134,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
             final String encoding;
             try {
                 encoding = (String) marshaller.getProperty(Marshaller.JAXB_ENCODING);
-            } catch (Exception e) { // (PropertyException | ClassCastException) on the JDK7 branch.
+            } catch (PropertyException | ClassCastException e) {
                 // Should never happen. But if it happen anyway, just let the
                 // characterEncoding unitialized: it will not be marshalled.
                 Context.warningOccured(Context.current(), PT_Locale.class, "beforeMarshal", e, true);

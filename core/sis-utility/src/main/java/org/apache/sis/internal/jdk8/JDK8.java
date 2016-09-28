@@ -29,14 +29,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import javax.xml.bind.DatatypeConverter;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.JDK7;
-import org.apache.sis.internal.jdk7.Objects;
-import org.apache.sis.internal.jdk7.Files;
-import org.apache.sis.internal.jdk7.Path;
-import org.apache.sis.internal.jdk7.StandardCharsets;
+import java.util.Objects;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 
 /**
@@ -54,7 +53,7 @@ public final class JDK8 {
      * We share a single instance instead than using {@link ThreadLocal} instances
      * on the assumption that usages of this calendar will be relatively rare.
      */
-    private static final AtomicReference<Calendar> CALENDAR = new AtomicReference<Calendar>();
+    private static final AtomicReference<Calendar> CALENDAR = new AtomicReference<>();
 
     /**
      * Do not allow instantiation of this class.
@@ -72,7 +71,7 @@ public final class JDK8 {
      * @since 0.7
      */
     public static int compareUnsigned(final int x, final int y) {
-        return JDK7.compare(x + Integer.MIN_VALUE, y + Integer.MIN_VALUE);
+        return Integer.compare(x + Integer.MIN_VALUE, y + Integer.MIN_VALUE);
     }
 
     /**

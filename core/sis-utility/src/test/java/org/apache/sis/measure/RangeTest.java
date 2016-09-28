@@ -38,35 +38,35 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testConstructor() {
-        Range<Integer> range = new Range<Integer>(Integer.class, 3, true, 5, true);
+        Range<Integer> range = new Range<>(Integer.class, 3, true, 5, true);
         assertEquals(Integer.valueOf(3), range.getMinValue());
         assertEquals(Integer.valueOf(5), range.getMaxValue());
         assertTrue  (range.isMaxIncluded());
         assertTrue  (range.isMinIncluded());
         assertFalse (range.isEmpty());
 
-        range = new Range<Integer>(Integer.class, 3, false, 5, true);
+        range = new Range<>(Integer.class, 3, false, 5, true);
         assertEquals(Integer.valueOf(3), range.getMinValue());
         assertEquals(Integer.valueOf(5), range.getMaxValue());
         assertTrue  (range.isMaxIncluded());
         assertFalse (range.isMinIncluded());
         assertFalse (range.isEmpty());
 
-        range = new Range<Integer>(Integer.class, 2, true, 7, false);
+        range = new Range<>(Integer.class, 2, true, 7, false);
         assertEquals(Integer.valueOf(2), range.getMinValue());
         assertEquals(Integer.valueOf(7), range.getMaxValue());
         assertFalse (range.isMaxIncluded());
         assertTrue  (range.isMinIncluded());
         assertFalse (range.isEmpty());
 
-        range = new Range<Integer>(Integer.class, 3, false, 10, false);
+        range = new Range<>(Integer.class, 3, false, 10, false);
         assertEquals(Integer.valueOf( 3), range.getMinValue());
         assertEquals(Integer.valueOf(10), range.getMaxValue());
         assertFalse (range.isMaxIncluded());
         assertFalse (range.isMinIncluded());
         assertFalse (range.isEmpty());
 
-        range = new Range<Integer>(Integer.class, 10, true, 2, true);
+        range = new Range<>(Integer.class, 10, true, 2, true);
         assertEquals(Integer.valueOf(10), range.getMinValue());
         assertEquals(Integer.valueOf( 2), range.getMaxValue());
         assertTrue (range.isEmpty());
@@ -107,7 +107,7 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testContains() {
-        final Range<Integer> range = new Range<Integer>(Integer.class, 3, true, 5, true);
+        final Range<Integer> range = new Range<>(Integer.class, 3, true, 5, true);
         assertTrue (range.contains(4));
         assertFalse(range.contains(6));
         assertFalse(range.contains(2));
@@ -120,7 +120,7 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testContainsNotInclusiveMinimum() {
-        final Range<Integer> range = new Range<Integer>(Integer.class, 2, false, 5, true);
+        final Range<Integer> range = new Range<>(Integer.class, 2, false, 5, true);
         assertTrue (range.contains(4));
         assertFalse(range.contains(6));
         assertFalse(range.contains(2));
@@ -134,7 +134,7 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testContainsNotInclusiveMaximum() {
-        final Range<Integer> range = new Range<Integer>(Integer.class, 3, true, 6, false);
+        final Range<Integer> range = new Range<>(Integer.class, 3, true, 6, false);
         assertTrue (range.contains(4));
         assertFalse(range.contains(6));
         assertFalse(range.contains(2));
@@ -147,7 +147,7 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testContainsNoLowerEndpoint() {
-        final Range<Integer> range = new Range<Integer>(Integer.class, null, true, 5, true);
+        final Range<Integer> range = new Range<>(Integer.class, null, true, 5, true);
         assertTrue (range.contains(-555));
         assertTrue (range.contains(5));
         assertFalse(range.contains(6));
@@ -158,7 +158,7 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testContainsNoUpperEndpoint() {
-        final Range<Integer> range = new Range<Integer>(Integer.class, 3, true, null, true);
+        final Range<Integer> range = new Range<>(Integer.class, 3, true, null, true);
         assertFalse(range.contains(1));
         assertTrue (range.contains(3));
         assertTrue (range.contains(10000));
@@ -169,7 +169,7 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testContainsNoEndpoints() {
-        final Range<Integer> range = new Range<Integer>(Integer.class, null, true, null, true);
+        final Range<Integer> range = new Range<>(Integer.class, null, true, null, true);
         assertTrue(range.contains(-55555));
         assertTrue(range.contains(100000));
     }
@@ -179,8 +179,8 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testContainsRange() {
-        final Range<Integer> range  = new Range<Integer>(Integer.class, -10, true, 10, true);
-        final Range<Integer> inside = new Range<Integer>(Integer.class,  -5, true,  5, true);
+        final Range<Integer> range  = new Range<>(Integer.class, -10, true, 10, true);
+        final Range<Integer> inside = new Range<>(Integer.class,  -5, true,  5, true);
 
         assertTrue(range.contains(inside));
         assertFalse(inside.contains(range));
@@ -191,8 +191,8 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testContainsRangeNoLowerEndpoint() {
-        final Range<Integer> range  = new Range<Integer>(Integer.class,  null, true, 500, true);
-        final Range<Integer> inside = new Range<Integer>(Integer.class, -2500, true, 305, true);
+        final Range<Integer> range  = new Range<>(Integer.class,  null, true, 500, true);
+        final Range<Integer> inside = new Range<>(Integer.class, -2500, true, 305, true);
 
         assertTrue (range.contains(inside));
         assertFalse(inside.contains(range));
@@ -203,8 +203,8 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testContainsRangeNoUpperEndpoint() {
-        final Range<Integer> range  = new Range<Integer>(Integer.class, -2500, true, null, true);
-        final Range<Integer> inside = new Range<Integer>(Integer.class,    17, true,  305, true);
+        final Range<Integer> range  = new Range<>(Integer.class, -2500, true, null, true);
+        final Range<Integer> inside = new Range<>(Integer.class,    17, true,  305, true);
 
         assertTrue(range.contains(inside));
         assertFalse(inside.contains(range));
@@ -215,9 +215,9 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testIntersects() {
-        final Range<Character> range1 = new Range<Character>(Character.class, 'a', true, 'g', true);
-        final Range<Character> range2 = new Range<Character>(Character.class, 'c', true, 'm', true);
-        final Range<Character> range3 = new Range<Character>(Character.class, 'o', true, 'z', true);
+        final Range<Character> range1 = new Range<>(Character.class, 'a', true, 'g', true);
+        final Range<Character> range2 = new Range<>(Character.class, 'c', true, 'm', true);
+        final Range<Character> range3 = new Range<>(Character.class, 'o', true, 'z', true);
 
         assertTrue (range1.intersects(range2));
         assertTrue (range2.intersects(range1));
@@ -230,8 +230,8 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testIntersection() {
-        final Range<Integer> range1 = new Range<Integer>(Integer.class, 1, true, 5, true);
-        final Range<Integer> range2 = new Range<Integer>(Integer.class, 4, true, 6, true);
+        final Range<Integer> range1 = new Range<>(Integer.class, 1, true, 5, true);
+        final Range<Integer> range2 = new Range<>(Integer.class, 4, true, 6, true);
 
         final Range<?> intersection = range1.intersect(range2);
         assertEquals(Integer.class, intersection.getElementType());
@@ -244,8 +244,8 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testIntersectionOfNonIntersectingRanges() {
-        final Range<Integer> range1 = new Range<Integer>(Integer.class, 1, true,  5, true);
-        final Range<Integer> range2 = new Range<Integer>(Integer.class, 8, true, 10, true);
+        final Range<Integer> range1 = new Range<>(Integer.class, 1, true,  5, true);
+        final Range<Integer> range2 = new Range<>(Integer.class, 8, true, 10, true);
 
         final Range<?> intersection = range1.intersect(range2);
         assertEquals(Integer.class, intersection.getElementType());
@@ -257,8 +257,8 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testUnion() {
-        final Range<Character> range1 = new Range<Character>(Character.class, 'a', true, 'f', true);
-        final Range<Character> range2 = new Range<Character>(Character.class, 'd', true, 'h', true);
+        final Range<Character> range1 = new Range<>(Character.class, 'a', true, 'f', true);
+        final Range<Character> range2 = new Range<>(Character.class, 'd', true, 'h', true);
 
         final Range<?> union = range1.union(range2);
         assertFalse(union.isEmpty());
@@ -271,8 +271,8 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testDisjointUnion() {
-        final Range<Character> range1 = new Range<Character>(Character.class, 'a', true, 'f', true);
-        final Range<Character> range2 = new Range<Character>(Character.class, 'm', true, 'v', true);
+        final Range<Character> range1 = new Range<>(Character.class, 'a', true, 'f', true);
+        final Range<Character> range2 = new Range<>(Character.class, 'm', true, 'v', true);
 
         final Range<?> unionRange = range1.union(range2);
         assertFalse(unionRange.isEmpty());
@@ -285,12 +285,12 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testSubtract() {
-        final Range<Integer> range1 = new Range<Integer>(Integer.class, 10, true, 40, true);
-        final Range<Integer> range2 = new Range<Integer>(Integer.class, 20, true, 25, true);
+        final Range<Integer> range1 = new Range<>(Integer.class, 10, true, 40, true);
+        final Range<Integer> range2 = new Range<>(Integer.class, 20, true, 25, true);
         final Range<Integer>[] subtract = range1.subtract(range2);
         assertEquals(2, subtract.length);
-        assertEquals(new Range<Integer>(Integer.class, 10, true,  20, false), subtract[0]);
-        assertEquals(new Range<Integer>(Integer.class, 25, false, 40, true),  subtract[1]);
+        assertEquals(new Range<>(Integer.class, 10, true,  20, false), subtract[0]);
+        assertEquals(new Range<>(Integer.class, 25, false, 40, true),  subtract[1]);
     }
 
     /**
@@ -298,12 +298,12 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testToString() {
-        assertEquals("{}",        new Range<Integer>(Integer.class, 10, false, 10, false).toString());
-        assertEquals("{10}",      new Range<Integer>(Integer.class, 10, true,  10, true ).toString());
-        assertEquals("[10 … 20]", new Range<Integer>(Integer.class, 10, true,  20, true ).toString());
-        assertEquals("(10 … 20)", new Range<Integer>(Integer.class, 10, false, 20, false).toString());
-        assertEquals("[10 … 20)", new Range<Integer>(Integer.class, 10, true,  20, false).toString());
-        assertEquals("(10 … 20]", new Range<Integer>(Integer.class, 10, false, 20, true ).toString());
+        assertEquals("{}",        new Range<>(Integer.class, 10, false, 10, false).toString());
+        assertEquals("{10}",      new Range<>(Integer.class, 10, true,  10, true ).toString());
+        assertEquals("[10 … 20]", new Range<>(Integer.class, 10, true,  20, true ).toString());
+        assertEquals("(10 … 20)", new Range<>(Integer.class, 10, false, 20, false).toString());
+        assertEquals("[10 … 20)", new Range<>(Integer.class, 10, true,  20, false).toString());
+        assertEquals("(10 … 20]", new Range<>(Integer.class, 10, false, 20, true ).toString());
     }
 
     /**
@@ -311,7 +311,7 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testFormatTo() {
-        final Range<Integer> range = new Range<Integer>(Integer.class, 10, true,  20, false);
+        final Range<Integer> range = new Range<>(Integer.class, 10, true,  20, false);
         assertEquals("[10 … 20)",    String.format(Locale.CANADA, "%s", range));
         assertEquals("[10 … 20)",    String.format(Locale.CANADA, "%4s", range));
         assertEquals("[10 … 20)   ", String.format(Locale.CANADA, "%-12s", range));
@@ -325,20 +325,20 @@ public final strictfp class RangeTest extends TestCase {
     @Test
     public void testEquality() {
         // Positive test - success case
-        final Range<Character> range1 = new Range<Character>(Character.class, 'a', true, 'f', true);
-        final Range<Character> range2 = new Range<Character>(Character.class, 'a', true, 'f', true);
+        final Range<Character> range1 = new Range<>(Character.class, 'a', true, 'f', true);
+        final Range<Character> range2 = new Range<>(Character.class, 'a', true, 'f', true);
         assertTrue(range1.equals(range2));
 
         // Positive test - failure case
-        final Range<Character> range3 = new Range<Character>(Character.class, 'a', true, 'g', true);
+        final Range<Character> range3 = new Range<>(Character.class, 'a', true, 'g', true);
         assertFalse(range1.equals(range3));
 
         // Failure due to type incompatibility
-        final Range<String> range4 = new Range<String>(String.class, "a", true, "g", true);
+        final Range<String> range4 = new Range<>(String.class, "a", true, "g", true);
         assertFalse(range3.equals(range4));
 
-        final Range<Character> range5 = new Range<Character>(Character.class, 'g', true, 'a', true);
-        final Range<Character> range6 = new Range<Character>(Character.class, 'g', true, 'a', true);
+        final Range<Character> range5 = new Range<>(Character.class, 'g', true, 'a', true);
+        final Range<Character> range6 = new Range<>(Character.class, 'g', true, 'a', true);
         assertTrue(range5.isEmpty());
         assertTrue(range6.isEmpty());
         assertTrue(range5.equals(range6));
@@ -349,7 +349,7 @@ public final strictfp class RangeTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final Range<Integer> range  = new Range<Integer>(Integer.class, -10, true, 10, true);
+        final Range<Integer> range  = new Range<>(Integer.class, -10, true, 10, true);
         assertNotSame(range, assertSerializedEquals(range));
     }
 }

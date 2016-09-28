@@ -102,7 +102,7 @@ public final strictfp class CollectionsExtTest extends TestCase {
      */
     @Test
     public void testAddToMultiValuesMap() {
-        final Map<String, List<Integer>> map = new LinkedHashMap<String, List<Integer>>();
+        final Map<String, List<Integer>> map = new LinkedHashMap<>();
         final Integer A1 = 2;
         final Integer A2 = 4;
         final Integer B1 = 3;
@@ -127,7 +127,7 @@ public final strictfp class CollectionsExtTest extends TestCase {
     @Test
     public void testToCaseInsensitiveNameMap() {
         final Function<String,String> nameFunction = ObjectConverters.identity(String.class);
-        final Map<String,String> expected = new HashMap<String,String>();
+        final Map<String,String> expected = new HashMap<>();
         assertNull(expected.put("AA", "AA"));
         assertNull(expected.put("Aa", "Aa")); // No mapping for "aa", because of ambiguity between "AA" and "Aa".
         assertNull(expected.put("BB", "BB"));

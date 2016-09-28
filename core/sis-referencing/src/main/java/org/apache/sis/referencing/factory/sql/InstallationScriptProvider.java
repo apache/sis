@@ -39,10 +39,10 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.StandardCharsets;
-import org.apache.sis.internal.jdk7.DirectoryStream;
-import org.apache.sis.internal.jdk7.Files;
-import org.apache.sis.internal.jdk7.Path;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 
 /**
@@ -323,8 +323,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
                 if (Files.isDirectory(dir)) {
                     final String[] resources = super.resources;
                     final String[] found = new String[resources.length - FIRST_FILE - 1];
-                    DirectoryStream stream = Files.newDirectoryStream(dir, "EPSG_*.sql");
-                    try {
+                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "EPSG_*.sql")) {
                         for (final Path path : stream) {
                             final String name = path.getFileName().toString();
                             for (int i=0; i<found.length; i++) {
@@ -339,8 +338,6 @@ public abstract class InstallationScriptProvider extends InstallationResources {
                                 }
                             }
                         }
-                    } finally {
-                        stream.close();
                     }
                     for (int i=0; i<found.length; i++) {
                         final String file = found[i];

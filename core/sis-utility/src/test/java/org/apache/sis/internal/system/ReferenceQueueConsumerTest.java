@@ -45,7 +45,7 @@ public final strictfp class ReferenceQueueConsumerTest extends TestCase {
      */
     @Test(expected=InterruptedException.class)
     public void verifyInterruptAssumption() throws InterruptedException {
-        final ReferenceQueue<Object> queue = new ReferenceQueue<Object>();
+        final ReferenceQueue<Object> queue = new ReferenceQueue<>();
         Thread.currentThread().interrupt();
         assertNull(queue.remove(1000));
     }

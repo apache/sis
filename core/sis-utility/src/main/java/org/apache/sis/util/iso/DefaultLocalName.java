@@ -33,7 +33,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

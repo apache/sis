@@ -111,13 +111,13 @@ public final class Assembler {
     /**
      * The {@code title} attributes found in abbreviations.
      */
-    private final Map<String,String> abbreviations = new HashMap<String,String>();
+    private final Map<String,String> abbreviations = new HashMap<>();
 
     /**
      * Whether we found an abbreviation after the last {@code h?} element.
      * This is used in order to avoid inserting too many abbreviation title.
      */
-    private final Set<String> writtenAbbreviations = new HashSet<String>();
+    private final Set<String> writtenAbbreviations = new HashSet<>();
 
     /**
      * Section numbers, incremented when a new {@code <h1>}, {@code <h2>}, <i>etc.</i> element is found.
@@ -304,20 +304,25 @@ public final class Assembler {
             }
             case Node.ELEMENT_NODE: {
                 final String name = node.getNodeName();
-                /* switch (name) */ {
-                    if (name.equals("xi:include")) {
+                switch (name) {
+                    case "xi:include": {
                         childNodes = replaceByBody(((Element) node).getAttribute("href"), node);
+                        break;
                     }
-                    else if (name.equals("aside") || name.equals("article")) {
+                    case "aside":
+                    case "article": {
                         index = false;
+                        break;
                     }
-                    else if (name.equals("abbr")) {
+                    case "abbr": {
                         processAbbreviation((Element) node);
+                        break;
                     }
-                    else if (name.equals("pre")) {
+                    case "pre": {
                         colorizer.highlight(node, ((Element) node).getAttribute("class"));
+                        break;
                     }
-                    else if (name.equals("code")) {
+                    case "code": {
                         if (!((Element) node).hasAttribute("class")) {
                             final String style = colorizer.styleForSingleIdentifier(node.getTextContent());
                             if (style != null) {
@@ -330,7 +335,7 @@ public final class Assembler {
                         }
                         return;                             // Do not scan recursively the <code> text content.
                     }
-                    else {
+                    default: {
                         if (name.length() == 2 && name.charAt(0) == 'h') {
                             final int c = name.charAt(1) - '0';
                             if (c >= 1 && c <= 9) {
@@ -358,6 +363,7 @@ public final class Assembler {
                                 }
                             }
                         }
+                        break;
                     }
                 }
                 break;

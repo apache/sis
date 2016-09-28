@@ -71,7 +71,6 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
         }
 
         @Override
-        @SuppressWarnings({"unchecked","rawtypes"})
         public java.util.List<?> apply(final Collection<?> source) {
             if (source == null) {
                 return null;
@@ -79,7 +78,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
             if (source instanceof java.util.List<?>) {
                 return (java.util.List<?>) source;
             }
-            return new ArrayList(source); // Checked in JDK7 branch.
+            return new ArrayList<>(source);
         }
     }
 
@@ -96,7 +95,6 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
         }
 
         @Override
-        @SuppressWarnings({"unchecked","rawtypes"})
         public java.util.Set<?> apply(final Collection<?> source) {
             if (source == null) {
                 return null;
@@ -104,7 +102,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
             if (source instanceof java.util.Set<?>) {
                 return (java.util.Set<?>) source;
             }
-            return new LinkedHashSet(source); // Checked in JDK7 branch.
+            return new LinkedHashSet<>(source);
         }
     }
 }

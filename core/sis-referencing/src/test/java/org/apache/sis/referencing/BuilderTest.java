@@ -221,14 +221,18 @@ public final strictfp class BuilderTest extends TestCase {
         builder.onCreate(true);
         for (final Map.Entry<String,?> entry : builder.properties.entrySet()) {
             final Object value = entry.getValue();
-            final String key = entry.getKey();
-            { // This is a switch(String) in the JDK7 branch.
-                if (key.equals(Identifier.AUTHORITY_KEY)) {
+            switch (entry.getKey()) {
+                case Identifier.AUTHORITY_KEY: {
                     assertSame("Authority and codespace shall be unchanged.", Citations.EPSG, value);
-                } else if (key.equals(ReferenceIdentifier.CODESPACE_KEY)) {
+                    break;
+                }
+                case ReferenceIdentifier.CODESPACE_KEY: {
                     assertEquals("Authority and codespace shall be unchanged.", "EPSG", value);
-                } else {
+                    break;
+                }
+                default: {
                     assertNull("Should not contain any non-null value except the authority.", value);
+                    break;
                 }
             }
         }
@@ -289,7 +293,7 @@ public final strictfp class BuilderTest extends TestCase {
      */
     @Test
     public void testCreationFromObject() {
-        final Map<String,Object> properties = new HashMap<String,Object>();
+        final Map<String,Object> properties = new HashMap<>();
         final Identifier id = new SimpleIdentifier(null, "An identifier", false);
         assertNull(properties.put(AbstractIdentifiedObject.IDENTIFIERS_KEY, id));
         assertNull(properties.put(AbstractIdentifiedObject.ALIAS_KEY,       "An alias"));

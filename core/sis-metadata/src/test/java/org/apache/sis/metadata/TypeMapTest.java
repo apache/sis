@@ -64,21 +64,21 @@ public final strictfp class TypeMapTest extends TestCase {
         final Map<String,Class<?>> map = MetadataStandard.ISO_19115.asTypeMap(
                 Citation.class, KeyNamePolicy.UML_IDENTIFIER, TypeValuePolicy.ELEMENT_TYPE);
         assertArrayEquals(new Object[] {
-            new SimpleEntry<String,Class<?>>("title",                 InternationalString.class),
-            new SimpleEntry<String,Class<?>>("alternateTitle",        InternationalString.class),
-            new SimpleEntry<String,Class<?>>("date",                  CitationDate.class),
-            new SimpleEntry<String,Class<?>>("edition",               InternationalString.class),
-            new SimpleEntry<String,Class<?>>("editionDate",           Date.class),
-            new SimpleEntry<String,Class<?>>("identifier",            Identifier.class),
-            new SimpleEntry<String,Class<?>>("citedResponsibleParty", ResponsibleParty.class),
-            new SimpleEntry<String,Class<?>>("presentationForm",      PresentationForm.class),
-            new SimpleEntry<String,Class<?>>("series",                Series.class),
-            new SimpleEntry<String,Class<?>>("otherCitationDetails",  InternationalString.class),
-//          new SimpleEntry<String,Class<?>>("collectiveTitle",       InternationalString.class),  -- deprecated as of ISO 19115:2014
-            new SimpleEntry<String,Class<?>>("ISBN",                  String.class),
-            new SimpleEntry<String,Class<?>>("ISSN",                  String.class),
-            new SimpleEntry<String,Class<?>>("graphic",               BrowseGraphic.class),
-            new SimpleEntry<String,Class<?>>("onlineResource",        OnlineResource.class)
+            new SimpleEntry<>("title",                 InternationalString.class),
+            new SimpleEntry<>("alternateTitle",        InternationalString.class),
+            new SimpleEntry<>("date",                  CitationDate.class),
+            new SimpleEntry<>("edition",               InternationalString.class),
+            new SimpleEntry<>("editionDate",           Date.class),
+            new SimpleEntry<>("identifier",            Identifier.class),
+            new SimpleEntry<>("citedResponsibleParty", ResponsibleParty.class),
+            new SimpleEntry<>("presentationForm",      PresentationForm.class),
+            new SimpleEntry<>("series",                Series.class),
+            new SimpleEntry<>("otherCitationDetails",  InternationalString.class),
+//          new SimpleEntry<>("collectiveTitle",       InternationalString.class),  -- deprecated as of ISO 19115:2014
+            new SimpleEntry<>("ISBN",                  String.class),
+            new SimpleEntry<>("ISSN",                  String.class),
+            new SimpleEntry<>("graphic",               BrowseGraphic.class),
+            new SimpleEntry<>("onlineResource",        OnlineResource.class)
         }, map.entrySet().toArray());
 
         assertEquals(InternationalString.class, map.get("alternateTitle"));

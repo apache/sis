@@ -41,7 +41,6 @@ import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**
@@ -124,7 +123,7 @@ final class Element implements Serializable {
         keyword = name;
         offset  = singleton.offset;
         locale  = singleton.locale;
-        list    = new LinkedList<Object>();                     // Needs to be a modifiable list.
+        list    = new LinkedList<>();                           // Needs to be a modifiable list.
         list.add(singleton);
     }
 
@@ -135,7 +134,7 @@ final class Element implements Serializable {
         keyword = toCopy.keyword;
         offset  = toCopy.offset;
         locale  = toCopy.locale;
-        list    = new LinkedList<Object>(toCopy.list);          // Needs to be a modifiable list.
+        list    = new LinkedList<>(toCopy.list);                // Needs to be a modifiable list.
         final ListIterator<Object> it = list.listIterator();
         while (it.hasNext()) {
             final Object value = it.next();
@@ -220,7 +219,7 @@ final class Element implements Serializable {
          *   - Otherwise, if the first character is a quote, then the value is taken as a String.
          *   - Otherwise, the element is parsed as a number or as a date, depending of 'isTemporal' boolean value.
          */
-        final List<Object> list = new LinkedList<Object>();
+        final List<Object> list = new LinkedList<>();
         final String separator = parser.symbols.trimmedSeparator();
         while (lower < length) {
             final int firstChar = text.codePointAt(lower);
@@ -777,7 +776,7 @@ final class Element implements Serializable {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder();
-        format(buffer, 0, JDK7.lineSeparator());
+        format(buffer, 0, System.lineSeparator());
         return buffer.toString();
     }
 

@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.collection.WeakEntry.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -541,7 +541,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
                 final Entry[] table = WeakValueHashMap.this.table;
                 for (Entry el : table) {
                     while (el != null) {
-                        final Map.Entry<K,V> entry = new SimpleEntry<K,V>(el);
+                        final Map.Entry<K,V> entry = new SimpleEntry<>(el);
                         if (entry.getValue() != null) {
                             elements[index++] = entry;
                         }

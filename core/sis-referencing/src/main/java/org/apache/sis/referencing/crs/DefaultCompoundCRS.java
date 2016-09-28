@@ -328,7 +328,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * @see #getSingleComponents()
      */
     private boolean setSingleComponents(final List<? extends CoordinateReferenceSystem> crs) {
-        final List<SingleCRS> flattened = new ArrayList<SingleCRS>(crs.size());
+        final List<SingleCRS> flattened = new ArrayList<>(crs.size());
         final boolean identical = ReferencingUtilities.getSingleComponents(crs, flattened);
         singles = UnmodifiableArrayList.wrap(flattened.toArray(new SingleCRS[flattened.size()]));
         return identical;

@@ -25,9 +25,6 @@ import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
-// Related to JK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Base class for parser and formatter of tabular data, providing control on line and column separators.
@@ -140,7 +137,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
         beforeFill      = "";
         fillCharacter   = ' ';
         columnSeparator = " ";
-        lineSeparator   = JDK7.lineSeparator();
+        lineSeparator   = System.lineSeparator();
     }
 
     /**

@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
 // Branch-dependent imports
-import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 
 
 /**
@@ -616,13 +616,13 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
              */
             buffer.position((int) p);
             clearBitOffset();
-        } else if (channel instanceof FileChannel) {
+        } else if (channel instanceof SeekableByteChannel) {
             /*
              * Requested position is outside the current limits of the buffer,
              * but we can set the new position directly in the channel.
              */
             flush();
-            ((FileChannel) channel).position(channelOffset + position);
+            ((SeekableByteChannel) channel).position(channelOffset + position);
             bufferOffset = position;
         } else if (p >= 0) {
             /*

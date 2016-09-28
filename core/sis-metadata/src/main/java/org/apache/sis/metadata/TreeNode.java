@@ -448,13 +448,13 @@ class TreeNode implements Node {
                     it.next(); // Inefficient way to move at the desired index, but hopefully rare.
                 }
                 return it.next();
-            } catch (RuntimeException e) { // (NullPointerException | IndexOutOfBoundsException | NoSuchElementException) on JDK7.
+            } catch (NullPointerException | IndexOutOfBoundsException | NoSuchElementException e) {
                 /*
                  * May happen if the collection for this metadata property changed after the iteration
                  * in the TreeNodeChildren. Users should not keep TreeNode references instances for a
                  * long time, but instead iterate again over TreeNodeChildren when needed.
                  */
-                throw (ConcurrentModificationException) new ConcurrentModificationException().initCause(e);
+                throw new ConcurrentModificationException(e);
             }
         }
 
@@ -489,7 +489,7 @@ class TreeNode implements Node {
                 ((List) values).set(indexInList, value);
             } catch (IndexOutOfBoundsException e) {
                 // Same rational than in the getUserObject() method.
-                throw (ConcurrentModificationException) new ConcurrentModificationException().initCause(e);
+                throw new ConcurrentModificationException(e);
             }
         }
     }

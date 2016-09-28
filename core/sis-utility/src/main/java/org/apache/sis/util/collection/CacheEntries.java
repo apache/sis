@@ -80,7 +80,7 @@ final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
      */
     @Override
     public Iterator<Map.Entry<K,V>> iterator() {
-        return new Iter<K,V>(entries.iterator());
+        return new Iter<>(entries.iterator());
     }
 
     /**
@@ -123,7 +123,7 @@ final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
                         continue;
                     }
                 }
-                next = new SimpleEntry<K,V>(entry.getKey(), (V) value);
+                next = new SimpleEntry<>(entry.getKey(), (V) value);
                 return;
             }
             next = null;

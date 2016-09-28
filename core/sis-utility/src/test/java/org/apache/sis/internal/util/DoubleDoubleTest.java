@@ -352,10 +352,10 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      *   <li>The arrays do not contains an entry for a value that could be omitted.</li>
      * </ul>
      *
-     * @throws Exception If a reflective operation failed (should never happen).
+     * @throws ReflectiveOperationException Should never happen.
      */
     @Test
-    public void testArraysConsistency() throws Exception {
+    public void testArraysConsistency() throws ReflectiveOperationException {
         Field field = DoubleDouble.class.getDeclaredField("VALUES");
         field.setAccessible(true);
         final double[] values = (double[]) field.get(null);

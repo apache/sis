@@ -172,11 +172,8 @@ final class TransformCommand extends MetadataCommand {
             throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, identifier), e, name);
         } else {
             final Metadata metadata;
-            final DataStore store = DataStores.open(identifier);
-            try {
+            try (DataStore store = DataStores.open(identifier)) {
                 metadata = store.getMetadata();
-            } finally {
-                store.close();
             }
             if (metadata != null) {
                 for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
@@ -210,19 +207,13 @@ final class TransformCommand extends MetadataCommand {
         final boolean useStandardInput = useStandardInput();
         if (useStandardInput || !files.isEmpty()) {
             if (useStandardInput) {
-                LineNumberReader in = new LineNumberReader(new InputStreamReader(System.in, encoding));
-                try {
+                try (LineNumberReader in = new LineNumberReader(new InputStreamReader(System.in, encoding))) {
                     points = readCoordinates(in, "stdin");
-                } finally {
-                    in.close();
                 }
             } else {
                 for (final String file : files) {
-                    LineNumberReader in = new LineNumberReader(new InputStreamReader(new FileInputStream(file), encoding));
-                    try {
+                    try (LineNumberReader in = new LineNumberReader(new InputStreamReader(new FileInputStream(file), encoding))) {
                         points = readCoordinates(in, file);
-                    } finally {
-                        in.close();
                     }
                 }
             }
@@ -535,7 +526,7 @@ final class TransformCommand extends MetadataCommand {
      * @return the coordinate values.
      */
     private List<double[]> readCoordinates(final LineNumberReader in, final String filename) throws IOException {
-        final List<double[]> points = new ArrayList<double[]>();
+        final List<double[]> points = new ArrayList<>();
         try {
             String line;
             while ((line = in.readLine()) != null) {

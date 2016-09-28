@@ -44,7 +44,7 @@ public final class SensorType extends CodeList<SensorType> {
      * List of all enumerations of this type.
      * Must be declared before any enum declaration.
      */
-    private static final List<SensorType> VALUES = new ArrayList<SensorType>();
+    private static final List<SensorType> VALUES = new ArrayList<>();
 
     /**
      * The sensor is a radiometer.

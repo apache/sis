@@ -35,9 +35,6 @@ import com.sun.star.lang.XSingleComponentFactory;
 import com.sun.star.lib.uno.helper.Factory;
 import com.sun.star.registry.XRegistryKey;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * The registration of all formulas provided in this package.
@@ -119,11 +116,8 @@ public final class Registration implements FilenameFilter {
             for (final String filename : content) {
                 final File packFile = new File(directory, filename);
                 final File jarFile  = new File(directory, filename.substring(0, filename.length() - PACK.length()) + "jar");
-                final JarOutputStream out = new JarOutputStream(new FileOutputStream(jarFile));
-                try {
+                try (JarOutputStream out = new JarOutputStream(new FileOutputStream(jarFile))) {
                     unpacker.unpack(packFile, out);
-                } finally {
-                    out.close();
                 }
                 packFile.delete();
             }
@@ -148,10 +142,7 @@ public final class Registration implements FilenameFilter {
         } catch (InvocationTargetException e) {
             fatalException(caller, "Failed to install EPSG geodetic dataset.", e.getTargetException());
             return false;
-        } catch (Exception e) {             // This is (ReflectiveOperationException | LinkageError) on the JDK7 branch.
-            classpathException(caller, e);
-            return false;
-        } catch (LinkageError e) {
+        } catch (ReflectiveOperationException | LinkageError e) {
             classpathException(caller, e);
             return false;
         }
@@ -176,7 +167,7 @@ public final class Registration implements FilenameFilter {
      * Logs the given exception for a classpath problem.
      */
     private static void classpathException(final String method, final Throwable exception) {
-        final String lineSeparator = JDK7.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final StringBuilder message = new StringBuilder("Can not find Apache SIS classes.").append(lineSeparator)
                 .append("Classpath = ").append(System.getProperty("java.class.path"));
         final ClassLoader loader = ReferencingFunctions.class.getClassLoader();

@@ -70,7 +70,7 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

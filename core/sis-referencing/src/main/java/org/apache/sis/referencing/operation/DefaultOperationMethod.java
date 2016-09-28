@@ -61,7 +61,7 @@ import org.apache.sis.io.wkt.FormattableObject;
 import static org.apache.sis.util.ArgumentChecks.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -322,7 +322,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @return The identified object properties in a mutable map.
      */
     private static Map<String,Object> getProperties(final IdentifiedObject info, final Citation authority) {
-        final Map<String,Object> properties = new HashMap<String,Object>(IdentifiedObjects.getProperties(info));
+        final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(info));
         properties.put(NAME_KEY, new NamedIdentifier(authority, info.getName().getCode()));
         properties.remove(IDENTIFIERS_KEY);
         return properties;

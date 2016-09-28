@@ -28,7 +28,7 @@ import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.XLink;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -271,7 +271,7 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
             }
         }
         if (value != null) {
-            identifiers.add(new SpecializedIdentifier<T>(authority, value));
+            identifiers.add(new SpecializedIdentifier<>(authority, value));
         }
         return old;
     }

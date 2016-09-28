@@ -55,7 +55,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      * @return The properties to be given to descriptor constructor.
      */
     private static Map<String,Object> properties(final String name) {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, name));
         assertNull(properties.put(DefaultParameterDescriptor.LOCALE_KEY, Locale.US));
         return properties;
@@ -69,7 +69,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      * @return The parameter descriptor.
      */
     static <T> DefaultParameterDescriptor<T> createSimpleOptional(final String name, final Class<T> type) {
-        return new DefaultParameterDescriptor<T>(properties(name), 0, 1, type, null, null, null);
+        return new DefaultParameterDescriptor<>(properties(name), 0, 1, type, null, null, null);
     }
 
     /**
@@ -84,7 +84,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     static DefaultParameterDescriptor<Integer> create(final String name,
             final int minimumValue, final int maximumValue, final int defaultValue)
     {
-        return new DefaultParameterDescriptor<Integer>(properties(name), 1, 1, Integer.class,
+        return new DefaultParameterDescriptor<>(properties(name), 1, 1, Integer.class,
                 NumberRange.create(minimumValue, true, maximumValue, true), null, defaultValue);
     }
 
@@ -101,7 +101,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     static DefaultParameterDescriptor<Double> create(final String name,
             final double minimumValue, final double maximumValue, final double defaultValue, final Unit<?> unit)
     {
-        return new DefaultParameterDescriptor<Double>(properties(name), 1, 1, Double.class,
+        return new DefaultParameterDescriptor<>(properties(name), 1, 1, Double.class,
                 MeasurementRange.create(minimumValue, true, maximumValue, true, unit), null,
                 Double.isNaN(defaultValue) ? null : defaultValue);
     }
@@ -119,7 +119,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     static <T> DefaultParameterDescriptor<T> create(final String name, final Class<T> type,
             final T[] validValues, final T defaultValue)
     {
-        return new DefaultParameterDescriptor<T>(properties(name), 1, 1, type, null, validValues, defaultValue);
+        return new DefaultParameterDescriptor<>(properties(name), 1, 1, type, null, validValues, defaultValue);
     }
 
     /**
@@ -135,7 +135,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
             final double minimumValue, final double maximumValue, final Unit<?> unit)
     {
         final MeasurementRange<Double> valueDomain = MeasurementRange.create(minimumValue, true, maximumValue, true, unit);
-        return new DefaultParameterDescriptor<double[]>(properties(name), 1, 1, double[].class, valueDomain, null, null);
+        return new DefaultParameterDescriptor<>(properties(name), 1, 1, double[].class, valueDomain, null, null);
     }
 
     /**
@@ -149,7 +149,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
         final Map<String, Object> properties = properties(name);
         assertNull(properties.put(DefaultParameterDescriptor.IDENTIFIERS_KEY,
                 new ImmutableIdentifier(Citations.EPSG, Constants.EPSG, Short.toString(code))));
-        return new DefaultParameterDescriptor<Double>(properties, 0, 1, Double.class, null, null, null);
+        return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, null);
     }
 
     /**
@@ -228,8 +228,8 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      */
     @Test
     public void testStringType() {
-        final Range<String> valueDomain = new Range<String>(String.class, "AAA", true, "BBB", true);
-        final DefaultParameterDescriptor<String> descriptor = new DefaultParameterDescriptor<String>(
+        final Range<String> valueDomain = new Range<>(String.class, "AAA", true, "BBB", true);
+        final DefaultParameterDescriptor<String> descriptor = new DefaultParameterDescriptor<>(
                 properties("String param"), 0, 1, String.class, valueDomain, null, "ABC");
         assertEquals("name", "String param",     descriptor.getName().getCode());
         assertEquals("valueClass", String.class, descriptor.getValueClass());
@@ -299,7 +299,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
          * Invalid operation: wrong type of range value.
          */
         try {
-            DefaultParameterDescriptor<double[]> p = new DefaultParameterDescriptor<double[]>(properties("Array param"),
+            DefaultParameterDescriptor<double[]> p = new DefaultParameterDescriptor<>(properties("Array param"),
                     0, 1, double[].class, NumberRange.create(4, true, 9, true), null, null);
             fail("Should not be allowed to create " + p);
         } catch (IllegalArgumentException e) {

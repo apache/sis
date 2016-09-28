@@ -71,7 +71,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
             weakMap.clear();
-            final HashMap<Integer,Integer> strongMap = new HashMap<Integer,Integer>();
+            final HashMap<Integer,Integer> strongMap = new HashMap<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
                 final Integer key   = random.nextInt(SAMPLE_SIZE);
                 final Integer value = random.nextInt(SAMPLE_SIZE);
@@ -113,7 +113,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
             weakMap.clear();
-            final HashMap<Integer,Integer> strongMap = new HashMap<Integer,Integer>();
+            final HashMap<Integer,Integer> strongMap = new HashMap<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
                 // We really want new instances here.
                 final Integer key   = new Integer(random.nextInt(SAMPLE_SIZE));
@@ -184,7 +184,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
     @Test
     @DependsOnMethod("testStrongReferences")
     public void testWithArrayKeys() {
-        final WeakValueHashMap<int[],Integer> weakMap = new WeakValueHashMap<int[],Integer>(int[].class);
+        final WeakValueHashMap<int[],Integer> weakMap = new WeakValueHashMap<>(int[].class);
         final int[] k1 = new int[] {2, 5, 3};
         final int[] k2 = new int[] {2, 5, 4};
         final Integer v1 = 1;
@@ -207,7 +207,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
     @Test
     @DependsOnMethod("testStrongReferences")
     public void testIdentityComparisons() {
-        final WeakValueHashMap<Integer,Integer> weakMap = new WeakValueHashMap<Integer,Integer>(Integer.class, true);
+        final WeakValueHashMap<Integer,Integer> weakMap = new WeakValueHashMap<>(Integer.class, true);
         final Integer k1 = 10;
         final Integer k2 = 20;
         final Integer k3 = new Integer(10); // Really want a new instance.

@@ -33,7 +33,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -154,7 +154,7 @@ final class StringJoinOperation extends AbstractOperation {
             attributeNames[i] = name.toString();
             converters[i] = ObjectConverters.find(String.class, ((DefaultAttributeType<?>) attributeType).getValueClass());
         }
-        resultType = FeatureOperations.POOL.unique(new DefaultAttributeType<String>(
+        resultType = FeatureOperations.POOL.unique(new DefaultAttributeType<>(
                 resultIdentification(identification), String.class, 1, 1, null));
         this.delimiter = delimiter;
         this.prefix = (prefix == null) ? "" : prefix;

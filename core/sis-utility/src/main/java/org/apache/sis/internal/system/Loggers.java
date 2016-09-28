@@ -121,7 +121,7 @@ public final class Loggers extends Static {
      * @return The effective logging levels of SIS loggers.
      */
     public static SortedMap<String,Level> getEffectiveLevels() {
-        final SortedMap<String,Level> levels = new TreeMap<String,Level>();
+        final SortedMap<String,Level> levels = new TreeMap<>();
         for (final Field field : Loggers.class.getDeclaredFields()) {
             if (Modifier.isStatic(field.getModifiers()) && field.getType() == String.class) try {
                 levels.put((String) field.get(null), null);

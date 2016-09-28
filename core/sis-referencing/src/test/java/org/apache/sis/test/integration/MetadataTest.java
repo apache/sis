@@ -87,7 +87,7 @@ import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.StandardCharsets;
+import java.nio.charset.StandardCharsets;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 
 

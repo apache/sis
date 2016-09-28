@@ -130,9 +130,9 @@ final class ParameterTableRow {
     ParameterTableRow(final IdentifiedObject object, final Locale locale, final Set<String> preferredCodespaces,
             final Map<String,Integer> remarks, final boolean isBrief)
     {
-        values = new ArrayList<Object>(2); // In the vast majority of cases, we will have only one value.
-        units  = new ArrayList<Object>(2);
-        identifiers = new LinkedHashMap<String,Set<Object>>();
+        values = new ArrayList<>(2); // In the vast majority of cases, we will have only one value.
+        units  = new ArrayList<>(2);
+        identifiers = new LinkedHashMap<>();
         ReferenceIdentifier name = object.getName();
         if (name != null) { // Paranoiac check.
             final String codespace = name.getCodeSpace();
@@ -219,7 +219,7 @@ final class ParameterTableRow {
         }
         Set<Object> ids = identifiers.get(codespace);
         if (ids == null) {
-            ids = new LinkedHashSet<Object>(8);
+            ids = new LinkedHashSet<>(8);
             identifiers.put(codespace, ids);
         }
         ids.add(identifier);

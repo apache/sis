@@ -60,12 +60,12 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
     public static final DefaultParameterDescriptorGroup M1_M1_O1_O2;
     static {
         final Class<Integer> type = Integer.class;
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         M1_M1_O1_O2 = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "Test group"), 0, 1,
-            new DefaultParameterDescriptor<Integer>(name(properties, "Mandatory 1", "Ambiguity"), 1, 1, type, null, null, DEFAULT_VALUE),
-            new DefaultParameterDescriptor<Integer>(name(properties, "Mandatory 2", "Alias 2"),   1, 1, type, null, null, DEFAULT_VALUE),
-            new DefaultParameterDescriptor<Integer>(name(properties, "Optional 3",  "Alias 3"),   0, 1, type, null, null, DEFAULT_VALUE),
-            new DefaultParameterDescriptor<Integer>(name(properties, "Optional 4",  "Ambiguity"), 0, 2, type, null, null, DEFAULT_VALUE)
+            new DefaultParameterDescriptor<>(name(properties, "Mandatory 1", "Ambiguity"), 1, 1, type, null, null, DEFAULT_VALUE),
+            new DefaultParameterDescriptor<>(name(properties, "Mandatory 2", "Alias 2"),   1, 1, type, null, null, DEFAULT_VALUE),
+            new DefaultParameterDescriptor<>(name(properties, "Optional 3",  "Alias 3"),   0, 1, type, null, null, DEFAULT_VALUE),
+            new DefaultParameterDescriptor<>(name(properties, "Optional 4",  "Ambiguity"), 0, 2, type, null, null, DEFAULT_VALUE)
         );
     }
 
@@ -84,10 +84,10 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
     @Test
     public void testConstruction() {
         final Class<Integer> type = Integer.class;
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         final DefaultParameterDescriptor<Integer> p1, p2;
-        p1 = new DefaultParameterDescriptor<Integer>(name(properties,   "Name",  null), 1, 1, type, null, null, null);
-        p2 = new DefaultParameterDescriptor<Integer>(name(properties, "  NAME ", null), 1, 1, type, null, null, null);
+        p1 = new DefaultParameterDescriptor<>(name(properties,   "Name",  null), 1, 1, type, null, null, null);
+        p2 = new DefaultParameterDescriptor<>(name(properties, "  NAME ", null), 1, 1, type, null, null, null);
         try {
             new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "Test group"), 0, 1, p1, p2);
             fail("Constructor should have detected the duplicated names.");

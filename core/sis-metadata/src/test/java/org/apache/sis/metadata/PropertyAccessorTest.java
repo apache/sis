@@ -553,7 +553,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         final List<InternationalString> newTitles = Arrays.<InternationalString>asList(
                 new SimpleInternationalString("New title 1"),
                 new SimpleInternationalString("New title 2"));
-        final List<InternationalString> merged = new ArrayList<InternationalString>(oldTitles);
+        final List<InternationalString> merged = new ArrayList<>(oldTitles);
         assertTrue(merged.addAll(newTitles));
 
         // Set the title.

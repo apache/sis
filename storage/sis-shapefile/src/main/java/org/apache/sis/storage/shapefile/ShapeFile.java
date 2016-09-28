@@ -18,7 +18,7 @@ package org.apache.sis.storage.shapefile;
 
 import java.io.File;
 import java.util.List;
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.internal.shapefile.ShapefileDescriptor;
@@ -50,10 +50,10 @@ public class ShapeFile {
 
     /** Shapefile descriptor. */
     private ShapefileDescriptor shapefileDescriptor;
-
+    
     /** Database field descriptors. */
     private List<DBase3FieldDescriptor> databaseFieldsDescriptors;
-
+    
     /**
      * Construct a Shapefile from a file.
      * @param shpfile file to read.
@@ -119,7 +119,7 @@ public class ShapeFile {
     public DefaultFeatureType getFeaturesType() {
         return this.featuresType;
     }
-
+    
     /**
      * Returns the shapefile descriptor.
      * @return Shapefile descriptor.
@@ -127,10 +127,10 @@ public class ShapeFile {
     public ShapefileDescriptor getShapefileDescriptor() {
         return this.shapefileDescriptor;
     }
-
-    /**
+    
+    /** 
      * Returns the database fields descriptors.
-     * @return List of fields descriptors.
+     * @return List of fields descriptors. 
      */
     public List<DBase3FieldDescriptor> getDatabaseFieldsDescriptors() {
         return this.databaseFieldsDescriptors;
@@ -200,7 +200,7 @@ public class ShapeFile {
     public void loadDescriptors() throws InvalidDbaseFileFormatException, InvalidShapefileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
         // Doing an simple query will init the internal descriptors.
         // It prepares a SELECT * FROM <DBase> but don't read a record by itself.
-        InputFeatureStream is = findAll();
-        is.close();
+        try(InputFeatureStream is = findAll()) {
+        }
     }
 }

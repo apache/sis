@@ -94,7 +94,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     @Workaround(library="JDK", version="1.7")
     private static Map<String,Object> toMap(final IdentifiedObject parameters) {
         ArgumentChecks.ensureNonNull("parameters", parameters);
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         properties.put(NAME_KEY, parameters.getName());
         final Collection<ReferenceIdentifier> identifiers = parameters.getIdentifiers();
         int size = identifiers.size();

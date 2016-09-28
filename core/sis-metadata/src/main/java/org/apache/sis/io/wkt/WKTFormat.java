@@ -253,7 +253,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Map<String,Element> fragments() {
         if (fragments == null) {
-            fragments = new TreeMap<String,Element>();
+            fragments = new TreeMap<>();
         }
         return fragments;
     }
@@ -264,9 +264,30 @@ public class WKTFormat extends CompoundFormat<Object> {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Map<Class<?>,Factory> factories() {
         if (factories == null) {
-            factories = new HashMap<Class<?>,Factory>(8);
+            factories = new HashMap<>(8);
         }
         return factories;
+    }
+
+    /**
+     * Returns the locale for the given category. This method implements the following mapping:
+     *
+     * <ul>
+     *   <li>{@link java.util.Locale.Category#FORMAT}: the value of {@link Symbols#getLocale()},
+     *       normally fixed to {@link Locale#ROOT}, used for number formatting.</li>
+     *   <li>{@link java.util.Locale.Category#DISPLAY}: the {@code locale} given at construction time,
+     *       used for {@link InternationalString} localization.</li>
+     * </ul>
+     *
+     * @param  category The category for which a locale is desired.
+     * @return The locale for the given category (never {@code null}).
+     */
+    @Override
+    public Locale getLocale(final Locale.Category category) {
+        if (category == Locale.Category.FORMAT) {
+            return symbols.getLocale();
+        }
+        return super.getLocale(category);
     }
 
     /**
@@ -660,7 +681,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         short error = Errors.Keys.NotAUnicodeIdentifier_1;
         if (CharSequences.isUnicodeIdentifier(name)) {
             if (sharedValues == null) {
-                sharedValues = new HashMap<Object,Object>();
+                sharedValues = new HashMap<>();
             }
             final ParsePosition pos = new ParsePosition(0);
             final Element element = new Element(parser(), wkt, pos, sharedValues);

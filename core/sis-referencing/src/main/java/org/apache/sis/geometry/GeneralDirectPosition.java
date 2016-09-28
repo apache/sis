@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -310,7 +310,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
             GeneralDirectPosition e = (GeneralDirectPosition) super.clone();
             field.set(e, ordinates.clone());
             return e;
-        } catch (Exception exception) { // (ReflectiveOperationException | CloneNotSupportedException) on JDK7
+        } catch (ReflectiveOperationException | CloneNotSupportedException exception) {
             // Should not happen, since we are cloneable.
             // Should not happen, since the "ordinates" field exists.
             // etc...

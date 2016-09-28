@@ -227,7 +227,7 @@ public class SQLTranslator {
     public SQLTranslator(final DatabaseMetaData md, final String catalog, final String schema) throws SQLException {
         ArgumentChecks.ensureNonNull("md", md);
         quote = md.getIdentifierQuoteString().trim();
-        accessToAnsi = new HashMap<String,String>(4);
+        accessToAnsi = new HashMap<>(4);
         this.catalog = catalog;
         this.schema  = schema;
         setup(md);
@@ -253,8 +253,7 @@ public class SQLTranslator {
             if (toUpperCase && i != MIXED_CASE) {
                 table = table.toUpperCase(Locale.US);
             }
-            final ResultSet result = md.getTables(catalog, schema, table, null);
-            try {
+            try (ResultSet result = md.getTables(catalog, schema, table, null)) {
                 if (result.next()) {
                     isTableFound    = true;
                     quoteTableNames = (i == MIXED_CASE);
@@ -265,8 +264,6 @@ public class SQLTranslator {
                     if (schema == null) schema = "";
                     break;
                 }
-            } finally {
-                result.close();
             }
         }
         /*
@@ -281,11 +278,8 @@ public class SQLTranslator {
              * This column has been renamed "coord_axis_order" in DLL scripts.
              * We need to check which name our current database uses.
              */
-            final ResultSet result = md.getColumns(catalog, schema, "Coordinate Axis", "ORDER");
-            try {
+            try (ResultSet result = md.getColumns(catalog, schema, "Coordinate Axis", "ORDER")) {
                 translateColumns = !result.next();
-            } finally {
-                result.close();
             }
         } else {
             accessToAnsi.put("Coordinate_Operation", "coordoperation");
@@ -302,8 +296,7 @@ public class SQLTranslator {
         if (md.storesLowerCaseIdentifiers()) {
             deprecated = deprecated.toLowerCase(Locale.US);
         }
-        final ResultSet result = md.getColumns(catalog, schema, null, deprecated);
-        try {
+        try (ResultSet result = md.getColumns(catalog, schema, null, deprecated)) {
             while (result.next()) {
                 if (CharSequences.endsWith(result.getString("TABLE_NAME"), "Datum", true)) {
                     final int type = result.getInt("DATA_TYPE");
@@ -311,8 +304,6 @@ public class SQLTranslator {
                     break;
                 }
             }
-        } finally {
-            result.close();
         }
     };
 

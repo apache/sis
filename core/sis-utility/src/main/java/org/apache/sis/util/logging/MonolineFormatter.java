@@ -43,9 +43,6 @@ import org.apache.sis.util.Debug;
 
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * A formatter writing log messages on a single line. Compared to the JDK {@link SimpleFormatter},
@@ -326,7 +323,7 @@ public class MonolineFormatter extends Formatter {
          * The default (8 characters) is a little bit too wide...
          */
         final StringWriter str = new StringWriter();
-        writer  = new LineAppender(str, JDK7.lineSeparator(), true);
+        writer  = new LineAppender(str, System.lineSeparator(), true);
         buffer  = str.getBuffer().append(header);
         printer = new PrintWriter(IO.asWriter(writer));
         writer.setTabulationWidth(4);
@@ -553,7 +550,7 @@ loop:   for (int i=0; ; i++) {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private SortedMap<Level,X364> colors() {
         if (colors == null) {
-            colors = new TreeMap<Level,X364>(COMPARATOR);
+            colors = new TreeMap<>(COMPARATOR);
         }
         return colors;
     }
@@ -701,7 +698,7 @@ loop:   for (int i=0; ; i++) {
              * amount of spaces in order to align message body on the column after the level name.
              */
             String bodyLineSeparator = writer.getLineSeparator();
-            final String lineSeparator = JDK7.lineSeparator();
+            final String lineSeparator = System.lineSeparator();
             if (bodyLineSeparator.length() != lineSeparator.length() + margin + 1) {
                 bodyLineSeparator = lineSeparator + levelColor + CharSequences.spaces(margin) + levelReset + ' ';
                 writer.setLineSeparator(bodyLineSeparator);

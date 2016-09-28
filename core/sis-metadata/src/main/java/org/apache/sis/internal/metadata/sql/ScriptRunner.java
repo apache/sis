@@ -36,7 +36,6 @@ import org.apache.sis.util.resources.Errors;
 // Branch-specific imports
 import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.internal.jdk8.BiFunction;
-import org.apache.sis.internal.jdk7.AutoCloseable;
 
 
 /**
@@ -55,8 +54,7 @@ import org.apache.sis.internal.jdk7.AutoCloseable;
  * @version 0.7
  * @module
  */
-@AutoCloseable
-public class ScriptRunner {
+public class ScriptRunner implements AutoCloseable {
     /**
      * The database user having read (not write) permissions.
      *
@@ -109,7 +107,7 @@ public class ScriptRunner {
      *
      * @see #replace(String, String)
      */
-    private final Map<String,String> replacements = new HashMap<String,String>();
+    private final Map<String,String> replacements = new HashMap<>();
 
     /**
      * A sentinel value for the {@linkplain #replace replacements} map meaning that {@code ScriptRunner}
@@ -604,6 +602,7 @@ parseLine:  while (pos < length) {
      *
      * @throws SQLException If an error occurred while closing the statement.
      */
+    @Override
     public void close() throws SQLException {
         statement.close();
     }

@@ -165,8 +165,7 @@ public class LambertConicConformal extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final byte variant = getVariant(method);
-        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles =
-                new EnumMap<ParameterRole, ParameterDescriptor<Double>>(ParameterRole.class);
+        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         /*
          * "Scale factor" is not formally a "Lambert Conformal (2SP)" argument, but we accept it
          * anyway for all Lambert projections since it may be used in some Well Known Text (WKT).

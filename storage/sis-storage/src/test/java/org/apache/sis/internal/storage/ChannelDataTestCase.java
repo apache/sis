@@ -108,7 +108,7 @@ abstract strictfp class ChannelDataTestCase extends TestCase {
                 operation = random.nextInt(numOperations);
                 transferRandomData(operation);
             }
-        } catch (AssertionError e) {
+        } catch (AssertionError | RuntimeException e) {
             out.println("Iter. count: " + count);
             out.println("Position:    " + position);
             out.println("Bit offset:  " + bitOffset);

@@ -165,7 +165,7 @@ abstract class DaemonThread extends Thread {
         while (thread != null) {
             if (!thread.isAlive() || thread.isStalled()) {
                 if (list == null) {
-                    list = new ArrayList<Thread>();
+                    list = new ArrayList<>();
                 }
                 list.add(thread);
             }

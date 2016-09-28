@@ -22,11 +22,8 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.logging.Level;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
 
 /**
  * The Abstract Byte Reader.
@@ -188,7 +185,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbase
      */
     private String toCodePage(byte pageCodeBinaryValue) {
         // From http://trac.osgeo.org/gdal/ticket/2864
-        HashMap<Integer, String> knownConversions = new HashMap<Integer,String>();
+        HashMap<Integer, String> knownConversions = new HashMap<>();
         knownConversions.put(0x01, "cp437"); //  U.S. MS–DOS
         knownConversions.put(0x02, "cp850"); // International MS–DOS
         knownConversions.put(0x03, "cp1252"); // Windows ANSI

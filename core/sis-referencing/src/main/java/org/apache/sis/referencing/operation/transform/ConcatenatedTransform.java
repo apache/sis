@@ -426,7 +426,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * @see MathTransforms#getSteps(MathTransform)
      */
     public final List<MathTransform> getSteps() {
-        final List<MathTransform> transforms = new ArrayList<MathTransform>(5);
+        final List<MathTransform> transforms = new ArrayList<>(5);
         getSteps(transforms);
         return transforms;
     }
@@ -438,7 +438,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * (<var>projection</var>) elements, which does not need to be instances of {@link MathTransform}.
      */
     private List<Object> getPseudoSteps() {
-        final List<Object> transforms = new ArrayList<Object>();
+        final List<Object> transforms = new ArrayList<>();
         getSteps(transforms);
         /*
          * Pre-process the transforms before to format. Some steps may be merged, or new

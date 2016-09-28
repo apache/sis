@@ -132,7 +132,7 @@ public final strictfp class NumberRangeTest extends TestCase {
         final ValueRange values = NumberRangeTest.class
                 .getMethod("testValueRangeAnnotation").getAnnotation(ValueRange.class);
         assertNotNull("Annotation not found.", values);
-        final NumberRange<Short> range = new NumberRange<Short>(Short.class, values);
+        final NumberRange<Short> range = new NumberRange<>(Short.class, values);
         assertEquals(NumberRange.create((short) 4, true, (short) 8, false), range);
     }
 }

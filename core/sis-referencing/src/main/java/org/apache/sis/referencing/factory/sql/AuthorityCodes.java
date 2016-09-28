@@ -190,7 +190,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      * See class Javadoc for more information.
      */
     final CloseableReference<AuthorityCodes> createReference() {
-        return new CloseableReference<AuthorityCodes>(this, factory, statements);
+        return new CloseableReference<>(this, factory, statements);
     }
 
     /**
@@ -296,16 +296,13 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
                             sql[ONE] = null;    // Not needed anymore.
                         }
                         statement.setInt(1, n);
-                        final ResultSet results = statement.executeQuery();
-                        try {
+                        try (ResultSet results = statement.executeQuery()) {
                             while (results.next()) {
                                 String name = results.getString(1);
                                 if (name != null) {
                                     return name;
                                 }
                             }
-                        } finally {
-                            results.close();
                         }
                     }
                 }
@@ -382,7 +379,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      * The serialized map of authority codes is disconnected from the underlying database.
      */
     protected Object writeReplace() throws ObjectStreamException {
-        return new LinkedHashMap<String,String>(this);
+        return new LinkedHashMap<>(this);
     }
 
     /*

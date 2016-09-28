@@ -490,7 +490,7 @@ public class IdentifiedObjectFinder {
      * @see #createFromNames(IdentifiedObject)
      */
     Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
-        final Set<IdentifiedObject> result = new LinkedHashSet<IdentifiedObject>();     // We need to preserve order.
+        final Set<IdentifiedObject> result = new LinkedHashSet<>();     // We need to preserve order.
         for (final String code : getCodeCandidates(object)) {
             final IdentifiedObject candidate;
             try {

@@ -42,21 +42,18 @@ public class DBFBuiltInMemoryResultSetForTablesTypesListing extends BuiltInMemor
     @Override public String getString(String columnLabel) {
         logStep("getString", columnLabel);
 
-        {   // On the JDK7 branch, this is a switch on strings.
-            if (columnLabel.equals("OBJECTID")) {    // FIXME Documentation of ObjectId for geTabletTypes() has not been found. What are the rules about this field ?
+        switch(columnLabel) {
+            case "OBJECTID":                  // FIXME Documentation of ObjectId for geTabletTypes() has not been found. What are the rules about this field ?
                 this.wasNull = false;
                 return "1";
-            }
 
-            else if (columnLabel.equals("TABLE_TYPE")) {         // String => table type. Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
+            case "TABLE_TYPE":                // String => table type. Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
                 this.wasNull = false;
                 return "TABLE";               // and DBase 3 only knows tables.
-            }
 
-            else {
+            default:
                 this.wasNull = true;
                 return null;
-            }
         }
     }
 

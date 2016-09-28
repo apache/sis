@@ -830,7 +830,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
     @Test
     @DependsOnMethod("testProjected4D_to_2D")
     public void testSpatioTemporalToDerived() throws FactoryException, TransformException {
-        final Map<String,Object> properties = new HashMap<String,Object>();
+        final Map<String,Object> properties = new HashMap<>();
         properties.put(DerivedCRS.NAME_KEY, "Display");
         properties.put("conversion.name", "Display to WGS84");
 

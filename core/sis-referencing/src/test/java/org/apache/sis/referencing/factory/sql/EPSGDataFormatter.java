@@ -38,7 +38,7 @@ import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.TestDatabase;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.StandardCharsets;
+import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -141,12 +141,10 @@ public final class EPSGDataFormatter extends ScriptRunner {
             return;
         }
         final DataSource ds = TestDatabase.create("dummy");
-        final Connection c = ds.getConnection();
-        try {
+        try (Connection c = ds.getConnection()) {
             final EPSGDataFormatter f = new EPSGDataFormatter(c);
             f.run(new File(arguments[0]), new File(arguments[1]));
         } finally {
-            c.close();
             TestDatabase.drop(ds);
         }
     }
@@ -197,7 +195,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
      */
     private EPSGDataFormatter(final Connection c) throws SQLException {
         super(c, Integer.MAX_VALUE);
-        final Map<String,int[]> m = new HashMap<String,int[]>();
+        final Map<String,int[]> m = new HashMap<>();
         m.put("epsg_alias",                     new int[] {   });
         m.put("epsg_area",                      new int[] {0  });
         m.put("epsg_change",                    new int[] {   });
@@ -247,8 +245,9 @@ public final class EPSGDataFormatter extends ScriptRunner {
             throw new IllegalArgumentException("Input and output files are the same.");
         }
         out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), StandardCharsets.ISO_8859_1));
-        final LineNumberReader in = new LineNumberReader(new InputStreamReader(new FileInputStream(inputFile), StandardCharsets.ISO_8859_1));
-        try {
+        try (final LineNumberReader in = new LineNumberReader(
+                new InputStreamReader(new FileInputStream(inputFile), StandardCharsets.ISO_8859_1)))
+        {
             out.write("---\n" +
                       "---    Copyright International Association of Oil and Gas Producers (IOGP)\n" +
                       "---    See  http://www.epsg.org/TermsOfUse  (a copy is in ./LICENSE.txt).\n" +
@@ -259,7 +258,6 @@ public final class EPSGDataFormatter extends ScriptRunner {
                       "\n");
             run(inputFile.getName(), in);
         } finally {
-            in.close();
             out.close();
             out = null;
         }

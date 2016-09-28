@@ -156,20 +156,20 @@ public final strictfp class RangeSetTest extends TestCase {
         final Date yesterday = new Date(now.getTime() - MILLISECONDS_PER_DAY);
         assertTrue(ranges.add(yesterday, now));
         assertEquals(1, ranges.size());
-        checkContains(ranges, new Range<Date>(Date.class, yesterday, true, now, false), true, true);
+        checkContains(ranges, new Range<>(Date.class, yesterday, true, now, false), true, true);
         /*
          * Add a disjoint range.
          */
         final Date lastWeek = new Date(now.getTime() - 7*MILLISECONDS_PER_DAY);
         final Date other = new Date(lastWeek.getTime() + 2*MILLISECONDS_PER_DAY);
-        assertTrue(ranges.add(new Range<Date>(Date.class, lastWeek, true, other, false)));
+        assertTrue(ranges.add(new Range<>(Date.class, lastWeek, true, other, false)));
         assertEquals(2, ranges.size());
         /*
          * Verify the RangeSet content.
          */
         final Iterator<Range<Date>> it = ranges.iterator();
-        assertEqual(new Range<Date>(Date.class, lastWeek,  true, other, false), it.next(), ranges.first());
-        assertEqual(new Range<Date>(Date.class, yesterday, true, now,   false), it.next(), ranges.last());
+        assertEqual(new Range<>(Date.class, lastWeek,  true, other, false), it.next(), ranges.first());
+        assertEqual(new Range<>(Date.class, yesterday, true, now,   false), it.next(), ranges.last());
         assertFalse(it.hasNext());
     }
 
@@ -182,13 +182,13 @@ public final strictfp class RangeSetTest extends TestCase {
         assertTrue(ranges.isEmpty());
         assertTrue(ranges.add("FAA", "FBB"));
         assertEquals(1, ranges.size());
-        checkContains(ranges, new Range<String>(String.class, "FAA", true, "FBB", false), true, true);
+        checkContains(ranges, new Range<>(String.class, "FAA", true, "FBB", false), true, true);
         /*
          * Merge the singleton range with the given range.
          */
         assertTrue(ranges.add("FAZ", "FCC"));
         assertEquals(1, ranges.size());
-        checkContains(ranges, new Range<String>(String.class, "FAA", true, "FCC", false), true, true);
+        checkContains(ranges, new Range<>(String.class, "FAA", true, "FCC", false), true, true);
         /*
          * Add a disjoint range.
          */
@@ -198,8 +198,8 @@ public final strictfp class RangeSetTest extends TestCase {
          * Verify the RangeSet content.
          */
         final Iterator<Range<String>> it = ranges.iterator();
-        assertEqual(new Range<String>(String.class, "FAA", true, "FCC", false), it.next(), ranges.first());
-        assertEqual(new Range<String>(String.class, "GAA", true, "GBB", false), it.next(), ranges.last());
+        assertEqual(new Range<>(String.class, "FAA", true, "FCC", false), it.next(), ranges.first());
+        assertEqual(new Range<>(String.class, "GAA", true, "GBB", false), it.next(), ranges.last());
         assertFalse(it.hasNext());
     }
 

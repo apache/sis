@@ -46,7 +46,7 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
         assertSame(UUID, assertSerializedEquals(UUID));
         assertSame(HREF, assertSerializedEquals(HREF));
 
-        final List<Identifier> identifiers = new ArrayList<Identifier>();
+        final List<Identifier> identifiers = new ArrayList<>();
         final Map<Citation,String> map = new IdentifierMapAdapter(identifiers);
         assertTrue(identifiers.add(new IdentifierMapEntry(ID,   "myID")));
         assertTrue(identifiers.add(new IdentifierMapEntry(UUID, "myUUID")));

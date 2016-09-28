@@ -218,7 +218,7 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
         for (final Identifier id : identifiers) {
             if (id != null && id.getAuthority() instanceof NonMarshalledAuthority<?>) {
                 if (toPreserve == null) {
-                    toPreserve = new ArrayList<Identifier>(remaining);
+                    toPreserve = new ArrayList<>(remaining);
                 }
                 toPreserve.add(id);
             }
@@ -231,8 +231,8 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
          * We find at least one identifier that may need to be preserved.
          * We need to create a combination of the two collections.
          */
-        final Map<Citation,Identifier> authorities = new IdentityHashMap<Citation,Identifier>(4);
-        final List<Identifier> merged = new ArrayList<Identifier>(newValues.size());
+        final Map<Citation,Identifier> authorities = new IdentityHashMap<>(4);
+        final List<Identifier> merged = new ArrayList<>(newValues.size());
         for (final Identifier id : newValues) {
             merged.add(id);
             if (id != null) {

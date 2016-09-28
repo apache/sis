@@ -154,15 +154,17 @@ public final class Command {
             command = new HelpCommand(-1, args);
         } else {
             commandName = commandName.toLowerCase(Locale.US);
-                 if (commandName.equals("help"))       command = new HelpCommand      (commandIndex, args);
-            else if (commandName.equals("about"))      command = new AboutCommand     (commandIndex, args);
-            else if (commandName.equals("mime-type"))  command = new MimeTypeCommand  (commandIndex, args);
-            else if (commandName.equals("metadata"))   command = new MetadataCommand  (commandIndex, args);
-            else if (commandName.equals("crs"))        command = new CRSCommand       (commandIndex, args);
-            else if (commandName.equals("identifier")) command = new IdentifierCommand(commandIndex, args);
-            else if (commandName.equals("transform"))  command = new TransformCommand (commandIndex, args);
-            else throw new InvalidCommandException(Errors.format(
-                        Errors.Keys.UnknownCommand_1, commandName), commandName);
+            switch (commandName) {
+                case "help":       command = new HelpCommand      (commandIndex, args); break;
+                case "about":      command = new AboutCommand     (commandIndex, args); break;
+                case "mime-type":  command = new MimeTypeCommand  (commandIndex, args); break;
+                case "metadata":   command = new MetadataCommand  (commandIndex, args); break;
+                case "crs":        command = new CRSCommand       (commandIndex, args); break;
+                case "identifier": command = new IdentifierCommand(commandIndex, args); break;
+                case "transform":  command = new TransformCommand (commandIndex, args); break;
+                default: throw new InvalidCommandException(Errors.format(
+                            Errors.Keys.UnknownCommand_1, commandName), commandName);
+            }
         }
         this.commandName = commandName;
         CommandRunner.instance = command;       // For ResourcesDownloader only.

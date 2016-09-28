@@ -75,14 +75,16 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
         boolean hasP1 = false;
         boolean hasP2 = false;
         for (final ParameterDescriptor<?> param : parameters) {
-            String code = param.getName().getCode();
-            if (code.equals(Constants.STANDARD_PARALLEL_1)) hasP1 = true;
-            else if (code.equals(Constants.STANDARD_PARALLEL_2)) hasP2 = true;
-            else {
-                for (final GenericName alias : param.getAlias()) {
-                    code = alias.tip().toString();
-                    if (code.equals(Constants.STANDARD_PARALLEL_1)) hasP1 = true;
-                    else if (code.equals(Constants.STANDARD_PARALLEL_2)) hasP2 = true;
+            switch (param.getName().getCode()) {
+                case Constants.STANDARD_PARALLEL_1: hasP1 = true; break;
+                case Constants.STANDARD_PARALLEL_2: hasP2 = true; break;
+                default: {
+                    for (final GenericName alias : param.getAlias()) {
+                        switch (alias.tip().toString()) {
+                            case Constants.STANDARD_PARALLEL_1: hasP1 = true; break;
+                            case Constants.STANDARD_PARALLEL_2: hasP2 = true; break;
+                        }
+                    }
                 }
             }
             if (hasP1 & hasP2) break;

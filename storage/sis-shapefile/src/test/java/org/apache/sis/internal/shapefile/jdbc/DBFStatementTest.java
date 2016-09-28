@@ -41,15 +41,12 @@ public class DBFStatementTest extends AbstractTestBaseForInternalJDBC {
     public void openCloseStatement() throws SQLException {
         final Driver driver = new DBFDriver();
 
-        Connection connection = driver.connect(this.dbfFile.getAbsolutePath(), null);
-        try {
+        try(Connection connection = driver.connect(this.dbfFile.getAbsolutePath(), null)) {
             final Statement stmt = connection.createStatement();
             assertFalse("Statement should be opened", stmt.isClosed());
 
             stmt.close();
             assertTrue ("Statement should be closed", stmt.isClosed());
-        } finally {
-            connection.close();
         }
     }
 
@@ -61,8 +58,7 @@ public class DBFStatementTest extends AbstractTestBaseForInternalJDBC {
     @DependsOnMethod("openCloseStatement")
     public void statementClosed() throws SQLException {
         // Open a connection, open and close a statement.
-        Connection connection = connect();
-        try {
+        try(Connection connection = connect()) {
             final Statement stmt = connection.createStatement();
             stmt.close();
 
@@ -76,12 +72,10 @@ public class DBFStatementTest extends AbstractTestBaseForInternalJDBC {
             catch(SQLException e) {
                 fail("Not the expected exception for using a closed statement.");
             }
-        } finally {
-            connection.close();
         }
 
         // Same, but we close the connection instead.
-        connection = connect();
+        Connection connection = connect();
         final Statement stmt = connection.createStatement();
 
         connection.close(); // At this time, you expect also a warning on the console, telling that you have one statement still opened.

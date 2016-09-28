@@ -79,7 +79,7 @@ public class FeatureFormat extends TabularFormat<Object> {
     /**
      * An instance created when first needed and potentially shared.
      */
-    private static final AtomicReference<FeatureFormat> INSTANCE = new AtomicReference<FeatureFormat>();
+    private static final AtomicReference<FeatureFormat> INSTANCE = new AtomicReference<>();
 
     /**
      * The locale for international strings.
@@ -90,8 +90,8 @@ public class FeatureFormat extends TabularFormat<Object> {
      * Creates a new formatter for the default locale and timezone.
      */
     public FeatureFormat() {
-        super(Locale.getDefault(), TimeZone.getDefault());
-        displayLocale = super.getLocale(); // This is different on the JDK7 branch.
+        super(Locale.getDefault(Locale.Category.FORMAT), TimeZone.getDefault());
+        displayLocale = Locale.getDefault(Locale.Category.DISPLAY);
         columnSeparator = " │ ";
     }
 
@@ -116,6 +116,22 @@ public class FeatureFormat extends TabularFormat<Object> {
     @Override
     public final Class<Object> getValueType() {
         return Object.class;
+    }
+
+    /**
+     * Returns the locale for the given category.
+     *
+     * <ul>
+     *   <li>{@link java.util.Locale.Category#FORMAT} specifies the locale to use for values.</li>
+     *   <li>{@link java.util.Locale.Category#DISPLAY} specifies the locale to use for labels.</li>
+     * </ul>
+     *
+     * @param  category The category for which a locale is desired.
+     * @return The locale for the given category (never {@code null}).
+     */
+    @Override
+    public Locale getLocale(final Locale.Category category) {
+        return (category == Locale.Category.DISPLAY) ? displayLocale : super.getLocale(category);
     }
 
     /**

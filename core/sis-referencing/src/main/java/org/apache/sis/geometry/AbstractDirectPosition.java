@@ -39,7 +39,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

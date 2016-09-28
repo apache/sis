@@ -102,7 +102,7 @@ public final class Context extends MarshalContext {
      * {@code finally} block by the {@link #finish()} method. This {@code ThreadLocal} shall
      * not contain any value when no (un)marshalling is in progress.
      */
-    private static final ThreadLocal<Context> CURRENT = new ThreadLocal<Context>();
+    private static final ThreadLocal<Context> CURRENT = new ThreadLocal<>();
 
     /**
      * The logger to use for warnings that are specific to XML.
@@ -218,15 +218,15 @@ public final class Context extends MarshalContext {
                    final WarningListener<?> warningListener)
     {
         this.bitMasks          = bitMasks;
-        this.locales           = new LinkedList<Locale>();
+        this.locales           = new LinkedList<>();
         this.timezone          = timezone;
         this.schemas           = schemas; // No clone, because this class is internal.
         this.versionGML        = versionGML;
         this.resolver          = resolver;
         this.converter         = converter;
         this.warningListener   = warningListener;
-        this.identifiers       = new HashMap<String,Object>();
-        this.identifiedObjects = new IdentityHashMap<Object,String>();
+        this.identifiers       = new HashMap<>();
+        this.identifiedObjects = new IdentityHashMap<>();
         if ((bitMasks & MARSHALLING) != 0) {
             if (!Semaphores.queryAndSet(Semaphores.NULL_COLLECTION)) {
                 this.bitMasks |= CLEAR_SEMAPHORE;

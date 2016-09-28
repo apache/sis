@@ -114,8 +114,7 @@ public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
         final ParameterDescriptor<?>[]         expected   = create(REMARK);
         final List<GeneralParameterDescriptor> fromXML    = unmarshal().descriptors();
         final List<GeneralParameterDescriptor> fromValues = UnmodifiableArrayList.<GeneralParameterDescriptor>wrap(expected);
-        final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements =
-                new IdentityHashMap<GeneralParameterDescriptor,GeneralParameterDescriptor>(4);
+        final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
         final GeneralParameterDescriptor[] merged = CC_OperationParameterGroup.merge(fromXML,
                 fromValues.toArray(new GeneralParameterDescriptor[fromValues.size()]), replacements);
 
@@ -139,8 +138,7 @@ public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
     public void testMerge() throws JAXBException {
         final ParameterDescriptorGroup fromXML = unmarshal();
         final ParameterDescriptor<?>[] fromValues = create(null);
-        final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements =
-                new IdentityHashMap<GeneralParameterDescriptor,GeneralParameterDescriptor>(4);
+        final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
         final GeneralParameterDescriptor[] merged = CC_OperationParameterGroup.merge(fromXML.descriptors(), fromValues.clone(), replacements);
         assertNotSame(fromValues, merged);
         /*

@@ -42,7 +42,7 @@ import org.junit.Test;
 import static org.apache.sis.test.ReferencingAssert.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -62,7 +62,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
      * Creates a parameter value for marshalling test.
      */
     private static <T> DefaultParameterValue<T> create(final Class<T> type, final Range<?> valueDomain) {
-        return new DefaultParameterValue<T>(new DefaultParameterDescriptor<T>(
+        return new DefaultParameterValue<>(new DefaultParameterDescriptor<>(
                 Collections.singletonMap(DefaultParameterDescriptor.NAME_KEY,
                         "A parameter of type " + type.getSimpleName()),
                 1, 1, type, valueDomain, null, null));
@@ -108,7 +108,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testDescriptor() throws JAXBException {
-        final DefaultParameterDescriptor<Double> descriptor = new DefaultParameterDescriptor<Double>(
+        final DefaultParameterDescriptor<Double> descriptor = new DefaultParameterDescriptor<>(
                 Collections.singletonMap(DefaultParameterDescriptor.NAME_KEY, "A descriptor"),
                 0, 1, Double.class, null, null, null);
         final String xml = XML.marshal(descriptor);

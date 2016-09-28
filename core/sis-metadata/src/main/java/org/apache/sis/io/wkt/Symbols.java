@@ -27,9 +27,6 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * The set of symbols to use for <cite>Well Known Text</cite> (WKT) parsing and formatting.
@@ -256,7 +253,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      *
      * @return The locale for dates and numbers.
      *
-     * @see WKTFormat#getLocale()
+     * @see WKTFormat#getLocale(Locale.Category)
      */
     @Override
     public final Locale getLocale() {
@@ -545,7 +542,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
     final String lineSeparator() {
         final String separator = getSeparator();
         return separator.substring(0, CharSequences.skipTrailingWhitespaces(separator, 0, separator.length()))
-                .concat(JDK7.lineSeparator());
+                .concat(System.lineSeparator());
     }
 
     /**

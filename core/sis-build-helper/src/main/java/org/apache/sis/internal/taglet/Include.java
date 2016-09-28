@@ -97,9 +97,7 @@ public final class Include extends InlineTaglet {
         file = new File(file.getParentFile(), reference.substring(0, sep));
         final String anchor = reference.substring(sep + 1);
         final StringBuilder buffer = new StringBuilder();
-        BufferedReader in = null;
-        try {
-            in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+        try (final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
             /*
              * Search the anchor.
              */
@@ -133,12 +131,6 @@ public final class Include extends InlineTaglet {
             }
         } catch (IOException e) {
             printError(position, "Error reading " + file + ":\n" + e);
-        } finally {
-            if (in != null) try {
-                in.close();
-            } catch (IOException e) {
-                printError(position, "Error reading " + file + ":\n" + e);
-            }
         }
         return buffer.toString();
     }

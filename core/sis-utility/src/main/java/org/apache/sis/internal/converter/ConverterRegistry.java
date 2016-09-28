@@ -84,7 +84,7 @@ public class ConverterRegistry {
      * Creates an initially empty set of object converters.
      */
     public ConverterRegistry() {
-        converters = new LinkedHashMap<ClassPair<?,?>, ObjectConverter<?,?>>();
+        converters = new LinkedHashMap<>();
     }
 
     /**
@@ -243,7 +243,6 @@ public class ConverterRegistry {
      * @param <T> The class of target (converted) values.
      * @param converter The converter to register.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
     public <S,T> void register(final ObjectConverter<S,T> converter) {
         ArgumentChecks.ensureNonNull("converter", converter);
         /*
@@ -274,7 +273,7 @@ public class ConverterRegistry {
                 initialize();
             }
             for (Class<? super T> i=targetClass; i!=null && i!=stopAt; i=i.getSuperclass()) {
-                register(new ClassPair(sourceClass, i), converter); // Checked in the JDK7 branch.
+                register(new ClassPair<>(sourceClass, i), converter);
             }
             /*
              * At this point, the given class and parent classes have been registered.
@@ -318,7 +317,7 @@ public class ConverterRegistry {
                     continue;
                 }
                 if (!i.isAssignableFrom(sourceClass)) {
-                    register(new ClassPair(sourceClass, i), converter); // Checked in the JDK7 branch.
+                    register(new ClassPair<>(sourceClass, i), converter);
                 }
             }
         }
@@ -439,7 +438,7 @@ public class ConverterRegistry {
     public <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> sourceClass, final Class<T> targetClass)
             throws UnconvertibleObjectException
     {
-        final ClassPair<S,T> key = new ClassPair<S,T>(sourceClass, targetClass);
+        final ClassPair<S,T> key = new ClassPair<>(sourceClass, targetClass);
         synchronized (converters) {
             ObjectConverter<? super S, ? extends T> converter = get(key);
             if (converter != null) {
@@ -490,7 +489,7 @@ public class ConverterRegistry {
             if (sourceComponent != null) {
                 final Class<?> targetComponent = targetClass.getComponentType();
                 if (targetComponent != null) {
-                    converter = new ArrayConverter<S,T>(sourceClass, targetClass, find(
+                    converter = new ArrayConverter<>(sourceClass, targetClass, find(
                             Numbers.primitiveToWrapper(sourceComponent),
                             Numbers.primitiveToWrapper(targetComponent)));
                     put(key, converter);

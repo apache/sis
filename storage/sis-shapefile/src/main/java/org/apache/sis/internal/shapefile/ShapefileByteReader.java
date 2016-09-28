@@ -35,10 +35,6 @@ import org.apache.sis.util.logging.Logging;
 
 import com.esri.core.geometry.*;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
-
-
 /**
  * Reader of a Shapefile Binary content by the way of a {@link java.nio.MappedByteBuffer}
  *
@@ -127,17 +123,17 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
 
         final int n = this.databaseFieldsDescriptors.size();
         final DefaultAttributeType<?>[] attributes = new DefaultAttributeType<?>[n + 1];
-        final Map<String, Object> properties = new HashMap<String, Object>(4);
+        final Map<String, Object> properties = new HashMap<>(4);
 
         // Load data field.
         for (int i = 0; i < n; i++) {
             properties.put(DefaultAttributeType.NAME_KEY, this.databaseFieldsDescriptors.get(i).getName());
-            attributes[i] = new DefaultAttributeType<String>(properties, String.class, 1, 1, null);
+            attributes[i] = new DefaultAttributeType<>(properties, String.class, 1, 1, null);
         }
 
         // Add geometry field.
         properties.put(DefaultAttributeType.NAME_KEY, GEOMETRY_NAME);
-        attributes[n] = new DefaultAttributeType<Geometry>(properties, Geometry.class, 1, 1, null);
+        attributes[n] = new DefaultAttributeType<>(properties, Geometry.class, 1, 1, null);
 
         // Add name.
         properties.put(DefaultAttributeType.NAME_KEY, name);
@@ -161,15 +157,14 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
             return false;
         }
 
-        try {
-            FileInputStream fis = new FileInputStream(this.shapeFileIndex); FileChannel fc = fis.getChannel();
+        try(FileInputStream fis = new FileInputStream(this.shapeFileIndex); FileChannel fc = fis.getChannel()) {
             try {
                 int fsize = (int)fc.size();
                 MappedByteBuffer indexesByteBuffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
 
                 // Indexes entries follow.
-                this.indexes = new ArrayList<Integer>();
-                this.recordsLengths = new ArrayList<Integer>();
+                this.indexes = new ArrayList<>();
+                this.recordsLengths = new ArrayList<>();
                 indexesByteBuffer.position(100);
                 indexesByteBuffer.order(ByteOrder.BIG_ENDIAN);
 
@@ -185,8 +180,6 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
                 log(Level.WARNING, "log.invalid_file_content_for_shapefile_index", this.shapeFileIndex.getAbsolutePath(), e.getMessage());
                 this.shapeFileIndex = null;
                 return false;
-            } finally {
-                fis.close();
             }
         }
         catch(FileNotFoundException e) {

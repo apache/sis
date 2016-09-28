@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -156,7 +156,7 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
     @Override
     public List<ParameterValueGroup> groups(final String name) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
-        final List<ParameterValueGroup> groups = new ArrayList<ParameterValueGroup>(4);
+        final List<ParameterValueGroup> groups = new ArrayList<>(4);
         for (final GeneralParameterValue value : values) {
             if (value instanceof ParameterValueGroup) {
                 if (IdentifiedObjects.isHeuristicMatchForName(value.getDescriptor(), name)) {

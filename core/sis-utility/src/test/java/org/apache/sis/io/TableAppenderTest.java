@@ -22,9 +22,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Related to JK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Tests {@link TableAppender} implementation.
@@ -87,7 +84,7 @@ public final strictfp class TableAppenderTest extends AppenderTestCase {
          * implementation), but simply in order to allow the test to pass.
          */
         if (out instanceof SingleCharAppendable) {
-            lineSeparator = JDK7.lineSeparator();
+            lineSeparator = System.lineSeparator();
         }
         assertOutputEquals(
                   "╔═════════╤═════════╤════════╗" + lineSeparator

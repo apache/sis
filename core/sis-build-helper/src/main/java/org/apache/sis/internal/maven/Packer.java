@@ -92,7 +92,7 @@ final class Packer implements FilenameFilter {
     private Map<File,PackInput> getInputJARs() throws IOException {
         final Set<String> filenames = JarCollector.loadDependencyList(new File(binariesDirectory, CONTENT_FILE));
         filenames.addAll(Arrays.asList(binariesDirectory.list(this)));
-        final Map<File,PackInput> inputJARs = new LinkedHashMap<File,PackInput>(filenames.size() * 4/3);
+        final Map<File,PackInput> inputJARs = new LinkedHashMap<>(filenames.size() * 4/3);
         for (final String filename : filenames) {
             File file = new File(filename);
             if (!file.isAbsolute()) {

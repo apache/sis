@@ -1037,7 +1037,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             GeneralEnvelope e = (GeneralEnvelope) super.clone();
             field.set(e, ordinates.clone());
             return e;
-        } catch (Exception exception) { // (CloneNotSupportedException | ReflectiveOperationException) on JDK7
+        } catch (CloneNotSupportedException | ReflectiveOperationException exception) {
             // Should not happen, since we are cloneable, the
             // field is known to exist and we made it accessible.
             throw new AssertionError(exception);

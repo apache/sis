@@ -185,7 +185,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
                     wrapper.isInherited = true;
                     return wrapper;
                 } catch (ClassNotFoundException e2) {
-                    // JDK7 branch does: e.addSuppressed(e2);
+                    e.addSuppressed(e2);
                 }
             }
             throw e;
@@ -441,7 +441,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      */
     @Test
     public void testPackageAnnotations() {
-        final Set<Package> packages = new HashSet<Package>();
+        final Set<Package> packages = new HashSet<>();
         for (final Class<?> type : types) {
             if (!CodeList.class.isAssignableFrom(type)) {
                 testingClass = type.getCanonicalName();

@@ -316,7 +316,7 @@ public final strictfp class RangeFormatTest extends TestCase {
         final long DAY  = 24L * HOUR;
         final long YEAR = round(365.25 * DAY);
 
-        Range<Date> range = new Range<Date>(Date.class,
+        Range<Date> range = new Range<>(Date.class,
                 new Date(15*DAY + 18*HOUR), true,
                 new Date(20*YEAR + 15*DAY + 9*HOUR), true);
         AttributedCharacterIterator it = format.formatToCharacterIterator(range);
@@ -332,7 +332,7 @@ public final strictfp class RangeFormatTest extends TestCase {
         /*
          * Try again with the infinity symbol in one endpoint.
          */
-        range = new Range<Date>(Date.class, (Date) null, true, new Date(20*YEAR), true);
+        range = new Range<>(Date.class, (Date) null, true, new Date(20*YEAR), true);
         it    = format.formatToCharacterIterator(range);
         text  = it.toString();
         findYears(it, RangeFormat.Field.MAX_VALUE, maxPos);
@@ -341,7 +341,7 @@ public final strictfp class RangeFormatTest extends TestCase {
         assertEquals(14, maxPos.getEndIndex());
         assertEquals(range, parse(text));
 
-        range = new Range<Date>(Date.class, new Date(20*YEAR), true, (Date) null, true);
+        range = new Range<>(Date.class, new Date(20*YEAR), true, (Date) null, true);
         it    = format.formatToCharacterIterator(range);
         text  = it.toString();
         findYears(it, RangeFormat.Field.MIN_VALUE, minPos);

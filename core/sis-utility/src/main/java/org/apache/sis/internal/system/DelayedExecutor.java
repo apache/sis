@@ -73,7 +73,7 @@ public final class DelayedExecutor extends DaemonThread {
     /**
      * List of delayed tasks to execute.
      */
-    private static final BlockingQueue<DelayedRunnable> QUEUE = new DelayQueue<DelayedRunnable>();
+    private static final BlockingQueue<DelayedRunnable> QUEUE = new DelayQueue<>();
 
     /**
      * Creates the singleton instance of the {@code DelayedExecutor} thread.

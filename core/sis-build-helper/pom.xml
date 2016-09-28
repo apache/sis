@@ -89,7 +89,7 @@ Define Maven Mojos and Javadoc taglets for generating resource files
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.3</version>  <!-- Last version compatible with JDK6 -->
+        <version>3.4</version>
         <executions>
           <execution>
             <id>default-descriptor</id>
@@ -118,7 +118,7 @@ Define Maven Mojos and Javadoc taglets for generating resource files
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
-      <version>3.3</version>
+      <version>3.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -160,7 +160,7 @@ Define Maven Mojos and Javadoc taglets for generating resource files
          This copy will not be needed anymore if http://jira.codehaus.org/browse/MNG-3328
          get fixed. -->
     <profile>
-      <id>jdk6-tools.jar</id>
+      <id>jdk7-tools.jar</id>
       <activation>
         <property>
           <name>java.vendor</name>

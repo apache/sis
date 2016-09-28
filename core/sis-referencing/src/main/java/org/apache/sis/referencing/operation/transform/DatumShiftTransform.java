@@ -31,7 +31,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
 // Branch-specific imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

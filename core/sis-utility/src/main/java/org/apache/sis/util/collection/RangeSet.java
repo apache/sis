@@ -292,7 +292,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         if (Number.class.isAssignableFrom(elementType)) {
             return new Numeric(elementType, isMinIncluded, isMaxIncluded);
         }
-        return new RangeSet<E>(elementType, isMinIncluded, isMaxIncluded);
+        return new RangeSet<>(elementType, isMinIncluded, isMaxIncluded);
     }
 
     /**
@@ -434,14 +434,13 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      */
     final int binarySearch(final E value, final int lower, final int upper) {
         switch (elementCode) {
-            // The convolved casts below are for working around a JDK6 compiler error which does not occur with the JDK7 compiler.
-            case DOUBLE:    return Arrays.binarySearch((double[]) array, lower, upper, ((Double)    ((Comparable) value)).doubleValue());
-            case FLOAT:     return Arrays.binarySearch((float []) array, lower, upper, ((Float)     ((Comparable) value)).floatValue ());
-            case LONG:      return Arrays.binarySearch((long  []) array, lower, upper, ((Long)      ((Comparable) value)).longValue  ());
-            case INTEGER:   return Arrays.binarySearch((int   []) array, lower, upper, ((Integer)   ((Comparable) value)).intValue   ());
-            case SHORT:     return Arrays.binarySearch((short []) array, lower, upper, ((Short)     ((Comparable) value)).shortValue ());
-            case BYTE:      return Arrays.binarySearch((byte  []) array, lower, upper, ((Byte)      ((Comparable) value)).byteValue  ());
-            case CHARACTER: return Arrays.binarySearch((char  []) array, lower, upper, ((Character) ((Comparable) value)).charValue  ());
+            case DOUBLE:    return Arrays.binarySearch((double[]) array, lower, upper, (Double)    value);
+            case FLOAT:     return Arrays.binarySearch((float []) array, lower, upper, (Float)     value);
+            case LONG:      return Arrays.binarySearch((long  []) array, lower, upper, (Long)      value);
+            case INTEGER:   return Arrays.binarySearch((int   []) array, lower, upper, (Integer)   value);
+            case SHORT:     return Arrays.binarySearch((short []) array, lower, upper, (Short)     value);
+            case BYTE:      return Arrays.binarySearch((byte  []) array, lower, upper, (Byte)      value);
+            case CHARACTER: return Arrays.binarySearch((char  []) array, lower, upper, (Character) value);
             default:        return Arrays.binarySearch((Object[]) array, lower, upper,             value);
         }
     }
@@ -931,7 +930,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "upper", upper));
         }
-        return intersect(new Range<E>(elementType,
+        return intersect(new Range<>(elementType,
                 lower.getMinValue(),  lower.isMinIncluded(),
                 maxValue, !upper.isMinIncluded()));
     }
@@ -956,7 +955,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "upper", upper));
         }
-        return intersect(new Range<E>(elementType, null, false, maxValue, !upper.isMinIncluded()));
+        return intersect(new Range<>(elementType, null, false, maxValue, !upper.isMinIncluded()));
     }
 
     /**
@@ -974,7 +973,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     @Override
     public SortedSet<Range<E>> tailSet(final Range<E> lower) {
         ArgumentChecks.ensureNonNull("lower", lower);
-        return intersect(new Range<E>(elementType, lower.getMinValue(), lower.isMinIncluded(), null, false));
+        return intersect(new Range<>(elementType, lower.getMinValue(), lower.isMinIncluded(), null, false));
     }
 
     /**
@@ -1508,7 +1507,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @return The new range for the given values.
      */
     protected Range<E> newRange(final E lower, final E upper) {
-        return new Range<E>(elementType, lower, isMinIncluded, upper, isMaxIncluded);
+        return new Range<>(elementType, lower, isMinIncluded, upper, isMaxIncluded);
     }
 
     /**
@@ -1525,7 +1524,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
 
         @Override
         protected Range<E> newRange(final E lower, final E upper) {
-            return new NumberRange<E>(elementType, lower, isMinIncluded, upper, isMaxIncluded);
+            return new NumberRange<>(elementType, lower, isMinIncluded, upper, isMaxIncluded);
         }
     }
 

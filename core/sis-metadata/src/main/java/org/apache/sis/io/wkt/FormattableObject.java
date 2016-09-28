@@ -82,7 +82,7 @@ public abstract class FormattableObject {
      * Since {@code toString()} is typically invoked for debugging purpose, a single formatter for
      * any thread is presumed sufficient.</div>
      */
-    private static final AtomicReference<Formatter> FORMATTER = new AtomicReference<Formatter>();
+    private static final AtomicReference<Formatter> FORMATTER = new AtomicReference<>();
 
     /**
      * Default constructor.

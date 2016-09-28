@@ -475,7 +475,7 @@ public final strictfp class HardCodedAxes {
             final AxisDirection direction, final Unit<?> unit, final double minimum, final double maximum,
             final RangeMeaning meaning)
     {
-        final Map<String,Object> properties = new HashMap<String,Object>(8);
+        final Map<String,Object> properties = new HashMap<>(8);
         properties.put(DefaultCoordinateSystemAxis.NAME_KEY, name);
         properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, minimum);
         properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, maximum);

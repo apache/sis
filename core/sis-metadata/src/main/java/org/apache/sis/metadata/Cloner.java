@@ -146,7 +146,7 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
          *          by their unmodifiable variant. The keys are assumed already immutable.
          */
         if (object instanceof Map<?,?>) {
-            final Map<Object,Object> map = new LinkedHashMap<Object,Object>((Map<?,?>) object);
+            final Map<Object,Object> map = new LinkedHashMap<>((Map<?,?>) object);
             for (final Iterator<Map.Entry<Object,Object>> it=map.entrySet().iterator(); it.hasNext();) {
                 final Map.Entry<Object,Object> entry = it.next();
                 entry.setValue(clone(entry.getValue()));

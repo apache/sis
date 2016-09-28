@@ -36,9 +36,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Verifies the API changes caused by the ISO 19115:2003 to ISO 19115:2014 upgrade.
@@ -94,7 +91,7 @@ public final strictfp class APIVerifier extends TestCase {
     private void verifyAPI(final MetadataStandard standard, final Properties changes)
             throws ClassNotFoundException, NoSuchMethodException
     {
-        final Set<Method> classChanges = new HashSet<Method>();
+        final Set<Method> classChanges = new HashSet<>();
         for (final Map.Entry<Object,Object> entry : changes.entrySet()) {
             final Class<?> implementation = standard.getImplementation(Class.forName((String) entry.getKey()));
             for (final String change : (String[]) CharSequences.split((String) entry.getValue(), ' ')) {
@@ -154,20 +151,21 @@ public final strictfp class APIVerifier extends TestCase {
      * @param  snapshotJAR Path to the JAR file of the GeoAPI interfaces that we would implement if it was released.
      * @param  unitsJAR    Path to the JAR file containing the {@code Unit} class. This is a GeoAPI dependency.
      * @param  out Where to write the API differences between {@code releasedJAR} and {@code snapshotJAR}.
-     * @throws Exception if an error occurred while processing the JAR file content.
+     * @throws ReflectiveOperationException if an error occurred while processing the JAR file content.
+     * @throws IOException if an error occurred while reading the JAR files or writing to {@code out}.
      */
     public static void listAPIChanges(final File releasedJAR, final File snapshotJAR, final File unitsJAR,
-            final Appendable out) throws Exception
+            final Appendable out) throws ReflectiveOperationException, IOException
     {
-        final String lineSeparator = JDK7.lineSeparator();
-        final Map<String,Boolean> methodChanges = new TreeMap<String,Boolean>();
-        final List<String> incompatibleChanges = new ArrayList<String>();
+        final String lineSeparator = System.lineSeparator();
+        final Map<String,Boolean> methodChanges = new TreeMap<>();
+        final List<String> incompatibleChanges = new ArrayList<>();
         final ClassLoader parent = APIVerifier.class.getClassLoader().getParent();
         final URL dependency = unitsJAR.toURI().toURL();
-        final JarFile newJARContent = new JarFile(snapshotJAR);
-        final URLClassLoader oldAPI = new URLClassLoader(new URL[] {releasedJAR.toURI().toURL(), dependency}, parent);
-        final URLClassLoader newAPI = new URLClassLoader(new URL[] {snapshotJAR.toURI().toURL(), dependency}, parent);
-        try {
+        try (final JarFile newJARContent = new JarFile(snapshotJAR);
+             final URLClassLoader oldAPI = new URLClassLoader(new URL[] {releasedJAR.toURI().toURL(), dependency}, parent);
+             final URLClassLoader newAPI = new URLClassLoader(new URL[] {snapshotJAR.toURI().toURL(), dependency}, parent))
+        {
             final Class<? extends Annotation> newUML = Class.forName("org.opengis.annotation.UML", false, newAPI).asSubclass(Annotation.class);
             final Method newIdentifier = newUML.getMethod("identifier", (Class[]) null);
             final Enumeration<JarEntry> entries = newJARContent.entries();
@@ -230,8 +228,6 @@ public final strictfp class APIVerifier extends TestCase {
                     }
                 }
             }
-        } finally {
-            newJARContent.close();
         }
         if (!incompatibleChanges.isEmpty()) {
             out.append(lineSeparator)

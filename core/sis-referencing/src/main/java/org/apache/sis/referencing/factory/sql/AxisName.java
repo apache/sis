@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 import org.apache.sis.util.Debug;
 
 

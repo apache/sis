@@ -65,11 +65,11 @@ public final strictfp class UtilitiesTest extends TestCase {
 
         final Collection<DummyLenient> c1, c2;
         if (orderIsSignificant) {
-            c1 = new ArrayList<DummyLenient>();
-            c2 = new ArrayList<DummyLenient>();
+            c1 = new ArrayList<>();
+            c2 = new ArrayList<>();
         } else {
-            c1 = new LinkedHashSet<DummyLenient>();
-            c2 = new LinkedHashSet<DummyLenient>();
+            c1 = new LinkedHashSet<>();
+            c2 = new LinkedHashSet<>();
         }
         assertTrue(c1.add(e1)); assertTrue(c1.add(e2));
         assertTrue(c2.add(e3)); assertTrue(c2.add(e4));

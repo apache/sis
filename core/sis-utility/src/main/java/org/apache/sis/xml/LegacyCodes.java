@@ -47,8 +47,8 @@ final class LegacyCodes {
     static {
         final CharacterSet[] codes = CharacterSet.values();
         final int capacity = Containers.hashMapCapacity(codes.length);
-        IANA_TO_LEGACY = new HashMap<String,String>(capacity);
-        LEGACY_TO_IANA = new HashMap<String,String>(capacity);
+        IANA_TO_LEGACY = new HashMap<>(capacity);
+        LEGACY_TO_IANA = new HashMap<>(capacity);
         for (final CharacterSet code : codes) {
             final String   legacy = code.identifier().intern();
             final String[] names  = code.names();

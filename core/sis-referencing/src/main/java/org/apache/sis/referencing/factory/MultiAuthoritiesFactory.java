@@ -229,8 +229,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             else nullMask |= (1 << i);
         }
         providers = ArraysExt.resize(p, length);
-        factories = new ConcurrentHashMap<AuthorityFactoryIdentifier, AuthorityFactory>();
-        warnings  = new HashMap<AuthorityFactoryIdentifier, Boolean>();
+        factories = new ConcurrentHashMap<>();
+        warnings  = new HashMap<>();
         isIterationCompleted = new AtomicInteger(nullMask);
     }
 
@@ -310,13 +310,13 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                     private final Iterator<AuthorityFactory> factories = getAllFactories();
 
                     /** An iterator over the codes of the current factory. */
-                    private Iterator<String> codes = Collections.<String>emptySet().iterator();
+                    private Iterator<String> codes = Collections.emptyIterator();
 
                     /** The prefix to prepend before codes, or {@code null} if none. */
                     private String prefix;
 
                     /** For filtering duplicated codes when there is many versions of the same authority. */
-                    private final Set<String> done = new HashSet<String>();
+                    private final Set<String> done = new HashSet<>();
 
                     /** Tests if there is more codes to return. */
                     @Override public boolean hasNext() {
@@ -350,7 +350,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             /**
              * The cache of values returned by {@link #getAuthorityCodes(AuthorityFactory)}.
              */
-            private final Map<AuthorityFactory, Set<String>> cache = new IdentityHashMap<AuthorityFactory, Set<String>>();
+            private final Map<AuthorityFactory, Set<String>> cache = new IdentityHashMap<>();
 
             /**
              * Returns the authority codes for the given factory.
@@ -394,7 +394,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             public int size() {
                 if (size < 0) {
                     int n = 0;
-                    final Set<String> done = new HashSet<String>();
+                    final Set<String> done = new HashSet<>();
                     for (final Iterator<AuthorityFactory> it = getAllFactories(); it.hasNext();) {
                         final AuthorityFactory factory = it.next();
                         if (done.add(getCodeSpace(factory))) {
@@ -475,7 +475,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     public Set<String> getCodeSpaces() {
         Set<String> union = codeSpaces;
         if (union == null) {
-            union = new LinkedHashSet<String>();
+            union = new LinkedHashSet<>();
             for (final Iterator<AuthorityFactory> it = getAllFactories(); it.hasNext();) {
                 union.addAll(getCodeSpaces(it.next()));
             }
@@ -533,7 +533,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * condition is meet, threads can safely use their iterators concurrently.</p>
      */
     final Iterator<AuthorityFactory> getAllFactories() {
-        return new LazySynchronizedIterator<AuthorityFactory>(providers);
+        return new LazySynchronizedIterator<>(providers);
     }
 
     /**
@@ -1556,8 +1556,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         @Override
         final Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
             if (finders == null) try {
-                final ArrayList<IdentifiedObjectFinder> list = new ArrayList<IdentifiedObjectFinder>();
-                final Map<AuthorityFactory,Boolean> unique = new IdentityHashMap<AuthorityFactory,Boolean>();
+                final ArrayList<IdentifiedObjectFinder> list = new ArrayList<>();
+                final Map<AuthorityFactory,Boolean> unique = new IdentityHashMap<>();
                 final Iterator<AuthorityFactory> it = ((MultiAuthoritiesFactory) factory).getAllFactories();
                 while (it.hasNext()) {
                     final AuthorityFactory candidate = it.next();
@@ -1574,7 +1574,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             } catch (BackingStoreException e) {
                 throw e.unwrapOrRethrow(FactoryException.class);
             }
-            final Set<IdentifiedObject> found = new LinkedHashSet<IdentifiedObject>();
+            final Set<IdentifiedObject> found = new LinkedHashSet<>();
             for (final IdentifiedObjectFinder finder : finders) {
                 found.addAll(finder.find(object));
             }

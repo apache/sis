@@ -42,35 +42,32 @@ public class DBFBuiltInMemoryResultSetForTablesListing extends BuiltInMemoryResu
     @Override public String getString(String columnLabel) {
         logStep("getString", columnLabel);
 
-        {   // On the JDK7 branch, this is a switch on strings.
-            if (columnLabel.equals("TABLE_NAME"))                // String => table name.
+        switch(columnLabel) {
+            case "TABLE_NAME":                // String => table name.
             {
                 String tableName = getTableName();
                 this.wasNull = (tableName == null);
                 return tableName;
             }
 
-            else if (columnLabel.equals("TABLE_TYPE")) {             // String => table type. Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
+            case "TABLE_TYPE":                // String => table type. Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
                 this.wasNull = false;
                 return "TABLE";
-            }
 
-            else if (columnLabel.equals("TYPE_NAME")                 // String => type name (may be null)
-                  || columnLabel.equals("TABLE_CAT")                 // String => table catalog (may be null)
-                  || columnLabel.equals("TABLE_SCHEM")               // String => table schema (may be null)
-                  || columnLabel.equals("REMARKS")                   // String => explanatory comment on the table
-                  || columnLabel.equals("TYPE_CAT")                  // String => the types catalog (may be null)
-                  || columnLabel.equals("TYPE_SCHEM")                // String => the types schema (may be null)
-                  || columnLabel.equals("SELF_REFERENCING_COL_NAME") // String => name of the designated "identifier" column of a typed table (may be null)
-                  || columnLabel.equals("REF_GENERATION")) {         // String => specifies how values in SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER", "DERIVED". (may be null)
+            case "TYPE_NAME":                 // String => type name (may be null)
+            case "TABLE_CAT":                 // String => table catalog (may be null)
+            case "TABLE_SCHEM":               // String => table schema (may be null)
+            case "REMARKS":                   // String => explanatory comment on the table
+            case "TYPE_CAT":                  // String => the types catalog (may be null)
+            case "TYPE_SCHEM":                // String => the types schema (may be null)
+            case "SELF_REFERENCING_COL_NAME": // String => name of the designated "identifier" column of a typed table (may be null)
+            case "REF_GENERATION":            // String => specifies how values in SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER", "DERIVED". (may be null)
                 this.wasNull = true;
                 return null;
-            }
 
-            else {
+            default:
                 this.wasNull = true;
                 return null;
-            }
         }
     }
 

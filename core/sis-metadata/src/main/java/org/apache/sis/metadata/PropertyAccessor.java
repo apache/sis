@@ -264,7 +264,7 @@ class PropertyAccessor {
         /*
          * Compute all information derived from getters: setters, property names, value types.
          */
-        mapping      = new HashMap<String,Integer>(hashMapCapacity(allCount));
+        mapping      = new HashMap<>(hashMapCapacity(allCount));
         names        = new String[allCount];
         elementTypes = new Class<?>[allCount];
         Method[] setters = null;
@@ -407,7 +407,7 @@ class PropertyAccessor {
          * Indices map is used for choosing what to do in case of name collision.
          */
         Method[] getters = (MetadataStandard.IMPLEMENTATION_CAN_ALTER_API ? implementation : type).getMethods();
-        final Map<String,Integer> indices = new HashMap<String,Integer>(hashMapCapacity(getters.length));
+        final Map<String,Integer> indices = new HashMap<>(hashMapCapacity(getters.length));
         boolean hasExtraGetter = false;
         int count = 0;
         for (Method candidate : getters) {
@@ -650,7 +650,7 @@ class PropertyAccessor {
                 // implements the interface where the getter come from.
                 throw new AssertionError(error);
             }
-            information = new PropertyInformation(standard, name, getter, elementType, range);
+            information = new PropertyInformation<>(standard, name, getter, elementType, range);
             informations[index] = information;
         }
         return information;

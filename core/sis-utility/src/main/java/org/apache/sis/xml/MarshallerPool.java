@@ -19,7 +19,7 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.Deque;
 import java.util.ServiceLoader;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -221,11 +221,11 @@ public class MarshallerPool {
             mapper = null;
         } else try {
             mapper = Class.forName(classname).getConstructor(String.class).newInstance(rootNamespace);
-        } catch (Throwable exception) { // (ReflectiveOperationException | NoClassDefFoundError) on JDK7 branch.
+        } catch (ReflectiveOperationException | NoClassDefFoundError exception) {
             throw new JAXBException(exception);
         }
-        marshallers        = new LinkedBlockingDeque<Marshaller>();
-        unmarshallers      = new LinkedBlockingDeque<Unmarshaller>();
+        marshallers        = new ConcurrentLinkedDeque<>();
+        unmarshallers      = new ConcurrentLinkedDeque<>();
         isRemovalScheduled = new AtomicBoolean();
     }
 

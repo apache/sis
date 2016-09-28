@@ -23,9 +23,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.X364;
 
-// Related to JK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * An {@link Appendable} which can apply different kinds of reformatting that depend on the
@@ -299,7 +296,7 @@ public class LineAppender extends Appender implements Flushable {
      */
     private void writeLineSeparator() throws IOException {
         if (lineSeparator == null) {
-            lineSeparator = JDK7.lineSeparator();
+            lineSeparator = System.lineSeparator();
         }
         out.append(lineSeparator);
     }

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.util;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -61,10 +60,6 @@ public final class StandardDateFormat extends SimpleDateFormat {
 
     /**
      * The {@value} timezone ID.
-     *
-     * The JDK7 branch has a 'X' pattern at the end of this format. But JDK6 does not support that pattern.
-     * As a workaround, code using this pattern will append a hard-coded {@code "'Z'"} if the timezone is
-     * known to be UTC.
      */
     public static final String UTC = "UTC";
 
@@ -84,7 +79,7 @@ public final class StandardDateFormat extends SimpleDateFormat {
      * specification. Note that this is different than {@link java.time.LocalDateTime} which parse those numbers as
      * fraction digits.
      */
-    public static final String TIME_PATTERN = "HH:mm:ss.SSS";
+    public static final String TIME_PATTERN = "HH:mm:ss.SSSX";
 
     /**
      * Number of fraction digits in {@link #TIME_PATTERN}.
@@ -129,7 +124,7 @@ public final class StandardDateFormat extends SimpleDateFormat {
      * @param zone    the timezone.
      */
     public StandardDateFormat(final Locale locale, final TimeZone zone) {
-        super(UTC.equals(zone.getID()) ? PATTERN + "'Z'" : PATTERN, locale);
+        super(PATTERN, locale);
         super.setTimeZone(zone);
     }
 
@@ -201,36 +196,6 @@ public final class StandardDateFormat extends SimpleDateFormat {
         final Date date = super.parse(fix.text, position);
         position.setIndex     (fix.adjustIndex(position.getIndex()));
         position.setErrorIndex(fix.adjustIndex(position.getErrorIndex()));
-        if (date != null) {
-            /*
-             * Following is a workaround specific to the JDK6 branch. Since JDK6 does not understand the 'Z' suffix,
-             * we handle it in this method. The Apache SIS branch for JDK7 does not need this hack since JDK7 supports
-             * parsing the 'Z' suffix.
-             */
-            final int p = position.getIndex();
-            if (p < text.length() && text.charAt(p) == 'Z') {
-                position.setIndex(p + 1);
-                final Calendar cal = calendar;
-                final int year   = cal.get(Calendar.YEAR);
-                final int month  = cal.get(Calendar.MONTH);
-                final int day    = cal.get(Calendar.DAY_OF_MONTH);
-                final int hour   = cal.get(Calendar.HOUR_OF_DAY);
-                final int minute = cal.get(Calendar.MINUTE);
-                final int second = cal.get(Calendar.SECOND);
-                final int millis = cal.get(Calendar.MILLISECOND);
-                final TimeZone timezone = cal.getTimeZone();
-                final long time;
-                try {
-                    cal.setTimeZone(TimeZone.getTimeZone(UTC));
-                    cal.set(year, month, day, hour, minute, second);
-                    cal.set(Calendar.MILLISECOND, millis);
-                    time = cal.getTimeInMillis();
-                } finally {
-                    cal.setTimeZone(timezone);
-                }
-                date.setTime(time);
-            }
-        }
         return date;
     }
 

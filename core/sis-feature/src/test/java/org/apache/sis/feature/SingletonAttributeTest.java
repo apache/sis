@@ -49,7 +49,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
      * This attribute has a default value.
      */
     static SingletonAttribute<String> city() {
-        return new SingletonAttribute<String>(DefaultAttributeTypeTest.city());
+        return new SingletonAttribute<>(DefaultAttributeTypeTest.city());
     }
 
     /**
@@ -57,7 +57,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
      * This attribute has no default value.
      */
     static SingletonAttribute<Integer> population() {
-        return new SingletonAttribute<Integer>(DefaultAttributeTypeTest.population(new HashMap<String,Object>(4)));
+        return new SingletonAttribute<>(DefaultAttributeTypeTest.population(new HashMap<String,Object>(4)));
     }
 
     /**
@@ -65,7 +65,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
      * This applies only to features of type "Capital".
      */
     static SingletonAttribute<String> parliament() {
-        return new SingletonAttribute<String>(DefaultAttributeTypeTest.parliament());
+        return new SingletonAttribute<>(DefaultAttributeTypeTest.parliament());
     }
 
     /**

@@ -62,7 +62,7 @@ final class OperationName extends DefaultOperationMetadata {
      * were identified only by a name in a {@code <srv:operationName>} element.</p>
      */
     static void resolve(final Collection<DefaultOperationMetadata> containsOperations, final Collection<DefaultCoupledResource> coupledResources) {
-        final Map<String,DefaultOperationMetadata> byName = new HashMap<String,DefaultOperationMetadata>();
+        final Map<String,DefaultOperationMetadata> byName = new HashMap<>();
         for (final DefaultOperationMetadata operation : containsOperations) {
             add(byName, operation.getOperationName(), operation);
         }

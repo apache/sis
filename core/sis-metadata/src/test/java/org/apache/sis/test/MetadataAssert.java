@@ -25,7 +25,6 @@ import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
 
 // Branch-specific imports
-import org.apache.sis.internal.jdk7.JDK7;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
@@ -151,7 +150,7 @@ public strictfp class MetadataAssert extends Assert {
                 WKT_FORMAT.setConvention(convention);
                 wkt = WKT_FORMAT.format(object);
             }
-            if (!wkt.matches(expected.replace("\n", JDK7.lineSeparator()))) {
+            if (!wkt.matches(expected.replace("\n", System.lineSeparator()))) {
                 fail("WKT does not match the expected regular expression. The WKT that we got is:\n" + wkt);
             }
         }

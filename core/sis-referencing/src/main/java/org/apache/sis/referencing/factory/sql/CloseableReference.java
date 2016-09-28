@@ -73,7 +73,7 @@ final class CloseableReference<T> extends WeakReference<T> implements Disposable
                     if (exception == null) {
                         exception = e;
                     } else {
-                        // exception.addSuppressed(e) on the JDK7 branch.
+                        exception.addSuppressed(e);
                     }
                 }
             }

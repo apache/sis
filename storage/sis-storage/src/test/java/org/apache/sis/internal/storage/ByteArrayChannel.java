@@ -22,7 +22,7 @@ import java.nio.channels.ClosedChannelException;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
-import java.nio.channels.ByteChannel;
+import java.nio.channels.SeekableByteChannel;
 
 
 /**
@@ -38,7 +38,7 @@ import java.nio.channels.ByteChannel;
  * @see ChannelDataOutputTest
  * @see ChannelImageOutputStream
  */
-final strictfp class ByteArrayChannel implements ByteChannel {
+final strictfp class ByteArrayChannel implements SeekableByteChannel {
     /**
      * Bytes array where to write the data.
      * The length of this array is the capacity.
@@ -105,6 +105,7 @@ final strictfp class ByteArrayChannel implements ByteChannel {
     /**
      * Returns this channel position.
      */
+    @Override
     public long position() throws IOException {
         ensureOpen();
         return position;
@@ -113,7 +114,8 @@ final strictfp class ByteArrayChannel implements ByteChannel {
     /**
      * Sets this channel position.
      */
-    public ByteArrayChannel position(final long newPosition) throws IOException {
+    @Override
+    public SeekableByteChannel position(final long newPosition) throws IOException {
         ensureOpen();
         ArgumentChecks.ensureBetween("position", 0, data.length, newPosition);
         position = (int) newPosition;
@@ -123,6 +125,7 @@ final strictfp class ByteArrayChannel implements ByteChannel {
     /**
      * Returns the current size.
      */
+    @Override
     public long size() throws IOException {
         ensureOpen();
         return limit;
@@ -131,7 +134,8 @@ final strictfp class ByteArrayChannel implements ByteChannel {
     /**
      * Truncates the data to the given size.
      */
-    public ByteArrayChannel truncate(final long size) throws IOException {
+    @Override
+    public SeekableByteChannel truncate(final long size) throws IOException {
         ensureOpen();
         ArgumentChecks.ensureBetween("position", 0, limit, size);
         limit = (int) size;

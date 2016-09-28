@@ -31,7 +31,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

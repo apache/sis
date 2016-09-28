@@ -81,7 +81,7 @@ final class OperationMethodSet extends SetOfUnknownSize<OperationMethod> {
     {
         this.type = type;
         this.methods = methods;
-        cachedMethods = new ArrayList<OperationMethod>();
+        cachedMethods = new ArrayList<>();
         reset();
     }
 

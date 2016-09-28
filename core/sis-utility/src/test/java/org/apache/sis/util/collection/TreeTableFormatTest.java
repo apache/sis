@@ -90,8 +90,8 @@ public final strictfp class TreeTableFormatTest extends TestCase {
     @Test
     @DependsOnMethod("testTreeFormat")
     public void testTreeTableFormat() {
-        final TableColumn<Integer> valueA = new TableColumn<Integer>(Integer.class, "value #1");
-        final TableColumn<String>  valueB = new TableColumn<String> (String .class, "value #2");
+        final TableColumn<Integer> valueA = new TableColumn<>(Integer.class, "value #1");
+        final TableColumn<String>  valueB = new TableColumn<>(String .class, "value #2");
         final DefaultTreeTable table  = new DefaultTreeTable(NAME, valueA, valueB);
         final TreeTable.Node   root   = new DefaultTreeTable.Node(table);
         root.setValue(NAME, "Node #1");
@@ -144,8 +144,8 @@ public final strictfp class TreeTableFormatTest extends TestCase {
     @Test
     @DependsOnMethod("testTreeTableFormat")
     public void testTreeTableParse() throws ParseException {
-        final TableColumn<Integer> valueA = new TableColumn<Integer>(Integer.class, "value #1");
-        final TableColumn<String>  valueB = new TableColumn<String> (String .class, "value #2");
+        final TableColumn<Integer> valueA = new TableColumn<>(Integer.class, "value #1");
+        final TableColumn<String>  valueB = new TableColumn<>(String .class, "value #2");
         final TreeTableFormat tf = new TreeTableFormat(null, null);
         tf.setColumns(NAME, valueA, valueB);
         tf.setVerticalLinePosition(1);
@@ -166,8 +166,8 @@ public final strictfp class TreeTableFormatTest extends TestCase {
     @Test
     @DependsOnMethod("testTreeTableParse")
     public void testAlternativeColumnSeparatorPattern() throws ParseException {
-        final TableColumn<Integer> valueA = new TableColumn<Integer>(Integer.class, "value #1");
-        final TableColumn<String>  valueB = new TableColumn<String> (String .class, "value #2");
+        final TableColumn<Integer> valueA = new TableColumn<>(Integer.class, "value #1");
+        final TableColumn<String>  valueB = new TableColumn<>(String .class, "value #2");
         final TreeTableFormat tf = new TreeTableFormat(null, null);
         assertEquals("?……[…] ", tf.getColumnSeparatorPattern());
         tf.setColumns(NAME, valueA, valueB);

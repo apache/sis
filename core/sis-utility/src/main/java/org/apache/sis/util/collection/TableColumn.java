@@ -104,7 +104,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * the column elements are typically instances of {@link String} or {@link InternationalString},
      * depending on whether the data provide localization support or not.
      */
-    public static final TableColumn<CharSequence> NAME = new Constant<CharSequence>("NAME",
+    public static final TableColumn<CharSequence> NAME = new Constant<>("NAME",
             CharSequence.class, Vocabulary.Keys.Name);
 
     /**
@@ -112,7 +112,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * The column {@linkplain #getHeader() header} is <cite>"Identifier"</cite> (eventually localized)
      * and the column elements are instances of {@link String}.
      */
-    public static final TableColumn<String> IDENTIFIER = new Constant<String>("IDENTIFIER",
+    public static final TableColumn<String> IDENTIFIER = new Constant<>("IDENTIFIER",
             String.class, Vocabulary.Keys.Identifier);
 
     /**
@@ -120,7 +120,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * The column {@linkplain #getHeader() header} is <cite>"Index"</cite> (eventually localized)
      * and the column elements are instances of {@link Integer}.
      */
-    public static final TableColumn<Integer> INDEX = new Constant<Integer>("INDEX",
+    public static final TableColumn<Integer> INDEX = new Constant<>("INDEX",
             Integer.class, Vocabulary.Keys.Index);
 
     /**
@@ -128,7 +128,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * The column {@linkplain #getHeader() header} is <cite>"Type"</cite> (eventually localized).
      */
     @SuppressWarnings("unchecked")
-    public static final TableColumn<Class<?>> TYPE = new Constant<Class<?>>("TYPE",
+    public static final TableColumn<Class<?>> TYPE = new Constant<>("TYPE",
             (Class) Class.class, Vocabulary.Keys.Type);
 
     /**
@@ -139,7 +139,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * @see #VALUE_AS_TEXT
      * @see #VALUE_AS_NUMBER
      */
-    public static final TableColumn<Object> VALUE = new Constant<Object>("VALUE",
+    public static final TableColumn<Object> VALUE = new Constant<>("VALUE",
             Object.class, Vocabulary.Keys.Value);
 
     /**
@@ -148,14 +148,14 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * the column elements are typically instances of {@link String} or {@link InternationalString},
      * depending on whether the data provide localization support or not.
      */
-    public static final TableColumn<CharSequence> VALUE_AS_TEXT = new Constant<CharSequence>("VALUE_AS_TEXT",
+    public static final TableColumn<CharSequence> VALUE_AS_TEXT = new Constant<>("VALUE_AS_TEXT",
             CharSequence.class, Vocabulary.Keys.Value);
 
     /**
      * Frequently-used constant for a column of object numerical values.
      * The column {@linkplain #getHeader() header} is <cite>"Value"</cite> (eventually localized).
      */
-    public static final TableColumn<Number> VALUE_AS_NUMBER = new Constant<Number>("VALUE_AS_NUMBER",
+    public static final TableColumn<Number> VALUE_AS_NUMBER = new Constant<>("VALUE_AS_NUMBER",
             Number.class, Vocabulary.Keys.Value);
 
     /**
@@ -237,7 +237,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
         private Object readResolve() throws InvalidObjectException {
             try {
                 return TableColumn.class.getField(field).get(null);
-            } catch (Exception cause) { // (ReflectiveOperationException) on JDK7 branch.
+            } catch (ReflectiveOperationException cause) {
                 InvalidObjectException e = new InvalidObjectException(cause.toString());
                 e.initCause(cause);
                 throw e;

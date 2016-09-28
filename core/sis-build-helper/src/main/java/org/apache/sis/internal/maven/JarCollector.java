@@ -36,6 +36,11 @@ import org.apache.maven.artifact.Artifact;
 
 import static org.apache.sis.internal.maven.Filenames.*;
 
+// Related to JDK7
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.FileSystemException;
+
 
 /**
  * Collects <code>.jar</code> files in a single "{@code target/binaries}" directory.
@@ -221,6 +226,19 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
      * @param copy The destination file to create.
      */
     private static void linkFileToDirectory(final File file, final File copy) throws IOException {
+        final Path source = file.toPath();
+        final Path target = copy.toPath();
+        try {
+            Files.createLink(target, source);
+            return;
+        } catch (UnsupportedOperationException | FileSystemException e) {
+            /*
+             * If hard links are not supported, edit the "content.txt" file instead.
+             * Note that a hard link may be unsupported because the source and target
+             * are on different Windows drives or mount points, in which case we get
+             * a FileSystemException instead than UnsupportedOperationException.
+             */
+        }
         /*
          * If we can not use hard links, creates or updates a "target/content.txt" file instead.
          * This file will contains the list of all dependencies, without duplicated values.
@@ -229,14 +247,11 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
         final Set<String> dependencies = loadDependencyList(dependenciesFile);
         if (dependencies.add(file.getPath())) {
             // Save the dependencies list only if it has been modified.
-            final BufferedWriter out = new BufferedWriter(new FileWriter(dependenciesFile));
-            try {
+            try (BufferedWriter out = new BufferedWriter(new FileWriter(dependenciesFile))) {
                 for (final String dependency : dependencies) {
                     out.write(dependency);
                     out.newLine();
                 }
-            } finally {
-                out.close();
             }
         }
     }
@@ -247,10 +262,9 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
      * platforms that do not support hard links.
      */
     static Set<String> loadDependencyList(final File dependenciesFile) throws IOException {
-        final Set<String> dependencies = new LinkedHashSet<String>();
+        final Set<String> dependencies = new LinkedHashSet<>();
         if (dependenciesFile.exists()) {
-            final BufferedReader in = new BufferedReader(new FileReader(dependenciesFile));
-            try {
+            try (BufferedReader in = new BufferedReader(new FileReader(dependenciesFile))) {
                 String line;
                 while ((line = in.readLine()) != null) {
                     line = line.trim();
@@ -258,8 +272,6 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
                         dependencies.add(line);
                     }
                 }
-            } finally {
-                in.close();
             }
         }
         return dependencies;

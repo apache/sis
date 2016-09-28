@@ -43,7 +43,7 @@ public final strictfp class LazySetTest extends TestCase {
      * Creates the set to use for testing purpose.
      */
     private static LazySet<String> create() {
-        return new LazySet<String>(Arrays.asList(LABELS).iterator());
+        return new LazySet<>(Arrays.asList(LABELS).iterator());
     }
 
     /**

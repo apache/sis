@@ -27,7 +27,7 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.AbstractInternationalString;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -168,7 +168,7 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
         in.defaultReadObject();
         try {
             key = getKeyConstants().getKeyValue(in.readUTF());
-        } catch (Exception cause) { // (ReflectiveOperationException) on JDK7
+        } catch (ReflectiveOperationException cause) {
             InvalidObjectException e = new InvalidObjectException(cause.toString());
             e.initCause(cause);
             throw e;

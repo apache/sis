@@ -139,7 +139,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             }
             final CodeList[] codes = (CodeList[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
             return codes[random.nextInt(codes.length)];
-        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+        } catch (ReflectiveOperationException e) {
             fail(e.toString());
         }
         if (Locale.class.isAssignableFrom(type)) {
@@ -154,7 +154,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             final Class<?> impl = getImplementation(type);
             if (impl != null) try {
                 return impl.getConstructor((Class<?>[]) null).newInstance((Object[]) null);
-            } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+            } catch (ReflectiveOperationException e) {
                 fail(e.toString());
             }
         }
@@ -213,7 +213,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
         final Object instance;
         try {
             instance = accessor.implementation.getConstructor((Class<?>[]) null).newInstance((Object[]) null);
-        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+        } catch (ReflectiveOperationException e) {
             fail(e.toString());
             return;
         }

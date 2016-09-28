@@ -19,20 +19,28 @@ package org.apache.sis.internal.referencing.provider;
 import java.net.URL;
 import java.net.URISyntaxException;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Path;
-import org.apache.sis.internal.jdk7.Paths;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 
 
 /**
@@ -155,5 +163,99 @@ public final strictfp class NTv2Test extends TestCase {
         assertArrayEquals("interpolateAt", expected, grid.interpolateAt(position),
                 FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DatumShiftGridLoader.DEGREES_TO_SECONDS);
         assertSame("Grid should be cached.", grid, NTv2.getOrLoad(file));
+    }
+
+
+
+
+    //////////////////////////////////////////////////
+    ////////                                  ////////
+    ////////        TEST FILE CREATION        ////////
+    ////////                                  ////////
+    //////////////////////////////////////////////////
+
+    /**
+     * Writes a sub-grid of the given grid in pseudo-NTv2 format. This method is used only for creating the test file.
+     * The file created by this method is not fully NTv2 compliant (in particular, we do not write complete header),
+     * but we take this opportunity for testing {@code NTv2.Loader} capability to be lenient.
+     *
+     * <p>This method has been executed once for creating the {@code "NTF_R93-extract.gsb"} test file and should not
+     * be needed anymore, but we keep it around in case we have new test files to generate. The parameter used for
+     * creating the test file are:</p>
+     *
+     * <ul>
+     *   <li>{@code gridX} = 72</li>
+     *   <li>{@code gridY} = 74</li>
+     *   <li>{@code nx}    =  6</li>
+     *   <li>{@code ny}    =  7</li>
+     * </ul>
+     *
+     * This ensure that the grid indices (75.7432814, 78.4451225) is included in the test file.
+     * Those grid indices is the location of the (2°25′32.4187″N 48°50′40.2441″W) test point to interpolate.
+     *
+     * <div class="section">Limitations</div>
+     * This method assumes that bounding box and increments have integer values, and that any fractional part
+     * is rounding errors. This is usually the case when using the {@code "SECONDS"} unit of measurement.
+     * This assumption does not apply to the shift values.
+     *
+     * @param grid  The full grid from which to extract a few values.
+     * @param out   Where to write the test file.
+     * @param gridX Index along the longitude axis of the first cell to write.
+     * @param gridY Index along the latitude axis of the first cell to write.
+     * @param nx    Number of cells to write along the longitude axis.
+     * @param ny    Number of cells to write along the latitude axis.
+     * @throws TransformException if an error occurred while computing the envelope.
+     * @throws IOException if an error occurred while writing the test file.
+     */
+    public static void writeSubGrid(final DatumShiftGridFile<Angle,Angle> grid, final Path out,
+            final int gridX, final int gridY, final int nx, final int ny) throws IOException, TransformException
+    {
+        Envelope envelope = new Envelope2D(null, gridX, gridY, nx - 1, ny - 1);
+        envelope = Envelopes.transform(grid.getCoordinateToGrid().inverse(), envelope);
+        final ByteBuffer buffer = ByteBuffer.allocate(4096);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        writeString(buffer, "NUM_OREC"); buffer.putInt(5); nextRecord(buffer);
+        writeString(buffer, "NUM_SREC"); buffer.putInt(7); nextRecord(buffer);
+        writeString(buffer, "NUM_FILE"); buffer.putInt(1); nextRecord(buffer);
+        writeString(buffer, "GS_TYPE");  writeString(buffer, "SECONDS");
+        writeString(buffer, "VERSION");  writeString(buffer, "SIS_TEST");   // Last overview record.
+        writeString(buffer, "S_LAT");    buffer.putDouble(Math.rint( envelope.getMinimum(1)));
+        writeString(buffer, "N_LAT");    buffer.putDouble(Math.rint( envelope.getMaximum(1)));
+        writeString(buffer, "E_LONG");   buffer.putDouble(Math.rint(-envelope.getMaximum(0)));  // Sign reversed.
+        writeString(buffer, "W_LONG");   buffer.putDouble(Math.rint(-envelope.getMinimum(0)));
+        writeString(buffer, "LAT_INC");  buffer.putDouble(Math.rint( envelope.getSpan(1) / (ny - 1)));
+        writeString(buffer, "LONG_INC"); buffer.putDouble(Math.rint( envelope.getSpan(0) / (nx - 1)));
+        writeString(buffer, "GS_COUNT"); buffer.putInt(nx * ny); nextRecord(buffer);
+        for (int y=0; y<ny; y++) {
+            for (int x=0; x<nx; x++) {
+                buffer.putFloat((float) grid.getCellValue(1, gridX + x, gridY + y));
+                buffer.putFloat((float) grid.getCellValue(0, gridX + x, gridY + y));
+                buffer.putFloat(ACCURACY);
+                buffer.putFloat(ACCURACY);
+            }
+        }
+        writeString(buffer, "END");
+        nextRecord(buffer);
+        try (final WritableByteChannel c = Files.newByteChannel(out, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+            buffer.flip();
+            c.write(buffer);
+        }
+    }
+
+    /**
+     * Writes the given string in the given buffer. It is caller's responsibility to ensure that the
+     * string does not occupy more than 8 bytes in US-ASCII encoding.
+     */
+    private static void writeString(final ByteBuffer buffer, final String keyword) {
+        final int upper = buffer.position() + 8;    // "8" is the space allowed for strings in NTv2 format.
+        buffer.put(keyword.getBytes(StandardCharsets.US_ASCII));
+        while (buffer.position() != upper) buffer.put((byte) ' ');
+    }
+
+    /**
+     * Moves the buffer position to the next record.
+     */
+    private static void nextRecord(final ByteBuffer buffer) {
+        buffer.position(((buffer.position() / 16) + 1) * 16);   // "16" is the length of records in NTv2 format.
     }
 }

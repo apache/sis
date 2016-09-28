@@ -96,19 +96,13 @@ public final strictfp class TreeTableViewTest extends TestCase {
         final Object original = create(ValueExistencePolicy.NON_EMPTY);
         final Object deserialized;
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        final ObjectOutputStream out = new ObjectOutputStream(buffer);
-        try {
+        try (ObjectOutputStream out = new ObjectOutputStream(buffer)) {
             out.writeObject(original);
-        } finally {
-            out.close();
         }
         // Now reads the object we just serialized.
         final byte[] data = buffer.toByteArray();
-        final ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data));
-        try {
+        try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data))) {
             deserialized = in.readObject();
-        } finally {
-            in.close();
         }
         assertMultilinesEquals(EXPECTED, formatNameAndValue((TreeTableView) deserialized));
     }

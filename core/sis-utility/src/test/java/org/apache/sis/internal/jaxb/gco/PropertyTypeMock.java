@@ -83,7 +83,7 @@ final strictfp class PropertyTypeMock extends PropertyType<PropertyTypeMock, Res
 
         /** Creates a new instance with initially no identifier. */
         Value() {
-            identifiers = new ArrayList<Identifier>();
+            identifiers = new ArrayList<>();
             map = new ModifiableIdentifierMap(identifiers);
         }
 

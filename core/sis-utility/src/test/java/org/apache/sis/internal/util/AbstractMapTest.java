@@ -47,7 +47,7 @@ public final strictfp class AbstractMapTest extends TestCase {
      * or consistency.
      */
     private static final class Count extends AbstractMap<Integer,String> {
-        private final List<String> values = new ArrayList<String>(Arrays.asList("one", "two", "three"));
+        private final List<String> values = new ArrayList<>(Arrays.asList("one", "two", "three"));
 
         @Override public    void    clear   ()                    {       values.clear();}
         @Override public    String  get     (Object  k)           {return values.get(((Integer) k) - 1);}
@@ -88,12 +88,12 @@ public final strictfp class AbstractMapTest extends TestCase {
         assertArrayEquals("values", new String[] {"one", "two", "three"}, values.toArray());
 
         final Collection<Map.Entry<Integer,String>> entries = map.entrySet();
-        assertTrue ("contains", entries.contains(new SimpleEntry<Integer,String>(2, "two")));
-        assertFalse("contains", entries.contains(new SimpleEntry<Integer,String>(2, "deux")));
+        assertTrue ("contains", entries.contains(new SimpleEntry<>(2, "two")));
+        assertFalse("contains", entries.contains(new SimpleEntry<>(2, "deux")));
         assertArrayEquals("entrySet", new SimpleEntry<?,?>[] {
-                    new SimpleEntry<Integer,String>(1, "one"),
-                    new SimpleEntry<Integer,String>(2, "two"),
-                    new SimpleEntry<Integer,String>(3, "three")
+                    new SimpleEntry<>(1, "one"),
+                    new SimpleEntry<>(2, "two"),
+                    new SimpleEntry<>(3, "three")
                 }, entries.toArray());
 
         map.clear();
@@ -120,10 +120,10 @@ public final strictfp class AbstractMapTest extends TestCase {
         assertTrue(map.keySet().add(4));
         assertEquals("size", 4, map.size());
         assertArrayEquals("entrySet", new SimpleEntry<?,?>[] {
-                    new SimpleEntry<Integer,String>(1, "one"),
-                    new SimpleEntry<Integer,String>(2, "two"),
-                    new SimpleEntry<Integer,String>(3, "three"),
-                    new SimpleEntry<Integer,String>(4, "four")
+                    new SimpleEntry<>(1, "one"),
+                    new SimpleEntry<>(2, "two"),
+                    new SimpleEntry<>(3, "three"),
+                    new SimpleEntry<>(4, "four")
                 }, map.entrySet().toArray());
     }
 
@@ -139,10 +139,10 @@ public final strictfp class AbstractMapTest extends TestCase {
         assertTrue(map.values().add("quatre"));
         assertEquals("size", 4, map.size());
         assertArrayEquals("entrySet", new SimpleEntry<?,?>[] {
-                    new SimpleEntry<Integer,String>(1, "one"),
-                    new SimpleEntry<Integer,String>(2, "two"),
-                    new SimpleEntry<Integer,String>(3, "three"),
-                    new SimpleEntry<Integer,String>(4, "quatre")
+                    new SimpleEntry<>(1, "one"),
+                    new SimpleEntry<>(2, "two"),
+                    new SimpleEntry<>(3, "three"),
+                    new SimpleEntry<>(4, "quatre")
                 }, map.entrySet().toArray());
     }
 
@@ -153,7 +153,7 @@ public final strictfp class AbstractMapTest extends TestCase {
     @Test
     public void testEquals() {
         final Count map = new Count();
-        final Map<Integer,String> copy = new HashMap<Integer,String>(map);
+        final Map<Integer,String> copy = new HashMap<>(map);
         assertTrue  ("equals",   copy.equals(map));
         assertTrue  ("equals",   map.equals(copy));
         assertEquals("hashCode", copy.hashCode(), map.hashCode());

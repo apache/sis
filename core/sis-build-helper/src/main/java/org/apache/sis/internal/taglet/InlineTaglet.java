@@ -50,10 +50,10 @@ abstract class InlineTaglet implements Taglet {
              */
             try {
                 configuration = (Configuration) ConfigurationImpl.class.getMethod("getInstance").invoke(null);
-            } catch (Exception e) { // ReflectiveOperationException on the JDK7 branch
+            } catch (ReflectiveOperationException e) {
                 try {
                     configuration = ConfigurationImpl.class.newInstance();
-                } catch (Exception e2) { // ReflectiveOperationException on the JDK7 branch
+                } catch (ReflectiveOperationException e2) {
                     return null; // Allowed by this method contract.
                 }
             }

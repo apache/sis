@@ -20,6 +20,7 @@ import java.io.File;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.logging.Level;
 
 import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
@@ -27,9 +28,6 @@ import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.resultset.DBFResultSet;
 import org.apache.sis.internal.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
 import org.apache.sis.internal.shapefile.jdbc.sql.SQLInvalidStatementException;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -44,7 +42,7 @@ public class DBFStatement extends AbstractStatement {
     private DBFConnection connection;
 
     /** ResultSets that are currently opened. */
-    private HashSet<DBFResultSet> openedResultSets = new HashSet<DBFResultSet>();
+    private HashSet<DBFResultSet> openedResultSets = new HashSet<>();
 
     /** The current result set, or {@code null} if none. */
     private DBFResultSet currentResultSet;

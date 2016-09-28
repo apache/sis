@@ -33,8 +33,8 @@ import org.junit.Test;
 import static org.opengis.test.Assert.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Paths;
-import org.apache.sis.internal.jdk7.Path;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 import org.apache.sis.internal.jdk8.JDK8;
 
 
@@ -145,11 +145,8 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
         assertNotNull("Test file \"" + TEST_FILE + "\" not found.", url);
         final Path file = Paths.get(url.toURI());
         final DatumShiftGridFile.Float<Angle,Length> grid;
-        final BufferedReader in = JDK8.newBufferedReader(file);
-        try {
+        try (final BufferedReader in = JDK8.newBufferedReader(file)) {
             grid = FranceGeocentricInterpolation.load(in, file);
-        } finally {
-            in.close();
         }
         assertEquals("cellPrecision",   0.005, grid.getCellPrecision(), STRICT);
         assertEquals("getCellMean",  168.2587, grid.getCellMean(0), 0.0001);

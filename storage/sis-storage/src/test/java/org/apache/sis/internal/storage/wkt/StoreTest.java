@@ -31,7 +31,7 @@ import org.junit.Test;
 import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.StandardCharsets;
+import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -73,12 +73,9 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testFromReader() throws DataStoreException {
         final Metadata metadata;
-        final Store store = new Store(new StorageConnector(new StringReader(WKT)));
-        try {
+        try (Store store = new Store(new StorageConnector(new StringReader(WKT)))) {
             metadata = store.getMetadata();
             assertSame("Expected cached value.", metadata, store.getMetadata());
-        } finally {
-            store.close();
         }
         validate((GeographicCRS) TestUtilities.getSingleton(metadata.getReferenceSystemInfo()));
     }
@@ -96,12 +93,9 @@ public final strictfp class StoreTest extends TestCase {
         final StoreProvider p = new StoreProvider();
         final StorageConnector c = new StorageConnector(new ByteArrayInputStream(StoreTest.WKT.getBytes(StandardCharsets.US_ASCII)));
         assertTrue("isSupported", p.probeContent(c).isSupported());
-        final Store store = new Store(c);
-        try {
+        try (Store store = new Store(c)) {
             metadata = store.getMetadata();
             assertSame("Expected cached value.", metadata, store.getMetadata());
-        } finally {
-            store.close();
         }
         validate((GeographicCRS) TestUtilities.getSingleton(metadata.getReferenceSystemInfo()));
     }

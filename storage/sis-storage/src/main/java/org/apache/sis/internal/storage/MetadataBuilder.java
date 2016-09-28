@@ -48,7 +48,6 @@ import org.apache.sis.util.iso.Types;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.JDK7;
 import org.apache.sis.internal.jdk8.LocalDate;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 
@@ -428,7 +427,7 @@ public class MetadataBuilder {
         if (p.contains(a)) {
             return previous;
         }
-        return Types.toInternationalString(p + JDK7.lineSeparator() + a);
+        return Types.toInternationalString(p + System.lineSeparator() + a);
     }
 
     /**

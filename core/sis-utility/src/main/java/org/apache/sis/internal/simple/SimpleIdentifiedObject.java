@@ -35,7 +35,7 @@ import org.apache.sis.util.ComparisonMode;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

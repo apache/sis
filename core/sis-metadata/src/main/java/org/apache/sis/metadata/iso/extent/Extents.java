@@ -119,7 +119,7 @@ public final class Extents extends Static {
         GeographicBoundingBox bounds = null;
         if (extent != null) {
             DefaultGeographicBoundingBox modifiable = null;
-            final List<Envelope> fallbacks = new ArrayList<Envelope>();
+            final List<Envelope> fallbacks = new ArrayList<>();
             for (final GeographicExtent element : extent.getGeographicElements()) {
                 /*
                  * If a geographic bounding box can be obtained, add it to the previous boxes (if any).
@@ -321,7 +321,7 @@ public final class Extents extends Static {
         if (min == null && max == null) {
             return null;
         }
-        return new Range<Date>(Date.class, min, true, max, true);
+        return new Range<>(Date.class, min, true, max, true);
     }
 
     /**

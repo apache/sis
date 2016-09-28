@@ -141,7 +141,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
 
         public SQL() { // Instantiated by ServiceLoader.
             super(java.sql.Date.class);
-            inverse = new IdentityConverter<Date, java.sql.Date>(targetClass, Date.class, this); // <T,S> in reverse order.
+            inverse = new IdentityConverter<>(targetClass, Date.class, this);
         }
 
         @Override public java.sql.Date apply(final Date source) {
@@ -161,7 +161,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
 
         public Timestamp() { // Instantiated by ServiceLoader.
             super(java.sql.Timestamp.class);
-            inverse = new IdentityConverter<Date, java.sql.Timestamp>(targetClass, Date.class, this); // <T,S> in reverse order.
+            inverse = new IdentityConverter<>(targetClass, Date.class, this);
         }
 
         @Override public java.sql.Timestamp apply(final Date source) {

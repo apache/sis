@@ -68,7 +68,7 @@ public final strictfp class MapProjectionParametersTest extends TestCase {
 
     /** Creates a parameter of the given name. */
     private static DefaultParameterDescriptor<?> parameter(final String name) {
-        return new DefaultParameterDescriptor<Double>(name(name), 1, 1, Double.class, null, null, null);
+        return new DefaultParameterDescriptor<>(name(name), 1, 1, Double.class, null, null, null);
     }
 
     /** Returns properties map for an object of the given name. */

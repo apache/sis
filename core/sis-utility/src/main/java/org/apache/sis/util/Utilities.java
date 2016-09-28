@@ -25,7 +25,7 @@ import java.util.Set;
 import org.apache.sis.util.collection.CheckedContainer;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -250,7 +250,7 @@ public final class Utilities extends Static {
              * compared up to this point.
              */
             // Creates a copy of REMAINING elements in the first collection.
-            final LinkedList<Object> copy = new LinkedList<Object>();
+            final LinkedList<Object> copy = new LinkedList<>();
             copy.add(element1);
             while (it1.hasNext()) {
                 copy.add(it1.next());

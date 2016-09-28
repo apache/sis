@@ -67,7 +67,6 @@ class MatrixParameters extends TensorParameters<Double> {
      * @param numRow The parameter for the number of rows.
      * @param numCol The parameter for the number of columns.
      */
-    @SuppressWarnings("unchecked")
     MatrixParameters(final ParameterDescriptor<Integer> numRow, final ParameterDescriptor<Integer> numCol) {
         super(Double.class, "elt_", "_", numRow, numCol);
     }
@@ -155,7 +154,7 @@ class MatrixParameters extends TensorParameters<Double> {
      */
     @Override
     protected ParameterDescriptor<Double> createElementDescriptor(final int[] indices) throws IllegalArgumentException {
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         properties.put(ParameterDescriptor.NAME_KEY,
                 new NamedIdentifier(Citations.OGC, Constants.OGC, indicesToName(indices), null, null));
         final String c = indicesToAlias(indices);
@@ -163,7 +162,7 @@ class MatrixParameters extends TensorParameters<Double> {
             properties.put(ParameterDescriptor.ALIAS_KEY,
                     new NamedIdentifier(Citations.SIS, Constants.SIS, c, null, null));
         }
-        return new DefaultParameterDescriptor<Double>(properties, 0, 1, Double.class, null, null, getDefaultValue(indices));
+        return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, getDefaultValue(indices));
     }
 
     /**

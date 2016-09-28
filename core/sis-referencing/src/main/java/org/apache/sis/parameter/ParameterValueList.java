@@ -36,9 +36,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.IdentifiedObjects;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * The list to be returned by {@link DefaultParameterValueGroup#values()}.
@@ -330,7 +327,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
         if (size == 0) {
             return "[]";
         }
-        final String lineSeparator = JDK7.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final StringBuilder buffer = new StringBuilder();
         for (int i=0; i<size; i++) {
             buffer.append(values[i]).append(lineSeparator);

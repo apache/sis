@@ -261,7 +261,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
         final Map<String,Object> map = std.asValueMap(instance,
                 KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
         assertFalse(map.isEmpty()); // Actually 'testValueMap()' job, but verified for safety.
-        assertEquals("hashCode()", new HashSet<Object>(map.values()).hashCode() + Citation.class.hashCode(),
+        assertEquals("hashCode()", new HashSet<>(map.values()).hashCode() + Citation.class.hashCode(),
                 std.hashCode(instance));
     }
 

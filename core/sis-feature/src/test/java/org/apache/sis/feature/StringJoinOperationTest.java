@@ -54,8 +54,8 @@ public final strictfp class StringJoinOperationTest extends TestCase {
      * @return The feature for a person.
      */
     private static DefaultFeatureType person() {
-        final AbstractIdentifiedType nameType = new DefaultAttributeType<String> (name("name"), String.class, 1, 1, null);
-        final AbstractIdentifiedType ageType  = new DefaultAttributeType<Integer>(name("age"), Integer.class, 1, 1, null);
+        final AbstractIdentifiedType nameType = new DefaultAttributeType<>(name("name"), String.class, 1, 1, null);
+        final AbstractIdentifiedType ageType  = new DefaultAttributeType<>(name("age"), Integer.class, 1, 1, null);
         final AbstractIdentifiedType cmpType  = FeatureOperations.compound(name("concat"), "/", "<<:", ":>>", nameType, ageType);
         return new DefaultFeatureType(name("person"), false, null, nameType, ageType, cmpType);
     }

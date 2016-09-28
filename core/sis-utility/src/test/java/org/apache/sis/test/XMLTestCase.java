@@ -123,7 +123,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
      */
     protected static synchronized MarshallerPool getMarshallerPool() throws JAXBException {
         if (defaultPool == null) {
-            final Map<String,Object> properties = new HashMap<String,Object>(4);
+            final Map<String,Object> properties = new HashMap<>(4);
             assertNull(properties.put(XML.LOCALE, Locale.UK));
             assertNull(properties.put(XML.TIMEZONE, TIMEZONE));
             defaultPool = new MarshallerPool(properties);
@@ -180,19 +180,6 @@ public abstract strictfp class XMLTestCase extends TestCase {
     }
 
     /**
-     * Appends explicitely {@code "xmlns:xsi"} to the list of attributes to ignore.
-     * This is not needed on JDK7 if the {@code "xmlns:*"} property has been defined,
-     * but required on JDK6. Not sure why...
-     */
-    @org.apache.sis.util.Workaround(library = "JDK", version = "1.6")
-    private static String[] addIgnoreXSI(String[] ignoredAttributes) {
-        final int length = ignoredAttributes.length;
-        ignoredAttributes = java.util.Arrays.copyOf(ignoredAttributes, length + 1);
-        ignoredAttributes[length] = "xmlns:xsi";
-        return ignoredAttributes;
-    }
-
-    /**
      * Marshals the given object and ensure that the result is equals to the content of the given file.
      *
      * @param  filename The name of the XML file in the package of the final subclass of {@code this}.
@@ -206,7 +193,7 @@ public abstract strictfp class XMLTestCase extends TestCase {
     protected final void assertMarshalEqualsFile(final String filename, final Object object,
             final String... ignoredAttributes) throws JAXBException
     {
-        assertXmlEquals(getResource(filename), marshal(object), addIgnoreXSI(ignoredAttributes));
+        assertXmlEquals(getResource(filename), marshal(object), ignoredAttributes);
     }
 
     /**

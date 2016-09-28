@@ -53,7 +53,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
      */
     @Test
     public void testCreateFromMap() {
-        final Map<String,Object> properties = new HashMap<String,Object>();
+        final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put("name",       "This is a name"));
         assertNull(properties.put("scope",      "This is a scope"));
         assertNull(properties.put("scope_fr",   "Valide dans ce domaine"));
@@ -76,7 +76,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
     @Test
     @DependsOnMethod("testCreateFromMap")
     public void testSerialization() {
-        final Map<String,Object> properties = new HashMap<String,Object>(8);
+        final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put("code",       "4326"));
         assertNull(properties.put("codeSpace",  "EPSG"));
         assertNull(properties.put("scope",      "This is a scope"));
@@ -96,7 +96,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
     @Test
     @DependsOnMethod("testCreateFromMap")
     public void testWKT() {
-        final Map<String,Object> properties = new HashMap<String,Object>(8);
+        final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put(NAME_KEY, "My “object”."));
         assertNull(properties.put(SCOPE_KEY, "Large scale topographic mapping and cadastre."));
         assertNull(properties.put(REMARKS_KEY, "注です。"));

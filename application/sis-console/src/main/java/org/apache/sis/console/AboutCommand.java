@@ -114,14 +114,11 @@ final class AboutCommand extends CommandRunner {
                 final TreeTable table;
                 try {
                     final JMXServiceURL url = new JMXServiceURL(path);
-                    final JMXConnector jmxc = JMXConnectorFactory.connect(url);
-                    try {
+                    try (JMXConnector jmxc = JMXConnectorFactory.connect(url)) {
                         final MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
                         final SupervisorMBean bean = JMX.newMBeanProxy(mbsc, new ObjectName(Supervisor.NAME), SupervisorMBean.class);
                         table = bean.configuration(sections, locale, timezone);
                         warnings = bean.warnings(locale);
-                    } finally {
-                        jmxc.close();
                     }
                 } catch (IOException e) {
                     error(Errors.format(Errors.Keys.CanNotConnectTo_1, path), e);

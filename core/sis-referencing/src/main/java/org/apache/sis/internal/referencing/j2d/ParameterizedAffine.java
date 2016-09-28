@@ -16,14 +16,12 @@
  */
 package org.apache.sis.internal.referencing.j2d;
 
+import java.util.Objects;
 import java.awt.geom.AffineTransform;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.internal.system.Semaphores;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**

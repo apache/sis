@@ -26,8 +26,8 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
+import java.nio.charset.StandardCharsets;
 import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.internal.jdk7.StandardCharsets;
 
 
 /**

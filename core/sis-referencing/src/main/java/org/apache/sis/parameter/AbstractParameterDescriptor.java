@@ -34,6 +34,7 @@ import org.apache.sis.util.Debug;
 
 import static org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
 
+
 /**
  * Abstract definition of a parameter or group of parameters used by a coordinate operation or a process.
  * This interface combines information provided by Referencing by Coordinates (ISO 19111),
@@ -311,7 +312,6 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * @return {@code "Parameter"} or {@code "ParameterGroup"}.
      */
     @Override
-    @SuppressWarnings({"unchecked","rawtypes"})
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         formatter.setInvalidWKT(this, null);
@@ -319,7 +319,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
             for (GeneralParameterDescriptor parameter : ((ParameterDescriptorGroup) this).descriptors()) {
                 if (!(parameter instanceof FormattableObject)) {
                     if (parameter instanceof ParameterDescriptor<?>) {
-                        parameter = new DefaultParameterDescriptor((ParameterDescriptor<?>) parameter);
+                        parameter = new DefaultParameterDescriptor<>((ParameterDescriptor<?>) parameter);
                     } else if (parameter instanceof ParameterDescriptorGroup) {
                         parameter = new DefaultParameterDescriptorGroup((ParameterDescriptorGroup) parameter);
                     } else {

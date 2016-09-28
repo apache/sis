@@ -55,7 +55,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @see ProjectiveTransform
  */
 public class AffineTransform2D extends ImmutableAffineTransform
-        implements MathTransform2D, LinearTransform, LenientComparable, Parameterized
+        implements LinearTransform2D, LenientComparable, Parameterized
 {
     /**
      * Serial number for inter-operability with different versions.

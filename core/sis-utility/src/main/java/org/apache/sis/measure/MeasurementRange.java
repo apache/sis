@@ -23,7 +23,7 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -84,7 +84,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     public static MeasurementRange<Float> create(float minValue, boolean isMinIncluded,
                                                  float maxValue, boolean isMaxIncluded, Unit<?> unit)
     {
-        return unique(new MeasurementRange<Float>(Float.class,
+        return unique(new MeasurementRange<>(Float.class,
                 valueOf("minValue", minValue, Float.NEGATIVE_INFINITY), isMinIncluded,
                 valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), isMaxIncluded, unit));
     }
@@ -103,7 +103,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     public static MeasurementRange<Double> create(double minValue, boolean isMinIncluded,
                                                   double maxValue, boolean isMaxIncluded, Unit<?> unit)
     {
-        return unique(new MeasurementRange<Double>(Double.class,
+        return unique(new MeasurementRange<>(Double.class,
                 valueOf("minValue", minValue, Double.NEGATIVE_INFINITY), isMinIncluded,
                 valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), isMaxIncluded, unit));
     }
@@ -120,7 +120,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * @since 0.6
      */
     public static MeasurementRange<Double> createGreaterThan(final double minValue, final Unit<?> unit) {
-        return unique(new MeasurementRange<Double>(Double.class,
+        return unique(new MeasurementRange<>(Double.class,
                 valueOf("minValue", minValue, Double.NEGATIVE_INFINITY), false, null, false, unit));
     }
 
@@ -225,7 +225,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     Range<E> create(final E minValue, final boolean isMinIncluded,
                     final E maxValue, final boolean isMaxIncluded)
     {
-        return new MeasurementRange<E>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded, unit);
+        return new MeasurementRange<>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded, unit);
     }
 
     /**
@@ -263,7 +263,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
         if (elementType == type) {
             return (MeasurementRange<N>) this;
         } else {
-            return new MeasurementRange<N>(type, this, unit);
+            return new MeasurementRange<>(type, this, unit);
         }
     }
 
@@ -306,7 +306,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2,
                     ((MeasurementRange<?>) range).unit, unit), e);
         }
-        return new MeasurementRange<N>(type, range, unit);
+        return new MeasurementRange<>(type, range, unit);
     }
 
     /**
@@ -345,12 +345,12 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
                     minInc &= (minimum == (minimum = Math.floor(minimum)));
                     maxInc &= (maximum == (maximum = Math.ceil (maximum)));
                 }
-                return new MeasurementRange<N>(type,
+                return new MeasurementRange<>(type,
                         Numbers.cast(minimum, type), minInc,
                         Numbers.cast(maximum, type), maxInc, targetUnit);
             }
         }
-        return new MeasurementRange<N>(type, this, targetUnit);
+        return new MeasurementRange<>(type, this, targetUnit);
     }
 
     /**

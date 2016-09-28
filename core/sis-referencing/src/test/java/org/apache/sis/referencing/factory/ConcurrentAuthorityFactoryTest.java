@@ -52,7 +52,7 @@ public final strictfp class ConcurrentAuthorityFactoryTest extends TestCase {
      */
     private static final strictfp class Mock extends ConcurrentAuthorityFactory<AuthorityFactoryMock> {
         /** All factories created by this mock, including any factories having been disposed. */
-        private final Queue<AuthorityFactoryMock> allDAOs = new ConcurrentLinkedQueue<AuthorityFactoryMock>();
+        private final Queue<AuthorityFactoryMock> allDAOs = new ConcurrentLinkedQueue<>();
 
         /** Creates a new concurrent authority factory. */
         Mock() {
@@ -70,7 +70,7 @@ public final strictfp class ConcurrentAuthorityFactoryTest extends TestCase {
 
         /** Returns a copy of the factories queue. */
         final synchronized List<AuthorityFactoryMock> createdDAOs() {
-            return new ArrayList<AuthorityFactoryMock>(allDAOs);
+            return new ArrayList<>(allDAOs);
         }
     }
 

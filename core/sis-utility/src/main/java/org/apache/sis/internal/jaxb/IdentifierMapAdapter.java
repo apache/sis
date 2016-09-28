@@ -37,7 +37,7 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -192,7 +192,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      */
     @Override
     public final int size() {
-        final HashSet<Citation> done = new HashSet<Citation>(hashMapCapacity(identifiers.size()));
+        final HashSet<Citation> done = new HashSet<>(hashMapCapacity(identifiers.size()));
         for (final Identifier identifier : identifiers) {
             if (identifier != null) {
                 done.add(identifier.getAuthority());

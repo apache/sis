@@ -42,7 +42,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -290,7 +290,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      */
     public static <T> DefaultParameterDescriptor<T> castOrCopy(final ParameterDescriptor<T> object) {
         return (object == null) || (object instanceof DefaultParameterDescriptor<?>)
-                ? (DefaultParameterDescriptor<T>) object : new DefaultParameterDescriptor<T>(object);
+                ? (DefaultParameterDescriptor<T>) object : new DefaultParameterDescriptor<>(object);
     }
 
     /**
@@ -432,7 +432,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      */
     @Override
     public ParameterValue<T> createValue() {
-        return new DefaultParameterValue<T>(this);
+        return new DefaultParameterValue<>(this);
     }
 
     /**

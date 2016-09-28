@@ -22,7 +22,7 @@ import java.util.concurrent.Callable;
 import org.apache.sis.util.logging.Logging;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -49,7 +49,7 @@ public final class Shutdown extends Thread {
     /**
      * The resources to dispose. Most recently added resources are last.
      */
-    private static final List<Callable<?>> resources = new ArrayList<Callable<?>>();
+    private static final List<Callable<?>> resources = new ArrayList<>();
 
     /**
      * Creates the thread to be executed at shutdown time.
@@ -184,6 +184,9 @@ public final class Shutdown extends Thread {
             while ((i = resources.size()) != 0) try {       // In case run() modifies the resources list.
                 resources.remove(i - 1).call();             // Dispose most recently added resources first.
             } catch (Exception e) {
+                if (exception != null) {
+                    e.addSuppressed(exception);
+                }
                 exception = e;
             }
         }

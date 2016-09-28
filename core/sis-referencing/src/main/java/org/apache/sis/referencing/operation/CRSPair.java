@@ -26,7 +26,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

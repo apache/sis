@@ -302,7 +302,7 @@ public class RangeFormat extends Format {
      * using the {@linkplain Locale#getDefault() default locale}.
      */
     public RangeFormat() {
-        this(Locale.getDefault());
+        this(Locale.getDefault(Locale.Category.FORMAT));
     }
 
     /**
@@ -475,7 +475,7 @@ public class RangeFormat extends Format {
      */
     private boolean insertSpaceBeforeUnit(final Unit<?> unit) {
         if (insertSpaceBeforeUnit == null) {
-            insertSpaceBeforeUnit = new HashMap<Unit<?>,Boolean>();
+            insertSpaceBeforeUnit = new HashMap<>();
         }
         Boolean value = insertSpaceBeforeUnit.get(unit);
         if (value == null) {

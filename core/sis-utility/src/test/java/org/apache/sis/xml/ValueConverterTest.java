@@ -24,7 +24,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.StandardCharsets;
+import java.nio.charset.StandardCharsets;
 
 
 /**

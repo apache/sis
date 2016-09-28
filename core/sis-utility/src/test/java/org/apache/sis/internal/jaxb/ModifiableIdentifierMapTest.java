@@ -81,7 +81,7 @@ public final strictfp class ModifiableIdentifierMapTest extends TestCase {
      */
     @Test
     public void testGetAndPut() {
-        final List<Identifier> identifiers = new ArrayList<Identifier>();
+        final List<Identifier> identifiers = new ArrayList<>();
         final Map<Citation,String> map = new ModifiableIdentifierMap(identifiers);
         assertTrue  ("Newly created map shall be empty.", map.isEmpty());
         assertEquals("Newly created map shall be empty.", 0, map.size());
@@ -155,7 +155,7 @@ public final strictfp class ModifiableIdentifierMapTest extends TestCase {
      */
     @Test
     public void testPutSpecialized() {
-        final List<Identifier> identifiers = new ArrayList<Identifier>();
+        final List<Identifier> identifiers = new ArrayList<>();
         final IdentifierMap map = new ModifiableIdentifierMap(identifiers);
         final String myID = "myID";
         final java.util.UUID myUUID = fromString("a1eb6e53-93db-4942-84a6-d9e7fb9db2c7");
@@ -181,7 +181,7 @@ public final strictfp class ModifiableIdentifierMapTest extends TestCase {
      */
     @Test
     public void testGetSpecialized() {
-        final List<Identifier> identifiers = new ArrayList<Identifier>();
+        final List<Identifier> identifiers = new ArrayList<>();
         final IdentifierMap map = new ModifiableIdentifierMap(identifiers);
 
         assertNull(map.put(ID,   "myID"));
@@ -204,7 +204,7 @@ public final strictfp class ModifiableIdentifierMapTest extends TestCase {
      */
     @Test
     public void testDuplicatedAuthorities() {
-        final List<Identifier> identifiers = new ArrayList<Identifier>();
+        final List<Identifier> identifiers = new ArrayList<>();
         assertTrue(identifiers.add(new IdentifierMapEntry(ID,   "myID1")));
         assertTrue(identifiers.add(new IdentifierMapEntry(UUID, "myUUID")));
         assertTrue(identifiers.add(new IdentifierMapEntry(ID,   "myID2")));
@@ -232,7 +232,7 @@ public final strictfp class ModifiableIdentifierMapTest extends TestCase {
      */
     @Test
     public void testHRefSubstitution() {
-        final List<Identifier> identifiers = new ArrayList<Identifier>();
+        final List<Identifier> identifiers = new ArrayList<>();
         final IdentifierMap map = new ModifiableIdentifierMap(identifiers);
         assertNull(map.put(HREF, "myHREF"));
         assertEquals("Shall contain the entry we added.", "myHREF", map.get(HREF));
@@ -252,7 +252,7 @@ public final strictfp class ModifiableIdentifierMapTest extends TestCase {
      */
     @Test
     public void testUUIDs() {
-        final List<Identifier> identifiers = new ArrayList<Identifier>();
+        final List<Identifier> identifiers = new ArrayList<>();
         final IdentifierMap map = new ModifiableIdentifierMap(identifiers);
         final java.util.UUID id1 = fromString("434f3107-c6d2-4c8c-bb25-553f68641c5c");
         final java.util.UUID id2 = fromString("42924124-032a-4dfe-b06e-113e3cb81cf0");

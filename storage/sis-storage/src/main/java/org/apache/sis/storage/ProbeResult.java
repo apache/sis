@@ -22,7 +22,7 @@ import org.apache.sis.util.Version;
 import org.apache.sis.internal.util.Utilities;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -290,7 +290,7 @@ public class ProbeResult implements Serializable {
         Object readResolve() {
             try {
                 return ProbeResult.class.getField(name).get(null);
-            } catch (Exception e) { // ReflectiveOperationException on the JDK7 branch.
+            } catch (ReflectiveOperationException e) {
                 return this; // See javadoc
             }
         }

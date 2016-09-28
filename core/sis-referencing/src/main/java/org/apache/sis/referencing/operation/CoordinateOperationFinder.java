@@ -163,8 +163,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                                      final CoordinateOperationContext          context) throws FactoryException
     {
         super(registry, factory, context);
-        identifierOfStepCRS = new HashMap<Identifier,Object>(8);
-        previousSearches    = new HashMap<CRSPair,Boolean>(8);
+        identifierOfStepCRS = new HashMap<>(8);
+        previousSearches    = new HashMap<>(8);
         useCache = (context == null) && (factory == factorySIS);
     }
 
@@ -199,9 +199,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (equalsIgnoreMetadata(sourceCRS, targetCRS)) try {
             return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
                     CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(), targetCRS.getCoordinateSystem()));
-        } catch (IllegalArgumentException e) {
-            throw new FactoryException(Errors.format(Errors.Keys.CanNotInstantiate_1, new CRSPair(sourceCRS, targetCRS)), e);
-        } catch (ConversionException e) {
+        } catch (IllegalArgumentException | ConversionException e) {
             throw new FactoryException(Errors.format(Errors.Keys.CanNotInstantiate_1, new CRSPair(sourceCRS, targetCRS)), e);
         }
         /*
@@ -358,9 +356,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             step1 = inverse(sourceCRS.getConversionFromBase());
         } catch (OperationNotFoundException exception) {
             throw exception;
-        } catch (FactoryException exception) {
-            throw new OperationNotFoundException(canNotInvert(sourceCRS), exception);
-        } catch (NoninvertibleTransformException exception) {
+        } catch (FactoryException | NoninvertibleTransformException exception) {
             throw new OperationNotFoundException(canNotInvert(sourceCRS), exception);
         }
         return concatenate(step1, step2);
@@ -393,9 +389,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             step1 = inverse(sourceCRS.getConversionFromBase());
         } catch (OperationNotFoundException exception) {
             throw exception;
-        } catch (FactoryException exception) {
-            throw new OperationNotFoundException(canNotInvert(sourceCRS), exception);
-        } catch (NoninvertibleTransformException exception) {
+        } catch (FactoryException | NoninvertibleTransformException exception) {
             throw new OperationNotFoundException(canNotInvert(sourceCRS), exception);
         }
         return concatenate(step1, step2, step3);
@@ -678,9 +672,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final Matrix matrix;
         try {
             matrix = CoordinateSystems.swapAndScaleAxes(sourceCS, targetCS);
-        } catch (IllegalArgumentException exception) {
-            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
-        } catch (ConversionException exception) {
+        } catch (IllegalArgumentException | ConversionException exception) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
         return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix);
@@ -726,9 +718,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final Matrix matrix;
         try {
             matrix = CoordinateSystems.swapAndScaleAxes(sourceCS, targetCS);
-        } catch (IllegalArgumentException exception) {
-            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
-        } catch (ConversionException exception) {
+        } catch (IllegalArgumentException | ConversionException exception) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
         final int translationColumn = matrix.getNumCol() - 1;           // Paranoiac check: should always be 1.
@@ -949,7 +939,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (SubTypes.isSingleOperation(main)) {
             final SingleOperation op = (SingleOperation) main;
             final MathTransform mt = factorySIS.getMathTransformFactory().createConcatenatedTransform(mt1, mt2);
-            main = createFromMathTransform(new HashMap<String,Object>(IdentifiedObjects.getProperties(main)),
+            main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
                    sourceCRS, targetCRS, mt, op.getMethod(), op.getParameterValues(),
                    (main instanceof Transformation) ? Transformation.class :
                    (main instanceof Conversion) ? Conversion.class : SingleOperation.class);
@@ -969,7 +959,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                     break;
                 }
             }
-            main = createFromMathTransform(new HashMap<String,Object>(IdentifiedObjects.getProperties(main)),
+            main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
                     main.getSourceCRS(), main.getTargetCRS(), main.getMathTransform(), null, null, type);
         }
         return main;
@@ -1047,7 +1037,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         identifierOfStepCRS.put(newID, oldID);
         identifierOfStepCRS.put(oldID, count);
 
-        final Map<String,Object> properties = new HashMap<String,Object>(4);
+        final Map<String,Object> properties = new HashMap<>(4);
         properties.put(IdentifiedObject.NAME_KEY, newID);
         properties.put(IdentifiedObject.REMARKS_KEY, Vocabulary.formatInternational(
                             Vocabulary.Keys.DerivedFrom_1, CRSPair.label(object)));

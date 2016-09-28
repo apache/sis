@@ -45,9 +45,9 @@ import org.apache.sis.util.logging.Logging;
 
 // Branch-dependent imports
 import java.util.concurrent.Callable;
-import org.apache.sis.internal.jdk7.Files;
-import org.apache.sis.internal.jdk7.Path;
-import org.apache.sis.internal.jdk7.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 /**
@@ -261,7 +261,7 @@ public abstract class Initializer {
                      * of encoding issues if the path contains spaces or non-ASCII characters.
                      */
                     path = Paths.get(home).relativize(path);
-                } catch (Exception e) {     // (IllegalArgumentException | SecurityException e) on the JDK7 branch.
+                } catch (IllegalArgumentException | SecurityException e) {
                     // The path can not be relativized. This is okay.
                     Logging.recoverableException(Logging.getLogger(Loggers.SQL), Initializer.class, "getDataSource", e);
                 }
@@ -284,7 +284,7 @@ public abstract class Initializer {
              * it properly if the schemas creation below fail.
              */
             Shutdown.register(new Callable<Object>() {
-                @Override public Object call() throws Exception {
+                @Override public Object call() throws ReflectiveOperationException {
                     shutdown();
                     return null;
                 }
@@ -297,13 +297,11 @@ public abstract class Initializer {
             if (create) {
                 final Method m = source.getClass().getMethod("setCreateDatabase", String.class);
                 m.invoke(source, "create");
-                Connection c = source.getConnection();
-                try {
+                try (Connection c = source.getConnection()) {
                     for (Initializer init : DefaultFactories.createServiceLoader(Initializer.class)) {
                         init.createSchema(c);
                     }
                 } finally {
-                    c.close();
                     m.invoke(source, "no");     // Any value other than "create".
                 }
             }
@@ -405,7 +403,7 @@ public abstract class Initializer {
      * @throws ReflectiveOperationException if an error occurred while
      *         setting the shutdown property on the Derby data source.
      */
-    private static synchronized void shutdown() throws Exception {
+    private static synchronized void shutdown() throws ReflectiveOperationException {
         final DataSource ds = source;
         if (ds != null) {                       // Should never be null, but let be safe.
             source = null;                      // Clear now in case of failure in remaining code.

@@ -64,17 +64,17 @@ public final strictfp class EnvelopeOperationTest extends TestCase {
      * @return the feature for a school.
      */
     private static DefaultFeatureType school(final int defaultGeometry) throws FactoryException {
-        final DefaultAttributeType<?> standardCRS = new DefaultAttributeType<CoordinateReferenceSystem>(
+        final DefaultAttributeType<?> standardCRS = new DefaultAttributeType<>(
                 name(AttributeConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84_φλ);
 
-        final DefaultAttributeType<?> normalizedCRS = new DefaultAttributeType<CoordinateReferenceSystem>(
+        final DefaultAttributeType<?> normalizedCRS = new DefaultAttributeType<>(
                 name(AttributeConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84);
 
         final AbstractIdentifiedType[] attributes = {
-            new DefaultAttributeType<String> (name("name"),          String.class,  1, 1, null),
-            new DefaultAttributeType<Polygon>(name("classes"),       Polygon.class, 1, 1, null, standardCRS),
-            new DefaultAttributeType<Point>  (name("climbing wall"), Point.class,   1, 1, null, standardCRS),
-            new DefaultAttributeType<Polygon>(name("gymnasium"),     Polygon.class, 1, 1, null, normalizedCRS),
+            new DefaultAttributeType<>(name("name"),          String.class,  1, 1, null),
+            new DefaultAttributeType<>(name("classes"),       Polygon.class, 1, 1, null, standardCRS),
+            new DefaultAttributeType<>(name("climbing wall"), Point.class,   1, 1, null, standardCRS),
+            new DefaultAttributeType<>(name("gymnasium"),     Polygon.class, 1, 1, null, normalizedCRS),
             null,
             null
         };

@@ -31,8 +31,8 @@ import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Path;
-import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.NoSuchFileException;
 
 
 /**
@@ -160,7 +160,7 @@ class DatumShiftGridLoader {
      */
     static FactoryException canNotLoad(final String format, final Path file, final Exception cause) {
         final String message = Errors.format(Errors.Keys.CanNotParseFile_2, format, file);
-        if (cause instanceof FileNotFoundException) {
+        if (cause instanceof NoSuchFileException) {
             return new MissingFactoryResourceException(message, cause);
         } else {
             return new FactoryDataException(message, cause);

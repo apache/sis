@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Locale;
 import java.io.File;
+import java.nio.file.Path;
 import java.text.ParseException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
@@ -129,6 +130,38 @@ public final class TreeTables extends Static {
      *         └─alice
      *             └─data
      * }
+     *
+     * @param  from   The root node from which to start the search.
+     * @param  column The column containing the file name.
+     * @param  path   The path for which to find or create a node.
+     * @return The node for the given path, either as an existing node or a new node.
+     */
+    public static TreeTable.Node nodeForPath(TreeTable.Node from,
+            final TableColumn<? super String> column, final Path path)
+    {
+        final Path parent = path.getParent();
+        if (parent != null) {
+            from = nodeForPath(from, column, parent);
+        }
+        Path filename = path.getFileName();
+        if (filename == null) {
+            filename = path.getRoot();
+        }
+        final String name = filename.toString();
+        for (final TreeTable.Node child : from.getChildren()) {
+            if (name.equals(child.getValue(column))) {
+                return child;
+            }
+        }
+        from = from.newChild();
+        from.setValue(column, name);
+        return from;
+    }
+
+    /**
+     * Finds the node for the given file, or creates a new node if none exists.
+     * This method performs the same work than the above variant, but working on
+     * {@code File} instances rather than {@code Path}.
      *
      * @param  from   The root node from which to start the search.
      * @param  column The column containing the file name.

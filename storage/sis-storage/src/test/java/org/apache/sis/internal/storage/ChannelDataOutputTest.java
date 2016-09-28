@@ -140,14 +140,6 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
         final ByteBuffer arrayView = ByteBuffer.wrap(expectedArray);
         for (int i=0; i<100; i++) {
             final int position = random.nextInt(seekRange);
-
-            // JDK6 specific: can not seek to arbitrary position because
-            // Java 6 does not provide the SeekableByteChannel interface.
-            if (position < testedStream.getFlushedPosition()) {
-                continue;
-            }
-            // End of JDK6 specific.
-
             testedStream.seek(position);
             assertEquals("getStreamPosition()", position, testedStream.getStreamPosition());
             final long v = random.nextLong();

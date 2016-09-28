@@ -248,7 +248,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
             /*
              * Both 'branch' and 'checked' are ordinary converters (not FallbackConverter).
              */
-            return new FallbackConverter<S,T>(branch.getSourceClass(), targetClass, branch, checked);
+            return new FallbackConverter<>(branch.getSourceClass(), targetClass, branch, checked);
         }
     }
 
@@ -291,7 +291,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
                 return null;
             }
         }
-        return new FallbackConverter<S,T>(sourceClass, targetClass, newPrimary, newFallback);
+        return new FallbackConverter<>(sourceClass, targetClass, newPrimary, newFallback);
     }
 
     /**
@@ -320,7 +320,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
             try {
                 return fallback.apply(source);
             } catch (UnconvertibleObjectException failure) {
-                // addSuppressed(failure) on the JDK7 branch.
+                exception.addSuppressed(failure);
                 throw exception;
             }
         }

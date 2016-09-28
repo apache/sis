@@ -95,7 +95,7 @@ public abstract strictfp class TestSuite {
         File root;
         try {
             root = new File(url.toURI());
-        } catch (Exception e) { // (URISyntaxException | IllegalArgumentException) on JDK7 branch.
+        } catch (URISyntaxException | IllegalArgumentException e) {
             // If not a file, then it is probably an entry in a JAR file.
             fail(e.toString());
             return;
@@ -125,9 +125,9 @@ public abstract strictfp class TestSuite {
          * and fail on the first missing test file if any.
          */
         List<Class<?>> declared = Arrays.asList(suite.getAnnotation(Suite.SuiteClasses.class).value());
-        final Set<Class<?>> tests = new HashSet<Class<?>>(declared);
+        final Set<Class<?>> tests = new HashSet<>(declared);
         if (tests.size() != declared.size()) {
-            declared = new ArrayList<Class<?>>(declared);
+            declared = new ArrayList<>(declared);
             assertTrue(declared.removeAll(tests));
             fail("Classes defined twice in " + suite.getSimpleName() + ": " + declared);
         }
@@ -217,7 +217,7 @@ public abstract strictfp class TestSuite {
      */
     protected static void verifyTestList(final Class<? extends TestSuite> suite, final Class<?>[] baseTestClasses) {
         final Class<?>[] testCases = suite.getAnnotation(Suite.SuiteClasses.class).value();
-        final Set<Class<?>> done = new HashSet<Class<?>>(testCases.length);
+        final Set<Class<?>> done = new HashSet<>(testCases.length);
         for (final Class<?> testCase : testCases) {
             if (!Classes.isAssignableToAny(testCase, baseTestClasses)) {
                 fail("Class " + testCase.getCanonicalName() + " does not extends TestCase.");

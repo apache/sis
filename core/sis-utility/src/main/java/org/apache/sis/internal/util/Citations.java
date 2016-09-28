@@ -31,7 +31,7 @@ import org.apache.sis.util.Static;
 import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 import org.opengis.referencing.ReferenceIdentifier;
 
 

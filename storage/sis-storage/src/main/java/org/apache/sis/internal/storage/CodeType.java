@@ -93,7 +93,7 @@ public enum CodeType {
      */
     private static final Map<String,CodeType> FOR_PROTOCOL;
     static {
-        FOR_PROTOCOL = new HashMap<String,CodeType>();
+        FOR_PROTOCOL = new HashMap<>();
         FOR_PROTOCOL.put("urn",   CodeType.URN);
         FOR_PROTOCOL.put("http",  CodeType.HTTP_OGC);   // Will actually need verification.
         FOR_PROTOCOL.put("https", CodeType.HTTP_OGC);   // Will actually need verification.

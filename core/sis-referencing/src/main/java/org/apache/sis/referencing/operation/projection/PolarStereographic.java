@@ -116,8 +116,7 @@ public class PolarStereographic extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final byte variant = getVariant(method);
-        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles =
-                new EnumMap<ParameterRole, ParameterDescriptor<Double>>(ParameterRole.class);
+        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         ParameterDescriptor<Double> falseEasting  = PolarStereographicA.FALSE_EASTING;
         ParameterDescriptor<Double> falseNorthing = PolarStereographicA.FALSE_NORTHING;
         if (variant == C) {

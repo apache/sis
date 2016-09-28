@@ -248,11 +248,6 @@ div.block pre, code, tt, dt code, table tr td dt code {
   font-size:   1em;
 }
 
-h5 {
-  font-size: 110%;
-  margin-bottom: 3pt;
-}
-
 /* Appareance of links in the "Description" column of class and package summaries.
  * JDK style uses bold characters for the left column, which contains the class and
  * package names. But we do not want those bold characters to apply to the descriptions.

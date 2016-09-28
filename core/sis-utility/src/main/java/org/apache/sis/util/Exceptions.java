@@ -25,9 +25,6 @@ import org.apache.sis.internal.util.LocalizedException;
 import org.apache.sis.util.resources.Vocabulary;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * Static methods working with {@link Exception} instances.
@@ -102,7 +99,7 @@ public final class Exceptions extends Static {
         final Throwable ne;
         try {
             ne = exception.getClass().getConstructor(String.class).newInstance(message);
-        } catch (Exception e) { // Too many exception for listing them all.
+        } catch (ReflectiveOperationException e) {
             return exception;
         }
         ne.setStackTrace(exception.getStackTrace());
@@ -128,8 +125,8 @@ public final class Exceptions extends Static {
      *         and no exception provide a message.
      */
     public static String formatChainedMessages(final Locale locale, String header, Throwable cause) {
-        final List<String> previousLines = new ArrayList<String>();
-        final String lineSeparator = JDK7.lineSeparator();
+        final List<String> previousLines = new ArrayList<>();
+        final String lineSeparator = System.lineSeparator();
         StringBuilder buffer = null;
         Vocabulary resources = null;
         while (cause != null) {

@@ -25,6 +25,10 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 
+// Branch-dependent imports
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
+
 
 /**
  * Keys in a map of options for configuring various services
@@ -79,7 +83,7 @@ public class OptionKey<T> implements Serializable {
      *
      * @since 0.4
      */
-    public static final OptionKey<Charset> ENCODING = new OptionKey<Charset>("ENCODING", Charset.class);
+    public static final OptionKey<Charset> ENCODING = new OptionKey<>("ENCODING", Charset.class);
 
     /**
      * The encoding of a URL (<strong>not</strong> the encoding of the document content).
@@ -111,7 +115,7 @@ public class OptionKey<T> implements Serializable {
      *
      * @see java.net.URLDecoder
      */
-    public static final OptionKey<String> URL_ENCODING = new OptionKey<String>("URL_ENCODING", String.class);
+    public static final OptionKey<String> URL_ENCODING = new OptionKey<>("URL_ENCODING", String.class);
 
     /**
      * Whether a storage object (e.g. a {@link org.apache.sis.storage.DataStore}) shall be opened in read,
@@ -120,18 +124,13 @@ public class OptionKey<T> implements Serializable {
      * <table class="sis">
      *   <caption>Supported open options</caption>
      *   <tr><th>Value</th>                             <th>Meaning</th></tr>
-     *   <tr><td>{@code "READ"}</td>   <td>Open for reading data from the storage object.</td></tr>
-     *   <tr><td>{@code "WRITE"}</td>  <td>Open for modifying existing data in the storage object.</td></tr>
-     *   <tr><td>{@code "APPEND"}</td> <td>Open for appending new data in the storage object.</td></tr>
-     *   <tr><td>{@code "CREATE"}</td> <td>Creates a new storage object (file or database) if it does not exist.</td></tr>
+     *   <tr><td>{@link StandardOpenOption#READ}</td>   <td>Open for reading data from the storage object.</td></tr>
+     *   <tr><td>{@link StandardOpenOption#WRITE}</td>  <td>Open for modifying existing data in the storage object.</td></tr>
+     *   <tr><td>{@link StandardOpenOption#APPEND}</td> <td>Open for appending new data in the storage object.</td></tr>
+     *   <tr><td>{@link StandardOpenOption#CREATE}</td> <td>Creates a new storage object (file or database) if it does not exist.</td></tr>
      * </table>
-     *
-     * <div class="section">Differences between the JDK6 and JDK7 branches of SIS</div>
-     * In the JDK7 branch of SIS, the array type for this key is {@code java.nio.file.OpenOption[]} instead than
-     * {@code Object[]} and the constants listed in the above table are {@code java.nio.file.StandardOpenOption}
-     * enumeration values.
      */
-    public static final OptionKey<Object[]> OPEN_OPTIONS = new OptionKey<Object[]>("OPEN_OPTIONS", Object[].class);
+    public static final OptionKey<OpenOption[]> OPEN_OPTIONS = new OptionKey<>("OPEN_OPTIONS", OpenOption[].class);
 
     /**
      * The byte buffer to use for input/output operations. Some {@link org.apache.sis.storage.DataStore}
@@ -145,7 +144,7 @@ public class OptionKey<T> implements Serializable {
      *   <li>The same buffer is not used concurrently by two different {@code DataStore} instances.</li>
      * </ul>
      */
-    public static final OptionKey<ByteBuffer> BYTE_BUFFER = new OptionKey<ByteBuffer>("BYTE_BUFFER", ByteBuffer.class);
+    public static final OptionKey<ByteBuffer> BYTE_BUFFER = new OptionKey<>("BYTE_BUFFER", ByteBuffer.class);
 
     /**
      * The name of this key. For {@code OptionKey} instances, it shall be the name of the static constants.
@@ -226,7 +225,7 @@ public class OptionKey<T> implements Serializable {
     public Map<OptionKey<?>,Object> setValueInto(Map<OptionKey<?>,Object> options, final T value) {
         if (value != null) {
             if (options == null) {
-                options = new HashMap<OptionKey<?>,Object>();
+                options = new HashMap<>();
             }
             options.put(this, value);
         } else if (options != null) {
@@ -278,7 +277,7 @@ public class OptionKey<T> implements Serializable {
     private Object readResolve() {
         try {
             return OptionKey.class.getField(name).get(null);
-        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+        } catch (ReflectiveOperationException e) {
             /*
              * This may happen if we are deserializing a stream produced by a more recent SIS library
              * than the one running in this JVM. This class should be robust to this situation, since

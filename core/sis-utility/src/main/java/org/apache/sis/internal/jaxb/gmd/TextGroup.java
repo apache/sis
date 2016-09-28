@@ -20,9 +20,6 @@ import java.util.Locale;
 import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.util.Debug;
 
-// Related to JDK7
-import org.apache.sis.internal.jdk7.JDK7;
-
 
 /**
  * A set of strings localized in different languages. This adapter represents the
@@ -127,7 +124,7 @@ final class TextGroup {
     @Debug
     @Override
     public String toString() {
-        final String lineSeparator = JDK7.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
         final StringBuilder buffer = new StringBuilder(160).append(getClass().getSimpleName()).append(lineSeparator);
         if (localized != null) {
             int corner = 0;

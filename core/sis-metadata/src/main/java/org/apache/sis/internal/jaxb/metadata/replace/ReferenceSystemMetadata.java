@@ -24,7 +24,7 @@ import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.util.ComparisonMode;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**

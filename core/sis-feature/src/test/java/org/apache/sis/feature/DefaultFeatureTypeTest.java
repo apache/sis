@@ -55,7 +55,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * @return The feature for a city.
      */
     public static DefaultFeatureType city() {
-        final Map<String,Object> identification = new HashMap<String,Object>();
+        final Map<String,Object> identification = new HashMap<>();
         final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(identification);
         final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(identification);
 
@@ -112,14 +112,14 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * @return The feature for a metropolis.
      */
     public static DefaultFeatureType metropolis() {
-        final Map<String,Object> identification = new HashMap<String,Object>(4);
+        final Map<String,Object> identification = new HashMap<>(4);
         assertNull(identification.put(DefaultFeatureType.NAME_KEY,         "Metropolis"));
         assertNull(identification.put(DefaultFeatureType.NAME_KEY + "_fr", "Métropole"));
         return new DefaultFeatureType(identification, false,
                 new DefaultFeatureType[] {city()},
-                new DefaultAttributeType<CharSequence>(singletonMap(DefaultAttributeType.NAME_KEY, "region"),
+                new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "region"),
                         CharSequence.class, 1, 1, null),
-                new DefaultAttributeType<Boolean>(singletonMap(DefaultAttributeType.NAME_KEY, "isGlobal"),
+                new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "isGlobal"),
                         Boolean.class, 1, 1, null));
     }
 
@@ -135,8 +135,8 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * Creates a sub-type of the "metropolis" type with the "region" attribute overridden to the given type.
      * The given type should be {@link InternationalString}, but we allow other types for testing argument checks.
      */
-    private static <T> DefaultFeatureType worldMetropolis(final DefaultFeatureType metropolis,
-            final DefaultFeatureType universityCity, final DefaultAttributeType<?> temperature, final Class<T> regionType)
+    private static DefaultFeatureType worldMetropolis(final DefaultFeatureType metropolis,
+            final DefaultFeatureType universityCity, final DefaultAttributeType<?> temperature, final Class<?> regionType)
     {
         return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "World metropolis"), false,
                 new DefaultFeatureType[] {          // Super types
@@ -144,7 +144,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
                     universityCity
                 },
                 new DefaultAttributeType<?>[] {     // Properties
-                    new DefaultAttributeType<T>(singletonMap(DefaultAttributeType.NAME_KEY, "region"), regionType, 1, 1, null),
+                    new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "region"), regionType, 1, 1, null),
                     temperature
                 });
     }
@@ -244,7 +244,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testSimple")
     public void testComplex() {
-        final Map<String,Object> identification = new HashMap<String,Object>();
+        final Map<String,Object> identification = new HashMap<>();
         final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(identification);
         final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(identification);
         testComplex(city, population, 0, 0);    // Simple
@@ -262,7 +262,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
             final DefaultAttributeType<Integer> population,
             final int minimumOccurs, final int maximumOccurs)
     {
-        final DefaultAttributeType<String> festival = new DefaultAttributeType<String>(
+        final DefaultAttributeType<String> festival = new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, "festival"),
                 String.class, minimumOccurs, maximumOccurs, null);
 
@@ -296,11 +296,11 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testSimple")
     public void testNameCollision() {
-        final DefaultAttributeType<String> city = new DefaultAttributeType<String>(
+        final DefaultAttributeType<String> city = new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, "name"), String.class, 1, 1, null);
-        final DefaultAttributeType<Integer> cityId = new DefaultAttributeType<Integer>(
+        final DefaultAttributeType<Integer> cityId = new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, "name"), Integer.class, 1, 1, null);
-        final DefaultAttributeType<Integer> population = new DefaultAttributeType<Integer>(
+        final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, "population"), Integer.class, 1, 1, null);
 
         final Map<String,String> identification = singletonMap(DefaultAttributeType.NAME_KEY, "City");
@@ -324,13 +324,13 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     @DependsOnMethod("testNameCollision")
     public void testQualifiedNames() {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-        final DefaultAttributeType<String> city = new DefaultAttributeType<String>(
+        final DefaultAttributeType<String> city = new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, factory.createGenericName(null, "ns1", "name")),
                 String.class, 1, 1, null);
-        final DefaultAttributeType<Integer> cityId = new DefaultAttributeType<Integer>(
+        final DefaultAttributeType<Integer> cityId = new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, factory.createGenericName(null, "ns2", "name")),
                 Integer.class, 1, 1, null);
-        final DefaultAttributeType<Integer> population = new DefaultAttributeType<Integer>(
+        final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
                 singletonMap(DefaultAttributeType.NAME_KEY, factory.createGenericName(null, "ns1", "population")),
                 Integer.class, 1, 1, null);
         final DefaultFeatureType feature = new DefaultFeatureType(
@@ -426,7 +426,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         final DefaultFeatureType metroCapital = new DefaultFeatureType(
                 singletonMap(DefaultFeatureType.NAME_KEY, "Metropolis and capital"), false,
                 new DefaultFeatureType[] {metropolis, capital},
-                new DefaultAttributeType<String>(singletonMap(DefaultAttributeType.NAME_KEY, "country"),
+                new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "country"),
                         String.class, 1, 1, null));
 
         assertUnmodifiable(metroCapital);

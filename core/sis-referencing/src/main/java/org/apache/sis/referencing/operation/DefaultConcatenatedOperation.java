@@ -42,7 +42,7 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 import org.opengis.referencing.operation.SingleOperation;
 
 
@@ -111,7 +111,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     {
         super(properties);
         ArgumentChecks.ensureNonNull("operations", operations);
-        final List<CoordinateOperation> flattened = new ArrayList<CoordinateOperation>(operations.length);
+        final List<CoordinateOperation> flattened = new ArrayList<>(operations.length);
         initialize(properties, operations, flattened, mtFactory,
                 (coordinateOperationAccuracy == null), (domainOfValidity == null));
         if (flattened.size() < 2) {
@@ -405,7 +405,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * Invoked by JAXB for setting the operations.
      */
     private void setSteps(final CoordinateOperation[] steps) throws FactoryException {
-        final List<CoordinateOperation> flattened = new ArrayList<CoordinateOperation>(steps.length);
+        final List<CoordinateOperation> flattened = new ArrayList<>(steps.length);
         initialize(null, steps, flattened, DefaultFactories.forBuildin(MathTransformFactory.class),
                 (coordinateOperationAccuracy == null), (domainOfValidity == null));
         operations = UnmodifiableArrayList.wrap(flattened.toArray(new SingleOperation[flattened.size()]));

@@ -21,7 +21,7 @@ import java.util.Comparator;
 import java.lang.reflect.Array;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
+import java.util.Objects;
 
 
 /**
@@ -2024,6 +2024,7 @@ public final class ArraysExt extends Static {
      * @see #append(Object[], Object)
      * @see #unionOfSorted(int[], int[])
      */
+    @SafeVarargs
     public static <T> T[] concatenate(final T[]... arrays) {
         T[] result = null;
         if (arrays != null) {

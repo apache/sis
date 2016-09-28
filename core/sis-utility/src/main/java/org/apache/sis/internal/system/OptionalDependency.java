@@ -93,7 +93,7 @@ public abstract class OptionalDependency extends SystemListener {
             record.setLoggerName(module);
             Logging.log(type, "getInstance", record);
             return null;
-        } catch (Exception exception) {    // (ReflectiveOperationException) on JDK7 branch.
+        } catch (ReflectiveOperationException exception) {
             // Should never happen if we didn't broke our helper class.
             throw new AssertionError(exception);
         }

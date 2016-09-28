@@ -287,7 +287,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                 if (target != null) {
                     target.clear();
                 } else {
-                    target = new CheckedArrayList<E>(elementType, source.size());
+                    target = new CheckedArrayList<>(elementType, source.size());
                 }
                 target.addAll(source);
             }
@@ -334,7 +334,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                 if (target != null) {
                     target.clear();
                 } else {
-                    target = new CheckedHashSet<E>(elementType, source.size());
+                    target = new CheckedHashSet<>(elementType, source.size());
                 }
                 target.addAll(source);
             }
@@ -401,7 +401,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                     if (useSet(elementType)) {
                         target = createSet(elementType, capacity);
                     } else {
-                        target = new CheckedArrayList<E>(elementType, capacity);
+                        target = new CheckedArrayList<>(elementType, capacity);
                     }
                 }
                 target.addAll(source);
@@ -425,7 +425,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (isNullOrEmpty(source)) {
             return null;
         }
-        final List<E> target = new CheckedArrayList<E>(elementType, source.size());
+        final List<E> target = new CheckedArrayList<>(elementType, source.size());
         target.addAll(source);
         return target;
     }
@@ -445,7 +445,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (isNullOrEmpty(source)) {
             return null;
         }
-        final Set<E> target = new CheckedHashSet<E>(elementType, source.size());
+        final Set<E> target = new CheckedHashSet<>(elementType, source.size());
         target.addAll(source);
         return target;
     }
@@ -473,7 +473,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (useSet(elementType)) {
             target = createSet(elementType, capacity);
         } else {
-            target = new CheckedArrayList<E>(elementType, capacity);
+            target = new CheckedArrayList<>(elementType, capacity);
         }
         target.addAll(source);
         return target;
@@ -500,7 +500,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (useSet(elementType)) {
             collection = createSet(elementType, INITIAL_CAPACITY);
         } else {
-            collection = new CheckedArrayList<E>(elementType, 1);
+            collection = new CheckedArrayList<>(elementType, 1);
         }
         collection.add(value);
         return collection;
@@ -541,7 +541,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
              * initially empty lists, but as of JDK8 this lazy instantiation works only for list having
              * the default capacity.
              */
-            return new CheckedArrayList<E>(elementType);
+            return new CheckedArrayList<>(elementType);
         }
         return Collections.emptyList();
     }
@@ -603,7 +603,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         } else {
             if (isModifiable) {
                 // Do not specify an initial capacity for the reason explained in nonNullList(…).
-                return new CheckedArrayList<E>(elementType);
+                return new CheckedArrayList<>(elementType);
             } else {
                 return Collections.emptyList();
             }
@@ -622,7 +622,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (CodeList.class.isAssignableFrom(elementType) && Modifier.isFinal(elementType.getModifiers())) {
             return new CodeListSet(elementType);
         }
-        return new CheckedHashSet<E>(elementType, capacity);
+        return new CheckedHashSet<>(elementType, capacity);
     }
 
     /**

@@ -51,10 +51,10 @@ import org.apache.sis.feature.AbstractFeature;
 public class InputFeatureStream extends InputStream {
     /** Logger. */
     private static Logger LOGGER = Logging.getLogger(InputFeatureStream.class.getSimpleName());
-
+    
     /** Resource bundle. */
     private ResourceBundle rsc = ResourceBundle.getBundle(InputFeatureStream.class.getName());
-
+    
     /** Dedicated connection to DBF. */
     private DBFConnection connection;
 
@@ -75,12 +75,12 @@ public class InputFeatureStream extends InputStream {
 
     /** Database file. */
     private File databaseFile;
-
+    
     /** Shapefile index. */
     private File shapefileIndex;
-
+    
     /** Indicates that the shape file has a valid index provided with it. */
-    private boolean hasShapefileIndex;
+    private boolean hasShapefileIndex; 
 
     /** Type of the features contained in this shapefile. */
     private DefaultFeatureType featuresType;
@@ -102,17 +102,17 @@ public class InputFeatureStream extends InputStream {
     public InputFeatureStream(File shpfile, File dbaseFile, File shpfileIndex, String sqlStatement) throws InvalidDbaseFileFormatException, InvalidShapefileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
         try {
             this.connection = (DBFConnection)new DBFDriver().connect(dbaseFile.getAbsolutePath(), null);
-
+            
             if (sqlStatement == null) {
                 this.sql = MessageFormat.format("SELECT * FROM {0}", dbaseFile.getName());
             }
             else {
                 this.sql = sqlStatement;
             }
-
+            
             this.shapefile = shpfile;
             this.databaseFile = dbaseFile;
-
+            
             if (shpfileIndex != null && (shpfileIndex.exists() && shpfileIndex.isFile())) {
                 this.shapefileIndex = shpfileIndex;
                 this.hasShapefileIndex = true;
@@ -120,10 +120,10 @@ public class InputFeatureStream extends InputStream {
             else {
                 this.hasShapefileIndex = false;
             }
-
+    
             this.shapefileReader = new ShapefileByteReader(this.shapefile, this.databaseFile, this.shapefileIndex);
             this.featuresType = this.shapefileReader.getFeaturesType();
-
+    
             try {
                 executeQuery();
             }
@@ -149,7 +149,7 @@ public class InputFeatureStream extends InputStream {
             throw new ShapefileNotFoundException(ex.getMessage(), ex);
         }
     }
-
+    
     /**
      * Create an input stream of features over a connection, responding to a SELECT * FROM DBF statement.
      * @param shpfile Shapefile.
@@ -176,7 +176,7 @@ public class InputFeatureStream extends InputStream {
     public InputFeatureStream(File shpfile, File dbaseFile) throws InvalidDbaseFileFormatException, InvalidShapefileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
         this(shpfile, dbaseFile, null);
     }
-
+    
     /**
      * @see java.io.InputStream#read()
      */
@@ -218,17 +218,17 @@ public class InputFeatureStream extends InputStream {
         catch(SQLConnectionClosedException e) {
             throw new DataStoreClosedException(e.getMessage(), e);
         }
-        catch(SQLNotNumericException e) {
+        catch(SQLInvalidStatementException | SQLIllegalParameterException | SQLNoSuchFieldException | SQLUnsupportedParsingFeatureException | SQLFeatureNotSupportedException e) {
+            throw new DataStoreQueryException(e.getMessage(), e);
+        }
+        catch(SQLNotNumericException | SQLNotDateException e) {
             throw new DataStoreQueryResultException(e.getMessage(), e);
         }
-        catch(SQLNotDateException e) {
-            throw new DataStoreQueryResultException(e.getMessage(), e);
-        }
-        catch(java.sql.SQLException e) {
+        catch(SQLNoDirectAccessAvailableException e) {
             throw new DataStoreQueryException(e.getMessage(), e);
         }
     }
-
+    
     /**
      * Return the features type.
      * @return Features type.
@@ -236,7 +236,7 @@ public class InputFeatureStream extends InputStream {
     public DefaultFeatureType getFeaturesType() {
         return this.featuresType;
     }
-
+    
     /**
      * Returns the shapefile descriptor.
      * @return Shapefile descriptor.
@@ -244,15 +244,15 @@ public class InputFeatureStream extends InputStream {
     public ShapefileDescriptor getShapefileDescriptor() {
         return this.shapefileReader.getShapefileDescriptor();
     }
-
-    /**
+    
+    /** 
      * Returns the database fields descriptors.
-     * @return List of fields descriptors.
+     * @return List of fields descriptors. 
      */
     public List<DBase3FieldDescriptor> getDatabaseFieldsDescriptors() {
         return this.shapefileReader.getFieldsDescriptors();
     }
-
+    
     /**
      * Checks if the shapefile has an index provided with it.
      * @return true if an index file (.shx) has been given with the shapefile.
@@ -260,7 +260,7 @@ public class InputFeatureStream extends InputStream {
     public boolean hasShapefileIndex() {
         return this.hasShapefileIndex;
     }
-
+    
     /**
      * Read next feature responding to the SQL query.
      * @return Feature, null if no more feature is available.
@@ -282,24 +282,24 @@ public class InputFeatureStream extends InputStream {
             }
 
             int previousRecordNumber = this.rs.getRowNum();
-
+            
             if (this.rs.next() == false) {
                 this.endOfFile = true;
                 return null;
             }
-
+            
             int currentRecordNumber = this.rs.getRowNum();
-
+            
             // On the shapefile, only jump in another place if a direct access is needed.
             boolean directAccesRequired = currentRecordNumber != (previousRecordNumber + 1);
-
+            
             if (directAccesRequired) {
                 try {
                     if (LOGGER.isLoggable(Level.FINER)) {
                         MessageFormat format = new MessageFormat(this.rsc.getString("log.shapefile_reading_with_direct_access"));
                         LOGGER.finer(format.format(new Object[] {previousRecordNumber, currentRecordNumber}));
                     }
-
+                    
                     this.shapefileReader.setRowNum(currentRecordNumber);
                 }
                 catch(SQLInvalidRecordNumberForDirectAccessException e) {
@@ -313,13 +313,12 @@ public class InputFeatureStream extends InputStream {
                     LOGGER.finer(format.format(new Object[] {previousRecordNumber, currentRecordNumber}));
                 }
             }
-
+            
             AbstractFeature feature = this.featuresType.newInstance();
             this.shapefileReader.completeFeature(feature);
             DBFDatabaseMetaData metadata = (DBFDatabaseMetaData)this.connection.getMetaData();
 
-            DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = (DBFBuiltInMemoryResultSetForColumnsListing)metadata.getColumns(null, null, null, null);
-            try {
+            try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = (DBFBuiltInMemoryResultSetForColumnsListing)metadata.getColumns(null, null, null, null)) {
                 while(rsDatabase.next()) {
                     String fieldName = rsDatabase.getString("COLUMN_NAME");
                     Object fieldValue = this.rs.getObject(fieldName);
@@ -351,11 +350,9 @@ public class InputFeatureStream extends InputStream {
 
                 return feature;
             }
-            catch(java.sql.SQLException e) {
+            catch(SQLNoResultException e) {
                 // This an internal trouble, if it occurs.
                 throw new RuntimeException(e.getMessage(), e);
-            } finally {
-                rsDatabase.close();
             }
         }
         catch(SQLNoResultException e) {
