@@ -62,6 +62,7 @@ import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.internal.referencing.provider.VerticalOffset;
 import org.apache.sis.internal.referencing.provider.Providers;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
@@ -79,7 +80,6 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
 
 
 /**
@@ -808,8 +808,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 }
                 final boolean isIvfDefinitive;
                 if (mismatchedParam != null) {
-                    final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING,
-                            Messages.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
+                    final LogRecord record = Resources.getResources(null).getLogRecord(Level.WARNING,
+                            Resources.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
                             mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
                     record.setLoggerName(Loggers.COORDINATE_OPERATION);
                     Logging.log(DefaultMathTransformFactory.class, "createParameterizedTransform", record);

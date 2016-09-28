@@ -20,7 +20,6 @@ import java.util.Locale;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import org.apache.sis.util.iso.AbstractInternationalString;
-import org.apache.sis.util.resources.Messages;
 
 
 /**
@@ -73,9 +72,9 @@ public final class SignReversalComment extends AbstractInternationalString imple
      */
     @Override
     public String toString(final Locale locale) {
-        return Messages.getResources(locale).getString(opposite
-                ? Messages.Keys.InverseOperationUsesOppositeSign
-                : Messages.Keys.InverseOperationUsesSameSign);
+        return Resources.getResources(locale).getString(opposite
+                ? Resources.Keys.InverseOperationUsesOppositeSign
+                : Resources.Keys.InverseOperationUsesSameSign);
     }
 
     /**

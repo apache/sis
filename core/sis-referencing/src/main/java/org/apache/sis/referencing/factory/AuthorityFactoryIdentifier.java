@@ -29,10 +29,10 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.metadata.NameMeaning;
+import org.apache.sis.internal.referencing.Resources;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -261,7 +261,7 @@ final class AuthorityFactoryIdentifier {
      * @param used The factory which will be used.
      */
     void logConflict(final AuthorityFactory used) {
-        log(Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.IgnoredServiceProvider_3,
+        log(Resources.getResources(null).getLogRecord(Level.WARNING, Resources.Keys.IgnoredServiceProvider_3,
                 TYPES[type], getAuthorityAndVersion(), Classes.getClass(used)));
     }
 
@@ -270,7 +270,7 @@ final class AuthorityFactoryIdentifier {
      * {@code AuthorityFactoryIdentifier} fallback on a default version.
      */
     void logFallback() {
-        log(Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.FallbackDefaultFactoryVersion_2,
+        log(Resources.getResources(null).getLogRecord(Level.WARNING, Resources.Keys.FallbackDefaultFactoryVersion_2,
                 authority, version));
     }
 

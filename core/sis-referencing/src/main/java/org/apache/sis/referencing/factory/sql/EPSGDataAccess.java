@@ -73,6 +73,7 @@ import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.EPSGParameterDomain;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.SignReversalComment;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Semaphores;
@@ -101,7 +102,6 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
@@ -462,7 +462,7 @@ addURIs:    for (int i=0; ; i++) {
                     case 2: {
                         url = metadata.getURL();
                         function = OnLineFunction.valueOf(CONNECTION);
-                        description = Messages.formatInternational(Messages.Keys.DataBase_4,
+                        description = Resources.formatInternational(Resources.Keys.GeodeticDataBase_4,
                                 Constants.EPSG, version, metadata.getDatabaseProductName(),
                                 Version.valueOf(metadata.getDatabaseMajorVersion(),
                                                 metadata.getDatabaseMinorVersion()));
@@ -1041,7 +1041,7 @@ addURIs:    for (int i=0; ; i++) {
             }
         }
         if (!quiet) {
-            LogRecord record = Messages.getResources(locale).getLogRecord(Level.WARNING, Messages.Keys.DeprecatedCode_3,
+            LogRecord record = Resources.getResources(locale).getLogRecord(Level.WARNING, Resources.Keys.DeprecatedCode_3,
                     Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code, replacedBy, reason);
             record.setLoggerName(Loggers.CRS_FACTORY);
             Logging.log(EPSGDataAccess.class, method, record);
@@ -1893,8 +1893,8 @@ addURIs:    for (int i=0; ; i++) {
                     if (!Double.isNaN(semiMinorAxis)) {
                         // Both 'inverseFlattening' and 'semiMinorAxis' are defined.
                         // Log a warning and create the ellipsoid using the inverse flattening.
-                        final LogRecord record = Messages.getResources(getLocale()).getLogRecord(Level.WARNING,
-                                Messages.Keys.AmbiguousEllipsoid_1, Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code);
+                        final LogRecord record = Resources.getResources(getLocale()).getLogRecord(Level.WARNING,
+                                Resources.Keys.AmbiguousEllipsoid_1, Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code);
                         record.setLoggerName(Loggers.CRS_FACTORY);
                         Logging.log(EPSGDataAccess.class, "createEllipsoid", record);
                     }
