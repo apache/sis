@@ -25,6 +25,7 @@ import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
+import org.apache.sis.internal.feature.Resources;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -120,7 +121,7 @@ abstract class PropertyView<V> extends Field<V> implements Property, Serializabl
             }
             value = it.next();
             if (it.hasNext()) {
-                throw new MultiValuedPropertyException(Errors.format(Errors.Keys.NotASingleton_1, name));
+                throw new MultiValuedPropertyException(Resources.format(Resources.Keys.NotASingleton_1, name));
             }
         }
         return getValueClass().cast(value);

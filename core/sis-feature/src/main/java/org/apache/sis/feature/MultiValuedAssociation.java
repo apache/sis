@@ -19,7 +19,7 @@ package org.apache.sis.feature;
 import java.util.Collection;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.feature.Resources;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -97,7 +97,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
         switch (values.size()) {
             case 0:  return null;
             case 1:  return values.get(0);
-            default: throw new MultiValuedPropertyException(Errors.format(Errors.Keys.NotASingleton_1, getName()));
+            default: throw new MultiValuedPropertyException(Resources.format(Resources.Keys.NotASingleton_1, getName()));
         }
     }
 
@@ -109,6 +109,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
      * @return The features in a <cite>live</cite> collection.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Feature> getValues() {
         return values;
     }
