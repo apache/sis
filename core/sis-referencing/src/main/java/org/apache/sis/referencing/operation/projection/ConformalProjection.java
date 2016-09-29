@@ -147,7 +147,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * <p>It is sub-classes responsibility to invoke {@code super.computeCoefficients()} in their
      * constructor when ready, or to compute the coefficients themselves.</p>
      *
-     * @param initializer The initializer for computing map projection internal parameters.
+     * @param  initializer  the initializer for computing map projection internal parameters.
      */
     ConformalProjection(final Initializer initializer) {
         super(initializer);
@@ -227,8 +227,8 @@ abstract class ConformalProjection extends NormalizedProjection {
      * for the same precision, but this precision is achieved "only" for relatively small eccentricity like
      * the Earth's one. See the {@code MercatorMethodComparison} class in the test package for more discussion.
      *
-     * @param  expOfSouthing The <em>reciprocal</em> of the value returned by {@link #expOfNorthing}.
-     * @return The latitude in radians.
+     * @param  expOfSouthing  the <em>reciprocal</em> of the value returned by {@link #expOfNorthing}.
+     * @return the latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
      *
      * @see #expOfNorthing(double, double)
@@ -289,7 +289,7 @@ abstract class ConformalProjection extends NormalizedProjection {
                 return φ;
             }
         }
-        throw new ProjectionException(Resources.Keys.NoConvergence);
+        throw new ProjectionException(Resources.format(Resources.Keys.NoConvergence));
     }
 
     /**
@@ -343,8 +343,8 @@ abstract class ConformalProjection extends NormalizedProjection {
      *   <li>Reciprocal of (15-9) in the <cite>Lambert Conformal Conic projection</cite> chapter.</li>
      * </ul>
      *
-     * @param  φ     The latitude in radians.
-     * @param  ℯsinφ The sine of the φ argument multiplied by {@link #eccentricity}.
+     * @param  φ      the latitude in radians.
+     * @param  ℯsinφ  the sine of the φ argument multiplied by {@link #eccentricity}.
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
      *
      * @see #φ(double)
@@ -368,9 +368,9 @@ abstract class ConformalProjection extends NormalizedProjection {
      * <p>In order to get the derivative of the {@link #expOfNorthing(double, double)} function, call can multiply
      * the returned value by by {@code expOfNorthing}.</p>
      *
-     * @param  sinφ the sine of latitude.
-     * @param  cosφ The cosine of latitude.
-     * @return The partial derivative of a Mercator projection at the given latitude.
+     * @param  sinφ  the sine of latitude.
+     * @param  cosφ  the cosine of latitude.
+     * @return the partial derivative of a Mercator projection at the given latitude.
      *
      * @see #expOfNorthing(double, double)
      * @see #φ(double)
