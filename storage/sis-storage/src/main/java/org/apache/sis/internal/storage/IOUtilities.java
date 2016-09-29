@@ -489,7 +489,7 @@ public final class IOUtilities extends Static {
             if (!uri.isAbsolute()) {
                 // All methods invoked in this block throws IllegalArgumentException if the URI has no scheme,
                 // so we are better to check now and provide a more appropriate exception for this method.
-                throw new IOException(Errors.format(Errors.Keys.MissingSchemeInURI));
+                throw new IOException(Resources.format(Resources.Keys.MissingSchemeInURI_1, uri));
             } else try {
                 input = Paths.get(uri);
             } catch (IllegalArgumentException | FileSystemNotFoundException e) {

@@ -42,6 +42,12 @@
       <fileset dir="${project.root}/core/sis-feature/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
+      <fileset dir="${project.root}/storage/sis-storage/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <fileset dir="${project.root}/storage/sis-netcdf/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
       <!-- Pending discussion about how to handle resources in the Shapefile module.
       <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources">
         <include name="**/*.utf"/>

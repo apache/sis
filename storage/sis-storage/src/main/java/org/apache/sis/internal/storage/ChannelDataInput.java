@@ -880,7 +880,7 @@ public class ChannelDataInput extends ChannelData {
             /*
              * Requested position is before the current buffer limits and we can not seek.
              */
-            throw new IOException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, filename));
+            throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
         clearBitOffset();
     }

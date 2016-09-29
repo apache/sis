@@ -28,7 +28,6 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.nio.channels.WritableByteChannel;
-import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
@@ -650,7 +649,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
             }
         } else {
             // We can not move position beyond the buffered part.
-            throw new IOException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, filename));
+            throw new IOException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
     }
 
