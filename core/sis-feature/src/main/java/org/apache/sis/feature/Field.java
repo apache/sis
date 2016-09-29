@@ -57,7 +57,7 @@ abstract class Field<V> implements Property {
     /**
      * Returns the field feature or attribute value, or {@code null} if none.
      *
-     * @return The feature or attribute value (may be {@code null}).
+     * @return the feature or attribute value (may be {@code null}).
      * @throws MultiValuedPropertyException if this field contains more than one value.
      *
      * @see AbstractFeature#getPropertyValue(String)
@@ -70,7 +70,7 @@ abstract class Field<V> implements Property {
      * The returned collection is <cite>live</cite>: changes in the returned collection
      * will be reflected immediately in this {@code Field} instance, and conversely.
      *
-     * @return The features or attribute values in a <cite>live</cite> collection.
+     * @return the features or attribute values in a <cite>live</cite> collection.
      */
     public Collection<V> getValues() {
         return new PropertySingleton<>(this);
@@ -79,7 +79,7 @@ abstract class Field<V> implements Property {
     /**
      * Sets the feature or attribute value. All previous values are replaced by the given singleton.
      *
-     * @param value The new value, or {@code null} for removing all values from this field.
+     * @param  value  the new value, or {@code null} for removing all values from this field.
      *
      * @see AbstractFeature#setPropertyValue(String, Object)
      */
@@ -91,7 +91,7 @@ abstract class Field<V> implements Property {
      * <p>The default implementation ensures that the given collection contains at most one element,
      * then delegates to {@link #setValue(Object)}.</p>
      *
-     * @param values The new values.
+     * @param  values  the new values.
      * @throws InvalidPropertyValueException if the given collection contains too many elements.
      */
     public void setValues(final Collection<? extends V> values) throws InvalidPropertyValueException {
