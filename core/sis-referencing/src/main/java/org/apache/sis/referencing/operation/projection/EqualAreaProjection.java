@@ -88,7 +88,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
     /**
      * Creates a new normalized projection from the parameters computed by the given initializer.
      *
-     * @param initializer The initializer for computing map projection internal parameters.
+     * @param  initializer  the initializer for computing map projection internal parameters.
      */
     EqualAreaProjection(final Initializer initializer) {
         super(initializer);
@@ -152,7 +152,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      *
      * In the spherical case, <var>q</var> = 2⋅sinφ.
      *
-     * @param  sinφ sine of the latitude <var>q</var> is calculated for.
+     * @param  sinφ  the sine of the latitude <var>q</var> is calculated for.
      * @return <var>q</var> from Snyder equation (3-12).
      */
     final double qm(final double sinφ) {
@@ -168,7 +168,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      * It is caller responsibility to ensure that this method is not invoked in the spherical case, since
      * this implementation does not work in such case.
      *
-     * @param  sinφ sine of the latitude <var>q</var> is calculated for.
+     * @param  sinφ  the sine of the latitude <var>q</var> is calculated for.
      * @return <var>q</var> from Snyder equation (3-12).
      */
     final double qm_ellipsoid(final double sinφ) {
@@ -197,7 +197,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      * have a sufficient amount of terms for achieving the centimetric precision, so we "finish" it by the
      * iterative method. The series expansion is nevertheless useful for reducing the number of iterations.
      *
-     * @param  y in the cylindrical case, this is northing on the normalized ellipsoid.
+     * @param  y  in the cylindrical case, this is northing on the normalized ellipsoid.
      * @return the latitude in radians.
      */
     final double φ(final double y) throws ProjectionException {
@@ -275,7 +275,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
             return Double.NaN;                      // Value "after" the pole.
         }
         // Value should have converged but did not.
-        throw new ProjectionException(Resources.Keys.NoConvergence);
+        throw new ProjectionException(Resources.format(Resources.Keys.NoConvergence));
     }
 
     /**

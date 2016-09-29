@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.Resources;
 
 
 /**
@@ -84,14 +83,5 @@ public class ProjectionException extends TransformException {
      */
     public ProjectionException(final String message, final Throwable cause) {
         super(message, cause);
-    }
-
-    /**
-     * Constructs a new exception with the specified detail message.
-     *
-     * @param  code  one of the constants suitable for {@link Resources#format(short)}.
-     */
-    ProjectionException(final short code) {
-        this(Resources.format(code));
     }
 }
