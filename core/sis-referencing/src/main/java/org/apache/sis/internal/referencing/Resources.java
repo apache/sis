@@ -29,6 +29,8 @@ import org.apache.sis.util.resources.ResourceInternationalString;
 
 /**
  * Warning and error messages that are specific to the {@code sis-referencing} module.
+ * Resources in this file should not be used by any other module. For resources shared
+ * by all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.8
