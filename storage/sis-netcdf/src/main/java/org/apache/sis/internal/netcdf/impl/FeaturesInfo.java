@@ -22,9 +22,9 @@ import java.io.IOException;
 import org.apache.sis.math.Vector;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
+import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.IntegerList;
-import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CF;
 
 
@@ -90,7 +90,7 @@ search: for (final VariableInfo counts : decoder.variables) {
                     final Dimension featureDimension = counts.dimensions[0];
                     final VariableInfo identifiers = decoder.findVariable(featureDimension.name);
                     if (identifiers == null) {
-                        decoder.listeners.warning(decoder.errors().getString(Errors.Keys.VariableNotFound_2,
+                        decoder.listeners.warning(decoder.resources().getString(Resources.Keys.VariableNotFound_2,
                                 decoder.getFilename(), featureDimension.name), null);
                         continue;
                     }
@@ -102,8 +102,8 @@ search: for (final VariableInfo counts : decoder.variables) {
                             default: isValid = false; break;                    // Too many dimensions
                         }
                         if (!isValid) {
-                            decoder.listeners.warning(decoder.errors().getString(
-                                    Errors.Keys.UnexpectedDimensionForVariable_4,
+                            decoder.listeners.warning(decoder.resources().getString(
+                                    Resources.Keys.UnexpectedDimensionForVariable_4,
                                     decoder.getFilename(), identifiers.getName(),
                                     featureDimension.getName(), identifiers.dimensions[i].name), null);
                             continue search;
@@ -116,7 +116,7 @@ search: for (final VariableInfo counts : decoder.variables) {
                      */
                     final Dimension sampleDim = counts.findDimension((String) sampleDimName);
                     if (sampleDim == null) {
-                        decoder.listeners.warning(decoder.errors().getString(Errors.Keys.DimensionNotFound_3,
+                        decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DimensionNotFound_3,
                                 decoder.getFilename(), counts.getName(), sampleDimName), null);
                         continue;
                     }

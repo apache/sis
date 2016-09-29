@@ -40,6 +40,7 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.NamedElement;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
+import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.StandardDateFormat;
@@ -230,7 +231,7 @@ public final class ChannelDecoder extends Decoder {
         switch (version) {
             case 1:  is64bits = false; break;
             case 2:  is64bits = true;  break;
-            default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnsupportedVersion_1, version));
+            default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnsupportedFormatVersion_2, "NetCDF", version));
             // If more cases are added, remember to increment the MAX_VERSION constant.
         }
         numrecs = input.readInt();
@@ -289,6 +290,15 @@ public final class ChannelDecoder extends Decoder {
      */
     final Errors errors() {
         return Errors.getResources(listeners.getLocale());
+    }
+
+    /**
+     * Returns the NetCDF-specific resource bundle for the locale given by {@link #getLocale()}.
+     *
+     * @return the localized error resource bundle.
+     */
+    final Resources resources() {
+        return Resources.getResources(listeners.getLocale());
     }
 
     /**
