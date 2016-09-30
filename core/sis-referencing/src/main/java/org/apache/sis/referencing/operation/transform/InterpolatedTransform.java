@@ -141,8 +141,8 @@ public class InterpolatedTransform extends DatumShiftTransform {
          */
         super((grid instanceof DatumShiftGridFile<?,?>) ? ((DatumShiftGridFile<?,?>) grid).descriptor : NTv2.PARAMETERS, grid);
         if (!grid.isCellValueRatio()) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalParameterValue_2, "isCellValueRatio", Boolean.FALSE));
+            throw new IllegalArgumentException(Resources.format(
+                    Resources.Keys.IllegalParameterValue_2, "isCellValueRatio", Boolean.FALSE));
         }
         final Unit<T> unit = grid.getTranslationUnit();
         if (unit != grid.getCoordinateUnit()) {

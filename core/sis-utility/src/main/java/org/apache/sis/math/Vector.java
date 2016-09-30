@@ -119,7 +119,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         if (array instanceof Vector) {
             return (Vector) array;
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterType_2, "array", array.getClass()));
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_2, "array", array.getClass()));
     }
 
     /**

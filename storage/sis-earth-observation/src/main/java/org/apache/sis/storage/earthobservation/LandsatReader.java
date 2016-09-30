@@ -820,7 +820,7 @@ final class LandsatReader {
         if (projection != null) {
             projection.parameter(name).setValue(Double.parseDouble(value), isLinear ? SI.METRE : NonSI.DEGREE_ANGLE);
         } else {
-            listeners.warning(errors().getString(Errors.Keys.UnexpectedParameter_1, key), null);
+            listeners.warning(errors().getString(Errors.Keys.UnexpectedProperty_2, filename, key), null);
         }
     }
 

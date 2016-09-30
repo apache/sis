@@ -35,6 +35,7 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
@@ -259,7 +260,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
              */
             final GeneralParameterDescriptor descriptor = values.descriptor.descriptor(name);
             if (!(descriptor instanceof ParameterDescriptor<?>) || descriptor.getMaximumOccurs() == 0) {
-                throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2,
+                throw new ParameterNotFoundException(Resources.format(Resources.Keys.ParameterNotFound_2,
                         Verifier.getDisplayName(values.descriptor), name), name);
             }
             /*
@@ -358,7 +359,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         if (groups.isEmpty()) {
             final ParameterDescriptorGroup descriptor = values.descriptor;
             if (!(descriptor.descriptor(name) instanceof ParameterDescriptorGroup)) {
-                throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2,
+                throw new ParameterNotFoundException(Resources.format(Resources.Keys.ParameterNotFound_2,
                         Verifier.getDisplayName(descriptor), name), name);
             }
         }
@@ -390,8 +391,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         final ParameterDescriptorGroup descriptor = values.descriptor;
         final GeneralParameterDescriptor child = descriptor.descriptor(name);
         if (!(child instanceof ParameterDescriptorGroup)) {
-            throw new ParameterNotFoundException(Errors.format(
-                    Errors.Keys.ParameterNotFound_2, descriptor.getName(), name), name);
+            throw new ParameterNotFoundException(Resources.format(
+                    Resources.Keys.ParameterNotFound_2, descriptor.getName(), name), name);
         }
         final ParameterValueGroup value = ((ParameterDescriptorGroup) child).createValue();
         values.add(value);

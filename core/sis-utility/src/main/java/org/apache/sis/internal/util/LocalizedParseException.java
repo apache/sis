@@ -68,10 +68,10 @@ public final class LocalizedParseException extends ParseException implements Loc
      * Constructs a {@code ParseException} with a message formatted from the given resource key
      * and message arguments. This is the most generic constructor.
      *
-     * @param locale      The locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
-     * @param key         The resource key as one of the {@code Errors.Keys} constant.
-     * @param arguments   The values to be given to {@link Errors#getString(short, Object)}.
-     * @param errorOffset The position where the error is found while parsing.
+     * @param  locale       the locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
+     * @param  key          the resource key as one of the {@code Errors.Keys} constant.
+     * @param  arguments    the values to be given to {@link Errors#getString(short, Object)}.
+     * @param  errorOffset  the position where the error is found while parsing.
      */
     public LocalizedParseException(final Locale locale, final short key, final Object[] arguments, final int errorOffset) {
         super(Errors.format(key, arguments), errorOffset);
@@ -85,10 +85,10 @@ public final class LocalizedParseException extends ParseException implements Loc
      * and unparsable string. This convenience constructor fetches the word starting at the error
      * index, and uses that word as the single argument associated to the resource key.
      *
-     * @param locale      The locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
-     * @param key         The resource key as one of the {@code Errors.Keys} constant.
-     * @param text        The full text that {@code Format} failed to parse.
-     * @param errorOffset The position where the error is found while parsing.
+     * @param  locale       the locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
+     * @param  key          the resource key as one of the {@code Errors.Keys} constant.
+     * @param  text         the full text that {@code Format} failed to parse.
+     * @param  errorOffset  the position where the error is found while parsing.
      */
     public LocalizedParseException(final Locale locale, final short key, final CharSequence text, final int errorOffset) {
         this(locale, key, new Object[] {CharSequences.token(text, errorOffset)}, errorOffset);
@@ -99,12 +99,12 @@ public final class LocalizedParseException extends ParseException implements Loc
      * information. This convenience constructor creates a message of the kind <cite>"Can not
      * parse string "text" as an object of type 'type'"</cite>.
      *
-     * @param  locale The locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
-     * @param  type   The type of objects parsed by the {@link java.text.Format}.
-     * @param  text   The full text that {@code Format} failed to parse.
-     * @param  pos    Index of the {@linkplain ParsePosition#getIndex() first parsed character},
-     *                together with the {@linkplain ParsePosition#getErrorIndex() error index}.
-     *                Can be {@code null} if index and error index are zero.
+     * @param  locale  the locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
+     * @param  type    the type of objects parsed by the {@link java.text.Format}.
+     * @param  text    the full text that {@code Format} failed to parse.
+     * @param  pos     index of the {@linkplain ParsePosition#getIndex() first parsed character},
+     *                 together with the {@linkplain ParsePosition#getErrorIndex() error index}.
+     *                 Can be {@code null} if index and error index are zero.
      */
     public LocalizedParseException(final Locale locale, final Class<?> type, final CharSequence text, final ParsePosition pos) {
         this(locale, type, text, (pos != null) ? pos.getIndex() : 0, (pos != null) ? pos.getErrorIndex() : 0);
@@ -134,11 +134,11 @@ public final class LocalizedParseException extends ParseException implements Loc
      * Workaround for RFE #4093999
      * ("Relax constraint on placement of this()/super() call in constructors").
      *
-     * @param  type        The type of objects parsed by the {@link java.text.Format}.
-     * @param  text        The text that {@code Format} failed to parse.
-     * @param  offset      Index of the first character to parse in {@code text}.
-     * @param  errorOffset The position where the error is found while parsing.
-     * @return The {@code arguments} value to give to the constructor.
+     * @param  type         the type of objects parsed by the {@link java.text.Format}.
+     * @param  text         the text that {@code Format} failed to parse.
+     * @param  offset       index of the first character to parse in {@code text}.
+     * @param  errorOffset  the position where the error is found while parsing.
+     * @return the {@code arguments} value to give to the constructor.
      */
     @Workaround(library="JDK", version="1.7")
     private static Object[] arguments(final Class<?> type, CharSequence text, final int offset, final int errorOffset) {

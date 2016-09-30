@@ -37,6 +37,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.system.Loggers;
@@ -665,8 +666,8 @@ public class ContextualParameters extends Parameters implements Serializable {
      * Returns the exception to thrown when the parameter of the given name has not been found.
      */
     private ParameterNotFoundException parameterNotFound(final String name) {
-        return new ParameterNotFoundException(Errors.format(
-                Errors.Keys.ParameterNotFound_2, descriptor.getName(), name), name);
+        return new ParameterNotFoundException(Resources.format(
+                Resources.Keys.ParameterNotFound_2, descriptor.getName(), name), name);
     }
 
     /**

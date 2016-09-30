@@ -677,7 +677,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             if (parameters != null) {
                 return parameters;
             }
-            throw new IllegalStateException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
+            throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedParameterValues));
         }
 
         /**

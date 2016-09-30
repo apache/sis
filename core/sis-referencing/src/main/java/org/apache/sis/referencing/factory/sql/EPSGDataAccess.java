@@ -965,7 +965,7 @@ addURIs:    for (int i=0; ; i++) {
      */
     private void ensureNoCycle(final Class<?> type, final Integer code) throws FactoryException {
         if (safetyGuard.putIfAbsent(code, type) != null) {
-            throw new FactoryException(error().getString(Errors.Keys.RecursiveCreateCallForCode_2, type, code));
+            throw new FactoryException(resources().getString(Resources.Keys.RecursiveCreateCallForCode_2, type, code));
         }
     }
 
