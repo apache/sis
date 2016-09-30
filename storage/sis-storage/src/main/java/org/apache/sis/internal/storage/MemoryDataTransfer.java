@@ -94,7 +94,7 @@ final class MemoryDataTransfer implements DataTransfer, ReadableByteChannel {
     /**
      * Delegates to the actual implementation.
      */
-    @Override public String filename()                  {return filename();}
+    @Override public String filename()                  {return reader.filename();}
     @Override public int    dataSizeShift()             {return reader.dataSizeShift();}
     @Override public Object dataArray()                 {return reader.dataArray();}
     @Override public Buffer view()                      {return reader.view();}

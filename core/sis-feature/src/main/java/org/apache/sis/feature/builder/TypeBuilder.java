@@ -34,6 +34,7 @@ import org.apache.sis.util.Debug;
 // Branch-dependent imports
 import java.util.Objects;
 import org.opengis.feature.IdentifiedType;
+import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -360,7 +361,7 @@ public abstract class TypeBuilder implements Localized {
             }
         }
         if (ambiguity != null) {
-            throw new IllegalArgumentException(errors().getString(
+            throw new PropertyNotFoundException(errors().getString(
                     Errors.Keys.AmbiguousName_3, best.getName(), ambiguity.getName(), name));
         }
         return best;

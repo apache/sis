@@ -96,27 +96,32 @@ public final strictfp class CollectionsExtTest extends TestCase {
     }
 
     /**
-     * Tests {@link CollectionsExt#addToMultiValuesMap(Map, Object, Object)}.
+     * Tests {@link CollectionsExt#addToMultiValuesMap(Map, Object, Object)}, then
+     * opportunistically tests {@link CollectionsExt#removeFromMultiValuesMap(Map, Object, Object)},
      */
     @Test
-    public void testAddToMultiValuesMap() {
+    public void testAddAndRemoveToMultiValuesMap() {
         final Map<String, List<Integer>> map = new LinkedHashMap<>();
         final Integer A1 = 2;
         final Integer A2 = 4;
         final Integer B1 = 3;
         final Integer B2 = 6;
         final Integer B3 = 9;
-        assertArrayEquals(new Integer[] {A1},
-                CollectionsExt.addToMultiValuesMap(map, "A", A1).toArray());
-        assertArrayEquals(new Integer[] {B1},
-                CollectionsExt.addToMultiValuesMap(map, "B", B1).toArray());
-        assertArrayEquals(new Integer[] {B1, B2},
-                CollectionsExt.addToMultiValuesMap(map, "B", B2).toArray());
-        assertArrayEquals(new Integer[] {A1, A2},
-                CollectionsExt.addToMultiValuesMap(map, "A", A2).toArray());
-        assertArrayEquals(new Integer[] {B1, B2, B3},
-                CollectionsExt.addToMultiValuesMap(map, "B", B3).toArray());
-        assertArrayEquals(new String[] {"A", "B"}, map.keySet().toArray());
+        assertArrayEquals(new Integer[] {A1},         CollectionsExt.addToMultiValuesMap(map, "A", A1).toArray());
+        assertArrayEquals(new Integer[] {B1},         CollectionsExt.addToMultiValuesMap(map, "B", B1).toArray());
+        assertArrayEquals(new Integer[] {B1, B2},     CollectionsExt.addToMultiValuesMap(map, "B", B2).toArray());
+        assertArrayEquals(new Integer[] {A1, A2},     CollectionsExt.addToMultiValuesMap(map, "A", A2).toArray());
+        assertArrayEquals(new Integer[] {B1, B2, B3}, CollectionsExt.addToMultiValuesMap(map, "B", B3).toArray());
+        assertArrayEquals(new String[]  {"A", "B"},   map.keySet().toArray());
+        assertArrayEquals(new Integer[] {A1, A2},     map.get("A").toArray());
+        assertArrayEquals(new Integer[] {B1, B2, B3}, map.get("B").toArray());
+
+        assertNull(                                   CollectionsExt.removeFromMultiValuesMap(map, "C", A2));
+        assertArrayEquals(new Integer[] {A1},         CollectionsExt.removeFromMultiValuesMap(map, "A", A2).toArray());
+        assertArrayEquals(new Integer[] {B1, B3},     CollectionsExt.removeFromMultiValuesMap(map, "B", B2).toArray());
+        assertArrayEquals(new Integer[] {},           CollectionsExt.removeFromMultiValuesMap(map, "A", A1).toArray());
+        assertArrayEquals(new String[]  {"B"},        map.keySet().toArray());
+        assertArrayEquals(new Integer[] {B1, B3},     map.get("B").toArray());
     }
 
     /**

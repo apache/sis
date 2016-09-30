@@ -677,15 +677,46 @@ public final class CollectionsExt extends Static {
         final List<V> singleton = Collections.singletonList(value);
         List<V> values = map.put(key, singleton);
         if (values == null) {
-            return singleton;
+            return singleton;               // This is the most common case.
         }
         if (values.size() <= 1) {
             values = new ArrayList<>(values);
-            if (map.put(key, values) != singleton) {
-                throw new ConcurrentModificationException();
-            }
+        }
+        if (map.put(key, values) != singleton) {
+            throw new ConcurrentModificationException();
         }
         values.add(value);
+        return values;
+    }
+
+    /**
+     * Removes a value in a pseudo multi-values map. The multi-values map is simulated by a map of lists.
+     * If more than one occurrence of the given value is found in the list, only the first occurrence is
+     * removed. If the list become empty after this method call, that list is removed from the map.
+     *
+     * @param  <K>    the type of key elements in the map.
+     * @param  <V>    the type of value elements in the lists.
+     * @param  map    the multi-values map where to remove an element.
+     * @param  key    the key of the element to remove. Can be null if the given map supports null keys.
+     * @param  value  the value of the element to remove. Can be null.
+     * @return list of remaining elements after the removal, or {@code null} if no list is mapped to the given key.
+     */
+    public static <K,V> List<V> removeFromMultiValuesMap(final Map<K,List<V>> map, final K key, final V value) {
+        List<V> values = map.get(key);
+        if (values != null) {
+            final boolean isEmpty;
+            switch (values.size()) {
+                case 0:  isEmpty = true; break;
+                case 1:  isEmpty = Objects.equals(value, values.get(0)); break;
+                default: isEmpty = values.remove(value) && values.isEmpty(); break;
+            }
+            if (isEmpty) {
+                if (map.remove(key) != values) {
+                    throw new ConcurrentModificationException();
+                }
+                values = Collections.emptyList();
+            }
+        }
         return values;
     }
 
