@@ -90,7 +90,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         if (array instanceof String[]) {
             return new ArrayVector.ASCII((String[]) array);
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterType_2, "array", array.getClass()));
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_2, "array", array.getClass()));
     }
 
     /**

@@ -159,7 +159,7 @@ public abstract class MapProjection extends AbstractProvider {
             throws IllegalArgumentException
     {
         if (Double.isNaN(value) || Double.isInfinite(value)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterValue_2,
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalParameterValue_2,
                     descriptor.getName(), value));
         }
         final Comparable<? extends Number> min = descriptor.getMinimumValue();

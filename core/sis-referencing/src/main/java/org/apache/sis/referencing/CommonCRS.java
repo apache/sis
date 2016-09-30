@@ -65,11 +65,12 @@ import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
@@ -1621,7 +1622,7 @@ public enum CommonCRS {
      * After invoking this method, the caller will fallback on hard-coded values.
      */
     static void failure(final Object caller, final String method, final FactoryException e, final int code) {
-        String message = Errors.format(Errors.Keys.CanNotInstantiate_1, "EPSG:" + code);
+        String message = Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, (Constants.EPSG + ':') + code);
         message = Exceptions.formatChainedMessages(null, message, e);
         final LogRecord record = new LogRecord(Level.WARNING, message);
         if (!(e instanceof UnavailableFactoryException) || !AuthorityFactories.failure((UnavailableFactoryException) e)) {

@@ -380,7 +380,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     private UnitConverter getConverterTo(final Unit<?> unit) {
         final Unit<?> source = getUnit();
         if (source == null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.UnitlessParameter_1, Verifier.getDisplayName(descriptor)));
+            throw new IllegalStateException(Resources.format(Resources.Keys.UnitlessParameter_1, Verifier.getDisplayName(descriptor)));
         }
         ensureNonNull("unit", unit);
         final short expectedID = Verifier.getUnitMessageID(source);
@@ -505,7 +505,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         if (value != null) {
             throw new InvalidParameterTypeException(getClassTypeError(), name);
         }
-        throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForParameter_1, cause, name));
+        throw new IllegalStateException(Resources.format(Resources.Keys.MissingValueForParameter_1, name), cause);
     }
 
     /**
@@ -537,7 +537,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         if (value != null) {
             return new InvalidParameterTypeException(getClassTypeError(), name);
         }
-        return new IllegalStateException(Errors.format(Errors.Keys.MissingValueForParameter_1, name));
+        return new IllegalStateException(Resources.format(Resources.Keys.MissingValueForParameter_1, name));
     }
 
     /**

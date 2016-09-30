@@ -29,6 +29,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.internal.referencing.EPSGParameterDomain;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.measure.Range;
@@ -46,14 +47,20 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class Verifier {
     /**
-     * The {@link Errors.Keys} value that describe the invalid value.
+     * The {@link Errors.Keys} or {@link Resources.Keys} value that describe the invalid value.
      */
     private final short errorKey;
+
+    /**
+     * {@code false} if {@link #errorKey} is a {@code Errors.Keys} constants,
+     * or {@code true} if it is a {@code Resources.Keys} constant.
+     */
+    private final boolean internal;
 
     /**
      * {@code true} if the last element in {@link #arguments} shall be set to the erroneous value.
@@ -75,8 +82,9 @@ final class Verifier {
     /**
      * Stores information about an error.
      */
-    private Verifier(final short errorKey, final boolean needsValue, final Object... arguments) {
+    private Verifier(final boolean internal, final short errorKey, final boolean needsValue, final Object... arguments) {
         this.errorKey   = errorKey;
+        this.internal   = internal;
         this.needsValue = needsValue;
         this.arguments  = arguments;
     }
@@ -117,7 +125,7 @@ final class Verifier {
                 def = getCompatibleUnit(Parameters.getValueDomain(descriptor), unit);
                 if (def == null) {
                     final String name = getDisplayName(descriptor);
-                    throw new InvalidParameterValueException(Errors.format(Errors.Keys.UnitlessParameter_1, name), name, unit);
+                    throw new InvalidParameterValueException(Resources.format(Resources.Keys.UnitlessParameter_1, name), name, unit);
                 }
             }
             if (!unit.equals(def)) {
@@ -133,7 +141,7 @@ final class Verifier {
                     if (!valueClass.isInstance(value)) {
                         final String name = getDisplayName(descriptor);
                         throw new InvalidParameterValueException(
-                                Errors.format(Errors.Keys.IllegalParameterValueClass_3,
+                                Resources.format(Resources.Keys.IllegalParameterValueClass_3,
                                 name, valueClass, value.getClass()), name, value);
                     }
                     /*
@@ -241,7 +249,7 @@ final class Verifier {
                  */
                 assert valueDomain.getElementType() == valueClass : valueDomain;
                 if (!((Range) valueDomain).contains((Comparable<?>) convertedValue)) {
-                    return new Verifier(Errors.Keys.ValueOutOfRange_4, true, null,
+                    return new Verifier(false, Errors.Keys.ValueOutOfRange_4, true, null,
                             valueDomain.getMinValue(), valueDomain.getMaxValue(), convertedValue);
                 }
             } else {
@@ -253,7 +261,7 @@ final class Verifier {
                 for (int i=0; i<length; i++) {
                     final Object e = Array.get(convertedValue, i);
                     if (!((Range) valueDomain).contains((Comparable<?>) e)) {
-                        return new Verifier(Errors.Keys.ValueOutOfRange_4, true, i,
+                        return new Verifier(false, Errors.Keys.ValueOutOfRange_4, true, i,
                                 valueDomain.getMinValue(), valueDomain.getMaxValue(), e);
                     }
                 }
@@ -279,15 +287,16 @@ final class Verifier {
             final Comparable<T> minimum, final Comparable<T> maximum, final Object convertedValue)
     {
         if (!valueClass.isInstance(convertedValue)) {
-            return new Verifier(Errors.Keys.IllegalParameterValueClass_3, false, null, valueClass, convertedValue.getClass());
+            return new Verifier(true, Resources.Keys.IllegalParameterValueClass_3,
+                    false, null, valueClass, convertedValue.getClass());
         }
         if (validValues != null && !validValues.contains(convertedValue)) {
-            return new Verifier(Errors.Keys.IllegalParameterValue_2, true, null, convertedValue);
+            return new Verifier(true, Resources.Keys.IllegalParameterValue_2, true, null, convertedValue);
         }
         if ((minimum != null && minimum.compareTo((T) convertedValue) > 0) ||
             (maximum != null && maximum.compareTo((T) convertedValue) < 0))
         {
-            return new Verifier(Errors.Keys.ValueOutOfRange_4, true, null, minimum, maximum, convertedValue);
+            return new Verifier(false, Errors.Keys.ValueOutOfRange_4, true, null, minimum, maximum, convertedValue);
         }
         return null;
     }
@@ -300,7 +309,7 @@ final class Verifier {
      *        uses the inverse of that conversion for converting the given minimum and maximum values.
      */
     private void convertRange(UnitConverter converter) {
-        if (converter != null && errorKey == Errors.Keys.ValueOutOfRange_4) {
+        if (converter != null && !internal && errorKey == Errors.Keys.ValueOutOfRange_4) {
             converter = converter.inverse();
             Object minimumValue = arguments[1];
             Object maximumValue = arguments[2];
@@ -344,7 +353,7 @@ final class Verifier {
         if (needsValue) {
             arguments[arguments.length - 1] = value;
         }
-        return Errors.getResources(properties).getString(errorKey, arguments);
+        return (internal ? Resources.getResources(properties) : Errors.getResources(properties)).getString(errorKey, arguments);
     }
 
     /**

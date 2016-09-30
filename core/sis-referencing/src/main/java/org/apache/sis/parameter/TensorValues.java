@@ -33,6 +33,7 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.Numerics;
@@ -238,8 +239,8 @@ final class TensorValues<E> extends AbstractParameterDescriptor
                 return dimensions[i];
             }
         }
-        throw (ParameterNotFoundException) new ParameterNotFoundException(Errors.format(
-                Errors.Keys.ParameterNotFound_2, getName(), name), name).initCause(cause);
+        throw (ParameterNotFoundException) new ParameterNotFoundException(Resources.format(
+                Resources.Keys.ParameterNotFound_2, getName(), name), name).initCause(cause);
     }
 
     /**
@@ -358,7 +359,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public List<ParameterValueGroup> groups(final String name) throws ParameterNotFoundException {
-        throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2, getName(), name), name);
+        throw new ParameterNotFoundException(Resources.format(Resources.Keys.ParameterNotFound_2, getName(), name), name);
     }
 
     /**
@@ -366,7 +367,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public ParameterValueGroup addGroup(String name) throws ParameterNotFoundException, IllegalStateException {
-        throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2, getName(), name), name);
+        throw new ParameterNotFoundException(Resources.format(Resources.Keys.ParameterNotFound_2, getName(), name), name);
     }
 
     /**

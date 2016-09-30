@@ -210,8 +210,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             this.transform = transform;
             checkDimensions(method, 0, transform, properties);
         } else if (parameters == null) {
-            throw new IllegalArgumentException(Errors.getResources(properties)
-                    .getString(Errors.Keys.UnspecifiedParameterValues));
+            throw new IllegalArgumentException(Resources.getResources(properties)
+                    .getString(Resources.Keys.UnspecifiedParameterValues));
         }
         if (parameters != null) {
             this.parameters = Parameters.unmodifiable(parameters);
@@ -246,7 +246,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
              * thanks to the 'sourceCRS' argument, we can complete the parameters.
              */
             if (parameters == null) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.UnspecifiedParameterValues));
             }
             if (factory instanceof DefaultMathTransformFactory) {
                 /*

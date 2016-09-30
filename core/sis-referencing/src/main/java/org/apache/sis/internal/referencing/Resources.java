@@ -78,6 +78,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotConcatenateTransforms_2 = 15;
 
         /**
+         * Can not create an object of group “{1}” as an instance of class ‘{0}’.
+         */
+        public static final short CanNotCreateObjectAsInstanceOf_2 = 57;
+
+        /**
+         * Can not instantiate geodetic object for “{0}”.
+         */
+        public static final short CanNotInstantiateGeodeticObject_1 = 58;
+
+        /**
          * Can not map an axis from the specified coordinate system to the “{0}” direction.
          */
         public static final short CanNotMapAxisToDirection_1 = 16;
@@ -129,6 +139,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DeprecatedCode_3 = 3;
 
         /**
+         * Name or alias for parameter “{0}” at index {1} conflict with name “{2}” at index {3}.
+         */
+        public static final short DuplicatedParameterName_4 = 59;
+
+        /**
          * There is no factory for version {1} of “{0}” authority. Fallback on default version for
          * objects creation.
          */
@@ -159,6 +174,22 @@ public final class Resources extends IndexedResourceBundle {
          * This operation can not be applied to values of class ‘{0}’.
          */
         public static final short IllegalOperationForValueClass_1 = 25;
+
+        /**
+         * Parameter “{0}” can not be of type ‘{1}’.
+         */
+        public static final short IllegalParameterType_2 = 60;
+
+        /**
+         * Parameter “{0}” does not accept values of ‘{2}’ type. Expected an instance of ‘{1}’ or
+         * derived type.
+         */
+        public static final short IllegalParameterValueClass_3 = 61;
+
+        /**
+         * Parameter “{0}” can not take the “{1}” value.
+         */
+        public static final short IllegalParameterValue_2 = 62;
 
         /**
          * Unit of measurement “{1}” is not valid for “{0}” values.
@@ -207,6 +238,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MismatchedOperationFactories_2 = 11;
 
         /**
+         * Mismatched descriptor for “{0}” parameter.
+         */
+        public static final short MismatchedParameterDescriptor_1 = 63;
+
+        /**
          * Expected the “{0}” prime meridian but found “{1}”.
          */
         public static final short MismatchedPrimeMeridian_2 = 30;
@@ -247,6 +283,11 @@ public final class Resources extends IndexedResourceBundle {
          * No temporal dimension found in “{0}”
          */
         public static final short MissingTemporalDimension_1 = 36;
+
+        /**
+         * Missing value for “{0}” parameter.
+         */
+        public static final short MissingValueForParameter_1 = 64;
 
         /**
          * No vertical dimension found in “{0}”
@@ -325,6 +366,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NotFormalProjectionParameter_1 = 13;
 
         /**
+         * No parameter named “{1}” has been found in “{0}”.
+         */
+        public static final short ParameterNotFound_2 = 65;
+
+        /**
+         * Recursive call while creating an object of type ‘{0}’ for code “{1}”.
+         */
+        public static final short RecursiveCreateCallForCode_2 = 66;
+
+        /**
          * Matrix is singular.
          */
         public static final short SingularMatrix = 51;
@@ -333,6 +384,11 @@ public final class Resources extends IndexedResourceBundle {
          * Unexpected dimension for a coordinate system of type ‘{0}’.
          */
         public static final short UnexpectedDimensionForCS_1 = 52;
+
+        /**
+         * Parameter “{0}” does not expect unit.
+         */
+        public static final short UnitlessParameter_1 = 67;
 
         /**
          * Authority “{0}” is unknown.
@@ -353,6 +409,11 @@ public final class Resources extends IndexedResourceBundle {
          * Dimensions have not been specified.
          */
         public static final short UnspecifiedDimensions = 56;
+
+        /**
+         * Parameter values have not been specified.
+         */
+        public static final short UnspecifiedParameterValues = 68;
     }
 
     /**
