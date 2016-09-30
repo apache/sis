@@ -381,7 +381,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         }
         /*
          * If some properties use long name of the form "head:tip", creates short aliases containing only the "tip"
-         * name for convenience, provided that it does not create ambiguity. If an short alias could map to two or
+         * name for convenience, provided that it does not create ambiguity.  If a short alias could map to two or
          * more properties, then this alias is not added.
          *
          * In the 'aliases' map below, null values will be assigned to ambiguous short names.
