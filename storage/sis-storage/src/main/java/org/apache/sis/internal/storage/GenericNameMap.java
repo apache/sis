@@ -48,10 +48,12 @@ public final class GenericNameMap<E> {
     /**
      * All aliases found for all names given to the {@link #add(GenericName, Object)} method.
      * Keys are aliases (never the explicitely given names) and values are names for which the key is an alias.
-     * Each {@code List<GenericName>} instance contains exactly one name if there is no ambiguity.
+     * Each {@code List<String>} instance contains exactly one name if there is no ambiguity.
      * If the list contains more than one name, this means that the alias is ambiguous.
+     *
+     * <p>Note that this map always have less entries than {@link #values} map.</p>
      */
-    private final Map<String, List<GenericName>> aliases;
+    private final Map<String, List<String>> aliases;
 
     /**
      * The user-specified values associated to names and aliases. If a value is absent, it may means either that the
@@ -80,7 +82,7 @@ public final class GenericNameMap<E> {
         if (value != null) {
             return value;
         }
-        final List<GenericName> nc = aliases.get(name);
+        final List<String> nc = aliases.get(name);
         final String message;
         if (nc == null) {
             message = Errors.format(Errors.Keys.ElementNotFound_1, name);
@@ -100,25 +102,24 @@ public final class GenericNameMap<E> {
      * @param  value  the value to add (can not be null).
      * @throws IllegalNameException if another element is already registered for the given name.
      */
-    public void add(final GenericName name, final E value) throws IllegalNameException {
+    public void add(GenericName name, final E value) throws IllegalNameException {
         ArgumentChecks.ensureNonNull("name",  name);
         ArgumentChecks.ensureNonNull("value", value);
-        String key = name.toString();
+        final String key = name.toString();
         if (values.putIfAbsent(key, value) != null) {
             throw new IllegalNameException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
         }
-        GenericName tail = name;
-        while (tail instanceof ScopedName) {
-            tail = ((ScopedName) tail).tail();
-            key = tail.toString();
-            if (CollectionsExt.addToMultiValuesMap(aliases, key, name).size() > 1) {
+        while (name instanceof ScopedName) {
+            name = ((ScopedName) name).tail();
+            final String alias = name.toString();
+            if (CollectionsExt.addToMultiValuesMap(aliases, alias, key).size() > 1) {
                 /*
                  * If there is more than one GenericName for the same alias, we have an ambiguity.
                  * Remove any value associated to that alias. The 'get' method in this class will
                  * know that the value is missing because of ambiguous name.
                  */
-                values.remove(key);
-            } else if (values.put(key, value) != null) {
+                values.remove(alias);
+            } else if (values.put(alias, value) != null) {
                 /*
                  * If no previous GenericName existed for that alias, then no value should exist for that alias.
                  * If a previous value existed, then (assuming that we do not have a bug in our algorithm) this
@@ -149,8 +150,8 @@ public final class GenericNameMap<E> {
         boolean error = false;
         while (name instanceof ScopedName) {
             name = ((ScopedName) name).tail();
-            String tail = name.toString();
-            final List<GenericName> remaining = CollectionsExt.removeFromMultiValuesMap(aliases, tail, name);
+            final String alias = name.toString();
+            final List<String> remaining = CollectionsExt.removeFromMultiValuesMap(aliases, alias, key);
             /*
              * The list of remaining GenericNames may be empty, but should never be null unless the tail is
              * inconsistent with the one found by the 'add(GenericName, Object) method.  Otherwise if there
@@ -158,21 +159,13 @@ public final class GenericNameMap<E> {
              */
             error |= (remaining == null);
             if (remaining != null && remaining.size() == 1) {
-                final String select = remaining.get(0).toString();
-                /*
-                 * Extra check in case a GenericName implementation provides a broken equals(Object) method:
-                 * If the remaining name is the name that we were supposed to remove (when comparing String
-                 * representations instead than GenericName instances), then do not re-put the value.
-                 */
-                if (!key.equals(select)) {
-                    error |= (values.putIfAbsent(tail, values.get(select)) != null);
-                } else if (aliases.remove(tail) != remaining) {
-                    throw new ConcurrentModificationException();
-                }
+                final String select = remaining.get(0);
+                assert !select.equals(key) : select;     // Should have been removed by removeFromMultiValuesMap(…).
+                error |= (values.putIfAbsent(alias, values.get(select)) != null);
             }
         }
         if (error) {
-            throw new IllegalNameException();
+            throw new IllegalNameException(Resources.format(Resources.Keys.InconsistentNameComponents_1, key));
         }
         return true;
     }

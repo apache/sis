@@ -31,7 +31,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.ConcurrentModificationException;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.measure.unit.Unit;
@@ -1453,7 +1452,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          * No coordinate operation because of mismatched factories. This is not illegal (the result is an empty set)
          * but it is worth to notify the user because this case has some chances to be an user error.
          */
-        final LogRecord record = Resources.getResources((Locale) null).getLogRecord(Level.WARNING,
+        final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
                 Resources.Keys.MismatchedOperationFactories_2, sourceCRS, targetCRS);
         record.setLoggerName(Loggers.CRS_FACTORY);
         Logging.log(MultiAuthoritiesFactory.class, "createFromCoordinateReferenceSystemCodes", record);

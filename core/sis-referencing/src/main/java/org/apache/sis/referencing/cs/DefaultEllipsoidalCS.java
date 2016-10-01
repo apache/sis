@@ -206,7 +206,7 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
         while (--i >= 0) {
             final AxisDirection direction = super.getAxis(i).getDirection();
             if (AxisDirections.isVertical(direction) && --n < 0) {
-                throw new IllegalArgumentException(Resources.getResources(properties).getString(
+                throw new IllegalArgumentException(Resources.forProperties(properties).getString(
                         Resources.Keys.IllegalAxisDirection_2, EllipsoidalCS.class, direction));
             }
         }

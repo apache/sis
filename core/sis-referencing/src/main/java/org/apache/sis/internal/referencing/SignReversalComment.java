@@ -72,7 +72,7 @@ public final class SignReversalComment extends AbstractInternationalString imple
      */
     @Override
     public String toString(final Locale locale) {
-        return Resources.getResources(locale).getString(opposite
+        return Resources.forLocale(locale).getString(opposite
                 ? Resources.Keys.InverseOperationUsesOppositeSign
                 : Resources.Keys.InverseOperationUsesSameSign);
     }

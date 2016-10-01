@@ -30,7 +30,7 @@ import static org.apache.sis.test.Assert.*;
 /**
  * Tests {@link DefaultPropertyName}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
@@ -42,7 +42,7 @@ public final strictfp class DefaultPropertyNameTest extends TestCase {
     @Test
     public void testConstructor() {
         final FilterFactory2 FF = new DefaultFilterFactory();
-        assertNotNull(FF.property(Names.parseGenericName(null, ":", "type")));
+        assertNotNull(FF.property(Names.parseGenericName(null, null, "type")));
         assertNotNull(FF.property("type"));
     }
 

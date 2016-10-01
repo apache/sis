@@ -19,7 +19,6 @@ package org.apache.sis.referencing;
 import java.util.Collections;
 import java.util.Set;
 import java.util.LinkedHashSet;
-import java.util.Locale;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
@@ -42,7 +41,7 @@ import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Fallback;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
@@ -79,6 +78,11 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
     private static final int CRS = 1, DATUM = 2, ELLIPSOID = 4, PRIME_MERIDIAN = 8;
 
     /**
+     * The authority to report in exceptions. Not necessarily the same than the {@link #authority} title.
+     */
+    private static final String AUTHORITY = Constants.EPSG + "-subset";
+
+    /**
      * The authority, created when first needed.
      */
     private Citation authority;
@@ -97,7 +101,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
     public synchronized Citation getAuthority() {
         if (authority == null) {
             final DefaultCitation c = new DefaultCitation(Citations.EPSG);
-            c.setTitle(new SimpleInternationalString("Subset of " + c.getTitle().toString(Locale.ENGLISH)));
+            c.setTitle(Vocabulary.formatInternational(Vocabulary.Keys.SubsetOf_1, c.getTitle()));
             authority = c;
         }
         return authority;
@@ -206,7 +210,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
     }
 
     /**
-     * Implementation of the {@code createFoo(String)} methods.
+     * Implementation of all {@code createFoo(String)} methods in this fallback class.
      *
      * @param  code  the EPSG code.
      * @param  kind  any combination of {@link #CRS}, {@link #DATUM}, {@link #ELLIPSOID} or {@link #PRIME_MERIDIAN} bits.
@@ -214,7 +218,6 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
      * @throws NoSuchAuthorityCodeException if no matching object has been found.
      */
     private IdentifiedObject predefined(String code, final int kind) throws NoSuchAuthorityCodeException {
-        NumberFormatException cause = null;
         try {
             /*
              * Parse the value after the last ':'. We do not bother to verify if the part before ':' is legal
@@ -225,7 +228,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
              */
             code = CharSequences.trimWhitespaces(code, code.lastIndexOf(DefaultNameSpace.DEFAULT_SEPARATOR) + 1, code.length()).toString();
             final int n = Integer.parseInt(code);
-            if ((kind & PRIME_MERIDIAN) != 0  &&  n == 8901) {
+            if ((kind & PRIME_MERIDIAN) != 0  &&  n == Constants.EPSG_GREENWICH) {
                 return CommonCRS.WGS84.primeMeridian();
             }
             for (final CommonCRS crs : CommonCRS.values()) {
@@ -260,21 +263,27 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
                     }
                 }
             }
-        } catch (NumberFormatException e) {
-            cause = e;
+        } catch (NumberFormatException cause) {
+            final NoSuchAuthorityCodeException e = new NoSuchAuthorityCodeException(Resources.format(
+                    Resources.Keys.NoSuchAuthorityCode_3, Constants.EPSG, toClass(kind), code), AUTHORITY, code);
+            e.initCause(cause);
+            throw e;
         }
-        final Class<?> type;
+        throw new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.NoSuchAuthorityCodeInSubset_4,
+                Constants.EPSG, toClass(kind), code, "http://sis.apache.org/epsg.html"), AUTHORITY, code);
+    }
+
+    /**
+     * Returns the interface for the given {@link #CRS}, {@link #DATUM}, {@link #ELLIPSOID} or {@link #PRIME_MERIDIAN}
+     * constant. This is used for formatting error message only.
+     */
+    private static Class<?> toClass(final int kind) {
         switch (kind) {
-            case CRS:            type = CoordinateReferenceSystem.class; break;
-            case DATUM:          type = Datum.class; break;
-            case ELLIPSOID:      type = Ellipsoid.class; break;
-            case PRIME_MERIDIAN: type = PrimeMeridian.class; break;
-            default:             type = IdentifiedObject.class; break;
+            case CRS:            return CoordinateReferenceSystem.class;
+            case DATUM:          return Datum.class;
+            case ELLIPSOID:      return Ellipsoid.class;
+            case PRIME_MERIDIAN: return PrimeMeridian.class;
+            default:             return IdentifiedObject.class;
         }
-        final String authority = Constants.EPSG + "-subset";
-        final NoSuchAuthorityCodeException e = new NoSuchAuthorityCodeException(Resources.format(
-                Resources.Keys.NoSuchAuthorityCode_3, authority, type, code), authority, code);
-        e.initCause(cause);
-        throw e;
     }
 }

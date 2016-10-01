@@ -181,7 +181,7 @@ public final class Resources extends IndexedResourceBundle {
      * @return resources in the given locale.
      * @throws MissingResourceException if resources can not be found.
      */
-    public static Resources getResources(final Locale locale) throws MissingResourceException {
+    public static Resources forLocale(final Locale locale) throws MissingResourceException {
         return getBundle(Resources.class, locale);
     }
 
@@ -196,8 +196,8 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @since 0.4
      */
-    public static Resources getResources(final Map<?,?> properties) throws MissingResourceException {
-        return getResources(getLocale(properties));
+    public static Resources forProperties(final Map<?,?> properties) throws MissingResourceException {
+        return forLocale(getLocale(properties));
     }
 
     /**
@@ -208,7 +208,7 @@ public final class Resources extends IndexedResourceBundle {
      * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short key) throws MissingResourceException {
-        return getResources((Locale) null).getString(key);
+        return forLocale(null).getString(key);
     }
 
     /**
@@ -223,7 +223,7 @@ public final class Resources extends IndexedResourceBundle {
     public static String format(final short  key,
                                 final Object arg0) throws MissingResourceException
     {
-        return getResources((Locale) null).getString(key, arg0);
+        return forLocale(null).getString(key, arg0);
     }
 
     /**
@@ -240,7 +240,7 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg0,
                                 final Object arg1) throws MissingResourceException
     {
-        return getResources((Locale) null).getString(key, arg0, arg1);
+        return forLocale(null).getString(key, arg0, arg1);
     }
 
     /**
@@ -259,7 +259,7 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg1,
                                 final Object arg2) throws MissingResourceException
     {
-        return getResources((Locale) null).getString(key, arg0, arg1, arg2);
+        return forLocale(null).getString(key, arg0, arg1, arg2);
     }
 
     /**
@@ -280,6 +280,6 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg2,
                                 final Object arg3) throws MissingResourceException
     {
-        return getResources((Locale) null).getString(key, arg0, arg1, arg2, arg3);
+        return forLocale(null).getString(key, arg0, arg1, arg2, arg3);
     }
 }

@@ -282,7 +282,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         if (method != null) {
             return method;
         }
-        throw new NoSuchIdentifierException(Resources.getResources(defaultProperties)
+        throw new NoSuchIdentifierException(Resources.forProperties(defaultProperties)
                 .getString(Resources.Keys.NoSuchOperationMethod_1, name), name);
     }
 

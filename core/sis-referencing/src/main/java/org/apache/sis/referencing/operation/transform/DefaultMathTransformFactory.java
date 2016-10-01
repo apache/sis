@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Constructor;
@@ -809,7 +808,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 }
                 final boolean isIvfDefinitive;
                 if (mismatchedParam != null) {
-                    final LogRecord record = Resources.getResources((Locale) null).getLogRecord(Level.WARNING,
+                    final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
                             Resources.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
                             mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
                     record.setLoggerName(Loggers.COORDINATE_OPERATION);

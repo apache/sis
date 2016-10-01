@@ -82,6 +82,8 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
 final class StandardDefinitions {
     /**
      * The EPSG code for Greenwich meridian.
+     *
+     * @see org.apache.sis.internal.util.Constants#EPSG_GREENWICH
      */
     static final String GREENWICH = "8901";
 
@@ -94,11 +96,11 @@ final class StandardDefinitions {
     /**
      * Returns a map of properties for the given EPSG code, name and alias.
      *
-     * @param  code  The EPSG code, or 0 if none.
-     * @param  name  The object name.
-     * @param  alias The alias, or {@code null} if none.
-     * @param  world {@code true} if the properties shall have an entry for the domain of validity.
-     * @return The map of properties to give to constructors or factory methods.
+     * @param  code   the EPSG code, or 0 if none.
+     * @param  name   the object name.
+     * @param  alias  the alias, or {@code null} if none.
+     * @param  world  {@code true} if the properties shall have an entry for the domain of validity.
+     * @return the map of properties to give to constructors or factory methods.
      */
     private static Map<String,Object> properties(final int code, final String name, final String alias, final boolean world) {
         final Map<String,Object> map = new HashMap<>(8);
@@ -129,11 +131,11 @@ final class StandardDefinitions {
      * This method restricts the factory to SIS implementation instead than arbitrary factory in order to meet
      * the contract saying that {@link CommonCRS} methods should never fail.
      *
-     * @param code       The EPSG code, or 0 if none.
-     * @param baseCRS    The geographic CRS on which the projected CRS is based.
-     * @param latitude   A latitude in the zone of the desired projection, to be snapped to 0°.
-     * @param longitude  A longitude in the zone of the desired projection, to be snapped to UTM central meridian.
-     * @param derivedCS  The projected coordinate system.
+     * @param code       the EPSG code, or 0 if none.
+     * @param baseCRS    the geographic CRS on which the projected CRS is based.
+     * @param latitude   a latitude in the zone of the desired projection, to be snapped to 0°.
+     * @param longitude  a longitude in the zone of the desired projection, to be snapped to UTM central meridian.
+     * @param derivedCS  the projected coordinate system.
      */
     static ProjectedCRS createUTM(final int code, final GeographicCRS baseCRS,
             final double latitude, final double longitude, final CartesianCS derivedCS)
@@ -157,10 +159,10 @@ final class StandardDefinitions {
     /**
      * Creates a geodetic CRS from hard-coded values for the given code.
      *
-     * @param  code  The EPSG code.
-     * @param  datum The geodetic datum.
-     * @param  cs    The coordinate system.
-     * @return The geographic CRS for the given code.
+     * @param  code   the EPSG code.
+     * @param  datum  the geodetic datum.
+     * @param  cs     the coordinate system.
+     * @return the geographic CRS for the given code.
      */
     static GeographicCRS createGeographicCRS(final short code, final GeodeticDatum datum, final EllipsoidalCS cs) {
         final String name;
@@ -185,10 +187,10 @@ final class StandardDefinitions {
     /**
      * Creates a geodetic datum from hard-coded values for the given code.
      *
-     * @param  code      The EPSG code.
-     * @param  ellipsoid The datum ellipsoid.
-     * @param  meridian  The datum prime meridian.
-     * @return The geodetic datum for the given code.
+     * @param  code       the EPSG code.
+     * @param  ellipsoid  the datum ellipsoid.
+     * @param  meridian   the datum prime meridian.
+     * @return the geodetic datum for the given code.
      */
     static GeodeticDatum createGeodeticDatum(final short code, final Ellipsoid ellipsoid, final PrimeMeridian meridian) {
         final String name;
@@ -210,8 +212,8 @@ final class StandardDefinitions {
     /**
      * Creates an ellipsoid from hard-coded values for the given code.
      *
-     * @param  code The EPSG code.
-     * @return The ellipsoid for the given code.
+     * @param  code  the EPSG code.
+     * @return the ellipsoid for the given code.
      */
     static Ellipsoid createEllipsoid(final short code) {
         String  name;          // No default value
@@ -251,9 +253,9 @@ final class StandardDefinitions {
     /**
      * Creates a vertical CRS from hard-coded values for the given code.
      *
-     * @param  code  The EPSG code.
-     * @param  datum The vertical datum.
-     * @return The vertical CRS for the given code.
+     * @param  code   the EPSG code.
+     * @param  datum  the vertical datum.
+     * @return the vertical CRS for the given code.
      */
     static VerticalCRS createVerticalCRS(final short code, final VerticalDatum datum) {
         String cs   = "Vertical CS. Axis: height (H).";   // Default coordinate system
@@ -287,8 +289,8 @@ final class StandardDefinitions {
     /**
      * Creates a vertical datum from hard-coded values for the given code.
      *
-     * @param  code The EPSG code.
-     * @return The vertical datum for the given code.
+     * @param  code  the EPSG code.
+     * @return the vertical datum for the given code.
      */
     static VerticalDatum createVerticalDatum(final short code) {
         final String name;
@@ -306,8 +308,8 @@ final class StandardDefinitions {
      * The coordinate system names used by this method contains only the first
      * part of the names declared in the EPSG database.
      *
-     * @param  code The EPSG code.
-     * @return The coordinate system for the given code.
+     * @param  code  the EPSG code.
+     * @return the coordinate system for the given code.
      */
     @SuppressWarnings("fallthrough")
     static CoordinateSystem createCoordinateSystem(final short code) {
@@ -353,8 +355,8 @@ final class StandardDefinitions {
     /**
      * Creates an axis from hard-coded values for the given code.
      *
-     * @param  code The EPSG code.
-     * @return The coordinate system axis for the given code.
+     * @param  code  the EPSG code.
+     * @return the coordinate system axis for the given code.
      */
     static CoordinateSystemAxis createAxis(final short code) {
         final String name, abrv;
