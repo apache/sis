@@ -196,7 +196,7 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
                  * they are not really for Cartesian CS because we do not know the grid geometry.
                  */
                 if (angle != null && Math.abs(angle.degrees()) != 90) {
-                    throw new IllegalArgumentException(Resources.getResources(properties).getString(
+                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
                             Resources.Keys.NonPerpendicularDirections_2, axis0, axis1));
                 }
             }

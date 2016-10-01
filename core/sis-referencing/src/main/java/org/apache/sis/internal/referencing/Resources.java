@@ -305,7 +305,13 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NoConvergenceForPoints_2 = 39;
 
         /**
-         * No code “{2}” from authority “{0}” found for object of type ‘{1}’.
+         * No ‘{1}’ object found for code “{2}”. However only a subset of the {0} geodetic dataset has
+         * been queried. See {3} for instruction about how to install the full {0} database.
+         */
+        public static final short NoSuchAuthorityCodeInSubset_4 = 69;
+
+        /**
+         * No ‘{1}’ object found for code “{2}” in the “{0}” geodetic dataset.
          */
         public static final short NoSuchAuthorityCode_3 = 40;
 
@@ -443,7 +449,7 @@ public final class Resources extends IndexedResourceBundle {
      * @return resources in the given locale.
      * @throws MissingResourceException if resources can't be found.
      */
-    public static Resources getResources(final Locale locale) throws MissingResourceException {
+    public static Resources forLocale(final Locale locale) throws MissingResourceException {
         return getBundle(Resources.class, locale);
     }
 
@@ -456,8 +462,8 @@ public final class Resources extends IndexedResourceBundle {
      * @return resources in the given locale.
      * @throws MissingResourceException if resources can't be found.
      */
-    public static Resources getResources(final Map<?,?> properties) throws MissingResourceException {
-        return getResources(getLocale(properties));
+    public static Resources forProperties(final Map<?,?> properties) throws MissingResourceException {
+        return forLocale(getLocale(properties));
     }
 
     /**
@@ -468,7 +474,7 @@ public final class Resources extends IndexedResourceBundle {
      * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short key) throws MissingResourceException {
-        return getResources((Locale) null).getString(key);
+        return forLocale(null).getString(key);
     }
 
     /**
@@ -483,7 +489,7 @@ public final class Resources extends IndexedResourceBundle {
     public static String format(final short  key,
                                 final Object arg0) throws MissingResourceException
     {
-        return getResources((Locale) null).getString(key, arg0);
+        return forLocale(null).getString(key, arg0);
     }
 
     /**
@@ -500,7 +506,7 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg0,
                                 final Object arg1) throws MissingResourceException
     {
-        return getResources((Locale) null).getString(key, arg0, arg1);
+        return forLocale(null).getString(key, arg0, arg1);
     }
 
     /**
@@ -519,7 +525,7 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg1,
                                 final Object arg2) throws MissingResourceException
     {
-        return getResources((Locale) null).getString(key, arg0, arg1, arg2);
+        return forLocale(null).getString(key, arg0, arg1, arg2);
     }
 
     /**
@@ -540,7 +546,7 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg2,
                                 final Object arg3) throws MissingResourceException
     {
-        return getResources((Locale) null).getString(key, arg0, arg1, arg2, arg3);
+        return forLocale(null).getString(key, arg0, arg1, arg2, arg3);
     }
 
     /**
@@ -553,7 +559,7 @@ public final class Resources extends IndexedResourceBundle {
         International(short key, Object args)              {super(key, args);}
         @Override protected KeyConstants getKeyConstants() {return Keys.INSTANCE;}
         @Override protected IndexedResourceBundle getBundle(final Locale locale) {
-            return getResources(locale);
+            return forLocale(locale);
         }
     }
 

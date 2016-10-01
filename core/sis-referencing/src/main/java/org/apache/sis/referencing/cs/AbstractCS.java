@@ -176,11 +176,11 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
              */
             switch (validateAxis(direction, unit)) {
                 case INVALID_DIRECTION: {
-                    throw new IllegalArgumentException(Resources.getResources(properties).getString(
+                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
                             Resources.Keys.IllegalAxisDirection_2, getClass(), direction));
                 }
                 case INVALID_UNIT: {
-                    throw new IllegalArgumentException(Resources.getResources(properties).getString(
+                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
                             Resources.Keys.IllegalUnitFor_2, name, unit));
                 }
             }
@@ -195,7 +195,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                     final AxisDirection other = axes[j].getDirection();
                     final AxisDirection abs = AxisDirections.absolute(other);
                     if (dir.equals(abs) && !abs.equals(AxisDirection.FUTURE)) {
-                        throw new IllegalArgumentException(Resources.getResources(properties).getString(
+                        throw new IllegalArgumentException(Resources.forProperties(properties).getString(
                                 Resources.Keys.ColinearAxisDirections_2, direction, other));
                     }
                 }

@@ -360,13 +360,13 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     if (actual == expected || actual < interpDim) {
                         // This check is not strictly necessary as the next check below would catch the error,
                         // but we provide here a hopefully more helpful error message for a common mistake.
-                        throw new IllegalArgumentException(Resources.getResources(properties)
+                        throw new IllegalArgumentException(Resources.forProperties(properties)
                                 .getString(Resources.Keys.MissingInterpolationOrdinates));
                     }
                     expected += interpDim;
                 }
                 if (crs != null && actual != expected) {
-                    throw new IllegalArgumentException(Resources.getResources(properties).getString(
+                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
                             Resources.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
                 }
             }

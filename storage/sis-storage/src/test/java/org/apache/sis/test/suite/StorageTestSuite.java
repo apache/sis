@@ -30,6 +30,7 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.storage.GenericNameMapTest.class,
     org.apache.sis.internal.storage.CodeTypeTest.class,
     org.apache.sis.internal.storage.IOUtilitiesTest.class,
     org.apache.sis.internal.storage.ChannelDataInputTest.class,

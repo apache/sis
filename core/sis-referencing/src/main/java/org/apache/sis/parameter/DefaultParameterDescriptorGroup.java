@@ -216,7 +216,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
             final String name = parameter.getName().getCode();
             for (int j=0; j<i; j++) {
                 if (IdentifiedObjects.isHeuristicMatchForName(parameters[j], name)) {
-                    throw new InvalidParameterNameException(Resources.getResources(properties).getString(
+                    throw new InvalidParameterNameException(Resources.forProperties(properties).getString(
                             Resources.Keys.DuplicatedParameterName_4, Verifier.getDisplayName(parameters[j]), j, name, i),
                             name);
                 }

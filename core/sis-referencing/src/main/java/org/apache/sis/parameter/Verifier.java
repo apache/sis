@@ -353,7 +353,7 @@ final class Verifier {
         if (needsValue) {
             arguments[arguments.length - 1] = value;
         }
-        return (internal ? Resources.getResources(properties) : Errors.getResources(properties)).getString(errorKey, arguments);
+        return (internal ? Resources.forProperties(properties) : Errors.getResources(properties)).getString(errorKey, arguments);
     }
 
     /**

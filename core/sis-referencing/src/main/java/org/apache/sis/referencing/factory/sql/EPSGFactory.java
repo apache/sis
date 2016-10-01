@@ -293,13 +293,13 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         if (message == null) {
             message = Classes.getShortClassName(e);
         }
-        return Resources.getResources(locale).getString(Resources.Keys.CanNotUseGeodeticParameters_2, Constants.EPSG, message);
+        return Resources.forLocale(locale).getString(Resources.Keys.CanNotUseGeodeticParameters_2, Constants.EPSG, message);
     }
 
     /**
      * Returns the namespace of EPSG codes.
      *
-     * @return The {@code "EPSG"} string in a singleton map.
+     * @return the {@code "EPSG"} string in a singleton map.
      */
     @Override
     public Set<String> getCodeSpaces() {
@@ -310,7 +310,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * Returns the locale used by this factory for producing error messages.
      * This locale does not change the way data are read from the EPSG database.
      *
-     * @return The locale for error messages.
+     * @return the locale for error messages.
      */
     @Override
     public Locale getLocale() {
@@ -361,7 +361,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * or add on the classpath a non-Apache bundle like {@code geotk-epsg.jar}.
      * See <a href="https://issues.apache.org/jira/browse/LEGAL-183">LEGAL-183</a> for more information.</p>
      *
-     * @param  connection Connection to the database where to create the EPSG schema.
+     * @param  connection  connection to the database where to create the EPSG schema.
      * @throws IOException if the SQL script can not be found or an I/O error occurred while reading them.
      * @throws SQLException if an error occurred while writing to the database.
      *
@@ -474,9 +474,9 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * Subclasses can override this method with a similar code but with {@code new EPSGDataAccess(…)} replaced
      * by {@code new MyDataAccessSubclass(…)}.
      *
-     * @param  connection A connection to the EPSG database.
-     * @param  translator The translator from the SQL statements using MS-Access dialect to SQL statements
-     *                    using the dialect of the actual database.
+     * @param  connection  a connection to the EPSG database.
+     * @param  translator  the translator from the SQL statements using MS-Access dialect to SQL statements
+     *                     using the dialect of the actual database.
      * @return Data Access Object (DAO) to use in {@code createFoo(String)} methods.
      * @throws SQLException if a problem with the database has been detected.
      *
@@ -492,7 +492,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * implementation always returns {@code false} if a set returned by {@link EPSGDataAccess#getAuthorityCodes(Class)}
      * is still in use.
      *
-     * @param factory The Data Access Object which is about to be closed.
+     * @param  factory  the Data Access Object which is about to be closed.
      * @return {@code true} if the given Data Access Object can be closed.
      */
     @Override

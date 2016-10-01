@@ -148,11 +148,11 @@ final class StringJoinOperation extends AbstractOperation {
             }
             if (!(attributeType instanceof AttributeType)) {
                 final Class<?>[] inf = Classes.getLeafInterfaces(Classes.getClass(attributeType), PropertyType.class);
-                throw new IllegalArgumentException(Resources.getResources(identification)
+                throw new IllegalArgumentException(Resources.forProperties(identification)
                         .getString(Resources.Keys.IllegalPropertyType_2, name, (inf.length != 0) ? inf[0] : null));
             }
             if (((AttributeType<?>) attributeType).getMaximumOccurs() > 1) {
-                throw new IllegalArgumentException(Resources.getResources(identification)
+                throw new IllegalArgumentException(Resources.forProperties(identification)
                         .getString(Resources.Keys.NotASingleton_1, name));
             }
             /*

@@ -242,7 +242,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * has special handling for this operation (a TensorParameters dedicated class, etc.)
          */
         if (!IdentifiedObjects.isHeuristicMatchForName(method, Constants.AFFINE)) {
-            throw new IllegalArgumentException(Resources.getResources(properties).getString(
+            throw new IllegalArgumentException(Resources.forProperties(properties).getString(
                     Resources.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
         }
     }

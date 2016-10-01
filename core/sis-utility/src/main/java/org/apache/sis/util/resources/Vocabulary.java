@@ -517,6 +517,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short StandardDeviation = 51;
 
         /**
+         * Subset of {0}
+         */
+        public static final short SubsetOf_1 = 115;
+
+        /**
          * Superseded by {0}.
          */
         public static final short SupersededBy_1 = 84;

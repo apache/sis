@@ -298,7 +298,7 @@ public final class ChannelDecoder extends Decoder {
      * @return the localized error resource bundle.
      */
     final Resources resources() {
-        return Resources.getResources(listeners.getLocale());
+        return Resources.forLocale(listeners.getLocale());
     }
 
     /**
