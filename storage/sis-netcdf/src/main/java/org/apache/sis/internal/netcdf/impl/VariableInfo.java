@@ -80,11 +80,6 @@ final class VariableInfo extends Variable {
     final Dimension[] dimensions;
 
     /**
-     * All dimensions in the NetCDF files.
-     */
-    private final Map<String,Dimension> allDimensions;
-
-    /**
      * The attributes associates to the variable, or an empty map if none.
      * Values can be:
      *
@@ -129,7 +124,6 @@ final class VariableInfo extends Variable {
      * @param  input          the channel together with a buffer for reading the variable data.
      * @param  name           the variable name.
      * @param  dimensions     the dimensions of this variable.
-     * @param  allDimensions  all dimensions in the NetCDF files.
      * @param  attributes     the attributes associates to the variable, or an empty map if none.
      * @param  dataType       the NetCDF type of data, or {@code null} if unknown.
      * @param  size           the variable size, used for verification purpose only.
@@ -138,7 +132,6 @@ final class VariableInfo extends Variable {
     VariableInfo(final ChannelDataInput      input,
                  final String                name,
                  final Dimension[]           dimensions,
-                 final Map<String,Dimension> allDimensions,
                  final Map<String,Object>    attributes,
                        DataType              dataType,
                  final int                   size,
@@ -148,11 +141,10 @@ final class VariableInfo extends Variable {
         if (isUnsigned != null) {
             dataType = dataType.unsigned(booleanValue(isUnsigned));
         }
-        this.name          = name;
-        this.dimensions    = dimensions;
-        this.allDimensions = allDimensions;
-        this.attributes    = attributes;
-        this.dataType      = dataType;
+        this.name       = name;
+        this.dimensions = dimensions;
+        this.attributes = attributes;
+        this.dataType   = dataType;
         /*
          * The 'size' value is provided in the NetCDF files, but doesn't need to be stored since it
          * is redundant with the dimension lengths and is not large enough for big variables anyway.
@@ -267,26 +259,6 @@ final class VariableInfo extends Variable {
             shape[i] = dimensions[i].length;
         }
         return shape;
-    }
-
-    /**
-     * Returns the dimension of the given name (eventually ignoring case), or {@code null} if none.
-     * This method searches in all dimensions found in the NetCDF file,
-     * regardless of whether the dimension is used by this variable or not.
-     * The search will ignore case only if no exact match is found for the given name.
-     *
-     * @param  dimName  the name of the dimension to search.
-     * @return dimension of the given name, or {@code null} if none.
-     */
-    final Dimension findDimension(final String dimName) {
-        Dimension dim = allDimensions.get(dimName);         // Give precedence to exact match before to ignore case.
-        if (dim == null) {
-            final String lower = dimName.toLowerCase(ChannelDecoder.NAME_LOCALE);
-            if (lower != dimName) {                         // Identity comparison is okay here.
-                dim = allDimensions.get(lower);
-            }
-        }
-        return dim;
     }
 
     /**
