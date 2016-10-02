@@ -17,6 +17,7 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.Numbers.*;
@@ -49,6 +50,7 @@ final class SequenceVector extends Vector implements Serializable {
 
     /**
      * The difference between the values at two adjacent indexes.
+     * May be positive, negative or zero.
      */
     private final double increment;
 
@@ -60,9 +62,9 @@ final class SequenceVector extends Vector implements Serializable {
     /**
      * Creates a sequence of numbers in a given range of values using the given increment.
      *
-     * @param first     The first value, inclusive.
-     * @param increment The difference between the values at two adjacent indexes.
-     * @param length    The length of the vector.
+     * @param  first      the first value, inclusive.
+     * @param  increment  the difference between the values at two adjacent indexes.
+     * @param  length     the length of the vector.
      */
     public SequenceVector(final double first, final double increment, final int length) {
         if (length < 0) {
@@ -154,6 +156,21 @@ final class SequenceVector extends Vector implements Serializable {
     @Override
     public Number set(final int index, final Number value) {
         throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "Vector"));
+    }
+
+    /**
+     * Computes the minimal and maximal values in this vector.
+     * This is easily computed from the first value and the increment.
+     */
+    @Override
+    public NumberRange<Double> range() {
+        double min = first;
+        double max = first + increment * (length - 1);
+        if (max < min) {
+            min = max;
+            max = first;
+        }
+        return NumberRange.create(min, true, max, true);
     }
 
     /**

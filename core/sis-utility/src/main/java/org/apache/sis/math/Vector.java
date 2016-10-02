@@ -20,6 +20,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.AbstractList;
 import java.util.RandomAccess;
+import java.util.function.IntSupplier;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
@@ -435,20 +437,20 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     }
 
     /**
-     * A view over an other vector in a range of index.
+     * A view over another vector in a range of index.
      */
     private final class SubSampling extends Vector implements Serializable {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 7641036842053528486L;
 
         /** Index of the first element in the enclosing vector. */
-        private final int first;
+        final int first;
 
         /** The index increment. May be negative but not zero. */
-        private final int step;
+        final int step;
 
         /** The length of this vector. */
-        private final int length;
+        final int length;
 
         /** Creates a new view over the given range. */
         protected SubSampling(final int first, final int step, final int length) {
@@ -464,7 +466,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         }
 
         /** Returns the index where to look for the value in the enclosing vector. */
-        private int toBacking(final int index) {
+        final int toBacking(final int index) {
             ensureValidIndex(length, index);
             return index*step + first;
         }
@@ -500,6 +502,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         @Override public String  stringValue(int index)     {return Vector.this.stringValue(toBacking(index));}
         @Override public Number  get        (int index)     {return Vector.this.get        (toBacking(index));}
 
+        /** Delegates to the enclosing vector. */
         @Override public Number set(final int index, final Number v) {
             final Number old = Vector.this.set(toBacking(index), v);
             modCount++;
@@ -522,6 +525,25 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
                 }
             }
             return super.createConcatenate(toAppend);
+        }
+
+        /** Delegates to the enclosing vector */
+        @Override NumberRange<?> range(final IntSupplier indices, final int n) {
+            if (indices != null) {
+                return Vector.this.range(() -> toBacking(indices.getAsInt()), n);
+            }
+            IntSupplier supplier = null;
+            if (first != 0 || step != 1) {
+                supplier = new IntSupplier() {
+                    private int index = first;
+                    @Override public int getAsInt() {
+                        final int i = index;
+                        index += step;
+                        return i;
+                    }
+                };
+            }
+            return Vector.this.range(supplier, n);
         }
     }
 
@@ -649,6 +671,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         @Override public String   stringValue(int i)    {return Vector.this.stringValue(indices[i]);}
         @Override public Number   get        (int i)    {return Vector.this.get        (indices[i]);}
 
+        /** Delegates to the enclosing vector. */
         @Override public Number set(final int i, final Number v) {
             final Number old = Vector.this.set(indices[i], v);
             modCount++;
@@ -677,6 +700,20 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
                 return Vector.this.pick(c);
             }
             return super.createConcatenate(toAppend);
+        }
+
+        /** Delegates to the enclosing vector. */
+        @Override NumberRange<?> range(final IntSupplier supplier, final int n) {
+            if (supplier != null) {
+                return Vector.this.range(() -> indices[supplier.getAsInt()], n);
+            } else {
+                return Vector.this.range(new IntSupplier() {
+                    private int index;
+                    @Override public int getAsInt() {
+                        return indices[index++];
+                    }
+                }, n);
+            }
         }
     }
 
@@ -738,6 +775,36 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     public final Vector reverse() {
         final int length = size();
         return (length > 1) ? subSampling(length-1, -1, length) : this;
+    }
+
+    /**
+     * Returns the minimal and maximal values found in this vector.
+     *
+     * @return minimal and maximal values found in this vector.
+     */
+    public NumberRange<?> range() {
+        return range(null, size());
+    }
+
+    /**
+     * Computes the range of values at the indices provided by the given supplier.
+     * The default implementation iterates over all {@code double} values, but
+     * subclasses should override with a more efficient implementation if possible.
+     *
+     * @param  indices  supplier of indices of the values to examine for computing the range,
+     *                  or {@code null} for the 0, 1, 2, … <var>n</var>-1 sequence.
+     * @param  n        number of indices to get from the supplier.
+     * @return the range of all values at the given indices.
+     */
+    NumberRange<?> range(final IntSupplier indices, int n) {
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        while (--n >= 0) {
+            final double value = doubleValue((indices != null) ? indices.getAsInt() : n);
+            if (value < min) min = value;
+            if (value > max) max = value;
+        }
+        return NumberRange.create(min, true, max, true);
     }
 
     /**

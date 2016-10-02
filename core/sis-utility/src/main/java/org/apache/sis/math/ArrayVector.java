@@ -17,10 +17,12 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import java.util.function.IntSupplier;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.measure.NumberRange;
 
 
 /**
@@ -182,6 +184,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             modCount++;
             return old;
         }
+
+        /** Finds the minimum and maximum values in the array or in a subset of the array. */
+        @Override NumberRange<java.lang.Double> range(final IntSupplier indices, int n) {
+            double min = java.lang.Double.POSITIVE_INFINITY;
+            double max = java.lang.Double.NEGATIVE_INFINITY;
+            while (--n >= 0) {
+                final double value = array[(indices != null) ? indices.getAsInt() : n];
+                if (value < min) min = value;
+                if (value > max) max = value;
+            }
+            return NumberRange.create(min, true, max, true);
+        }
     }
 
     /**
@@ -231,6 +245,27 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             modCount++;
             return old;
         }
+
+        /** Finds the minimum and maximum values in the array or in a subset of the array. */
+        @Override final NumberRange<?> range(final IntSupplier indices, int n) {
+            float min = java.lang.Float.POSITIVE_INFINITY;
+            float max = java.lang.Float.NEGATIVE_INFINITY;
+            while (--n >= 0) {
+                final float value = array[(indices != null) ? indices.getAsInt() : n];
+                if (value < min) min = value;
+                if (value > max) max = value;
+            }
+            return createRange(min, max);
+        }
+
+        /**
+         * Creates a range from the given minimum and maximum values, inclusive.
+         * The default implementation creates a range of {@code float}, but this method is
+         * overridden by {@code ArrayVector.Decimal} which create a range of {@code double}.
+         */
+        NumberRange<?> createRange(final float min, final float max) {
+            return NumberRange.create(min, true, max, true);
+        }
     }
 
     /**
@@ -250,6 +285,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the value at the given index. */
         @Override public double doubleValue(final int index) {
             return DecimalFunctions.floatToDouble(super.floatValue(index));
+        }
+
+        /** Creates a range from the given minimum and maximum values. */
+        @Override NumberRange<?> createRange(final float min, final float max) {
+            return NumberRange.create(DecimalFunctions.floatToDouble(min), true,
+                                      DecimalFunctions.floatToDouble(max), true);
         }
     }
 
@@ -289,6 +330,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             array[index] = value.longValue();
             modCount++;
             return old;
+        }
+
+        /** Finds the minimum and maximum values in the array or in a subset of the array. */
+        @Override NumberRange<?> range(final IntSupplier indices, int n) {
+            long min = java.lang.Long.MAX_VALUE;
+            long max = java.lang.Long.MIN_VALUE;
+            while (--n >= 0) {
+                final long value = array[(indices != null) ? indices.getAsInt() : n];
+                if (value < min) min = value;
+                if (value > max) max = value;
+            }
+            return NumberRange.create(min, true, max, true);
         }
     }
 
@@ -330,6 +383,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             modCount++;
             return old;
         }
+
+        /** Finds the minimum and maximum values in the array or in a subset of the array. */
+        @Override NumberRange<?> range(final IntSupplier indices, int n) {
+            int min = java.lang.Integer.MAX_VALUE;
+            int max = java.lang.Integer.MIN_VALUE;
+            while (--n >= 0) {
+                final int value = array[(indices != null) ? indices.getAsInt() : n];
+                if (value < min) min = value;
+                if (value > max) max = value;
+            }
+            return NumberRange.create(min, true, max, true);
+        }
     }
 
     /**
@@ -370,6 +435,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             array[index] = value.shortValue();
             modCount++;
             return old;
+        }
+
+        /** Finds the minimum and maximum values in the array or in a subset of the array. */
+        @Override NumberRange<?> range(final IntSupplier indices, int n) {
+            short min = java.lang.Short.MAX_VALUE;
+            short max = java.lang.Short.MIN_VALUE;
+            while (--n >= 0) {
+                final short value = array[(indices != null) ? indices.getAsInt() : n];
+                if (value < min) min = value;
+                if (value > max) max = value;
+            }
+            return NumberRange.create(min, true, max, true);
         }
     }
 
@@ -413,6 +490,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             modCount++;
             return old;
         }
+
+        /** Finds the minimum and maximum values in the array or in a subset of the array. */
+        @Override NumberRange<?> range(final IntSupplier indices, int n) {
+            byte min = java.lang.Byte.MAX_VALUE;
+            byte max = java.lang.Byte.MIN_VALUE;
+            while (--n >= 0) {
+                final byte value = array[(indices != null) ? indices.getAsInt() : n];
+                if (value < min) min = value;
+                if (value > max) max = value;
+            }
+            return NumberRange.create(min, true, max, true);
+        }
     }
 
     /**
@@ -451,6 +540,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public String stringValue(final int index) {
             return java.lang.Long.toUnsignedString(super.longValue(index));
         }
+
+        /** Finds the minimum and maximum values in the array or in a subset of the array. */
+        @Override NumberRange<java.lang.Double> range(final IntSupplier indices, int n) {
+            double min = java.lang.Double.POSITIVE_INFINITY;
+            double max = java.lang.Double.NEGATIVE_INFINITY;
+            while (--n >= 0) {
+                final double value = doubleValue((indices != null) ? indices.getAsInt() : n);
+                if (value < min) min = value;
+                if (value > max) max = value;
+            }
+            return NumberRange.create(min, true, max, true);
+        }
     }
 
     /**
@@ -479,6 +580,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
             return java.lang.Integer.toUnsignedString(super.intValue(index));
+        }
+
+        /** Finds the minimum and maximum values in the array or in a subset of the array. */
+        @Override NumberRange<?> range(final IntSupplier indices, int n) {
+            long min = java.lang.Long.MAX_VALUE;
+            long max = java.lang.Long.MIN_VALUE;
+            while (--n >= 0) {
+                final long value = longValue((indices != null) ? indices.getAsInt() : n);
+                if (value < min) min = value;
+                if (value > max) max = value;
+            }
+            return NumberRange.create(min, true, max, true);
         }
     }
 
@@ -510,6 +623,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public String stringValue(final int index) {
             return java.lang.Integer.toString(intValue(index));
         }
+
+        /** Finds the minimum and maximum values in the array or in a subset of the array. */
+        @Override NumberRange<?> range(final IntSupplier indices, int n) {
+            int min = java.lang.Integer.MAX_VALUE;
+            int max = java.lang.Integer.MIN_VALUE;
+            while (--n >= 0) {
+                final int value = intValue((indices != null) ? indices.getAsInt() : n);
+                if (value < min) min = value;
+                if (value > max) max = value;
+            }
+            return NumberRange.create(min, true, max, true);
+        }
     }
 
     /**
@@ -540,6 +665,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
             return java.lang.Integer.toString(intValue(index));
+        }
+
+        /** Finds the minimum and maximum values in the array or in a subset of the array. */
+        @Override NumberRange<?> range(final IntSupplier indices, int n) {
+            short min = java.lang.Short.MAX_VALUE;
+            short max = java.lang.Short.MIN_VALUE;
+            while (--n >= 0) {
+                final short value = shortValue((indices != null) ? indices.getAsInt() : n);
+                if (value < min) min = value;
+                if (value > max) max = value;
+            }
+            return NumberRange.create(min, true, max, true);
         }
     }
 

@@ -18,6 +18,7 @@ package org.apache.sis.math;
 
 import java.io.Serializable;
 import org.apache.sis.util.Classes;
+import org.apache.sis.measure.NumberRange;
 
 
 /**
@@ -232,6 +233,15 @@ final class ConcatenatedVector extends Vector implements Serializable {
         final Number old = v.set(index, value);
         modCount++;
         return old;
+    }
+
+    /**
+     * Computes the minimal and maximal values in this vector.
+     * This is the union of the range of the two concatenated vectors.
+     */
+    @Override
+    public NumberRange<?> range() {
+        return first.range().unionAny(second.range());
     }
 
     /**
