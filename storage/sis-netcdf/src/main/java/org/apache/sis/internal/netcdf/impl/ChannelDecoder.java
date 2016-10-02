@@ -181,10 +181,19 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * The attributes found in the NetCDF file.
+     * Values in this map give directly the attribute value (there is no {@code Attribute} object).
      *
      * @see #findAttribute(String)
      */
     private final Map<String,Object> attributeMap;
+
+    /**
+     * All dimensions in the NetCDF files.
+     *
+     * @see #readDimensions(int)
+     * @see #findDimension(String)
+     */
+    private Map<String,Dimension> dimensionMap;
 
     /**
      * The grid geometries, created when first needed.
@@ -463,6 +472,7 @@ public final class ChannelDecoder extends Decoder {
             }
             dimensions[i] = new Dimension(name, length);
         }
+        dimensionMap = Dimension.toCaseInsensitiveNameMap(dimensions, NAME_LOCALE);
         return dimensions;
     }
 
@@ -520,7 +530,6 @@ public final class ChannelDecoder extends Decoder {
         if (allDimensions == null) {
             throw malformedHeader();        // May happen if readDimensions(…) has not been invoked.
         }
-        final Map<String,Dimension> dimByNames = Dimension.toCaseInsensitiveNameMap(allDimensions, NAME_LOCALE);
         final VariableInfo[] variables = new VariableInfo[nelems];
         for (int j=0; j<nelems; j++) {
             final String name = readName();
@@ -551,7 +560,7 @@ public final class ChannelDecoder extends Decoder {
                     default:        throw malformedHeader();
                 }
             }
-            variables[j] = new VariableInfo(input, name, varDims, dimByNames, attributes,
+            variables[j] = new VariableInfo(input, name, varDims, attributes,
                     DataType.valueOf(input.readInt()), input.readInt(), readOffset());
         }
         return variables;
@@ -595,6 +604,25 @@ public final class ChannelDecoder extends Decoder {
     @Override
     public String[] getSearchPath() {
         return new String[1];
+    }
+
+    /**
+     * Returns the dimension of the given name (eventually ignoring case), or {@code null} if none.
+     * This method searches in all dimensions found in the NetCDF file, regardless of variables.
+     * The search will ignore case only if no exact match is found for the given name.
+     *
+     * @param  dimName  the name of the dimension to search.
+     * @return dimension of the given name, or {@code null} if none.
+     */
+    final Dimension findDimension(final String dimName) {
+        Dimension dim = dimensionMap.get(dimName);         // Give precedence to exact match before to ignore case.
+        if (dim == null) {
+            final String lower = dimName.toLowerCase(ChannelDecoder.NAME_LOCALE);
+            if (lower != dimName) {                         // Identity comparison is okay here.
+                dim = dimensionMap.get(lower);
+            }
+        }
+        return dim;
     }
 
     /**

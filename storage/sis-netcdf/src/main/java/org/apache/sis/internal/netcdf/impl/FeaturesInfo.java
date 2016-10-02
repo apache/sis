@@ -56,20 +56,23 @@ final class FeaturesInfo extends DiscreteSampling {
      */
     private FeaturesInfo(final Vector cpf, final VariableInfo identifiers) {
         final int n = cpf.size();
-        int max = 1;
-        for (int i=0; i<n; i++) {
-            final int v = cpf.intValue(i);
-            if (v > max) max = v;
+        int max = cpf.range().getMaxValue().intValue();
+        if (max <= 0) {
+            max = Integer.MAX_VALUE;
         }
         counts = new IntegerList(n, max);
         for (int i=0; i<n; i++) {
             counts.addInt(cpf.intValue(i));
         }
         this.identifiers = identifiers;
-        final Object role = identifiers.getAttributeValue(CF.CF_ROLE);
-        if (role instanceof String && ((String) role).equalsIgnoreCase(CF.TRAJECTORY_ID)) {
-            // TODO
-        }
+    }
+
+    /**
+     * Returns {@code true} if the given attribute value is one of the {@code cf_role} attribute values
+     * supported by this implementation.
+     */
+    private static boolean isSupportedRole(final Object role) {
+        return (role instanceof String) && ((String) role).equalsIgnoreCase(CF.TRAJECTORY_ID);
     }
 
     /**
@@ -78,22 +81,66 @@ final class FeaturesInfo extends DiscreteSampling {
     static FeaturesInfo[] create(final ChannelDecoder decoder) throws IOException, DataStoreException {
         final List<FeaturesInfo> features = new ArrayList<>(3);     // Will usually contain at most one element.
 search: for (final VariableInfo counts : decoder.variables) {
+            /*
+             * Any one-dimensional integer variable having a "sample_dimension" attribute string value
+             * will be taken as an indication that we have Discrete Sampling Geometries. That variable
+             * shall be counting the number of feature instances, and another variable having the same
+             * dimension (optionally plus a character dimension) shall give the feature identifiers.
+             * Example:
+             *
+             *     dimensions:
+             *         identifiers = 100;
+             *         points = UNLIMITED;
+             *     variables:
+             *         int identifiers(identifiers);
+             *             identifiers:cf_role = "trajectory_id";
+             *         int counts(identifiers);
+             *             counts:sample_dimension = "points";
+             */
             if (counts.dimensions.length == 1 && counts.getDataType().isInteger) {
                 final Object sampleDimName = counts.getAttributeValue(CF.SAMPLE_DIMENSION);
                 if (sampleDimName instanceof String) {
-                    /*
-                     * Any one-dimensional integer variable having a "sample_dimension" attribute string value
-                     * will be taken as an indication that we have Discrete Sampling Geometries. That variable
-                     * shall be counting the number of feature instances, and another variable having the same
-                     * dimension (optionally plus a character dimension) shall give the feature identifiers.
-                     */
                     final Dimension featureDimension = counts.dimensions[0];
-                    final VariableInfo identifiers = decoder.findVariable(featureDimension.name);
-                    if (identifiers == null) {
-                        decoder.listeners.warning(decoder.resources().getString(Resources.Keys.VariableNotFound_2,
-                                decoder.getFilename(), featureDimension.name), null);
+                    final Dimension sampleDimension = decoder.findDimension((String) sampleDimName);
+                    if (sampleDimension == null) {
+                        decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DimensionNotFound_3,
+                                decoder.getFilename(), counts.getName(), sampleDimName), null);
                         continue;
                     }
+                    /*
+                     * We should have another variable of the same name than the feature dimension name
+                     * ("identifiers" in above example). That variable should have a "cf_role" attribute
+                     * set to one of the values known to current implementation.  If we do not find such
+                     * variable, search among other variables before to give up. That second search is not
+                     * part of CF convention and will be accepted only if there is no ambiguity.
+                     */
+                    VariableInfo identifiers = decoder.findVariable(featureDimension.name);
+                    if (identifiers == null || !isSupportedRole(identifiers.getAttributeValue(CF.CF_ROLE))) {
+                        VariableInfo replacement = null;
+                        for (final VariableInfo alt : decoder.variables) {
+                            if (alt.dimensions.length != 0 && alt.dimensions[0] == featureDimension
+                                    && isSupportedRole(alt.getAttributeValue(CF.CF_ROLE)))
+                            {
+                                if (replacement != null) {
+                                    replacement = null;
+                                    break;                  // Ambiguity found: consider that we found no replacement.
+                                }
+                                replacement = alt;
+                            }
+                        }
+                        if (replacement != null) {
+                            identifiers = replacement;
+                        }
+                        if (identifiers == null) {
+                            decoder.listeners.warning(decoder.resources().getString(Resources.Keys.VariableNotFound_2,
+                                    decoder.getFilename(), featureDimension.name), null);
+                            continue;
+                        }
+                    }
+                    /*
+                     * At this point we found a variable that should be the feature identifiers.
+                     * Verify that the variable dimensions are valid.
+                     */
                     for (int i=0; i<identifiers.dimensions.length; i++) {
                         final boolean isValid;
                         switch (i) {
@@ -110,16 +157,8 @@ search: for (final VariableInfo counts : decoder.variables) {
                         }
                     }
                     /*
-                     * The "sample_dimension" attribute value shall be the name of a dimension.
-                     * Those dimensions are associated to other variables (not the count one),
-                     * but the 'findDimension' method below searches in all dimensions.
+                     * At this point, all information has been verified as valid.
                      */
-                    final Dimension sampleDim = counts.findDimension((String) sampleDimName);
-                    if (sampleDim == null) {
-                        decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DimensionNotFound_3,
-                                decoder.getFilename(), counts.getName(), sampleDimName), null);
-                        continue;
-                    }
                     features.add(new FeaturesInfo(counts.read(), identifiers));
                 }
             }
