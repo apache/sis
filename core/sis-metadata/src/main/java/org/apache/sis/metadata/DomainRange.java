@@ -58,11 +58,10 @@ final class DomainRange<E extends Number & Comparable<? super E>> extends Number
      * the given type is not wide enough, then the values are truncated in the same way
      * than the Java language casts primitive types.
      *
-     * @param  type  The element type, restricted to one of {@link Byte}, {@link Short},
-     *               {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
-     * @param  range The range of values.
-     * @throws IllegalArgumentException If the given type is not one of the primitive
-     *         wrappers for numeric types.
+     * @param  type   the element type, restricted to one of {@link Byte}, {@link Short},
+     *                {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
+     * @param  range  the range of values.
+     * @throws IllegalArgumentException if the given type is not one of the primitive wrappers for numeric types.
      */
     DomainRange(final Class<E> type, final ValueRange range) throws IllegalArgumentException {
         super(type, range);
