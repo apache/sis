@@ -46,7 +46,7 @@ public final class EPSGParameterDomain extends NumberRange<Double> {
     /**
      * Creates a new parameter descriptor for the given units.
      *
-     * @param units The units.
+     * @param  units  the units.
      */
     public EPSGParameterDomain(final Set<Unit<?>> units) {
         super(Double.class, null, false, null, false);
