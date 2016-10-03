@@ -52,47 +52,34 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
      * @throws IllegalArgumentException if the type of the given object is not recognized by the method.
      */
     static Vector newInstance(final Object array, final boolean isUnsigned) throws IllegalArgumentException {
+        final Vector vec;
         if (array instanceof double[]) {
-            return new ArrayVector.Double((double[]) array);
+            vec = new Doubles((double[]) array);
+        } else if (array instanceof float[]) {
+            vec = new Floats((float[]) array);
+        } else if (array instanceof long[]) {
+            vec = isUnsigned ? new UnsignedLongs((long[]) array)
+                             : new         Longs((long[]) array);
+        } else if (array instanceof int[]) {
+            vec = isUnsigned ? new UnsignedIntegers((int[]) array)
+                             : new         Integers((int[]) array);
+        } else if (array instanceof short[]) {
+            vec = isUnsigned ? new UnsignedShorts((short[]) array)
+                             : new         Shorts((short[]) array);
+        } else if (array instanceof byte[]) {
+            vec = isUnsigned ? new UnsignedBytes((byte[]) array)
+                             : new         Bytes((byte[]) array);
+        } else if (array instanceof Number[]) {
+            vec = new Raw((Number[]) array);
+        } else if (array instanceof String[]) {
+            vec = new ASCII((String[]) array);
+        } else {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_2, "array", array.getClass()));
         }
-        if (array instanceof float[]) {
-            return new ArrayVector.Float((float[]) array);
+        if (vec.isEmpty()) {
+            return new SequenceVector(vec.getElementType());
         }
-        if (array instanceof long[]) {
-            if (isUnsigned) {
-                return new ArrayVector.UnsignedLong((long[]) array);
-            } else {
-                return new ArrayVector.Long((long[]) array);
-            }
-        }
-        if (array instanceof int[]) {
-            if (isUnsigned) {
-                return new ArrayVector.UnsignedInteger((int[]) array);
-            } else {
-                return new ArrayVector.Integer((int[]) array);
-            }
-        }
-        if (array instanceof short[]) {
-            if (isUnsigned) {
-                return new ArrayVector.UnsignedShort((short[]) array);
-            } else {
-                return new ArrayVector.Short((short[]) array);
-            }
-        }
-        if (array instanceof byte[]) {
-            if (isUnsigned) {
-                return new ArrayVector.UnsignedByte((byte[]) array);
-            } else {
-                return new ArrayVector.Byte((byte[]) array);
-            }
-        }
-        if (array instanceof Number[]) {
-            return new ArrayVector.Raw((Number[]) array);
-        }
-        if (array instanceof String[]) {
-            return new ArrayVector.ASCII((String[]) array);
-        }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_2, "array", array.getClass()));
+        return vec;
     }
 
     /**
@@ -126,7 +113,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code double[]}.
      */
-    private static final class Double extends ArrayVector<java.lang.Double> {
+    private static final class Doubles extends ArrayVector<Double> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -2900375382498345812L;
 
@@ -134,13 +121,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         private final double[] array;
 
         /** Creates a new vector for the given array. */
-        Double(final double[] array) {
+        Doubles(final double[] array) {
             this.array = array;
         }
 
         /** Returns the type of elements in the backing array. */
-        @Override public Class<java.lang.Double> getElementType() {
-            return java.lang.Double.class;
+        @Override public Class<Double> getElementType() {
+            return Double.class;
         }
 
         /** Returns the length of the backing array. */
@@ -150,12 +137,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns {@code true} if the value at the given index is {@code NaN}. */
         @Override public boolean isNaN(final int index) {
-            return java.lang.Double.isNaN(array[index]);
+            return Double.isNaN(array[index]);
         }
 
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
-            return java.lang.Double.toString(array[index]);
+            return Double.toString(array[index]);
         }
 
         /** Returns the value at the given index. */
@@ -186,9 +173,9 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
-        @Override NumberRange<java.lang.Double> range(final IntSupplier indices, int n) {
-            double min = java.lang.Double.POSITIVE_INFINITY;
-            double max = java.lang.Double.NEGATIVE_INFINITY;
+        @Override NumberRange<Double> range(final IntSupplier indices, int n) {
+            double min = Double.POSITIVE_INFINITY;
+            double max = Double.NEGATIVE_INFINITY;
             while (--n >= 0) {
                 final double value = array[(indices != null) ? indices.getAsInt() : n];
                 if (value < min) min = value;
@@ -201,7 +188,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code float[]}.
      */
-    private static class Float extends ArrayVector<java.lang.Float> {
+    private static class Floats extends ArrayVector<Float> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 5395284704294981455L;
 
@@ -209,13 +196,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         private final float[] array;
 
         /** Creates a new vector for the given array. */
-        Float(final float[] array) {
+        Floats(final float[] array) {
             this.array = array;
         }
 
         /** Returns the type of elements in the backing array. */
-        @Override public final Class<java.lang.Float> getElementType() {
-            return java.lang.Float.class;
+        @Override public final Class<Float> getElementType() {
+            return Float.class;
         }
 
         /** Returns the length of the backing array. */
@@ -225,12 +212,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns {@code true} if the value at the given index is {@code NaN}. */
         @Override public final boolean isNaN(final int index) {
-            return java.lang.Float.isNaN(array[index]);
+            return Float.isNaN(array[index]);
         }
 
         /** Returns the string representation at the given index. */
         @Override public final String stringValue(final int index) {
-            return java.lang.Float.toString(array[index]);
+            return Float.toString(array[index]);
         }
 
         /** Returns the value at the given index. */
@@ -248,8 +235,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override final NumberRange<?> range(final IntSupplier indices, int n) {
-            float min = java.lang.Float.POSITIVE_INFINITY;
-            float max = java.lang.Float.NEGATIVE_INFINITY;
+            float min = Float.POSITIVE_INFINITY;
+            float max = Float.NEGATIVE_INFINITY;
             while (--n >= 0) {
                 final float value = array[(indices != null) ? indices.getAsInt() : n];
                 if (value < min) min = value;
@@ -273,7 +260,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
      * the errors when represented in base 10. This implementation should be used only when there is good reasons to
      * believe that the {@code float} data where encoded in base 10 in the first place (for example in an ASCII file).
      */
-    static final class Decimal extends Float {
+    static final class Decimal extends Floats {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 6085386820455858377L;
 
@@ -297,7 +284,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code long[]}.
      */
-    private static class Long extends ArrayVector<java.lang.Long> {
+    private static class Longs extends ArrayVector<Long> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 338413429037224587L;
 
@@ -305,18 +292,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         private final long[] array;
 
         /** Creates a new vector for the given array. */
-        Long(final long[] array) {
+        Longs(final long[] array) {
             this.array = array;
         }
 
         /** Returns the type of elements in the backing array. */
-        @Override public final Class<java.lang.Long> getElementType() {
-            return java.lang.Long.class;
+        @Override public final Class<Long> getElementType() {
+            return Long.class;
         }
 
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
-            return java.lang.Long.toString(array[index]);
+            return Long.toString(array[index]);
         }
 
         @Override public final int     size()          {return array.length;}
@@ -334,8 +321,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
-            long min = java.lang.Long.MAX_VALUE;
-            long max = java.lang.Long.MIN_VALUE;
+            long min = Long.MAX_VALUE;
+            long max = Long.MIN_VALUE;
             while (--n >= 0) {
                 final long value = array[(indices != null) ? indices.getAsInt() : n];
                 if (value < min) min = value;
@@ -348,7 +335,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code int[]}.
      */
-    private static class Integer extends ArrayVector<java.lang.Integer> {
+    private static class Integers extends ArrayVector<Integer> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -1292641147544275801L;
 
@@ -356,18 +343,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         private final int[] array;
 
         /** Creates a new vector for the given array. */
-        Integer(final int[] array) {
+        Integers(final int[] array) {
             this.array = array;
         }
 
         /** Returns the type of elements in the backing array. */
-        @Override public final Class<java.lang.Integer> getElementType() {
-            return java.lang.Integer.class;
+        @Override public final Class<Integer> getElementType() {
+            return Integer.class;
         }
 
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
-            return java.lang.Integer.toString(array[index]);
+            return Integer.toString(array[index]);
         }
 
         @Override public final int     size()          {return array.length;}
@@ -386,8 +373,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
-            int min = java.lang.Integer.MAX_VALUE;
-            int max = java.lang.Integer.MIN_VALUE;
+            int min = Integer.MAX_VALUE;
+            int max = Integer.MIN_VALUE;
             while (--n >= 0) {
                 final int value = array[(indices != null) ? indices.getAsInt() : n];
                 if (value < min) min = value;
@@ -400,7 +387,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code short[]}.
      */
-    private static class Short extends ArrayVector<java.lang.Short> {
+    private static class Shorts extends ArrayVector<Short> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -126825963332296000L;
 
@@ -408,18 +395,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         private final short[] array;
 
         /** Creates a new vector for the given array. */
-        Short(final short[] array) {
+        Shorts(final short[] array) {
             this.array = array;
         }
 
         /** Returns the type of elements in the backing array. */
-        @Override public final Class<java.lang.Short> getElementType() {
-            return java.lang.Short.class;
+        @Override public final Class<Short> getElementType() {
+            return Short.class;
         }
 
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
-            return java.lang.Short.toString(array[index]);
+            return Short.toString(array[index]);
         }
 
         @Override public final int     size()          {return array.length;}
@@ -439,8 +426,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
-            short min = java.lang.Short.MAX_VALUE;
-            short max = java.lang.Short.MIN_VALUE;
+            short min = Short.MAX_VALUE;
+            short max = Short.MIN_VALUE;
             while (--n >= 0) {
                 final short value = array[(indices != null) ? indices.getAsInt() : n];
                 if (value < min) min = value;
@@ -453,7 +440,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code byte[]}.
      */
-    private static class Byte extends ArrayVector<java.lang.Byte> {
+    private static class Bytes extends ArrayVector<Byte> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 7933568876180528548L;
 
@@ -461,18 +448,18 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         private final byte[] array;
 
         /** Creates a new vector for the given array. */
-        Byte(final byte[] array) {
+        Bytes(final byte[] array) {
             this.array = array;
         }
 
         /** Returns the type of elements in the backing array. */
-        @Override public final Class<java.lang.Byte> getElementType() {
-            return java.lang.Byte.class;
+        @Override public final Class<Byte> getElementType() {
+            return Byte.class;
         }
 
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
-            return java.lang.Byte.toString(array[index]);
+            return Byte.toString(array[index]);
         }
 
         @Override public final int     size()          {return array.length;}
@@ -493,8 +480,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
-            byte min = java.lang.Byte.MAX_VALUE;
-            byte max = java.lang.Byte.MIN_VALUE;
+            byte min = Byte.MAX_VALUE;
+            byte max = Byte.MIN_VALUE;
             while (--n >= 0) {
                 final byte value = array[(indices != null) ? indices.getAsInt() : n];
                 if (value < min) min = value;
@@ -507,12 +494,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code long[]} to be interpreted as unsigned values.
      */
-    private static final class UnsignedLong extends Long {
+    private static final class UnsignedLongs extends Longs {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 712968674526282882L;
 
         /** Creates a new vector for the given array. */
-        UnsignedLong(final long[] array) {
+        UnsignedLongs(final long[] array) {
             super(array);
         }
 
@@ -538,13 +525,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
-            return java.lang.Long.toUnsignedString(super.longValue(index));
+            return Long.toUnsignedString(super.longValue(index));
         }
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
-        @Override NumberRange<java.lang.Double> range(final IntSupplier indices, int n) {
-            double min = java.lang.Double.POSITIVE_INFINITY;
-            double max = java.lang.Double.NEGATIVE_INFINITY;
+        @Override NumberRange<Double> range(final IntSupplier indices, int n) {
+            double min = Double.POSITIVE_INFINITY;
+            double max = Double.NEGATIVE_INFINITY;
             while (--n >= 0) {
                 final double value = doubleValue((indices != null) ? indices.getAsInt() : n);
                 if (value < min) min = value;
@@ -557,12 +544,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code int[]} to be interpreted as unsigned values.
      */
-    private static final class UnsignedInteger extends Integer {
+    private static final class UnsignedIntegers extends Integers {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 8420585724189054050L;
 
         /** Creates a new vector for the given array. */
-        UnsignedInteger(final int[] array) {
+        UnsignedIntegers(final int[] array) {
             super(array);
         }
 
@@ -570,7 +557,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public boolean isUnsigned()          {return true;}
         @Override public double doubleValue(int index) {return longValue(index);}
         @Override public float   floatValue(int index) {return longValue(index);}
-        @Override public long     longValue(int index) {return java.lang.Integer.toUnsignedLong(super.intValue(index));}
+        @Override public long     longValue(int index) {return Integer.toUnsignedLong(super.intValue(index));}
         @Override public int       intValue(int index) {
             final int value = super.intValue(index);
             if (value >= 0) return value;
@@ -579,13 +566,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
-            return java.lang.Integer.toUnsignedString(super.intValue(index));
+            return Integer.toUnsignedString(super.intValue(index));
         }
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
-            long min = java.lang.Long.MAX_VALUE;
-            long max = java.lang.Long.MIN_VALUE;
+            long min = Long.MAX_VALUE;
+            long max = Long.MIN_VALUE;
             while (--n >= 0) {
                 final long value = longValue((indices != null) ? indices.getAsInt() : n);
                 if (value < min) min = value;
@@ -598,12 +585,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code short[]} to be interpreted as unsigned values.
      */
-    private static final class UnsignedShort extends Short {
+    private static final class UnsignedShorts extends Shorts {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 8219060080494444776L;
 
         /** Creates a new vector for the given array. */
-        UnsignedShort(final short[] array) {
+        UnsignedShorts(final short[] array) {
             super(array);
         }
 
@@ -611,8 +598,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public boolean isUnsigned()          {return true;}
         @Override public double doubleValue(int index) {return intValue(index);}
         @Override public float   floatValue(int index) {return intValue(index);}
-        @Override public long     longValue(int index) {return java.lang.Short.toUnsignedLong(super.shortValue(index));}
-        @Override public int       intValue(int index) {return java.lang.Short.toUnsignedInt (super.shortValue(index));}
+        @Override public long     longValue(int index) {return Short.toUnsignedLong(super.shortValue(index));}
+        @Override public int       intValue(int index) {return Short.toUnsignedInt (super.shortValue(index));}
         @Override public short   shortValue(int index) {
             final short value = super.shortValue(index);
             if (value >= 0) return value;
@@ -621,13 +608,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
-            return java.lang.Integer.toString(intValue(index));
+            return Integer.toString(intValue(index));
         }
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
-            int min = java.lang.Integer.MAX_VALUE;
-            int max = java.lang.Integer.MIN_VALUE;
+            int min = Integer.MAX_VALUE;
+            int max = Integer.MIN_VALUE;
             while (--n >= 0) {
                 final int value = intValue((indices != null) ? indices.getAsInt() : n);
                 if (value < min) min = value;
@@ -640,12 +627,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code byte[]} to be interpreted as unsigned values.
      */
-    private static final class UnsignedByte extends Byte {
+    private static final class UnsignedBytes extends Bytes {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -2150064612523948331L;
 
         /** Creates a new vector for the given array. */
-        UnsignedByte(final byte[] array) {
+        UnsignedBytes(final byte[] array) {
             super(array);
         }
 
@@ -653,8 +640,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public boolean isUnsigned()          {return true;}
         @Override public double doubleValue(int index) {return intValue(index);}
         @Override public float   floatValue(int index) {return intValue(index);}
-        @Override public long     longValue(int index) {return java.lang.Byte.toUnsignedLong (super.byteValue(index));}
-        @Override public int       intValue(int index) {return java.lang.Byte.toUnsignedInt  (super.byteValue(index));}
+        @Override public long     longValue(int index) {return Byte.toUnsignedLong (super.byteValue(index));}
+        @Override public int       intValue(int index) {return Byte.toUnsignedInt  (super.byteValue(index));}
         @Override public short   shortValue(int index) {return (short) intValue(index);}
         @Override public byte     byteValue(int index) {
             final byte value = super.byteValue(index);
@@ -664,13 +651,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
-            return java.lang.Integer.toString(intValue(index));
+            return Integer.toString(intValue(index));
         }
 
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<?> range(final IntSupplier indices, int n) {
-            short min = java.lang.Short.MAX_VALUE;
-            short max = java.lang.Short.MIN_VALUE;
+            short min = Short.MAX_VALUE;
+            short max = Short.MIN_VALUE;
             while (--n >= 0) {
                 final short value = shortValue((indices != null) ? indices.getAsInt() : n);
                 if (value < min) min = value;
@@ -684,7 +671,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
      * A vector backed by an array of type {@code String[]}.
      * This is not recommended, but happen for example in GDAL extensions for GeoTIFF files.
      */
-    private static final class ASCII extends ArrayVector<java.lang.Double> {
+    private static final class ASCII extends ArrayVector<Double> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 2801615620517491573L;
 
@@ -697,8 +684,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the type of elements in the backing array. */
-        @Override public final Class<java.lang.Double> getElementType() {
-            return java.lang.Double.class;
+        @Override public final Class<Double> getElementType() {
+            return Double.class;
         }
 
         /** Returns {@code true} if the element at the given index is null or NaN. */
@@ -718,15 +705,15 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         @Override public int           size()          {return array.length;}
         @Override public String stringValue(int index) {return array[index];}
-        @Override public double doubleValue(int index) {return java.lang.Double .parseDouble(array[index]);}
-        @Override public float   floatValue(int index) {return java.lang.Float  .parseFloat (array[index]);}
-        @Override public long     longValue(int index) {return java.lang.Long   .parseLong  (array[index]);}
-        @Override public int       intValue(int index) {return java.lang.Integer.parseInt   (array[index]);}
-        @Override public short   shortValue(int index) {return java.lang.Short  .parseShort (array[index]);}
-        @Override public byte     byteValue(int index) {return java.lang.Byte   .parseByte  (array[index]);}
+        @Override public double doubleValue(int index) {return Double .parseDouble(array[index]);}
+        @Override public float   floatValue(int index) {return Float  .parseFloat (array[index]);}
+        @Override public long     longValue(int index) {return Long   .parseLong  (array[index]);}
+        @Override public int       intValue(int index) {return Integer.parseInt   (array[index]);}
+        @Override public short   shortValue(int index) {return Short  .parseShort (array[index]);}
+        @Override public byte     byteValue(int index) {return Byte   .parseByte  (array[index]);}
         @Override public Number         get(int index) {
             final String value = array[index];
-            return (value != null) ? java.lang.Double.parseDouble(value) : null;
+            return (value != null) ? Double.parseDouble(value) : null;
         }
 
         /** Stores the given value in this vector and returns the previous value. */
@@ -763,8 +750,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public boolean isNaN(final int index) {
             Number value = array[index];
             if (value == null) return true;
-            if (value instanceof java.lang.Float)  return ((java.lang.Float)  value).isNaN();
-            if (value instanceof java.lang.Double) return ((java.lang.Double) value).isNaN();
+            if (value instanceof Float)  return ((Float)  value).isNaN();
+            if (value instanceof Double) return ((Double) value).isNaN();
             return false;
         }
 

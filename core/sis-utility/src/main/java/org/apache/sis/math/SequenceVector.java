@@ -60,6 +60,16 @@ final class SequenceVector extends Vector implements Serializable {
     private final int length;
 
     /**
+     * Creates an empty vector of the given type.
+     */
+    SequenceVector(final Class<? extends Number> type) {
+        this.type = type;
+        first     = 0;
+        increment = 0;
+        length    = 0;
+    }
+
+    /**
      * Creates a sequence of numbers in a given range of values using the given increment.
      *
      * @param  first      the first value, inclusive.
