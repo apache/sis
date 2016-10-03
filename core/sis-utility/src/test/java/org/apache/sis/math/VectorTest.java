@@ -16,6 +16,8 @@
  */
 package org.apache.sis.math;
 
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -134,7 +136,7 @@ public final strictfp class VectorTest extends TestCase {
             array[i] = (i + 100) * 10;
         }
         vector = Vector.create(array, false);
-        assertEquals("Float", vector.getClass().getSimpleName());
+        assertEquals("Floats", vector.getClass().getSimpleName());
         assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
         assertEquals(Float.class, vector.getElementType());
@@ -157,7 +159,7 @@ public final strictfp class VectorTest extends TestCase {
             array[i] = (i + 100) * 10;
         }
         vector = Vector.create(array, false);
-        assertEquals("Double", vector.getClass().getSimpleName());
+        assertEquals("Doubles", vector.getClass().getSimpleName());
         assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
         assertEquals(Double.class, vector.getElementType());
@@ -174,6 +176,7 @@ public final strictfp class VectorTest extends TestCase {
      * Tests {@link Vector#reverse()}.
      */
     @Test
+    @DependsOnMethod("testDoubleArray")
     public void testReverse() {
         final double[] array    = {2, 3, 8};
         final double[] expected = {8, 3, 2};
@@ -185,6 +188,7 @@ public final strictfp class VectorTest extends TestCase {
      * Tests {@link Vector#concatenate(Vector)}.
      */
     @Test
+    @DependsOnMethod("testFloatArray")
     public void testConcatenate() {
         final float[] array = new float[40];
         for (int i=0; i<array.length; i++) {
@@ -244,5 +248,74 @@ public final strictfp class VectorTest extends TestCase {
 
         vector = Vector.create(array, false);
         assertEquals("[10, 100, -56]", vector.toString());
+    }
+
+    /**
+     * Tests {@link Vector#range()}. This test depends on most other tests defined in this {@code VectorTest} class
+     * since it needs to test various combination of vectors and sub-vectors.
+     */
+    @Test
+    @DependsOnMethod({
+        "testSequenceOfBytes", "testSequenceOfFloats", "testShortArray", "testFloatArray",
+        "testDoubleArray", "testReverse", "testConcatenate", "testStringArray"
+    })
+    public void testRange() {
+        for (int type = 0; type <= 11; type++) {
+            final Vector vec;
+            switch (type) {
+                case  0: vec = Vector.create(new double[] { 3,   2,   9,   7,   -8 }, false); break;
+                case  1: vec = Vector.create(new float[]  { 3,   2,   9,   7,   -8 }, false); break;
+                case  2: vec = Vector.create(new long[]   { 3,   2,   9,   7,   -8 }, false); break;
+                case  3: vec = Vector.create(new long[]   { 3,   2,   9,   7,   -8 }, true ); break;
+                case  4: vec = Vector.create(new int[]    { 3,   2,   9,   7,   -8 }, false); break;
+                case  5: vec = Vector.create(new int[]    { 3,   2,   9,   7,   -8 }, true ); break;
+                case  6: vec = Vector.create(new short[]  { 3,   2,   9,   7,   -8 }, false); break;
+                case  7: vec = Vector.create(new short[]  { 3,   2,   9,   7,   -8 }, true ); break;
+                case  8: vec = Vector.create(new byte[]   { 3,   2,   9,   7,   -8 }, false); break;
+                case  9: vec = Vector.create(new byte[]   { 3,   2,   9,   7,   -8 }, true ); break;
+                case 10: vec = Vector.create(new Number[] { 3,   2,   9,   7,   -8 }, false); break;
+                case 11: vec = Vector.create(new String[] {"3", "2", "9", "7", "-8"}, false); break;
+                default: throw new AssertionError(type);
+            }
+            String message = vec.getElementType().getSimpleName();
+            if (vec.isUnsigned()) {
+                message = "Unsigned " + message;
+            }
+            /*
+             * Verify the minimum and maximum values of the {3, 2, 9, 7, -8} vector (signed case).
+             * Those minimum and maximum are -8 and 9 respectively when interpreted as signed numbers.
+             * In the unsigned case, -8 become some large positive number (how large depends on the type).
+             * So the new minimum value in the unsigned case is 2 and the maximum value is type-dependent.
+             */
+            NumberRange<?> range = vec.range();
+            if (vec.isUnsigned()) {
+                assertEquals(message, 2, range.getMinDouble(), STRICT);
+                assertTrue  (message, range.getMaxDouble() > Byte.MAX_VALUE);
+            } else {
+                assertEquals(message, -8, range.getMinDouble(), STRICT);
+                assertEquals(message,  9, range.getMaxDouble(), STRICT);
+            }
+            /*
+             * Verify the minimum and maximum values of the {2, 7} vector.
+             */
+            final Vector sub = vec.subSampling(1, 2, 2);
+            range = sub.range();
+            assertEquals(message, 2, range.getMinDouble(), STRICT);
+            assertEquals(message, 7, range.getMaxDouble(), STRICT);
+            /*
+             * Verify the minimum and maximum values of the {3, 9, 7} vector.
+             */
+            final Vector pick = vec.pick(0, 2, 3);
+            range = pick.range();
+            assertEquals(message, 3, range.getMinDouble(), STRICT);
+            assertEquals(message, 9, range.getMaxDouble(), STRICT);
+            /*
+             * Verify the minimum and maximum values of the {3, 9, 7, 2, 7} vector.
+             */
+            final Vector union = sub.concatenate(pick);
+            range = union.range();
+            assertEquals(message, 2, range.getMinDouble(), STRICT);
+            assertEquals(message, 9, range.getMaxDouble(), STRICT);
+        }
     }
 }
