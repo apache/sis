@@ -44,7 +44,7 @@ public final strictfp class VectorTest extends TestCase {
     @Test
     public void testSequenceOfBytes() {
         vector = Vector.createSequence(100, 2, 10);
-        assertEquals(Byte.class, vector.getElementType());
+        assertEquals(Long.class, vector.getElementType());
         assertEquals(10, vector.size());
         for (int i=0; i<vector.size(); i++) {
             assertEquals(100 + 2*i, vector.byteValue(i));
@@ -248,6 +248,38 @@ public final strictfp class VectorTest extends TestCase {
 
         vector = Vector.create(array, false);
         assertEquals("[10, 100, -56]", vector.toString());
+    }
+
+    /**
+     * Tests {@link Vector#increment(double)}.
+     */
+    @Test
+    @DependsOnMethod({"testShortArray", "testFloatArray", "testDoubleArray"})
+    public void testIncrement() {
+        for (int type = 0; type <= 9; type++) {
+            final Vector vec;
+            switch (type) {
+                case  0: vec = Vector.create(new double[] {  5,      8,     11,         14,         17}, false); break;
+                case  1: vec = Vector.create(new float[]  { -5,     -2,      1,          4,          7}, false); break;
+                case  2: vec = Vector.create(new long[]   { -5,     -2,      1,          4,          7}, false); break;
+                case  3: vec = Vector.create(new long[]   {120,    123,    126,        129,        132}, true ); break;
+                case  4: vec = Vector.create(new int[]    { -5,     -2,      1,          4,          7}, false); break;
+                case  5: vec = Vector.create(new int[]    {120,    123,    126,        129,        132}, true ); break;
+                case  6: vec = Vector.create(new short[]  { -5,     -2,      1,          4,          7}, false); break;
+                case  7: vec = Vector.create(new short[]  {120,    123,    126,        129,        132}, true ); break;
+                case  8: vec = Vector.create(new byte[]   { -5,     -2,      1,          4,          7}, false); break;
+                case  9: vec = Vector.create(new byte[]   {120,    123,    126, (byte) 129, (byte) 132}, true ); break;
+                default: throw new AssertionError(type);
+            }
+            String message = vec.getElementType().getSimpleName();
+            if (vec.isUnsigned()) {
+                message = "Unsigned " + message;
+            }
+            final Number inc = vec.increment(0);
+            assertNotNull(message, inc);
+            assertEquals (message, 3, inc.doubleValue(), STRICT);
+            assertEquals (message, vec.getElementType(), inc.getClass());
+        }
     }
 
     /**

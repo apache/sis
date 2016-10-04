@@ -76,8 +76,72 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         } else {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_2, "array", array.getClass()));
         }
-        if (vec.isEmpty()) {
-            return new SequenceVector(vec.getElementType());
+        return vec;
+    }
+
+    /**
+     * Returns a vector with the same data than this vector but encoded in a more compact way,
+     * or {@code this} if this method can not do better than current {@code Vector} instance.
+     */
+    public final Vector compress(final double tolerance) {
+        final Vector vec = super.compress(tolerance);
+        if (vec == this) {
+            if (isInteger()) {
+                /*
+                 * For integer values, verify if we can pack the data into a smaller type.
+                 * We will use a vector backed by IntegerList in order to use only the amount of bits needed,
+                 * unless that amount is exactly the number of bits of a primitive type (8, 16, 32 or 64) in
+                 * which case using one of the specialized class in this ArrayVector is more performant.
+                 */
+                final NumberRange<?> range = range();
+                if (range != null && !range.isEmpty() && range.getMinDouble() >= Long.MIN_VALUE
+                                                      && range.getMaxDouble() <= Long.MAX_VALUE)
+                {
+                    final long min      = range.getMinValue().longValue();
+                    final long max      = range.getMaxValue().longValue();
+                    final long delta    = Math.subtractExact(max, min);
+                    final int  bitCount = Long.SIZE - Long.numberOfLeadingZeros(delta);
+                    if (bitCount != Numbers.primitiveBitCount(getElementType())) {
+                        switch (bitCount) {
+                            case Byte.SIZE: {
+                                final boolean isSigned = (min >= Byte.MIN_VALUE && max <= Byte.MAX_VALUE);
+                                if (isSigned || (min >= 0 && max <= 0xFF)) {
+                                    final byte[] array = new byte[size()];
+                                    for (int i=0; i < array.length; i++) {
+                                        array[i] = (byte) intValue(i);
+                                    }
+                                    return isSigned ? new Bytes(array) : new UnsignedBytes(array);
+                                }
+                                break;
+                            }
+                            case Short.SIZE: {
+                                final boolean isSigned = (min >= Short.MIN_VALUE && max <= Short.MAX_VALUE);
+                                if (isSigned || (min >= 0 && max <= 0xFFFF)) {
+                                    final short[] array = new short[size()];
+                                    for (int i=0; i < array.length; i++) {
+                                        array[i] = (short) intValue(i);
+                                    }
+                                    return isSigned ? new Shorts(array) : new UnsignedShorts(array);
+                                }
+                                break;
+                            }
+                            case Integer.SIZE: {
+                                final boolean isSigned = (min >= Integer.MIN_VALUE && max <= Integer.MAX_VALUE);
+                                if (isSigned || (min >= 0 && max <= 0xFFFFFFFF)) {
+                                    final int[] array = new int[size()];
+                                    for (int i=0; i < array.length; i++) {
+                                        array[i] = (int) longValue(i);
+                                    }
+                                    return isSigned ? new Integers(array) : new UnsignedIntegers(array);
+                                }
+                                break;
+                            }
+                            // The Long.SIZE case should never happen because of the 'bitCount' check before the switch.
+                        }
+                        return new PackedVector(this, min, Math.toIntExact(delta));
+                    }
+                }
+            }
         }
         return vec;
     }
@@ -186,7 +250,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     }
 
     /**
-     * A vector backed by an array of type {@code float[]}.
+     * A vector backed by an array of type {@code float[]}. In this class, conversions to the {@code double} type
+     * use the standard Java cast operator  (i.e. the {@code double} value is padded with zero fraction digits in
+     * its base 2 representation). The {@code ArrayVector.Decimal} subclass overrides this behavior with a more
+     * costly cast that tries to preserve the representation in base 10.
      */
     private static class Floats extends ArrayVector<Float> {
         /** For cross-version compatibility. */
@@ -282,7 +349,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     }
 
     /**
-     * A vector backed by an array of type {@code long[]}.
+     * A vector backed by an array of type {@code long[]}. This class handles signed values.
+     * The {@code ArrayVector.UnsignedLongs} subclass handle unsigned {@code long} values.
      */
     private static class Longs extends ArrayVector<Long> {
         /** For cross-version compatibility. */
@@ -330,10 +398,40 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             }
             return NumberRange.create(min, true, max, true);
         }
+
+        /**
+         * Returns the increment between values if this increment is constant, or {@code null} otherwise.
+         * Addition or subtraction of unsigned integers are bitwise identical to the same operations on
+         * signed integers. Consequently we do not need to distinguish the two cases during the loop.
+         */
+        @Override public final Number increment(final double tolerance) {
+            if (!(tolerance >= 0 && tolerance < 1)) {                       // Use '!' for catching NaN.
+                return super.increment(tolerance);
+            }
+            int i = array.length;
+            if (i >= 2) {
+                long p;
+                final long inc;
+                try {
+                    inc = subtract(array[--i], p = array[--i]);
+                } catch (ArithmeticException e) {
+                    warning("increment", e);
+                    return null;
+                }
+                while (i != 0) {
+                    if (p - (p = array[--i]) != inc) {
+                        return null;
+                    }
+                }
+                return inc;
+            }
+            return null;
+        }
     }
 
     /**
-     * A vector backed by an array of type {@code int[]}.
+     * A vector backed by an array of type {@code int[]}. This class handles signed values.
+     * The {@code ArrayVector.UnsignedIntegers} subclass handle unsigned {@code long} values.
      */
     private static class Integers extends ArrayVector<Integer> {
         /** For cross-version compatibility. */
@@ -382,10 +480,43 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             }
             return NumberRange.create(min, true, max, true);
         }
+
+        /**
+         * Returns the increment between values if this increment is constant, or {@code null} otherwise.
+         * Addition or subtraction of unsigned integers are bitwise identical to the same operations on
+         * signed integers. Consequently we do not need to distinguish the two cases during the loop.
+         */
+        @Override public final Number increment(final double tolerance) {
+            if (!(tolerance >= 0 && tolerance < 1)) {                       // Use '!' for catching NaN.
+                return super.increment(tolerance);
+            }
+            int i = array.length;
+            if (i >= 2) {
+                final long inc = longValue(--i) - longValue(--i);
+                final boolean isSigned = (inc >= Integer.MIN_VALUE && inc <= Integer.MAX_VALUE);
+                if (isSigned || isUnsigned()) {             // Check against overflow.
+                    final int asInt = (int) inc;
+                    int p = array[i];
+                    while (i != 0) {
+                        if (p - (p = array[--i]) != asInt) {
+                            return null;
+                        }
+                    }
+                    // Do not use the ?: operator below since it casts 'asInt' to Long, which is not wanted.
+                    if (isSigned) {
+                        return asInt;
+                    } else {
+                        return inc;
+                    }
+                }
+            }
+            return null;
+        }
     }
 
     /**
-     * A vector backed by an array of type {@code short[]}.
+     * A vector backed by an array of type {@code short[]}. This class handles signed values.
+     * The {@code ArrayVector.UnsignedShorts} subclass handle unsigned {@code long} values.
      */
     private static class Shorts extends ArrayVector<Short> {
         /** For cross-version compatibility. */
@@ -435,10 +566,15 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             }
             return NumberRange.create(min, true, max, true);
         }
+
+        // Not worth to override 'increment(double)' because the array can not be long anyway
+        // (except if the increment is zero) and the implicit conversion of 'short' to 'int'
+        // performed by Java would make the implementation a little bit more tricky.
     }
 
     /**
-     * A vector backed by an array of type {@code byte[]}.
+     * A vector backed by an array of type {@code byte[]}. This class handles signed values.
+     * The {@code ArrayVector.UnsignedBytes} subclass handle unsigned {@code long} values.
      */
     private static class Bytes extends ArrayVector<Byte> {
         /** For cross-version compatibility. */
@@ -489,6 +625,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             }
             return NumberRange.create(min, true, max, true);
         }
+
+        // Not worth to override 'increment(double)' because the array can not be long anyway
+        // (except if the increment is zero) and the implicit conversion of 'byte' to 'int'
+        // performed by Java would make the implementation a little bit more tricky.
     }
 
     /**
