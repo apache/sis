@@ -50,6 +50,15 @@ import static java.lang.Double.doubleToLongBits;
 public final class Numbers extends Static {
     /**
      * Constant of value {@value} used in {@code switch} statements or as index in arrays.
+     * This enumeration provides the following guarantees (some Apache SIS code rely on them):
+     *
+     * <ul>
+     *   <li>{@code OTHER} value is 0.</li>
+     *   <li>Primitive types are enumerated in this exact order (from lower value to higher value):
+     *       {@code BYTE}, {@code SHORT}, {@code INTEGER}, {@code LONG}, {@code FLOAT}, {@code DOUBLE}.</li>
+     *   <li>{@link java.math} types of greater capacity that primitive types ({@code BIG_DECIMAL}
+     *       and {@code BIG_INTEGER}) have higher enumeration values.</li>
+     * </ul>
      */
     public static final byte
             BIG_DECIMAL=10, BIG_INTEGER=9,
@@ -84,7 +93,7 @@ public final class Numbers extends Static {
     /** The wrapper for the primitive type.     */ private final Class<?> wrapper;
     /** {@code true} for floating point number. */ private final boolean  isFloat;
     /** {@code true} for integer number.        */ private final boolean  isInteger;
-    /** The size in bytes, or -1 if variable.   */ private final byte     size;
+    /** The size in bits, or -1 if variable.    */ private final byte     size;
     /** Constant to be used in switch statement.*/ private final byte     ordinal;
     /** The internal form of the primitive name.*/ private final char     internal;
     /** The null, NaN, 0 or false value.        */ private final Object   nullValue;
@@ -220,8 +229,8 @@ public final class Numbers extends Static {
      * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
      * {@link BigInteger} or {@link BigDecimal} types.
      *
-     * <p>If one of the given argument is null, then this method returns the class of the
-     * non-null argument. If both arguments are null, then this method returns {@code null}.</p>
+     * <p>If one of the given argument is null, then this method returns the class of the non-null argument.
+     * If both arguments are null, then this method returns {@code null}.</p>
      *
      * @param  n1  the first number, or {@code null}.
      * @param  n2  the second number, or {@code null}.
