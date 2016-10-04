@@ -952,7 +952,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * array is small compared to the calculation performed with the values.
      *
      * @param  tolerance  maximal difference allowed between original and compressed vectors (can be zero).
-     * @return a more compact vector with the same data than this vector, or {@cod this}.
+     * @return a more compact vector with the same data than this vector, or {@code this}.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Vector compress(final double tolerance) {
