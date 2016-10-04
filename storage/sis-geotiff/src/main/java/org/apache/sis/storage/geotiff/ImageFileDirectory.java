@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.math.Vector;
 
 
 /**
@@ -46,16 +47,34 @@ final class ImageFileDirectory {
     /**
      * The size of the image described by this FID, or -1 if the information has not been found.
      * The image may be much bigger than the memory capacity, in which case the image shall be tiled.
+     * (Java attribut {@link #imageHeight} is named imageLength in tiff specification).
      */
     private long imageWidth = -1, imageHeight = -1;
 
     /**
      * The size of each tile, or -1 if the information has not be found.
      * Tiles should be small enough for fitting in memory.
+     * (Java attribut {@link #tileHeight} is named tileLength in tiff specification).
      */
     private int tileWidth = -1, tileHeight = -1;
 
-    private int samplesPerPixel;
+    /**
+     * The number of components per pixel.
+     * SamplesPerPixel is usually 1 for bilevel, grayscale, and palette-color images.
+     * SamplesPerPixel is usually 3 for RGB images.
+     * If this value is higher, ExtraSamples should give an indication of the meaning of the additional channels.
+     */
+    private short samplesPerPixel = 1;
+
+    /**
+     * Number of bits per component.
+     * Note that this field allows a different number of bits per component for each component corresponding to a pixel.
+     * For example, RGB color data could use a different number of bits per component for each of the three color planes.
+     * Most RGB files will have the same number of BitsPerSample for each component.
+     * Even in this case, the writer must write all three values.
+     * LibTiff does not support different BitsPerSample values for different components.
+     */
+    private short bitspersample = 1;
 
     /**
      * If {@code true}, the components are stored in separate “component planes”.
@@ -69,6 +88,23 @@ final class ImageFileDirectory {
      * or unsupported we can not read the image, but we still can read the metadata.
      */
     private Compression compression;
+
+    /**
+     * The number of rows per strip.
+     * TIFF image data can be organized into strips for faster random access and efficient I/O buffering.
+     * RowsPerStrip and ImageLength together tell us the number of strips in the entire image. The equation is:
+     * StripsPerImage = floor ((ImageLength + RowsPerStrip - 1) / RowsPerStrip).
+     * StripsPerImage is not a field. It is merely a value that a TIFF reader will want to compute
+     * because it specifies the number of StripOffsets and StripByteCounts for the image.
+     * Note that either SHORT or LONG values can be used to specify RowsPerStrip.
+     * SHORT values may be used for small TIFF files. It should be noted, however,
+     * that earlier TIFF specification revisions required LONG values and that some software may not accept SHORT values.
+     * The default is 2**32 - 1, which is effectively infinity.
+     * That is, the entire image is one strip. Use of a single strip is not recommended.
+     * Choose RowsPerStrip such that each strip is about 8K bytes, even if the data is not compressed,
+     * since it makes buffering simpler for readers. The 8K value is fairly arbitrary, but seems to work well.
+     */
+    private long rowPerStrip = 0xFFFFFFFF;
 
     /**
      * Creates a new image file directory.
@@ -176,7 +212,21 @@ final class ImageFileDirectory {
              * But the TIFF specification allows different values.
              */
             case Tags.BitsPerSample: {
-                // TODO
+                final Vector values = type.readVector(reader.input, count);
+                final short value   = values.shortValue(0);
+                //-- temporary check internal bitpersamples values
+                //-- to assert same conformity values.
+                {
+                    //-- count never equal to 0
+                    //-- TODO later : reader support different bitpersample values.
+                    for (int i = 1; i < values.size(); i++) {
+                        if (Math.abs(value - values.shortValue(i)) < 1E-9)
+                            throw new IllegalArgumentException("SIS GeoTiff image reader does not support "
+                                    + "different BitsPerSample values. Expected : "+value+", found : "+values.shortValue(i));
+
+                    }
+                }
+                bitspersample = value;
                 break;
             }
             /*
@@ -184,7 +234,7 @@ final class ImageFileDirectory {
              * and 3 for RGB images. Default value is 1.
              */
             case Tags.SamplesPerPixel: {
-                // TODO
+                samplesPerPixel = (short) type.readUnsignedLong(reader.input, count);
                 break;
             }
             /*
