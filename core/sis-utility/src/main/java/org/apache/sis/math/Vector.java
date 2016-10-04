@@ -22,7 +22,12 @@ import java.util.AbstractList;
 import java.util.RandomAccess;
 import java.util.function.IntSupplier;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.util.Numbers;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Numerics;
 
 import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
 
@@ -152,17 +157,27 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * Note that the value given by the {@code first} argument is equivalent to a "lowest" or "minimum" value
      * only if the given increment is positive.
      *
-     * <p>The {@linkplain #getElementType() element type} will be the smallest type that can be used
-     * for storing every values. For example it will be {@code Byte.class} for the range [100:1:120]
-     * but will be {@code Double.class} for the range [0:0.1:1].</p>
+     * <p>The {@linkplain #getElementType() element type} will be inferred from the type of the given
+     * {@code Number} instances. If will typically be {@code Integer.class} for the [100:1:120] range
+     * and {@code Double.class} for the [0:0.1:1] range.</p>
      *
      * @param  first      the first value, inclusive.
      * @param  increment  the difference between the values at two adjacent indexes.
      * @param  length     the length of the desired vector.
      * @return the given sequence as a vector.
      */
-    public static Vector createSequence(final double first, final double increment, final int length) {
-        return new SequenceVector(first, increment, length);
+    public static Vector createSequence(final Number first, final Number increment, final int length) {
+        Class<? extends Number> type;
+        type = Numbers.widestClass(first, increment);
+        type = Numbers.widestClass(type,
+               Numbers.narrowestClass(first.doubleValue() + increment.doubleValue() * (length-1)));
+        final int t = Numbers.getEnumConstant(type);
+        if (t >= Numbers.BYTE && t <= Numbers.LONG) {
+            // Use the long type if possible because not all long values can be represented as double.
+            return new SequenceVector.Longs(first, increment, length);
+        } else {
+            return new SequenceVector.Doubles(first, increment, length);
+        }
     }
 
     /**
@@ -186,6 +201,24 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @see org.apache.sis.util.collection.CheckedContainer#getElementType()
      */
     public abstract Class<? extends Number> getElementType();
+
+    /**
+     * Returns {@code true} if this vector contains only integer values.
+     * This method may iterate over all values for performing this verification.
+     *
+     * @return {@code true} if this vector contains only integer values.
+     */
+    public boolean isInteger() {
+        if (!Numbers.isInteger(getElementType())) {
+            for (int i=size(); --i >= 0;) {
+                final double v = doubleValue(i);
+                if (v != Math.floor(v)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     /**
      * Returns {@code true} if integer values shall be interpreted as unsigned values.
@@ -384,6 +417,126 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     public abstract Number set(int index, Number value);
 
     /**
+     * Returns {@code a-b} as a signed value, throwing an exception if the result overflows a {@code long}.
+     * The given values will be interpreted as unsigned values if this vector {@linkplain #isUnsigned() is unsigned}.
+     *
+     * @param  a  the first value, unsigned if {@link #isUnsigned()} return {@code true}.
+     * @param  b  the value to subtract from {@code a}, unsigned if {@link #isUnsigned()} return {@code true}.
+     * @return the difference, always signed.
+     * @throws ArithmeticException if the difference is too large.
+     *
+     * @see Math#subtractExact(long, long)
+     */
+    final long subtract(final long a, final long b) {
+        final long inc = a - b;
+        // The sign of the difference shall be the same than the sign of Long.compare(…).
+        if ((((isUnsigned() ? Long.compareUnsigned(a, b) : Long.compare(a, b)) ^ inc) & Long.MIN_VALUE) != 0) {
+            throw new ArithmeticException();
+        }
+        return inc;
+    }
+
+    /**
+     * Returns the increment between all consecutive values if this increment is constant, or {@code null} otherwise.
+     * If the returned value is non-null, then the following condition shall hold for all values of <var>i</var> in
+     * the [0 … {@link #size()} - 1] range:
+     *
+     * <blockquote><code>{@linkplain Math#abs(double) abs}({@linkplain #doubleValue(int) doubleValue}(<var>i</var>)
+     * - (doubleValue(0) + increment*<var>i</var>)) &lt;= tolerance</code></blockquote>
+     *
+     * The tolerance threshold can be zero if exact matches are desired.
+     * The return value (if non-null) is always a signed value,
+     * even if this vector {@linkplain #isUnsigned() is unsigned}.
+     *
+     * @param  tolerance  the tolerance threshold for verifying if the increment is constant.
+     * @return the increment as a signed value, or {@code null} if the increment is not constant.
+     */
+    @SuppressWarnings("fallthrough")
+    public Number increment(final double tolerance) {
+        ArgumentChecks.ensurePositive("tolerance", tolerance);
+        int i = size();
+        if (i >= 2) try {
+            final int type = Numbers.getEnumConstant(getElementType());
+            /*
+             * For integer types, verify if the increment is constant. We do not use the "first + inc*i"
+             * formula because some 'long' values can not be represented accurately as 'double' values.
+             * The result will be converted to the same type than the vector element type if possible,
+             * or the next wider type if the increment is an unsigned value too big for the element type.
+             */
+            if (type >= Numbers.BYTE && type <= Numbers.LONG && tolerance < 1) {
+                long p;
+                final long inc = subtract(longValue(--i), p = longValue(--i));
+                while (i != 0) {
+                    if (p - (p = longValue(--i)) != inc) {
+                        return null;
+                    }
+                }
+                switch (type) {
+                    case Numbers.BYTE:    if (inc >= Byte   .MIN_VALUE && inc <= Byte   .MAX_VALUE) return (byte)  inc;  // else fallthrough
+                    case Numbers.SHORT:   if (inc >= Short  .MIN_VALUE && inc <= Short  .MAX_VALUE) return (short) inc;  // else fallthrough
+                    case Numbers.INTEGER: if (inc >= Integer.MIN_VALUE && inc <= Integer.MAX_VALUE) return (int)   inc;  // else fallthrough
+                    default: return inc;
+                }
+            }
+            /*
+             * For floating point types, we must use the same formula than the one used by SequenceVector:
+             *
+             *     doubleValue(i)  =  first + increment*i
+             *
+             * The intend is that if tolerance = 0 and this method returns a non-null value, then replacing
+             * this vector by an instance of SequenceVector should produce exactely the same double values.
+             */
+            if (type >= Numbers.FLOAT && type <= Numbers.DOUBLE) {
+                final double first = doubleValue(0);
+                final double inc = (doubleValue(--i) - first) / i;
+                while (i >= 1) {
+                    if (!(Math.abs(first + inc*i - doubleValue(i--)) <= tolerance)) {       // Use '!' for catching NaN.
+                        return null;
+                    }
+                }
+                if (type == Numbers.FLOAT) {
+                    final float f = (float) inc;
+                    if (f == inc) return f;             // Use the java.lang.Float wrapper class if possible.
+                }
+                return inc;
+            }
+        } catch (ArithmeticException e) {
+            warning("increment", e);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the minimal and maximal values found in this vector.
+     *
+     * @return minimal and maximal values found in this vector.
+     */
+    public NumberRange<?> range() {
+        return range(null, size());
+    }
+
+    /**
+     * Computes the range of values at the indices provided by the given supplier.
+     * The default implementation iterates over all {@code double} values, but
+     * subclasses should override with a more efficient implementation if possible.
+     *
+     * @param  indices  supplier of indices of the values to examine for computing the range,
+     *                  or {@code null} for the 0, 1, 2, … <var>n</var>-1 sequence.
+     * @param  n        number of indices to get from the supplier.
+     * @return the range of all values at the given indices.
+     */
+    NumberRange<?> range(final IntSupplier indices, int n) {
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        while (--n >= 0) {
+            final double value = doubleValue((indices != null) ? indices.getAsInt() : n);
+            if (value < min) min = value;
+            if (value > max) max = value;
+        }
+        return NumberRange.create(min, true, max, true);
+    }
+
+    /**
      * Returns a view which contain the values of this vector in the given index range.
      * The returned view will contain the values from index {@code lower} inclusive to
      * {@code upper} exclusive.
@@ -431,6 +584,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
 
     /**
      * Implementation of {@link #subSampling(int,int,int)} to be overridden by subclasses.
+     * Argument validity must have been verified by the caller.
      */
     Vector createSubSampling(final int first, final int step, final int length) {
         return new SubSampling(first, step, length);
@@ -778,33 +932,52 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     }
 
     /**
-     * Returns the minimal and maximal values found in this vector.
+     * Returns a vector with the same data than this vector but encoded in a more compact way,
+     * or {@code this} if this method can not do better than current {@code Vector} instance.
+     * Examples:
      *
-     * @return minimal and maximal values found in this vector.
+     * <ul>
+     *   <li>Vector is backed by an {@code int[]} array while values could be stored as {@code short} values.</li>
+     *   <li>Vector contains increasing or decreasing values with a constant delta between consecutive values.</li>
+     * </ul>
+     *
+     * The returned vector may or may not be backed by the array given to the {@link #create(Object, boolean)} method.
+     * Since the returned array may be a copy of {@code this} array, caller should not retain reference to {@code this}
+     * or reference to the backing array after this method call (otherwise an unnecessary duplication of data may exist
+     * in memory).
+     *
+     * <div class="section">When to use</div>
+     * It is usually not worth to compress small arrays. Performance-critical arrays may not be compressed neither.
+     * This method is best suited for arrays that may potentially be large and for which the cost of reading that
+     * array is small compared to the calculation performed with the values.
+     *
+     * @param  tolerance  maximal difference allowed between original and compressed vectors (can be zero).
+     * @return a more compact vector with the same data than this vector, or {@cod this}.
      */
-    public NumberRange<?> range() {
-        return range(null, size());
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Vector compress(final double tolerance) {
+        final int length = size();
+        final Number inc = increment(tolerance);
+        if (inc != null) {
+            return createSequence(get(0), inc, length);
+        }
+        /*
+         * Verify if the vector contains only NaN values. This extra check is useful because 'increment()'
+         * returns null if the array contains NaN. Note that for array of integers, 'isNaN(int)' is very
+         * efficient and the loop will stop immediately after the first iteration.
+         */
+        for (int i=0; i<length; i++) {
+            if (!isNaN(i)) return this;
+        }
+        final Double NaN = Numerics.valueOf(Double.NaN);
+        return new SequenceVector.Doubles(NaN, NaN, length);
     }
 
     /**
-     * Computes the range of values at the indices provided by the given supplier.
-     * The default implementation iterates over all {@code double} values, but
-     * subclasses should override with a more efficient implementation if possible.
-     *
-     * @param  indices  supplier of indices of the values to examine for computing the range,
-     *                  or {@code null} for the 0, 1, 2, … <var>n</var>-1 sequence.
-     * @param  n        number of indices to get from the supplier.
-     * @return the range of all values at the given indices.
+     * Logs a warning about an exception that can be safely ignored.
      */
-    NumberRange<?> range(final IntSupplier indices, int n) {
-        double min = Double.POSITIVE_INFINITY;
-        double max = Double.NEGATIVE_INFINITY;
-        while (--n >= 0) {
-            final double value = doubleValue((indices != null) ? indices.getAsInt() : n);
-            if (value < min) min = value;
-            if (value > max) max = value;
-        }
-        return NumberRange.create(min, true, max, true);
+    final void warning(final String method, final RuntimeException e) {
+        Logging.recoverableException(Logging.getLogger(Loggers.MATH), Vector.class, method, e);
     }
 
     /**

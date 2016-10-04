@@ -24,7 +24,6 @@ import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.collection.IntegerList;
 import ucar.nc2.constants.CF;
 
 
@@ -41,7 +40,7 @@ final class FeaturesInfo extends DiscreteSampling {
     /**
      * The number of instances for each feature.
      */
-    private final IntegerList counts;
+    private final Vector counts;
 
     /**
      * The moving feature identifiers ("mfIdRef").
@@ -51,19 +50,11 @@ final class FeaturesInfo extends DiscreteSampling {
     /**
      * Creates a new discrete sampling parser for features identified by the given variable.
      *
-     * @param  cpf          the count of instances per feature.
+     * @param  counts       the count of instances per feature.
      * @param  identifiers  the feature identifiers.
      */
-    private FeaturesInfo(final Vector cpf, final VariableInfo identifiers) {
-        final int n = cpf.size();
-        int max = cpf.range().getMaxValue().intValue();
-        if (max <= 0) {
-            max = Integer.MAX_VALUE;
-        }
-        counts = new IntegerList(n, max);
-        for (int i=0; i<n; i++) {
-            counts.addInt(cpf.intValue(i));
-        }
+    private FeaturesInfo(final Vector counts, final VariableInfo identifiers) {
+        this.counts      = counts;
         this.identifiers = identifiers;
     }
 
@@ -159,7 +150,7 @@ search: for (final VariableInfo counts : decoder.variables) {
                     /*
                      * At this point, all information has been verified as valid.
                      */
-                    features.add(new FeaturesInfo(counts.read(), identifiers));
+                    features.add(new FeaturesInfo(counts.read().compress(0), identifiers));
                 }
             }
         }
