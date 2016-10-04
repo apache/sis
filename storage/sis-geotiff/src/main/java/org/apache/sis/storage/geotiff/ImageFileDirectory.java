@@ -47,34 +47,36 @@ final class ImageFileDirectory {
     /**
      * The size of the image described by this FID, or -1 if the information has not been found.
      * The image may be much bigger than the memory capacity, in which case the image shall be tiled.
-     * (Java attribut {@link #imageHeight} is named imageLength in tiff specification).
+     *
+     * <p><b>Note:</b>
+     * the {@link #imageHeight} attribute is named {@code ImageLength} in TIFF specification.</p>
      */
     private long imageWidth = -1, imageHeight = -1;
 
     /**
      * The size of each tile, or -1 if the information has not be found.
      * Tiles should be small enough for fitting in memory.
-     * (Java attribut {@link #tileHeight} is named tileLength in tiff specification).
+     *
+     * <p><b>Note:</b>
+     * the {@link #tileHeight} attribute is named {@code TileLength} in TIFF specification.</p>
      */
     private int tileWidth = -1, tileHeight = -1;
 
     /**
      * The number of components per pixel.
-     * SamplesPerPixel is usually 1 for bilevel, grayscale, and palette-color images.
-     * SamplesPerPixel is usually 3 for RGB images.
-     * If this value is higher, ExtraSamples should give an indication of the meaning of the additional channels.
+     * The {@code samplesPerPixel} value is usually 1 for bilevel, grayscale and palette-color images,
+     * and 3 for RGB images. If this value is higher, then the {@code ExtraSamples} TIFF tag should
+     * give an indication of the meaning of the additional channels.
      */
     private short samplesPerPixel = 1;
 
     /**
      * Number of bits per component.
-     * Note that this field allows a different number of bits per component for each component corresponding to a pixel.
+     * The TIFF specification allows a different number of bits per component for each component corresponding to a pixel.
      * For example, RGB color data could use a different number of bits per component for each of the three color planes.
-     * Most RGB files will have the same number of BitsPerSample for each component.
-     * Even in this case, the writer must write all three values.
-     * LibTiff does not support different BitsPerSample values for different components.
+     * However, current Apache SIS implementation requires that all components have the same {@code BitsPerSample} value.
      */
-    private short bitspersample = 1;
+    private short bitsPerSample = 1;
 
     /**
      * If {@code true}, the components are stored in separate “component planes”.
@@ -92,19 +94,20 @@ final class ImageFileDirectory {
     /**
      * The number of rows per strip.
      * TIFF image data can be organized into strips for faster random access and efficient I/O buffering.
-     * RowsPerStrip and ImageLength together tell us the number of strips in the entire image. The equation is:
-     * StripsPerImage = floor ((ImageLength + RowsPerStrip - 1) / RowsPerStrip).
-     * StripsPerImage is not a field. It is merely a value that a TIFF reader will want to compute
-     * because it specifies the number of StripOffsets and StripByteCounts for the image.
-     * Note that either SHORT or LONG values can be used to specify RowsPerStrip.
-     * SHORT values may be used for small TIFF files. It should be noted, however,
-     * that earlier TIFF specification revisions required LONG values and that some software may not accept SHORT values.
-     * The default is 2**32 - 1, which is effectively infinity.
-     * That is, the entire image is one strip. Use of a single strip is not recommended.
-     * Choose RowsPerStrip such that each strip is about 8K bytes, even if the data is not compressed,
-     * since it makes buffering simpler for readers. The 8K value is fairly arbitrary, but seems to work well.
+     * The {@code rowsPerStrip} and {@link #imageHeight} fields together tell us the number of strips in the entire image.
+     * The equation is:
+     *
+     * {@preformat math
+     *     StripsPerImage = floor ((ImageLength + RowsPerStrip - 1) / RowsPerStrip)
+     * }
+     *
+     * {@code StripsPerImage} is not a field. It is merely a value that a TIFF reader will want to compute
+     * because it specifies the number of {@code StripOffsets} and {@code StripByteCounts} for the image.
+     *
+     * <p>This field should be interpreted as an unsigned value.
+     * The default is 2^32 - 1, which is effectively infinity (i.e. the entire image is one strip).</p>
      */
-    private long rowPerStrip = 0xFFFFFFFF;
+    private int rowsPerStrip = 0xFFFFFFFF;
 
     /**
      * Creates a new image file directory.
@@ -213,28 +216,27 @@ final class ImageFileDirectory {
              */
             case Tags.BitsPerSample: {
                 final Vector values = type.readVector(reader.input, count);
-                final short value   = values.shortValue(0);
-                //-- temporary check internal bitpersamples values
-                //-- to assert same conformity values.
-                {
-                    //-- count never equal to 0
-                    //-- TODO later : reader support different bitpersample values.
-                    for (int i = 1; i < values.size(); i++) {
-                        if (Math.abs(value - values.shortValue(i)) < 1E-9)
-                            throw new IllegalArgumentException("SIS GeoTiff image reader does not support "
-                                    + "different BitsPerSample values. Expected : "+value+", found : "+values.shortValue(i));
-
+                /*
+                 * The current implementation requires that all 'bitsPerSample' elements have the same value.
+                 * This restriction may be revisited in future Apache SIS versions.
+                 * Note: 'count' is never zero when this method is invoked, so we do not need to check bounds.
+                 */
+                bitsPerSample = values.shortValue(0);
+                final int length = values.size();
+                for (int i = 1; i < length; i++) {
+                    if (values.shortValue(i) != bitsPerSample) {
+                        throw new IllegalArgumentException("SIS GeoTiff image reader does not support "
+                                + "different BitsPerSample values. Found: " + values);
                     }
                 }
-                bitspersample = value;
                 break;
             }
             /*
-             * The number of components per pixel. Ssually 1 for bilevel, grayscale, and palette-color images,
+             * The number of components per pixel. Usually 1 for bilevel, grayscale, and palette-color images,
              * and 3 for RGB images. Default value is 1.
              */
             case Tags.SamplesPerPixel: {
-                samplesPerPixel = (short) type.readUnsignedLong(reader.input, count);
+                samplesPerPixel = type.readShort(reader.input, count);
                 break;
             }
             /*
