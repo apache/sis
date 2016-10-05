@@ -44,7 +44,7 @@ import org.apache.sis.storage.IllegalNameException;
  * @version 0.8
  * @module
  */
-public final class GenericNameMap<E> {
+public class GenericNameMap<E> {
     /**
      * All aliases found for all names given to the {@link #add(GenericName, Object)} method.
      * Keys are aliases (never the explicitely given names) and values are names for which the key is an alias.
@@ -158,7 +158,9 @@ public final class GenericNameMap<E> {
              * is exactly one remaining GenericName, then the alias is not ambiguous anymore for that name.
              */
             error |= (remaining == null);
-            if (remaining != null && remaining.size() == 1) {
+            if (remaining == null || remaining.isEmpty()) {
+                error |= (values.remove(alias) == null);
+            } else if (remaining.size() == 1) {
                 final String select = remaining.get(0);
                 assert !select.equals(key) : select;     // Should have been removed by removeFromMultiValuesMap(…).
                 error |= (values.putIfAbsent(alias, values.get(select)) != null);
