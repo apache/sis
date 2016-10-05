@@ -20,6 +20,9 @@ import java.util.Locale;
 import java.io.IOException;
 import java.text.ParseException;
 import org.opengis.metadata.citation.DateType;
+import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.math.Vector;
 
@@ -130,8 +133,11 @@ final class ImageFileDirectory {
      * @throws ArithmeticException if the value can not be represented in the expected Java type.
      * @throws IllegalArgumentException if a value which was expected to be a singleton is not.
      * @throws UnsupportedOperationException if the given type is {@link Type#UNDEFINED}.
+     * @throws DataStoreException if a logical error is found or an unsupported TIFF feature is used.
      */
-    Object addEntry(final Reader reader, final int tag, final Type type, final long count) throws IOException, ParseException {
+    Object addEntry(final Reader reader, final int tag, final Type type, final long count)
+            throws IOException, ParseException, DataStoreException
+    {
         switch (tag) {
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -225,8 +231,8 @@ final class ImageFileDirectory {
                 final int length = values.size();
                 for (int i = 1; i < length; i++) {
                     if (values.shortValue(i) != bitsPerSample) {
-                        throw new IllegalArgumentException("SIS GeoTiff image reader does not support "
-                                + "different BitsPerSample values. Found: " + values);
+                        throw new DataStoreContentException(reader.resources().getString(
+                                Resources.Keys.ConstantValueRequired_3, "BitsPerSample", reader.input.filename, values));
                     }
                 }
                 break;
