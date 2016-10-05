@@ -37,6 +37,8 @@ import org.apache.sis.util.ArgumentChecks;
  * @since   0.7
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.math.Vector
  */
 public class IntegerList extends AbstractList<Integer> implements RandomAccess, Serializable, Cloneable {
     /**

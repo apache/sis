@@ -87,6 +87,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * @since   0.8
  * @version 0.8
  * @module
+ *
+ * @see org.apache.sis.util.collection.IntegerList
  */
 public abstract class Vector extends AbstractList<Number> implements RandomAccess {
     /**
@@ -390,8 +392,13 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
 
     /**
      * Returns the number at the given index, or {@code null} if none.
-     * If non-null, the object returned by this method will be an instance
-     * of the class returned by {@link #getElementType()} or a sub-class.
+     * The object returned by this method is usually an instance of the class returned by {@link #getElementType()},
+     * but may also be an instance of a wider type if this is necessary for representing the values.
+     *
+     * <div class="note"><b>Example:</b>
+     * if {@link #getElementType()} returns {@code Byte.class} but {@link #isUnsigned()} returns {@code true},
+     * then this method may return instances of {@link Short} since that type is the smallest Java primitive
+     * type capable to hold byte values in the [128 … 255] range.</div>
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index (may be {@code null}).

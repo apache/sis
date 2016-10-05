@@ -21,7 +21,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -189,6 +189,7 @@ public final strictfp class VectorTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testFloatArray")
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testConcatenate() {
         final float[] array = new float[40];
         for (int i=0; i<array.length; i++) {
@@ -348,6 +349,81 @@ public final strictfp class VectorTest extends TestCase {
             range = union.range();
             assertEquals(message, 2, range.getMinDouble(), STRICT);
             assertEquals(message, 9, range.getMaxDouble(), STRICT);
+        }
+    }
+
+    /**
+     * Tests {@link Vector#compress(double)}.
+     */
+    @Test
+    @DependsOnMethod({"testRange", "testIncrement"})
+    public void testCompress() {
+        /*
+         * Values that can be not be compressed further. We use a byte[] array
+         * with values different enough for requiring all 8 bits of byte type.
+         */
+        Vector vec =  Vector.create(new byte[] {30, 120, -50, -120}, false);
+        Vector compressed = vec.compress(0);
+        assertSame(vec, compressed);
+        /*
+         * Values that can be compressed as signed bytes.
+         */
+        vec =  Vector.create(new double[] {30, 120, -50, -120}, false);
+        assertNotSame(vec, compressed = vec.compress(0));
+        assertEquals("elementType", Byte.class, compressed.getElementType());
+        assertFalse("isUnsigned()", compressed.isUnsigned());
+        assertContentEquals(vec, compressed);
+        /*
+         * Values that can be compressed as unsigned signed bytes.
+         */
+        vec =  Vector.create(new float[] {30, 120, 250, 1}, false);
+        assertNotSame(vec, compressed = vec.compress(0));
+        assertEquals("elementType", Byte.class, compressed.getElementType());
+        assertTrue("isUnsigned()", compressed.isUnsigned());
+        assertContentEquals(vec, compressed);
+        /*
+         * Values that can be compressed as signed shorts.
+         */
+        vec =  Vector.create(new long[] {32000, 120, -25000, 14}, false);
+        assertNotSame(vec, compressed = vec.compress(0));
+        assertEquals("elementType", Short.class, compressed.getElementType());
+        assertFalse("isUnsigned()", compressed.isUnsigned());
+        assertContentEquals(vec, compressed);
+        /*
+         * Values that can be compressed as unsigned unsigned shorts.
+         */
+        vec =  Vector.create(new float[] {3, 60000, 25, 4}, false);
+        assertNotSame(vec, compressed = vec.compress(0));
+        assertEquals("elementType", Short.class, compressed.getElementType());
+        assertTrue("isUnsigned()", compressed.isUnsigned());
+        assertContentEquals(vec, compressed);
+        /*
+         * Values that can be compressed in a PackedVector.
+         * Values below require less bits than the 'byte' type.
+         */
+        vec =  Vector.create(new double[] {30, 27, 93, 72, -8}, false);
+        assertNotSame(vec, compressed = vec.compress(0));
+        assertInstanceOf("vector.compress(0)", PackedVector.class, compressed);
+        assertContentEquals(vec, compressed);
+        /*
+         * Values that can be compressed as float types.
+         */
+        vec =  Vector.create(new double[] {3.10, 60.59, -25.32, 4.78}, false);
+        assertNotSame(vec, compressed = vec.compress(0));
+        assertEquals("elementType", Float.class, compressed.getElementType());
+        assertFalse("isUnsigned()", compressed.isUnsigned());
+        assertContentEquals(vec, compressed);
+    }
+
+    /**
+     * Asserts that the content of the given vector are equal.
+     * The vectors do not need to use the same element type.
+     */
+    private static void assertContentEquals(final Vector expected, final Vector actual) {
+        final int length = expected.size();
+        assertEquals("size", length, actual.size());
+        for (int i=0; i<length; i++) {
+            assertEquals("value", expected.doubleValue(i), actual.doubleValue(i), STRICT);
         }
     }
 }

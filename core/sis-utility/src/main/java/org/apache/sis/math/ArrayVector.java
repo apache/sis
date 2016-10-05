@@ -83,9 +83,10 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
      * Returns a vector with the same data than this vector but encoded in a more compact way,
      * or {@code this} if this method can not do better than current {@code Vector} instance.
      */
+    @Override
     public final Vector compress(final double tolerance) {
         final Vector vec = super.compress(tolerance);
-        if (vec == this) {
+        if (vec == this && !isEmpty()) {
             if (isInteger()) {
                 /*
                  * For integer values, verify if we can pack the data into a smaller type.
@@ -141,9 +142,41 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
                         return new PackedVector(this, min, Math.toIntExact(delta));
                     }
                 }
+            } else if (!Float.class.equals(getElementType())) {
+                /*
+                 * For floating point types, verify if values are equivalent to 'float' values.
+                 * There is two different ways to pad extra fraction digits in 'double' values:
+                 * with zero fraction digits in base 2 representation (the standard Java cast),
+                 * or with zero fraction digits in base 10 representation.
+                 */
+                final int length = size();
+                int i = 0;
+                double v;
+                do if (i >= length) {
+                    return new Floats(toFloatArray());
+                } while (!(Math.abs((v = doubleValue(i++)) - (float) v) > tolerance));    // Use '!' for accepting NaN.
+                /*
+                 * Same try than above loop, but now using base 10 representation.
+                 * This is a more costly computation.
+                 */
+                i = 0;
+                do if (i >= length) {
+                    return new Decimal(toFloatArray());
+                } while (!(Math.abs((v = doubleValue(i++)) - DecimalFunctions.floatToDouble((float) v)) > tolerance));
             }
         }
         return vec;
+    }
+
+    /**
+     * Returns a copy of current data as a floating point array.
+     */
+    float[] toFloatArray() {
+        final float[] copy = new float[size()];
+        for (int i=0; i<copy.length; i++) {
+            copy[i] = (float) doubleValue(i);
+        }
+        return copy;
     }
 
     /**
@@ -236,6 +269,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return old;
         }
 
+        /** Returns a copy of current data as a floating point array. */
+        @Override float[] toFloatArray() {
+            return Numerics.copyAsFloats(array);
+        }
+
         /** Finds the minimum and maximum values in the array or in a subset of the array. */
         @Override NumberRange<Double> range(final IntSupplier indices, int n) {
             double min = Double.POSITIVE_INFINITY;
@@ -290,7 +328,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the value at the given index. */
         @Override public       double doubleValue(int index) {return array[index];}
         @Override public final float   floatValue(int index) {return array[index];}
-        @Override public final Number         get(int index) {return array[index];}
+        @Override public       Number         get(int index) {return array[index];}
 
         /** Sets the value at the given index. */
         @Override public final Number set(final int index, final Number value) {
@@ -339,6 +377,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the value at the given index. */
         @Override public double doubleValue(final int index) {
             return DecimalFunctions.floatToDouble(super.floatValue(index));
+        }
+
+        /** Returns the value at the given index. */
+        @Override public Number get(final int index) {
+            return doubleValue(index);
         }
 
         /** Creates a range from the given minimum and maximum values. */
