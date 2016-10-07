@@ -32,9 +32,9 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.util.resources.Messages;
 
 import static java.lang.Math.*;
 
@@ -173,7 +173,7 @@ public final class Equirectangular extends AbstractProvider {
                 .addName(Citations.NETCDF,  "latitude_of_projection_origin")
                 .addName(Citations.GEOTIFF, "ProjCenterLat")
                 .addName(Citations.PROJ4,   "lat_0")
-                .setRemarks(Messages.formatInternational(Messages.Keys.ConstantProjParameterValue_1, 0))
+                .setRemarks(Resources.formatInternational(Resources.Keys.ConstantProjParameterValue_1, 0))
                 .setRequired(false));
 
         // Do not declare the ESRI "Equidistant_Cylindrical" projection name below,

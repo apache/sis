@@ -129,7 +129,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
      */
     @Override public int getRowNum() {
         int position = getByteBuffer().position();
-        int recordNumber = (position - JDK8.toUnsignedInt(this.firstRecordPosition)) / JDK8.toUnsignedInt(this.recordLength);
+        int recordNumber = (position - (firstRecordPosition & 0xFFFF)) / (recordLength & 0xFFFF);
         return recordNumber;
     }
 

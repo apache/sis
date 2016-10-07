@@ -17,8 +17,8 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -118,7 +118,7 @@ final class Solver implements Matrix {                          // Not Cloneable
         final int size = X.getNumRow();
         final int numCol = X.getNumCol();
         if (numCol != size) {
-            throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.NonInvertibleMatrix_2, size, numCol));
+            throw new NoninvertibleMatrixException(Resources.format(Resources.Keys.NonInvertibleMatrix_2, size, numCol));
         }
         return solve(X, IDENTITY, null, size, size, noChange);
     }
@@ -135,7 +135,7 @@ final class Solver implements Matrix {                          // Not Cloneable
         final int size   = X.getNumRow();
         final int numCol = X.getNumCol();
         if (numCol != size) {
-            throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.NonInvertibleMatrix_2, size, numCol));
+            throw new NoninvertibleMatrixException(Resources.format(Resources.Keys.NonInvertibleMatrix_2, size, numCol));
         }
         final int innerSize = Y.getNumCol();
         GeneralMatrix.ensureNumRowMatch(size, Y.getNumRow(), innerSize);
@@ -405,7 +405,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
         for (int j=0; j<size; j++) {
             rat.setFrom(LU, j*size + j, errorLU);
             if (rat.isZero()) {
-                throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.SingularMatrix));
+                throw new NoninvertibleMatrixException(Resources.format(Resources.Keys.SingularMatrix));
             }
         }
         /*

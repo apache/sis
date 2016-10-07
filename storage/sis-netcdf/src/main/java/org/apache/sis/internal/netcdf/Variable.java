@@ -18,8 +18,8 @@ package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
 import java.awt.image.DataBuffer;
+import org.apache.sis.math.Vector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 
@@ -29,24 +29,14 @@ import org.apache.sis.util.Debug;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
-public abstract class Variable {
+public abstract class Variable extends NamedElement {
     /**
      * Minimal number of dimension for accepting a variable as a coverage variable.
      */
     public static final int MIN_DIMENSION = 2;
-
-    /**
-     * The {@value} attribute name, used by {@link #isCoordinateSystemAxis()} implementations.
-     * If this attribute is defined, then that name will be used as the variable name when
-     * determining if the variable is a coordinate system axis.
-     *
-     * <p>This constants may be removed in any future SIS version if it is added to the
-     * {@link ucar.nc2.constants._Coordinate} class.</p>
-     */
-    protected static final String _CoordinateVariableAlias = "_CoordinateVariableAlias";
 
     /**
      * Creates a new variable.
@@ -59,6 +49,7 @@ public abstract class Variable {
      *
      * @return the name of this variable, or {@code null}.
      */
+    @Override
     public abstract String getName();
 
     /**
@@ -76,60 +67,28 @@ public abstract class Variable {
     public abstract String getUnitsString();
 
     /**
-     * Returns the variable data type, as a primitive type if possible.
+     * Returns the variable data type.
      *
-     * @return the variable data type, or {@code null} if unknown.
+     * @return the variable data type, or {@code UNKNOWN} if unknown.
      */
-    public abstract Class<?> getDataType();
+    public abstract DataType getDataType();
 
     /**
      * Returns the name of the variable data type as the name of the primitive type
      * followed by the span of each dimension (in unit of grid cells) between brackets.
-     * Example: {@code "short[180][360]"}.
+     * Example: {@code "SHORT[180][360]"}.
      *
      * @return the name of the variable data type.
      */
     public final String getDataTypeName() {
         final StringBuilder buffer = new StringBuilder(20);
-        if (isUnsigned()) {
-            buffer.append("unsigned ");
-        }
-        buffer.append(Classes.getShortName(getDataType()));
+        buffer.append(getDataType().name().toLowerCase());
         final int[] shape = getGridEnvelope();
         for (int i=shape.length; --i>=0;) {
             buffer.append('[').append(shape[i] & 0xFFFFFFFFL).append(']');
         }
         return buffer.toString();
     }
-
-    /**
-     * Returns the {@link DataBuffer} constant which most closely represents the "raw" internal data of the variable.
-     * This is the value to be returned by {@link java.awt.image.SampleModel#getDataType()} for the Java2D rasters
-     * created from this variable data.
-     *
-     * @return the Java2D data type, or {@link DataBuffer#TYPE_UNDEFINED} if this variable data type
-     *         can not be mapped to a Java2D data type.
-     */
-    public final int getRasterDataType() {
-        final Class<?> type = getDataType();
-        if (type == boolean.class || type == byte.class) {
-            return DataBuffer.TYPE_BYTE;
-        }
-        if (type == short .class) return isUnsigned() ? DataBuffer.TYPE_USHORT : DataBuffer.TYPE_SHORT;
-        if (type == int   .class) return DataBuffer.TYPE_INT;
-        if (type == float .class) return DataBuffer.TYPE_FLOAT;
-        if (type == double.class) return DataBuffer.TYPE_DOUBLE;
-        return DataBuffer.TYPE_UNDEFINED;
-    }
-
-    /**
-     * Returns {@code true} if the integer values shall be considered as unsigned. The OGC NetCDF standard version 1.0
-     * does not define unsigned data types. However some data providers attach an {@code "_Unsigned = true"} attribute
-     * to the variable.
-     *
-     * @return {@code false} for signed data type (the default), or {@code true} for unsigned data type.
-     */
-    public abstract boolean isUnsigned();
 
     /**
      * Returns {@code true} if the given variable can be used for generating an image.
@@ -148,7 +107,7 @@ public abstract class Variable {
      *       with images.</li>
      * </ul>
      *
-     * @param  minSpan minimal span (in unit of grid cells) along the dimensions.
+     * @param  minSpan  minimal span (in unit of grid cells) along the dimensions.
      * @return {@code true} if the variable can be considered a coverage.
      */
     public final boolean isCoverage(final int minSpan) {
@@ -158,8 +117,11 @@ public abstract class Variable {
                 numVectors++;
             }
         }
-        if (numVectors >= MIN_DIMENSION && getRasterDataType() != DataBuffer.TYPE_UNDEFINED) {
-            return !isCoordinateSystemAxis();
+        if (numVectors >= MIN_DIMENSION) {
+            final DataType dataType = getDataType();
+            if (dataType.rasterDataType != DataBuffer.TYPE_UNDEFINED) {
+                return !isCoordinateSystemAxis();
+            }
         }
         return false;
     }
@@ -185,7 +147,7 @@ public abstract class Variable {
      * The length of this array shall be equals to the length of the {@link #getGridDimensionNames()} array.
      *
      * <p>In ISO 19123 terminology, this method returns the upper corner of the grid envelope plus one.
-     * The lower corner is always (0,0,…,0).</p>
+     * The lower corner is always (0, 0, …, 0).</p>
      *
      * @return the number of grid cells for each dimension, in NetCDF order (reverse of "natural" order).
      */
@@ -196,7 +158,7 @@ public abstract class Variable {
      * The elements will be of class {@link String} if {@code numeric} is {@code false},
      * or {@link Number} if {@code numeric} is {@code true}.
      *
-     * @param  attributeName The name of the attribute for which to get the values.
+     * @param  attributeName  the name of the attribute for which to get the values.
      * @param  numeric {@code true} if the values are expected to be numeric, or {@code false} for strings.
      * @return The sequence of {@link String} or {@link Number} values for the named attribute.
      */
@@ -209,7 +171,7 @@ public abstract class Variable {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract Object read() throws IOException, DataStoreException;
+    public abstract Vector read() throws IOException, DataStoreException;
 
     /**
      * Reads a sub-sampled sub-area of the variable.
@@ -228,7 +190,7 @@ public abstract class Variable {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract Object read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException;
+    public abstract Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException;
 
     /**
      * Returns a string representation of this variable for debugging purpose.
@@ -238,8 +200,7 @@ public abstract class Variable {
     @Debug
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(getName())
-                .append(" : ").append(Classes.getShortName(getDataType()));
+        final StringBuilder buffer = new StringBuilder(getName()).append(" : ").append(getDataType());
         final int[] shape = getGridEnvelope();
         for (int i=shape.length; --i>=0;) {
             buffer.append('[').append(shape[i] & 0xFFFFFFFFL).append(']');

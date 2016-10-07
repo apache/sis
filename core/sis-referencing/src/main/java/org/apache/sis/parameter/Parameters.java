@@ -27,6 +27,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.*; // We use almost all types from this package.
 import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameter;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.MeasurementRange;
@@ -201,7 +202,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             // We require a strict equality - not type.isAssignableFrom(actual) - because in
             // the later case we could have (to be strict) to return a <? extends T> type.
             if (!valueClass.equals(actual)) {
-                throw new ClassCastException(Errors.format(Errors.Keys.IllegalParameterType_2,
+                throw new ClassCastException(Resources.format(Resources.Keys.IllegalParameterType_2,
                         Verifier.getDisplayName(descriptor), actual));
             }
         }
@@ -231,7 +232,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
             final Class<?> actual = descriptor.getValueClass();
             if (!valueClass.equals(actual)) {   // Same comment than cast(ParameterDescriptor).
-                throw new ClassCastException(Errors.format(Errors.Keys.IllegalParameterType_2,
+                throw new ClassCastException(Resources.format(Resources.Keys.IllegalParameterType_2,
                         Verifier.getDisplayName(descriptor), actual));
             }
         }
@@ -518,7 +519,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
         if (value != null) {
             return value;
         } else {
-            throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForParameter_1,
+            throw new IllegalStateException(Resources.format(Resources.Keys.MissingValueForParameter_1,
                     Verifier.getDisplayName(parameter)));
         }
     }
@@ -533,7 +534,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
         if (value != null) {
             return value;
         } else {
-            throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForParameter_1,
+            throw new IllegalStateException(Resources.format(Resources.Keys.MissingValueForParameter_1,
                     Verifier.getDisplayName(parameter)));
         }
     }

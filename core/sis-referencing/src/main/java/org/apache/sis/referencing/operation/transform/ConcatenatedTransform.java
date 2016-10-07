@@ -35,6 +35,7 @@ import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.GeocentricAffine;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.LenientComparable;
@@ -106,7 +107,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         this.transform1 = transform1;
         this.transform2 = transform2;
         if (!isValid()) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConcatenateTransforms_2,
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.CanNotConcatenateTransforms_2,
                     getName(transform1), getName(transform2)));
         }
     }
@@ -158,7 +159,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         final int dim1 = tr1.getTargetDimensions();
         final int dim2 = tr2.getSourceDimensions();
         if (dim1 != dim2) {
-            throw new MismatchedDimensionException(Errors.format(Errors.Keys.CanNotConcatenateTransforms_2, getName(tr1),
+            throw new MismatchedDimensionException(Resources.format(Resources.Keys.CanNotConcatenateTransforms_2, getName(tr1),
                     getName(tr2)) + ' ' + Errors.format(Errors.Keys.MismatchedDimension_2, dim1, dim2));
         }
         MathTransform mt = createOptimized(tr1, tr2, factory);
@@ -873,7 +874,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 ((ConcatenatedTransform) inverse).inverse = this;
             }
         } catch (FactoryException e) {
-            throw new NoninvertibleTransformException(Errors.format(Errors.Keys.NonInvertibleTransform), e);
+            throw new NoninvertibleTransformException(Resources.format(Resources.Keys.NonInvertibleTransform), e);
         }
         return inverse;
     }

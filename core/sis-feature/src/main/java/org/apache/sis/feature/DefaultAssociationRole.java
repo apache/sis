@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -356,7 +356,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
         if (type instanceof NamedFeatureType) {
             type = ((NamedFeatureType) type).resolved;
             if (type == null) {
-                throw new IllegalStateException(Errors.format(Errors.Keys.UnresolvedFeatureName_1, getName()));
+                throw new IllegalStateException(Resources.format(Resources.Keys.UnresolvedFeatureName_1, getName()));
             }
             valueType = type;
         }

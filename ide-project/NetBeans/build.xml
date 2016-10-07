@@ -32,21 +32,29 @@
     before it can be built by the NetBeans IDE.
   -->
   <target name="-post-compile">
-    <copy todir="${build.classes.dir}/org/apache/sis/util/resources">
-      <fileset dir="${project.root}/core/sis-utility/target/generated-resources/org/apache/sis/util/resources">
-        <include name="*.utf"/>
-      </fileset>
-    </copy>
-    <!-- Pending discussion about how to handle resources in the Shapefile module.
-    <copy todir="${build.classes.dir}/org/apache/sis/internal/shapefile/jdbc">
-      <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources/org/apache/sis/internal/shapefile/jdbc">
-        <include name="*.utf"/>
-      </fileset>
-    </copy>
-    -->
-
-    <!-- Resources (properties files, SQL scripts). -->
     <copy todir="${build.classes.dir}">
+      <fileset dir="${project.root}/core/sis-utility/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <fileset dir="${project.root}/core/sis-referencing/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <fileset dir="${project.root}/core/sis-feature/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <fileset dir="${project.root}/storage/sis-storage/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <fileset dir="${project.root}/storage/sis-netcdf/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      <!-- Pending discussion about how to handle resources in the Shapefile module.
+      <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
+      -->
+
+      <!-- Other resources (properties files, SQL scripts). -->
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
         <include name="**/*.properties"/>
       </fileset>

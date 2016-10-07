@@ -42,7 +42,7 @@ public final strictfp class ServiceParameterTest extends XMLTestCase {
      * @return The test parameter.
      */
     public static ServiceParameter create() {
-        final MemberName paramName = Names.createMemberName(null, ":", "Version", String.class);
+        final MemberName paramName = Names.createMemberName(null, null, "Version", String.class);
         final ServiceParameter param = new ServiceParameter();
         param.memberName    = paramName;
         param.optionality   = true;

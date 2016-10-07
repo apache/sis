@@ -65,11 +65,12 @@ import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
@@ -373,11 +374,11 @@ public enum CommonCRS {
     /**
      * Creates a new constant for the given EPSG or SIS codes.
      *
-     * @param geographic The EPSG code for the two-dimensional geographic CRS.
-     * @param geo3D      The EPSG code of the three-dimensional geographic CRS, or 0 if none.
-     * @param geocentric The EPSG code of the geocentric CRS, or 0 if none.
-     * @param datum      The EPSG code for the datum.
-     * @param ellipsoid  The EPSG code for the ellipsoid.
+     * @param geographic  the EPSG code for the two-dimensional geographic CRS.
+     * @param geo3D       the EPSG code of the three-dimensional geographic CRS, or 0 if none.
+     * @param geocentric  the EPSG code of the geocentric CRS, or 0 if none.
+     * @param datum       the EPSG code for the datum.
+     * @param ellipsoid   the EPSG code for the ellipsoid.
      */
     private CommonCRS(final short geographic, final short geo3D, final short geocentric, final short datum, final short ellipsoid,
             final short northUTM, final short southUTM, final byte firstZone, final byte lastZone)
@@ -443,7 +444,7 @@ public enum CommonCRS {
      * Since ISO 19115 {@link org.opengis.metadata.extent.GeographicBoundingBox} is approximative by definition,
      * their datum can be arbitrary.
      *
-     * @return The default two-dimensional geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order.
+     * @return the default two-dimensional geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order.
      */
     public static GeographicCRS defaultGeographic() {
         return DEFAULT.normalizedGeographic();
@@ -468,7 +469,7 @@ public enum CommonCRS {
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>CRS:84</td></tr>
      * </table></blockquote>
      *
-     * @return The geographic CRS with non-standard (<var>longitude</var>, <var>latitude</var>) axis order.
+     * @return the geographic CRS with non-standard (<var>longitude</var>, <var>latitude</var>) axis order.
      *
      * @see CRS#forCode(String)
      * @see DefaultGeographicCRS#forConvention(AxesConvention)
@@ -508,7 +509,7 @@ public enum CommonCRS {
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>4326</td></tr>
      * </table></blockquote>
      *
-     * @return The geographic CRS with standard (<var>latitude</var>, <var>longitude</var>) axis order.
+     * @return the geographic CRS with standard (<var>latitude</var>, <var>longitude</var>) axis order.
      *
      * @see CRS#forCode(String)
      * @see DefaultGeographicCRS
@@ -563,7 +564,7 @@ public enum CommonCRS {
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>4979</td></tr>
      * </table></blockquote>
      *
-     * @return The three-dimensional geographic CRS associated to this enum.
+     * @return the three-dimensional geographic CRS associated to this enum.
      *
      * @see CRS#forCode(String)
      * @see DefaultGeographicCRS
@@ -621,7 +622,7 @@ public enum CommonCRS {
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>4978</td></tr>
      * </table></blockquote>
      *
-     * @return The geocentric CRS associated to this enum.
+     * @return the geocentric CRS associated to this enum.
      *
      * @see CRS#forCode(String)
      * @see DefaultGeocentricCRS
@@ -671,7 +672,7 @@ public enum CommonCRS {
      *   <li>Geocentric radius in metres oriented toward {@linkplain AxisDirection#UP up}.</li>
      * </ol>
      *
-     * @return The geocentric CRS associated to this enum.
+     * @return the geocentric CRS associated to this enum.
      *
      * @see DefaultGeocentricCRS
      *
@@ -729,7 +730,7 @@ public enum CommonCRS {
      *   <tr><td>World Geodetic System 1984</td>                        <td>{@link #WGS84}</td>  <td>6326</td></tr>
      * </table></blockquote>
      *
-     * @return The geodetic datum associated to this enum.
+     * @return the geodetic datum associated to this enum.
      *
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
      */
@@ -770,7 +771,7 @@ public enum CommonCRS {
      *   <tr><td>World Geodetic System (WGS) 1984</td> <td>{@link #WGS84}</td>  <td>7030</td></tr>
      * </table></blockquote>
      *
-     * @return The ellipsoid associated to this enum.
+     * @return the ellipsoid associated to this enum.
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid
      */
@@ -810,7 +811,7 @@ public enum CommonCRS {
      *   <tr><td>Greenwich</td>     <td>{@link #WGS84}</td> <td>8901</td></tr>
      * </table></blockquote>
      *
-     * @return The prime meridian associated to this enum.
+     * @return the prime meridian associated to this enum.
      *
      * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian
      */
@@ -828,7 +829,7 @@ public enum CommonCRS {
                             cached = object = factory.createPrimeMeridian(StandardDefinitions.GREENWICH);
                             return object;
                         } catch (FactoryException e) {
-                            failure(this, "primeMeridian", e, (short) 8901);
+                            failure(this, "primeMeridian", e, Constants.EPSG_GREENWICH);
                         }
                         object = StandardDefinitions.primeMeridian();
                     }
@@ -924,9 +925,9 @@ public enum CommonCRS {
      *
      * The coordinate system axes are (Easting, Northing) in metres.
      *
-     * @param  latitude  A latitude in the desired UTM projection zone.
-     * @param  longitude A longitude in the desired UTM projection zone.
-     * @return A Universal Transverse Mercator projection for the zone containing the given point.
+     * @param  latitude  a latitude in the desired UTM projection zone.
+     * @param  longitude a longitude in the desired UTM projection zone.
+     * @return a Universal Transverse Mercator projection for the zone containing the given point.
      *
      * @since 0.7
      */
@@ -943,7 +944,7 @@ public enum CommonCRS {
         if (crs == null) {
             int code = 0;
             if (zone >= firstZone && zone <= lastZone) {
-                code = JDK8.toUnsignedInt(isSouth ? southUTM : northUTM);
+                code = (isSouth ? southUTM : northUTM) & 0xFFFF;
                 if (code != 0) {
                     code += zone;
                     final CRSAuthorityFactory factory = crsFactory();
@@ -1184,7 +1185,7 @@ public enum CommonCRS {
          *   <tr><td>Other surface</td>             <td>{@link #OTHER_SURFACE}</td>      <td></td></tr>
          * </table></blockquote>
          *
-         * @return The CRS associated to this enum.
+         * @return the CRS associated to this enum.
          *
          * @see DefaultVerticalCRS
          */
@@ -1249,7 +1250,7 @@ public enum CommonCRS {
          *   <tr><td>Other surface</td>             <td>{@link #OTHER_SURFACE}</td>      <td></td></tr>
          * </table></blockquote>
          *
-         * @return The datum associated to this enum.
+         * @return the datum associated to this enum.
          *
          * @see DefaultVerticalDatum
          */
@@ -1432,7 +1433,7 @@ public enum CommonCRS {
          *   <tr><td>Unix/POSIX or Java</td> <td>{@link #UNIX}</td></tr>
          * </table></blockquote>
          *
-         * @return The CRS associated to this enum.
+         * @return the CRS associated to this enum.
          *
          * @see DefaultTemporalCRS
          */
@@ -1501,7 +1502,7 @@ public enum CommonCRS {
          *   <tr><td>Unix/POSIX or Java</td> <td>{@link #UNIX}</td></tr>
          * </table></blockquote>
          *
-         * @return The datum associated to this enum.
+         * @return the datum associated to this enum.
          *
          * @see DefaultTemporalDatum
          */
@@ -1554,8 +1555,8 @@ public enum CommonCRS {
     /**
      * Puts the name for the given key in a map of properties to be given to object constructors.
      *
-     * @param  key A constant from {@link org.apache.sis.util.resources.Vocabulary.Keys}.
-     * @return The properties to give to the object constructor.
+     * @param  key  a constant from {@link org.apache.sis.util.resources.Vocabulary.Keys}.
+     * @return the properties to give to the object constructor.
      */
     static Map<String,?> properties(final short key) {
         return properties(Vocabulary.formatInternational(key));
@@ -1624,7 +1625,7 @@ public enum CommonCRS {
      * After invoking this method, the caller will fallback on hard-coded values.
      */
     static void failure(final Object caller, final String method, final FactoryException e, final int code) {
-        String message = Errors.format(Errors.Keys.CanNotInstantiate_1, "EPSG:" + code);
+        String message = Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, (Constants.EPSG + ':') + code);
         message = Exceptions.formatChainedMessages(null, message, e);
         final LogRecord record = new LogRecord(Level.WARNING, message);
         if (!(e instanceof UnavailableFactoryException) || !AuthorityFactories.failure((UnavailableFactoryException) e)) {

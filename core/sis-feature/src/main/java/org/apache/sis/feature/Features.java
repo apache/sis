@@ -25,9 +25,9 @@ import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Result;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.feature.Resources;
 
 // Branch-dependent imports
 import org.opengis.feature.Attribute;
@@ -78,7 +78,7 @@ public final class Features extends Static {
             // We require a strict equality - not type.isAssignableFrom(actual) - because in
             // the later case we could have (to be strict) to return a <? extends V> type.
             if (!valueClass.equals(actual)) {
-                throw new ClassCastException(Errors.format(Errors.Keys.MismatchedValueClass_3,
+                throw new ClassCastException(Resources.format(Resources.Keys.MismatchedValueClass_3,
                         type.getName(), valueClass, actual));
             }
         }
@@ -107,7 +107,7 @@ public final class Features extends Static {
             // We require a strict equality - not type.isAssignableFrom(actual) - because in
             // the later case we could have (to be strict) to return a <? extends V> type.
             if (!valueClass.equals(actual)) {
-                throw new ClassCastException(Errors.format(Errors.Keys.MismatchedValueClass_3,
+                throw new ClassCastException(Resources.format(Resources.Keys.MismatchedValueClass_3,
                         attribute.getName(), valueClass, actual));
             }
         }

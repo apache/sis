@@ -21,10 +21,10 @@ import java.util.HashMap;
 import java.util.ConcurrentModificationException;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -127,7 +127,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
         if (index != null) {
             return index;
         }
-        throw new PropertyNotFoundException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
+        throw new PropertyNotFoundException(Resources.format(Resources.Keys.PropertyNotFound_2, getName(), name));
     }
 
     /**

@@ -44,6 +44,7 @@ import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.MetadataUtilities;
@@ -241,8 +242,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * has special handling for this operation (a TensorParameters dedicated class, etc.)
          */
         if (!IdentifiedObjects.isHeuristicMatchForName(method, Constants.AFFINE)) {
-            throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                    Errors.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
+            throw new IllegalArgumentException(Resources.forProperties(properties).getString(
+                    Resources.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
         }
     }
 

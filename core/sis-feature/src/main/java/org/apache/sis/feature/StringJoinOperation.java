@@ -24,6 +24,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.GenericName;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
@@ -146,13 +147,13 @@ final class StringJoinOperation extends AbstractOperation {
                 attributeType = ((Operation) attributeType).getResult();
             }
             if (!(attributeType instanceof AttributeType)) {
-                throw new IllegalArgumentException(Errors.getResources(identification)
-                        .getString(Errors.Keys.IllegalPropertyType_2, name,
-                        Classes.getLeafInterfaces(attributeType.getClass(), PropertyType.class)[0]));
+                final Class<?>[] inf = Classes.getLeafInterfaces(Classes.getClass(attributeType), PropertyType.class);
+                throw new IllegalArgumentException(Resources.forProperties(identification)
+                        .getString(Resources.Keys.IllegalPropertyType_2, name, (inf.length != 0) ? inf[0] : null));
             }
             if (((AttributeType<?>) attributeType).getMaximumOccurs() > 1) {
-                throw new IllegalArgumentException(Errors.getResources(identification)
-                        .getString(Errors.Keys.NotASingleton_1, name));
+                throw new IllegalArgumentException(Resources.forProperties(identification)
+                        .getString(Resources.Keys.NotASingleton_1, name));
             }
             /*
              * StringJoinOperation does not need to keep the AttributeType references.
@@ -297,7 +298,7 @@ final class StringJoinOperation extends AbstractOperation {
                     throw e;
                 }
                 throw new UnconvertibleObjectException(Errors.format(
-                        Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass(), e));
+                        Errors.Keys.IncompatiblePropertyValue_1, name), e);
             }
             return sb.append(suffix).toString();
         }
@@ -389,8 +390,8 @@ final class StringJoinOperation extends AbstractOperation {
              * in order to have a "all or nothing" behavior.
              */
             if (values.length != count) {
-                throw new InvalidPropertyValueException(
-                        Errors.format(Errors.Keys.UnexpectedNumberOfComponents_3, value, values.length, count));
+                throw new InvalidPropertyValueException(Resources.format(
+                        Resources.Keys.UnexpectedNumberOfComponents_4, getName(), value, values.length, count));
             }
             for (int i=0; i < values.length; i++) {
                 feature.setPropertyValue(attributeNames[i], values[i]);

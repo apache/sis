@@ -28,8 +28,8 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -300,7 +300,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
         final double[] coordinate = new double[] {point.getX(), point.getY()};
         final Matrix derivative = tr.transform(coordinate, 0, null, 0, true);
         if (derivative == null) {
-            throw new TransformException(Errors.format(Errors.Keys.CanNotComputeDerivative));
+            throw new TransformException(Resources.format(Resources.Keys.CanNotComputeDerivative));
         }
         return derivative;
     }

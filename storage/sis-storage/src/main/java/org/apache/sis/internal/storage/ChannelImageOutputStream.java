@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.WritableByteChannel;
 import javax.imageio.stream.ImageOutputStream;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -139,7 +138,8 @@ public class ChannelImageOutputStream extends ChannelDataOutput implements DataO
     public void writeUTF(final String s) throws IOException {
         byte[] data = s.getBytes("UTF-8");
         if (data.length > Short.MAX_VALUE) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveStringSize));
+            throw new IllegalArgumentException(Resources.format(
+                    Resources.Keys.ExcessiveStringSize_3, filename, Short.MAX_VALUE, data.length));
         }
         final ByteOrder oldOrder = buffer.order();
         buffer.order(ByteOrder.BIG_ENDIAN);

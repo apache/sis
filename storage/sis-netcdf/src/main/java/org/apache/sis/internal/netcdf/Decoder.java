@@ -21,6 +21,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import javax.measure.unit.Unit;
 import org.apache.sis.measure.Units;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 
 // Branch-dependent imports
@@ -30,9 +31,12 @@ import java.util.Objects;
 /**
  * The API used internally by Apache SIS for fetching variables and attribute values from a NetCDF file.
  *
+ * <p>This {@code Decoder} class and subclasses are <strong>not</strong> thread-safe.
+ * Synchronizations are caller's responsibility.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 public abstract class Decoder implements Closeable {
@@ -58,13 +62,19 @@ public abstract class Decoder implements Closeable {
     }
 
     /**
+     * Returns a filename for information purpose only. This is used for formatting error messages.
+     *
+     * @return a filename to report in warning or error messages.
+     */
+    public abstract String getFilename();
+
+    /**
      * Defines the groups where to search for named attributes, in preference order.
      * The {@code null} group name stands for the global attributes.
      *
      * @param  groupNames  the name of the group where to search, in preference order.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    public abstract void setSearchPath(final String... groupNames) throws IOException;
+    public abstract void setSearchPath(final String... groupNames);
 
     /**
      * Returns the path which is currently set. The array returned by this method may be only
@@ -72,9 +82,8 @@ public abstract class Decoder implements Closeable {
      * groups which have been found in the NetCDF file are returned by this method.
      *
      * @return the current search path.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    public abstract String[] getSearchPath() throws IOException;
+    public abstract String[] getSearchPath();
 
     /**
      * Returns the value for the attribute of the given name, or {@code null} if none.
@@ -83,18 +92,16 @@ public abstract class Decoder implements Closeable {
      *
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none or empty or if the given name was null.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    public abstract String stringValue(final String name) throws IOException;
+    public abstract String stringValue(final String name);
 
     /**
      * Returns the value of the attribute of the given name as a number, or {@code null} if none.
      *
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    public abstract Number numericValue(final String name) throws IOException;
+    public abstract Number numericValue(final String name);
 
     /**
      * Convenience method for {@link #numericValue(String)} implementation.
@@ -122,22 +129,20 @@ public abstract class Decoder implements Closeable {
      *
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    public abstract Date dateValue(final String name) throws IOException;
+    public abstract Date dateValue(final String name);
 
     /**
      * Returns the value of the attribute of the given name as a unit of measurement, or {@code null} if none.
      *
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
-     * @throws IOException if an I/O operation was necessary but failed.
      *
      * @todo Current Units.valueOf(String) implementation ignore direction in "degrees_east" or "degrees_west".
      *       We may need to take that in account (with "degrees_west" to "degrees_east" converter that reverse
      *       the sign).
      */
-    public final Unit<?> unitValue(final String name) throws IOException {
+    public final Unit<?> unitValue(final String name) {
         final String unit = stringValue(name);
         if (unit != null) try {
             return Units.valueOf(unit);
@@ -154,19 +159,20 @@ public abstract class Decoder implements Closeable {
      * @param  symbol  the temporal unit name or symbol, followed by the epoch.
      * @param  values  the values to convert. May contains {@code null} elements.
      * @return the converted values. May contains {@code null} elements.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    public abstract Date[] numberToDate(final String symbol, final Number... values) throws IOException;
+    public abstract Date[] numberToDate(final String symbol, final Number... values);
 
     /**
      * Returns the value of the {@code "_Id"} global attribute. The UCAR library defines a
      * {@link ucar.nc2.NetcdfFile#getId()} method for that purpose, which we will use when
      * possible in case that {@code getId()} method is defined in an other way.
      *
+     * <p>This method is used by {@link org.apache.sis.storage.netcdf.MetadataReader} in last resort
+     * when no value were found for the attributes defined by the CF standard or by THREDDS.</p>
+     *
      * @return the global dataset identifier, or {@code null} if none.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    public String getId() throws IOException {
+    public String getId() {
         return stringValue("_Id");
     }
 
@@ -175,10 +181,12 @@ public abstract class Decoder implements Closeable {
      * {@link ucar.nc2.NetcdfFile#getTitle()} method for that purpose, which we will use when
      * possible in case that {@code getTitle()} method is defined in an other way.
      *
+     * <p>This method is used by {@link org.apache.sis.storage.netcdf.MetadataReader} in last resort
+     * when no value were found for the attributes defined by the CF standard or by THREDDS.</p>
+     *
      * @return the dataset title, or {@code null} if none.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    public String getTitle() throws IOException {
+    public String getTitle() {
         return stringValue("_Title");
     }
 
@@ -187,9 +195,19 @@ public abstract class Decoder implements Closeable {
      * This method may return a direct reference to an internal array - do not modify.
      *
      * @return all variables, or an empty array if none.
-     * @throws IOException if an I/O operation was necessary but failed.
      */
-    public abstract Variable[] getVariables() throws IOException;
+    public abstract Variable[] getVariables();
+
+    /**
+     * If the file contains features encoded as discrete sampling (for example profiles or trajectories),
+     * returns objects for handling them.
+     * This method may return a direct reference to an internal array - do not modify.
+     *
+     * @return a handler for the features, or an empty array if none.
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    public abstract DiscreteSampling[] getDiscreteSampling() throws IOException, DataStoreException;
 
     /**
      * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.

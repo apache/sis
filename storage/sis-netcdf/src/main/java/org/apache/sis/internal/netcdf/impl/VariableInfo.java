@@ -18,9 +18,11 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Map;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
+import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.HyperRectangleReader;
@@ -28,7 +30,9 @@ import org.apache.sis.internal.storage.Region;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.math.Vector;
 
 
 /**
@@ -42,6 +46,11 @@ import org.apache.sis.util.Numbers;
  */
 final class VariableInfo extends Variable {
     /**
+     * The array to be returned by {@link #numberValues(Object)} when the given value is null.
+     */
+    private static final Number[] EMPTY = new Number[0];
+
+    /**
      * The names of attributes where to look for the description to be returned by {@link #getDescription()}.
      * We use the same attributes than the one documented in the {@link ucar.nc2.Variable#getDescription()} javadoc.
      */
@@ -50,52 +59,6 @@ final class VariableInfo extends Variable {
         CDM.DESCRIPTION,
         CDM.TITLE,
         CF.STANDARD_NAME
-    };
-
-    /**
-     * The NetCDF type of data. Number of bits and endianness are same as in the Java language except {@code CHAR},
-     * which is defined as an unsigned 8-bits value.
-     */
-    static final int BYTE=1, CHAR=2, SHORT=3, INT=4, FLOAT=5, DOUBLE=6;
-
-    /**
-     * Mapping from the NetCDF data type to the enumeration used by our {@link Numbers} class.
-     */
-    private static final byte[] NUMBER_TYPES = new byte[] {
-        Numbers.BYTE,
-        Numbers.BYTE,       // NOT Numbers.CHARACTER
-        Numbers.SHORT,
-        Numbers.INTEGER,
-        Numbers.FLOAT,
-        Numbers.DOUBLE,
-    };
-
-    /**
-     * The size in bytes of the above constants.
-     *
-     * @see #sizeOf(int)
-     */
-    private static final byte[] SIZES = new byte[] {
-        Byte   .SIZE / Byte.SIZE,
-        Byte   .SIZE / Byte.SIZE,      // NOT Character.BYTES
-        Short  .SIZE / Byte.SIZE,
-        Integer.SIZE / Byte.SIZE,
-        Float  .SIZE / Byte.SIZE,
-        Double .SIZE / Byte.SIZE,
-    };
-
-    /**
-     * The Java primitive type of the above constants.
-     *
-     * @see #getDataType()
-     */
-    private static final Class<?>[] TYPES = new Class<?>[] {
-       byte  .class,
-       char  .class,
-       short .class,
-       int   .class,
-       float .class,
-       double.class
     };
 
     /**
@@ -110,24 +73,35 @@ final class VariableInfo extends Variable {
     private final String name;
 
     /**
-     * The dimensions of this variable.
+     * The dimensions of this variable, in order. When iterating over the values stored in this variable
+     * (a flattened one-dimensional sequence of values), index in the domain of {@code dimensions[0]}
+     * varies faster, followed by index in the domain of {@code dimensions[1]}, <i>etc.</i>
      */
     final Dimension[] dimensions;
 
     /**
-     * All dimensions in the NetCDF files.
-     */
-    private final Dimension[] allDimensions;
-
-    /**
      * The attributes associates to the variable, or an empty map if none.
+     * Values can be:
+     *
+     * <ul>
+     *   <li>a {@link String}</li>
+     *   <li>A {@link Number}</li>
+     *   <li>an array of primitive type</li>
+     * </ul>
+     *
+     * If the value is a {@code String}, then leading and trailing spaces and control characters
+     * should be trimmed by {@link String#trim()}.
+     *
+     * @see #stringValues(Object)
+     * @see #numberValues(Object)
+     * @see #booleanValue(Object)
      */
-    private final Map<String,Attribute> attributes;
+    private final Map<String,Object> attributes;
 
     /**
-     * The type of data, as one of the {@code BYTE}, {@code SHORT} and similar constants defined in this class.
+     * The NetCDF type of data, or {@code null} if unknown.
      */
-    private final int dataType;
+    private final DataType dataType;
 
     /**
      * The grid geometry associated to this variable,
@@ -136,35 +110,66 @@ final class VariableInfo extends Variable {
     GridGeometryInfo gridGeometry;
 
     /**
+     * {@code true} if this variable seems to be a coordinate system axis, as determined by comparing its name
+     * with the name of all dimensions in the NetCDF file. This information is computed at construction time
+     * because requested more than once.
+     *
+     * @see #isCoordinateSystemAxis()
+     */
+    private final boolean isCoordinateSystemAxis;
+
+    /**
      * Creates a new variable.
      *
      * @param  input          the channel together with a buffer for reading the variable data.
      * @param  name           the variable name.
      * @param  dimensions     the dimensions of this variable.
-     * @param  allDimensions  all dimensions in the NetCDF files.
      * @param  attributes     the attributes associates to the variable, or an empty map if none.
-     * @param  dataType       the type of data, as one of the {@code BYTE} and similar constants defined in this class.
+     * @param  dataType       the NetCDF type of data, or {@code null} if unknown.
      * @param  size           the variable size, used for verification purpose only.
      * @param  offset         the offset where the variable data begins in the NetCDF file.
      */
-    VariableInfo(final ChannelDataInput input, final String name,
-            final Dimension[] dimensions, final Dimension[] allDimensions,
-            final Map<String,Attribute> attributes, int dataType, final int size, final long offset)
-            throws DataStoreException
+    VariableInfo(final ChannelDataInput      input,
+                 final String                name,
+                 final Dimension[]           dimensions,
+                 final Map<String,Object>    attributes,
+                       DataType              dataType,
+                 final int                   size,
+                 final long                  offset) throws DataStoreException
     {
-        this.name          = name;
-        this.dimensions    = dimensions;
-        this.allDimensions = allDimensions;
-        this.attributes    = attributes;
-        this.dataType      = dataType;
+        final Object isUnsigned = attributes.get(CDM.UNSIGNED);
+        if (isUnsigned != null) {
+            dataType = dataType.unsigned(booleanValue(isUnsigned));
+        }
+        this.name       = name;
+        this.dimensions = dimensions;
+        this.attributes = attributes;
+        this.dataType   = dataType;
         /*
          * The 'size' value is provided in the NetCDF files, but doesn't need to be stored since it
          * is redundant with the dimension lengths and is not large enough for big variables anyway.
          */
-        if (--dataType >= 0 && dataType < NUMBER_TYPES.length) {
-            reader = new HyperRectangleReader(NUMBER_TYPES[dataType], input, offset);
+        if (dataType != null && dataType.number >= Numbers.BYTE && dataType.number <= Numbers.DOUBLE) {
+            reader = new HyperRectangleReader(dataType.number, input, offset);
         } else {
             reader = null;
+        }
+        /*
+         * If the "_CoordinateAliasForDimension" attribute is defined, then its value will be used
+         * instead of the variable name when determining if the variable is a coordinate system axis.
+         * "_CoordinateVariableAlias" seems to be a legacy attribute name for the same purpose.
+         */
+        if (dimensions.length == 1) {
+            Object value = getAttributeValue(_Coordinate.AliasForDimension, "_coordinatealiasfordimension");
+            if (value == null) {
+                value = getAttributeValue("_CoordinateVariableAlias", "_coordinatevariablealias");
+                if (value == null) {
+                    value = name;
+                }
+            }
+            isCoordinateSystemAxis = dimensions[0].name.equals(value);
+        } else {
+            isCoordinateSystemAxis = false;
         }
     }
 
@@ -184,9 +189,9 @@ final class VariableInfo extends Variable {
     @Override
     public String getDescription() {
         for (final String attributeName : DESCRIPTION_ATTRIBUTES) {
-            final Attribute attribute = attributes.get(attributeName);
-            if (attribute != null && attribute.value instanceof String) {
-                return (String) attribute.value;
+            final Object value = getAttributeValue(attributeName);
+            if (value instanceof String) {
+                return (String) value;
             }
         }
         return null;
@@ -197,38 +202,18 @@ final class VariableInfo extends Variable {
      */
     @Override
     public String getUnitsString() {
-        final Attribute attribute = attributes.get(CDM.UNITS);
-        if (attribute != null && attribute.value instanceof String) {
-            return (String) attribute.value;
-        }
-        return null;
+        final Object value = getAttributeValue(CDM.UNITS);
+        return (value instanceof String) ? (String) value : null;
     }
 
     /**
-     * Returns the type of data as a Java primitive type if possible,
-     * or {@code null} if the data type is unknown to this method.
+     * Returns the type of data, or {@code UNKNOWN} if the data type is unknown to this method.
+     * If this variable has a {@code "_Unsigned = true"} attribute, then the returned data type
+     * will be a unsigned variant.
      */
     @Override
-    public Class<?> getDataType() {
-        final int i = dataType - 1;
-        return (i >= 0 && i < TYPES.length) ? TYPES[i] : null;
-    }
-
-    /**
-     * Returns the size of the given data type, or 0 if unknown.
-     */
-    static int sizeOf(int datatype) {
-        return (--datatype >= 0 && datatype < SIZES.length) ? SIZES[datatype] : 0;
-    }
-
-    /**
-     * Returns {@code true} if the integer values shall be considered as unsigned.
-     * Current implementation searches for an {@code "_Unsigned = true"} attribute.
-     */
-    @Override
-    public boolean isUnsigned() {
-        final Attribute attribute = attributes.get(CDM.UNSIGNED);
-        return (attribute != null) && attribute.booleanValue();
+    public DataType getDataType() {
+        return dataType;
     }
 
     /**
@@ -237,29 +222,15 @@ final class VariableInfo extends Variable {
      */
     @Override
     public boolean isCoordinateSystemAxis() {
-        String name = this.name;
-        final Attribute attribute = attributes.get(_CoordinateVariableAlias);
-        if (attribute != null && attribute.value instanceof String) {
-            name = (String) attribute.value;
-        }
-        for (final Dimension dimension : allDimensions) {
-            if (name.equals(dimension.name)) {
-                // This variable is a dimension of another variable.
-                return true;
-            }
-        }
-        return false;
+        return isCoordinateSystemAxis;
     }
 
     /**
      * Returns the value of the {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
      */
     final String getAxisType() {
-        final Attribute attribute = attributes.get(_Coordinate.AxisType);
-        if (attribute != null && attribute.value instanceof String) {
-            return (String) attribute.value;
-        }
-        return null;
+        final Object value = getAttributeValue(_Coordinate.AxisType, "_coordinateaxistype");
+        return (value instanceof String) ? (String) value : null;
     }
 
     /**
@@ -291,24 +262,100 @@ final class VariableInfo extends Variable {
     }
 
     /**
+     * Returns the value of the given attribute, or {@code null} if none.
+     * This method should be invoked only for hard-coded names that mix lower-case and upper-case letters.
+     *
+     * @param  attributeName  name of attribute to search, in the expected case.
+     * @param  lowerCase      the all lower-case variant of {@code attributeName}.
+     * @return variable attribute value of the given name, or {@code null} if none.
+     */
+    private Object getAttributeValue(final String attributeName, final String lowerCase) {
+        Object value = attributes.get(attributeName);
+        if (value == null) {
+            value = attributes.get(lowerCase);
+        }
+        return value;
+    }
+
+    /**
+     * Returns the value of the given attribute, or {@code null} if none.
+     * This method does not search the lower-case variant of the given name because the argument given to this method
+     * is usually a hard-coded value from {@link CF} or {@link CDM} conventions, which are already in lower-cases.
+     *
+     * @param  attributeName  name of attribute to search, in the expected case.
+     * @return variable attribute value of the given name, or {@code null} if none.
+     */
+    final Object getAttributeValue(final String attributeName) {
+        return attributes.get(attributeName);
+    }
+
+    /**
      * Returns the sequence of values for the given attribute, or an empty array if none.
      * The elements will be of class {@link String} if {@code numeric} is {@code false},
      * or {@link Number} if {@code numeric} is {@code true}.
      */
     @Override
     public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
-        Attribute attribute = attributes.get(attributeName);
-        if (attribute != null) {
-            return numeric ? attribute.numberValues() : attribute.stringValues();
+        final Object value = getAttributeValue(attributeName);
+        return numeric ? numberValues(value) : stringValues(value);
+    }
+
+    /**
+     * Returns the attribute values as an array of {@link String}s, or an empty array if none.
+     * The given argument is typically a value of the {@link #attributes} map.
+     *
+     * @see #getAttributeValues(String, boolean)
+     */
+    static String[] stringValues(final Object value) {
+        if (value == null) {
+            return CharSequences.EMPTY_ARRAY;
         }
-        return new Object[0];
+        if (value.getClass().isArray()) {
+            final String[] values = new String[Array.getLength(value)];
+            for (int i=0; i<values.length; i++) {
+                values[i] = Array.get(value, i).toString();
+            }
+            return values;
+        }
+        return new String[] {value.toString()};
+    }
+
+    /**
+     * Returns the attribute values as an array of {@link Number}, or an empty array if none.
+     * The given argument is typically a value of the {@link #attributes} map.
+     *
+     * @see #getAttributeValues(String, boolean)
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    static Number[] numberValues(final Object value) {
+        if (value != null) {
+            if (value.getClass().isArray()) {
+                final Number[] values = new Number[Array.getLength(value)];
+                for (int i=0; i<values.length; i++) {
+                    values[i] = (Number) Array.get(value, i);
+                }
+                return values;
+            }
+            if (value instanceof Number) {
+                return new Number[] {(Number) value};
+            }
+        }
+        return EMPTY;
+    }
+
+    /**
+     * Returns the attribute value as a boolean, or {@code false} if the attribute is not a boolean.
+     * The given argument is typically a value of the {@link #attributes} map.
+     */
+    private static boolean booleanValue(final Object value) {
+        return (value instanceof String) && Boolean.valueOf((String) value);
     }
 
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      */
     @Override
-    public Object read() throws IOException, DataStoreException {
+    public Vector read() throws IOException, DataStoreException {
         if (reader == null) {
             throw new DataStoreContentException(unknownType());
         }
@@ -326,7 +373,7 @@ final class VariableInfo extends Variable {
             sub [i] = 1;
             size[i] = dimensions[(dimension - 1) - i].length();
         }
-        return reader.read(new Region(size, new long[dimension], size, sub));
+        return Vector.create(reader.read(new Region(size, new long[dimension], size, sub)), dataType.isUnsigned);
     }
 
     /**
@@ -338,7 +385,7 @@ final class VariableInfo extends Variable {
      * @return the data as an array of a Java primitive type.
      */
     @Override
-    public Object read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException {
+    public Vector read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException {
         if (reader == null) {
             throw new DataStoreContentException(unknownType());
         }
@@ -373,7 +420,7 @@ final class VariableInfo extends Variable {
             sub  [i] = subsampling[j];
             size [i] = dimensions[j].length();
         }
-        return reader.read(new Region(size, lower, upper, sub));
+        return Vector.create(reader.read(new Region(size, lower, upper, sub)), dataType.isUnsigned);
     }
 
     /**

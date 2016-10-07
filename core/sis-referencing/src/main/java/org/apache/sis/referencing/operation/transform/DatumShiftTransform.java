@@ -25,6 +25,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ComparisonMode;
@@ -144,7 +145,7 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
         }
         Object unitLabel = "ratio";
         if (grid.isCellValueRatio() || (unitLabel = grid.getTranslationUnit()) != unit) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalUnitFor_2, "translation", unitLabel));
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalUnitFor_2, "translation", unitLabel));
         }
     }
 

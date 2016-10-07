@@ -20,10 +20,10 @@ import java.util.Arrays;
 import java.io.Serializable;
 import java.awt.geom.AffineTransform;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -168,7 +168,7 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
      */
     @Override
     public final void setElement(final int row, final int column, final double value) {
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableAffineTransform));
+        throw new UnsupportedOperationException(Resources.format(Resources.Keys.UnmodifiableAffineTransform));
     }
 
     /**
