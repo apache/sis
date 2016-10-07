@@ -18,7 +18,7 @@ package org.apache.sis.internal.referencing.j2d;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 
 
 /**
@@ -81,7 +81,7 @@ public class ImmutableAffineTransform extends AffineTransform {
      * @throws UnsupportedOperationException if this affine transform is immutable.
      */
     protected void checkPermission() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableAffineTransform));
+        throw new UnsupportedOperationException(Resources.format(Resources.Keys.UnmodifiableAffineTransform));
     }
 
     /**

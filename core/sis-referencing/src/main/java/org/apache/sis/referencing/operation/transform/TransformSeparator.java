@@ -23,6 +23,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -292,7 +293,7 @@ public class TransformSeparator {
         if (sourceDimensions != null) {
             return sourceDimensions.clone();
         }
-        throw new IllegalStateException(Errors.format(Errors.Keys.UnspecifiedDimensions));
+        throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedDimensions));
     }
 
     /**
@@ -353,7 +354,7 @@ public class TransformSeparator {
         if (targetDimensions != null) {
             return targetDimensions.clone();
         }
-        throw new IllegalStateException(Errors.format(Errors.Keys.UnspecifiedDimensions));
+        throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedDimensions));
     }
 
     /**
@@ -411,7 +412,7 @@ public class TransformSeparator {
                          * because at least one of the requested target dimensions has a dependency to a
                          * source dimension that does not appear in the list of source dimensions to keep.
                          */
-                        throw new FactoryException(Errors.format(Errors.Keys.CanNotSeparateTargetDimension_1, r));
+                        throw new FactoryException(Resources.format(Resources.Keys.CanNotSeparateTargetDimension_1, r));
                     }
                     subDimensions[i] = j;
                 }
@@ -432,7 +433,7 @@ public class TransformSeparator {
                 return tr;
             }
         }
-        throw new FactoryException(Errors.format(Errors.Keys.MismatchedTransformDimension_3, type, expected, actual));
+        throw new FactoryException(Resources.format(Resources.Keys.MismatchedTransformDimension_3, type, expected, actual));
     }
 
     /**
@@ -590,7 +591,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
              * But if we reach this point, our matrix has such dependencies.
              */
         }
-        throw new FactoryException(Errors.format(Errors.Keys.NotAnAffineTransform));
+        throw new FactoryException(Resources.format(Resources.Keys.NotAnAffineTransform));
     }
 
     /**

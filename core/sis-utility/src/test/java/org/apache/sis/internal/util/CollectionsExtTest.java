@@ -18,7 +18,9 @@ package org.apache.sis.internal.util;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Set;
@@ -29,14 +31,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
 import org.apache.sis.util.collection.CodeListSet;
-import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk8.Function;
 
 
 /**
@@ -44,7 +42,7 @@ import org.apache.sis.internal.jdk8.Function;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public final strictfp class CollectionsExtTest extends TestCase {
@@ -98,47 +96,57 @@ public final strictfp class CollectionsExtTest extends TestCase {
     }
 
     /**
-     * Tests {@link CollectionsExt#addToMultiValuesMap(Map, Object, Object)}.
+     * Tests {@link CollectionsExt#addToMultiValuesMap(Map, Object, Object)}, then
+     * opportunistically tests {@link CollectionsExt#removeFromMultiValuesMap(Map, Object, Object)},
      */
     @Test
-    public void testAddToMultiValuesMap() {
+    public void testAddAndRemoveToMultiValuesMap() {
         final Map<String, List<Integer>> map = new LinkedHashMap<>();
         final Integer A1 = 2;
         final Integer A2 = 4;
         final Integer B1 = 3;
         final Integer B2 = 6;
         final Integer B3 = 9;
-        assertArrayEquals(new Integer[] {A1},
-                CollectionsExt.addToMultiValuesMap(map, "A", A1).toArray());
-        assertArrayEquals(new Integer[] {B1},
-                CollectionsExt.addToMultiValuesMap(map, "B", B1).toArray());
-        assertArrayEquals(new Integer[] {B1, B2},
-                CollectionsExt.addToMultiValuesMap(map, "B", B2).toArray());
-        assertArrayEquals(new Integer[] {A1, A2},
-                CollectionsExt.addToMultiValuesMap(map, "A", A2).toArray());
-        assertArrayEquals(new Integer[] {B1, B2, B3},
-                CollectionsExt.addToMultiValuesMap(map, "B", B3).toArray());
-        assertArrayEquals(new String[] {"A", "B"}, map.keySet().toArray());
+        assertArrayEquals(new Integer[] {A1},         CollectionsExt.addToMultiValuesMap(map, "A", A1).toArray());
+        assertArrayEquals(new Integer[] {B1},         CollectionsExt.addToMultiValuesMap(map, "B", B1).toArray());
+        assertArrayEquals(new Integer[] {B1, B2},     CollectionsExt.addToMultiValuesMap(map, "B", B2).toArray());
+        assertArrayEquals(new Integer[] {A1, A2},     CollectionsExt.addToMultiValuesMap(map, "A", A2).toArray());
+        assertArrayEquals(new Integer[] {B1, B2, B3}, CollectionsExt.addToMultiValuesMap(map, "B", B3).toArray());
+        assertArrayEquals(new String[]  {"A", "B"},   map.keySet().toArray());
+        assertArrayEquals(new Integer[] {A1, A2},     map.get("A").toArray());
+        assertArrayEquals(new Integer[] {B1, B2, B3}, map.get("B").toArray());
+
+        assertNull(                                   CollectionsExt.removeFromMultiValuesMap(map, "C", A2));
+        assertArrayEquals(new Integer[] {A1},         CollectionsExt.removeFromMultiValuesMap(map, "A", A2).toArray());
+        assertArrayEquals(new Integer[] {B1, B3},     CollectionsExt.removeFromMultiValuesMap(map, "B", B2).toArray());
+        assertArrayEquals(new Integer[] {},           CollectionsExt.removeFromMultiValuesMap(map, "A", A1).toArray());
+        assertArrayEquals(new String[]  {"B"},        map.keySet().toArray());
+        assertArrayEquals(new Integer[] {B1, B3},     map.get("B").toArray());
     }
 
     /**
-     * Tests {@link CollectionsExt#toCaseInsensitiveNameMap(Collection, Function, Locale)}.
+     * Tests {@link CollectionsExt#toCaseInsensitiveNameMap(Collection, Locale)}.
      */
     @Test
     public void testToCaseInsensitiveNameMap() {
-        final Function<String,String> nameFunction = ObjectConverters.identity(String.class);
+        final List<Map.Entry<String,String>> elements = new ArrayList<>();
+        elements.add(new AbstractMap.SimpleEntry<>("AA", "AA"));
+        elements.add(new AbstractMap.SimpleEntry<>("Aa", "Aa"));
+        elements.add(new AbstractMap.SimpleEntry<>("BB", "BB"));
+        elements.add(new AbstractMap.SimpleEntry<>("bb", "bb"));
+        elements.add(new AbstractMap.SimpleEntry<>("CC", "CC"));
+
         final Map<String,String> expected = new HashMap<>();
         assertNull(expected.put("AA", "AA"));
-        assertNull(expected.put("Aa", "Aa")); // No mapping for "aa", because of ambiguity between "AA" and "Aa".
+        assertNull(expected.put("Aa", "Aa"));   // No mapping for "aa", because of ambiguity between "AA" and "Aa".
         assertNull(expected.put("BB", "BB"));
         assertNull(expected.put("bb", "bb"));
         assertNull(expected.put("CC", "CC"));
-        assertNull(expected.put("cc", "CC")); // Automatically added.
+        assertNull(expected.put("cc", "CC"));   // Automatically added.
 
-        final List<String> elements = Arrays.asList("AA", "Aa", "BB", "bb", "CC");
         for (int i=0; i<10; i++) {
             Collections.shuffle(elements);
-            assertMapEquals(expected, CollectionsExt.toCaseInsensitiveNameMap(elements, nameFunction, Locale.ROOT));
+            assertMapEquals(expected, CollectionsExt.toCaseInsensitiveNameMap(elements, Locale.ROOT));
         }
     }
 

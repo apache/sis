@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
@@ -88,7 +88,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
     /**
      * Creates a new normalized projection from the parameters computed by the given initializer.
      *
-     * @param initializer The initializer for computing map projection internal parameters.
+     * @param  initializer  the initializer for computing map projection internal parameters.
      */
     EqualAreaProjection(final Initializer initializer) {
         super(initializer);
@@ -152,7 +152,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      *
      * In the spherical case, <var>q</var> = 2⋅sinφ.
      *
-     * @param  sinφ sine of the latitude <var>q</var> is calculated for.
+     * @param  sinφ  the sine of the latitude <var>q</var> is calculated for.
      * @return <var>q</var> from Snyder equation (3-12).
      */
     final double qm(final double sinφ) {
@@ -168,7 +168,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      * It is caller responsibility to ensure that this method is not invoked in the spherical case, since
      * this implementation does not work in such case.
      *
-     * @param  sinφ sine of the latitude <var>q</var> is calculated for.
+     * @param  sinφ  the sine of the latitude <var>q</var> is calculated for.
      * @return <var>q</var> from Snyder equation (3-12).
      */
     final double qm_ellipsoid(final double sinφ) {
@@ -192,12 +192,12 @@ abstract class EqualAreaProjection extends NormalizedProjection {
 
     /**
      * Computes the latitude using equation 3-18 from Synder, followed by iterative resolution of Synder 3-16.
-     * If theory, the series expansion given by equation 3-18 (φ ≈ c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(8β)) should
+     * In theory, the series expansion given by equation 3-18 (φ ≈ c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(8β)) should
      * be used in replacement of the iterative method. However in practice the series expansion seems to not
      * have a sufficient amount of terms for achieving the centimetric precision, so we "finish" it by the
      * iterative method. The series expansion is nevertheless useful for reducing the number of iterations.
      *
-     * @param  y in the cylindrical case, this is northing on the normalized ellipsoid.
+     * @param  y  in the cylindrical case, this is northing on the normalized ellipsoid.
      * @return the latitude in radians.
      */
     final double φ(final double y) throws ProjectionException {
@@ -275,7 +275,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
             return Double.NaN;                      // Value "after" the pole.
         }
         // Value should have converged but did not.
-        throw new ProjectionException(Errors.format(Errors.Keys.NoConvergence));
+        throw new ProjectionException(Resources.format(Resources.Keys.NoConvergence));
     }
 
     /**

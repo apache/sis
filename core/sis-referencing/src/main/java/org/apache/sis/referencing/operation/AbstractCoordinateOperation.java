@@ -45,7 +45,6 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.util.logging.Logging;
@@ -56,6 +55,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.MetadataUtilities;
@@ -360,14 +360,14 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     if (actual == expected || actual < interpDim) {
                         // This check is not strictly necessary as the next check below would catch the error,
                         // but we provide here a hopefully more helpful error message for a common mistake.
-                        throw new IllegalArgumentException(Errors.getResources(properties)
-                                .getString(Errors.Keys.MissingInterpolationOrdinates));
+                        throw new IllegalArgumentException(Resources.forProperties(properties)
+                                .getString(Resources.Keys.MissingInterpolationOrdinates));
                     }
                     expected += interpDim;
                 }
                 if (crs != null && actual != expected) {
-                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                            Errors.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
+                    throw new IllegalArgumentException(Resources.forProperties(properties).getString(
+                            Resources.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
                 }
             }
         }

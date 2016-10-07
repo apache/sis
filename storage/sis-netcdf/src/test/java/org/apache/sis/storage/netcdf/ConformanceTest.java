@@ -59,9 +59,9 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
      * {@code NetcdfFile.findAttribute(String)} method calls. However in SIS implementation, the metadata
      * object is fully created right at this method invocation time.</div>
      *
-     * @param  file The NetCDF file to wrap.
-     * @return A metadata implementation created from the attributes found in the given file.
-     * @throws IOException If an error occurred while reading the given NetCDF file.
+     * @param  file the NetCDF file to wrap.
+     * @return a metadata implementation created from the attributes found in the given file.
+     * @throws IOException if an error occurred while reading the given NetCDF file.
      */
     @Override
     protected Metadata wrap(final NetcdfFile file) throws IOException {
@@ -83,7 +83,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     /**
      * Adds a set of common property values expected by every tests in this class.
      *
-     * @param expected   The map where to add additional attributes expected by the test.
+     * @param expected   the map where to add additional attributes expected by the test.
      * @param hasContact {@code true} for adding contact information.
      */
     private static void addCommonProperties(final Map<String,Object> expected, final boolean hasContact) {
@@ -99,7 +99,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
      * Tests a file that contains THREDDS metadata. This method inherits the tests defined in GeoAPI,
      * and adds some additional tests for attributes parsed by SIS but not by GeoAPI.
      *
-     * @throws IOException If the test file can not be read.
+     * @throws IOException if the test file can not be read.
      */
     @Test
     @Override
@@ -133,7 +133,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
      * Tests a NetCDF binary file. This method inherits the tests defined in GeoAPI,
      * and adds some additional tests for attributes parsed by SIS but not GeoAPI.
      *
-     * @throws IOException If the test file can not be read.
+     * @throws IOException if the test file can not be read.
      */
     @Test
     @Override
@@ -161,7 +161,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     /**
      * Tests the Landsat file (binary format).
      *
-     * @throws IOException If the test file can not be read.
+     * @throws IOException if the test file can not be read.
      */
     @Test
     @Override
@@ -177,7 +177,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     /**
      * Tests the "Current Icing Product" file (binary format).
      *
-     * @throws IOException If the test file can not be read.
+     * @throws IOException if the test file can not be read.
      */
     @Test
     @Override

@@ -29,10 +29,10 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.metadata.NameMeaning;
+import org.apache.sis.internal.referencing.Resources;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -47,6 +47,12 @@ import java.util.Objects;
  * @module
  */
 final class AuthorityFactoryIdentifier {
+    /**
+     * The locale to use for identifiers. This is not necessarily the same locale
+     * than the one used for logging or error messages.
+     */
+    private static final Locale IDENTIFIER_LOCALE = Locale.US;
+
     /**
      * Factory needed is {@link CRSAuthorityFactory}.
      */
@@ -154,8 +160,8 @@ final class AuthorityFactoryIdentifier {
      * Only the version can be null.
      */
     static AuthorityFactoryIdentifier create(final byte type, final String authority, final String version) {
-        return new AuthorityFactoryIdentifier(type, authority.toUpperCase(Locale.US),
-                           (version == null) ? null : version.toLowerCase(Locale.US));
+        return new AuthorityFactoryIdentifier(type, authority.toUpperCase(IDENTIFIER_LOCALE),
+                           (version == null) ? null : version.toLowerCase(IDENTIFIER_LOCALE));
     }
 
     /**
@@ -166,20 +172,20 @@ final class AuthorityFactoryIdentifier {
         if (version == null && newAuthority.equals(authority)) {
             return this;
         }
-        return new AuthorityFactoryIdentifier(type, newAuthority.toUpperCase(Locale.US), null);
+        return new AuthorityFactoryIdentifier(type, newAuthority.toUpperCase(IDENTIFIER_LOCALE), null);
     }
 
     /**
      * Creates a new identifier for the same type and authority than this identifier, but a different version
      * extracted from the given authority.
      *
-     * @param  factory The factory's authority, or {@code null} for creating an identifier without version.
-     * @return An identifier for the version of the given authority, or {@code this} if the version is the same.
+     * @param  factory  the factory's authority, or {@code null} for creating an identifier without version.
+     * @return an identifier for the version of the given authority, or {@code this} if the version is the same.
      */
     AuthorityFactoryIdentifier versionOf(final Citation factory) {
         String newVersion = NameMeaning.getVersion(factory);
         if (newVersion != null) {
-            newVersion = newVersion.toLowerCase(Locale.US);
+            newVersion = newVersion.toLowerCase(IDENTIFIER_LOCALE);
         }
         if (Objects.equals(version, newVersion)) {
             return this;
@@ -258,10 +264,10 @@ final class AuthorityFactoryIdentifier {
      * and another factory, if this instance has not already logged a warning. This method assumes that it is invoked
      * by the {@code MultiAuthoritiesFactory.getAuthorityFactory(…)} method.
      *
-     * @param used The factory which will be used.
+     * @param  used  the factory which will be used.
      */
     void logConflict(final AuthorityFactory used) {
-        log(Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.IgnoredServiceProvider_3,
+        log(Resources.forLocale(null).getLogRecord(Level.WARNING, Resources.Keys.IgnoredServiceProvider_3,
                 TYPES[type], getAuthorityAndVersion(), Classes.getClass(used)));
     }
 
@@ -270,7 +276,7 @@ final class AuthorityFactoryIdentifier {
      * {@code AuthorityFactoryIdentifier} fallback on a default version.
      */
     void logFallback() {
-        log(Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.FallbackDefaultFactoryVersion_2,
+        log(Resources.forLocale(null).getLogRecord(Level.WARNING, Resources.Keys.FallbackDefaultFactoryVersion_2,
                 authority, version));
     }
 

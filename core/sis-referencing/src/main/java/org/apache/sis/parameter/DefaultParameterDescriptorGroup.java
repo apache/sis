@@ -32,6 +32,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
 import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
@@ -215,8 +216,8 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
             final String name = parameter.getName().getCode();
             for (int j=0; j<i; j++) {
                 if (IdentifiedObjects.isHeuristicMatchForName(parameters[j], name)) {
-                    throw new InvalidParameterNameException(Errors.getResources(properties).getString(
-                            Errors.Keys.DuplicatedParameterName_4, Verifier.getDisplayName(parameters[j]), j, name, i),
+                    throw new InvalidParameterNameException(Resources.forProperties(properties).getString(
+                            Resources.Keys.DuplicatedParameterName_4, Verifier.getDisplayName(parameters[j]), j, name, i),
                             name);
                 }
             }
@@ -389,7 +390,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
                 ? Errors.format(Errors.Keys.AmbiguousName_3,
                         IdentifiedObjects.toString(fallback.getName()),
                         IdentifiedObjects.toString(ambiguity.getName()), name)
-                : Errors.format(Errors.Keys.ParameterNotFound_2, Verifier.getDisplayName(this), name), name);
+                : Resources.format(Resources.Keys.ParameterNotFound_2, Verifier.getDisplayName(this), name), name);
     }
 
     /**

@@ -32,6 +32,7 @@ import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
@@ -748,7 +749,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
                 }
                 if (AttributeConvention.IDENTIFIER_PROPERTY.equals(identifierTypes[0].getName())) {
                     if (identifierCursor > 1) {
-                        throw new IllegalStateException(Errors.format(Errors.Keys.PropertyAlreadyExists_2,
+                        throw new IllegalStateException(Resources.format(Resources.Keys.PropertyAlreadyExists_2,
                                 getDisplayName(), AttributeConvention.IDENTIFIER_PROPERTY));
                     }
                     System.arraycopy(propertyTypes, 1, propertyTypes, 0, --propertyCursor);

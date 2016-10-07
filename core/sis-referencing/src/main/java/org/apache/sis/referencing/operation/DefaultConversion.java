@@ -35,6 +35,7 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -209,8 +210,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             this.transform = transform;
             checkDimensions(method, 0, transform, properties);
         } else if (parameters == null) {
-            throw new IllegalArgumentException(Errors.getResources(properties)
-                    .getString(Errors.Keys.UnspecifiedParameterValues));
+            throw new IllegalArgumentException(Resources.forProperties(properties)
+                    .getString(Resources.Keys.UnspecifiedParameterValues));
         }
         if (parameters != null) {
             this.parameters = Parameters.unmodifiable(parameters);
@@ -245,7 +246,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
              * thanks to the 'sourceCRS' argument, we can complete the parameters.
              */
             if (parameters == null) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.UnspecifiedParameterValues));
             }
             if (factory instanceof DefaultMathTransformFactory) {
                 /*
@@ -446,8 +447,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         if ((expected instanceof SingleCRS) && (actual instanceof SingleCRS)) {
             final Datum datum = ((SingleCRS) expected).getDatum();
             if (datum != null && !Utilities.equalsIgnoreMetadata(datum, ((SingleCRS) actual).getDatum())) {
-                throw new MismatchedDatumException(Errors.format(
-                        Errors.Keys.IncompatibleDatum_2, datum.getName(), param));
+                throw new MismatchedDatumException(Resources.format(
+                        Resources.Keys.IncompatibleDatum_2, datum.getName(), param));
             }
         }
     }

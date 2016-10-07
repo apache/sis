@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -33,6 +34,7 @@ import org.apache.sis.util.Debug;
 // Branch-dependent imports
 import java.util.Objects;
 import org.opengis.feature.IdentifiedType;
+import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -359,7 +361,7 @@ public abstract class TypeBuilder implements Localized {
             }
         }
         if (ambiguity != null) {
-            throw new IllegalArgumentException(errors().getString(
+            throw new PropertyNotFoundException(errors().getString(
                     Errors.Keys.AmbiguousName_3, best.getName(), ambiguity.getName(), name));
         }
         return best;
@@ -381,6 +383,13 @@ public abstract class TypeBuilder implements Localized {
      */
     final Errors errors() {
         return Errors.getResources(identification);
+    }
+
+    /**
+     * Returns the {@code sis-feature} specific resources for error messages.
+     */
+    final Resources resources() {
+        return Resources.forProperties(identification);
     }
 
     /**

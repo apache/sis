@@ -36,13 +36,13 @@ import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.jaxb.referencing.SecondDefiningParameter;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
 import static java.lang.Double.*;
@@ -614,7 +614,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             return NaN;
         }
         // Other cases: no solution for this algorithm.
-        throw new ArithmeticException(Errors.format(Errors.Keys.NoConvergenceForPoints_2,
+        throw new ArithmeticException(Resources.format(Resources.Keys.NoConvergenceForPoints_2,
                   new DirectPosition2D(toDegrees(λ1), toDegrees(φ1)),
                   new DirectPosition2D(toDegrees(λ2), toDegrees(φ2))));
     }

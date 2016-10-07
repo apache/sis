@@ -46,8 +46,8 @@ public strictfp class GridGeometryTest extends TestCase {
      * {@code GridGeometryInfoTest} in order to ignore one-dimensional coordinate systems created
      * by {@code GridGeometry} but not by the UCAR library.
      *
-     * @param  geometries The grid geometries created by {@link Decoder}.
-     * @return The grid geometries to test.
+     * @param  geometries  the grid geometries created by {@link Decoder}.
+     * @return the grid geometries to test.
      */
     protected GridGeometry[] filter(final GridGeometry[] geometries) {
         return geometries;

@@ -64,6 +64,7 @@
         </references>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>accessor</word>
+            <word>bilevel</word>
             <word>bitmask</word>
             <word>classname</word>
             <word>classnames</word>
@@ -72,6 +73,7 @@
             <word>deserialized</word>
             <word>endianness</word>
             <word>geoidal</word>
+            <word>grayscale</word>
             <word>hectopascals</word>
             <word>initially</word>
             <word>javadoc</word>

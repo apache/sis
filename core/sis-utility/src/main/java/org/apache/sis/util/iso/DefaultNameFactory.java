@@ -199,9 +199,9 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * Creates a type name from the given character sequence.
      * The default implementation returns a new or an existing {@link DefaultTypeName} instance.
      *
-     * @param  scope  the {@linkplain AbstractName#scope() scope} of the type
-     *         name to be created, or {@code null} for a global namespace.
-     * @param  name  the type name as a string or an international string.
+     * @param  scope  the {@linkplain AbstractName#scope() scope} of the type name to be created,
+     *                or {@code null} for a global namespace.
+     * @param  name   the type name as a string or an international string.
      * @return the type name for the given character sequence.
      *
      * @see #toTypeName(Class)
@@ -216,11 +216,13 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * Creates a member name from the given character sequence and attribute type.
      * The default implementation returns a new or an existing {@link DefaultMemberName} instance.
      *
-     * @param  scope  the {@linkplain AbstractName#scope() scope} of the member
-     *         name to be created, or {@code null} for a global namespace.
-     * @param  name  the member name as a string or an international string.
+     * @param  scope  the {@linkplain AbstractName#scope() scope} of the member name to be created,
+     *                or {@code null} for a global namespace.
+     * @param  name   the member name as a string or an international string.
      * @param  attributeType  the type of the data associated with the record member.
      * @return the member name for the given character sequence.
+     *
+     * @see Names#createMemberName(CharSequence, String, CharSequence, Class)
      */
     @Override
     public MemberName createMemberName(final NameSpace scope, final CharSequence name, final TypeName attributeType) {
@@ -231,9 +233,9 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * Creates a local name from the given character sequence.
      * The default implementation returns a new or an existing {@link DefaultLocalName} instance.
      *
-     * @param  scope  the {@linkplain AbstractName#scope() scope} of the local
-     *         name to be created, or {@code null} for a global namespace.
-     * @param  name  the local name as a string or an international string.
+     * @param  scope  the {@linkplain AbstractName#scope() scope} of the local name to be created,
+     *                or {@code null} for a global namespace.
+     * @param  name   the local name as a string or an international string.
      * @return the local name for the given character sequence.
      *
      * @see Names#createLocalName(CharSequence, String, CharSequence)
@@ -257,10 +259,10 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * array is 1, or an instance of {@link DefaultScopedName} if the length of the array is 2
      * or more.
      *
-     * @param  scope  the {@linkplain AbstractName#scope() scope} of the generic name to be created,
-     *         or {@code null} for a global namespace.
+     * @param  scope        the {@linkplain AbstractName#scope() scope} of the generic name to be created,
+     *                      or {@code null} for a global namespace.
      * @param  parsedNames  the local names as an array of {@link String} or {@link InternationalString} instances.
-     *         This array shall contain at least one element.
+     *                      This array shall contain at least one element.
      * @return the generic name for the given parsed names.
      *
      * @see #parseGenericName(NameSpace, CharSequence)
@@ -280,10 +282,9 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * This method splits the given name around a separator inferred from the given scope, or the
      * {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator if the given scope is null.
      *
-     * @param  scope  the {@linkplain AbstractName#scope() scope} of the generic name to
-     *         be created, or {@code null} for a global namespace.
-     * @param  name  the qualified name, as a sequence of names separated by a scope-dependent
-     *         separator.
+     * @param  scope  the {@linkplain AbstractName#scope() scope} of the generic name to be created,
+     *                or {@code null} for a global namespace.
+     * @param  name   the qualified name, as a sequence of names separated by a scope-dependent separator.
      * @return a name parsed from the given string.
      *
      * @see Names#parseGenericName(CharSequence, String, CharSequence)

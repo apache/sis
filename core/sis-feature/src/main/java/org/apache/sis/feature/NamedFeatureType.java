@@ -27,7 +27,7 @@ import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.feature.FeatureInstantiationException;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.feature.Resources;
 
 
 /**
@@ -100,7 +100,7 @@ final class NamedFeatureType implements FeatureType, Serializable {
      */
     @Override
     public PropertyType getProperty(final String name) throws PropertyNotFoundException {
-        throw new PropertyNotFoundException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
+        throw new PropertyNotFoundException(Resources.format(Resources.Keys.PropertyNotFound_2, getName(), name));
     }
 
     /**
@@ -142,7 +142,7 @@ final class NamedFeatureType implements FeatureType, Serializable {
      */
     @Override
     public Feature newInstance() throws FeatureInstantiationException {
-        throw new FeatureInstantiationException(Errors.format(Errors.Keys.UnresolvedFeatureName_1, getName()));
+        throw new FeatureInstantiationException(Resources.format(Resources.Keys.UnresolvedFeatureName_1, getName()));
     }
 
     /**

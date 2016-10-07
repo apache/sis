@@ -18,6 +18,8 @@ package org.apache.sis.math;
 
 import java.io.Serializable;
 import org.apache.sis.util.Classes;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.util.Numbers;
 
 
 /**
@@ -62,6 +64,14 @@ final class ConcatenatedVector extends Vector implements Serializable {
     @Override
     public Class<? extends Number> getElementType() {
         return Classes.findCommonClass(first.getElementType(), second.getElementType()).asSubclass(Number.class);
+    }
+
+    /**
+     * Returns {@code true} if this vector contains only integer values.
+     */
+    @Override
+    public boolean isInteger() {
+        return first.isInteger() && second.isInteger();
     }
 
     /**
@@ -232,6 +242,35 @@ final class ConcatenatedVector extends Vector implements Serializable {
         final Number old = v.set(index, value);
         modCount++;
         return old;
+    }
+
+    /**
+     * Returns the increment between all consecutive values if this increment is constant, or {@code null} otherwise.
+     */
+    @Override
+    public Number increment(final double tolerance) {
+        Number inc = first.increment(tolerance);
+        if (inc != null) {
+            Number check = second.increment(tolerance);
+            if (check != null) {
+                final Class<? extends Number> type = Numbers.widestClass(inc.getClass(), check.getClass());
+                inc   = Numbers.cast(inc,   type);
+                check = Numbers.cast(check, type);
+                if (inc.equals(check)) {
+                    return inc;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Computes the minimal and maximal values in this vector.
+     * This is the union of the range of the two concatenated vectors.
+     */
+    @Override
+    public NumberRange<?> range() {
+        return first.range().unionAny(second.range());
     }
 
     /**

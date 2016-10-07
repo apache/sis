@@ -24,9 +24,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 
@@ -146,7 +146,7 @@ class DatumShiftGridLoader {
      * @param file   The grid file, as a {@link String} or a {@link Path}.
      */
     static void log(final Class<?> caller, final Object file) {
-        final LogRecord record = Messages.getResources(null).getLogRecord(Level.FINE, Messages.Keys.LoadingDatumShiftFile_1, file);
+        final LogRecord record = Resources.forLocale(null).getLogRecord(Level.FINE, Resources.Keys.LoadingDatumShiftFile_1, file);
         record.setLoggerName(Loggers.COORDINATE_OPERATION);
         Logging.log(caller, "createMathTransform", record);
     }

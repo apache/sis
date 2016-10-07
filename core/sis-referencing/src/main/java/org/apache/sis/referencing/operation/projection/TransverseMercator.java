@@ -27,6 +27,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
@@ -95,8 +96,8 @@ public class TransverseMercator extends ConformalProjection {
      *   <li><cite>"Transverse Mercator (South Orientated)"</cite>.</li>
      * </ul>
      *
-     * @param method     Description of the projection parameters.
-     * @param parameters The parameter values of the projection to create.
+     * @param  method      description of the projection parameters.
+     * @param  parameters  the parameter values of the projection to create.
      */
     public TransverseMercator(final OperationMethod method, final Parameters parameters) {
         this(initializer(method, parameters));
@@ -244,7 +245,7 @@ public class TransverseMercator extends ConformalProjection {
      *
      *     <blockquote>b/a = √(1 - ℯ²)</blockquote>
      *
-     * @param n The value of {@code f / (2-f)} where {@code f} is the flattening factor.
+     * @param  n  the value of {@code f / (2-f)} where {@code f} is the flattening factor.
      */
     private void computeCoefficients(final double n) {
         final double n2 = n  * n;
@@ -287,8 +288,8 @@ public class TransverseMercator extends ConformalProjection {
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
      * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
      *
-     * @param  factory The factory to use for creating the transform.
-     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @param  factory  the factory to use for creating the transform.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override
@@ -304,7 +305,7 @@ public class TransverseMercator extends ConformalProjection {
      * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
      *
-     * @return The matrix of the projection derivative at the given source position,
+     * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
      * @throws ProjectionException if the coordinate can not be converted.
      */
@@ -333,7 +334,7 @@ public class TransverseMercator extends ConformalProjection {
              * using WGS84 ellipsoid. We do not need to reduce the limit for the spherical formulas,
              * because the mathematic are simpler and the function still smooth until 90°.
              */
-            throw new ProjectionException(Errors.Keys.OutsideDomainOfValidity);
+            throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
         }
         final double φ     = srcPts[srcOff+1];
         final double sinλ  = sin(λ);
@@ -577,7 +578,7 @@ public class TransverseMercator extends ConformalProjection {
             }
             p = c;
         }
-        throw new ProjectionException(Errors.Keys.NoConvergence);
+        throw new ProjectionException(Resources.format(Resources.Keys.NoConvergence));
     }
 
 
@@ -602,7 +603,7 @@ public class TransverseMercator extends ConformalProjection {
         /**
          * Constructs a new map projection from the parameters of the given projection.
          *
-         * @param other The other projection (usually ellipsoidal) from which to copy the parameters.
+         * @param  other  the other projection (usually ellipsoidal) from which to copy the parameters.
          */
         protected Spherical(final TransverseMercator other) {
             super(other);
@@ -619,7 +620,7 @@ public class TransverseMercator extends ConformalProjection {
             final double λ = srcPts[srcOff  ];
             if (abs(λ) > PI/2) {
                 // See comment in the overridden class.
-                throw new ProjectionException(Errors.Keys.OutsideDomainOfValidity);
+                throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
             }
             final double φ    = srcPts[srcOff+1];
             final double sinλ = sin(λ);

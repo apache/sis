@@ -26,6 +26,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.internal.referencing.provider.Interpolation1D;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
@@ -168,7 +169,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
             try {
                 tr = create(preimage.clone()).inverse();                                // preimageToIndex transform.
             } catch (NoninvertibleTransformException e) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonMonotonicSequence_1, "preimage"), e);
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.NonMonotonicSequence_1, "preimage"), e);
             }
             if (indexToValues != null) {
                 tr = MathTransforms.concatenate(tr, indexToValues);

@@ -24,7 +24,7 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.metadata.AxisDirections;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.measure.Units;
 
 
@@ -206,8 +206,8 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
         while (--i >= 0) {
             final AxisDirection direction = super.getAxis(i).getDirection();
             if (AxisDirections.isVertical(direction) && --n < 0) {
-                throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                        Errors.Keys.IllegalAxisDirection_2, EllipsoidalCS.class, direction));
+                throw new IllegalArgumentException(Resources.forProperties(properties).getString(
+                        Resources.Keys.IllegalAxisDirection_2, EllipsoidalCS.class, direction));
             }
         }
     }

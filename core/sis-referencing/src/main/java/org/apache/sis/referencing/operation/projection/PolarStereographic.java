@@ -30,8 +30,8 @@ import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.internal.referencing.provider.PolarStereographicC;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.math.MathFunctions;
@@ -165,7 +165,7 @@ public class PolarStereographic extends ConformalProjection {
                     (variant == SOUTH) ? Latitude.MIN_VALUE : Double.NaN);
         }
         if (abs(abs(φ0) - Latitude.MAX_VALUE) > Formulas.ANGULAR_TOLERANCE) {       // Can be only -90°, +90° or NaN
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterValue_2,
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalParameterValue_2,
                     PolarStereographicA.LATITUDE_OF_ORIGIN.getName(), φ0));
         }
         double φ1;

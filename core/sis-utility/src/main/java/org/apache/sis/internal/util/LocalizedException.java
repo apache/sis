@@ -45,7 +45,7 @@ public interface LocalizedException {
     /**
      * Returns the message in the {@linkplain Locale#getDefault() default locale}.
      *
-     * @return The exception message in the default locale.
+     * @return the exception message in the default locale.
      */
     String getMessage();
 
@@ -57,15 +57,15 @@ public interface LocalizedException {
      * the {@link Localized} interface and the context locale can be obtained by a call to
      * {@link Localized#getLocale()}.</p>
      *
-     * @return The localized exception message.
+     * @return the localized exception message.
      */
     String getLocalizedMessage();
 
     /**
      * Returns the message in the given locale.
      *
-     * @param  locale The locale of the message to produce, or {@code null} for the default locale.
-     * @return The exception message in the given locale.
+     * @param  locale  the locale of the message to produce, or {@code null} for the default locale.
+     * @return the exception message in the given locale.
      */
     String getLocalizedMessage(Locale locale);
 }

@@ -42,6 +42,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
@@ -55,7 +56,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
 import static org.apache.sis.internal.referencing.provider.MapProjection.SEMI_MAJOR;
@@ -725,7 +725,7 @@ next:   while (--numPts >= 0) {
                         continue next;
                     }
                 }
-                throw new TransformException(Errors.format(Errors.Keys.NoConvergence));
+                throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
             }
         }
     }

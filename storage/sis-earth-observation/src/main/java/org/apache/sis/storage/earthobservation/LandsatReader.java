@@ -218,11 +218,6 @@ final class LandsatReader {
     private final MetadataBuilder metadata;
 
     /**
-     * The locale to use for formatting warning or error messages.
-     */
-    private final Locale locale;
-
-    /**
      * Where to send the warnings.
      */
     private final WarningListeners<?> listeners;
@@ -300,12 +295,10 @@ final class LandsatReader {
      * Creates a new metadata parser.
      *
      * @param  filename   an identifier of the file being read, or {@code null} if unknown.
-     * @param  locale     the locale to use for formatting warning or error messages.
      * @param  listeners  where to sent warnings that may occur during the parsing process.
      */
-    LandsatReader(final String filename, final Locale locale, final WarningListeners<?> listeners) {
+    LandsatReader(final String filename, final WarningListeners<?> listeners) {
         this.filename  = filename;
-        this.locale    = locale;
         this.listeners = listeners;
         this.metadata  = new MetadataBuilder();
         this.bands     = new DefaultBand[BAND_NAMES.length];
@@ -827,7 +820,7 @@ final class LandsatReader {
         if (projection != null) {
             projection.parameter(name).setValue(Double.parseDouble(value), isLinear ? SI.METRE : NonSI.DEGREE_ANGLE);
         } else {
-            listeners.warning(errors().getString(Errors.Keys.UnexpectedParameter_1, key), null);
+            listeners.warning(errors().getString(Errors.Keys.UnexpectedProperty_2, filename, key), null);
         }
     }
 
@@ -962,8 +955,7 @@ final class LandsatReader {
             /*
              * Set information about all non-null bands. The bands are categorized in three groups:
              * PANCHROMATIC, REFLECTIVE and THERMAL. The group in which each band belong is encoded
-             * in the BAND_GROUPS bitmask. The maximum number of groups is the same than the maximum
-             * number of
+             * in the BAND_GROUPS bitmask.
              */
             final DefaultCoverageDescription content = (DefaultCoverageDescription) singletonOrNull(result.getContentInfo());
             if (content != null) {
@@ -992,7 +984,7 @@ final class LandsatReader {
      * Returns the filename to show in error messages, or a localized "unnamed" word if none.
      */
     private String getFilename() {
-        return (filename != null) ? filename : Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed);
+        return (filename != null) ? filename : Vocabulary.getResources(listeners.getLocale()).getString(Vocabulary.Keys.Unnamed);
     }
 
     /**
@@ -1025,6 +1017,6 @@ final class LandsatReader {
      * Returns the resources to use for formatting error messages.
      */
     private Errors errors() {
-        return Errors.getResources(locale);
+        return Errors.getResources(listeners.getLocale());
     }
 }
