@@ -34,7 +34,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 public strictfp class DecoderTest extends TestCase {
@@ -111,5 +111,23 @@ public strictfp class DecoderTest extends TestCase {
             date("1969-12-29 06:00:00"),
             date("1993-04-10 00:00:00")
         }, decoder.numberToDate("days since 1970-01-01T00:00:00Z", 8.75, -2.75, 8500));
+    }
+
+    /**
+     * Tests {@link Decoder#getTitle()} and {@link Decoder#getId()}.
+     *
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    @Test
+    public void testGetTitleAndID() throws IOException, DataStoreException {
+        final Decoder decoder = selectDataset(NCEP);
+        /*
+         * Actually we really want a null value, even if the NCEP file contains 'title' and 'id' attributes,
+         * because the decoder methods are supposed to check only for the "_Title" and "_Id" attributes as a
+         * last resort fallback when MetadataReader failed to find the title and identifier by itself.
+         */
+        assertNull("title", decoder.getTitle());
+        assertNull("id",    decoder.getId());
     }
 }

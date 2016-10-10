@@ -180,7 +180,7 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
                 if (valueClass != null) {
                     final String code = id.getCode();
                     if (code != null) {
-                        return Names.createMemberName(id.getCodeSpace(), ":", code, valueClass);
+                        return Names.createMemberName(id.getCodeSpace(), null, code, valueClass);
                     }
                 }
             }

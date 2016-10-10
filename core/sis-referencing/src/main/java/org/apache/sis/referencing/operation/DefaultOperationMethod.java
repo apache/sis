@@ -48,6 +48,7 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
 import org.apache.sis.internal.referencing.NilReferencingObject;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameterized;
@@ -408,7 +409,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
         ensurePositive("sourceDimensions", sourceDimensions);
         ensurePositive("targetDimensions", targetDimensions);
         if (!sourceValids || !targetValids) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalOperationDimension_3,
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalOperationDimension_3,
                     method.getName().getCode(), sourceDimensions, targetDimensions));
         }
         return new DefaultOperationMethod(method, sourceDimensions, targetDimensions);

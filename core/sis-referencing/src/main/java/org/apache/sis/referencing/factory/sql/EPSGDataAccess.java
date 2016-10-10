@@ -73,6 +73,7 @@ import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.EPSGParameterDomain;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.SignReversalComment;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Semaphores;
@@ -101,7 +102,6 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
@@ -354,9 +354,9 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * by the {@link EPSGFactory#newDataAccess(Connection, SQLTranslator)} method of a corresponding custom
      * {@code EPSGFactory} subclass.</div>
      *
-     * @param owner       The {@code EPSGFactory} which is creating this Data Access Object (DAO).
-     * @param connection  The connection to the underlying EPSG database.
-     * @param translator  The translator from the SQL statements using MS-Access dialect
+     * @param owner       the {@code EPSGFactory} which is creating this Data Access Object (DAO).
+     * @param connection  the connection to the underlying EPSG database.
+     * @param translator  the translator from the SQL statements using MS-Access dialect
      *                    to SQL statements using the dialect of the actual database.
      *
      * @see EPSGFactory#newDataAccess(Connection, SQLTranslator)
@@ -375,7 +375,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * Returns the locale used by this factory for producing error messages.
      * This locale does not change the way data are read from the EPSG database.
      *
-     * @return The locale for error messages.
+     * @return the locale for error messages.
      */
     @Override
     public Locale getLocale() {
@@ -465,7 +465,7 @@ addURIs:    for (int i=0; ; i++) {
                     case 2: {
                         url = metadata.getURL();
                         function = OnLineFunction.valueOf(CONNECTION);
-                        description = Messages.formatInternational(Messages.Keys.DataBase_4,
+                        description = Resources.formatInternational(Resources.Keys.GeodeticDataBase_4,
                                 Constants.EPSG, version, metadata.getDatabaseProductName(),
                                 Version.valueOf(metadata.getDatabaseMajorVersion(),
                                                 metadata.getDatabaseMinorVersion()));
@@ -514,8 +514,8 @@ addURIs:    for (int i=0; ; i++) {
      * <p>An other point of view could be to said that the returned collection behaves as if the deprecated codes
      * were included in the set but invisible.</p>
      *
-     * @param  type The spatial reference objects type (may be {@code Object.class}).
-     * @return The set of authority codes for spatial reference objects of the given type (may be an empty set).
+     * @param  type  the spatial reference objects type (may be {@code Object.class}).
+     * @return the set of authority codes for spatial reference objects of the given type (may be an empty set).
      * @throws FactoryException if access to the underlying database failed.
      */
     @Override
@@ -598,7 +598,7 @@ addURIs:    for (int i=0; ; i++) {
      * Returns an empty set since this data access class expects no namespace.
      * Code shall be given to {@code createFoo(String)} methods directly, without {@code "EPSG:"} prefix.
      *
-     * @return Empty set.
+     * @return empty set.
      */
     @Override
     public Set<String> getCodeSpaces() {
@@ -609,8 +609,8 @@ addURIs:    for (int i=0; ; i++) {
      * Gets a description of the object corresponding to a code.
      * This method returns the object name in a lightweight manner, without creating the full {@link IdentifiedObject}.
      *
-     * @param  code Value allocated by authority.
-     * @return The object name, or {@code null} if the object corresponding to the specified {@code code} has no name.
+     * @param  code  value allocated by authority.
+     * @return the object name, or {@code null} if the object corresponding to the specified {@code code} has no name.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the query failed for some other reason.
      */
@@ -646,7 +646,7 @@ addURIs:    for (int i=0; ; i++) {
      * <div class="section">Default implementation</div>
      * The default implementation returns {@code true} if all characters are decimal digits 0 to 9.
      *
-     * @param  code  The code the inspect.
+     * @param  code  the code the inspect.
      * @return {@code true} if the code is probably a primary key.
      * @throws FactoryException if an unexpected error occurred while inspecting the code.
      */
@@ -670,11 +670,11 @@ addURIs:    for (int i=0; ; i++) {
      * <div class="note"><b>Note:</b>
      * this method could be seen as the converse of above {@link #getDescriptionText(String)} method.</div>
      *
-     * @param  table       The table where the code should appears, or {@code null} if none.
-     * @param  codeColumn  The column name for the codes, or {@code null} if none.
-     * @param  nameColumn  The column name for the names, or {@code null} if none.
-     * @param  codes       The codes or names to convert to primary keys, as an array of length 1 or 2.
-     * @return The numerical identifiers (i.e. the table primary key values).
+     * @param  table       the table where the code should appears, or {@code null} if none.
+     * @param  codeColumn  the column name for the codes, or {@code null} if none.
+     * @param  nameColumn  the column name for the names, or {@code null} if none.
+     * @param  codes       the codes or names to convert to primary keys, as an array of length 1 or 2.
+     * @return the numerical identifiers (i.e. the table primary key values).
      * @throws SQLException if an error occurred while querying the database.
      */
     private int[] toPrimaryKeys(final String table, final String codeColumn, final String nameColumn, final String... codes)
@@ -742,13 +742,13 @@ addURIs:    for (int i=0; ; i++) {
      * {@linkplain #isPrimaryKey primary key}, then this method assumes that the code is the object name
      * and will search for its primary key value.
      *
-     * @param  table       The table where the code should appears.
-     * @param  codeColumn  The column name for the codes, or {@code null} if none.
-     * @param  nameColumn  The column name for the names, or {@code null} if none.
-     * @param  sql         The SQL statement to use for creating the {@link PreparedStatement} object.
+     * @param  table       the table where the code should appears.
+     * @param  codeColumn  the column name for the codes, or {@code null} if none.
+     * @param  nameColumn  the column name for the names, or {@code null} if none.
+     * @param  sql         the SQL statement to use for creating the {@link PreparedStatement} object.
      *                     Will be used only if no prepared statement was already created for the given code.
-     * @param  codes       The codes of the object to create, as an array of length 1 or 2.
-     * @return The result of the query.
+     * @param  codes       the codes of the object to create, as an array of length 1 or 2.
+     * @return the result of the query.
      * @throws SQLException if an error occurred while querying the database.
      */
     private ResultSet executeQuery(final String table, final String codeColumn, final String nameColumn,
@@ -765,11 +765,11 @@ addURIs:    for (int i=0; ; i++) {
      * Creates a statement and executes for the given codes. The first code value is assigned to parameter #1,
      * the second code value (if any) is assigned to parameter #2, <i>etc</i>.
      *
-     * @param  table A key uniquely identifying the caller (e.g. {@code "Ellipsoid"} for {@link #createEllipsoid(String)}).
-     * @param  sql   The SQL statement to use for creating the {@link PreparedStatement} object.
-     *               Will be used only if no prepared statement was already created for the specified key.
-     * @param  codes The codes of the object to create, as an array of length 1 or 2.
-     * @return The result of the query.
+     * @param  table  a key uniquely identifying the caller (e.g. {@code "Ellipsoid"} for {@link #createEllipsoid(String)}).
+     * @param  sql    the SQL statement to use for creating the {@link PreparedStatement} object.
+     *                Will be used only if no prepared statement was already created for the specified key.
+     * @param  codes  the codes of the object to create, as an array of length 1 or 2.
+     * @return the result of the query.
      * @throws SQLException if an error occurred while querying the database.
      */
     private ResultSet executeQuery(final String table, final String sql, final int... codes) throws SQLException {
@@ -790,9 +790,9 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Gets the value from the specified {@link ResultSet}, or {@code null} if none.
      *
-     * @param  result       The result set to fetch value from.
-     * @param  columnIndex  The column index (1-based).
-     * @return The string at the specified column, or {@code null}.
+     * @param  result       the result set to fetch value from.
+     * @param  columnIndex  the column index (1-based).
+     * @return the string at the specified column, or {@code null}.
      * @throws SQLException if an error occurred while querying the database.
      */
     private static String getOptionalString(final ResultSet result, final int columnIndex) throws SQLException {
@@ -803,9 +803,9 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Gets the value from the specified {@link ResultSet}, or {@code NaN} if none.
      *
-     * @param  result       The result set to fetch value from.
-     * @param  columnIndex  The column index (1-based).
-     * @return The number at the specified column, or {@code NaN}.
+     * @param  result       the result set to fetch value from.
+     * @param  columnIndex  the column index (1-based).
+     * @return the number at the specified column, or {@code NaN}.
      * @throws SQLException if an error occurred while querying the database.
      */
     private static double getOptionalDouble(final ResultSet result, final int columnIndex) throws SQLException {
@@ -816,9 +816,9 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Gets the value from the specified {@link ResultSet}, or {@code null} if none.
      *
-     * @param  result       The result set to fetch value from.
-     * @param  columnIndex  The column index (1-based).
-     * @return The integer at the specified column, or {@code null}.
+     * @param  result       the result set to fetch value from.
+     * @param  columnIndex  the column index (1-based).
+     * @return the integer at the specified column, or {@code null}.
      * @throws SQLException if an error occurred while querying the database.
      */
     private static Integer getOptionalInteger(final ResultSet result, final int columnIndex) throws SQLException {
@@ -830,9 +830,9 @@ addURIs:    for (int i=0; ; i++) {
      * Gets the value from the specified {@link ResultSet}, or {@code false} if none.
      * The EPSG database stores boolean values as integers instead than using the SQL type.
      *
-     * @param  result       The result set to fetch value from.
-     * @param  columnIndex  The column index (1-based).
-     * @return The boolean at the specified column, or {@code null}.
+     * @param  result       the result set to fetch value from.
+     * @param  columnIndex  the column index (1-based).
+     * @return the boolean at the specified column, or {@code null}.
      * @throws SQLException if an error occurred while querying the database.
      */
     private boolean getOptionalBoolean(final ResultSet result, final int columnIndex) throws SQLException {
@@ -868,10 +868,10 @@ addURIs:    for (int i=0; ; i++) {
      * Gets the string from the specified {@link ResultSet}.
      * The string is required to be non-null. A null string will throw an exception.
      *
-     * @param  code         The identifier of the record where the string was found.
-     * @param  result       The result set to fetch value from.
-     * @param  columnIndex  The column index (1-based).
-     * @return The string at the specified column.
+     * @param  code         the identifier of the record where the string was found.
+     * @param  result       the result set to fetch value from.
+     * @param  columnIndex  the column index (1-based).
+     * @return the string at the specified column.
      * @throws SQLException if an error occurred while querying the database.
      * @throws FactoryDataException if a null value was found.
      */
@@ -889,10 +889,10 @@ addURIs:    for (int i=0; ; i++) {
      * Gets the value from the specified {@link ResultSet}.
      * The value is required to be non-null. A null value (i.e. blank) will throw an exception.
      *
-     * @param  code         The identifier of the record where the double was found.
-     * @param  result       The result set to fetch value from.
-     * @param  columnIndex  The column index (1-based).
-     * @return The double at the specified column.
+     * @param  code         the identifier of the record where the double was found.
+     * @param  result       the result set to fetch value from.
+     * @param  columnIndex  the column index (1-based).
+     * @return the double at the specified column.
      * @throws SQLException if an error occurred while querying the database.
      * @throws FactoryDataException if a null value was found.
      */
@@ -913,10 +913,10 @@ addURIs:    for (int i=0; ; i++) {
      * <p>We return the value as the {@code Integer} wrapper instead than the {@code int} primitive type
      * because the caller will often need that value as an object (for use as key in {@link HashMap}, etc.).</p>
      *
-     * @param  code         The identifier of the record where the integer was found.
-     * @param  result       The result set to fetch value from.
-     * @param  columnIndex  The column index (1-based).
-     * @return The integer at the specified column.
+     * @param  code         the identifier of the record where the integer was found.
+     * @param  result       the result set to fetch value from.
+     * @param  columnIndex  the column index (1-based).
+     * @return the integer at the specified column.
      * @throws SQLException if an error occurred while querying the database.
      * @throws FactoryDataException if a null value was found.
      */
@@ -938,9 +938,9 @@ addURIs:    for (int i=0; ; i++) {
      * This method is invoked in the loop for making sure that, if there is more than one record
      * (which should never happen), at least they have identical content.
      *
-     * @param  newValue  The newly constructed object.
-     * @param  oldValue  The object previously constructed, or {@code null} if none.
-     * @param  code The EPSG code (for formatting error message).
+     * @param  newValue  the newly constructed object.
+     * @param  oldValue  the object previously constructed, or {@code null} if none.
+     * @param  code      the EPSG code (for formatting error message).
      * @throws FactoryDataException if a duplication has been detected.
      */
     private <T> T ensureSingleton(final T newValue, final T oldValue, final Comparable<?> code) throws FactoryDataException {
@@ -968,7 +968,7 @@ addURIs:    for (int i=0; ; i++) {
      */
     private void ensureNoCycle(final Class<?> type, final Integer code) throws FactoryException {
         if (JDK8.putIfAbsent(safetyGuard, code, type) != null) {
-            throw new FactoryException(error().getString(Errors.Keys.RecursiveCreateCallForCode_2, type, code));
+            throw new FactoryException(resources().getString(Resources.Keys.RecursiveCreateCallForCode_2, type, code));
         }
     }
 
@@ -989,9 +989,9 @@ addURIs:    for (int i=0; ; i++) {
      * <p>The table name should be one of the values enumerated in the {@code epsg_table_name} type of the
      * {@code EPSG_Prepare.sql} file.</p>
      *
-     * @param  expected  The expected table name (e.g. {@code "Coordinate_Operation"}).
-     * @param  name      The actual table name.
-     * @return Whether the given {@code name} is considered to match the expected name.
+     * @param  expected  the expected table name (e.g. {@code "Coordinate_Operation"}).
+     * @param  name      the actual table name.
+     * @return whether the given {@code name} is considered to match the expected name.
      */
     static boolean tableMatches(final String expected, String name) {
         if (name == null) {
@@ -1006,10 +1006,9 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Logs a warning saying that the given code is deprecated and returns the code of the proposed replacement.
      *
-     * @param  table  The table of the deprecated code.
-     * @param  code   The deprecated code.
-     * @param  locale The locale for logging messages.
-     * @return The proposed replacement (may be the "(none)" text).
+     * @param  table   the table of the deprecated code.
+     * @param  code    the deprecated code.
+     * @return the proposed replacement (may be the "(none)" text).
      */
     private String getSupersession(final String table, final Integer code, final Locale locale) throws SQLException {
         String reason = null;
@@ -1044,7 +1043,7 @@ addURIs:    for (int i=0; ; i++) {
             }
         }
         if (!quiet) {
-            LogRecord record = Messages.getResources(locale).getLogRecord(Level.WARNING, Messages.Keys.DeprecatedCode_3,
+            LogRecord record = Resources.forLocale(locale).getLogRecord(Level.WARNING, Resources.Keys.DeprecatedCode_3,
                     Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code, replacedBy, reason);
             record.setLoggerName(Loggers.CRS_FACTORY);
             Logging.log(EPSGDataAccess.class, method, record);
@@ -1055,12 +1054,12 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Returns the name and aliases for the {@link IdentifiedObject} to construct.
      *
-     * @param  table       The table on which a query has been executed.
-     * @param  name        The name for the {@link IndentifiedObject} to construct.
-     * @param  code        The EPSG code of the object to construct.
-     * @param  remarks     Remarks as a {@link String} or {@link InternationalString}, or {@code null} if none.
+     * @param  table       the table on which a query has been executed.
+     * @param  name        the name for the {@link IndentifiedObject} to construct.
+     * @param  code        the EPSG code of the object to construct.
+     * @param  remarks     remarks as a {@link String} or {@link InternationalString}, or {@code null} if none.
      * @param  deprecated  {@code true} if the object to create is deprecated.
-     * @return The name together with a set of properties.
+     * @return the name together with a set of properties.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Map<String,Object> createProperties(final String table, String name, final Integer code,
@@ -1154,14 +1153,14 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Returns the name, aliases and domain of validity for the {@link IdentifiedObject} to construct.
      *
-     * @param  table      The table on which a query has been executed.
-     * @param  name       The name for the {@link IndentifiedObject} to construct.
-     * @param  code       The EPSG code of the object to construct.
-     * @param  domainCode The code for the domain of validity, or {@code null} if none.
-     * @param  scope      The scope, or {@code null} if none.
-     * @param  remarks    Remarks, or {@code null} if none.
-     * @param  deprecated {@code true} if the object to create is deprecated.
-     * @return The name together with a set of properties.
+     * @param  table       the table on which a query has been executed.
+     * @param  name        the name for the {@link IndentifiedObject} to construct.
+     * @param  code        the EPSG code of the object to construct.
+     * @param  domainCode  the code for the domain of validity, or {@code null} if none.
+     * @param  scope       the scope, or {@code null} if none.
+     * @param  remarks     remarks, or {@code null} if none.
+     * @param  deprecated  {@code true} if the object to create is deprecated.
+     * @return the name together with a set of properties.
      */
     private Map<String,Object> createProperties(final String table, final String name, final Integer code,
             final String domainCode, String scope, final String remarks, final boolean deprecated)
@@ -1198,8 +1197,8 @@ addURIs:    for (int i=0; ; i++) {
      * It is recommended to invoke the most specific {@code createFoo(String)} method when the desired type is known,
      * both for performance reason and for avoiding ambiguity.</p>
      *
-     * @param  code Value allocated by EPSG.
-     * @return The object for the given code.
+     * @param  code  value allocated by EPSG.
+     * @return the object for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
@@ -1300,8 +1299,8 @@ addURIs:    for (int i=0; ; i++) {
      *   <tr><td>5800</td> <td>Engineering</td>   <td>Astra Minas Grid</td></tr>
      * </table></div>
      *
-     * @param  code Value allocated by EPSG.
-     * @return The coordinate reference system for the given code.
+     * @param  code  value allocated by EPSG.
+     * @return the coordinate reference system for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      */
@@ -1579,8 +1578,8 @@ addURIs:    for (int i=0; ; i++) {
      *   <tr><td>9315</td> <td>Engineering</td> <td>Seismic bin grid datum</td></tr>
      * </table></div>
      *
-     * @param  code Value allocated by EPSG.
-     * @return The datum for the given code.
+     * @param  code  value allocated by EPSG.
+     * @return the datum for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      */
@@ -1666,7 +1665,7 @@ addURIs:    for (int i=0; ; i++) {
                     case "temporal": {
                         final Date originDate;
                         if (anchor == null || anchor.isEmpty()) {
-                            throw new FactoryDataException(error().getString(Errors.Keys.DatumOriginShallBeDate));
+                            throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate));
                         }
                         if (dateFormat == null) {
                             dateFormat = new StandardDateFormat();
@@ -1675,7 +1674,7 @@ addURIs:    for (int i=0; ; i++) {
                         try {
                             originDate = dateFormat.parse(anchor);
                         } catch (ParseException e) {
-                            throw new FactoryDataException(error().getString(Errors.Keys.DatumOriginShallBeDate), e);
+                            throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate), e);
                         }
                         datum = datumFactory.createTemporalDatum(properties, originDate);
                         break;
@@ -1717,8 +1716,8 @@ addURIs:    for (int i=0; ; i++) {
      * That legacy format had a {@code TOWGS84} element which needs the information provided by this method.
      * Note that {@code TOWGS84} is a deprecated element as of WKT 2 (ISO 19162).</p>
      *
-     * @param  meridian The source datum prime meridian, used for discarding any target datum using a different meridian.
-     * @param  code The EPSG code of the source {@link GeodeticDatum}.
+     * @param  meridian  the source datum prime meridian, used for discarding any target datum using a different meridian.
+     * @param  code      the EPSG code of the source {@link GeodeticDatum}.
      * @return an array of Bursa-Wolf parameters, or {@code null}.
      */
     private BursaWolfParameters[] createBursaWolfParameters(final PrimeMeridian meridian, final Integer code)
@@ -1839,8 +1838,8 @@ addURIs:    for (int i=0; ; i++) {
      *   <tr><td>7048</td> <td>GRS 1980 Authalic Sphere</td></tr>
      * </table></div>
      *
-     * @param  code Value allocated by EPSG.
-     * @return The ellipsoid for the given code.
+     * @param  code  value allocated by EPSG.
+     * @return the ellipsoid for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
@@ -1896,8 +1895,8 @@ addURIs:    for (int i=0; ; i++) {
                     if (!Double.isNaN(semiMinorAxis)) {
                         // Both 'inverseFlattening' and 'semiMinorAxis' are defined.
                         // Log a warning and create the ellipsoid using the inverse flattening.
-                        final LogRecord record = Messages.getResources(getLocale()).getLogRecord(Level.WARNING,
-                                Messages.Keys.AmbiguousEllipsoid_1, Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code);
+                        final LogRecord record = resources().getLogRecord(Level.WARNING,
+                                Resources.Keys.AmbiguousEllipsoid_1, Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code);
                         record.setLoggerName(Loggers.CRS_FACTORY);
                         Logging.log(EPSGDataAccess.class, "createEllipsoid", record);
                     }
@@ -1929,8 +1928,8 @@ addURIs:    for (int i=0; ; i++) {
      *   <tr><td>8906</td> <td>Rome</td></tr>
      * </table></div>
      *
-     * @param  code Value allocated by EPSG.
-     * @return The prime meridian for the given code.
+     * @param  code  value allocated by EPSG.
+     * @return the prime meridian for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
@@ -1986,8 +1985,8 @@ addURIs:    for (int i=0; ; i++) {
      *   <tr><td>3391</td> <td>World - between 80°S and 84°N</td></tr>
      * </table></div>
      *
-     * @param  code Value allocated by EPSG.
-     * @return The extent for the given code.
+     * @param  code  value allocated by EPSG.
+     * @return the extent for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
@@ -2069,8 +2068,8 @@ addURIs:    for (int i=0; ; i++) {
      *   <tr><td>6499</td> <td>Vertical CS</td>       <td>height (H)</td>                              <td>up</td>              <td>metre</td></tr>
      * </table></div>
      *
-     * @param  code Value allocated by EPSG.
-     * @return The coordinate system for the given code.
+     * @param  code  value allocated by EPSG.
+     * @return the coordinate system for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      */
@@ -2176,7 +2175,7 @@ addURIs:    for (int i=0; ; i++) {
                     }
                 }
                 if (cs == null) {
-                    throw new FactoryDataException(error().getString(Errors.Keys.UnexpectedDimensionForCS_1, type));
+                    throw new FactoryDataException(resources().getString(Resources.Keys.UnexpectedDimensionForCS_1, type));
                 }
                 returnValue = ensureSingleton(cs, returnValue, code);
             }
@@ -2192,8 +2191,8 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Returns the number of dimension for the specified Coordinate System, or {@code null} if not found.
      *
-     * @param  cs the EPSG code for the coordinate system.
-     * @return The number of dimensions, or {@code null} if not found.
+     * @param  cs  the EPSG code for the coordinate system.
+     * @return the number of dimensions, or {@code null} if not found.
      *
      * @see #getDimensionsForMethod(int)
      */
@@ -2267,8 +2266,8 @@ addURIs:    for (int i=0; ; i++) {
      *   <tr><td>2</td>    <td>Northing (N)</td>  <td>metre</td></tr>
      * </table></div>
      *
-     * @param  code Value allocated by EPSG.
-     * @return The axis for the given code.
+     * @param  code  value allocated by EPSG.
+     * @return the axis for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
@@ -2370,8 +2369,8 @@ addURIs:    for (int i=0; ; i++) {
      *   <tr><td>1029</td> <td>year</td></tr>
      * </table></div>
      *
-     * @param  code Value allocated by EPSG.
-     * @return The unit of measurement for the given code.
+     * @param  code  value allocated by EPSG.
+     * @return the unit of measurement for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      */
@@ -2441,8 +2440,8 @@ addURIs:    for (int i=0; ; i++) {
      *   <tr><td>8807</td> <td>False northing</td></tr>
      * </table></div>
      *
-     * @param  code Value allocated by EPSG.
-     * @return The parameter descriptor for the given code.
+     * @param  code  value allocated by EPSG.
+     * @return the parameter descriptor for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
@@ -2562,8 +2561,8 @@ next:               while (r.next()) {
     /**
      * Returns all parameter descriptors for the specified method.
      *
-     * @param  method The operation method code.
-     * @return The parameter descriptors.
+     * @param  method  the operation method code.
+     * @return the parameter descriptors.
      * @throws SQLException if a SQL statement failed.
      */
     private ParameterDescriptor<?>[] createParameterDescriptors(final Integer method) throws FactoryException, SQLException {
@@ -2584,9 +2583,9 @@ next:               while (r.next()) {
     /**
      * Sets the values of all parameters in the given group.
      *
-     * @param  method    The EPSG code for the operation method.
-     * @param  operation The EPSG code for the operation (conversion or transformation).
-     * @param  value     The parameter values to fill.
+     * @param  method     the EPSG code for the operation method.
+     * @param  operation  the EPSG code for the operation (conversion or transformation).
+     * @param  value      the parameter values to fill.
      * @throws SQLException if a SQL statement failed.
      */
     private void fillParameterValues(final Integer method, final Integer operation, final ParameterValueGroup parameters)
@@ -2674,8 +2673,8 @@ next:               while (r.next()) {
      *   <tr><td>9624</td> <td>Affine parametric transformation</td></tr>
      * </table></div>
      *
-     * @param  code Value allocated by EPSG.
-     * @return The operation method for the given code.
+     * @param  code  value allocated by EPSG.
+     * @return the operation method for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      */
@@ -2963,9 +2962,9 @@ next:               while (r.next()) {
      * Deprecated operations are not included in the set; if a deprecated operation is really wanted,
      * it can be fetched by an explicit call to {@link #createCoordinateOperation(String)}.</p>
      *
-     * @param  sourceCRS  Coded value of source coordinate reference system.
-     * @param  targetCRS  Coded value of target coordinate reference system.
-     * @return The operations from {@code sourceCRS} to {@code targetCRS}.
+     * @param  sourceCRS  coded value of source coordinate reference system.
+     * @param  targetCRS  coded value of target coordinate reference system.
+     * @return the operations from {@code sourceCRS} to {@code targetCRS}.
      * @throws NoSuchAuthorityCodeException if a specified code was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      */
@@ -3038,7 +3037,7 @@ next:               while (r.next()) {
      * The finder tries to fetch a fully {@linkplain AbstractIdentifiedObject identified object} from an incomplete one,
      * for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}" element in <cite>Well Known Text</cite>.
      *
-     * @return A finder to use for looking up unidentified objects.
+     * @return a finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder can not be created.
      */
     @Override
@@ -3211,7 +3210,7 @@ next:               while (r.next()) {
      * Returns {@code true} if the {@link CoordinateOperation} for the specified code is a {@link Projection}.
      * The caller must have verified that the designed operation is a {@link Conversion} before to invoke this method.
      *
-     * @throws SQLException If an error occurred while querying the database.
+     * @throws SQLException if an error occurred while querying the database.
      */
     final boolean isProjection(final Integer code) throws SQLException {
         Boolean projection = isProjection.get(code);
@@ -3234,8 +3233,8 @@ next:               while (r.next()) {
      * for all operations using that method. The returned array has a length of 2 and is never null,
      * but some elements in that array may be null.
      *
-     * @param  method  The EPSG code of the operation method for which to get the dimensions.
-     * @return The dimensions in an array of length 2.
+     * @param  method  the EPSG code of the operation method for which to get the dimensions.
+     * @return the dimensions in an array of length 2.
      *
      * @see #getDimensionForCS(int)
      */
@@ -3306,9 +3305,9 @@ next:               while (r.next()) {
      * to preserve the old ordering of the supplied codes (since deprecated operations should already be last).
      * The ordering is performed in place.
      *
-     * @param table The table of the objects for which to check for supersession.
-     * @param codes The codes, usually as an array of {@link String}. If the array do not contains string objects,
-     *              then the {@link Object#toString()} method must return the code for each element.
+     * @param table  the table of the objects for which to check for supersession.
+     * @param codes  the codes, usually as an array of {@link String}. If the array do not contains string objects,
+     *               then the {@link Object#toString()} method must return the code for each element.
      * @return {@code true} if the array changed as a result of this method call.
      */
     final synchronized boolean sort(final String table, final Object[] codes) throws SQLException, FactoryException {
@@ -3355,12 +3354,12 @@ next:               while (r.next()) {
      * Creates an exception for an unknown authority code.
      * This convenience method is provided for implementation of {@code createFoo(String)} methods.
      *
-     * @param  type  The GeoAPI interface that was to be created (e.g. {@code CoordinateReferenceSystem.class}).
-     * @param  code  The unknown authority code.
-     * @return An exception initialized with an error message built from the specified informations.
+     * @param  type  the GeoAPI interface that was to be created (e.g. {@code CoordinateReferenceSystem.class}).
+     * @param  code  the unknown authority code.
+     * @return an exception initialized with an error message built from the specified informations.
      */
     private NoSuchAuthorityCodeException noSuchAuthorityCode(final Class<?> type, final String code) {
-        return new NoSuchAuthorityCodeException(error().getString(Errors.Keys.NoSuchAuthorityCode_3,
+        return new NoSuchAuthorityCodeException(resources().getString(Resources.Keys.NoSuchAuthorityCode_3,
                 Constants.EPSG, type, code), Constants.EPSG, code, code);
     }
 
@@ -3379,10 +3378,17 @@ next:               while (r.next()) {
     }
 
     /**
+     * Minor shortcut for fetching the resources specific to the {@code sis-referencing} module.
+     */
+    private Resources resources() {
+        return Resources.forLocale(getLocale());
+    }
+
+    /**
      * Logs a warning about an unexpected but non-fatal exception.
      *
-     * @param method    The source method.
-     * @param exception The exception to log.
+     * @param method     the source method.
+     * @param exception  the exception to log.
      */
     private static void unexpectedException(final String method, final Exception exception) {
         Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), EPSGDataAccess.class, method, exception);

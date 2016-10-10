@@ -37,6 +37,8 @@ import org.apache.sis.util.ArgumentChecks;
  * @since   0.7
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.math.Vector
  */
 public class IntegerList extends AbstractList<Integer> implements RandomAccess, Serializable, Cloneable {
     /**
@@ -83,8 +85,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Creates an initially empty list with the given initial capacity.
      *
-     * @param initialCapacity The initial capacity.
-     * @param maximalValue The maximal value to be allowed, inclusive.
+     * @param initialCapacity  the initial capacity.
+     * @param maximalValue     the maximal value to be allowed, inclusive.
      */
     public IntegerList(int initialCapacity, int maximalValue) {
         this(initialCapacity, maximalValue, false);
@@ -94,22 +96,17 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * Creates a new list with the given initial size.
      * The value of all elements are initialized to 0.
      *
-     * @param initialCapacity The initial capacity.
-     * @param maximalValue The maximal value to be allowed, inclusive.
-     * @param fill If {@code true}, the initial {@linkplain #size() size} is set to the initial capacity
+     * @param initialCapacity  the initial capacity.
+     * @param maximalValue     the maximal value to be allowed, inclusive.
+     * @param fill if {@code true}, the initial {@linkplain #size() size} is set to the initial capacity
      *        with all values set to 0.
      */
-    public IntegerList(final int initialCapacity, int maximalValue, final boolean fill) {
+    public IntegerList(final int initialCapacity, final int maximalValue, final boolean fill) {
         ArgumentChecks.ensureStrictlyPositive("initialCapacity", initialCapacity);
         ArgumentChecks.ensureStrictlyPositive("maximalValue",    maximalValue);
-        int bitCount = 0;
-        do {
-            bitCount++;
-            maximalValue >>>= 1;
-        } while (maximalValue != 0);
-        this.bitCount = bitCount;
-        mask = (1 << bitCount) - 1;
-        values = new long[length(initialCapacity)];
+        bitCount = Math.max(1, Integer.SIZE - Integer.numberOfLeadingZeros(maximalValue));
+        mask     = (1 << bitCount) - 1;
+        values   = new long[length(initialCapacity)];
         if (fill) {
             size = initialCapacity;
         }
@@ -118,8 +115,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Returns the array length required for holding a list of the given size.
      *
-     * @param size The list size.
-     * @return The array length for holding a list of the given size.
+     * @param  size  the list size.
+     * @return the array length for holding a list of the given size.
      */
     private int length(int size) {
         size *= bitCount;
@@ -134,7 +131,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * Returns the maximal value that can be stored in this list.
      * May be slightly higher than the value given to the constructor.
      *
-     * @return The maximal value, inclusive.
+     * @return the maximal value, inclusive.
      */
     public int maximalValue() {
         return mask;
@@ -143,7 +140,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Returns the current number of values in this list.
      *
-     * @return The number of values.
+     * @return the number of values.
      */
     @Override
     public int size() {
@@ -155,7 +152,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * then the elements after the new size are discarded. If the new size is greater than
      * the previous one, then the extra elements are initialized to 0.
      *
-     * @param size The new size.
+     * @param  size  the new size.
      */
     public void resize(final int size) {
         ArgumentChecks.ensurePositive("size", size);
@@ -180,7 +177,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * Fills the list with the given value.
      * Every existing values are overwritten from index 0 inclusive up to {@link #size} exclusive.
      *
-     * @param value The value to set.
+     * @param  value  the value to set.
      */
     @SuppressWarnings("fallthrough")
     public void fill(int value) {
@@ -197,7 +194,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
             case  8: value |= (value << 8);     // Fall through
             case 16: value |= (value << 16);    // Fall through
             case 32: p = (value & 0xFFFFFFFFL) | ((long) value << 32); break;
-            default: {    // General case (unoptimized)
+            default: {                          // General case (unoptimized)
                 for (int i=0; i<size; i++) {
                     setUnchecked(i, value);
                 }
@@ -218,8 +215,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Adds the given element to this list.
      *
-     * @param  value The value to add.
-     * @return Always {@code true}.
+     * @param  value  the value to add.
+     * @return always {@code true}.
      * @throws NullPointerException if the given value is null.
      * @throws IllegalArgumentException if the given value is out of bounds.
      */
@@ -232,7 +229,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Adds the given element as the {@code int} primitive type.
      *
-     * @param  value The value to add.
+     * @param  value  the value to add.
      * @throws IllegalArgumentException if the given value is out of bounds.
      *
      * @see #removeLast()
@@ -250,8 +247,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Returns the element at the given index.
      *
-     * @param  index The element index.
-     * @return The value at the given index.
+     * @param  index  the element index.
+     * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     @Override
@@ -262,8 +259,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Returns the element at the given index as the {@code int} primitive type.
      *
-     * @param  index The element index.
-     * @return The value at the given index.
+     * @param  index  the element index.
+     * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     public int getInt(final int index) throws IndexOutOfBoundsException {
@@ -275,8 +272,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * Returns the element at the given index as the {@code int} primitive type.
      * This argument does not check argument validity, since it is assumed already done.
      *
-     * @param  index The element index.
-     * @return The value at the given index.
+     * @param  index  the element index.
+     * @return the value at the given index.
      */
     private int getUnchecked(int index) {
         index *= bitCount;
@@ -295,9 +292,9 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Sets the element at the given index.
      *
-     * @param  index The element index.
-     * @param  value The value at the given index.
-     * @return The previous value at the given index.
+     * @param  index  the element index.
+     * @param  value  the value at the given index.
+     * @return the previous value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws IllegalArgumentException if the given value is out of bounds.
      * @throws NullPointerException if the given value is null.
@@ -312,8 +309,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Sets the element at the given index as the {@code int} primitive type.
      *
-     * @param  index The element index.
-     * @param  value The value at the given index.
+     * @param  index  the element index.
+     * @param  value  the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws IllegalArgumentException if the given value is out of bounds.
      */
@@ -327,8 +324,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * Sets the element at the given index as the {@code int} primitive type.
      * This argument does not check argument validity, since it is assumed already done.
      *
-     * @param index The element index.
-     * @param value The value at the given index.
+     * @param  index  the element index.
+     * @param  value  the value at the given index.
      */
     private void setUnchecked(int index, int value) {
         index *= bitCount;
@@ -347,8 +344,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Removes the element at the given index.
      *
-     * @param  index The index of the element to remove.
-     * @return The previous value of the element at the given index.
+     * @param  index  the index of the element to remove.
+     * @return the previous value of the element at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     @Override
@@ -361,7 +358,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Retrieves and remove the last element of this list.
      *
-     * @return The tail of this list.
+     * @return the tail of this list.
      * @throws NoSuchElementException if this list is empty.
      */
     public int removeLast() throws NoSuchElementException {
@@ -375,8 +372,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * Removes all values in the given range of index.
      * Shifts any succeeding elements to the left (reduces their index).
      *
-     * @param lower Index of the first element to remove, inclusive.
-     * @param upper Index after the last element to be removed.
+     * @param  lower  index of the first element to remove, inclusive.
+     * @param  upper  index after the last element to be removed.
      */
     @Override
     protected void removeRange(int lower, int upper) {
@@ -410,8 +407,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Returns the occurrence of the given value in this list.
      *
-     * @param  value The value to search for.
-     * @return The number of time the given value occurs in this list.
+     * @param  value  the value to search for.
+     * @return the number of time the given value occurs in this list.
      */
     public int occurrence(final int value) {
         int count = 0;
@@ -434,7 +431,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Returns a clone of this list.
      *
-     * @return A clone of this list.
+     * @return a clone of this list.
      */
     @Override
     public IntegerList clone() {
@@ -451,8 +448,8 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Invokes {@link #trimToSize()} before serialization in order to make the stream more compact.
      *
-     * @param  out The output stream where to serialize this list.
-     * @throws IOException If an I/O error occurred while writing.
+     * @param  out  the output stream where to serialize this list.
+     * @throws IOException if an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         trimToSize();

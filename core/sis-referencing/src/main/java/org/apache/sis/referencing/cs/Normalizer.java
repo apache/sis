@@ -31,8 +31,8 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CylindricalCS;
 import org.opengis.referencing.cs.PolarCS;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.Units;
@@ -254,7 +254,7 @@ final class Normalizer implements Comparable<Normalizer> {
                 c = unit.getConverterToAny(newUnit);
             } catch (ConversionException e) {
                 // Use IllegalStateException because the public API is an AbstractCS member method.
-                throw new IllegalStateException(Errors.format(Errors.Keys.IllegalUnitFor_2, "axis", unit), e);
+                throw new IllegalStateException(Resources.format(Resources.Keys.IllegalUnitFor_2, "axis", unit), e);
             }
             double minimum = c.convert(axis.getMinimumValue());
             double maximum = c.convert(axis.getMaximumValue());

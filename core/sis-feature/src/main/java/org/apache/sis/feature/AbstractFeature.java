@@ -28,6 +28,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.internal.feature.Resources;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -194,7 +195,7 @@ public abstract class AbstractFeature implements Serializable {
         final String name = ((Property) property).getName().toString();
         verifyPropertyType(name, (Property) property);
         if (property instanceof AbstractAttribute<?> && !Containers.isNullOrEmpty(((AbstractAttribute<?>) property).characteristics())) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotAssignCharacteristics_1, name));
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.CanNotAssignCharacteristics_1, name));
         }
         setPropertyValue(name, ((Property) property).getValue());
     }
@@ -281,7 +282,7 @@ public abstract class AbstractFeature implements Serializable {
             if (result instanceof Property) {
                 setPropertyValue((Property) result, value);
             } else {
-                throw new IllegalStateException(Errors.format(Errors.Keys.CanNotSetPropertyValue_1, name));
+                throw new IllegalStateException(Resources.format(Resources.Keys.CanNotSetPropertyValue_1, name));
             }
         }
     }
@@ -429,7 +430,7 @@ public abstract class AbstractFeature implements Serializable {
                     } while ((element = it.next()) == null || base.isInstance(element));
                     // Found an illegal value. Exeption is thrown below.
                 }
-                throw illegalValueClass(attribute.getName(), element); // 'element' can not be null here.
+                throw illegalValueClass(pt, base, element);         // 'element' can not be null here.
             }
         }
         ((AbstractAttribute) attribute).setValue(value);
@@ -447,14 +448,14 @@ public abstract class AbstractFeature implements Serializable {
             if (value instanceof AbstractFeature) {
                 final DefaultFeatureType actual = ((AbstractFeature) value).getType();
                 if (base != actual && !DefaultFeatureType.maybeAssignableFrom(base, actual)) {
-                    throw illegalPropertyType(role.getName(), actual.getName());
+                    throw illegalFeatureType(role, base, actual);
                 }
             } else if (value instanceof Collection<?>) {
                 verifyAssociationValues(role, (Collection<?>) value);
                 association.setValues((Collection<? extends AbstractFeature>) value);
-                return; // Skip the setter at the end of this method.
+                return;                                 // Skip the setter at the end of this method.
             } else {
-                throw illegalValueClass(association.getName(), value);
+                throw illegalValueClass(role, AbstractFeature.class, value);
             }
         }
         association.setValue((AbstractFeature) value);
@@ -495,20 +496,20 @@ public abstract class AbstractFeature implements Serializable {
         } else if (property instanceof AbstractAssociation) {
             pt = ((AbstractAssociation) property).getRole();
         } else {
-            throw illegalPropertyType(base.getName(), property.getClass());
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalPropertyType_2, base.getName(), property.getClass()));
         }
         if (pt != base) {
             if (base == null) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.PropertyNotFound_2, getName(), name));
             } else {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, name));
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedPropertyType_1, name));
             }
         }
     }
 
     /**
-     * Verifies the validity of the given value for the property of the given name, then returns the value
-     * to store. The returned value is usually the same than the given one, except in the case of collections.
+     * Verifies the validity of the given value for the property of the given name, then returns the value to store.
+     * The returned value is usually the same than the given one, except in the case of collections.
      */
     final Object verifyPropertyValue(final String name, final Object value) {
         final AbstractIdentifiedType pt = type.getProperty(name);
@@ -544,7 +545,7 @@ public abstract class AbstractFeature implements Serializable {
         } else if (!isSingleton && value instanceof Collection<?>) {
             return CheckedArrayList.castOrCopy((Collection<?>) value, valueClass);
         } else {
-            throw illegalValueClass(type.getName(), value);
+            throw illegalValueClass(type, valueClass, value);
         }
     }
 
@@ -570,13 +571,13 @@ public abstract class AbstractFeature implements Serializable {
             if (base == valueType || DefaultFeatureType.maybeAssignableFrom(base, valueType)) {
                 return isSingleton ? value : singletonList(AbstractFeature.class, role.getMinimumOccurs(), value);
             } else {
-                throw illegalPropertyType(role.getName(), valueType.getName());
+                throw illegalFeatureType(role, base, valueType);
             }
         } else if (!isSingleton && value instanceof Collection<?>) {
             verifyAssociationValues(role, (Collection<?>) value);
             return CheckedArrayList.castOrCopy((Collection<?>) value, AbstractFeature.class);
         } else {
-            throw illegalValueClass(role.getName(), value);
+            throw illegalValueClass(role, AbstractFeature.class, value);
         }
     }
 
@@ -589,11 +590,11 @@ public abstract class AbstractFeature implements Serializable {
         for (final Object value : values) {
             ArgumentChecks.ensureNonNullElement("values", index, value);
             if (!(value instanceof AbstractFeature)) {
-                throw illegalValueClass(role.getName(), value);
+                throw illegalValueClass(role, AbstractFeature.class, value);
             }
             final DefaultFeatureType type = ((AbstractFeature) value).getType();
             if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
-                throw illegalPropertyType(role.getName(), type.getName());
+                throw illegalFeatureType(role, base, type);
             }
             index++;
         }
@@ -606,7 +607,7 @@ public abstract class AbstractFeature implements Serializable {
     @SuppressWarnings("unchecked")
     private static <V> Collection<V> singletonList(final Class<V> valueClass, final int minimumOccurs, final Object value) {
         final CheckedArrayList<V> values = new CheckedArrayList<>(valueClass, Math.max(minimumOccurs, 4));
-        values.add((V) value); // Type will be checked by CheckedArrayList.
+        values.add((V) value);                              // Type will be checked by CheckedArrayList.
         return values;
     }
 
@@ -616,23 +617,29 @@ public abstract class AbstractFeature implements Serializable {
      * but that property can not be stored in or extracted from a {@link Property} instance.
      */
     static IllegalArgumentException unsupportedPropertyType(final GenericName name) {
-        return new IllegalArgumentException(Errors.format(Errors.Keys.CanNotInstantiate_1, name));
+        return new IllegalArgumentException(Resources.format(Resources.Keys.CanNotInstantiateProperty_1, name));
     }
 
     /**
      * Returns the exception for a property value of wrong Java class.
      *
-     * @param value The value, which shall be non-null.
+     * @param  value  the value, which shall be non-null.
      */
-    private static ClassCastException illegalValueClass(final GenericName name, final Object value) {
-        return new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass()));
+    private static ClassCastException illegalValueClass(
+            final AbstractIdentifiedType property, final Class<?> expected, final Object value)
+    {
+        return new ClassCastException(Resources.format(Resources.Keys.IllegalPropertyValueClass_3,
+                property.getName(), expected, value.getClass()));
     }
 
     /**
-     * Returns the exception for a property value (usually a feature) of wrong type.
+     * Returns the exception for an association value of wrong type.
      */
-    private static IllegalArgumentException illegalPropertyType(final GenericName name, final Object value) {
-        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2, name, value));
+    private static IllegalArgumentException illegalFeatureType(
+            final DefaultAssociationRole association, final FeatureType expected, final FeatureType actual)
+    {
+        return new IllegalArgumentException(Resources.format(Resources.Keys.IllegalFeatureType_3,
+                association.getName(), expected.getName(), actual.getName()));
     }
 
     /**

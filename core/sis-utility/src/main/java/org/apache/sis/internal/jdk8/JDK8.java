@@ -36,6 +36,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.util.Objects;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.math.BigInteger;
 
 
 /**
@@ -62,6 +63,19 @@ public final class JDK8 {
     }
 
     /**
+     * Compares two numbers as unsigned long.
+     *
+     * @param  x  first unsigned value.
+     * @param  y  second unsigned value.
+     * @return comparison result.
+     *
+     * @since 0.8
+     */
+    public static int compareUnsigned(final long x, final long y) {
+        return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
+    }
+
+    /**
      * Compares two numbers as unsigned.
      *
      * @param  x  first unsigned value.
@@ -76,7 +90,7 @@ public final class JDK8 {
 
     /**
      * Returns the given value as an unsigned string.
-     * This implementation does not support values larger than {@link Long#MAX_VALUE}.
+     * This implementation is inefficient.
      * This is only a placeholder; JDK8 provides a better implementation.
      *
      * @param  x  the value to format.
@@ -86,19 +100,19 @@ public final class JDK8 {
      */
     public static String toUnsignedString(final long x) {
         if (x >= 0) return Long.toString(x);
-        throw new ArithmeticException();
+        return new BigInteger(Long.toHexString(x), 16).toString();
     }
 
     /**
-     * Returns the given integer as an unsigned long.
+     * Returns the given byte as an unsigned long.
      *
-     * @param  x  the integer to return as an unsigned long.
-     * @return the unsigned value of the given integer.
+     * @param  x  the byte to return as an unsigned long.
+     * @return the unsigned value of the given byte.
      *
      * @since 0.8
      */
-    public static int toUnsignedLong(final int x) {
-        return x & 0xFFFFFFFF;
+    public static long toUnsignedLong(final byte x) {
+        return x & 0xFFL;
     }
 
     /**
@@ -113,17 +127,8 @@ public final class JDK8 {
         return x & 0xFF;
     }
 
-    /**
-     * Returns the given short as an unsigned integer.
-     *
-     * @param  x  the short to return as an unsigned integer.
-     * @return the unsigned value of the given short.
-     *
-     * @since 0.7
-     */
-    public static int toUnsignedInt(final short x) {
-        return x & 0xFFFF;
-    }
+    // Do not provide overloaded 'toUnsigned' methods for the short and int types.
+    // This is a cause confusion since the mask to apply depends on the type.
 
     /**
      * Safe cast of the given long to integer.
@@ -154,6 +159,22 @@ public final class JDK8 {
      */
     public static long addExact(final long x, final long y) {
         final long r = x + y;
+        if (((x ^ r) & (y ^ r)) >= 0) return r;
+        throw new ArithmeticException();
+    }
+
+    /**
+     * Safe subtraction of the given numbers.
+     *
+     * @param  x  first value.
+     * @param  y  second value to subtract.
+     * @return the difference.
+     * @throws ArithmeticException if the result overflows.
+     *
+     * @since 0.8
+     */
+    public static long subtractExact(final long x, final long y) {
+        final long r = x - y;
         if (((x ^ r) & (y ^ r)) >= 0) return r;
         throw new ArithmeticException();
     }

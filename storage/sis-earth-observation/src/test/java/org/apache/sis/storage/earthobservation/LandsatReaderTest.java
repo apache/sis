@@ -86,7 +86,7 @@ public class LandsatReaderTest extends TestCase {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
         {
-            final LandsatReader reader = new LandsatReader("LandsatTest.txt", Locale.ENGLISH,
+            final LandsatReader reader = new LandsatReader("LandsatTest.txt",
                     new EmptyWarningListeners<>(Locale.ENGLISH, Modules.EARTH_OBSERVATION));
             reader.read(in);
             actual = reader.getMetadata();

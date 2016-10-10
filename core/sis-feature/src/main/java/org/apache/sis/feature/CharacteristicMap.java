@@ -19,10 +19,10 @@ package org.apache.sis.feature;
 import java.util.Map;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.internal.util.AbstractMapEntry;
+import org.apache.sis.internal.feature.Resources;
 
 
 /**
@@ -53,8 +53,8 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
     /**
      * Creates an initially empty map of attribute characteristics.
      *
-     * @param source The attribute which is characterized by {@code characterizedBy}.
-     * @param characterizedBy Description of the characteristics of {@code source}.
+     * @param  source  the attribute which is characterized by {@code characterizedBy}.
+     * @param  characterizedBy  description of the characteristics of {@code source}.
      */
     CharacteristicMap(final AbstractAttribute<?> source, final CharacteristicTypeMap types) {
         this.source = source;
@@ -64,7 +64,7 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
     /**
      * Returns a copy of this map. Characteristics are also cloned.
      *
-     * @return A copy of this map.
+     * @return a copy of this map.
      */
     @Override
     public CharacteristicMap clone() throws CloneNotSupportedException {
@@ -160,15 +160,16 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
     /**
      * Returns the index for the characteristic of the given name.
      *
-     * @param  key The name for which to get the characteristic index.
-     * @return The index for the characteristic of the given name.
+     * @param  key  the name for which to get the characteristic index.
+     * @return the index for the characteristic of the given name.
      * @throws IllegalArgumentException if the given key is not the name of a characteristic in this map.
      */
     private int indexOf(final String key) {
         ArgumentChecks.ensureNonNull("key", key);
         final Integer index = types.indices.get(key);
         if (index == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, source.getName(), key));
+            throw new IllegalArgumentException(Resources.format(
+                    Resources.Keys.CharacteristicsNotFound_2, source.getName(), key));
         }
         return index;
     }
@@ -178,8 +179,8 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
      * If the given instance is not the expected one, then an {@link IllegalArgumentException}
      * will be thrown with an error message formatted using the name of expected and given types.
      *
-     * @param index Index of the expected attribute type.
-     * @param type  The actual attribute type.
+     * @param  index  index of the expected attribute type.
+     * @param  type   the actual attribute type.
      */
     final void verifyAttributeType(final int index, final DefaultAttributeType<?> type) {
         final DefaultAttributeType<?> expected = types.characterizedBy[index];
@@ -187,15 +188,15 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
             final GenericName en = expected.getName();
             final GenericName an = type.getName();
             throw new IllegalArgumentException(String.valueOf(en).equals(String.valueOf(an))
-                    ? Errors.format(Errors.Keys.MismatchedPropertyType_1, en)
-                    : Errors.format(Errors.Keys.CanNotAssign_2, en.push(source.getName()), an));
+                    ? Resources.format(Resources.Keys.MismatchedPropertyType_1, en)
+                    : Resources.format(Resources.Keys.CanNotSetCharacteristics_2, en.push(source.getName()), an));
         }
     }
 
     /**
      * Sets the attribute characteristic for the given name.
      *
-     * @param  key The name of the characteristic to set.
+     * @param  key  the name of the characteristic to set.
      * @throws IllegalArgumentException if the given key is not the name of a characteristic in this map.
      */
     @Override
@@ -215,7 +216,7 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
      * If no characteristic exists for the given name and that name is valid,
      * creates a new map entry with a default {@code Attribute} characteristic.
      *
-     * @param  name The name of the characteristic to create, if it does not already exist.
+     * @param  name  the name of the characteristic to create, if it does not already exist.
      * @return {@code true} if a new characteristic has been created for the given name.
      * @throws IllegalArgumentException if the given key is not the name of a characteristic in this map.
      */
@@ -235,7 +236,7 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
     /**
      * Adds the given characteristic if none is currently associated for the same characteristic name.
      *
-     * @param  value The characteristic to add.
+     * @param  value  the characteristic to add.
      * @return {@code true} if the characteristic has been added.
      * @throws IllegalArgumentException if given characteristic is not valid for this map.
      * @throws IllegalStateException if another characteristic already exists for the characteristic name.
@@ -255,8 +256,8 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
         } else if (previous.equals(value)) {
             return false;
         } else {
-            throw new IllegalStateException(Errors.format(
-                    Errors.Keys.PropertyAlreadyExists_2, source.getName(), value.getName()));
+            throw new IllegalStateException(Resources.format(
+                    Resources.Keys.CharacteristicsAlreadyExists_2, source.getName(), value.getName()));
         }
     }
 

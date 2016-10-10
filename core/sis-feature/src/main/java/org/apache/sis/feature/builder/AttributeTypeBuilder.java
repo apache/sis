@@ -32,6 +32,7 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
 import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverters;
@@ -600,7 +601,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
                         throw new IllegalStateException(errors().getString(Errors.Keys.UnsupportedImplementation_1, valueClass));
                     }
                     if (owner.defaultGeometry != null) {
-                        throw new IllegalStateException(errors().getString(Errors.Keys.PropertyAlreadyExists_2,
+                        throw new IllegalStateException(resources().getString(Resources.Keys.PropertyAlreadyExists_2,
                                 owner.getDisplayName(), AttributeConvention.GEOMETRY_PROPERTY));
                     }
                     owner.defaultGeometry = this;

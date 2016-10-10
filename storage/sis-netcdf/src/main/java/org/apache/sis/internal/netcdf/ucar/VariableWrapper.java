@@ -24,6 +24,8 @@ import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
+import org.apache.sis.math.Vector;
+import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -45,16 +47,10 @@ final class VariableWrapper extends Variable {
     private final VariableIF variable;
 
     /**
-     * The list of all dimensions in the NetCDF file.
-     */
-    private final List<? extends Dimension> all;
-
-    /**
      * Creates a new variable wrapping the given NetCDF interface.
      */
-    VariableWrapper(final VariableIF variable, List<? extends Dimension> all) {
+    VariableWrapper(final VariableIF variable) {
         this.variable = variable;
-        this.all = all;
     }
 
     /**
@@ -82,43 +78,32 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the variable data type, as a primitive type if possible.
-     * This method may return {@code null} (UCAR code seems to allow that).
+     * Returns the variable data type.
+     * This method may return {@code UNKNOWN} if the datatype is unknown.
      */
     @Override
-    public Class<?> getDataType() {
-        return variable.getDataType().getPrimitiveClassType();
+    public DataType getDataType() {
+        final DataType type;
+        switch (variable.getDataType()) {
+            case STRING: return DataType.STRING;
+            case CHAR:   return DataType.CHAR;
+            case BYTE:   type = DataType.BYTE;   break;
+            case SHORT:  type = DataType.SHORT;  break;
+            case INT:    type = DataType.INT;    break;
+            case LONG:   type = DataType.INT64;  break;
+            case FLOAT:  return DataType.FLOAT;
+            case DOUBLE: return DataType.DOUBLE;
+            default:     return DataType.UNKNOWN;
+        }
+        return type.unsigned(variable.isUnsigned());
     }
 
     /**
-     * Returns {@code true} if the integer values shall be considered as unsigned.
-     */
-    @Override
-    public boolean isUnsigned() {
-        return variable.isUnsigned();
-    }
-
-    /**
-     * Returns {@code true} if this variable seems to be a coordinate system axis,
-     * determined by comparing its name with the name of all dimensions in the NetCDF file.
+     * Returns {@code true} if this variable seems to be a coordinate system axis.
      */
     @Override
     public boolean isCoordinateSystemAxis() {
-        String name = null;
-        final Attribute attribute = variable.findAttributeIgnoreCase(_CoordinateVariableAlias);
-        if (attribute != null) {
-            name = attribute.getStringValue();
-        }
-        if (name == null) {
-            name = getName();
-        }
-        for (final Dimension dimension : all) {
-            if (name.equals(dimension.getShortName())) {
-                // This variable is a dimension of another variable.
-                return true;
-            }
-        }
-        return false;
+        return variable.isCoordinateVariable();
     }
 
     /**
@@ -182,9 +167,9 @@ final class VariableWrapper extends Variable {
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      */
     @Override
-    public Object read() throws IOException {
+    public Vector read() throws IOException {
         final Array array = variable.read();
-        return array.get1DJavaArray(array.getElementType());
+        return Vector.create(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
     }
 
     /**
@@ -196,7 +181,7 @@ final class VariableWrapper extends Variable {
      * @return the data as an array of a Java primitive type.
      */
     @Override
-    public Object read(final int[] areaLower, final int[] areaUpper, final int[] subsampling)
+    public Vector read(final int[] areaLower, final int[] areaUpper, final int[] subsampling)
             throws IOException, DataStoreException
     {
         final int[] size = new int[areaUpper.length];
@@ -209,6 +194,6 @@ final class VariableWrapper extends Variable {
         } catch (InvalidRangeException e) {
             throw new DataStoreContentException(e);
         }
-        return array.get1DJavaArray(array.getElementType());
+        return Vector.create(array.get1DJavaArray(array.getElementType()), variable.isUnsigned());
     }
 }

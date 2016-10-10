@@ -19,8 +19,8 @@ package org.apache.sis.internal.referencing.provider;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.util.resources.Messages;
 
 
 /**
@@ -68,7 +68,7 @@ public final class LambertConformalWest extends AbstractLambert {
         final ParameterBuilder builder = builder();
         FALSE_WESTING = createShift(builder
                 .addNamesAndIdentifiers(LambertConformal1SP.FALSE_EASTING)
-                .setRemarks(Messages.formatInternational(Messages.Keys.MisnamedParameter_1, "False westing")));
+                .setRemarks(Resources.formatInternational(Resources.Keys.MisnamedParameter_1, "False westing")));
 
         PARAMETERS = builder
                 .addIdentifier(IDENTIFIER)

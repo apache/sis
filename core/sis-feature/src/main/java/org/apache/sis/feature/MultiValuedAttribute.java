@@ -21,6 +21,7 @@ import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.feature.Resources;
 
 
 /**
@@ -63,7 +64,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
      * Creates a new attribute of the given type initialized to the
      * {@linkplain DefaultAttributeType#getDefaultValue() default value}.
      *
-     * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param  type  information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
     public MultiValuedAttribute(final DefaultAttributeType<V> type) {
         super(type);
@@ -78,8 +79,8 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
      * Creates a new attribute of the given type initialized to the given values.
      * Note that a {@code null} value may not be the same as the default value.
      *
-     * @param type   Information about the attribute (base Java class, domain of values, <i>etc.</i>).
-     * @param values The initial values, or {@code null} for initializing to an empty list.
+     * @param  type    information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param  values  the initial values, or {@code null} for initializing to an empty list.
      */
     @SuppressWarnings("unchecked")
     MultiValuedAttribute(final DefaultAttributeType<V> type, final Object values) {
@@ -100,7 +101,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
     /**
      * Returns the attribute value, or {@code null} if none.
      *
-     * @return The attribute value (may be {@code null}).
+     * @return the attribute value (may be {@code null}).
      * @throws IllegalStateException if this attribute contains more than one value.
      */
     @Override
@@ -108,7 +109,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
         switch (values.size()) {
             case 0:  return null;
             case 1:  return values.get(0);
-            default: throw new IllegalStateException(Errors.format(Errors.Keys.NotASingleton_1, getName()));
+            default: throw new IllegalStateException(Resources.format(Resources.Keys.NotASingleton_1, getName()));
         }
     }
 
@@ -117,7 +118,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
      * The returned collection is <cite>live</cite>: changes in the returned collection
      * will be reflected immediately in this {@code Attribute} instance, and conversely.
      *
-     * @return The attribute values in a <cite>live</cite> collection.
+     * @return the attribute values in a <cite>live</cite> collection.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -128,7 +129,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
     /**
      * Sets the attribute value.
      *
-     * @param value The new value, or {@code null} for removing all values from this attribute.
+     * @param  value  the new value, or {@code null} for removing all values from this attribute.
      */
     @Override
     public void setValue(final V value) {
@@ -141,7 +142,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
     /**
      * Sets the attribute values. All previous values are replaced by the given collection.
      *
-     * @param newValues The new values.
+     * @param  newValues  the new values.
      */
     @Override
     public void setValues(final Collection<? extends V> newValues) {
@@ -157,7 +158,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
      * This implementation returns a <em>shallow</em> copy:
      * the attribute {@linkplain #getValues() values} are <strong>not</strong> cloned.
      *
-     * @return A clone of this attribute.
+     * @return a clone of this attribute.
      * @throws CloneNotSupportedException if this attribute can not be cloned.
      */
     @Override
@@ -171,7 +172,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
     /**
      * Returns a hash code value for this attribute.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {

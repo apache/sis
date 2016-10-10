@@ -34,10 +34,10 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.feature.Resources;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
@@ -264,7 +264,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             for (final FeatureType type : this.superTypes) {
                 if (type instanceof NamedFeatureType) {
                     // Hierarchy of feature types can not be cyclic.
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.UnresolvedFeatureName_1, type.getName()));
+                    throw new IllegalArgumentException(Resources.format(Resources.Keys.UnresolvedFeatureName_1, type.getName()));
                 }
             }
         }
@@ -294,7 +294,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             if (property instanceof AbstractOperation) {
                 for (final String dependency : ((AbstractOperation) property).getDependencies()) {
                     if (!byName.containsKey(dependency)) {
-                        throw new IllegalArgumentException(Errors.format(Errors.Keys.DependencyNotFound_3,
+                        throw new IllegalArgumentException(Resources.format(Resources.Keys.DependencyNotFound_3,
                                 property.getName(), dependency, super.getName()));
                     }
                 }
@@ -384,7 +384,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         }
         /*
          * If some properties use long name of the form "head:tip", creates short aliases containing only the "tip"
-         * name for convenience, provided that it does not create ambiguity. If an short alias could map to two or
+         * name for convenience, provided that it does not create ambiguity.  If a short alias could map to two or
          * more properties, then this alias is not added.
          *
          * In the 'aliases' map below, null values will be assigned to ambiguous short names.
@@ -475,7 +475,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                     }
                 } else if (!isAssignableIgnoreName(previous, property)) {
                     final GenericName owner = ownerOf(this, sourceProperties, previous);
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyAlreadyExists_2,
+                    throw new IllegalArgumentException(Resources.format(Resources.Keys.PropertyAlreadyExists_2,
                             (owner != null) ? owner : "?", name));
                 }
             }
@@ -584,7 +584,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *
      * @see #OPERATION_INDEX
      */
-    private static boolean isParameterlessOperation(final AbstractIdentifiedType type) {
+    static boolean isParameterlessOperation(final AbstractIdentifiedType type) {
         if (type instanceof AbstractOperation) {
             final ParameterDescriptorGroup parameters = ((AbstractOperation) type).getParameters();
             return ((parameters == null) || parameters.descriptors().isEmpty())
@@ -817,7 +817,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         if (pt != null) {
             return pt;
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.PropertyNotFound_2, getName(), name));
     }
 
     /**
@@ -841,7 +841,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      */
     public AbstractFeature newInstance() throws IllegalStateException {
         if (isAbstract) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.AbstractType_1, getName()));
+            throw new IllegalStateException(Resources.format(Resources.Keys.AbstractFeatureType_1, getName()));
         }
         return isSparse ? new SparseFeature(this) : new DenseFeature(this);
     }

@@ -101,7 +101,8 @@
   <build>
     <plugins>
 
-      <!-- Collect JAR files in <root>/target/binaries directory. -->
+      <!-- Compile properties files into resources UTF files and
+           collect JAR files in <root>/target/binaries directory. -->
       <plugin>
         <groupId>org.apache.sis.core</groupId>
         <artifactId>sis-build-helper</artifactId>
@@ -109,6 +110,7 @@
         <executions>
           <execution>
             <goals>
+              <goal>compile-resources</goal>
               <goal>collect-jars</goal>
             </goals>
           </execution>

@@ -23,7 +23,7 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
 import static java.lang.Math.*;     // Not StrictMath in this particular case.
@@ -85,7 +85,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     /**
      * Creates a new instance for the same eccentricity than the given projection.
      *
-     * @param projection the projection from which to take the eccentricity.
+     * @param  projection  the projection from which to take the eccentricity.
      */
     public MercatorMethodComparison(final NormalizedProjection projection) {
         this(projection.eccentricitySquared);
@@ -115,8 +115,8 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * Computes φ using the series expansion given by Geomatics Guidance Note number 7, part 2.
      * This is the first part of the {@link ConformalProjection#φ(double)} method.
      *
-     * @param  t The {@code expOfSouthing} parameter value.
-     * @return The latitude (in radians) for the given parameter.
+     * @param  t  the {@code expOfSouthing} parameter value.
+     * @return the latitude (in radians) for the given parameter.
      */
     public double bySeriesExpansion(final double t) {
         final double χ = PI/2 - 2*atan(t);
@@ -136,8 +136,8 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      *   <li>sin(4⋅x) = (4 - 8⋅sin²(x))⋅sin(x)⋅cos(x)</li>
      * </ul>
      *
-     * @param  t The {@code expOfSouthing} parameter value.
-     * @return The latitude (in radians) for the given parameter.
+     * @param  t  the {@code expOfSouthing} parameter value.
+     * @return the latitude (in radians) for the given parameter.
      */
     public double usingTrigonometricIdentities(final double t) {
         final double χ = PI/2 - 2*atan(t);
@@ -154,8 +154,8 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * Computes φ using the iterative method used by USGS.
      * This is the second part of the {@link ConformalProjection#φ(double)} method.
      *
-     * @param  t The {@code expOfSouthing} parameter value.
-     * @return The latitude (in radians) for the given parameter.
+     * @param  t  the {@code expOfSouthing} parameter value.
+     * @return the latitude (in radians) for the given parameter.
      * @throws ProjectionException if the iteration does not converge.
      */
     public double byIterativeMethod(final double t) throws ProjectionException {
@@ -171,7 +171,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         if (Double.isNaN(t)) {
             return Double.NaN;
         }
-        throw new ProjectionException(Errors.Keys.NoConvergence);
+        throw new ProjectionException(Resources.format(Resources.Keys.NoConvergence));
     }
 
     /**
@@ -187,7 +187,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * values for random numbers. The result is printed to the standard output stream as the maximum and average errors,
      * in units of {@link NormalizedProjection#ITERATION_TOLERANCE} (about 0.25 cm on a planet of the size of Earth).
      *
-     * @param  numSamples Number of random sample values.
+     * @param  numSamples  number of random sample values.
      * @throws ProjectionException if an error occurred during the calculation of φ.
      */
     public void printAccuracyComparison(final int numSamples) throws ProjectionException {
@@ -265,8 +265,8 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * The current threshold value is shown by inserting a horizontal line separator in the table when that threshold
      * is crossed.</p>
      *
-     * @param min The first eccentricity value to test.
-     * @param max The maximal eccentricity value to test.
+     * @param  min  the first eccentricity value to test.
+     * @param  max  the maximal eccentricity value to test.
      * @throws ProjectionException if an error occurred in {@link #φ(double)}.
      */
     public static void printErrorForExcentricities(final double min, final double max) throws ProjectionException {
@@ -334,7 +334,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     /**
      * The result is printed to the standard output stream.
      *
-     * @param  args ignored.
+     * @param  args  ignored.
      * @throws ProjectionException if an error occurred in {@link #φ(double)}.
      * @throws InterruptedException if the thread has been interrupted between two benchmarks.
      */

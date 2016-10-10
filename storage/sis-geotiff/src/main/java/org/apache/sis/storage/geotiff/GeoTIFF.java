@@ -22,6 +22,7 @@ import java.io.Closeable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.geotiff.Resources;
 
 
 /**
@@ -66,6 +67,13 @@ abstract class GeoTIFF implements Closeable {
      */
     final Errors errors() {
         return Errors.getResources(owner.getLocale());
+    }
+
+    /**
+     * Returns the GeoTIFF-specific resource for error messages and warnings.
+     */
+    final Resources resources() {
+        return Resources.forLocale(owner.getLocale());
     }
 
     /**

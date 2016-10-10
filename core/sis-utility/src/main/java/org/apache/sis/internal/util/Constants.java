@@ -32,7 +32,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class Constants extends Static {
@@ -197,6 +197,11 @@ public final class Constants extends Static {
      * The EPSG code for degrees when used in axes.
      */
     public static final short EPSG_AXIS_DEGREES = 9122;
+
+    /**
+     * The EPSG code for the Greenwich prime meridian.
+     */
+    public static final short EPSG_GREENWICH = 8901;
 
     /**
      * EPSG code of "WGS 84 / Arctic Polar Stereographic" projection.

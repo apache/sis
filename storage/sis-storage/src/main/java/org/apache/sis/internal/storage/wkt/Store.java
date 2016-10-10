@@ -27,6 +27,7 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.ReferenceSystem;
+import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.storage.DataStore;
@@ -49,6 +50,13 @@ import org.apache.sis.referencing.CRS;
  * @module
  */
 final class Store extends DataStore {
+    /**
+     * Arbitrary size limit. Files that big are likely to be something else than WKT,
+     * so this limit allows earlier error reporting than loading huge amount of data
+     * before to detect that those data are not what we taught they are.
+     */
+    private static final int SIZE_LIMIT = 1000000;
+
     /**
      * The file name.
      */
@@ -103,8 +111,9 @@ final class Store extends DataStore {
                 int n;
                 while ((n = in.read(buffer, length, buffer.length - length)) >= 0) {
                     if ((length += n) >= buffer.length) {
-                        if (n >= Integer.MAX_VALUE / 1024) {     // Arbitrary size limit.
-                            throw new DataStoreContentException(Errors.format(Errors.Keys.ExcessiveStringSize));
+                        if (n >= SIZE_LIMIT) {
+                            throw new DataStoreContentException(Resources.format(
+                                    Resources.Keys.ExcessiveStringSize_3, name, SIZE_LIMIT, n));
                         }
                         buffer = Arrays.copyOf(buffer, n << 1);
                     }

@@ -24,6 +24,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
@@ -165,7 +166,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
     @Override
     public final void setElement(final int row, final int column, final double value) {
         throw new UnsupportedOperationException(isAffine()
-                ? Errors.format(Errors.Keys.UnmodifiableAffineTransform)
+                ? Resources.format(Resources.Keys.UnmodifiableAffineTransform)
                 : Errors.format(Errors.Keys.UnmodifiableObject_1, AbstractLinearTransform.class));
     }
 

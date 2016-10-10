@@ -52,12 +52,12 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.internal.util.LazySynchronizedIterator;
 import org.apache.sis.internal.util.SetOfUnknownSize;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -705,7 +705,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             return factory;
         }
         final String authority = request.getAuthorityAndVersion().toString();
-        throw new NoSuchAuthorityFactoryException(Errors.format(Errors.Keys.UnknownAuthority_1, authority), authority);
+        throw new NoSuchAuthorityFactoryException(Resources.format(Resources.Keys.UnknownAuthority_1, authority), authority);
     }
 
     /**
@@ -737,7 +737,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         final DefinitionURI uri = DefinitionURI.parse(code);
         if (uri != null) {
             if (uri.authority == null) {
-                throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.MissingAuthority_1, code), null, uri.code, code);
+                throw new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.MissingAuthority_1, code), null, uri.code, code);
             }
             final Class<? extends T> type = proxy.type;
             authority  = uri.authority;
@@ -751,7 +751,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                 if (code == null) {
                     message = Errors.format(Errors.Keys.MissingComponentInElement_2, s, "code");
                 } else {
-                    message = Errors.format(Errors.Keys.CanNotCreateObjectAsInstanceOf_2, type,
+                    message = Resources.format(Resources.Keys.CanNotCreateObjectAsInstanceOf_2, type,
                             DefinitionURI.PREFIX + DefinitionURI.SEPARATOR + uri.type);
                 }
                 throw new NoSuchAuthorityCodeException(message, authority, code, s);
@@ -766,7 +766,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             int end = CharSequences.skipTrailingWhitespaces(code, 0, afterAuthority);
             int start = CharSequences.skipLeadingWhitespaces(code, 0, end);
             if (start >= end) {
-                throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.MissingAuthority_1, code), null, code);
+                throw new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.MissingAuthority_1, code), null, code);
             }
             authority = code.substring(start, end);
             /*
@@ -1455,8 +1455,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          * No coordinate operation because of mismatched factories. This is not illegal (the result is an empty set)
          * but it is worth to notify the user because this case has some chances to be an user error.
          */
-        final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING,
-                Messages.Keys.MismatchedOperationFactories_2, sourceCRS, targetCRS);
+        final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
+                Resources.Keys.MismatchedOperationFactories_2, sourceCRS, targetCRS);
         record.setLoggerName(Loggers.CRS_FACTORY);
         Logging.log(MultiAuthoritiesFactory.class, "createFromCoordinateReferenceSystemCodes", record);
         return super.createFromCoordinateReferenceSystemCodes(sourceCRS, targetCRS);

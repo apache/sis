@@ -96,8 +96,8 @@ public final strictfp class NamesTest extends TestCase {
     @Test
     public void testClassFromOtherNamespaces() {
         assertValueClassEquals(null,         Names.createTypeName("MyOrg", ":", "CharacterString"));
-        assertValueClassEquals(String.class, Names.createTypeName(null,    ":", "CharacterString"));
-        assertValueClassEquals(null,         Names.createTypeName(null,    ":", "Dummy"));
+        assertValueClassEquals(String.class, Names.createTypeName(null,   null, "CharacterString"));
+        assertValueClassEquals(null,         Names.createTypeName(null,   null, "Dummy"));
     }
 
     /**

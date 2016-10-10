@@ -20,7 +20,11 @@ import java.util.Locale;
 import java.io.IOException;
 import java.text.ParseException;
 import org.opengis.metadata.citation.DateType;
+import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.math.Vector;
 
 
 /**
@@ -46,16 +50,36 @@ final class ImageFileDirectory {
     /**
      * The size of the image described by this FID, or -1 if the information has not been found.
      * The image may be much bigger than the memory capacity, in which case the image shall be tiled.
+     *
+     * <p><b>Note:</b>
+     * the {@link #imageHeight} attribute is named {@code ImageLength} in TIFF specification.</p>
      */
     private long imageWidth = -1, imageHeight = -1;
 
     /**
      * The size of each tile, or -1 if the information has not be found.
      * Tiles should be small enough for fitting in memory.
+     *
+     * <p><b>Note:</b>
+     * the {@link #tileHeight} attribute is named {@code TileLength} in TIFF specification.</p>
      */
     private int tileWidth = -1, tileHeight = -1;
 
-    private int samplesPerPixel;
+    /**
+     * The number of components per pixel.
+     * The {@code samplesPerPixel} value is usually 1 for bilevel, grayscale and palette-color images,
+     * and 3 for RGB images. If this value is higher, then the {@code ExtraSamples} TIFF tag should
+     * give an indication of the meaning of the additional channels.
+     */
+    private short samplesPerPixel = 1;
+
+    /**
+     * Number of bits per component.
+     * The TIFF specification allows a different number of bits per component for each component corresponding to a pixel.
+     * For example, RGB color data could use a different number of bits per component for each of the three color planes.
+     * However, current Apache SIS implementation requires that all components have the same {@code BitsPerSample} value.
+     */
+    private short bitsPerSample = 1;
 
     /**
      * If {@code true}, the components are stored in separate “component planes”.
@@ -69,6 +93,24 @@ final class ImageFileDirectory {
      * or unsupported we can not read the image, but we still can read the metadata.
      */
     private Compression compression;
+
+    /**
+     * The number of rows per strip.
+     * TIFF image data can be organized into strips for faster random access and efficient I/O buffering.
+     * The {@code rowsPerStrip} and {@link #imageHeight} fields together tell us the number of strips in the entire image.
+     * The equation is:
+     *
+     * {@preformat math
+     *     StripsPerImage = floor ((ImageLength + RowsPerStrip - 1) / RowsPerStrip)
+     * }
+     *
+     * {@code StripsPerImage} is not a field. It is merely a value that a TIFF reader will want to compute
+     * because it specifies the number of {@code StripOffsets} and {@code StripByteCounts} for the image.
+     *
+     * <p>This field should be interpreted as an unsigned value.
+     * The default is 2^32 - 1, which is effectively infinity (i.e. the entire image is one strip).</p>
+     */
+    private int rowsPerStrip = 0xFFFFFFFF;
 
     /**
      * Creates a new image file directory.
@@ -91,8 +133,11 @@ final class ImageFileDirectory {
      * @throws ArithmeticException if the value can not be represented in the expected Java type.
      * @throws IllegalArgumentException if a value which was expected to be a singleton is not.
      * @throws UnsupportedOperationException if the given type is {@link Type#UNDEFINED}.
+     * @throws DataStoreException if a logical error is found or an unsupported TIFF feature is used.
      */
-    Object addEntry(final Reader reader, final int tag, final Type type, final long count) throws IOException, ParseException {
+    Object addEntry(final Reader reader, final int tag, final Type type, final long count)
+            throws IOException, ParseException, DataStoreException
+    {
         switch (tag) {
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,15 +221,28 @@ final class ImageFileDirectory {
              * But the TIFF specification allows different values.
              */
             case Tags.BitsPerSample: {
-                // TODO
+                final Vector values = type.readVector(reader.input, count);
+                /*
+                 * The current implementation requires that all 'bitsPerSample' elements have the same value.
+                 * This restriction may be revisited in future Apache SIS versions.
+                 * Note: 'count' is never zero when this method is invoked, so we do not need to check bounds.
+                 */
+                bitsPerSample = values.shortValue(0);
+                final int length = values.size();
+                for (int i = 1; i < length; i++) {
+                    if (values.shortValue(i) != bitsPerSample) {
+                        throw new DataStoreContentException(reader.resources().getString(
+                                Resources.Keys.ConstantValueRequired_3, "BitsPerSample", reader.input.filename, values));
+                    }
+                }
                 break;
             }
             /*
-             * The number of components per pixel. Ssually 1 for bilevel, grayscale, and palette-color images,
+             * The number of components per pixel. Usually 1 for bilevel, grayscale, and palette-color images,
              * and 3 for RGB images. Default value is 1.
              */
             case Tags.SamplesPerPixel: {
-                // TODO
+                samplesPerPixel = type.readShort(reader.input, count);
                 break;
             }
             /*

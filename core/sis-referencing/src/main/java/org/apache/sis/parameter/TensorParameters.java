@@ -39,6 +39,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.measure.NumberRange;
@@ -616,8 +617,8 @@ public class TensorParameters<E> implements Serializable {
                 return param;
             }
         }
-        throw (ParameterNotFoundException) new ParameterNotFoundException(Errors.format(
-                Errors.Keys.ParameterNotFound_2, caller.getName(), name), name).initCause(cause);
+        throw (ParameterNotFoundException) new ParameterNotFoundException(Resources.format(
+                Resources.Keys.ParameterNotFound_2, caller.getName(), name), name).initCause(cause);
     }
 
     /**
