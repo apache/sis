@@ -24,10 +24,10 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -215,7 +215,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      */
     private static void verifyEquivalence(final String name, final boolean condition) {
         if (!condition) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedParameterDescriptor_1, name));
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedParameterDescriptor_1, name));
         }
     }
 }

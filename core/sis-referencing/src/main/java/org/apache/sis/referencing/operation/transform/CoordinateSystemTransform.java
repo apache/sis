@@ -29,6 +29,7 @@ import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationNotFoundException;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
@@ -38,7 +39,6 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -207,7 +207,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
         } catch (IllegalArgumentException | ConversionException e) {
             cause = e;
         }
-        throw new OperationNotFoundException(Errors.format(Errors.Keys.CoordinateOperationNotFound_2,
+        throw new OperationNotFoundException(Resources.format(Resources.Keys.CoordinateOperationNotFound_2,
                 WKTUtilities.toType(CoordinateSystem.class, source.getClass()),
                 WKTUtilities.toType(CoordinateSystem.class, target.getClass())), cause);
     }

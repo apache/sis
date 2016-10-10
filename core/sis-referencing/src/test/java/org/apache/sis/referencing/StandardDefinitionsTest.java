@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -59,6 +59,17 @@ import static org.junit.Assert.*;
     org.apache.sis.internal.referencing.provider.TransverseMercatorTest.class
 })
 public final strictfp class StandardDefinitionsTest extends TestCase {
+    /**
+     * Verifies value of the {@link StandardDefinitions#GREENWICH} code.
+     * This method is for ensuring consistency between hard-coded constants.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void verifyGreenwichCode() {
+        assertEquals(String.valueOf(Constants.EPSG_GREENWICH), StandardDefinitions.GREENWICH);
+    }
+
     /**
      * Tests {@link StandardDefinitions#createUTM(int, GeographicCRS, double, boolean, CartesianCS)}.
      *

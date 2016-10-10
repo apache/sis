@@ -79,7 +79,7 @@ public class CodeType {
     /**
      * Sets the value from the given name.
      *
-     * @param name The name to marshal.
+     * @param name  the name to marshal.
      */
     public final void setName(final GenericName name) {
         this.value = name.toString();
@@ -92,10 +92,10 @@ public class CodeType {
     /**
      * Returns the name from the current value.
      *
-     * @return The unmarshalled name.
+     * @return the unmarshalled name.
      */
     public GenericName getName() {
-        return Names.parseGenericName(codeSpace, ":", value);
+        return Names.parseGenericName(codeSpace, null, value);
     }
 
     /**
@@ -104,7 +104,7 @@ public class CodeType {
     @XmlRootElement(name = "LocalName", namespace = Namespaces.GCO)
     public static final class LocalName extends CodeType {
         @Override public GenericName getName() {
-            return Names.createLocalName(codeSpace, ":", value);
+            return Names.createLocalName(codeSpace, null, value);
         }
     }
 

@@ -34,8 +34,8 @@ import org.apache.sis.internal.referencing.provider.LambertConformalWest;
 import org.apache.sis.internal.referencing.provider.LambertConformalBelgium;
 import org.apache.sis.internal.referencing.provider.LambertConformalMichigan;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
@@ -227,7 +227,7 @@ public class LambertConicConformal extends ConformalProjection {
              * in this class break down with indetermination like 0 × ∞.
              * The caller should use the Mercator projection instead for such cases.
              */
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.LatitudesAreOpposite_2,
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.LatitudesAreOpposite_2,
                     new Latitude(φ1), new Latitude(φ2)));
         }
         /*

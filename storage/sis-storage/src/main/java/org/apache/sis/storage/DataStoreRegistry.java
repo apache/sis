@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -212,7 +212,7 @@ search:         while (!deferred.isEmpty() && connector.prefetch()) {
             }
         }
         if (open && selected == null) {
-            throw new UnsupportedStorageException(Errors.format(Errors.Keys.UnknownFormatFor_1, connector.getStorageName()));
+            throw new UnsupportedStorageException(Resources.format(Resources.Keys.UnknownFormatFor_1, connector.getStorageName()));
         }
         return selected;
     }

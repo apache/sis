@@ -31,7 +31,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -42,8 +42,8 @@ public final strictfp class NetcdfStoreTest extends IOTestCase {
     /**
      * Returns a new NetCDF store to test.
      *
-     * @param  dataset The name of the datastore to load.
-     * @throws DataStoreException If an error occurred while reading the NetCDF file.
+     * @param  dataset the name of the datastore to load.
+     * @throws DataStoreException if an error occurred while reading the NetCDF file.
      */
     private static NetcdfStore create(final String dataset) throws DataStoreException {
         return new NetcdfStore(new StorageConnector(IOTestCase.getResource(dataset)));
@@ -52,14 +52,15 @@ public final strictfp class NetcdfStoreTest extends IOTestCase {
     /**
      * Tests {@link NetcdfStore#getMetadata()}.
      *
-     * @throws DataStoreException If an error occurred while reading the NetCDF file.
+     * @throws DataStoreException if an error occurred while reading the NetCDF file.
      */
     @Test
     public void testGetMetadata() throws DataStoreException {
-        final NetcdfStore store = create(NCEP);
-        final Metadata metadata = store.getMetadata();
-        assertSame("Should be cached.", metadata, store.getMetadata());
-        store.close();
+        final Metadata metadata;
+        try (NetcdfStore store = create(NCEP)) {
+            metadata = store.getMetadata();
+            assertSame("Should be cached.", metadata, store.getMetadata());
+        }
         MetadataReaderTest.compareToExpected(metadata);
     }
 }

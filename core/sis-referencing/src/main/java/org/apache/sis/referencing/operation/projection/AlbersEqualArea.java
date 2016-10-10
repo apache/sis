@@ -24,11 +24,11 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
@@ -113,7 +113,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         double φ1 = initializer.getAndStore(STANDARD_PARALLEL_1, φ0);
         double φ2 = initializer.getAndStore(STANDARD_PARALLEL_2, φ1);
         if (abs(φ1 + φ2) < Formulas.ANGULAR_TOLERANCE) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.LatitudesAreOpposite_2,
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.LatitudesAreOpposite_2,
                     new Latitude(φ1), new Latitude(φ2)));
         }
         final boolean secant = (abs(φ1 - φ2) >= Formulas.ANGULAR_TOLERANCE);

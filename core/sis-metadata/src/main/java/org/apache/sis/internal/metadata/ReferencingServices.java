@@ -57,7 +57,6 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.resources.Errors;
 
 // Branch-specific imports
 import org.opengis.referencing.datum.Datum;
@@ -752,7 +751,7 @@ public class ReferencingServices extends OptionalDependency {
         if (method != null) {
             return method;
         }
-        throw new NoSuchIdentifierException(Errors.format(Errors.Keys.NoSuchOperationMethod_1, identifier), identifier);
+        throw new NoSuchIdentifierException("No such operation method: " + identifier, identifier);
     }
 
     /**

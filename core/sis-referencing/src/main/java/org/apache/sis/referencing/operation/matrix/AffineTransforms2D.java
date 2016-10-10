@@ -25,9 +25,9 @@ import java.awt.geom.RectangularShape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
 import static java.awt.geom.AffineTransform.*;
@@ -67,7 +67,7 @@ public final class AffineTransforms2D extends Static {
         }
         MatrixSIS.ensureSizeMatch(3, 3, matrix);
         if (!Matrices.isAffine(matrix)) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.NotAnAffineTransform));
+            throw new IllegalStateException(Resources.format(Resources.Keys.NotAnAffineTransform));
         }
         return new AffineTransform(matrix.getElement(0,0), matrix.getElement(1,0),
                                    matrix.getElement(0,1), matrix.getElement(1,1),

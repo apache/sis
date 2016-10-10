@@ -28,6 +28,9 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.metadata.ModifiableMetadata;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Version;
+import ucar.nc2.constants.CDM;
 
 
 /**
@@ -94,6 +97,25 @@ public class NetcdfStore extends DataStore {
             throw new DataStoreException(e);
         }
         return metadata;
+    }
+
+    /**
+     * Returns the version number of the Climate and Forecast (CF) conventions used in the NetCDF file.
+     * The use of CF convention is mandated by the OGC 11-165r2 standard
+     * (<cite>CF-netCDF3 Data Model Extension standard</cite>).
+     *
+     * @return CF-convention version, or {@code null} if no information about CF convention has been found.
+     * @throws DataStoreException if an error occurred while reading the data.
+     *
+     * @since 0.8
+     */
+    public synchronized Version getConventionVersion() throws DataStoreException {
+        for (final CharSequence value : CharSequences.split(decoder.stringValue(CDM.CONVENTIONS), ',')) {
+            if (CharSequences.regionMatches(value, 0, "CF-", true)) {
+                return new Version(value.subSequence(3, value.length()).toString());
+            }
+        }
+        return null;
     }
 
     /**

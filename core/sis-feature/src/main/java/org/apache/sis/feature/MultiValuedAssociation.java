@@ -19,7 +19,7 @@ package org.apache.sis.feature;
 import java.util.Collection;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.feature.Resources;
 
 
 /**
@@ -91,7 +91,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
         switch (values.size()) {
             case 0:  return null;
             case 1:  return values.get(0);
-            default: throw new IllegalStateException(Errors.format(Errors.Keys.NotASingleton_1, getName()));
+            default: throw new IllegalStateException(Resources.format(Resources.Keys.NotASingleton_1, getName()));
         }
     }
 
@@ -103,6 +103,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
      * @return The features in a <cite>live</cite> collection.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<AbstractFeature> getValues() {
         return values;
     }

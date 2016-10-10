@@ -36,6 +36,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Projection;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.referencing.NamedIdentifier;
@@ -45,7 +46,6 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.Debug;
 
 import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
@@ -160,7 +160,7 @@ public abstract class MapProjection extends AbstractProvider {
             throws IllegalArgumentException
     {
         if (Double.isNaN(value) || Double.isInfinite(value)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterValue_2,
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalParameterValue_2,
                     descriptor.getName(), value));
         }
         final Comparable<? extends Number> min = descriptor.getMinimumValue();
@@ -356,6 +356,6 @@ public abstract class MapProjection extends AbstractProvider {
      * @return a remarks saying that the parameter is actually defined in {@code origin}.
      */
     static InternationalString notFormalParameter(final String origin) {
-        return Messages.formatInternational(Messages.Keys.NotFormalProjectionParameter_1, origin);
+        return Resources.formatInternational(Resources.Keys.NotFormalProjectionParameter_1, origin);
     }
 }

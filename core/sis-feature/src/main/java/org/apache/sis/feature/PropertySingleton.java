@@ -155,7 +155,7 @@ final class PropertySingleton<V> extends AbstractList<V> {
      * Removes the singleton value, if presents.
      * This method is for {@link Iter#remove()} implementation only.
      *
-     * @param  c The expected {@link #modCount} value, for check against concurrent modification.
+     * @param  c  the expected {@link #modCount} value, for check against concurrent modification.
      */
     final void clear(final int c) {
         if (c != modCount) {

@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.Arrays;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -86,7 +86,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
         if (index != null) {
             return index;
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.PropertyNotFound_2, getName(), name));
     }
 
     /**

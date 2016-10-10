@@ -308,7 +308,9 @@ final class Reader extends GeoTIFF {
      * @param ignoreAfter  offset relative to the beginning of TIFF file at which entries should be ignored.
      *        This hint does not apply to the IFD specified by the {@code dir} argument.
      */
-    private void resolveDeferredEntries(final ImageFileDirectory dir, final long ignoreAfter) throws IOException {
+    private void resolveDeferredEntries(final ImageFileDirectory dir, final long ignoreAfter)
+            throws IOException, DataStoreException
+    {
         if (deferredNeedsSort) {
             Collections.sort(deferredEntries);                          // Sequential order in input stream.
             deferredNeedsSort = false;

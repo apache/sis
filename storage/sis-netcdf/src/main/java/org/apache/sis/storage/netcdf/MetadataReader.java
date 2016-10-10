@@ -451,7 +451,7 @@ final class MetadataReader {
                 if (resource == null) resource = createOnlineResource(url);
                 contact = createContact(address, resource);
             }
-            if (individualName != null || organisationName != null || contact != null) { // Do not test role.
+            if (individualName != null || organisationName != null || contact != null) {        // Do not test role.
                 AbstractParty party = null;
                 if (individualName   != null) party = new DefaultIndividual(individualName, null, null);
                 if (organisationName != null) party = new DefaultOrganisation(organisationName, null, (DefaultIndividual) party, null);
@@ -474,9 +474,9 @@ final class MetadataReader {
     private Citation createCitation(final Identifier identifier) throws IOException {
         String title = stringValue(TITLE);
         if (title == null) {
-            title = stringValue("full_name"); // THREDDS attribute documented in TITLE javadoc.
+            title = stringValue("full_name");   // THREDDS attribute documented in TITLE javadoc.
             if (title == null) {
-                title = stringValue("name"); // THREDDS attribute documented in TITLE javadoc.
+                title = stringValue("name");    // THREDDS attribute documented in TITLE javadoc.
                 if (title == null) {
                     title = decoder.getTitle();
                 }
@@ -853,7 +853,8 @@ final class MetadataReader {
         String name = variable.getName();
         if (name != null && !(name = name.trim()).isEmpty()) {
             if (nameFactory == null) {
-                nameFactory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class); // Real dependency injection to be used in a future version.
+                nameFactory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+                // Real dependency injection to be used in a future version.
             }
             band.setSequenceIdentifier(nameFactory.createMemberName(null, name,
                     nameFactory.createTypeName(null, variable.getDataTypeName())));

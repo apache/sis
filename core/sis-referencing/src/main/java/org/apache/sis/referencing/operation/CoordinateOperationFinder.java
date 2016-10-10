@@ -41,6 +41,7 @@ import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.provider.GeocentricAffine;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -56,7 +57,6 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
@@ -200,7 +200,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
                     CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(), targetCRS.getCoordinateSystem()));
         } catch (IllegalArgumentException | ConversionException e) {
-            throw new FactoryException(Errors.format(Errors.Keys.CanNotInstantiate_1, new CRSPair(sourceCRS, targetCRS)), e);
+            throw new FactoryException(Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, new CRSPair(sourceCRS, targetCRS)), e);
         }
         /*
          * If this method is invoked recursively, verify if the requested operation is already in the cache.
@@ -215,7 +215,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             if (op != null) return op;
         }
         if (previousSearches.put(key, Boolean.TRUE) != null) {
-            throw new FactoryException(Errors.format(Errors.Keys.RecursiveCreateCallForCode_2, CoordinateOperation.class, key));
+            throw new FactoryException(Resources.format(Resources.Keys.RecursiveCreateCallForCode_2, CoordinateOperation.class, key));
         }
         /*
          * If the user did not specified an area of interest, use the domain of validity of the CRS.
@@ -1060,7 +1060,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @return A default error message.
      */
     private static String notFoundMessage(final IdentifiedObject source, final IdentifiedObject target) {
-        return Errors.format(Errors.Keys.CoordinateOperationNotFound_2, CRSPair.label(source), CRSPair.label(target));
+        return Resources.format(Resources.Keys.CoordinateOperationNotFound_2, CRSPair.label(source), CRSPair.label(target));
     }
 
     /**
@@ -1071,6 +1071,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @return A default error message.
      */
     private static String canNotInvert(final GeneralDerivedCRS crs) {
-        return Errors.format(Errors.Keys.NonInvertibleOperation_1, crs.getConversionFromBase().getName().getCode());
+        return Resources.format(Resources.Keys.NonInvertibleOperation_1, crs.getConversionFromBase().getName().getCode());
     }
 }

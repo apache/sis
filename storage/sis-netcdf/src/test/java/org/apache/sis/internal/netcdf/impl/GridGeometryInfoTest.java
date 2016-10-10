@@ -40,7 +40,7 @@ public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
     /**
      * Creates a new decoder for dataset of the given name.
      *
-     * @return The decoder for the given name.
+     * @return the decoder for the given name.
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
      */
@@ -64,7 +64,7 @@ public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
      * Filters out the one-dimensional coordinate systems created by {@code GridGeometry}
      * but not by the UCAR library.
      *
-     * @return The filtered grid geometries to test.
+     * @return the filtered grid geometries to test.
      */
     @Override
     protected GridGeometry[] filter(final GridGeometry[] geometries) {

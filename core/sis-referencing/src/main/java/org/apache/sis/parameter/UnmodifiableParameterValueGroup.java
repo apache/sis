@@ -31,6 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 // Branch-dependent imports
@@ -146,7 +147,7 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
         if (value != null) {
             return value;
         }
-        throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2,
+        throw new ParameterNotFoundException(Resources.format(Resources.Keys.ParameterNotFound_2,
                 Verifier.getDisplayName(descriptor), name), name);
     }
 
@@ -166,7 +167,7 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
         }
         if (groups.isEmpty()) {
             if (!(descriptor.descriptor(name) instanceof ParameterDescriptorGroup)) {
-                throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2,
+                throw new ParameterNotFoundException(Resources.format(Resources.Keys.ParameterNotFound_2,
                         Verifier.getDisplayName(descriptor), name), name);
             }
         }

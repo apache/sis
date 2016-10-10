@@ -71,7 +71,7 @@ import org.apache.sis.internal.util.PatchedUnitFormat;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public class IndexedResourceBundle extends ResourceBundle implements Localized {
@@ -126,8 +126,8 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Constructs a new resource bundle loading data from the given UTF file.
      *
-     * @param resources The path of the binary file containing resources, or {@code null} if
-     *        there is no resources. The resources may be a file or an entry in a JAR file.
+     * @param  resources  the path of the binary file containing resources, or {@code null} if
+     *         there is no resources. The resources may be a file or an entry in a JAR file.
      */
     protected IndexedResourceBundle(final URL resources) {
         this.resources = resources;
@@ -136,10 +136,10 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Returns a resource bundle of the specified class.
      *
-     * @param  <T>     The resource bundle class.
-     * @param  base    The resource bundle class.
-     * @param  locale  The locale, or {@code null} for the default locale.
-     * @return Resources in the given locale.
+     * @param  <T>      the resource bundle class.
+     * @param  base     the resource bundle class.
+     * @param  locale   the locale, or {@code null} for the default locale.
+     * @return resources in the given locale.
      * @throws MissingResourceException if resources can't be found.
      *
      * @see Vocabulary#getResources(Locale)
@@ -157,13 +157,11 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
 
     /**
      * Returns a handler for the constants declared in the inner {@code Keys} class.
-     * Subclasses defined in the {@code org.apache.sis.util.resources} package
-     * override this method for efficiency. However the default implementation
-     * should work for other cases (we don't want to expose too much internal API).
+     * Subclasses should override this method for efficiency, but this is not mandatory.
      *
-     * @return A handler for the constants declared in the inner {@code Keys} class.
+     * @return a handler for the constants declared in the inner {@code Keys} class.
      */
-    KeyConstants getKeyConstants() {
+    protected KeyConstants getKeyConstants() {
         Class<?> keysClass = KeyConstants.class;
         for (final Class<?> inner : getClass().getClasses()) {
             if ("Keys".equals(inner.getSimpleName())) {
@@ -177,7 +175,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Returns an enumeration of the keys.
      *
-     * @return All keys in this resource bundle.
+     * @return all keys in this resource bundle.
      */
     @Override
     public final Enumeration<String> getKeys() {
@@ -224,7 +222,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Lists resources to the specified stream. If a resource has more than one line, only
      * the first line will be written. This method is used mostly for debugging purposes.
      *
-     * @param  out The destination stream.
+     * @param  out  the destination stream.
      * @throws IOException if an output operation failed.
      */
     @Debug
@@ -260,9 +258,9 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Ensures that resource values are loaded. If they are not, loads them immediately.
      *
-     * @param  key Key for the requested resource, or {@code null} if all resources
+     * @param  key  key for the requested resource, or {@code null} if all resources
      *         are requested. This key is used mostly for constructing messages.
-     * @return The resources.
+     * @return the resources.
      * @throws MissingResourceException if this method failed to load resources.
      */
     private String[] ensureLoaded(final String key) throws MissingResourceException {
@@ -341,7 +339,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Returns null if this resource bundle does not contain an
      * object for the given key.
      *
-     * @param  key the key for the desired object
+     * @param  key  the key for the desired object
      * @throws NullPointerException if {@code key} is {@code null}
      * @return the object for the given key, or null
      */
@@ -383,7 +381,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * <div class="note"><b>Note:</b>
      * If more cases are added, remember to update class and package javadoc.</div>
      *
-     * @param  arguments The object to check.
+     * @param  arguments  the object to check.
      * @return {@code arguments} as an array, eventually with some elements replaced.
      */
     private Object[] toArray(final Object arguments) {
@@ -448,9 +446,9 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Gets a string for the given key and appends "…" to it.
      * This method is typically used for creating menu items.
      *
-     * @param  key The key for the desired string.
-     * @return The string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key  the key for the desired string.
+     * @return the string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public final String getMenuLabel(final short key) throws MissingResourceException {
         return getString(key) + '…';
@@ -462,8 +460,8 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * No space is added after the string; it is up to the caller to add such space if needed.
      *
      * @param  key The key for the desired string.
-     * @return The string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @return the string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public final String getLabel(final short key) throws MissingResourceException {
         String label = getString(key);
@@ -478,9 +476,9 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Gets a string for the given key from this resource bundle or one of its parents.
      *
-     * @param  key The key for the desired string.
-     * @return The string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key  the key for the desired string.
+     * @return the string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public final String getString(final short key) throws MissingResourceException {
         return getString(String.valueOf(key));
@@ -501,10 +499,10 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * {@link MessageFormat}, all occurrences of "{0}", "{1}", "{2}" in the resource string will be
      * replaced by {@code arg0[0]}, {@code arg0[1]}, {@code arg0[2]}, etc.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 A single object or an array of objects to be formatted and substituted.
-     * @return The string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  a single object or an array of objects to be formatted and substituted.
+     * @return the string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      *
      * @see #getString(String)
      * @see #getString(short,Object,Object)
@@ -545,11 +543,11 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Gets a string for the given key and replaces all occurrences of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 Value to substitute for "{0}".
-     * @param  arg1 Value to substitute for "{1}".
-     * @return The formatted string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute for "{0}".
+     * @param  arg1  value to substitute for "{1}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public final String getString(final short  key,
                                   final Object arg0,
@@ -562,12 +560,12 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Gets a string for the given key and replaces all occurrences of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 Value to substitute for "{0}".
-     * @param  arg1 Value to substitute for "{1}".
-     * @param  arg2 Value to substitute for "{2}".
-     * @return The formatted string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute for "{0}".
+     * @param  arg1  value to substitute for "{1}".
+     * @param  arg2  value to substitute for "{2}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public final String getString(final short  key,
                                   final Object arg0,
@@ -581,13 +579,13 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Gets a string for the given key and replaces all occurrences of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 Value to substitute for "{0}".
-     * @param  arg1 Value to substitute for "{1}".
-     * @param  arg2 Value to substitute for "{2}".
-     * @param  arg3 Value to substitute for "{3}".
-     * @return The formatted string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute for "{0}".
+     * @param  arg1  value to substitute for "{1}".
+     * @param  arg2  value to substitute for "{2}".
+     * @param  arg3  value to substitute for "{3}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public final String getString(final short  key,
                                   final Object arg0,
@@ -602,14 +600,14 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Gets a string for the given key and replaces all occurrences of "{0}",
      * "{1}", with values of {@code arg0}, {@code arg1}, etc.
      *
-     * @param  key The key for the desired string.
-     * @param  arg0 Value to substitute for "{0}".
-     * @param  arg1 Value to substitute for "{1}".
-     * @param  arg2 Value to substitute for "{2}".
-     * @param  arg3 Value to substitute for "{3}".
-     * @param  arg4 Value to substitute for "{4}".
-     * @return The formatted string for the given key.
-     * @throws MissingResourceException If no object for the given key can be found.
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute for "{0}".
+     * @param  arg1  value to substitute for "{1}".
+     * @param  arg2  value to substitute for "{2}".
+     * @param  arg3  value to substitute for "{3}".
+     * @param  arg4  value to substitute for "{4}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
      */
     public final String getString(final short  key,
                                   final Object arg0,
@@ -624,9 +622,9 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Gets a localized log record.
      *
-     * @param  level The log record level.
-     * @param  key   The resource key.
-     * @return The log record.
+     * @param  level  the log record level.
+     * @param  key    the resource key.
+     * @return the log record.
      */
     public final LogRecord getLogRecord(final Level level, final short key) {
         final LogRecord record = new LogRecord(level, getKeyConstants().getKeyName(key));
@@ -638,10 +636,10 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Gets a localized log record.
      *
-     * @param  level The log record level.
-     * @param  key   The resource key.
-     * @param  arg0  The parameter for the log message, which may be an array.
-     * @return The log record.
+     * @param  level  the log record level.
+     * @param  key    the resource key.
+     * @param  arg0   the parameter for the log message, which may be an array.
+     * @return the log record.
      */
     public final LogRecord getLogRecord(final Level level, final short key,
                                         final Object arg0)
@@ -654,11 +652,11 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Gets a localized log record.
      *
-     * @param  level The log record level.
-     * @param  key   The resource key.
-     * @param  arg0  The first parameter.
-     * @param  arg1  The second parameter.
-     * @return The log record.
+     * @param  level  the log record level.
+     * @param  key    the resource key.
+     * @param  arg0   the first parameter.
+     * @param  arg1   the second parameter.
+     * @return the log record.
      */
     public final LogRecord getLogRecord(final Level level, final short key,
                                         final Object arg0,
@@ -670,12 +668,12 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Gets a localized log record.
      *
-     * @param  level The log record level.
-     * @param  key   The resource key.
-     * @param  arg0  The first parameter.
-     * @param  arg1  The second parameter.
-     * @param  arg2  The third parameter.
-     * @return The log record.
+     * @param  level  the log record level.
+     * @param  key    the resource key.
+     * @param  arg0   the first parameter.
+     * @param  arg1   the second parameter.
+     * @param  arg2   the third parameter.
+     * @return the log record.
      */
     public final LogRecord getLogRecord(final Level level, final short key,
                                         final Object arg0,
@@ -688,13 +686,13 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Gets a localized log record.
      *
-     * @param  level The log record level.
-     * @param  key   The resource key.
-     * @param  arg0  The first parameter.
-     * @param  arg1  The second parameter.
-     * @param  arg2  The third parameter.
-     * @param  arg3  The fourth parameter.
-     * @return The log record.
+     * @param  level  the log record level.
+     * @param  key    the resource key.
+     * @param  arg0   the first parameter.
+     * @param  arg1   the second parameter.
+     * @param  arg2   the third parameter.
+     * @param  arg3   the fourth parameter.
+     * @return the log record.
      */
     public final LogRecord getLogRecord(final Level level, final short key,
                                         final Object arg0,
@@ -709,12 +707,12 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Returns the locale specified in the given map, or {@code null} if none.
      * Value of unexpected type are ignored.
      *
-     * @param  properties The map of properties, or {@code null} if none.
-     * @return The locale found in the given map, or {@code null} if none.
+     * @param  properties  the map of properties, or {@code null} if none.
+     * @return the locale found in the given map, or {@code null} if none.
      *
-     * @since 0.4
+     * @since 0.8
      */
-    static Locale getLocale(final Map<?,?> properties) {
+    protected static Locale getLocale(final Map<?,?> properties) {
         if (properties != null) {
             final Object candidate = properties.get(LOCALE_KEY);
             if (candidate instanceof Locale) {
@@ -728,7 +726,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Returns a string representation of this object.
      * This method is for debugging purposes only.
      *
-     * @return A string representation of this resources bundle.
+     * @return a string representation of this resources bundle.
      */
     @Debug
     @Override

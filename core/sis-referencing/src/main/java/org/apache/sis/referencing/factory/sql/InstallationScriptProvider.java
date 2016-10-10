@@ -33,6 +33,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.setup.InstallationResources;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -213,7 +214,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
         verifyAuthority(authority);
         ArgumentChecks.ensureValidIndex(resources.length, resource);
         if (!Constants.EPSG.equals(authority)) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.UnknownAuthority_1, authority));
+            throw new IllegalStateException(Resources.format(Resources.Keys.UnknownAuthority_1, authority));
         }
         String name = resources[resource];
         final Charset charset;

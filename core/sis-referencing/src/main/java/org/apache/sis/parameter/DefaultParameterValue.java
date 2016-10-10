@@ -39,6 +39,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.jaxb.gml.MeasureList;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -379,7 +380,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     private UnitConverter getConverterTo(final Unit<?> unit) {
         final Unit<?> source = getUnit();
         if (source == null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.UnitlessParameter_1, Verifier.getDisplayName(descriptor)));
+            throw new IllegalStateException(Resources.format(Resources.Keys.UnitlessParameter_1, Verifier.getDisplayName(descriptor)));
         }
         ensureNonNull("unit", unit);
         final short expectedID = Verifier.getUnitMessageID(source);
@@ -504,7 +505,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         if (value != null) {
             throw new InvalidParameterTypeException(getClassTypeError(), name);
         }
-        throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForParameter_1, cause, name));
+        throw new IllegalStateException(Resources.format(Resources.Keys.MissingValueForParameter_1, name), cause);
     }
 
     /**
@@ -536,14 +537,14 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         if (value != null) {
             return new InvalidParameterTypeException(getClassTypeError(), name);
         }
-        return new IllegalStateException(Errors.format(Errors.Keys.MissingValueForParameter_1, name));
+        return new IllegalStateException(Resources.format(Resources.Keys.MissingValueForParameter_1, name));
     }
 
     /**
      * Formats an error message for illegal method call for the current value type.
      */
     private String getClassTypeError() {
-        return Errors.format(Errors.Keys.IllegalOperationForValueClass_1,
+        return Resources.format(Resources.Keys.IllegalOperationForValueClass_1,
                 (descriptor != null) ? ((ParameterDescriptor<?>) descriptor).getValueClass() : "?");
     }
 

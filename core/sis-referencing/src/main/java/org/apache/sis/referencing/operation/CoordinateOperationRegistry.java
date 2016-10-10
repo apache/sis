@@ -61,6 +61,7 @@ import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Citations;
@@ -73,7 +74,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -336,7 +336,7 @@ class CoordinateOperationRegistry {
                     return operation;
                 }
             } catch (IllegalArgumentException | ConversionException e) {
-                String message = Errors.format(Errors.Keys.CanNotInstantiate_1, new CRSPair(sourceCRS, targetCRS));
+                String message = Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, new CRSPair(sourceCRS, targetCRS));
                 String details = e.getLocalizedMessage();
                 if (details != null) {
                     message = message + ' ' + details;

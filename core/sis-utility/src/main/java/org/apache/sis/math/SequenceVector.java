@@ -17,85 +17,47 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-
-import static org.apache.sis.util.Numbers.*;
-import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
 
 
 /**
- * A vector which is a sequence of numbers.
+ * A vector which is a sequence of increasing or decreasing values.
+ * Values may be {@code long} or {@code double} types.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-final class SequenceVector extends Vector implements Serializable {
+abstract class SequenceVector extends Vector implements Serializable {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 7980737287789566091L;
 
     /**
-     * The element type, or {@code null} if values are NaN.
-     */
-    private final Class<? extends Number> type;
-
-    /**
-     * The value at index 0.
-     */
-    private final double first;
-
-    /**
-     * The difference between the values at two adjacent indexes.
-     */
-    private final double increment;
-
-    /**
      * The length of this vector.
      */
-    private final int length;
+    final int length;
 
     /**
-     * Creates a sequence of numbers in a given range of values using the given increment.
-     *
-     * @param first     The first value, inclusive.
-     * @param increment The difference between the values at two adjacent indexes.
-     * @param length    The length of the vector.
+     * Creates a sequence of numbers of the given length.
      */
-    public SequenceVector(final double first, final double increment, final int length) {
+    SequenceVector(final int length) {
+        this.length = length;
         if (length < 0) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "length", length));
         }
-        this.first     = first;
-        this.increment = increment;
-        this.length    = length;
-        if (Double.isNaN(first) || Double.isNaN(increment)) {
-            type = null;
-        } else {
-            Class<? extends Number> t = narrowestClass(first);
-            t = widestClass(t, narrowestClass(first + increment));
-            t = widestClass(t, narrowestClass(first + increment*(length-1)));
-            type = t;
-        }
-    }
-
-    /**
-     * Returns the type of elements.
-     */
-    @Override
-    public Class<? extends Number> getElementType() {
-        // Float is the smallest type capable to hold NaN.
-        return (type != null) ? type : Float.class;
     }
 
     /**
      * {@code SequenceVector} values are always interpreted as signed values.
      */
     @Override
-    public boolean isUnsigned() {
+    public final boolean isUnsigned() {
         return false;
     }
 
@@ -103,64 +65,215 @@ final class SequenceVector extends Vector implements Serializable {
      * Returns the vector size.
      */
     @Override
-    public int size() {
+    public final int size() {
         return length;
-    }
-
-    /**
-     * Returns {@code true} if this vector returns {@code NaN} values.
-     */
-    @Override
-    public boolean isNaN(final int index) {
-        return type == null;
-    }
-
-    /**
-     * Computes the value at the given index.
-     */
-    @Override
-    public double doubleValue(final int index) throws IndexOutOfBoundsException {
-        ensureValidIndex(length, index);
-        return first + increment*index;
-    }
-
-    /**
-     * Computes the value at the given index.
-     */
-    @Override
-    public float floatValue(final int index) throws IndexOutOfBoundsException {
-        return (float) doubleValue(index);
-    }
-
-    /**
-     * Returns the string representation of the value at the given index.
-     */
-    @Override
-    public String stringValue(final int index) throws IndexOutOfBoundsException {
-        return String.valueOf(doubleValue(index));
-    }
-
-    /**
-     * Computes the value at the given index.
-     */
-    @Override
-    public Number get(final int index) throws IndexOutOfBoundsException {
-        return doubleValue(index);
     }
 
     /**
      * Unsupported operation since this vector is not modifiable.
      */
     @Override
-    public Number set(final int index, final Number value) {
+    public final Number set(final int index, final Number value) {
         throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "Vector"));
     }
 
     /**
-     * Creates a new sequence.
+     * Returns {@code this} since Apache SIS can not create a more compact vector than this {@code SequenceVector}.
      */
     @Override
-    Vector createSubSampling(final int first, final int step, final int length) {
-        return new SequenceVector(doubleValue(first), increment*step, length);
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public final Vector compress(final double tolerance) {
+        return this;
+    }
+
+
+    /**
+     * A vector which is a sequence of increasing or decreasing {@code double} values.
+     */
+    static final class Doubles extends SequenceVector {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -5222432536264284005L;
+
+        /**
+         * The value at index 0.
+         */
+        private final double first;
+
+        /**
+         * The difference between the values at two adjacent indexes.
+         * May be positive, negative or zero.
+         */
+        private final double increment;
+
+        /**
+         * Creates a sequence of numbers in a given range of values using the given increment.
+         *
+         * @param  first      the first value, inclusive.
+         * @param  increment  the difference between the values at two adjacent indexes.
+         * @param  length     the length of the vector.
+         */
+        Doubles(final Number first, final Number increment, final int length) {
+            super(length);
+            this.first     = first.doubleValue();
+            this.increment = increment.doubleValue();
+        }
+
+        /** Creates a new sequence for a subrange of this vector. */
+        @Override Vector createSubSampling(final int offset, final int step, final int n) {
+            return new Doubles(doubleValue(offset), increment*step, n);
+        }
+
+        /** Returns the type of elements. */
+        @Override public Class<Double> getElementType() {
+            return Double.class;
+        }
+
+        /** Returns {@code true} if this vector contains only integer values. */
+        @Override public boolean isInteger() {
+            return Math.floor(first) == first && Math.floor(increment) == increment;
+        }
+
+        /**
+         * Returns {@code true} if this vector returns {@code NaN} values.
+         */
+        @Override public boolean isNaN(final int index) {
+            return Double.isNaN(first) || Double.isNaN(increment);
+        }
+
+        /** Computes the value at the given index. */
+        @Override public double doubleValue(final int index) {
+            ArgumentChecks.ensureValidIndex(length, index);
+            return first + increment*index;
+        }
+
+        /** Computes the value at the given index. */
+        @Override public float floatValue(final int index) {
+            return (float) doubleValue(index);
+        }
+
+        /** Returns the string representation of the value at the given index. */
+        @Override public String stringValue(final int index) {
+            return String.valueOf(doubleValue(index));
+        }
+
+        /** Computes the value at the given index. */
+        @Override public Number get(final int index) {
+            return doubleValue(index);
+        }
+
+        /** Returns the increment between all consecutive values */
+        @Override public Number increment(final double tolerance) {
+            return increment;
+        }
+
+        /** Computes the minimal and maximal values in this vector. */
+        @Override public NumberRange<Double> range() {
+            double min = first;
+            double max = first + increment * (length - 1);
+            if (max < min) {
+                min = max;
+                max = first;
+            }
+            return NumberRange.create(min, true, max, true);
+        }
+    }
+
+
+    /**
+     * A vector which is a sequence of increasing or decreasing {@code long} values.
+     */
+    static final class Longs extends SequenceVector {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 8959308953555132379L;
+
+        /**
+         * The value at index 0.
+         */
+        private final long first;
+
+        /**
+         * The difference between the values at two adjacent indexes.
+         * May be positive, negative or zero.
+         */
+        private final long increment;
+
+        /**
+         * Creates a sequence of numbers in a given range of values using the given increment.
+         *
+         * @param  first      the first value, inclusive.
+         * @param  increment  the difference between the values at two adjacent indexes.
+         * @param  length     the length of the vector.
+         */
+        Longs(final Number first, final Number increment, final int length) {
+            super(length);
+            this.first     = first.longValue();
+            this.increment = increment.longValue();
+        }
+
+        /** Creates a new sequence for a subrange of this vector. */
+        @Override Vector createSubSampling(final int offset, final int step, final int n) {
+            return new Longs(longValue(offset), increment*step, n);
+        }
+
+        /** Returns the type of elements. */
+        @Override public Class<Long> getElementType() {
+            return Long.class;
+        }
+
+        /** Returns {@code true} since this vector contains only integer values. */
+        @Override public boolean isInteger() {
+            return true;
+        }
+
+        /** Returns {@code false} since this vector never return {@code NaN} values. */
+        @Override public boolean isNaN(final int index) {
+            return false;
+        }
+
+        /** Computes the value at the given index. */
+        @Override public double doubleValue(final int index) {
+            return longValue(index);
+        }
+
+        /** Computes the value at the given index. */
+        @Override public float floatValue(final int index) {
+            return longValue(index);
+        }
+
+        /** Computes the value at the given index. */
+        @Override public long longValue(final int index) {
+            ArgumentChecks.ensureValidIndex(length, index);
+            return first + increment*index;
+        }
+
+        /** Returns the string representation of the value at the given index. */
+        @Override public String stringValue(final int index) {
+            return String.valueOf(longValue(index));
+        }
+
+        /** Computes the value at the given index. */
+        @Override public Number get(final int index) {
+            return longValue(index);
+        }
+
+        /** Returns the increment between all consecutive values */
+        @Override public Number increment(final double tolerance) {
+            return increment;
+        }
+
+        /** Computes the minimal and maximal values in this vector. */
+        @Override public NumberRange<Long> range() {
+            long min = first;
+            long max = first + increment * (length - 1);
+            if (max < min) {
+                min = max;
+                max = first;
+            }
+            return NumberRange.create(min, true, max, true);
+        }
     }
 }

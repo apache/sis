@@ -107,8 +107,8 @@ public class FeatureFormat extends TabularFormat<Object> {
     /**
      * Creates a new formatter for the given locale and timezone.
      *
-     * @param locale   The locale, or {@code null} for {@code Locale.ROOT}.
-     * @param timezone The timezone, or {@code null} for UTC.
+     * @param  locale    the locale, or {@code null} for {@code Locale.ROOT}.
+     * @param  timezone  the timezone, or {@code null} for UTC.
      */
     public FeatureFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
@@ -135,8 +135,8 @@ public class FeatureFormat extends TabularFormat<Object> {
      *   <li>{@link java.util.Locale.Category#DISPLAY} specifies the locale to use for labels.</li>
      * </ul>
      *
-     * @param  category The category for which a locale is desired.
-     * @return The locale for the given category (never {@code null}).
+     * @param  category  the category for which a locale is desired.
+     * @return the locale for the given category (never {@code null}).
      */
     @Override
     public Locale getLocale(final Locale.Category category) {
@@ -160,7 +160,7 @@ public class FeatureFormat extends TabularFormat<Object> {
      *   <li>{@link FeatureType}</li>
      * </ul>
      *
-     * @throws IOException If an error occurred while writing to the given appendable.
+     * @throws IOException if an error occurred while writing to the given appendable.
      */
     @Override
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
@@ -244,6 +244,12 @@ header: for (int i=0; ; i++) {
         for (final AbstractIdentifiedType propertyType : featureType.getProperties(true)) {
             Object value = null;
             if (feature != null) {
+                if (!(propertyType instanceof DefaultAttributeType<?>) &&
+                    !(propertyType instanceof DefaultAssociationRole) &&
+                    !DefaultFeatureType.isParameterlessOperation(propertyType))
+                {
+                    continue;
+                }
                 value = feature.getPropertyValue(propertyType.getName().toString());
                 if (value == null) {
                     if (propertyType instanceof FieldType && ((FieldType) propertyType).getMinimumOccurs() == 0) {
@@ -275,7 +281,7 @@ header: for (int i=0; ; i++) {
             final int minimumOccurs, maximumOccurs;         // Negative values mean no cardinality.
             final AbstractIdentifiedType resultType;        // Result of operation if applicable.
             if (propertyType instanceof AbstractOperation) {
-                resultType = ((AbstractOperation) propertyType).getResult();
+                resultType = ((AbstractOperation) propertyType).getResult();        // May be null
             } else {
                 resultType = propertyType;
             }
@@ -293,7 +299,7 @@ header: for (int i=0; ; i++) {
                 valueType     = toString(DefaultAssociationRole.getValueTypeName(pt));
                 valueClass    = AbstractFeature.class;
             } else {
-                valueType  = toString(resultType.getName());
+                valueType  = (resultType != null) ? toString(resultType.getName()) : "";
                 valueClass = null;
                 minimumOccurs = -1;
                 maximumOccurs = -1;
@@ -436,7 +442,7 @@ header: for (int i=0; ; i++) {
      * Not yet supported.
      *
      * @return Currently never return.
-     * @throws ParseException Currently always thrown.
+     * @throws ParseException currently always thrown.
      */
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {

@@ -23,7 +23,7 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.feature.Resources;
 
 
 /**
@@ -193,7 +193,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     final void ensureValid(final DefaultFeatureType base, final DefaultFeatureType type) {
         if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
             throw new IllegalArgumentException(
-                    Errors.format(Errors.Keys.IllegalArgumentClass_3, getName(), base.getName(), type.getName()));
+                    Resources.format(Resources.Keys.IllegalFeatureType_3, getName(), base.getName(), type.getName()));
         }
     }
 

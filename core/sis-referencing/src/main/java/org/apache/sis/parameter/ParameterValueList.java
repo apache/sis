@@ -35,6 +35,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.referencing.Resources;
 
 
 /**
@@ -242,11 +243,11 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
             final String code = name.getCode();
             for (final GeneralParameterDescriptor descriptor : descriptors) {
                 if (IdentifiedObjects.isHeuristicMatchForName(descriptor, code)) {
-                    throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.MismatchedParameterDescriptor_1, name));
+                    throw new IllegalArgumentException(Resources.format(
+                            Resources.Keys.MismatchedParameterDescriptor_1, name));
                 }
             }
-            throw new InvalidParameterNameException(Errors.format(Errors.Keys.ParameterNotFound_2,
+            throw new InvalidParameterNameException(Resources.format(Resources.Keys.ParameterNotFound_2,
                     Verifier.getDisplayName(descriptor), name), code);
         }
     }

@@ -37,6 +37,7 @@ import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.util.Utilities;
@@ -767,7 +768,7 @@ public abstract class AbstractMathTransform extends FormattableObject
         }
         final Matrix derivative = transform(coordinate, 0, null, 0, true);
         if (derivative == null) {
-            throw new TransformException(Errors.format(Errors.Keys.CanNotComputeDerivative));
+            throw new TransformException(Resources.format(Resources.Keys.CanNotComputeDerivative));
         }
         return derivative;
     }
@@ -785,7 +786,7 @@ public abstract class AbstractMathTransform extends FormattableObject
         if (isIdentity()) {
             return this;
         }
-        throw new NoninvertibleTransformException(Errors.format(Errors.Keys.NonInvertibleTransform));
+        throw new NoninvertibleTransformException(Resources.format(Resources.Keys.NonInvertibleTransform));
     }
 
     /**
