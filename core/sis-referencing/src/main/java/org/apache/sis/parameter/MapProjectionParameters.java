@@ -18,8 +18,7 @@ package org.apache.sis.parameter;
 
 import java.util.Collections;
 import java.util.Map;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -27,6 +26,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 
@@ -44,7 +44,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 final class MapProjectionParameters extends DefaultParameterValueGroup {
@@ -170,7 +170,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          */
         static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
                 InverseFlattening.toMap(Constants.EARTH_RADIUS), 0, 1, Double.class,
-                MeasurementRange.createGreaterThan(0.0, SI.METRE), null, null);
+                MeasurementRange.createGreaterThan(0.0, Units.METRE), null, null);
 
         /**
          * The parameters for the semi-major and semi-minor axis length.
@@ -254,7 +254,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          */
         static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
                 toMap(Constants.INVERSE_FLATTENING), 0, 1, Double.class,
-                MeasurementRange.createGreaterThan(0.0, Unit.ONE), null, null);
+                MeasurementRange.createGreaterThan(0.0, Units.ONE), null, null);
 
         /**
          * Helper method for {@link #DESCRIPTOR} constructions.

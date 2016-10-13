@@ -31,8 +31,9 @@ import java.util.regex.Pattern;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.ConversionException;
+import javax.measure.UnitConverter;
+import javax.measure.IncommensurableException;
+import javax.measure.format.ParserException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
@@ -728,7 +729,7 @@ public final class ChannelDecoder extends Decoder {
                     dates[i] = new Date(epoch + Math.round(converter.convert(value.doubleValue())));
                 }
             }
-        } catch (ConversionException | DateTimeException | ArithmeticException e) {
+        } catch (IncommensurableException | ParserException | DateTimeException | ArithmeticException e) {
             listeners.warning(null, e);
         }
         return dates;

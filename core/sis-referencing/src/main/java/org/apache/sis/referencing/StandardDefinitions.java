@@ -18,9 +18,7 @@ package org.apache.sis.referencing;
 
 import java.util.Map;
 import java.util.HashMap;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
@@ -61,6 +59,7 @@ import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Units;
 
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
@@ -76,7 +75,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class StandardDefinitions {
@@ -221,7 +220,7 @@ final class StandardDefinitions {
         double  semiMajorAxis; // No default value
         double  other;         // No default value
         boolean ivfDefinitive  = true;
-        Unit<Length> unit      = SI.METRE;
+        Unit<Length> unit      = Units.METRE;
         switch (code) {
             case 7030: name  = "WGS 84";                   alias = "WGS84";        semiMajorAxis = 6378137.0; other = 298.257223563; break;
             case 7043: name  = "WGS 72";                   alias = "NWL 10D";      semiMajorAxis = 6378135.0; other = 298.26;        break;
@@ -247,7 +246,7 @@ final class StandardDefinitions {
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, "Greenwich")); // Name is fixed by ISO 19111.
         properties.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, GREENWICH));
-        return new DefaultPrimeMeridian(properties, 0, NonSI.DEGREE_ANGLE);
+        return new DefaultPrimeMeridian(properties, 0, Units.DEGREE);
     }
 
     /**
@@ -360,7 +359,7 @@ final class StandardDefinitions {
      */
     static CoordinateSystemAxis createAxis(final short code) {
         final String name, abrv;
-        Unit<?> unit = SI.METRE;
+        Unit<?> unit = Units.METRE;
         double min = Double.NEGATIVE_INFINITY;
         double max = Double.POSITIVE_INFINITY;
         RangeMeaning rm = null;
@@ -368,17 +367,17 @@ final class StandardDefinitions {
         switch (code) {
             case 1:    name = "Easting";
                        abrv = "E";
-                       unit = SI.METRE;
+                       unit = Units.METRE;
                        dir  = AxisDirection.EAST;
                        break;
             case 2:    name = "Northing";
                        abrv = "N";
-                       unit = SI.METRE;
+                       unit = Units.METRE;
                        dir  = AxisDirection.NORTH;
                        break;
             case 60:   name = "Spherical latitude";
                        abrv = "φ′";                         // See HardCodedAxes.SPHERICAL_LATITUDE in tests.
-                       unit = NonSI.DEGREE_ANGLE;
+                       unit = Units.DEGREE;
                        dir  = AxisDirection.NORTH;
                        min  = Latitude.MIN_VALUE;
                        max  = Latitude.MAX_VALUE;
@@ -386,7 +385,7 @@ final class StandardDefinitions {
                        break;
             case 61:   name = "Spherical longitude";
                        abrv = "θ";                          // See HardCodedAxes.SPHERICAL_LONGITUDE in tests.
-                       unit = NonSI.DEGREE_ANGLE;
+                       unit = Units.DEGREE;
                        dir  = AxisDirection.EAST;
                        min  = Longitude.MIN_VALUE;
                        max  = Longitude.MAX_VALUE;
@@ -394,7 +393,7 @@ final class StandardDefinitions {
                        break;
             case 62:   name = "Geocentric radius";
                        abrv = "R";                          // See HardCodedAxes.GEOCENTRIC_RADIUS in tests.
-                       unit = SI.METRE;
+                       unit = Units.METRE;
                        dir  = AxisDirection.UP;
                        rm   = RangeMeaning.EXACT;
                        min  = 0;
@@ -402,7 +401,7 @@ final class StandardDefinitions {
             case 108:  // Used in Ellipsoidal 3D.
             case 106:  name = AxisNames.GEODETIC_LATITUDE;
                        abrv = "φ";
-                       unit = NonSI.DEGREE_ANGLE;
+                       unit = Units.DEGREE;
                        dir  = AxisDirection.NORTH;
                        min  = Latitude.MIN_VALUE;
                        max  = Latitude.MAX_VALUE;
@@ -411,7 +410,7 @@ final class StandardDefinitions {
             case 109:  // Used in Ellipsoidal 3D.
             case 107:  name = AxisNames.GEODETIC_LONGITUDE;
                        abrv = "λ";
-                       unit = NonSI.DEGREE_ANGLE;
+                       unit = Units.DEGREE;
                        dir  = AxisDirection.EAST;
                        min  = Longitude.MIN_VALUE;
                        max  = Longitude.MAX_VALUE;

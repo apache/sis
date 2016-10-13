@@ -17,7 +17,6 @@
 package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
-import javax.measure.unit.SI;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -30,6 +29,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -40,7 +40,7 @@ import org.apache.sis.parameter.Parameters;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -67,34 +67,34 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
 
     /**
      * The operation parameter descriptor for the {@code "src_semi_major"} optional parameter value.
-     * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
+     * Valid values range from 0 to infinity. Units are {@linkplain Units#METRE metres}.
      */
     public static final ParameterDescriptor<Double> SRC_SEMI_MAJOR;
 
     /**
      * The operation parameter descriptor for the {@code "src_semi_minor"} optional parameter value.
-     * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
+     * Valid values range from 0 to infinity. Units are {@linkplain Units#METRE metres}.
      */
     public static final ParameterDescriptor<Double> SRC_SEMI_MINOR;
 
     /**
      * The operation parameter descriptor for the {@code "src_semi_major"} optional parameter value.
-     * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
+     * Valid values range from 0 to infinity. Units are {@linkplain Units#METRE metres}.
      */
     public static final ParameterDescriptor<Double> TGT_SEMI_MAJOR;
 
     /**
      * The operation parameter descriptor for the {@code "src_semi_minor"} optional parameter value.
-     * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
+     * Valid values range from 0 to infinity. Units are {@linkplain Units#METRE metres}.
      */
     public static final ParameterDescriptor<Double> TGT_SEMI_MINOR;
 
     static {
         final ParameterBuilder builder = builder().setCodeSpace(Citations.OGC, Constants.OGC);
-        SRC_SEMI_MAJOR = builder.addName("src_semi_major").createStrictlyPositive(Double.NaN, SI.METRE);
-        SRC_SEMI_MINOR = builder.addName("src_semi_minor").createStrictlyPositive(Double.NaN, SI.METRE);
-        TGT_SEMI_MAJOR = builder.addName("tgt_semi_major").createStrictlyPositive(Double.NaN, SI.METRE);
-        TGT_SEMI_MINOR = builder.addName("tgt_semi_minor").createStrictlyPositive(Double.NaN, SI.METRE);
+        SRC_SEMI_MAJOR = builder.addName("src_semi_major").createStrictlyPositive(Double.NaN, Units.METRE);
+        SRC_SEMI_MINOR = builder.addName("src_semi_minor").createStrictlyPositive(Double.NaN, Units.METRE);
+        TGT_SEMI_MAJOR = builder.addName("tgt_semi_major").createStrictlyPositive(Double.NaN, Units.METRE);
+        TGT_SEMI_MINOR = builder.addName("tgt_semi_minor").createStrictlyPositive(Double.NaN, Units.METRE);
         DIMENSION      = builder.addName("dim").setRequired(false).createBounded(Integer.class, 2, 3, null);
     }
 
@@ -146,7 +146,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
         MathTransform toGeocentric = EllipsoidToCentricTransform.createGeodeticConversion(factory,
                 pv.doubleValue(SRC_SEMI_MAJOR),
                 pv.doubleValue(SRC_SEMI_MINOR),
-                SI.METRE, getSourceDimensions() >= 3,
+                Units.METRE, getSourceDimensions() >= 3,
                 EllipsoidToCentricTransform.TargetType.CARTESIAN);
         /*
          * Create a "Geocentric to Geographic" conversion with ellipsoid axis length units converted to metres
@@ -155,7 +155,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
         MathTransform toGeographic = EllipsoidToCentricTransform.createGeodeticConversion(factory,
                 pv.doubleValue(TGT_SEMI_MAJOR),
                 pv.doubleValue(TGT_SEMI_MINOR),
-                SI.METRE, getTargetDimensions() >= 3,
+                Units.METRE, getTargetDimensions() >= 3,
                 EllipsoidToCentricTransform.TargetType.CARTESIAN);
         try {
             toGeographic = toGeographic.inverse();

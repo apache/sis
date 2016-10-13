@@ -19,8 +19,7 @@ package org.apache.sis.parameter;
 import java.util.Set;
 import java.util.Collection;
 import java.util.Collections;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterValue;
@@ -31,6 +30,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -96,8 +96,8 @@ public final strictfp class ParametersTest extends TestCase {
                 DefaultParameterDescriptorTest.createSimpleOptional("No range", String.class));
         verifyValueDomain(NumberRange.create(1, true, 4, true),
                 DefaultParameterDescriptorTest.create("Integers", 1, 4, 2));
-        verifyValueDomain(MeasurementRange.create(1d, true, 4d, true, SI.METRE),
-                DefaultParameterDescriptorTest.create("Doubles", 1d, 4d, 2d, SI.METRE));
+        verifyValueDomain(MeasurementRange.create(1d, true, 4d, true, Units.METRE),
+                DefaultParameterDescriptorTest.create("Doubles", 1d, 4d, 2d, Units.METRE));
     }
 
     /**

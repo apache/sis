@@ -45,6 +45,6 @@ public final strictfp class DefaultCompoundCSTest extends TestCase {
                         HardCodedAxes.HEIGHT_cm.getName()), HardCodedAxes.HEIGHT_cm),
                 HardCodedCS.DAYS
         );
-        assertEquals("Compound CS: East (m), North (m), Up (cm), Future (d).", cs.getName().getCode());
+        assertEquals("Compound CS: East (m), North (m), Up (cm), Future (day).", cs.getName().getCode());
     }
 }

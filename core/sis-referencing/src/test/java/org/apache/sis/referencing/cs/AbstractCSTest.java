@@ -16,9 +16,9 @@
  */
 package org.apache.sis.referencing.cs;
 
-import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -101,9 +101,9 @@ public final strictfp class AbstractCSTest extends TestCase {
          * if it is not really the purpose of this test.
          */
         final DefaultCoordinateSystemAxis EASTING = new DefaultCoordinateSystemAxis(
-                singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)), "E", AxisDirection.EAST, SI.METRE);
+                singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)), "E", AxisDirection.EAST, Units.METRE);
         final DefaultCoordinateSystemAxis HEIGHT = new DefaultCoordinateSystemAxis(
-                singletonMap(NAME_KEY, "Height"), "h", AxisDirection.UP, SI.METRE);
+                singletonMap(NAME_KEY, "Height"), "h", AxisDirection.UP, Units.METRE);
         assertEquals("minimumValue", Double.NEGATIVE_INFINITY, EASTING.getMinimumValue(), STRICT);
         assertEquals("maximumValue", Double.POSITIVE_INFINITY, EASTING.getMaximumValue(), STRICT);
         assertNull  ("rangeMeaning", EASTING.getRangeMeaning());

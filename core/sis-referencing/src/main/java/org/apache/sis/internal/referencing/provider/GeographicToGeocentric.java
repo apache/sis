@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;

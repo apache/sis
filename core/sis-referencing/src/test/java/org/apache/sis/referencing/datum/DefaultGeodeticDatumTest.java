@@ -19,13 +19,12 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.test.Validators;
+import org.apache.sis.measure.Units;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -45,7 +44,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -66,11 +65,11 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     public void testCreateAndSerialize() {
         final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put(DefaultEllipsoid.NAME_KEY, "Asteroid"));
-        final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createEllipsoid(properties, 1200, 1000, SI.METRE);
+        final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createEllipsoid(properties, 1200, 1000, Units.METRE);
 
         properties.clear();
         assertNull(properties.put(DefaultEllipsoid.NAME_KEY, "Somewhere"));
-        final DefaultPrimeMeridian primeMeridian = new DefaultPrimeMeridian(properties, 12, NonSI.DEGREE_ANGLE);
+        final DefaultPrimeMeridian primeMeridian = new DefaultPrimeMeridian(properties, 12, Units.DEGREE);
 
         properties.clear();
         assertNull(properties.put("name",       "This is a name"));

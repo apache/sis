@@ -16,12 +16,10 @@
  */
 package org.apache.sis.parameter;
 
-import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -35,7 +33,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -50,26 +48,26 @@ public final strictfp class ParameterBuilderTest extends TestCase {
     @Test
     public void testCreate() {
         final ParameterBuilder builder = new ParameterBuilder();
-        ParameterDescriptor<Double> p = builder.addName("Test 1").create(0, SI.METRE);
+        ParameterDescriptor<Double> p = builder.addName("Test 1").create(0, Units.METRE);
         assertEquals("name", "Test 1",    p.getName().getCode());
         assertEquals("defaultValue", 0.0, p.getDefaultValue(), 0);
         assertNull  ("minimumValue",      p.getMinimumValue());
         assertNull  ("maximumValue",      p.getMaximumValue());
-        assertEquals("unit", SI.METRE,    p.getUnit());
+        assertEquals("unit", Units.METRE,    p.getUnit());
 
-        p = builder.addName("Test 2").create(Double.NaN, SI.METRE);
+        p = builder.addName("Test 2").create(Double.NaN, Units.METRE);
         assertEquals("name", "Test 2",    p.getName().getCode());
         assertNull  ("defaultValue",      p.getDefaultValue());
         assertNull  ("minimumValue",      p.getMinimumValue());
         assertNull  ("maximumValue",      p.getMaximumValue());
-        assertEquals("unit", SI.METRE,    p.getUnit());
+        assertEquals("unit", Units.METRE,    p.getUnit());
 
-        p = builder.addName("Test 3").createBounded(1, 4, 3, SI.METRE);
+        p = builder.addName("Test 3").createBounded(1, 4, 3, Units.METRE);
         assertEquals("name", "Test 3",    p.getName().getCode());
         assertEquals("defaultValue", 3.0, p.getDefaultValue(), 0);
         assertEquals("minimumValue", 1.0, p.getMinimumValue());
         assertEquals("maximumValue", 4.0, p.getMaximumValue());
-        assertEquals("unit", SI.METRE,    p.getUnit());
+        assertEquals("unit", Units.METRE,    p.getUnit());
     }
 
     /**
@@ -85,18 +83,18 @@ public final strictfp class ParameterBuilderTest extends TestCase {
             builder.addName("Longitude of natural origin")
                    .addName(Citations.OGC, "central_meridian")
                    .addName(Citations.GEOTIFF, "NatOriginLong")
-                   .setRemarks("Some remarks.")               .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
-            builder.addName("Latitude of natural origin")     .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
-            builder.addName("Scale factor at natural origin") .createStrictlyPositive(1, Unit.ONE),
-            builder.addName("False easting")                  .create(0, SI.METRE),
-            builder.addName("False northing")                 .create(0, SI.METRE)
+                   .setRemarks("Some remarks.")               .createBounded(-180, +180, 0, Units.DEGREE),
+            builder.addName("Latitude of natural origin")     .createBounded( -80,  +84, 0, Units.DEGREE),
+            builder.addName("Scale factor at natural origin") .createStrictlyPositive(1, Units.ONE),
+            builder.addName("False easting")                  .create(0, Units.METRE),
+            builder.addName("False northing")                 .create(0, Units.METRE)
         };
         // Tests random properties.
         assertEquals("EPSG",             parameters[1].getName().getCodeSpace());
         assertEquals("False easting",    parameters[3].getName().getCode());
         assertEquals("Some remarks.",    parameters[0].getRemarks().toString());
         assertEquals(Double.valueOf(84), parameters[1].getMaximumValue());
-        assertEquals(SI.METRE,           parameters[4].getUnit());
+        assertEquals(Units.METRE,           parameters[4].getUnit());
         assertTrue  (                    parameters[1].getAlias().isEmpty());
 
         final GenericName alias = parameters[0].getAlias().iterator().next();

@@ -20,8 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -38,6 +37,7 @@ import org.opengis.referencing.operation.Projection;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -90,7 +90,7 @@ public abstract class MapProjection extends AbstractProvider {
     @Debug
     public static final DefaultParameterDescriptor<Double> ECCENTRICITY;
     static {
-        final MeasurementRange<Double> valueDomain = MeasurementRange.createGreaterThan(0, SI.METRE);
+        final MeasurementRange<Double> valueDomain = MeasurementRange.createGreaterThan(0, Units.METRE);
         final GenericName[] aliases = {
             new NamedIdentifier(Citations.ESRI,    "Semi_Major"),
             new NamedIdentifier(Citations.NETCDF,  "semi_major_axis"),

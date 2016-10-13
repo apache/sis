@@ -24,7 +24,6 @@ import java.nio.FloatBuffer;
 import java.nio.channels.ReadableByteChannel;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Angle;
-import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -41,6 +40,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
 import java.nio.file.Path;
@@ -59,7 +59,7 @@ import java.nio.file.Files;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rueben Schulz (UBC)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see <a href="http://www.ngs.noaa.gov/cgi-bin/nadcon.prl">NADCON on-line computation</a>
@@ -387,7 +387,7 @@ public final class NADCON extends AbstractProvider {
             if (latitudeShifts == null) {
                 dim   = 1;                          // Dimension of latitudes.
                 scale = DEGREES_TO_SECONDS * Δy;    // NADCON shifts are positive north.
-                grid  = new DatumShiftGridFile.Float<>(2, NonSI.DEGREE_ANGLE, NonSI.DEGREE_ANGLE,
+                grid  = new DatumShiftGridFile.Float<>(2, Units.DEGREE, Units.DEGREE,
                         true, x0, y0, Δx, Δy, nx, ny, PARAMETERS, file, longitudeShifts);
                 grid.accuracy = SECOND_PRECISION / DEGREES_TO_SECONDS;
             } else {

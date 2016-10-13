@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.internal.referencing.provider.AbridgedMolodensky;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
@@ -82,7 +83,7 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public class MolodenskyTransform extends MolodenskyFormula {
@@ -188,7 +189,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
         pg.getOrCreate(Molodensky.TY)                    .setValue(tY, unit);
         pg.getOrCreate(Molodensky.TZ)                    .setValue(tZ, unit);
         pg.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).setValue(Δa, unit);
-        pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Unit.ONE);
+        pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Units.ONE);
         if (pg != context) {
             pg.parameter("abridged").setValue(isAbridged);  // Only in internal parameters.
         }

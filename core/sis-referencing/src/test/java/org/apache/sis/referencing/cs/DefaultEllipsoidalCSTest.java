@@ -17,11 +17,11 @@
 package org.apache.sis.referencing.cs;
 
 import javax.xml.bind.JAXBException;
-import javax.measure.unit.NonSI;
 import org.opengis.test.Validators;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -37,7 +37,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 @DependsOn(AbstractCSTest.class)
@@ -99,7 +99,7 @@ public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
     public void testUnitConversion() {
         final DefaultEllipsoidalCS cs = HardCodedCS.ELLIPSOIDAL_gon;
         CoordinateSystemAxis axis = cs.getAxis(0);
-        assertEquals("unit", NonSI.GRADE, axis.getUnit());
+        assertEquals("unit", Units.GRAD, axis.getUnit());
         assertEquals("longitude.minimumValue", -200, axis.getMinimumValue(), STRICT);
         assertEquals("longitude.maximumValue", +200, axis.getMaximumValue(), STRICT);
 
@@ -108,7 +108,7 @@ public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
         Validators.validate(converted);
 
         axis = converted.getAxis(0);
-        assertEquals("unit", NonSI.DEGREE_ANGLE, axis.getUnit());
+        assertEquals("unit", Units.DEGREE, axis.getUnit());
         assertEquals("longitude.minimumValue", -180, axis.getMinimumValue(), STRICT);
         assertEquals("longitude.maximumValue", +180, axis.getMaximumValue(), STRICT);
     }
@@ -131,8 +131,8 @@ public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
         final CoordinateSystemAxis λ = cs.getAxis(1);
         assertEquals("name",    "Latitude (north), Longitude (east)",     cs.getName().getCode());
         assertEquals("remarks", "Used in two-dimensional GeographicCRS.", cs.getRemarks().toString());
-        assertAxisEquals("Geodetic latitude",  "φ", AxisDirection.NORTH, -90,  +90, NonSI.DEGREE_ANGLE, RangeMeaning.EXACT, φ);
-        assertAxisEquals("Geodetic longitude", "λ", AxisDirection.EAST, -180, +180, NonSI.DEGREE_ANGLE, RangeMeaning.WRAPAROUND, λ);
+        assertAxisEquals("Geodetic latitude",  "φ", AxisDirection.NORTH, -90,  +90, Units.DEGREE, RangeMeaning.EXACT, φ);
+        assertAxisEquals("Geodetic longitude", "λ", AxisDirection.EAST, -180, +180, Units.DEGREE, RangeMeaning.WRAPAROUND, λ);
         assertEpsgIdentifierEquals("6422", getSingleton(cs.getIdentifiers()));
         assertEpsgIdentifierEquals("106",  getSingleton(φ.getIdentifiers()));
         assertEpsgIdentifierEquals("107",  getSingleton(λ.getIdentifiers()));

@@ -79,7 +79,7 @@ public final strictfp class HardCodedCRS {
      * A two-dimensional geographic coordinate reference system using the Paris prime meridian.
      * This CRS uses (<var>longitude</var>, <var>latitude</var>) ordinates with longitude values
      * increasing towards the East and latitude values increasing towards the North.
-     * The angular units for the prime meridian and the axes are grades.
+     * The angular units for the prime meridian and the axes are grads.
      *
      * <p>This CRS is equivalent to {@code EPSG:4807} except for axis order, since EPSG defines
      * (<var>latitude</var>, <var>longitude</var>).</p>
@@ -95,10 +95,10 @@ public final strictfp class HardCodedCRS {
      * This CRS uses (<var>longitude</var>, <var>latitude</var>) ordinates with longitude values
      * increasing towards the East and latitude values increasing towards the North.
      * The angular units are decimal degrees except for the prime meridian (Paris),
-     * which is measured in grades.
+     * which is measured in grads.
      *
      * <p>This CRS is equivalent to {@code EPSG:4807} except for axis order and units of measurement,
-     * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grades. The main purpose of
+     * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grads.  The main purpose of
      * this CRS is to test the convolved case where the unit of prime meridian is different than the
      * axis units.</p>
      *

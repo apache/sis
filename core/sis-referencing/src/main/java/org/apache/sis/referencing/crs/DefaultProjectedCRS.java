@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import javax.xml.bind.annotation.XmlType;
@@ -329,10 +329,10 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *     BaseGeodCRS[“NTF (Paris)”,
      *       Datum[“Nouvelle Triangulation Francaise”,
      *         Ellipsoid[“NTF”, 6378249.2, 293.4660212936269, LengthUnit[“metre”, 1]]],
-     *         PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967]]],
+     *         PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grad”, 0.015707963267948967]]],
      *     Conversion[“Lambert zone II”,
      *       Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801, Citation[“IOGP”]]],
-     *       Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grade”, 0.015707963267948967], Id[“EPSG”, 8801]],
+     *       Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grad”, 0.015707963267948967], Id[“EPSG”, 8801]],
      *       Parameter[“Longitude of natural origin”, 0.0, AngleUnit[“degree”, 0.017453292519943295], Id[“EPSG”, 8802]],
      *       Parameter[“Scale factor at natural origin”, 0.99987742, ScaleUnit[“unity”, 1], Id[“EPSG”, 8805]],
      *       Parameter[“False easting”, 600000.0, LengthUnit[“metre”, 1], Id[“EPSG”, 8806]],

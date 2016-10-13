@@ -238,7 +238,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
      * Tests WKT 2 formatting of a CRS using a prime meridian other than Greenwich.
      *
      * <p>This CRS used in this test is equivalent to {@code EPSG:4807} except for axis order,
-     * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grades.</p>
+     * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grads.</p>
      */
     @Test
     @DependsOnMethod("testWKT2")
@@ -247,11 +247,11 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "GeodeticCRS[“NTF (Paris)”,\n" +
                 "  Datum[“Nouvelle Triangulation Francaise”,\n" +           // Formatter should replace "ç" by "c".
                 "    Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
-                "    PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967]],\n" +
+                "    PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Longitude (L)”, east],\n" +                      // See method javadoc.
                 "    Axis[“Latitude (B)”, north],\n" +
-                "    Unit[“grade”, 0.015707963267948967]]",
+                "    Unit[“grad”, 0.015707963267948967]]",
                 HardCodedCRS.NTF);
     }
 
@@ -259,7 +259,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
      * Tests WKT 1 formatting on a CRS using a prime meridian other than Greenwich.
      *
      * <p>This CRS used in this test is equivalent to {@code EPSG:4807} except for axis order,
-     * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grades.</p>
+     * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grads.</p>
      */
     @Test
     @DependsOnMethod("testWKT2")
@@ -269,7 +269,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "  DATUM[“Nouvelle Triangulation Francaise”,\n" +   // Formatter should replace "ç" by "c".
                 "    SPHEROID[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "    PRIMEM[“Paris”, 2.5969213],\n" +
-                "  UNIT[“grade”, 0.015707963267948967],\n" +
+                "  UNIT[“grad”, 0.015707963267948967],\n" +
                 "  AXIS[“Longitude”, EAST],\n" +
                 "  AXIS[“Latitude”, NORTH]]",
                 HardCodedCRS.NTF);
@@ -288,7 +288,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "  DATUM[“Nouvelle Triangulation Francaise”,\n" +   // Formatter should replace "ç" by "c".
                 "    SPHEROID[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "    PRIMEM[“Paris”, 2.33722917],\n" +              // Would be 2.5969213 in standard-compliant WKT.
-                "  UNIT[“grade”, 0.015707963267948967],\n" +
+                "  UNIT[“grad”, 0.015707963267948967],\n" +
                 "  AXIS[“Longitude”, EAST],\n" +
                 "  AXIS[“Latitude”, NORTH]]",
                 HardCodedCRS.NTF);

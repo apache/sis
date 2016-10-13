@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import javax.measure.converter.ConversionException;
+import javax.measure.IncommensurableException;
 
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
@@ -103,7 +103,7 @@ import java.util.function.Predicate;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 class CoordinateOperationRegistry {
@@ -334,7 +334,7 @@ class CoordinateOperationRegistry {
                     }
                     return operation;
                 }
-            } catch (IllegalArgumentException | ConversionException e) {
+            } catch (IllegalArgumentException | IncommensurableException e) {
                 String message = Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, new CRSPair(sourceCRS, targetCRS));
                 String details = e.getLocalizedMessage();
                 if (details != null) {
@@ -358,12 +358,12 @@ class CoordinateOperationRegistry {
      * @return A coordinate operation from {@code sourceCRS} to {@code targetCRS}, or {@code null}
      *         if no such operation is explicitly defined in the underlying database.
      * @throws IllegalArgumentException if the coordinate systems are not of the same type or axes do not match.
-     * @throws ConversionException if the units are not compatible or a unit conversion is non-linear.
+     * @throws IncommensurableException if the units are not compatible or a unit conversion is non-linear.
      * @throws FactoryException if an error occurred while creating the operation.
      */
     private CoordinateOperation search(final CoordinateReferenceSystem sourceCRS,
                                        final CoordinateReferenceSystem targetCRS)
-            throws IllegalArgumentException, ConversionException, FactoryException
+            throws IllegalArgumentException, IncommensurableException, FactoryException
     {
         final String sourceID = findCode(sourceCRS);
         if (sourceID == null) {
@@ -576,13 +576,13 @@ class CoordinateOperationRegistry {
      * @param  targetCRS  the target CRS requested by the user.
      * @return a coordinate operation for the given source and target CRS.
      * @throws IllegalArgumentException if the coordinate systems are not of the same type or axes do not match.
-     * @throws ConversionException if the units are not compatible or a unit conversion is non-linear.
+     * @throws IncommensurableException if the units are not compatible or a unit conversion is non-linear.
      * @throws FactoryException if the operation can not be constructed.
      */
     private CoordinateOperation complete(final CoordinateOperation       operation,
                                          final CoordinateReferenceSystem sourceCRS,
                                          final CoordinateReferenceSystem targetCRS)
-            throws IllegalArgumentException, ConversionException, FactoryException
+            throws IllegalArgumentException, IncommensurableException, FactoryException
     {
         CoordinateReferenceSystem source = operation.getSourceCRS();
         CoordinateReferenceSystem target = operation.getTargetCRS();
@@ -603,13 +603,13 @@ class CoordinateOperationRegistry {
      * @param  mtFactory  the math transform factory to use.
      * @return the transform from the given source to the given target CRS, or {@code null} if none is needed.
      * @throws IllegalArgumentException if the coordinate systems are not of the same type or axes do not match.
-     * @throws ConversionException if the units are not compatible or a unit conversion is non-linear.
+     * @throws IncommensurableException if the units are not compatible or a unit conversion is non-linear.
      * @throws FactoryException if an error occurred while creating a math transform.
      */
     private static MathTransform swapAndScaleAxes(final CoordinateReferenceSystem sourceCRS,
                                                   final CoordinateReferenceSystem targetCRS,
                                                   final MathTransformFactory      mtFactory)
-            throws IllegalArgumentException, ConversionException, FactoryException
+            throws IllegalArgumentException, IncommensurableException, FactoryException
     {
         assert ReferencingUtilities.getDimension(sourceCRS) != ReferencingUtilities.getDimension(targetCRS)
                 || Utilities.deepEquals(sourceCRS, targetCRS, ComparisonMode.ALLOW_VARIANT);

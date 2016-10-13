@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -25,6 +24,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -33,7 +33,7 @@ import org.apache.sis.measure.MeasurementRange;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -66,7 +66,7 @@ public final class PolarStereographicSouth extends AbstractStereographic {
         final ParameterBuilder builder = builder();
         final ParameterDescriptor<?>[] parameters = {
             alternativeAuthority(PolarStereographicB.STANDARD_PARALLEL, Citations.ESRI, builder)
-                   .createBounded(Latitude.MIN_VALUE, 0, Latitude.MIN_VALUE, NonSI.DEGREE_ANGLE),
+                   .createBounded(Latitude.MIN_VALUE, 0, Latitude.MIN_VALUE, Units.DEGREE),
 
             forESRI(PolarStereographicB.LONGITUDE_OF_ORIGIN, builder),
                     PolarStereographicB.SCALE_FACTOR,                   // Not formally a parameter of this projection.

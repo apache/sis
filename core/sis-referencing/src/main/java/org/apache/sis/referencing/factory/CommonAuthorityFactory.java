@@ -23,9 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Collections;
 import java.util.Arrays;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -191,7 +189,7 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.ce
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see CommonCRS
@@ -631,9 +629,9 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             if (isLegacy) {
                 unit = createUnitFromEPSG(factor).asType(Length.class);
             } else {
-                unit = (factor != 1) ? Units.multiply(SI.METRE, factor) : SI.METRE;
+                unit = (factor != 1) ? Units.multiply(Units.METRE, factor) : Units.METRE;
             }
-            if (!SI.METRE.equals(unit)) {
+            if (!Units.METRE.equals(unit)) {
                 cs = (CartesianCS) CoordinateSystems.replaceLinearUnit(cs, unit);
             }
             /*
@@ -649,9 +647,9 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             } else {
                 builder.setConversionMethod(method)
                        .addName(PROJECTION_NAMES[projection - FIRST_PROJECTION_CODE])
-                       .setParameter(Constants.CENTRAL_MERIDIAN, longitude, NonSI.DEGREE_ANGLE);
+                       .setParameter(Constants.CENTRAL_MERIDIAN, longitude, Units.DEGREE);
                 if (param != null) {
-                    builder.setParameter(param, latitude, NonSI.DEGREE_ANGLE);
+                    builder.setParameter(param, latitude, Units.DEGREE);
                 }
             }
             return builder.createProjectedCRS(baseCRS, cs);
@@ -693,8 +691,8 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             final CSFactory csFactory = DefaultFactories.forBuildin(CSFactory.class);
             final CartesianCS cs = csFactory.createCartesianCS(
                     Collections.singletonMap(CartesianCS.NAME_KEY, "Computer display"),
-                    csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "i"), "i", AxisDirection.EAST, NonSI.PIXEL),
-                    csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "j"), "j", AxisDirection.SOUTH, NonSI.PIXEL));
+                    csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "i"), "i", AxisDirection.EAST,  Units.PIXEL),
+                    csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "j"), "j", AxisDirection.SOUTH, Units.PIXEL));
 
             final Map<String,Object> properties = new HashMap<>(4);
             properties.put(EngineeringDatum.NAME_KEY, cs.getName());

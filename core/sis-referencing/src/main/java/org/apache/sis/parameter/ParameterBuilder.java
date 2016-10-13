@@ -16,7 +16,7 @@
  */
 package org.apache.sis.parameter;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -73,22 +73,22 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   // Constructs the list of parameters.
  *   ParameterDescriptor<?>[] parameters = {
  *       builder.addName("Latitude of natural origin")              // Name in the default namespace ("EPSG" in this example).
- *              .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),  // Latitude of Mercator projection can not go to the poles.
+ *              .createBounded( -80,  +84, 0, Units.DEGREE),  // Latitude of Mercator projection can not go to the poles.
  *
  *       builder.addIdentifier("8802")                              // Primary key in default namespace ("EPSG" in this example).
  *              .addName("Longitude of natural origin")             // Primary name in default namespace ("EPSG" in this example).
  *              .addName(Citations.OGC, "central_meridian")         // First alias in "OGC" namespace.
  *              .addName(Citations.GEOTIFF, "NatOriginLong")        // Second alias in "GeoTIFF" namespace.
- *              .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),  // Projection is valid on all the longitude range (±180°).
+ *              .createBounded(-180, +180, 0, Units.DEGREE),  // Projection is valid on all the longitude range (±180°).
  *
  *       builder.addName("Scale factor at natural origin")
- *              .createStrictlyPositive(1, Unit.ONE),
+ *              .createStrictlyPositive(1, Units.ONE),
  *
  *       builder.addName("False easting")
- *              .create(0, SI.METRE),
+ *              .create(0, Units.METRE),
  *
  *       builder.addName("False northing")
- *              .create(0, SI.METRE)
+ *              .create(0, Units.METRE)
  *   };
  *
  *   // Put all above parameters in a group.

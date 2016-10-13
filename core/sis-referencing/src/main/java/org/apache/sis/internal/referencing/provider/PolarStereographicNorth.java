@@ -17,7 +17,6 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.List;
-import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -25,6 +24,7 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -33,7 +33,7 @@ import org.apache.sis.measure.Latitude;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -56,7 +56,7 @@ public final class PolarStereographicNorth extends AbstractStereographic {
         // Replace the "Standard Parallel" parameter from [-90 … 0]° domain to [0 … 90]° domain.
         final ParameterBuilder builder = builder();
         parameters[0] = builder.addNamesAndIdentifiers(parameters[0]).createBounded(
-                       0, Latitude.MAX_VALUE, Latitude.MAX_VALUE, NonSI.DEGREE_ANGLE);
+                       0, Latitude.MAX_VALUE, Latitude.MAX_VALUE, Units.DEGREE);
 
         PARAMETERS = builder
                 .addName(Citations.ESRI, "Stereographic_North_Pole")

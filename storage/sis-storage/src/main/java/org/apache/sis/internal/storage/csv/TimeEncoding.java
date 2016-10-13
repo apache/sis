@@ -16,9 +16,8 @@
  */
 package org.apache.sis.internal.storage.csv;
 
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
-import javax.measure.quantity.Duration;
+import javax.measure.Unit;
+import javax.measure.quantity.Time;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.internal.converter.SurjectiveConverter;
 import org.apache.sis.referencing.CommonCRS;
@@ -47,7 +46,7 @@ class TimeEncoding extends SurjectiveConverter<String,Instant> {
     /**
      * Times are formatted as ISO dates.
      */
-    static final TimeEncoding ABSOLUTE = new TimeEncoding(DEFAULT.datum(), NonSI.DAY) {
+    static final TimeEncoding ABSOLUTE = new TimeEncoding(DEFAULT.datum(), Units.DAY) {
         @Override public Instant apply(final String time) {
             return Instant.parse(time);
         }
@@ -66,7 +65,7 @@ class TimeEncoding extends SurjectiveConverter<String,Instant> {
     /**
      * Creates a new time encoding.
      */
-    TimeEncoding(final TemporalDatum datum, final Unit<Duration> unit) {
+    TimeEncoding(final TemporalDatum datum, final Unit<Time> unit) {
         this.origin   = datum.getOrigin().getTime();
         this.interval = unit.getConverterTo(Units.MILLISECOND).convert(1);
     }

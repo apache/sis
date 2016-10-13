@@ -16,11 +16,11 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import javax.measure.unit.SI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.gml.Measure;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -33,7 +33,7 @@ import org.apache.sis.internal.jaxb.gml.Measure;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 @XmlType(name = "Measure_PropertyType")
@@ -60,7 +60,7 @@ public final class GO_Measure extends XmlAdapter<GO_Measure, Double> {
      *       replace the Double type by some quantity type.
      */
     private GO_Measure(final Double value) {
-        measure = new Measure(value, SI.METRE);
+        measure = new Measure(value, Units.METRE);
         measure.asXPointer = true;
     }
 

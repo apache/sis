@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
-import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
@@ -31,6 +30,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -48,7 +48,7 @@ import java.nio.file.StandardOpenOption;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
@@ -115,8 +115,8 @@ public final strictfp class NTv2Test extends TestCase {
         final double cellSize = 360;
         final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(file);
         assertInstanceOf("Should not be compressed.", DatumShiftGridFile.Float.class, grid);
-        assertEquals("coordinateUnit",  NonSI.SECOND_ANGLE, grid.getCoordinateUnit());
-        assertEquals("translationUnit", NonSI.SECOND_ANGLE, grid.getTranslationUnit());
+        assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());
+        assertEquals("translationUnit", Units.ARC_SECOND, grid.getTranslationUnit());
         assertEquals("translationDimensions", 2, grid.getTranslationDimensions());
         assertTrue  ("isCellValueRatio", grid.isCellValueRatio());
         assertEquals("cellPrecision", (ACCURACY / 10) / cellSize, grid.getCellPrecision(), 0.5E-6 / cellSize);

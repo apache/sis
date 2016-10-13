@@ -321,7 +321,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
                 "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Latitude (φ)”, NORTH],\n" +
                 "    Axis[“Longitude (λ)”, EAST],\n" +
-                "    Unit[“grade”, 0.015707963267949],\n" +
+                "    Unit[“grad”, 0.015707963267949],\n" +
                 "  Id[“EPSG”, “4807”]]");
 
         final GeographicCRS       targetCRS = CommonCRS.WGS84.geographic();

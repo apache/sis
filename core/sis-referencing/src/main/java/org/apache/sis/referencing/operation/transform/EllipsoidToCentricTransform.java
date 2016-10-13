@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;

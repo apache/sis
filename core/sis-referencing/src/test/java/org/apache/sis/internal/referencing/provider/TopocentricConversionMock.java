@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.measure.unit.SI;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -32,7 +32,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @SuppressWarnings("serial")
@@ -46,7 +46,7 @@ public final strictfp class TopocentricConversionMock extends ProviderMock {
         final ParameterDescriptor<?>[] parameters = {
             createLatitude (builder.addIdentifier("8834").addName("Latitude of topocentric origin"), true),
             createLongitude(builder.addIdentifier("8835").addName("Longitude of topocentric origin")),
-            builder.addIdentifier("8836").addName("Ellipsoidal height of topocentric origin").create(0, SI.METRE)
+            builder.addIdentifier("8836").addName("Ellipsoidal height of topocentric origin").create(0, Units.METRE)
         };
         PARAMETERS = builder
                 .addIdentifier("9837")

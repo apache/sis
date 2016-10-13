@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.distribution;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;

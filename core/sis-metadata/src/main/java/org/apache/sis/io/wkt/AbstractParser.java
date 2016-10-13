@@ -29,14 +29,15 @@ import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-import javax.measure.unit.Unit;
-import javax.measure.unit.UnitFormat;
+import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
@@ -58,7 +59,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 abstract class AbstractParser implements Parser {
@@ -332,26 +333,15 @@ abstract class AbstractParser implements Parser {
     /**
      * Parses the given unit symbol.
      */
-    final Unit<?> parseUnit(final String text) throws ParseException, IllegalArgumentException {
+    final Unit<?> parseUnit(final String text) throws ParseException, ParserException {
         if (unitFormat == null) {
-            if (symbols.getLocale() == Locale.ROOT) {
-                return Units.valueOf(text);             // Most common case, avoid the convolved code below.
+            final Locale locale = symbols.getLocale();
+            if (locale == Locale.ROOT) {
+                return Units.valueOf(text);             // Most common case.
             }
-            unitFormat = UnitFormat.getInstance(symbols.getLocale());
+            unitFormat = UnitFormat.getInstance(locale);
         }
-        /*
-         * This convolved code tries to workaround JSR-275 limitations.
-         */
-        try {
-            return (Unit<?>) unitFormat.parseObject(text);
-        } catch (ParseException e) {
-            try {
-                return Units.valueOf(text);
-            } catch (IllegalArgumentException e2) {
-                e.addSuppressed(e2);
-                throw e;
-            }
-        }
+        return unitFormat.parse(text);
     }
 
     /**

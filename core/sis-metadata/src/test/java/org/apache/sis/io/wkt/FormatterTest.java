@@ -16,8 +16,6 @@
  */
 package org.apache.sis.io.wkt;
 
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import org.opengis.util.CodeList;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -40,7 +38,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.8
  * @module
  */
 @DependsOn({ConventionTest.class, SymbolsTest.class, ColorsTest.class})
@@ -103,12 +101,12 @@ public final strictfp class FormatterTest extends TestCase {
      */
     @Test
     public void testAppendUnit() {
-        assertWktEquals(Convention.WKT2, "LENGTHUNIT[“metre”, 1]", SI.METRE);
-        assertWktEquals(Convention.WKT2, "ANGLEUNIT[“degree”, 0.017453292519943295]", NonSI.DEGREE_ANGLE);
+        assertWktEquals(Convention.WKT2, "LENGTHUNIT[“metre”, 1]", Units.METRE);
+        assertWktEquals(Convention.WKT2, "ANGLEUNIT[“degree”, 0.017453292519943295]", Units.DEGREE);
         assertWktEquals(Convention.WKT2, "SCALEUNIT[“parts per million”, 1.0E-6]", Units.PPM);
 
-        assertWktEquals(Convention.WKT1, "UNIT[“metre”, 1]", SI.METRE);
-        assertWktEquals(Convention.WKT1, "UNIT[“degree”, 0.017453292519943295]", NonSI.DEGREE_ANGLE);
+        assertWktEquals(Convention.WKT1, "UNIT[“metre”, 1]", Units.METRE);
+        assertWktEquals(Convention.WKT1, "UNIT[“degree”, 0.017453292519943295]", Units.DEGREE);
         assertWktEquals(Convention.WKT1, "UNIT[“parts per million”, 1.0E-6]", Units.PPM);
     }
 

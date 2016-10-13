@@ -42,9 +42,10 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
+import javax.measure.format.ParserException;
 
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
@@ -2407,7 +2408,7 @@ addURIs:    for (int i=0; ; i++) {
                         unit = Units.multiply(base, b/c);
                     } else try {
                         unit = Units.valueOf(getString(code, result, 5));           // Try parsing the unit symbol as a fallback.
-                    } catch (IllegalArgumentException e) {
+                    } catch (ParserException e) {
                         throw new FactoryDataException(error().getString(Errors.Keys.UnknownUnit_1, code), e);
                     }
                 }

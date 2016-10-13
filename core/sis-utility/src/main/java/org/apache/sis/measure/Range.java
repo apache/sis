@@ -20,7 +20,7 @@ import java.util.Formatter;
 import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.io.Serializable;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.util.collection.CheckedContainer;
@@ -86,7 +86,7 @@ import java.util.Objects;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  *
  * @see RangeFormat

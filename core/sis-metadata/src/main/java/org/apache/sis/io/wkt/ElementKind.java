@@ -16,7 +16,7 @@
  */
 package org.apache.sis.io.wkt;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -59,7 +59,7 @@ public enum ElementKind {
     INTEGER,
 
     /**
-     * {@linkplain javax.measure.unit.Unit Units of measurement},
+     * {@linkplain javax.measure.Unit Units of measurement},
      * often represented by {@code UNIT[…]} elements.
      */
     UNIT,

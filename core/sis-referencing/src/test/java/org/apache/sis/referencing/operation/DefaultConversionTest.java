@@ -67,7 +67,7 @@ import static org.apache.sis.test.MetadataAssert.*;
 public final strictfp class DefaultConversionTest extends TestCase {
     /**
      * The rotation from a CRS using the Paris prime meridian to a CRS using the Greenwich prime meridian,
-     * in degrees. The definitive value is 2.5969213 grades.
+     * in degrees. The definitive value is 2.5969213 grads.
      */
     private static final double OFFSET = 2.33722917;
 

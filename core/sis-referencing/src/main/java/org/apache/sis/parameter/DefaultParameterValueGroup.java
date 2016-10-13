@@ -79,8 +79,8 @@ import java.util.Objects;
  *
  * {@preformat java
  *     ParameterValueGroup mercator = Mercator.PARAMETERS.createValue();
- *     mercator.parameter("Longitude of natural origin").setValue(-60, NonSI.DEGREE_ANGLE);  // 60°W
- *     mercator.parameter("Latitude of natural origin") .setValue( 40, NonSI.DEGREE_ANGLE);  // 40°N
+ *     mercator.parameter("Longitude of natural origin").setValue(-60, Units.DEGREE);  // 60°W
+ *     mercator.parameter("Latitude of natural origin") .setValue( 40, Units.DEGREE);  // 40°N
  *     // Keep default values for other parameters.
  * }
  * </div>

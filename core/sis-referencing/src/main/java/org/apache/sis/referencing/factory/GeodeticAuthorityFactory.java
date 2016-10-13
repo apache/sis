@@ -18,7 +18,7 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Set;
 import java.util.Collections;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;

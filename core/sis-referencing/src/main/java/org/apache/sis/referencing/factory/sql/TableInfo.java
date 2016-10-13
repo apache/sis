@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
