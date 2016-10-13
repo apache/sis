@@ -62,8 +62,11 @@ public final class Units extends Static {
      * @see #CENTIMETRE
      * @see #KILOMETRE
      * @see #NAUTICAL_MILE
+     * @see #MILE
      * @see #FOOT
      * @see #FOOT_SURVEY_US
+     * @see #INCH
+     * @see #PIXEL
      *
      * @since 0.8
      */
@@ -121,10 +124,22 @@ public final class Units extends Static {
      *
      * @see #METRE
      * @see #KILOMETRE
+     * @see #MILE
      *
      * @since 0.8
      */
     public static final Unit<Length> NAUTICAL_MILE = METRE.multiply(1852);
+
+    /**
+     * Unit of measurement defined as 1609.344 metres.
+     *
+     * @see #METRE
+     * @see #KILOMETRE
+     * @see #NAUTICAL_MILE
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> MILE = METRE.multiply(1609.344);
 
     /**
      * Unit of measurement defined as 0.3048 metres.
@@ -146,6 +161,21 @@ public final class Units extends Static {
      * @since 0.8
      */
     public static final Unit<Length> FOOT_SURVEY_US = METRE.multiply(12 / 39.37);
+
+    /**
+     * Unit of measurement defined as 2.54 centimetres.
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> INCH = METRE.multiply(2.54 / 100);
+
+    /**
+     * Unit of measurement defined as 0.013837 inch.
+     * This is commonly used to measure the height of a font.
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> POINT = METRE.multiply(0.996264 / 72);
 
     /**
      * The SI unit for plane angles.
