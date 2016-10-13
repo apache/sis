@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;

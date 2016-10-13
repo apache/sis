@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collections;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
@@ -83,7 +83,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Vadim Semenov
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -493,11 +493,11 @@ public final strictfp class EPSGFactoryTest extends TestCase {
             for (int i=0; i<dimension; i++) {
                 final CoordinateSystemAxis ref  = expected.getAxis(i);
                 final CoordinateSystemAxis axis = deprecated.getAxis(i);
-                assertEquals("name",         ref.getName(),         axis.getName());
-                assertEquals("alias",        ref.getAlias(),        axis.getAlias());
-                assertEquals("direction",    ref.getDirection(),    axis.getDirection());
-                assertEquals("rangeMeaning", ref.getRangeMeaning(), axis.getRangeMeaning());
-                assertEquals("unit",         ref.getUnit().toSI(),  axis.getUnit().toSI());
+                assertEquals("name",         ref.getName(),                 axis.getName());
+                assertEquals("alias",        ref.getAlias(),                axis.getAlias());
+                assertEquals("direction",    ref.getDirection(),            axis.getDirection());
+                assertEquals("rangeMeaning", ref.getRangeMeaning(),         axis.getRangeMeaning());
+                assertEquals("unit",         ref.getUnit().getSystemUnit(), axis.getUnit().getSystemUnit());
             }
         }
     }

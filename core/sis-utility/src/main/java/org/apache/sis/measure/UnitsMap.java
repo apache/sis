@@ -20,10 +20,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.Unit;
-import javax.measure.quantity.Quantity;
+import javax.measure.Unit;
+import javax.measure.Quantity;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.Static;
 
@@ -31,12 +29,12 @@ import static org.apache.sis.measure.Units.*;
 
 
 /**
- * Map of units, defined in a separated class in order to avoid too-early class loading.
+ * Map of units, defined in a separated class in order to avoid too early class loading.
  * This class may be removed in a future SIS version if we provide our own units framework.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 final class UnitsMap extends Static {
@@ -73,8 +71,8 @@ final class UnitsMap extends Static {
     private static final Map<Unit<?>,Unit<?>> COMMONS = new HashMap<>(48);
     static {
         COMMONS.put(MILLISECOND, MILLISECOND);
-        boolean nonSI = false;
-        do for (final Field field : (nonSI ? NonSI.class : SI.class).getFields()) {
+        COMMONS.put(tec.units.ri.AbstractUnit.ONE, tec.units.ri.AbstractUnit.ONE);
+        for (final Field field : tec.units.ri.unit.Units.class.getFields()) {
             final int modifiers = field.getModifiers();
             if (Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)) {
                 final Object value;
@@ -91,18 +89,18 @@ final class UnitsMap extends Static {
                     }
                 }
             }
-        } while ((nonSI = !nonSI) == true);
+        }
     }
 
     /**
      * Returns a unique instance of the given units if possible, or the units unchanged otherwise.
      *
-     * @param  <A>    The quantity measured by the unit.
-     * @param  unit   The unit to canonicalize.
-     * @return A unit equivalents to the given unit, canonicalized if possible.
+     * @param  <A>   the quantity measured by the unit.
+     * @param  unit  the unit to canonicalize.
+     * @return a unit equivalents to the given unit, canonicalized if possible.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
-    static <A extends Quantity> Unit<A> canonicalize(final Unit<A> unit) {
+    static <A extends Quantity<A>> Unit<A> canonicalize(final Unit<A> unit) {
         final Unit<?> candidate = COMMONS.get(unit);
         if (candidate != null) {
             return (Unit) candidate;

@@ -22,8 +22,8 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.io.Serializable;
-import javax.measure.unit.Unit;
-import javax.measure.converter.ConversionException;
+import javax.measure.Unit;
+import javax.measure.IncommensurableException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -110,7 +110,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public abstract class AbstractEnvelope implements Envelope, Emptiable {
@@ -488,10 +488,10 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * @param  unit The unit for the return value.
      * @return The span in terms of the given unit.
      * @throws IndexOutOfBoundsException If the given index is out of bounds.
-     * @throws ConversionException if the length can't be converted to the specified units.
+     * @throws IncommensurableException if the length can't be converted to the specified units.
      */
     public double getSpan(final int dimension, final Unit<?> unit)
-            throws IndexOutOfBoundsException, ConversionException
+            throws IndexOutOfBoundsException, IncommensurableException
     {
         double value = getSpan(dimension);
         final CoordinateSystemAxis axis = getAxis(getCoordinateReferenceSystem(), dimension);

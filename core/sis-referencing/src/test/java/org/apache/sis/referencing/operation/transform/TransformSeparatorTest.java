@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Iterator;
-import javax.measure.unit.SI;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -25,6 +24,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -38,7 +38,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -209,7 +209,7 @@ public final strictfp class TransformSeparatorTest extends TestCase {
     @DependsOnMethod("testLinearTransform")
     public void testPassThroughTransform() throws FactoryException {
         final MathTransform nonLinear = new EllipsoidToCentricTransform(6378137, 6356752.314245179,
-                SI.METRE, false, EllipsoidToCentricTransform.TargetType.CARTESIAN);
+                Units.METRE, false, EllipsoidToCentricTransform.TargetType.CARTESIAN);
         final TransformSeparator s = new TransformSeparator(PassThroughTransform.create(2, nonLinear, 3));
         /*
          * Trivial case: no dimension specified, we should get the transform unchanged.

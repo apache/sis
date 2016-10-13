@@ -18,14 +18,8 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.text.Format;
-import java.text.FieldPosition;
-import java.text.ParsePosition;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
-import javax.measure.unit.UnitFormat;
-import javax.measure.quantity.Quantity;
+import javax.measure.Unit;
+import javax.measure.Quantity;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Workaround;
 
@@ -39,12 +33,7 @@ import org.apache.sis.util.Workaround;
  * @module
  */
 @Workaround(library="JSR-275", version="0.9.3")
-public final class PatchedUnitFormat extends Format {
-    /**
-     * For cross-version compatibility (even if this class is hopefully temporary).
-     */
-    private static final long serialVersionUID = -3064428584419360693L;
-
+public final class PatchedUnitFormat {
     /**
      * The symbols for some units defined by Apache SIS. We store here the symbols that we were not able
      * to set in the units created by {@link org.apache.sis.measure.SexagesimalConverter} because of
@@ -77,23 +66,9 @@ public final class PatchedUnitFormat extends Format {
     }
 
     /**
-     * The {@link UnitFormat} to patch.
+     * Do not allow instantiation of this class.
      */
-    private final UnitFormat format;
-
-    /**
-     * {@code true} for formatting the unit names using US spelling.
-     * Example: "meter" instead of "metre".
-     */
-    public boolean isLocaleUS;
-
-    /**
-     * Creates a new {@code PatchedUnitFormat} instance wrapping the given format.
-     *
-     * @param format the format to wrap.
-     */
-    public PatchedUnitFormat(final UnitFormat format) {
-        this.format = format;
+    private PatchedUnitFormat() {
     }
 
     /**
@@ -105,11 +80,11 @@ public final class PatchedUnitFormat extends Format {
      * @return The replacement to format, or {@code unit} if not needed.
      */
     @SuppressWarnings("unchecked")
-    public static <Q extends Quantity> Unit<Q> toFormattable(Unit<Q> unit) {
+    public static <Q extends Quantity<Q>> Unit<Q> toFormattable(Unit<Q> unit) {
         final Map<Unit<?>,String> symbols = SYMBOLS;
         if (symbols != null && symbols.containsKey(unit)) {
             assert Units.isAngular(unit);
-            unit = (Unit<Q>) NonSI.DEGREE_ANGLE;
+            unit = (Unit<Q>) Units.DEGREE;
         }
         return unit;
     }
@@ -147,48 +122,14 @@ public final class PatchedUnitFormat extends Format {
     }
 
     /**
-     * Formats the given unit.
+     * Returns the "special-case" symbol of the given unit, or {@code null} if none.
      *
-     * @param  unit The unit to format.
-     * @param  toAppendTo where to append to unit.
-     * @param  pos Ignored.
-     * @return The given {@code toAppendTo} argument.
+     * @param  unit  the unit to format.
+     * @return the "special-case" symbol of given unit, or {@code null}.
      */
-    @Override
-    public StringBuffer format(final Object unit, final StringBuffer toAppendTo, final FieldPosition pos) {
+    @Workaround(library="JSR-275", version="0.9.3")
+    public static String getSymbol(final Object unit) {
         final Map<Unit<?>,String> symbols = SYMBOLS;
-        if (symbols != null) {
-            final String symbol = symbols.get(unit);
-            if (symbol != null) {
-                return toAppendTo.append(symbol);
-            }
-        }
-        /*
-         * Following are specific to the WKT format, which is currently the only user of this method.
-         * If we invoke this method for other purposes, then we would need to provide more control on
-         * what kind of formatting is desired.
-         */
-        if (Unit.ONE.equals(unit)) {
-            return toAppendTo.append("unity");
-        } else if (NonSI.DEGREE_ANGLE.equals(unit)) {
-            return toAppendTo.append("degree");
-        } else if (SI.METRE.equals(unit)) {
-            return toAppendTo.append(isLocaleUS ? "meter" : "metre");
-        } else if (NonSI.FOOT_SURVEY_US.equals(unit)) {
-            return toAppendTo.append("US survey foot");
-        } else if (Units.PPM.equals(unit)) {
-            return toAppendTo.append("parts per million");
-        }
-        return format.format(unit, toAppendTo, pos);
-    }
-
-    /**
-     * Delegates to the wrapped {@link UnitFormat}.
-     *
-     * @return The parsed unit, or {@code null}.
-     */
-    @Override
-    public Object parseObject(final String source, final ParsePosition pos) {
-        return format.parseObject(source, pos);
+        return (symbols != null) ? symbols.get(unit) : null;
     }
 }

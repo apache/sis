@@ -29,8 +29,7 @@ import java.text.NumberFormat;
 import java.text.DateFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import javax.measure.unit.Unit;
-import javax.measure.unit.UnitFormat;
+import javax.measure.Unit;
 import org.opengis.util.Factory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
@@ -41,6 +40,7 @@ import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -107,7 +107,7 @@ import org.apache.sis.internal.util.LocalizedParseException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>

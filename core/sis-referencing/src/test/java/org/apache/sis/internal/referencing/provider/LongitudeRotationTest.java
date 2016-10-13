@@ -16,11 +16,11 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.measure.unit.NonSI;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -34,7 +34,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn(AffineTest.class)
@@ -46,7 +46,7 @@ public final strictfp class LongitudeRotationTest extends TestCase {
     public void testCreateMathTransform() {
         final LongitudeRotation provider = new LongitudeRotation();
         ParameterValueGroup p = provider.getParameters().createValue();
-        p.parameter("Longitude offset").setValue(2.5969213, NonSI.GRADE);   // Paris meridian
+        p.parameter("Longitude offset").setValue(2.5969213, Units.GRAD);   // Paris meridian
         final MathTransform mt = provider.createMathTransform(null, p);
         /*
          * Verify the full matrix. Note that the longitude offset is expected to be in degrees.
@@ -69,7 +69,7 @@ public final strictfp class LongitudeRotationTest extends TestCase {
     public void testWKT() {
         final LongitudeRotation provider = new LongitudeRotation();
         final ParameterValueGroup p = provider.getParameters().createValue();
-        p.parameter("Longitude offset").setValue(2.5969213, NonSI.GRADE);
+        p.parameter("Longitude offset").setValue(2.5969213, Units.GRAD);
         assertWktEquals(
                 "PARAM_MT[“Affine parametric transformation”,\n" +
                 "  PARAMETER[“A2”, 2.33722917, ID[“EPSG”, 8625]]]", provider.createMathTransform(null, p));

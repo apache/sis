@@ -17,11 +17,10 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Arrays;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.LinearConverter;
-import javax.measure.converter.ConversionException;
+import javax.measure.UnitConverter;
+import javax.measure.IncommensurableException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -51,7 +50,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class CoordinateSystems extends Static {
@@ -271,18 +270,18 @@ public final class CoordinateSystems extends Static {
      * }
      * </div>
      *
-     * @param  sourceCS The source coordinate system.
-     * @param  targetCS The target coordinate system.
-     * @return The conversion from {@code sourceCS} to {@code targetCS} as an affine transform.
+     * @param  sourceCS  the source coordinate system.
+     * @param  targetCS  the target coordinate system.
+     * @return the conversion from {@code sourceCS} to {@code targetCS} as an affine transform.
      *         Only axis direction and units are taken in account.
      * @throws IllegalArgumentException if the CS are not of the same type, or axes do not match.
-     * @throws ConversionException if the units are not compatible, or the conversion is non-linear.
+     * @throws IncommensurableException if the units are not compatible, or the conversion is non-linear.
      *
      * @see Matrices#createTransform(AxisDirection[], AxisDirection[])
      */
     public static Matrix swapAndScaleAxes(final CoordinateSystem sourceCS,
                                           final CoordinateSystem targetCS)
-            throws IllegalArgumentException, ConversionException
+            throws IllegalArgumentException, IncommensurableException
     {
         ensureNonNull("sourceCS", sourceCS);
         ensureNonNull("targetCS", targetCS);
@@ -326,8 +325,8 @@ public final class CoordinateSystems extends Static {
                     continue;
                 }
                 final UnitConverter converter = sourceUnit.getConverterToAny(targetUnit);
-                if (!(converter instanceof LinearConverter)) {
-                    throw new ConversionException(Resources.format(
+                if (!converter.isLinear()) {
+                    throw new IncommensurableException(Resources.format(
                               Resources.Keys.NonLinearUnitConversion_2, sourceUnit, targetUnit));
                 }
                 final double offset = converter.convert(0);
@@ -353,7 +352,7 @@ public final class CoordinateSystems extends Static {
      *         &#64;Override
      *         public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
      *             if (Units.isAngular(unit)) {
-     *                 unit = NonSI.DEGREE_ANGLE;
+     *                 unit = Units.DEGREE;
      *             }
      *             return unit;
      *         }

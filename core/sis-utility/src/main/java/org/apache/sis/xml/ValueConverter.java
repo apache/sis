@@ -26,7 +26,8 @@ import java.util.Locale;
 import java.util.UUID;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Locales;
 
@@ -321,7 +322,7 @@ public class ValueConverter {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
             return Units.valueOf(value);
-        } catch (IllegalArgumentException e) {
+        } catch (ParserException e) {
             if (!exceptionOccured(context, value, String.class, Unit.class, e)) {
                 throw e;
             }

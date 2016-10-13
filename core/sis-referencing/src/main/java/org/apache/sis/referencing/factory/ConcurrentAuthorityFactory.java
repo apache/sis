@@ -32,7 +32,7 @@ import java.lang.ref.WeakReference;
 import java.lang.ref.PhantomReference;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;

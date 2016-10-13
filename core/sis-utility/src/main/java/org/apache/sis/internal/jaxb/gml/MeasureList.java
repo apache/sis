@@ -23,7 +23,7 @@ import java.net.URISyntaxException;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;

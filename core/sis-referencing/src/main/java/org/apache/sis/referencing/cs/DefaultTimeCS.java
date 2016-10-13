@@ -17,8 +17,7 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.TimeCS;
@@ -151,7 +150,7 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      * Returns {@code VALID} if the given argument values are allowed for this coordinate system,
      * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time.
      * The current implementation accepts only temporal directions (i.e. {@link AxisDirection#FUTURE}
-     * and {@link AxisDirection#PAST}) and units compatible with {@link SI#SECOND}.
+     * and {@link AxisDirection#PAST}) and units compatible with {@link Units#SECOND}.
      */
     @Override
     final int validateAxis(final AxisDirection direction, final Unit<?> unit) {

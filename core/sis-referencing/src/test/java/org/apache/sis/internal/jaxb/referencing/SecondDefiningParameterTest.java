@@ -17,8 +17,8 @@
 package org.apache.sis.internal.jaxb.referencing;
 
 import java.util.Collections;
-import javax.measure.unit.SI;
 import javax.xml.bind.JAXBException;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
@@ -31,7 +31,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public final strictfp class SecondDefiningParameterTest extends XMLTestCase {
@@ -52,7 +52,7 @@ public final strictfp class SecondDefiningParameterTest extends XMLTestCase {
     @Test
     public void testMarshalling() throws JAXBException {
         final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createEllipsoid(Collections.singletonMap(
-                DefaultEllipsoid.NAME_KEY, "Sphere"), 6371000, 6371000, SI.METRE);
+                DefaultEllipsoid.NAME_KEY, "Sphere"), 6371000, 6371000, Units.METRE);
         final SecondDefiningParameter sdp = new SecondDefiningParameter(ellipsoid, false);
         assertXmlEquals(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
@@ -71,6 +71,6 @@ public final strictfp class SecondDefiningParameterTest extends XMLTestCase {
     public void testUnmarshalling() throws JAXBException {
         final SecondDefiningParameter sdp = unmarshal(SecondDefiningParameter.class, XML);
         assertEquals(6371000.0, sdp.measure.value, 0);
-        assertEquals(SI.METRE,  sdp.measure.unit);
+        assertEquals(Units.METRE,  sdp.measure.unit);
     }
 }

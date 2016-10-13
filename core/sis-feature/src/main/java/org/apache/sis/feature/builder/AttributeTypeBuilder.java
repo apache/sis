@@ -448,7 +448,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      *
      * <p>Usage example:</p>
      * {@preformat java
-     *     attribute.addCharacteristic(Unit.class).setName("Unit of measurement").setDefaultValue(SI.CELSIUS);
+     *     attribute.addCharacteristic(Unit.class).setName("Unit of measurement").setDefaultValue(Units.CELSIUS);
      * }
      *
      * The default characteristic name is the name of the given type, but callers should invoke one

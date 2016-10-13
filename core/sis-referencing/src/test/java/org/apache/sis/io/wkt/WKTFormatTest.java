@@ -18,8 +18,8 @@ package org.apache.sis.io.wkt;
 
 import java.util.Collections;
 import java.text.ParseException;
-import javax.measure.unit.NonSI;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
@@ -36,7 +36,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn(GeodeticObjectParserTest.class)
@@ -380,7 +380,7 @@ public final strictfp class WKTFormatTest extends TestCase {
     @Test
     public void testWarnings() throws ParseException {
         DefaultPrimeMeridian pm = new DefaultPrimeMeridian(Collections.singletonMap(
-                DefaultPrimeMeridian.NAME_KEY, "Invalid “$name” here"), -10, NonSI.DEGREE_ANGLE);
+                DefaultPrimeMeridian.NAME_KEY, "Invalid “$name” here"), -10, Units.DEGREE);
         format = new WKTFormat(null, null);
         final String   wkt      = format.format(pm);
         final Warnings warnings = format.getWarnings();

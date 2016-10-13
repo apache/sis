@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Modifier;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;

@@ -18,10 +18,10 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.Arrays;
-import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -36,7 +36,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -156,7 +156,7 @@ public final strictfp class NormalizerTest extends TestCase {
         final Map<String,?> properties = singletonMap(NAME_KEY, "Temporary axis");
         final CoordinateSystemAxis[] axis = new CoordinateSystemAxis[directions.length];
         for (int i=0; i<directions.length; i++) {
-            axis[i] = new DefaultCoordinateSystemAxis(properties, "none", directions[i], SI.METRE);
+            axis[i] = new DefaultCoordinateSystemAxis(properties, "none", directions[i], Units.METRE);
         }
         return axis;
     }
@@ -188,13 +188,13 @@ public final strictfp class NormalizerTest extends TestCase {
         assertSame(HardCodedAxes.HEIGHT_cm, Normalizer.normalize(HardCodedAxes.HEIGHT_cm,
                 AxesConvention.CONVENTIONALLY_ORIENTED));                                   // Do not change unit.
         assertAxisEquals("Height", "h", AxisDirection.UP,
-                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
+                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null,
                 Normalizer.normalize(HardCodedAxes.HEIGHT_cm, AxesConvention.NORMALIZED));
         /*
          * Test a change of direction from West to East.
          */
         assertAxisEquals(Vocabulary.format(Vocabulary.Keys.Unnamed), "E",
-                AxisDirection.EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
+                AxisDirection.EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null,
                 Normalizer.normalize(HardCodedAxes.WESTING, AxesConvention.NORMALIZED));
     }
 }

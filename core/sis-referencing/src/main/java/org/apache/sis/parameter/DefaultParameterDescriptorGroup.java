@@ -67,11 +67,11 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *             ParameterBuilder builder = new ParameterBuilder();
  *             builder.setCodeSpace(Citations.EPSG, "EPSG").setRequired(true);
  *             ParameterDescriptor<?>[] parameters = {
- *                 builder.addName("Latitude of natural origin")    .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
- *                 builder.addName("Longitude of natural origin")   .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
- *                 builder.addName("Scale factor at natural origin").createStrictlyPositive(1, Unit.ONE),
- *                 builder.addName("False easting")                 .create(0, SI.METRE),
- *                 builder.addName("False northing")                .create(0, SI.METRE)
+ *                 builder.addName("Latitude of natural origin")    .createBounded( -80,  +84, 0, Units.DEGREE),
+ *                 builder.addName("Longitude of natural origin")   .createBounded(-180, +180, 0, Units.DEGREE),
+ *                 builder.addName("Scale factor at natural origin").createStrictlyPositive(1, Units.ONE),
+ *                 builder.addName("False easting")                 .create(0, Units.METRE),
+ *                 builder.addName("False northing")                .create(0, Units.METRE)
  *             };
  *             builder.addIdentifier("9804")                    // Primary key in EPSG database.
  *                    .addName("Mercator (variant A)")          // EPSG name since October 2010.

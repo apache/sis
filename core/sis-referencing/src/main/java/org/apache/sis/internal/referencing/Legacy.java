@@ -16,11 +16,11 @@
  */
 package org.apache.sis.internal.referencing;
 
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -40,7 +40,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class Legacy {
@@ -57,9 +57,9 @@ public final class Legacy {
      * the invalid names and directions for WKT 1 parsing/formatting purposes.
      */
     private static final CartesianCS LEGACY = new DefaultCartesianCS(singletonMap(NAME_KEY, "Legacy geocentric"),
-            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "X"), "X", AxisDirection.OTHER, SI.METRE),
-            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Y"), "Y", AxisDirection.EAST,  SI.METRE),
-            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Z"), "Z", AxisDirection.NORTH, SI.METRE));
+            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "X"), "X", AxisDirection.OTHER, Units.METRE),
+            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Y"), "Y", AxisDirection.EAST,  Units.METRE),
+            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Z"), "Z", AxisDirection.NORTH, Units.METRE));
 
     /**
      * Do not allow instantiation of this class.
@@ -104,7 +104,7 @@ public final class Legacy {
 
     /**
      * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
-     * This method presumes that the given {@code cs} uses {@link SI#METRE} (this is not verified).
+     * This method presumes that the given {@code cs} uses {@link Units#METRE} (this is not verified).
      *
      * @param  cs The coordinate system for which to perform the unit replacement.
      * @param  unit The unit of measurement for the geocentric CRS axes.
@@ -113,7 +113,7 @@ public final class Legacy {
      * @since 0.6
      */
     public static CartesianCS replaceUnit(CartesianCS cs, final Unit<?> unit) {
-        if (unit != null && !unit.equals(SI.METRE)) {
+        if (unit != null && !unit.equals(Units.METRE)) {
             cs = (CartesianCS) CoordinateSystems.replaceLinearUnit(cs, unit.asType(Length.class));
         }
         return cs;

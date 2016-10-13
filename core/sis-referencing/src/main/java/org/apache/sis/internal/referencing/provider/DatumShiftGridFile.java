@@ -18,8 +18,8 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.Arrays;
 import java.lang.reflect.Array;
-import javax.measure.unit.Unit;
-import javax.measure.quantity.Quantity;
+import javax.measure.Unit;
+import javax.measure.Quantity;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -48,16 +48,16 @@ import java.nio.file.Path;
  *       from {@code float} to {@code double} performed by the {@link #getCellValue(int, int, int)} method.</li>
  * </ul>
  *
- * @param <C> Dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
- * @param <T> Dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
- *            or {@link javax.measure.quantity.Length}).
+ * @param  <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
+ * @param  <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
+ *              or {@link javax.measure.quantity.Length}).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
-public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity> extends DatumShiftGrid<C,T> {
+public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGrid<C,T> {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -211,7 +211,7 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
      * Returns {@code this} casted to the given type, after verification that those types are valid.
      */
     @SuppressWarnings("unchecked")
-    final <NC extends Quantity, NT extends Quantity> DatumShiftGridFile<NC,NT> castTo(
+    final <NC extends Quantity<NC>, NT extends Quantity<NT>> DatumShiftGridFile<NC,NT> castTo(
             final Class<NC> coordinateType, final Class<NT> translationType)
     {
         super.getCoordinateUnit() .asType(coordinateType);
@@ -270,7 +270,7 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
      * @version 0.7
      * @module
      */
-    static final class Float<C extends Quantity, T extends Quantity> extends DatumShiftGridFile<C,T> {
+    static final class Float<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
         /**
          * Serial number for inter-operability with different versions.
          */

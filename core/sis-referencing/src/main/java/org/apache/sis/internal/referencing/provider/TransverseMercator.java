@@ -16,9 +16,6 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -30,6 +27,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -38,7 +36,7 @@ import org.apache.sis.math.MathFunctions;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator.html">Transverse Mercator on RemoteSensing.org</a>
@@ -176,11 +174,11 @@ public final class TransverseMercator extends AbstractMercator {
         if (zone != 0) {
             name = "UTM zone " + zone + (isSouth ? 'S' : 'N');
         }
-        group.parameter(Constants.LATITUDE_OF_ORIGIN).setValue(latitude,  NonSI.DEGREE_ANGLE);
-        group.parameter(Constants.CENTRAL_MERIDIAN)  .setValue(longitude, NonSI.DEGREE_ANGLE);
-        group.parameter(Constants.SCALE_FACTOR)      .setValue(0.9996, Unit.ONE);
-        group.parameter(Constants.FALSE_EASTING)     .setValue(500000, SI.METRE);
-        group.parameter(Constants.FALSE_NORTHING)    .setValue(isSouth ? 10000000 : 0, SI.METRE);
+        group.parameter(Constants.LATITUDE_OF_ORIGIN).setValue(latitude,  Units.DEGREE);
+        group.parameter(Constants.CENTRAL_MERIDIAN)  .setValue(longitude, Units.DEGREE);
+        group.parameter(Constants.SCALE_FACTOR)      .setValue(0.9996, Units.ONE);
+        group.parameter(Constants.FALSE_EASTING)     .setValue(500000, Units.METRE);
+        group.parameter(Constants.FALSE_NORTHING)    .setValue(isSouth ? 10000000 : 0, Units.METRE);
         return name;
     }
 

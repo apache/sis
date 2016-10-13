@@ -16,9 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
-import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;                 // For javadoc
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -108,7 +106,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see AbstractCS#forConvention(AxesConvention)
@@ -123,9 +121,9 @@ public enum AxesConvention implements AxisFilter {
      *   <li>Axes are oriented and ordered as defined for {@link #CONVENTIONALLY_ORIENTED} coordinate systems.</li>
      *   <li>Known units are normalized (this list may be expanded in future SIS versions):
      *     <ul>
-     *       <li>Angular units are set to {@link javax.measure.unit.NonSI#DEGREE_ANGLE}.</li>
-     *       <li>Linear units are set to {@link javax.measure.unit.SI#METRE}.</li>
-     *       <li>Temporal units are set to {@link javax.measure.unit.NonSI#DAY}.</li>
+     *       <li>Angular units are set to {@link javax.measure.Units#DEGREE}.</li>
+     *       <li>Linear units are set to {@link javax.measure.unit.Units#METRE}.</li>
+     *       <li>Temporal units are set to {@link javax.measure.unit.Units#DAY}.</li>
      *     </ul>
      *   </li>
      * </ul>
@@ -150,11 +148,11 @@ public enum AxesConvention implements AxisFilter {
         @Override
         public Unit<?> getUnitReplacement(final CoordinateSystemAxis axis, Unit<?> unit) {
             if (Units.isLinear(unit)) {
-                unit = SI.METRE;
+                unit = Units.METRE;
             } else if (Units.isAngular(unit)) {
-                unit = NonSI.DEGREE_ANGLE;
+                unit = Units.DEGREE;
             } else if (Units.isTemporal(unit)) {
-                unit = NonSI.DAY;
+                unit = Units.DAY;
             }
             return unit;
         }

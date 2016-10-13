@@ -16,7 +16,7 @@
  */
 package org.apache.sis.parameter;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValue;
 import org.apache.sis.internal.util.Cloner;

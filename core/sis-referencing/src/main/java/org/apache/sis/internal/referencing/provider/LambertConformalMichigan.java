@@ -17,10 +17,10 @@
 package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
-import javax.measure.unit.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -28,7 +28,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -58,7 +58,7 @@ public final class LambertConformalMichigan extends AbstractLambert {
         SCALE_FACTOR = builder
                 .addIdentifier("1051")
                 .addName("Ellipsoid scaling factor")
-                .createStrictlyPositive(Double.NaN, Unit.ONE);
+                .createStrictlyPositive(Double.NaN, Units.ONE);
 
         PARAMETERS = builder
                 .addIdentifier(IDENTIFIER)
