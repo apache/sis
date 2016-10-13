@@ -17,13 +17,13 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
-import javax.measure.unit.Unit;
-import javax.measure.quantity.Quantity;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.LinearConverter;
+import javax.measure.Unit;
+import javax.measure.Quantity;
+import javax.measure.UnitConverter;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
@@ -36,9 +36,6 @@ import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.Units;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -132,12 +129,12 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.referencing.operation.transform.DatumShiftTransform
  */
-public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> implements Serializable {
+public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T>> implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -145,7 +142,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
 
     /**
      * The unit of measurements of input values, before conversion to grid indices by {@link #coordinateToGrid}.
-     * The coordinate unit is typically {@link javax.measure.unit.NonSI#DEGREE_ANGLE}.
+     * The coordinate unit is typically {@link javax.measure.Units#DEGREE}.
      *
      * @see #getCoordinateUnit()
      */
@@ -247,8 +244,8 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
         scaleY = Double.NaN;
         x0     = Double.NaN;
         y0     = Double.NaN;
-        final UnitConverter c = coordinateUnit.toSI().getConverterTo(coordinateUnit);
-        if (c instanceof LinearConverter && c.convert(0) == 0) {
+        final UnitConverter c = coordinateUnit.getSystemUnit().getConverterTo(coordinateUnit);
+        if (c.isLinear() && c.convert(0) == 0) {
             final Matrix m = coordinateToGrid.getMatrix();
             if (Matrices.isAffine(m)) {
                 final int n = m.getNumCol() - 1;
@@ -328,7 +325,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
 
     /**
      * Returns the unit of measurement of input values, before conversion to grid indices.
-     * The coordinate unit is usually {@link javax.measure.unit.NonSI#DEGREE_ANGLE}, but other units are allowed.
+     * The coordinate unit is usually {@link javax.measure.Units#DEGREE}, but other units are allowed.
      *
      * @return The unit of measurement of input values before conversion to grid indices.
      *

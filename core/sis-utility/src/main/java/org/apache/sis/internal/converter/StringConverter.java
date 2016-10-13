@@ -23,6 +23,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.nio.file.InvalidPathException;
+import javax.measure.format.ParserException;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Numbers;
@@ -302,12 +303,12 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         }
     }
 
-    public static final class Unit extends StringConverter<javax.measure.unit.Unit<?>> {
+    public static final class Unit extends StringConverter<javax.measure.Unit<?>> {
         private static final long serialVersionUID = -1809497218136016210L;
         @SuppressWarnings("unchecked")
-        public Unit() {super((Class) javax.measure.unit.Unit.class);}               // Instantiated by ServiceLoader.
+        public Unit() {super((Class) javax.measure.Unit.class);}               // Instantiated by ServiceLoader.
 
-        @Override javax.measure.unit.Unit<?> doConvert(String source) throws IllegalArgumentException {
+        @Override javax.measure.Unit<?> doConvert(String source) throws ParserException {
             return Units.valueOf(source);
         }
     }

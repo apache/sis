@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterValue;
 

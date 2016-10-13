@@ -29,14 +29,14 @@ import java.text.ParsePosition;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import javax.measure.unit.Unit;
-import javax.measure.unit.UnitFormat;
+import javax.measure.Unit;
 
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
@@ -77,7 +77,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 public abstract class CompoundFormat<T> extends Format implements Localized {

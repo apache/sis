@@ -17,7 +17,7 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Collection;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.datum.VerticalDatumType;

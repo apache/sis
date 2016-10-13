@@ -16,9 +16,9 @@
  */
 package org.apache.sis.measure;
 
-import javax.measure.unit.Unit;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.ConversionException;
+import javax.measure.Unit;
+import javax.measure.UnitConverter;
+import javax.measure.IncommensurableException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 
@@ -243,9 +243,9 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      *
      * @param  targetUnit  the target unit, or {@code null} for keeping the unit unchanged.
      * @return the converted range, or {@code this} if no conversion is needed.
-     * @throws ConversionException if the target unit are not compatible with this {@linkplain #unit() range unit}.
+     * @throws IncommensurableException if the target unit are not compatible with this {@linkplain #unit() range unit}.
      */
-    public MeasurementRange<E> convertTo(final Unit<?> targetUnit) throws ConversionException {
+    public MeasurementRange<E> convertTo(final Unit<?> targetUnit) throws IncommensurableException {
         return convertAndCast(elementType, targetUnit);
     }
 
@@ -275,7 +275,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     private <N extends E> Range<N> convert(final Range<N> range) throws IllegalArgumentException {
         if (range instanceof MeasurementRange<?>) try {
             return ((MeasurementRange<N>) range).convertAndCast(range.elementType, unit);
-        } catch (ConversionException e) {
+        } catch (IncommensurableException e) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2,
                     ((MeasurementRange<?>) range).unit, unit), e);
         }
@@ -298,7 +298,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     {
         if (range instanceof MeasurementRange<?>) try {
             return ((MeasurementRange<?>) range).convertAndCast(type, unit);
-        } catch (ConversionException e) {
+        } catch (IncommensurableException e) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2,
                     ((MeasurementRange<?>) range).unit, unit), e);
         }
@@ -314,11 +314,11 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      *               {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param  targetUnit the target unit, or {@code null} for no change.
      * @return the casted range, or {@code this}.
-     * @throws ConversionException if the given target unit is not compatible with the unit of this range.
+     * @throws IncommensurableException if the given target unit is not compatible with the unit of this range.
      */
     @SuppressWarnings("unchecked")
     private <N extends Number & Comparable<? super N>> MeasurementRange<N>
-            convertAndCast(final Class<N> type, Unit<?> targetUnit) throws ConversionException
+            convertAndCast(final Class<N> type, Unit<?> targetUnit) throws IncommensurableException
     {
         if (targetUnit == null || targetUnit.equals(unit)) {
             if (elementType == type) {
@@ -327,7 +327,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
             targetUnit = unit;
         } else if (unit != null) {
             final UnitConverter converter = unit.getConverterToAny(targetUnit);
-            if (!converter.equals(UnitConverter.IDENTITY)) {
+            if (!converter.isIdentity()) {
                 boolean minInc = isMinIncluded;
                 boolean maxInc = isMaxIncluded;
                 double minimum = converter.convert(getMinDouble());

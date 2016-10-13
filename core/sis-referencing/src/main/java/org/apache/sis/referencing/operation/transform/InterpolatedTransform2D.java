@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
-import javax.measure.quantity.Quantity;
+import javax.measure.Quantity;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
@@ -31,7 +31,7 @@ import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class InterpolatedTransform2D extends InterpolatedTransform implements MathTransform2D {
@@ -43,7 +43,7 @@ final class InterpolatedTransform2D extends InterpolatedTransform implements Mat
     /**
      * Constructs a 2D transform.
      */
-    <T extends Quantity> InterpolatedTransform2D(final DatumShiftGrid<T,T> grid) throws NoninvertibleMatrixException {
+    <T extends Quantity<T>> InterpolatedTransform2D(final DatumShiftGrid<T,T> grid) throws NoninvertibleMatrixException {
         super(grid);
     }
 

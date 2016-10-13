@@ -19,13 +19,12 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.measure.Units;
 
 import static org.opengis.referencing.datum.Datum.*;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
@@ -36,7 +35,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public final strictfp class HardCodedDatum {
@@ -45,7 +44,7 @@ public final strictfp class HardCodedDatum {
      */
     public static final DefaultPrimeMeridian GREENWICH = new DefaultPrimeMeridian(
             properties("Greenwich", "8901", null),
-            0, NonSI.DEGREE_ANGLE);
+            0, Units.DEGREE);
 
     /**
      * Paris meridian (EPSG:8903), with angular measurements in grad.
@@ -54,7 +53,7 @@ public final strictfp class HardCodedDatum {
      */
     public static final DefaultPrimeMeridian PARIS = new DefaultPrimeMeridian(
             properties("Paris", "8903", null),
-            2.5969213, NonSI.GRADE);
+            2.5969213, Units.GRAD);
 
     /**
      * Old Paris meridian (EPSG:8914) defined as 2°20'13.95"E.
@@ -67,7 +66,7 @@ public final strictfp class HardCodedDatum {
      */
     public static final DefaultPrimeMeridian PARIS_RGS = new DefaultPrimeMeridian(
             properties("Paris RGS", "8914", null),
-            2 + (20 + 13.95/60)/60, NonSI.DEGREE_ANGLE);
+            2 + (20 + 13.95/60)/60, Units.DEGREE);
 
     /**
      * WGS 1984 datum (EPSG:6326). Prime meridian is Greenwich.
@@ -105,7 +104,7 @@ public final strictfp class HardCodedDatum {
     public static final DefaultGeodeticDatum TOKYO = new DefaultGeodeticDatum(
             properties("Tokyo 1918", "6301", "Geodetic survey."),
             DefaultEllipsoid.createFlattenedSphere(properties("Bessel 1841", "7004", null),
-                    6377397.155, 299.1528128, SI.METRE), GREENWICH);
+                    6377397.155, 299.1528128, Units.METRE), GREENWICH);
 
     /**
      * Japanese Geodetic Datum 2000 datum (EPSG:6612). Ellipsoid is GRS 1980 and prime meridian is Greenwich.
@@ -116,7 +115,7 @@ public final strictfp class HardCodedDatum {
     public static final DefaultGeodeticDatum JGD2000 = new DefaultGeodeticDatum(
             properties("Japanese Geodetic Datum 2000", "6612", TOKYO.getScope()),
             DefaultEllipsoid.createFlattenedSphere(properties("GRS 1980", "7019", null),
-                    6378137, 298.257222101, SI.METRE), GREENWICH);
+                    6378137, 298.257222101, Units.METRE), GREENWICH);
 
     /**
      * Spherical datum based on GRS 1980 Authalic Sphere (EPSG:6047). Prime meridian is Greenwich.

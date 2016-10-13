@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -24,6 +23,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.opengis.test.referencing.TransformTestCase;
@@ -37,7 +37,7 @@ import org.junit.Test;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn(AffineTest.class)
@@ -101,7 +101,7 @@ public final strictfp class GeographicOffsetsTest extends TransformTestCase {
     public void testVerticalOffset() throws FactoryException, TransformException {
         final VerticalOffset provider = new VerticalOffset();
         final ParameterValueGroup pv = provider.getParameters().createValue();
-        pv.parameter("Vertical Offset").setValue(15.55, NonSI.FOOT);
+        pv.parameter("Vertical Offset").setValue(15.55, Units.FOOT);
         transform = provider.createMathTransform(null, pv);
         tolerance = Formulas.LINEAR_TOLERANCE;
         final double[] source = new double[transform.getSourceDimensions()];
@@ -124,7 +124,7 @@ public final strictfp class GeographicOffsetsTest extends TransformTestCase {
         final DefaultMathTransformFactory factory = DefaultFactories.forBuildin(
                 MathTransformFactory.class, DefaultMathTransformFactory.class);
         final ParameterValueGroup pv = factory.getDefaultParameters("Vertical Offset");
-        pv.parameter("Vertical Offset").setValue(15.55, NonSI.FOOT);
+        pv.parameter("Vertical Offset").setValue(15.55, Units.FOOT);
         /*
          * Now create the MathTransform. But at the difference of the above testVerticalOffset() method,
          * we supply information about axis directions. The operation parameter shall have the same sign

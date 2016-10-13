@@ -17,9 +17,8 @@
 package org.apache.sis.internal.jaxb.gml;
 
 import java.net.URISyntaxException;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
-import javax.measure.quantity.Quantity;
+import javax.measure.Unit;
+import javax.measure.Quantity;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -62,7 +61,7 @@ import org.apache.sis.measure.Units;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.measure.Measure
@@ -150,11 +149,8 @@ public final class Measure {
                 return DefinitionURI.PREFIX + ":uom:" + Constants.EPSG + "::" + code;
             }
         }
-        if (unit == null || unit.equals(Unit.ONE)) {
+        if (unit == null || unit.equals(Units.ONE)) {
             return "";
-        }
-        if (unit.equals(NonSI.PIXEL)) {
-            return "pixel"; // TODO: maybe not the most appropriate unit.
         }
         return Context.schema(Context.current(), "gmd", Schemas.METADATA_ROOT).append(Schemas.UOM_PATH)
                 .append("#xpointer(//*[@gml:id='").append(unit).append("'])").toString();
@@ -181,7 +177,7 @@ public final class Measure {
      * @param  type The quantity for the desired unit.
      * @return A unit compatible with the given type, or {@code null} if none.
      */
-    public <Q extends Quantity> Unit<Q> getUnit(final Class<Q> type) {
+    public <Q extends Quantity<Q>> Unit<Q> getUnit(final Class<Q> type) {
         return (unit != null) ? unit.asType(type) : null;
     }
 

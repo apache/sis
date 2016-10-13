@@ -17,10 +17,10 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Collections;
-import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -33,7 +33,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn(DefaultPolarCSTest.class)
@@ -60,7 +60,7 @@ public final strictfp class DefaultCylindricalCSTest extends TestCase {
     @Test
     public void testChangeAxisOrder() {
         final DefaultCoordinateSystemAxis radius = HardCodedAxes.create("Radius", "r",
-                AxisDirection.SOUTH, SI.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
+                AxisDirection.SOUTH, Units.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
 
         final DefaultCylindricalCS cs = new DefaultCylindricalCS(
                 Collections.singletonMap(DefaultCylindricalCS.NAME_KEY, "Cylindrical"),

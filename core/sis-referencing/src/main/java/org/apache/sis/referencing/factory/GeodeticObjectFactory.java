@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.lang.reflect.Constructor;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import javax.xml.bind.JAXBException;

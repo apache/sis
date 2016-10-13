@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import javax.measure.unit.SI;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.SphericalCS;
@@ -26,6 +25,7 @@ import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.opengis.test.referencing.TransformTestCase;
@@ -42,7 +42,7 @@ import org.junit.Test;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -84,7 +84,7 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
      * Returns the given coordinate system but with linear axes in centimetres instead of metres.
      */
     private static CoordinateSystem toCentimetres(final CoordinateSystem cs) {
-        return CoordinateSystems.replaceLinearUnit(cs, SI.CENTIMETRE);
+        return CoordinateSystems.replaceLinearUnit(cs, Units.CENTIMETRE);
     }
 
     /**

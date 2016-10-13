@@ -26,11 +26,11 @@ import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.lang.annotation.ElementType;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.apache.sis.measure.Angle;
+import org.apache.sis.measure.Units;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -52,7 +52,7 @@ import java.nio.charset.StandardCharsets;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  */
 @DependsOn(org.apache.sis.measure.AngleTest.class)
@@ -300,7 +300,7 @@ public final strictfp class StringConverterTest extends TestCase {
     @Test
     public void testUnit() {
         final ObjectConverter<String,Unit<?>> c = new StringConverter.Unit();
-        runInvertibleConversion(c, "km", SI.KILOMETRE);
+        runInvertibleConversion(c, "km", Units.KILOMETRE);
         assertSerializedEquals(c);
     }
 

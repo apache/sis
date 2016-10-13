@@ -22,10 +22,9 @@ import java.util.Locale;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
-import javax.measure.unit.UnitFormat;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
+import javax.measure.format.ParserException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValue;
@@ -43,6 +42,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 
@@ -57,7 +57,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  *
  * @see <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Know Text specification</a>
@@ -82,7 +82,7 @@ class MathTransformParser extends AbstractParser {
      * For each {@code UNIT_KEYWORDS[i]} element, the associated base unit is {@code BASE_UNIT[i]}.
      */
     private static final Unit<?>[] BASE_UNITS = {
-        SI.METRE, SI.RADIAN, Unit.ONE, SI.SECOND
+        Units.METRE, Units.RADIAN, Units.ONE, Units.SECOND
     };
 
     /**
@@ -110,7 +110,7 @@ class MathTransformParser extends AbstractParser {
      * Do not change the method signature even if it doesn't break the compilation, unless the reflection code
      * is also updated.</p>
      *
-     * @param mtFactory The factory to use to create {@link MathTransform} objects.
+     * @param  mtFactory  the factory to use to create {@link MathTransform} objects.
      */
     public MathTransformParser(final MathTransformFactory mtFactory) {
         this(Symbols.getDefault(), Collections.<String,Element>emptyMap(), null, null, null, mtFactory, null);
@@ -119,13 +119,13 @@ class MathTransformParser extends AbstractParser {
     /**
      * Creates a parser using the specified set of symbols and factory.
      *
-     * @param symbols       The set of symbols to use.
-     * @param fragments     Reference to the {@link WKTFormat#fragments} map, or an empty map if none.
-     * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
-     * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
-     * @param unitFormat    The unit format provided by {@link WKTFormat}, or {@code null} for a default format.
-     * @param mtFactory     The factory to use to create {@link MathTransform} objects.
-     * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
+     * @param  symbols       the set of symbols to use.
+     * @param  fragments     reference to the {@link WKTFormat#fragments} map, or an empty map if none.
+     * @param  numberFormat  the number format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param  dateFormat    the date format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param  unitFormat    the unit format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param  mtFactory     the factory to use to create {@link MathTransform} objects.
+     * @param  errorLocale   the locale for error messages (not for parsing), or {@code null} for the system default.
      */
     MathTransformParser(final Symbols symbols, final Map<String,Element> fragments,
             final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
@@ -148,8 +148,8 @@ class MathTransformParser extends AbstractParser {
     /**
      * Parses the next element in the specified <cite>Well Know Text</cite> (WKT) tree.
      *
-     * @param  element The element to be parsed.
-     * @return The parsed object, or {@code null} if the element is not recognized.
+     * @param  element  the element to be parsed.
+     * @return the parsed object, or {@code null} if the element is not recognized.
      * @throws ParseException if the element can not be parsed.
      */
     @Override
@@ -160,9 +160,9 @@ class MathTransformParser extends AbstractParser {
     /**
      * Parses the next {@code MathTransform} in the specified <cite>Well Know Text</cite> (WKT) tree.
      *
-     * @param  element The parent element.
-     * @param  mandatory {@code true} if a math transform must be present, or {@code false} if optional.
-     * @return The next element as a {@code MathTransform} object, or {@code null}.
+     * @param  element    the parent element.
+     * @param  mandatory  {@code true} if a math transform must be present, or {@code false} if optional.
+     * @return the next element as a {@code MathTransform} object, or {@code null}.
      * @throws ParseException if the next element can not be parsed.
      */
     final MathTransform parseMathTransform(final Element element, final boolean mandatory) throws ParseException {
@@ -195,8 +195,8 @@ class MathTransformParser extends AbstractParser {
      * and 9111) can hardly be expressed in an other way than by their EPSG code. Thankfully, identifiers in
      * {@code UNIT} elements are rare, so risk of conflicts should be low.</div>
      *
-     * @param  parent The parent {@code "UNIT"} element.
-     * @return The unit from the identifier code, or {@code null} if none.
+     * @param  parent  the parent {@code "UNIT"} element.
+     * @return the unit from the identifier code, or {@code null} if none.
      * @throws ParseException if the {@code "ID"} can not be parsed.
      */
     final Unit<?> parseUnitID(final Element parent) throws ParseException {
@@ -224,8 +224,8 @@ class MathTransformParser extends AbstractParser {
      * Parses an optional {@code "UNIT"} element of unknown dimension.
      * This method tries to infer the quantity dimension from the unit keyword.
      *
-     * @param  parent The parent element.
-     * @return The {@code "UNIT"} element, or {@code null} if none.
+     * @param  parent  the parent element.
+     * @return the {@code "UNIT"} element, or {@code null} if none.
      * @throws ParseException if the {@code "UNIT"} can not be parsed.
      */
     final Unit<?> parseUnit(final Element parent) throws ParseException {
@@ -247,7 +247,7 @@ class MathTransformParser extends AbstractParser {
         // If we can not infer the base type, we have to rely on the name.
         try {
             return parseUnit(name);
-        } catch (IllegalArgumentException e) {
+        } catch (ParserException e) {
             throw (ParseException) new LocalizedParseException(errorLocale,
                     Errors.Keys.UnknownUnit_1, new Object[] {name}, element.offset).initCause(e);
         }
@@ -256,17 +256,17 @@ class MathTransformParser extends AbstractParser {
     /**
      * Parses a sequence of {@code "PARAMETER"} elements.
      *
-     * @param  element            The parent element containing the parameters to parse.
-     * @param  parameters         The group where to store the parameter values.
-     * @param  defaultUnit        The default unit (for arbitrary quantity, including angular), or {@code null}.
-     * @param  defaultAngularUnit The default angular unit, or {@code null} if none. This is determined by the
-     *         context, especially when {@link GeodeticObjectParser} parses a {@code ProjectedCRS} element.
+     * @param  element             the parent element containing the parameters to parse.
+     * @param  parameters          the group where to store the parameter values.
+     * @param  defaultUnit         the default unit (for arbitrary quantity, including angular), or {@code null}.
+     * @param  defaultAngularUnit  the default angular unit, or {@code null} if none. This is determined by the context,
+     *                             especially when {@link GeodeticObjectParser} parses a {@code ProjectedCRS} element.
      * @throws ParseException if the {@code "PARAMETER"} element can not be parsed.
      */
     final void parseParameters(final Element element, final ParameterValueGroup parameters,
             final Unit<?> defaultUnit, final Unit<Angle> defaultAngularUnit) throws ParseException
     {
-        final Unit<?> defaultSI = (defaultUnit != null) ? defaultUnit.toSI() : null;
+        final Unit<?> defaultSI = (defaultUnit != null) ? defaultUnit.getSystemUnit(): null;
         Element param = element;
         try {
             while ((param = element.pullElement(OPTIONAL, WKTKeywords.Parameter)) != null) {
@@ -287,10 +287,10 @@ class MathTransformParser extends AbstractParser {
                 if (isNumeric && unit == null) {
                     unit = descriptor.getUnit();
                     if (unit != null) {
-                        final Unit<?> si = unit.toSI();
+                        final Unit<?> si = unit.getSystemUnit();
                         if (si.equals(defaultSI)) {
                             unit = defaultUnit;
-                        } else if (si.equals(SI.RADIAN)) {
+                        } else if (si.equals(Units.RADIAN)) {
                             unit = defaultAngularUnit;
                         }
                     }
@@ -325,8 +325,8 @@ class MathTransformParser extends AbstractParser {
      *     PARAM_MT["<classification-name>" {,<parameter>}* ]
      * }
      *
-     * @param  parent The parent element.
-     * @return The {@code "PARAM_MT"} element as an {@link MathTransform} object.
+     * @param  parent  the parent element.
+     * @return the {@code "PARAM_MT"} element as an {@link MathTransform} object.
      * @throws ParseException if the {@code "PARAM_MT"} element can not be parsed.
      */
     private MathTransform parseParamMT(final Element parent) throws ParseException {
@@ -367,8 +367,8 @@ class MathTransformParser extends AbstractParser {
      *     INVERSE_MT[<math transform>]
      * }
      *
-     * @param  parent The parent element.
-     * @return The {@code "INVERSE_MT"} element as an {@link MathTransform} object.
+     * @param  parent  the parent element.
+     * @return the {@code "INVERSE_MT"} element as an {@link MathTransform} object.
      * @throws ParseException if the {@code "INVERSE_MT"} element can not be parsed.
      */
     private MathTransform parseInverseMT(final Element parent) throws ParseException {
@@ -393,8 +393,8 @@ class MathTransformParser extends AbstractParser {
      *     PASSTHROUGH_MT[<integer>, <math transform>]
      * }
      *
-     * @param  parent The parent element.
-     * @return The {@code "PASSTHROUGH_MT"} element as an {@link MathTransform} object.
+     * @param  parent  the parent element.
+     * @return the {@code "PASSTHROUGH_MT"} element as an {@link MathTransform} object.
      * @throws ParseException if the {@code "PASSTHROUGH_MT"} element can not be parsed.
      */
     private MathTransform parsePassThroughMT(final Element parent) throws ParseException {
@@ -419,9 +419,9 @@ class MathTransformParser extends AbstractParser {
      *     CONCAT_MT[<math transform> {,<math transform>}*]
      * }
      *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @return The {@code "CONCAT_MT"} element as an {@link MathTransform} object.
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @return the {@code "CONCAT_MT"} element as an {@link MathTransform} object.
      * @throws ParseException if the {@code "CONCAT_MT"} element can not be parsed.
      */
     private MathTransform parseConcatMT(final Element parent) throws ParseException {

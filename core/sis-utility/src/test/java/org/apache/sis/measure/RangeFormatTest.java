@@ -24,8 +24,6 @@ import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.text.AttributedCharacterIterator;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.SI;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -42,7 +40,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 @DependsOn(MeasurementRangeTest.class)
@@ -167,34 +165,34 @@ public final strictfp class RangeFormatTest extends TestCase {
         assertEquals("maxPos.endIndex",   7, maxPos.getEndIndex());
 
         // Positive infinity with integers
-        assertEquals("[50 … ∞)", format(new NumberRange<Integer>(Integer.class, 50, true, null, true)));
+        assertEquals("[50 … ∞)", format(new NumberRange<>(Integer.class, 50, true, null, true)));
         assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
         assertEquals("maxPos.endIndex",   7, maxPos.getEndIndex());
 
         // Negative infinity with integers
-        assertEquals("(-∞ … 40]", format(new NumberRange<Integer>(Integer.class, null, true, 40, true)));
+        assertEquals("(-∞ … 40]", format(new NumberRange<>(Integer.class, null, true, 40, true)));
         assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
         assertEquals("maxPos.endIndex",   8, maxPos.getEndIndex());
 
         // Measurement
-        assertEquals("[-10 … 20] m", format(MeasurementRange.create(-10, true, 20, true, SI.METRE)));
+        assertEquals("[-10 … 20] m", format(MeasurementRange.create(-10, true, 20, true, Units.METRE)));
         assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   4, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 7, maxPos.getBeginIndex());
         assertEquals("maxPos.endIndex",   9, maxPos.getEndIndex());
 
-        assertEquals("[-10 … 20]°", format(MeasurementRange.create(-10, true, 20, true, NonSI.DEGREE_ANGLE)));
+        assertEquals("[-10 … 20]°", format(MeasurementRange.create(-10, true, 20, true, Units.DEGREE)));
         assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   4, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 7, maxPos.getBeginIndex());
         assertEquals("maxPos.endIndex",   9, maxPos.getEndIndex());
 
         maxPos = new FieldPosition(RangeFormat.Field.UNIT);
-        assertEquals("[-1 … 2] km", format(MeasurementRange.create(-1, true, 2, true, SI.KILOMETRE)));
+        assertEquals("[-1 … 2] km", format(MeasurementRange.create(-1, true, 2, true, Units.KILOMETRE)));
         assertEquals("unitPos.beginIndex", 9, maxPos.getBeginIndex());
         assertEquals("unitPos.endIndex",  11, maxPos.getEndIndex());
     }

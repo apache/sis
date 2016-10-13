@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Collections;
-import javax.measure.unit.Unit;
-import javax.measure.quantity.Duration;
-import javax.measure.converter.ConversionException;
+import javax.measure.Unit;
+import javax.measure.quantity.Time;
+import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
@@ -107,7 +107,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
@@ -199,7 +199,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (equalsIgnoreMetadata(sourceCRS, targetCRS)) try {
             return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
                     CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(), targetCRS.getCoordinateSystem()));
-        } catch (IllegalArgumentException | ConversionException e) {
+        } catch (IllegalArgumentException | IncommensurableException e) {
             throw new FactoryException(Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, new CRSPair(sourceCRS, targetCRS)), e);
         }
         /*
@@ -672,7 +672,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final Matrix matrix;
         try {
             matrix = CoordinateSystems.swapAndScaleAxes(sourceCS, targetCS);
-        } catch (IllegalArgumentException | ConversionException exception) {
+        } catch (IllegalArgumentException | IncommensurableException exception) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
         return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix);
@@ -702,7 +702,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * much to add to a time in 'sourceCRS' in order to get a time in 'targetCRS'. This "epoch shift" is
          * in units of 'targetCRS'.
          */
-        final Unit<Duration> targetUnit = targetCS.getAxis(0).getUnit().asType(Duration.class);
+        final Unit<Time> targetUnit = targetCS.getAxis(0).getUnit().asType(Time.class);
         double epochShift = sourceDatum.getOrigin().getTime() -
                             targetDatum.getOrigin().getTime();
         epochShift = Units.MILLISECOND.getConverterTo(targetUnit).convert(epochShift);
@@ -718,7 +718,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final Matrix matrix;
         try {
             matrix = CoordinateSystems.swapAndScaleAxes(sourceCS, targetCS);
-        } catch (IllegalArgumentException | ConversionException exception) {
+        } catch (IllegalArgumentException | IncommensurableException exception) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
         final int translationColumn = matrix.getNumCol() - 1;           // Paranoiac check: should always be 1.

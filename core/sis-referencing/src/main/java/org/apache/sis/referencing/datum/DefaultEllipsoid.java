@@ -17,10 +17,9 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import javax.measure.converter.UnitConverter;
+import javax.measure.UnitConverter;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -43,6 +42,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.measure.Units;
 
 import static java.lang.Math.*;
 import static java.lang.Double.*;
@@ -113,7 +113,7 @@ import java.util.Objects;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.referencing.CommonCRS#ellipsoid()
@@ -720,7 +720,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                 if (!Objects.equals(unit, that.getAxisUnit())) {
                     return false;
                 }
-                final UnitConverter c = mode.isApproximative() ? unit.getConverterTo(SI.METRE) : null;
+                final UnitConverter c = mode.isApproximative() ? unit.getConverterTo(Units.METRE) : null;
                 boolean isMinor = false;
                 double v1 = this.getSemiMajorAxis();
                 double v2 = that.getSemiMajorAxis();
@@ -771,7 +771,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         final Unit<Length> unit       = getAxisUnit();  // Gives to users a chance to override properties.
         double length = getSemiMajorAxis();
         if (isWKT1) {
-            length = unit.getConverterTo(SI.METRE).convert(length);
+            length = unit.getConverterTo(Units.METRE).convert(length);
         }
         formatter.append(length);
         final double inverseFlattening = getInverseFlattening();  // Gives to users a chance to override properties.
@@ -779,7 +779,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         if (isWKT1) {
             return WKTKeywords.Spheroid;
         }
-        if (!convention.isSimplified() || !SI.METRE.equals(unit)) {
+        if (!convention.isSimplified() || !Units.METRE.equals(unit)) {
             formatter.append(unit);
         }
         return WKTKeywords.Ellipsoid;
@@ -834,7 +834,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             }
         }
         if (unit == null) {
-            unit = SI.METRE;
+            unit = Units.METRE;
             Measure.missingUOM(DefaultEllipsoid.class, "semiMajorAxis");
         }
     }

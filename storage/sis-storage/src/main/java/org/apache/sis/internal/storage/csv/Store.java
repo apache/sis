@@ -29,10 +29,8 @@ import java.io.LineNumberReader;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
-import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import javax.measure.quantity.Duration;
+import javax.measure.Unit;
+import javax.measure.quantity.Time;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -59,6 +57,7 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.Instant;
@@ -260,13 +259,13 @@ public final class Store extends DataStore {
     @SuppressWarnings("fallthrough")
     private GeneralEnvelope parseEnvelope(final List<String> elements) throws DataStoreException, FactoryException {
         CoordinateReferenceSystem crs = null;
-        int spatialDimensionCount     = 2;
-        double[]       lowerCorner    = ArraysExt.EMPTY_DOUBLE;
-        double[]       upperCorner    = ArraysExt.EMPTY_DOUBLE;
-        Instant        startTime      = null;
-        Instant        endTime        = null;
-        Unit<Duration> timeUnit       = SI.SECOND;
-        boolean        isTimeAbsolute = false;
+        int spatialDimensionCount = 2;
+        double[]   lowerCorner    = ArraysExt.EMPTY_DOUBLE;
+        double[]   upperCorner    = ArraysExt.EMPTY_DOUBLE;
+        Instant    startTime      = null;
+        Instant    endTime        = null;
+        Unit<Time> timeUnit       = Units.SECOND;
+        boolean    isTimeAbsolute = false;
         int ordinal = -1;
         for (final String element : elements) {
             ordinal++;
@@ -294,10 +293,10 @@ public final class Store extends DataStore {
                     case 6: endTime     = Instant.parse(element); continue;
                     case 7: switch (element.toLowerCase(Locale.US)) {
                                 case "sec":
-                                case "second":   /* Already SI.SECOND. */ continue;
-                                case "minute":   timeUnit = NonSI.MINUTE; continue;
-                                case "hour":     timeUnit = NonSI.HOUR;   continue;
-                                case "day":      timeUnit = NonSI.DAY;    continue;
+                                case "second":   /* Already SECOND. */    continue;
+                                case "minute":   timeUnit = Units.MINUTE; continue;
+                                case "hour":     timeUnit = Units.HOUR;   continue;
+                                case "day":      timeUnit = Units.DAY;    continue;
                                 case "absolute": isTimeAbsolute = true;   continue;
                                 default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnknownUnit_1, element));
                             }

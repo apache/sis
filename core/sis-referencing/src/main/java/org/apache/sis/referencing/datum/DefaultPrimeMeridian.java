@@ -17,8 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -38,6 +37,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -229,7 +229,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * code, regardless of the underlying angular units of this prime meridian:
      *
      * {@preformat java
-     *     double longitudeInDegrees = primeMeridian.getGreenwichLongitude(NonSI.DEGREE_ANGLE);
+     *     double longitudeInDegrees = primeMeridian.getGreenwichLongitude(Units.DEGREE);
      * }
      *
      * @param unit The unit in which to express longitude.
@@ -275,8 +275,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
                         Objects.equals(getAngularUnit(),        that.getAngularUnit());
             }
             default: {
-                final double v1 = getGreenwichLongitude(NonSI.DEGREE_ANGLE);
-                final double v2 = ReferencingUtilities.getGreenwichLongitude((PrimeMeridian) object, NonSI.DEGREE_ANGLE);
+                final double v1 = getGreenwichLongitude(Units.DEGREE);
+                final double v2 = ReferencingUtilities.getGreenwichLongitude((PrimeMeridian) object, Units.DEGREE);
                 if (mode == ComparisonMode.IGNORE_METADATA) {
                     /*
                      * We relax the check on unit of measurement because EPSG uses sexagesimal degrees
@@ -319,7 +319,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *       Datum[“Nouvelle Triangulation Francaise”,
      *         Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],
      *       PrimeMeridian[“Paris”, 2.5969213],
-     *       AngleUnit[“grade”, 0.015707963267948967]],
+     *       AngleUnit[“grad”, 0.015707963267948967]],
      *     Conversion[“Lambert zone II”,
      *       etc...
      * }
@@ -356,7 +356,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * See {@link #isElementOfBaseCRS(Formatter)} for more discussion.
      */
     private static boolean beConservative(final Formatter formatter, final Unit<Angle> contextualUnit) {
-        return !contextualUnit.equals(NonSI.DEGREE_ANGLE) && !isElementOfBaseCRS(formatter);
+        return !contextualUnit.equals(Units.DEGREE) && !isElementOfBaseCRS(formatter);
     }
 
     /**
@@ -371,7 +371,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         super.formatTo(formatter);
         final Convention  convention = formatter.getConvention();
         final boolean     isWKT1 = (convention.majorVersion() == 1);
-        final Unit<Angle> contextualUnit = formatter.toContextualUnit(NonSI.DEGREE_ANGLE);
+        final Unit<Angle> contextualUnit = formatter.toContextualUnit(Units.DEGREE);
         Unit<Angle> unit = contextualUnit;
         if (!isWKT1) {
             unit = getAngularUnit();
@@ -439,7 +439,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
                  * (assuming that the missing unit was not applying an offset), so we can select a default.
                  * If the Greenwich longitude is not zero, presume egrees but log a warning.
                  */
-                angularUnit = NonSI.DEGREE_ANGLE;
+                angularUnit = Units.DEGREE;
                 if (greenwichLongitude != 0) {
                     Measure.missingUOM(DefaultPrimeMeridian.class, "setGreenwichMeasure");
                 }

@@ -25,8 +25,6 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.LineNumberReader;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Citation;
@@ -42,6 +40,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.util.FactoryException;
 
+import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -802,7 +801,7 @@ final class LandsatReader {
             band = new DefaultBand();
             band.setDescription(new SimpleInternationalString(BAND_NAMES[index]));
             band.setPeakResponse((double) WAVELENGTHS[index]);
-            band.setBoundUnits(SI.MetricPrefix.NANO(SI.METRE));
+            band.setBoundUnits(Units.NANOMETRE);
             bands[index] = band;
         }
         return band;
@@ -818,7 +817,7 @@ final class LandsatReader {
      */
     private void setProjectionParameter(final String key, final String name, final String value, final boolean isLinear) {
         if (projection != null) {
-            projection.parameter(name).setValue(Double.parseDouble(value), isLinear ? SI.METRE : NonSI.DEGREE_ANGLE);
+            projection.parameter(name).setValue(Double.parseDouble(value), isLinear ? Units.METRE : Units.DEGREE);
         } else {
             listeners.warning(errors().getString(Errors.Keys.UnexpectedProperty_2, filename, key), null);
         }

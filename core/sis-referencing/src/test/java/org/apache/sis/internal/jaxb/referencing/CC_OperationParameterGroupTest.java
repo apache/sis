@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.Collections;
 import javax.xml.bind.JAXBException;
-import javax.measure.unit.NonSI;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -31,6 +30,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
@@ -98,8 +98,8 @@ public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
         final ParameterBuilder builder = new ParameterBuilder();
         builder.setCodeSpace(EPSG, "EPSG").setRequired(true);
         return new ParameterDescriptor<?>[] {
-            builder.addIdentifier("8801").addName("Latitude of natural origin") .setRemarks(remarks).create(0, NonSI.DEGREE_ANGLE),
-            builder.addIdentifier("8802").addName("Longitude of natural origin").create(0, NonSI.DEGREE_ANGLE),
+            builder.addIdentifier("8801").addName("Latitude of natural origin") .setRemarks(remarks).create(0, Units.DEGREE),
+            builder.addIdentifier("8802").addName("Longitude of natural origin").create(0, Units.DEGREE),
         };
     }
 

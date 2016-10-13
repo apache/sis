@@ -19,7 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.measure.converter.ConversionException;
+import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.Conversion;
@@ -483,7 +483,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                 transform = factory.createConcatenatedTransform(isSource ? s : transform,
                                                                 isSource ? transform : s);
             }
-        } catch (ConversionException e) {
+        } catch (IncommensurableException e) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2,
                     (isSource ? "sourceCRS" : "targetCRS"),
                     (isSource ?  sourceCRS  :  targetCRS).getName()), e);

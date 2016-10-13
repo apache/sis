@@ -36,7 +36,7 @@
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 package org.apache.sis.measure;

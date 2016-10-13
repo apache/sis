@@ -16,8 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -26,6 +25,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5 (derived from 0.4)
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final strictfp class ReferencingUtilitiesTest extends TestCase {
@@ -47,12 +47,12 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
      */
     @Test
     public void testGetGreenwichLongitude() {
-        assertEquals(0,          getGreenwichLongitude(HardCodedDatum.GREENWICH, NonSI.DEGREE_ANGLE), STRICT);
-        assertEquals(0,          getGreenwichLongitude(HardCodedDatum.GREENWICH, NonSI.GRADE),        STRICT);
-        assertEquals(2.5969213,  getGreenwichLongitude(HardCodedDatum.PARIS,     NonSI.GRADE),        STRICT);
-        assertEquals(2.33722917, getGreenwichLongitude(HardCodedDatum.PARIS,     NonSI.DEGREE_ANGLE), 1E-12);
-        assertEquals(2.33720833, getGreenwichLongitude(HardCodedDatum.PARIS_RGS, NonSI.DEGREE_ANGLE), 1E-8);
-        assertEquals(2.596898,   getGreenwichLongitude(HardCodedDatum.PARIS_RGS, NonSI.GRADE),        1E-6);
+        assertEquals(0,          getGreenwichLongitude(HardCodedDatum.GREENWICH, Units.DEGREE), STRICT);
+        assertEquals(0,          getGreenwichLongitude(HardCodedDatum.GREENWICH, Units.GRAD),   STRICT);
+        assertEquals(2.5969213,  getGreenwichLongitude(HardCodedDatum.PARIS,     Units.GRAD),   STRICT);
+        assertEquals(2.33722917, getGreenwichLongitude(HardCodedDatum.PARIS,     Units.DEGREE), 1E-12);
+        assertEquals(2.33720833, getGreenwichLongitude(HardCodedDatum.PARIS_RGS, Units.DEGREE), 1E-8);
+        assertEquals(2.596898,   getGreenwichLongitude(HardCodedDatum.PARIS_RGS, Units.GRAD),   1E-6);
     }
 
     /**

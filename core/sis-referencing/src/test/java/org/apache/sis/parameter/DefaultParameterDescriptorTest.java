@@ -19,8 +19,7 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
@@ -29,6 +28,7 @@ import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -43,7 +43,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
@@ -213,9 +213,9 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     @Test
     @SuppressWarnings("UnnecessaryBoxing")
     public void testDoubleType() {
-        final ParameterDescriptor<Double> descriptor = create("Length measure", 4, 20, 12, SI.METRE);
+        final ParameterDescriptor<Double> descriptor = create("Length measure", 4, 20, 12, Units.METRE);
         assertEquals("name",         "Length measure",   descriptor.getName().getCode());
-        assertEquals("unit",         SI.METRE,           descriptor.getUnit());
+        assertEquals("unit",         Units.METRE,           descriptor.getUnit());
         assertEquals("class",        Double.class,       descriptor.getValueClass());
         assertEquals("defaultValue", Double.valueOf(12), descriptor.getDefaultValue());
         assertEquals("minimum",      Double.valueOf( 4), descriptor.getMinimumValue());
@@ -279,10 +279,10 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     @DependsOnMethod("testDoubleType")
     @SuppressWarnings("UnnecessaryBoxing")
     public void testArrayType() {
-        final DefaultParameterDescriptor<double[]> descriptor = createForArray("Array param", 4, 9, SI.METRE);
+        final DefaultParameterDescriptor<double[]> descriptor = createForArray("Array param", 4, 9, Units.METRE);
         assertEquals("name",       "Array param",  descriptor.getName().getCode());
         assertEquals("valueClass", double[].class, descriptor.getValueClass());
-        assertEquals("unit",       SI.METRE,       descriptor.getUnit());
+        assertEquals("unit",       Units.METRE,       descriptor.getUnit());
         assertNull  ("validValues",                descriptor.getValidValues());
         assertNull  ("defaultValue",               descriptor.getDefaultValue());
         assertNull  ("minimumValue",               descriptor.getMinimumValue());
@@ -312,7 +312,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        final DefaultParameterDescriptor<Double> descriptor = create("Real number", 4, 8, 5, SI.METRE);
+        final DefaultParameterDescriptor<Double> descriptor = create("Real number", 4, 8, 5, Units.METRE);
         assertWktEquals("PARAMETER[“Integer param”, 5]", create("Integer param", 4, 8, 5));
         assertWktEquals("PARAMETER[“Real number”, 5.0, LENGTHUNIT[“metre”, 1]]", descriptor);
         assertWktEquals(Convention.WKT2_SIMPLIFIED, "Parameter[“Real number”, 5.0, Unit[“metre”, 1]]", descriptor);

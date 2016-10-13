@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.AffineTransform;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterValue;

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation;
 
-import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -29,6 +28,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters.MatrixRole;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -40,7 +40,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class MathTransformContext extends Context {
@@ -59,8 +59,8 @@ final class MathTransformContext extends Context {
      * to the information provided by the super-class.
      */
     MathTransformContext(final GeodeticDatum source, final GeodeticDatum target) {
-        final double rs = ReferencingUtilities.getGreenwichLongitude(source.getPrimeMeridian(), NonSI.DEGREE_ANGLE);
-        final double rt = ReferencingUtilities.getGreenwichLongitude(target.getPrimeMeridian(), NonSI.DEGREE_ANGLE);
+        final double rs = ReferencingUtilities.getGreenwichLongitude(source.getPrimeMeridian(), Units.DEGREE);
+        final double rt = ReferencingUtilities.getGreenwichLongitude(target.getPrimeMeridian(), Units.DEGREE);
         if (rs != rt) {
             sourceMeridian = rs;
             targetMeridian = rt;

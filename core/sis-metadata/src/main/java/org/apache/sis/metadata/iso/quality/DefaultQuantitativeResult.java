@@ -17,7 +17,7 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.List;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;

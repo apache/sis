@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import javax.xml.bind.JAXBException;
-import javax.measure.unit.NonSI;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -33,6 +32,7 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.test.Validators;
+import org.apache.sis.measure.Units;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroupTest;
@@ -55,7 +55,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -71,8 +71,8 @@ public final strictfp class SingleOperationMarshallingTest extends XMLTestCase {
         final ParameterBuilder builder = new ParameterBuilder();
         builder.setCodeSpace(EPSG, "EPSG").setRequired(true);
         ParameterDescriptor<?>[] parameters = {
-            builder.addIdentifier("8801").addName("Latitude of natural origin" ).create(0, NonSI.DEGREE_ANGLE),
-            builder.addIdentifier("8802").addName("Longitude of natural origin").create(0, NonSI.DEGREE_ANGLE)
+            builder.addIdentifier("8801").addName("Latitude of natural origin" ).create(0, Units.DEGREE),
+            builder.addIdentifier("8802").addName("Longitude of natural origin").create(0, Units.DEGREE)
             // There is more parameters for a Mercator projection, but 2 is enough for this test.
         };
         builder.addName(null, "Mercator (1SP)");
@@ -221,9 +221,9 @@ public final strictfp class SingleOperationMarshallingTest extends XMLTestCase {
         assertSame("parameters.descriptors", method.getParameters(), parameters.getDescriptor());
 
         final ParameterValue<?> parameter = (ParameterValue<?>) getSingleton(parameters.values());
-        assertSame  ("parameters.descriptor", descriptor,  parameter.getDescriptor());
-        assertEquals("parameters.unit",       NonSI.GRADE, parameter.getUnit());
-        assertEquals("parameters.value",      2.5969213,   parameter.getValue());
+        assertSame  ("parameters.descriptor", descriptor, parameter.getDescriptor());
+        assertEquals("parameters.unit",       Units.GRAD, parameter.getUnit());
+        assertEquals("parameters.value",      2.5969213,  parameter.getValue());
 
         final CoordinateReferenceSystem sourceCRS = c.getSourceCRS();
         assertInstanceOf("sourceCRS",            GeodeticCRS.class,  sourceCRS);

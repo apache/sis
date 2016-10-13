@@ -93,7 +93,7 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
                 "    Datum[“Nouvelle Triangulation Française (Paris)”,\n" +
                 "      Ellipsoid[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213],\n" +
-                "    Unit[“grade”, 0.015707963267948967]]\n," +
+                "    Unit[“grad”, 0.015707963267948967]]\n," +
                 "  Conversion[“Lambert zone II”,\n" +
                 "    Method[“Lambert Conic Conformal (1SP)”],\n" +
                 "    Parameter[“Latitude of natural origin”, 52.0],\n" +

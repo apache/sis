@@ -17,8 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -42,6 +41,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -61,7 +61,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @XmlType(name = "GeodeticCRSType", propOrder = {
@@ -204,7 +204,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         final PrimeMeridian pm = datum.getPrimeMeridian();
         final Unit<Angle> angularUnit = AxisDirections.getAngularUnit(cs, null);
         if (convention != Convention.WKT2_SIMPLIFIED ||     // Really this specific enum, not Convention.isSimplified().
-                ReferencingUtilities.getGreenwichLongitude(pm, NonSI.DEGREE_ANGLE) != 0)
+                ReferencingUtilities.getGreenwichLongitude(pm, Units.DEGREE) != 0)
         {
             final Unit<Angle> oldUnit = formatter.addContextualUnit(angularUnit);
             formatter.indent(1);

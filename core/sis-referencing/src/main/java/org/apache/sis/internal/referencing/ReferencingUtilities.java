@@ -19,7 +19,7 @@ package org.apache.sis.internal.referencing;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;

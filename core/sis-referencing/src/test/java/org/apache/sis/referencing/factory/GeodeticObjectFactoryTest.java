@@ -18,9 +18,7 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Map;
 import java.util.Collections;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
@@ -46,6 +44,7 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.opengis.test.referencing.ObjectFactoryTest;
@@ -179,14 +178,14 @@ public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest 
         /*
          * Prime meridian
          */
-        angularUnit = NonSI.DEGREE_ANGLE;
+        angularUnit = Units.DEGREE;
         meridian = datumFactory.createPrimeMeridian(name("Greenwich"), 0, angularUnit);
         assertWktEquals(Convention.WKT1,
                 "PRIMEM[“Greenwich”, 0.0]", meridian);
         /*
          * Ellipsoid
          */
-        linearUnit = SI.METRE;
+        linearUnit = Units.METRE;
         ellipsoid = datumFactory.createEllipsoid(name("Airy1830"), 6377563.396, 6356256.910, linearUnit);
         assertWktEquals(Convention.WKT1,
                 "SPHEROID[“Airy1830”, 6377563.396, 299.3249753150345]", ellipsoid);
