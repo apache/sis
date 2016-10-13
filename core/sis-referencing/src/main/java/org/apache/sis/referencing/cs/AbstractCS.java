@@ -19,9 +19,7 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.EnumMap;
 import java.util.Arrays;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -67,7 +65,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see DefaultCoordinateSystemAxis
@@ -271,7 +269,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time for checking
      * argument validity. The default implementation returns {@code VALID} in all cases. Subclasses override
      * this method in order to put more restrictions on allowed axis directions and check for compatibility
-     * with {@linkplain SI#METRE metre} or {@linkplain NonSI#DEGREE_ANGLE degree} units.
+     * with {@linkplain Units#METRE metre} or {@linkplain Units#DEGREE degree} units.
      *
      * <p><b>Note for implementors:</b> since this method is invoked at construction time, it shall not depend
      * on this object's state. This method is not in public API for that reason.</p>

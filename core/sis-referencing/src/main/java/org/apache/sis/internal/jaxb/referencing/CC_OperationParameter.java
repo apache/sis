@@ -18,14 +18,13 @@ package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
-import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.Units;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 
 
@@ -39,7 +38,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public final class CC_OperationParameter extends PropertyType<CC_OperationParameter, ParameterDescriptor<?>> {
@@ -135,9 +134,9 @@ public final class CC_OperationParameter extends PropertyType<CC_OperationParame
                 valueClass = value.getClass();
                 Unit<?> unit = ((ParameterValue<?>) parent).getUnit();
                 if (unit != null) {
-                    unit = unit.toSI();
-                    if (SI.RADIAN.equals(unit)) {
-                        unit = NonSI.DEGREE_ANGLE;
+                    unit = unit.getSystemUnit();
+                    if (Units.RADIAN.equals(unit)) {
+                        unit = Units.DEGREE;
                     }
                     assert (valueClass == Double.class) || (valueClass == double[].class) : valueClass;
                     valueDomain = MeasurementRange.create(Double.NEGATIVE_INFINITY, false,

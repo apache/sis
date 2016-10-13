@@ -26,10 +26,8 @@ import java.io.FileInputStream;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
 import java.text.NumberFormat;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.SI;
-import javax.measure.converter.ConversionException;
+import javax.measure.Unit;
+import javax.measure.IncommensurableException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -489,9 +487,9 @@ final class TransformCommand extends MetadataCommand {
     /**
      * Computes the suggested precision for printing values in the given units.
      *
-     * @throws ConversionException should never happen.
+     * @throws IncommensurableException should never happen.
      */
-    private void computeNumFractionDigits(final CoordinateSystem cs) throws ConversionException {
+    private void computeNumFractionDigits(final CoordinateSystem cs) throws IncommensurableException {
         final int dimension = cs.getDimension();
         numFractionDigits = new int[dimension];
         thresholdForScientificNotation = new double[dimension];
@@ -501,10 +499,10 @@ final class TransformCommand extends MetadataCommand {
             double precision;
             if (Units.isLinear(unit)) {
                 precision = Formulas.LINEAR_TOLERANCE;
-                source = SI.METRE;
+                source = Units.METRE;
             } else if (Units.isAngular(unit)) {
                 precision = Formulas.ANGULAR_TOLERANCE;
-                source = NonSI.DEGREE_ANGLE;
+                source = Units.DEGREE;
             } else {
                 precision = 0.001;
                 source = unit;

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import javax.measure.unit.SI;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
@@ -28,6 +27,7 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -131,11 +131,11 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         /*
          * Following parameters are reproduced verbatim from EPSG registry and EPSG guide.
          */
-        p.parameter("Latitude of natural origin")    .setValue(φ0, SI.RADIAN);
-        p.parameter("Longitude of natural origin")   .setValue(λ0, SI.RADIAN);
+        p.parameter("Latitude of natural origin")    .setValue(φ0, Units.RADIAN);
+        p.parameter("Longitude of natural origin")   .setValue(λ0, Units.RADIAN);
         p.parameter("Scale factor at natural origin").setValue(k0);
-        p.parameter("False easting")                 .setValue(FE, SI.METRE);
-        p.parameter("False northing")                .setValue(FN, SI.METRE);
+        p.parameter("False easting")                 .setValue(FE, Units.METRE);
+        p.parameter("False northing")                .setValue(FN, Units.METRE);
 
         transform = new ObliqueStereographic(op, (Parameters) p);
     }

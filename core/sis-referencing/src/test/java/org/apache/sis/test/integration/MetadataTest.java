@@ -24,7 +24,6 @@ import java.io.StringWriter;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
-import javax.measure.unit.SI;
 
 import org.opengis.metadata.*;
 import org.opengis.metadata.citation.*;
@@ -46,6 +45,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 
+import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.*;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.constraint.*;
@@ -97,7 +97,7 @@ import java.nio.charset.StandardCharsets;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
@@ -271,7 +271,7 @@ public strictfp class MetadataTest extends XMLTestCase {
             {
                 final DefaultCoordinateSystemAxis axis = new DefaultCoordinateSystemAxis(
                         singletonMap(DefaultCoordinateSystemAxis.NAME_KEY, new NamedIdentifier(null, "Depth")),
-                        "d", AxisDirection.DOWN, SI.METRE);
+                        "d", AxisDirection.DOWN, Units.METRE);
 
                 final DefaultVerticalCS cs = new DefaultVerticalCS(
                         singletonMap(DefaultVerticalCS.NAME_KEY, new NamedIdentifier(null, "Depth")),

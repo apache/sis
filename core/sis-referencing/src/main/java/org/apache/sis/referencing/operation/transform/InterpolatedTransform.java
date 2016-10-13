@@ -17,11 +17,10 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
-import javax.measure.quantity.Quantity;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.LinearConverter;
+import java.util.Objects;
+import javax.measure.Unit;
+import javax.measure.Quantity;
+import javax.measure.UnitConverter;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -40,9 +39,6 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.provider.NTv2;
 import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
-
-// Branch-specific imports
-import java.util.Objects;
 
 
 /**
@@ -75,7 +71,7 @@ import java.util.Objects;
  * @author  Simon Reynard (Geomatys)
  * @author  Rueben Schulz (UBC)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public class InterpolatedTransform extends DatumShiftTransform {
@@ -132,7 +128,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * @see #createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
     @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
-    protected <T extends Quantity> InterpolatedTransform(final DatumShiftGrid<T,T> grid)
+    protected <T extends Quantity<T>> InterpolatedTransform(final DatumShiftGrid<T,T> grid)
             throws NoninvertibleMatrixException
     {
         /*
@@ -166,10 +162,10 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * We concatenate the unit conversion with above "coordinate to grid" conversion.
          */
         @SuppressWarnings("unchecked")
-        final Unit<T> normalized = Units.isAngular(unit) ? (Unit<T>) NonSI.DEGREE_ANGLE : unit.toSI();
+        final Unit<T> normalized = Units.isAngular(unit) ? (Unit<T>) Units.DEGREE : unit.getSystemUnit();
         if (!unit.equals(normalized)) {
             final UnitConverter converter = normalized.getConverterTo(unit);
-            if (!(converter instanceof LinearConverter)) {
+            if (!converter.isLinear()) {
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.NonLinearUnitConversion_2, normalized, unit));
             }
             final Double offset = converter.convert(0);
@@ -212,7 +208,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * @return The transformation between geodetic coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
-    public static <T extends Quantity> MathTransform createGeodeticTransformation(
+    public static <T extends Quantity<T>> MathTransform createGeodeticTransformation(
             final MathTransformFactory factory, final DatumShiftGrid<T,T> grid) throws FactoryException
     {
         ArgumentChecks.ensureNonNull("grid", grid);

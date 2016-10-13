@@ -16,7 +16,7 @@
  */
 package org.apache.sis.test.mock;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;

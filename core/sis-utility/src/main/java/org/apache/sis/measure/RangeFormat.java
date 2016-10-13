@@ -31,8 +31,7 @@ import java.text.AttributedCharacterIterator;
 import java.text.FieldPosition;
 import java.text.ParseException;
 import java.text.ParsePosition;
-import javax.measure.unit.Unit;
-import javax.measure.unit.UnitFormat;
+import javax.measure.Unit;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -91,7 +90,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  *
  * @see Range#toString()
@@ -578,7 +577,7 @@ public class RangeFormat extends Format {
             }
             field = MAX_VALUE_FIELD;
         }
-        toAppendTo.appendCodePoint( // Select the char for the first condition to be true below:
+        toAppendTo.appendCodePoint(                     // Select the char for the first condition to be true below:
                 isSingleton           ? openSet :
                 range.isMinIncluded() ? openInclusive :
                 alternateForm         ? openExclusiveAlt :
@@ -594,7 +593,7 @@ public class RangeFormat extends Format {
             int startPosition = toAppendTo.length();
             if (value == null) {
                 switch (field) {
-                    case MIN_VALUE_FIELD: toAppendTo.append(minusSign); // Fall through
+                    case MIN_VALUE_FIELD: toAppendTo.append(minusSign);             // Fall through
                     case MAX_VALUE_FIELD: toAppendTo.append(infinity); break;
                 }
             } else {
@@ -631,7 +630,7 @@ public class RangeFormat extends Format {
                     toAppendTo.append(' ').append(separator).append(' ');
                     break;
                 }
-                case MAX_VALUE_FIELD: { // Select the char for the first condition to be true below:
+                case MAX_VALUE_FIELD: {                 // Select the char for the first condition to be true below:
                     toAppendTo.appendCodePoint(
                             isSingleton           ? closeSet :
                             range.isMaxIncluded() ? closeInclusive :

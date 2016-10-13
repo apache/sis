@@ -17,8 +17,6 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.List;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -59,7 +57,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -80,42 +78,42 @@ public abstract class GeocentricAffine extends GeodeticOperation {
     /**
      * The operation parameter descriptor for the <cite>X-axis translation</cite>
      * ({@linkplain BursaWolfParameters#tX tX}) parameter value. Valid values range
-     * from negative to positive infinity. Units are {@linkplain SI#METRE metres}.
+     * from negative to positive infinity. Units are {@linkplain Units#METRE metres}.
      */
     public static final ParameterDescriptor<Double> TX;
 
     /**
      * The operation parameter descriptor for the <cite>Y-axis translation</cite>
      * ({@linkplain BursaWolfParameters#tY tY}) parameter value. Valid values range
-     * from negative to positive infinity. Units are {@linkplain SI#METRE metres}.
+     * from negative to positive infinity. Units are {@linkplain Units#METRE metres}.
      */
     public static final ParameterDescriptor<Double> TY;
 
     /**
      * The operation parameter descriptor for the <cite>Z-axis translation</cite>
      * ({@linkplain BursaWolfParameters#tZ tZ}) parameter value. Valid values range
-     * from negative to positive infinity. Units are {@linkplain SI#METRE metres}.
+     * from negative to positive infinity. Units are {@linkplain Units#METRE metres}.
      */
     public static final ParameterDescriptor<Double> TZ;
 
     /**
      * The operation parameter descriptor for the <cite>X-axis rotation</cite>
      * ({@linkplain BursaWolfParameters#rX rX}) parameter value.
-     * Units are {@linkplain NonSI#SECOND_ANGLE arc-seconds}.
+     * Units are {@linkplain Units#SECOND_ANGLE arc-seconds}.
      */
     static final ParameterDescriptor<Double> RX;
 
     /**
      * The operation parameter descriptor for the <cite>Y-axis rotation</cite>
      * ({@linkplain BursaWolfParameters#rY rY}) parameter value.
-     * Units are {@linkplain NonSI#SECOND_ANGLE arc-seconds}.
+     * Units are {@linkplain Units#SECOND_ANGLE arc-seconds}.
      */
     static final ParameterDescriptor<Double> RY;
 
     /**
      * The operation parameter descriptor for the <cite>Z-axis rotation</cite>
      * ({@linkplain BursaWolfParameters#rZ rZ}) parameter value.
-     * Units are {@linkplain NonSI#SECOND_ANGLE arc-seconds}.
+     * Units are {@linkplain Units#SECOND_ANGLE arc-seconds}.
      */
     static final ParameterDescriptor<Double> RZ;
 
@@ -141,7 +139,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      * Convenience method for building the rotation parameters.
      */
     private static ParameterDescriptor<Double> createRotation(final ParameterBuilder builder, final String name, final String alias) {
-        return builder.addName(name).addName(Citations.OGC, alias).createBounded(-180*60*60, 180*60*60, 0, NonSI.SECOND_ANGLE);
+        return builder.addName(name).addName(Citations.OGC, alias).createBounded(-180*60*60, 180*60*60, 0, Units.ARC_SECOND);
     }
 
     /**

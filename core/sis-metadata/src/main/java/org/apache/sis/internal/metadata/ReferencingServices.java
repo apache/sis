@@ -19,7 +19,7 @@ package org.apache.sis.internal.metadata;
 import java.util.Map;
 import java.util.Collections;
 import java.util.Locale;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Identifier;

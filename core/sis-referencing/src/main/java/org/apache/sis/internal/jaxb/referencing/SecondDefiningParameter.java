@@ -18,8 +18,9 @@ package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.apache.sis.measure.Units;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gml.Measure;
@@ -34,7 +35,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 @XmlRootElement(name = "SecondDefiningParameter", namespace = Namespaces.GML)
@@ -72,7 +73,7 @@ public final class SecondDefiningParameter {
             secondDefiningParameter = new SecondDefiningParameter(ellipsoid, false);
         } else {
             if (ellipsoid.isIvfDefinitive()) {
-                measure = new Measure(ellipsoid.getInverseFlattening(), Unit.ONE);
+                measure = new Measure(ellipsoid.getInverseFlattening(), Units.ONE);
             } else {
                 measure = new Measure(ellipsoid.getSemiMinorAxis(), ellipsoid.getAxisUnit());
             }
@@ -85,7 +86,7 @@ public final class SecondDefiningParameter {
      * @return {@code true} if the measure is the inverse of the flattening value.
      */
     public boolean isIvfDefinitive() {
-        return (measure != null) && Unit.ONE.equals(measure.unit);
+        return (measure != null) && Units.ONE.equals(measure.unit);
     }
 
     /**
@@ -130,7 +131,7 @@ public final class SecondDefiningParameter {
      * @param measure The inverse flattening value.
      */
     public void setInverseFlattening(final Measure measure) {
-        if (measure.setUnit(Unit.ONE)) {
+        if (measure.setUnit(Units.ONE)) {
             Context.warningOccured(Context.current(), SecondDefiningParameter.class, "setInverseFlattening",
                     Errors.class, Errors.Keys.IncompatiblePropertyValue_1, "uom");
         }

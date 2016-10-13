@@ -18,11 +18,11 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import javax.xml.bind.JAXBException;
-import javax.measure.unit.SI;
 import org.opengis.test.Validators;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -39,7 +39,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -131,7 +131,7 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
         if (c.equals(AxisDirection.EAST))  return HardCodedAxes.EASTING;
         if (c.equals(AxisDirection.SOUTH)) return HardCodedAxes.SOUTHING;
         if (c.equals(AxisDirection.WEST))  return HardCodedAxes.WESTING;
-        return new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, c.name()), "?", c, SI.METRE);
+        return new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, c.name()), "?", c, Units.METRE);
     }
 
     /**
@@ -218,8 +218,8 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
         assertEpsgIdentifierEquals("4400", getSingleton(cs.getIdentifiers()));
         assertEpsgIdentifierEquals("1",    getSingleton(E.getIdentifiers()));
         assertEpsgIdentifierEquals("2",    getSingleton(N.getIdentifiers()));
-        assertAxisEquals("Easting",  "E", AxisDirection.EAST,  Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null, E);
-        assertAxisEquals("Northing", "N", AxisDirection.NORTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null, N);
+        assertAxisEquals("Easting",  "E", AxisDirection.EAST,  Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null, E);
+        assertAxisEquals("Northing", "N", AxisDirection.NORTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null, N);
         /*
          * Marshal and compare with the original file.
          */

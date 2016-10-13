@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.AffineCS;
@@ -190,7 +190,7 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
         if (!AxisDirections.isSpatialOrUserDefined(direction, true)) {
             return INVALID_DIRECTION;
         }
-        if (!Units.isLinear(unit) && !Unit.ONE.equals(unit)) {
+        if (!Units.isLinear(unit) && !Units.ONE.equals(unit)) {
             return INVALID_UNIT;
         }
         return VALID;

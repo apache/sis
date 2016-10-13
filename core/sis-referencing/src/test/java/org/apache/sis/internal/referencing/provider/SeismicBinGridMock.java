@@ -16,12 +16,10 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -34,7 +32,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @SuppressWarnings("serial")
@@ -46,16 +44,16 @@ public final strictfp class SeismicBinGridMock extends ProviderMock {
     static {
         final ParameterBuilder builder = builder();
         final ParameterDescriptor<?>[] parameters = {
-            builder.addIdentifier("8733").addName("Bin grid origin I").create(Double.NaN, Unit.ONE),
-            builder.addIdentifier("8734").addName("Bin grid origin J").create(Double.NaN, Unit.ONE),
-            builder.addIdentifier("8735").addName("Bin grid origin Easting").create(Double.NaN, SI.METRE),
-            builder.addIdentifier("8736").addName("Bin grid origin Northing").create(Double.NaN, SI.METRE),
-            builder.addIdentifier("8737").addName("Scale factor of bin grid").create(Double.NaN, Unit.ONE),
-            builder.addIdentifier("8738").addName("Bin width on I-axis").create(Double.NaN, SI.METRE),
-            builder.addIdentifier("8739").addName("Bin width on J-axis").create(Double.NaN, SI.METRE),
-            builder.addIdentifier("8740").addName("Map grid bearing of bin grid J-axis").create(Double.NaN, NonSI.DEGREE_ANGLE),
-            builder.addIdentifier("8741").addName("Bin node increment on I-axis").create(Double.NaN, Unit.ONE),
-            builder.addIdentifier("8742").addName("Bin node increment on J-axis").create(Double.NaN, Unit.ONE)
+            builder.addIdentifier("8733").addName("Bin grid origin I")                  .create(Double.NaN, Units.ONE),
+            builder.addIdentifier("8734").addName("Bin grid origin J")                  .create(Double.NaN, Units.ONE),
+            builder.addIdentifier("8735").addName("Bin grid origin Easting")            .create(Double.NaN, Units.METRE),
+            builder.addIdentifier("8736").addName("Bin grid origin Northing")           .create(Double.NaN, Units.METRE),
+            builder.addIdentifier("8737").addName("Scale factor of bin grid")           .create(Double.NaN, Units.ONE),
+            builder.addIdentifier("8738").addName("Bin width on I-axis")                .create(Double.NaN, Units.METRE),
+            builder.addIdentifier("8739").addName("Bin width on J-axis")                .create(Double.NaN, Units.METRE),
+            builder.addIdentifier("8740").addName("Map grid bearing of bin grid J-axis").create(Double.NaN, Units.DEGREE),
+            builder.addIdentifier("8741").addName("Bin node increment on I-axis")       .create(Double.NaN, Units.ONE),
+            builder.addIdentifier("8742").addName("Bin node increment on J-axis")       .create(Double.NaN, Units.ONE)
         };
         PARAMETERS = builder
                 .addIdentifier("1049")

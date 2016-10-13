@@ -19,8 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.List;
 import java.util.Arrays;
 import java.io.Serializable;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -82,7 +80,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see DefaultMathTransformFactory
@@ -158,7 +156,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * <div class="note"><b>Relationship with ISO 19111:</b>
      * This method is similar to {@link OperationMethod#getParameters()}, except that typical
      * {@link MathTransform} implementations return parameters in standard units (usually
-     * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
+     * {@linkplain Units#METRE metres} or {@linkplain Units#DEGREE decimal degrees}).
      * </div>
      *
      * @return The parameter descriptors for this math transform, or {@code null} if unspecified.

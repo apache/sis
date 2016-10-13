@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.measure.unit.NonSI;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -32,7 +32,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @SuppressWarnings("serial")
@@ -46,7 +46,7 @@ public final strictfp class PoleRotationMock extends ProviderMock {
         final ParameterDescriptor<?>[] parameters = {
             createLatitude (builder.addName("Latitude of rotated pole"), true),
             createLongitude(builder.addName("Longitude of rotated pole")),
-                            builder.addName("Axis rotation").create(Double.NaN, NonSI.DEGREE_ANGLE)
+                            builder.addName("Axis rotation").create(Double.NaN, Units.DEGREE)
         };
         PARAMETERS = builder.addName("Pole rotation").createGroup(parameters);
     }

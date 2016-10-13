@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.measure.converter.ConversionException;
+import javax.measure.IncommensurableException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
@@ -821,7 +821,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                                     CoordinateSystems.swapAndScaleAxes(that.getTargetCRS().getCoordinateSystem(),
                                                                        this.getTargetCRS().getCoordinateSystem()));
                             tr2 = MathTransforms.concatenate(before, tr2, after);
-                        } catch (ConversionException | RuntimeException e) {
+                        } catch (IncommensurableException | RuntimeException e) {
                             Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
                                     AbstractCoordinateOperation.class, "equals", e);
                         }

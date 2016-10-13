@@ -46,9 +46,9 @@ public final class XPaths extends Static {
      *       {@code "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"})</li>
      * </ul>
      *
-     * @param  type The object type.
-     * @param  url  The URL to parse.
-     * @return The reference, or {@code null} if none.
+     * @param  type  the object type.
+     * @param  url   the URL to parse.
+     * @return the reference, or {@code null} if none.
      */
     public static String xpointer(final String type, final String url) {
         if (type.equals("uom")) {

@@ -17,7 +17,7 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Set;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.internal.util.CollectionsExt;
 

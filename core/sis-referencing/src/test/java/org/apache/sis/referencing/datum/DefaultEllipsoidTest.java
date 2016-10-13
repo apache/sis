@@ -18,7 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Random;
 import javax.xml.bind.JAXBException;
-import javax.measure.unit.NonSI;
+import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -37,7 +37,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -222,7 +222,7 @@ public final strictfp class DefaultEllipsoidTest extends XMLTestCase {
         assertEquals("semiMajorAxis",     20926202,           ellipsoid.getSemiMajorAxis(), 0);
         assertEquals("semiMinorAxis",     20854895,           ellipsoid.getSemiMinorAxis(), 0);
         assertEquals("inverseFlattening", 293.46630765562986, ellipsoid.getInverseFlattening(), 1E-12);
-        assertEquals("axisUnit",          NonSI.FOOT,         ellipsoid.getAxisUnit());
+        assertEquals("axisUnit",          Units.FOOT,         ellipsoid.getAxisUnit());
         /*
          * Marshall and compare to the original file.
          */

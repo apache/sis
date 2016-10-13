@@ -18,7 +18,7 @@ package org.apache.sis.internal.metadata;
 
 import java.util.Map;
 import java.util.HashMap;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.cs.AxisDirection;

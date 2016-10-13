@@ -20,8 +20,6 @@ import java.util.Arrays;
 import java.util.Set;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValueGroup;
@@ -39,6 +37,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.measure.Units;
 
 // Test imports
 import org.apache.sis.test.DependsOnMethod;
@@ -215,7 +214,7 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
         assertEquals(Constants.CENTRAL_MERIDIAN, -123, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
         assertEquals(Constants.LATITUDE_OF_ORIGIN,  0, p.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
         assertEquals(Constants.FALSE_NORTHING,      0, p.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
-        assertEquals("axis[0].unit", SI.METRE, crs.getCoordinateSystem().getAxis(0).getUnit());
+        assertEquals("axis[0].unit", Units.METRE, crs.getCoordinateSystem().getAxis(0).getUnit());
         try {
             factory.createObject("AUTO:42001");
             fail("Should not have accepted incomplete code.");
@@ -237,7 +236,7 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
         assertSame("Legacy namespace.", crs, factory.createProjectedCRS("AUTO:42001,9002,-123,0"));
         assertEquals("name", "WGS 84 / UTM zone 10N", crs.getName().getCode());
         assertTrue("Expected no EPSG identifier because the axes are not in metres.", crs.getIdentifiers().isEmpty());
-        assertEquals("axis[0].unit", NonSI.FOOT, crs.getCoordinateSystem().getAxis(0).getUnit());
+        assertEquals("axis[0].unit", Units.FOOT, crs.getCoordinateSystem().getAxis(0).getUnit());
     }
 
     /**

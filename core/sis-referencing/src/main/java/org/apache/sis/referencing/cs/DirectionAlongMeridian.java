@@ -18,9 +18,9 @@ package org.apache.sis.referencing.cs;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.metadata.AxisDirections;
@@ -48,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 final class DirectionAlongMeridian extends FormattableObject implements Comparable<DirectionAlongMeridian> {
@@ -302,7 +302,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
     @Override
     protected String formatTo(final Formatter formatter) {
         formatter.append(meridian);
-        formatter.append(NonSI.DEGREE_ANGLE);
+        formatter.append(Units.DEGREE);
         return WKTKeywords.Meridian;
     }
 }

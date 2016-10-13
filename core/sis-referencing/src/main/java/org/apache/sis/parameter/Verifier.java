@@ -21,9 +21,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Array;
-import javax.measure.unit.Unit;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.ConversionException;
+import javax.measure.Unit;
+import javax.measure.UnitConverter;
+import javax.measure.IncommensurableException;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -151,7 +151,7 @@ final class Verifier {
                      */
                     try {
                         converter = unit.getConverterToAny(def);
-                    } catch (ConversionException e) {
+                    } catch (IncommensurableException e) {
                         throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2, unit, def), e);
                     }
                     Class<?> componentType = valueClass.getComponentType();

@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.measure.unit.SI;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
@@ -39,6 +38,7 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -55,7 +55,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn(AuthorityFactoryProxyTest.class)
@@ -207,7 +207,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         assertSame("With spaces",   HardCodedCRS  .DEPTH,     factory.createVerticalCRS  (" MoCk : : 9905"));
         assertSame("Version 0",     HardCodedDatum.SPHERE,    factory.createGeodeticDatum("MOCK: 0:6047"));
         assertSame("With spaces",   Extents       .WORLD,     factory.createExtent       ("MOCK: 2.3 : 1262"));
-        assertSame("With spaces",   SI            .METRE,     factory.createUnit         (" MoCK : : 9001 "));
+        assertSame("With spaces",   Units         .METRE,     factory.createUnit         (" MoCK : : 9001 "));
         assertEquals("Greenwich",   factory.getDescriptionText("MOCK:8901").toString());
         try {
             factory.createGeodeticDatum("MOCK2:4326");
@@ -236,7 +236,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         assertSame("With version",  HardCodedDatum.WGS84,     factory.createDatum        ("urn:ogc:def:datum:mock:2.3:6326"));
         assertSame("Empty version", HardCodedDatum.GREENWICH, factory.createObject       ("urn:ogc:def:meridian: MoCk :: 8901"));
         assertSame("Version 0",     HardCodedDatum.SPHERE,    factory.createGeodeticDatum("urn:ogc:def:datum:MOCK: 0 :6047"));
-        assertSame("Upper case",    SI            .METRE,     factory.createUnit         ("URN:OGC:DEF:UOM:MOCK::9001"));
+        assertSame("Upper case",    Units         .METRE,     factory.createUnit         ("URN:OGC:DEF:UOM:MOCK::9001"));
         try {
             factory.createGeographicCRS("urn:ogc:def:datum:MOCK::4326");
             fail("Should create an object of the wrong type.");

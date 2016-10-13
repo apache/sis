@@ -18,7 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.util.Map;
 import java.util.Collections;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;

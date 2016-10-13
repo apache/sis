@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.measure.Units;
 
@@ -31,7 +30,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final strictfp class HardCodedCS {
@@ -246,14 +245,14 @@ public final strictfp class HardCodedCS {
     /**
      * A one-dimensional temporal CS with
      * <var>{@linkplain HardCodedAxes#TIME time}</var>,
-     * axis in {@linkplain javax.measure.unit.NonSI#DAY day} units.
+     * axis in {@linkplain Units#DAY day} units.
      */
     public static final DefaultTimeCS DAYS;
 
     /**
      * A one-dimensional temporal CS with
      * <var>{@linkplain HardCodedAxes#TIME time}</var>,
-     * axis in {@linkplain javax.measure.unit.SI#SECOND second} units.
+     * axis in {@linkplain Units#SECOND second} units.
      */
     public static final DefaultTimeCS SECONDS;
 
@@ -266,7 +265,7 @@ public final strictfp class HardCodedCS {
     static {
         final Map<String,?> properties = getProperties(HardCodedAxes.TIME);
         DAYS         = new DefaultTimeCS(properties, HardCodedAxes.TIME);
-        SECONDS      = new DefaultTimeCS(properties, new DefaultCoordinateSystemAxis(properties, "t", AxisDirection.FUTURE, SI.SECOND));
+        SECONDS      = new DefaultTimeCS(properties, new DefaultCoordinateSystemAxis(properties, "t", AxisDirection.FUTURE, Units.SECOND));
         MILLISECONDS = new DefaultTimeCS(properties, new DefaultCoordinateSystemAxis(properties, "t", AxisDirection.FUTURE, Units.MILLISECOND));
     }
 

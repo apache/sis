@@ -17,11 +17,11 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Collections;
-import javax.measure.unit.SI;
 import org.opengis.util.RecordType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.quality.EvaluationMethodType;
+import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult;
 import org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy;
 import org.apache.sis.util.collection.WeakValueHashMap;
@@ -35,7 +35,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class TransformationAccuracy extends Static {
@@ -78,7 +78,7 @@ public final class TransformationAccuracy extends Static {
 
             final DefaultQuantitativeResult result = new DefaultQuantitativeResult();
             result.setValues(Collections.singletonList(record));
-            result.setValueUnit(SI.METRE);              // In metres by definition in the EPSG database.
+            result.setValueUnit(Units.METRE);              // In metres by definition in the EPSG database.
             result.setValueType(TYPE);
 
             final DefaultAbsoluteExternalPositionalAccuracy element =

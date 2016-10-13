@@ -21,8 +21,7 @@ import java.util.Collections;
 import java.io.ObjectStreamException;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Length;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.Record;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.quality.PositionalAccuracy;
@@ -104,6 +103,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
     /**
      * Creates an positional accuracy initialized to the given result.
      */
+    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")                  // Safe because this class is final.
     private PositionalAccuracyConstant(final InternationalString measureDescription,
             final InternationalString evaluationMethodDescription, final boolean pass)
     {
@@ -131,7 +131,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      *
      * <ul>
      *   <li>If at least one {@link QuantitativeResult} is found with a linear unit, then the largest
-     *       accuracy estimate is converted to {@linkplain SI#METRE metres} and returned.</li>
+     *       accuracy estimate is converted to {@linkplain Units#METRE metres} and returned.</li>
      *   <li>Otherwise, if the operation is a {@link Conversion}, then returns 0 since a conversion
      *       is by definition accurate up to rounding errors.</li>
      *   <li>Otherwise, if the operation is a {@link Transformation}, then checks if the datum shift
@@ -166,7 +166,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
                                 for (final Object value : record.getAttributes().values()) {
                                     if (value instanceof Number) {
                                         double v = ((Number) value).doubleValue();
-                                        v = unitOfLength.getConverterTo(SI.METRE).convert(v);
+                                        v = unitOfLength.getConverterTo(Units.METRE).convert(v);
                                         if (v >= 0 && !(v <= accuracy)) {       // '!' is for replacing the NaN value.
                                             accuracy = v;
                                         }
