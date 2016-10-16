@@ -113,7 +113,9 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * Above result still slightly smaller in magnitude than {@code Long.MIN_VALUE}.
      */
     private Fraction simplify(long num, long den) {
-        assert (num != Long.MIN_VALUE) && (den != Long.MIN_VALUE) : this;
+        if (num == Long.MIN_VALUE || den == Long.MIN_VALUE) {
+            throw new ArithmeticException();
+        }
         if (num == 0) {
             den = Long.signum(den);             // Simplify  0/x  as  0/±1 or 0/0.
         } else if (den == 0) {
@@ -416,20 +418,31 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      */
     @Override
     public String toString() {
-        if (numerator >= 0 && numerator < UNICODES.length) {
-            final int d = denominator - numerator - 1;
-            if (d >= 0) {
-                final char[] r = UNICODES[numerator];
-                if (d < r.length) {
-                    final char c = r[d];
-                    if (c != 0) {
-                        return String.valueOf(c);
+        switch (denominator) {
+            case 0: {
+                if (numerator != 0) {
+                    return (numerator >= 0) ? "∞" : "−∞";
+                }
+                break;
+            }
+            case 1: {
+                return String.valueOf(numerator);
+            }
+            default: {
+                if (numerator >= 0 && numerator < UNICODES.length) {
+                    final int d = denominator - numerator - 1;
+                    if (d >= 0) {
+                        final char[] r = UNICODES[numerator];
+                        if (d < r.length) {
+                            final char c = r[d];
+                            if (c != 0) {
+                                return String.valueOf(c);
+                            }
+                        }
                     }
                 }
+                break;
             }
-        }
-        if (denominator == 0 && numerator != 0) {
-            return (numerator >= 0) ? "∞" : "−∞";
         }
         return new StringBuilder().append(numerator).append('⁄').append(denominator).toString();
     }

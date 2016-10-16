@@ -16,6 +16,9 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Map;
+import java.util.HashMap;
+import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.format.ParserException;
@@ -54,6 +57,30 @@ import static org.apache.sis.measure.SexagesimalConverter.EPS;
  * @module
  */
 public final class Units extends Static {
+    /**
+     * The units for given {@link UnitDimension} instances. This map contains mostly SI units (no imperial units)
+     * with the addition of some alternative units. This map must be unmodified after it has been populated.
+     */
+    private static final Map<UnitDimension, SystemUnit<?>> SYSTEM = new HashMap<>();
+
+    /**
+     * Invoked by {@code Units} static class initializer for registering SI base and derived units.
+     * We do not synchronize that method on the assumption that {@link #SYSTEM} map will be fully
+     * populated in a single thread by the {@code Units} class initializer, then never modified.
+     */
+    private static void add(final SystemUnit<?> unit) {
+        if (SYSTEM.put(unit.dimension, unit) != null) {
+            throw new AssertionError();                 // Shall not map the same dimension twice.
+        }
+    }
+
+    /**
+     * Returns the unit for the given dimension, or {@code null} if none.
+     */
+    static SystemUnit<?> get(final Dimension dim) {
+        return SYSTEM.get(dim);
+    }
+
     /**
      * The SI base unit for distances (symbol “m”).
      *

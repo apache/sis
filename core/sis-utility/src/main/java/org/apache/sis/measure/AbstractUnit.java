@@ -21,15 +21,30 @@ import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 
 
 /**
- * Base class of all unit implementations. All unit instances shall be immutable.
+ * Base class of all unit implementations. There is conceptually 5 kinds of units,
+ * but some of them are implemented by the same class:
  *
- * <div class="section">Immutability and thread safety</div>
- * This base class is immutable and thus inherently thread-safe.
- * All subclasses shall be immutable too.
+ * <ul>
+ *   <li><b>Base units</b> are the 6 or 7 SI units used as building blocks for all other units.
+ *       The base units are metre, second, kilogram, Kelvin degrees, Ampere and Candela,
+ *       sometime with the addition of mole.</li>
+ *   <li><b>Derived units</b> are products of base units raised to some power.
+ *       For example "m/s" is a derived units.</li>
+ *   <li><b>Alternate units</b> are dimensionless units handled as if they had a dimension.
+ *       An example is angular degrees.</li>
+ *   <li><b>Scaled units</b> are units multiplied by a constant value compared to a base unit.
+ *       For example "km" is a scaled unit equals to 1000 metres.</li>
+ *   <li><b>Shifted units</b> are units shifted by a constant value compared to a base unit.
+ *       For example "°C" is a shifted unit equals to a value in degree Kelvin minus 273.15.</li>
+ * </ul>
+ *
+ * In Apache SIS implementation, base and derived units are represented by the same class: {@link SystemUnit}.
+ * All unit instances shall be immutable and thread-safe.
  *
  * @param  <Q>  the kind of quantity to be measured using this units.
  *
@@ -86,9 +101,15 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      * Returns the symbol (if any) of this unit. A unit may have no symbol, in which case
      * the {@link #toString()} method is responsible for creating a string representation.
      *
+     * <div class="note"><b>Example:</b>
+     * {@link Units#METRE} has the {@code "m"} symbol and the same string representation.
+     * But {@link Units#METRES_PER_SECOND} has no symbol; it has only the {@code "m/s"}
+     * string representation.</div>
+     *
      * @return the unit symbol, or {@code null} if this unit has no specific symbol.
      *
      * @see #toString()
+     * @see UnitFormat
      */
     @Override
     public final String getSymbol() {
@@ -107,6 +128,16 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     }
 
     /**
+     * Returns the unscaled system unit from which this unit is derived.
+     * System units are either base units, {@linkplain #alternate(String) alternate}
+     * units or product of rational powers of system units.
+     *
+     * @return the system unit this unit is derived from, or {@code this} if this unit is a system unit.
+     */
+    @Override
+    public abstract SystemUnit<Q> getSystemUnit();
+
+    /**
      * Indicates if this unit is compatible with the given unit.
      * This implementation delegates to:
      *
@@ -123,6 +154,27 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     public final boolean isCompatible(final Unit<?> that) {
         ArgumentChecks.ensureNonNull("that", that);
         return getDimension().equals(that.getDimension());
+    }
+
+    /**
+     * Casts this unit to a parameterized unit of specified nature or throw a {@code ClassCastException}
+     * if the dimension of the specified quantity and this unit's dimension do not match.
+     *
+     * @param  <T>   the type of the quantity measured by the unit.
+     * @param  type  the quantity class identifying the nature of the unit.
+     * @return this unit parameterized with the specified type.
+     * @throws ClassCastException if the dimension of this unit is different from the specified quantity dimension.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public final <T extends Quantity<T>> Unit<T> asType(final Class<T> type) throws ClassCastException {
+        ArgumentChecks.ensureNonNull("type", type);
+        final Class<Quantity<Q>> quantity = getSystemUnit().quantity;
+        if (type.equals(quantity)) {
+            return (Unit<T>) this;
+        }
+        throw new ClassCastException(Errors.format(Errors.Keys.CanNotConvertFromType_2,
+                "Unit<" + quantity.getSimpleName() + '>', "Unit<" + type.getSimpleName() + '>'));
     }
 
     /**

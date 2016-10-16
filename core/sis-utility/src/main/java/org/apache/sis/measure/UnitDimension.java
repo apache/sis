@@ -22,13 +22,16 @@ import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import javax.measure.Dimension;
 import org.apache.sis.math.Fraction;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.internal.converter.FractionConverter;
+import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
@@ -50,6 +53,8 @@ import org.apache.sis.internal.converter.FractionConverter;
  *   <li><a href="http://en.wikipedia.org/wiki/Specific_detectivity">Specific detectivity</a>
  *       as T^2.5 / (M⋅L) dimension.</li>
  * </ul>
+ *
+ * All {@code UnitDimension} instances are immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
@@ -123,9 +128,7 @@ final class UnitDimension implements Dimension, Serializable {
      *
      * @param  components  the product of base dimensions together with their power.
      */
-    private static UnitDimension create(final Map<UnitDimension,Fraction> components) {
-        final Map<UnitDimension,Fraction> unmodifiable;     // Unmodifiable view of 'components'.
-        final boolean share;
+    private static UnitDimension create(Map<UnitDimension,Fraction> components) {
         switch (components.size()) {
             case 0: return NONE;
             case 1: {
@@ -135,31 +138,56 @@ final class UnitDimension implements Dimension, Serializable {
                 if (power.numerator == 1 && power.denominator == 1) {
                     return base;
                 }
-                unmodifiable = Collections.singletonMap(base, power.unique());
-                share = false;      // Because we already invoked 'unique()'.
-                break;
-            }
-            default: {
-                unmodifiable = Collections.unmodifiableMap(components);
-                share = true;
                 break;
             }
         }
-        return POOL.computeIfAbsent(unmodifiable, (key) -> {
-            if (share) {
-                components.replaceAll((c, power) -> power.unique());
+        /*
+         * Implementation note: following code duplicates the functionality of Map.computeIfAbsent(…),
+         * but we had to do it because we compute not only the value, but also the 'components' key.
+         */
+        UnitDimension dim = POOL.get(components);
+        if (dim == null) {
+            shareFractionInstances(components);
+            components = CollectionsExt.unmodifiableOrCopy(components);
+            dim = new UnitDimension(components);
+            final UnitDimension c = POOL.putIfAbsent(components, dim);
+            if (c != null) {
+                return c;       // UnitDimension created concurrently in another thread.
             }
-            return new UnitDimension(key);
-        });
+        }
+        return dim;
     }
 
+    /**
+     * Replaces the {@link Fraction} values in the given map by unique instances.
+     * This is a micro-optimisation saving a little bit of memory and performance
+     * in the common case where all dimensions share a small set of power values.
+     */
+    private static void shareFractionInstances(final Map<UnitDimension,Fraction> components) {
+        components.replaceAll((c, power) -> power.unique());
+    }
+
+    /**
+     * Invoked on deserialization for returning a unique instance of {@code UnitDimension}.
+     */
+    Object readResolve() throws ObjectStreamException {
+        UnitDimension dim = POOL.get(components);
+        if (dim == null) {
+            shareFractionInstances(components);
+            dim = POOL.putIfAbsent(components, this);
+            if (dim == null) {
+                return this;
+            }
+        }
+        return dim;
+    }
 
     /**
      * Returns the (fundamental) base dimensions and their exponent whose product is this dimension,
      * or null if this dimension is a base dimension.
      */
     @Override
-    public Map<? extends Dimension, Integer> getBaseDimensions() {
+    public Map<UnitDimension,Integer> getBaseDimensions() {
         if (symbol != 0) {
             return null;
         }
@@ -189,17 +217,6 @@ final class UnitDimension implements Dimension, Serializable {
     }
 
     /**
-     * Returns the quotient of this dimension with the one specified.
-     *
-     * @param  divisor  the dimension by which to divide this dimension.
-     * @return {@code this} / {@code divisor}
-     */
-    @Override
-    public Dimension divide(final Dimension divisor) {
-        return multiply(divisor, -1);
-    }
-
-    /**
      * Returns the product of this dimension with the one specified.
      *
      * @param  multiplicand  the dimension by which to multiply this dimension.
@@ -207,26 +224,36 @@ final class UnitDimension implements Dimension, Serializable {
      */
     @Override
     public Dimension multiply(final Dimension multiplicand) {
-        return multiply(multiplicand, +1);
+        return combine(multiplicand, (sum, toAdd) -> {
+            sum = sum.add(toAdd);
+            return (sum.numerator != 0) ? sum : null;
+        });
     }
 
     /**
-     * Returns the product of this dimension with the specified one raised to the given power.
+     * Returns the quotient of this dimension with the one specified.
      *
-     * @param  multiplicand  the dimension by which to multiply this dimension.
-     * @param  power         the power at which to raise {@code multiplicand}.
+     * @param  divisor  the dimension by which to divide this dimension.
+     * @return {@code this} ∕ {@code divisor}
+     */
+    @Override
+    public Dimension divide(final Dimension divisor) {
+        return combine(divisor, (sum, toRemove) -> {
+            sum = sum.subtract(toRemove);
+            return (sum.numerator != 0) ? sum : null;
+        });
+    }
+
+    /**
+     * Returns the product or the quotient of this dimension with the specified one.
+     *
+     * @param  other   the dimension by which to multiply or divide this dimension.
+     * @param  mapping the operation to apply between the powers of {@code this} and {@code other} dimensions.
      * @return the product of this dimension by the given dimension raised to the given power.
      */
-    private Dimension multiply(final Dimension multiplicand, final int power) {
-        final BiFunction<Fraction, Fraction, Fraction> mapping = (sum, toAdd) -> {
-            if (power != 1) {
-                toAdd = new Fraction(toAdd.numerator * power, toAdd.denominator);
-            }
-            sum = sum.add(toAdd);
-            return (sum.numerator != 0) ? sum : null;
-        };
+    private Dimension combine(final Dimension other, final BiFunction<Fraction, Fraction, Fraction> mapping) {
         final Map<UnitDimension,Fraction> product = new LinkedHashMap<>(components);
-        for (final Map.Entry<? extends Dimension, Fraction> entry : getBaseDimensions(multiplicand).entrySet()) {
+        for (final Map.Entry<? extends Dimension, Fraction> entry : getBaseDimensions(other).entrySet()) {
             final Dimension dim = entry.getKey();
             final Fraction p = entry.getValue();
             if (dim instanceof UnitDimension) {
@@ -278,5 +305,59 @@ final class UnitDimension implements Dimension, Serializable {
             case 1:  return this;
             default: return pow(new Fraction(1,n));
         }
+    }
+
+    /**
+     * Compares this dimension with the given object for equality.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (other instanceof UnitDimension) {
+            final UnitDimension that = (UnitDimension) other;
+            if (symbol == that.symbol) {
+                /*
+                 * Do not compare 'components' if 'symbols' is non-zero because in such case
+                 * the components map contains 'this', which would cause an infinite loop.
+                 */
+                return (symbol == 0) || components.equals(that.components);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this dimension.
+     */
+    @Override
+    public int hashCode() {
+        /*
+         * Do not use 'components' in hash code calculation if 'symbols' is non-zero
+         * beause in such case the map contains 'this', which would cause an infinite loop.
+         */
+        return (symbol != 0) ? symbol ^ (int) serialVersionUID : components.hashCode();
+    }
+
+    /**
+     * Returns a string representation of this dimension.
+     */
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder(8);
+        for (final Map.Entry<UnitDimension,Fraction> c : components.entrySet()) {
+            buffer.append(c.getKey().symbol);
+            final Fraction power = c.getValue();
+            if (power.denominator == 1) {
+                final int n = power.numerator;
+                if (n >= 0 && n <= 9) {
+                    buffer.append(Characters.toSuperScript((char) (n + '0')));
+                    continue;
+                }
+            }
+            buffer.append("^(").append(power).append(')');
+        }
+        return buffer.toString();
     }
 }

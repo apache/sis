@@ -120,6 +120,21 @@ public final strictfp class FractionTest extends TestCase {
     }
 
     /**
+     * Tests the {@link Fraction#toString()} method.
+     */
+    @Test
+    public void testToString() {
+        assertEquals("3",   new Fraction(3, 1).toString());
+        assertEquals("¼",   new Fraction(1, 4).toString());
+        assertEquals("⅜",   new Fraction(3, 8).toString());
+        assertEquals("⅚",   new Fraction(5, 6).toString());
+        assertEquals("3⁄7", new Fraction(3, 7).toString());
+        assertEquals("⅞",   new Fraction(7, 8).toString());
+        assertEquals("4⁄8", new Fraction(4, 8).toString());
+        assertEquals("∞",   new Fraction(3, 0).toString());
+    }
+
+    /**
      * Tests serialization.
      */
     @Test
