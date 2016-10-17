@@ -504,7 +504,7 @@ public final class Units extends Static {
     /**
      * Dimensionless unit for pixels.
      */
-    public static final Unit<Dimensionless> PIXEL = ONE.alternate("pixel");
+    public static final Unit<Dimensionless> PIXEL = ONE.alternate("px");
 
     static {
         final javax.measure.format.UnitFormat format = tec.units.ri.format.SimpleUnitFormat.getInstance();

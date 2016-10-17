@@ -30,6 +30,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.converter.SurjectiveConverter;
+import org.apache.sis.math.Fraction;
 
 
 /**
@@ -130,6 +131,15 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
             return null;            // This unit is associated to a base dimension.
         }
         return ObjectConverters.derivedKeys(dim, DimToUnit.INSTANCE, Integer.class);
+    }
+
+    /**
+     * Returns the base units used by Apache SIS implementations.
+     * Contrarily to {@link #getBaseUnits()}, this method never returns {@code null}.
+     */
+    @Override
+    final Map<SystemUnit<?>, Fraction> getBaseSystemUnits() {
+        return ObjectConverters.derivedKeys(dimension.components, DimToUnit.INSTANCE, Fraction.class);
     }
 
     /**

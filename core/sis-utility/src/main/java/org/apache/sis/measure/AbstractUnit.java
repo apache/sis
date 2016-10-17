@@ -16,10 +16,12 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Map;
 import java.util.Objects;
 import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.Quantity;
+import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -133,6 +135,12 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      */
     @Override
     public abstract SystemUnit<Q> getSystemUnit();
+
+    /**
+     * Returns the base units used by Apache SIS implementations.
+     * Contrarily to {@link #getBaseUnits()}, this method never returns {@code null}.
+     */
+    abstract Map<SystemUnit<?>, Fraction> getBaseSystemUnits();
 
     /**
      * Indicates if this unit is compatible with the given unit.
