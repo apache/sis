@@ -270,4 +270,30 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
         ArgumentChecks.ensureNonNull("operation", operation);
         return create(target, toTarget.concatenate(operation));
     }
+
+    /**
+     * Compares this unit with the given object for equality.
+     *
+     * @param  other  the other object to compares with this unit, or {@code null}.
+     * @return {@code true} if the given object is equals to this unit.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (super.equals(other)) {
+            final ConventionalUnit<?> that = (ConventionalUnit<?>) other;
+            return target.equals(that.target) && toTarget.equals(that.toTarget);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this unit.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + 37 * (target.hashCode() + 31 * toTarget.hashCode());
+    }
 }
