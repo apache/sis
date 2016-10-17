@@ -147,7 +147,7 @@ final class UnitDimension implements Dimension, Serializable {
          */
         UnitDimension dim = POOL.get(components);
         if (dim == null) {
-            shareFractionInstances(components);
+            components.replaceAll((c, power) -> power.unique());
             components = CollectionsExt.unmodifiableOrCopy(components);
             dim = new UnitDimension(components);
             final UnitDimension c = POOL.putIfAbsent(components, dim);
@@ -159,27 +159,19 @@ final class UnitDimension implements Dimension, Serializable {
     }
 
     /**
-     * Replaces the {@link Fraction} values in the given map by unique instances.
-     * This is a micro-optimisation saving a little bit of memory and performance
-     * in the common case where all dimensions share a small set of power values.
-     */
-    private static void shareFractionInstances(final Map<UnitDimension,Fraction> components) {
-        components.replaceAll((c, power) -> power.unique());
-    }
-
-    /**
      * Invoked on deserialization for returning a unique instance of {@code UnitDimension}.
      */
     Object readResolve() throws ObjectStreamException {
-        UnitDimension dim = POOL.get(components);
-        if (dim == null) {
-            shareFractionInstances(components);
-            dim = POOL.putIfAbsent(components, this);
-            if (dim == null) {
-                return this;
-            }
-        }
-        return dim;
+        final UnitDimension dim = POOL.putIfAbsent(components, this);
+        return (dim != null) ? dim : this;
+    }
+
+    /**
+     * Returns {@code true} if this {@code UnitDimension} has no components.
+     * Many dimensionless units exist for different quantities as angles, parts per million, <i>etc.</i>
+     */
+    final boolean isDimensionless() {
+        return components.isEmpty();
     }
 
     /**
@@ -223,7 +215,7 @@ final class UnitDimension implements Dimension, Serializable {
      * @return {@code this} × {@code multiplicand}
      */
     @Override
-    public Dimension multiply(final Dimension multiplicand) {
+    public UnitDimension multiply(final Dimension multiplicand) {
         return combine(multiplicand, (sum, toAdd) -> {
             sum = sum.add(toAdd);
             return (sum.numerator != 0) ? sum : null;
@@ -237,7 +229,7 @@ final class UnitDimension implements Dimension, Serializable {
      * @return {@code this} ∕ {@code divisor}
      */
     @Override
-    public Dimension divide(final Dimension divisor) {
+    public UnitDimension divide(final Dimension divisor) {
         return combine(divisor, (sum, toRemove) -> {
             sum = sum.subtract(toRemove);
             return (sum.numerator != 0) ? sum : null;
@@ -251,7 +243,7 @@ final class UnitDimension implements Dimension, Serializable {
      * @param  mapping the operation to apply between the powers of {@code this} and {@code other} dimensions.
      * @return the product of this dimension by the given dimension raised to the given power.
      */
-    private Dimension combine(final Dimension other, final BiFunction<Fraction, Fraction, Fraction> mapping) {
+    private UnitDimension combine(final Dimension other, final BiFunction<Fraction, Fraction, Fraction> mapping) {
         final Map<UnitDimension,Fraction> product = new LinkedHashMap<>(components);
         for (final Map.Entry<? extends Dimension, Fraction> entry : getBaseDimensions(other).entrySet()) {
             final Dimension dim = entry.getKey();
@@ -271,7 +263,7 @@ final class UnitDimension implements Dimension, Serializable {
      * @param  n  power to raise this dimension to (can be negative).
      * @return {@code this}ⁿ
      */
-    private Dimension pow(final Fraction n) {
+    private UnitDimension pow(final Fraction n) {
         final Map<UnitDimension,Fraction> product = new LinkedHashMap<>(components);
         product.replaceAll((dim, power) -> power.multiply(n));
         return create(product);
@@ -284,7 +276,7 @@ final class UnitDimension implements Dimension, Serializable {
      * @return {@code this}ⁿ
      */
     @Override
-    public Dimension pow(final int n) {
+    public UnitDimension pow(final int n) {
         switch (n) {
             case 0:  return NONE;
             case 1:  return this;
@@ -299,7 +291,7 @@ final class UnitDimension implements Dimension, Serializable {
      * @return {@code this} raised to power 1/n.
      */
     @Override
-    public Dimension root(final int n) {
+    public UnitDimension root(final int n) {
         switch (n) {
             case 0:  throw new ArithmeticException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "n", 0));
             case 1:  return this;

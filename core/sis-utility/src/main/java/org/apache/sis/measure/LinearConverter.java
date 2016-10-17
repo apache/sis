@@ -21,7 +21,10 @@ import java.util.Collections;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import javax.measure.UnitConverter;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.internal.util.Numerics;
 
 
@@ -52,7 +55,7 @@ final class LinearConverter implements UnitConverter, Serializable {
     /**
      * The identity linear converter.
      */
-    private static final LinearConverter IDENTITY = new LinearConverter(1, 0);
+    static final LinearConverter IDENTITY = new LinearConverter(1, 0);
 
     /**
      * The scale to apply for converting values.
@@ -86,6 +89,32 @@ final class LinearConverter implements UnitConverter, Serializable {
             if (scale == 1) return IDENTITY;
         }
         return new LinearConverter(scale, offset);
+    }
+
+    /**
+     * Raises the given converter to the given power. This method assumes that the given converter
+     * {@linkplain #isLinear() is linear} (this is not verified) and take only the scale factor;
+     * the offset (if any) is ignored.
+     *
+     * @param  converter  the converter to raise to the given power.
+     * @param  n          the exponent.
+     * @param  root       {@code true} for raising to 1/n instead of n.
+     * @return the converter raised to the given power.
+     */
+    static LinearConverter pow(final UnitConverter converter, final int n, final boolean root) {
+        double scale = converter.convert(1.0) - converter.convert(0.0);
+        if (root) {
+            switch (n) {
+                case 2:  scale = Math.sqrt(scale); break;
+                case 3:  scale = Math.cbrt(scale); break;
+                default: scale = Math.pow(scale, 1.0 / n); break;
+            }
+        } else if (scale == 10) {
+            scale = MathFunctions.pow10(n);
+        } else {
+            scale = Math.pow(scale, n);
+        }
+        return create(scale, 0);
     }
 
     /**
@@ -143,6 +172,7 @@ final class LinearConverter implements UnitConverter, Serializable {
      */
     @Override
     public Number convert(Number value) {
+        ArgumentChecks.ensureNonNull("value", value);
         if (value instanceof BigDecimal) {
             if (scale != 1) {
                 value = ((BigDecimal) value).multiply(BigDecimal.valueOf(scale));
@@ -151,7 +181,14 @@ final class LinearConverter implements UnitConverter, Serializable {
                 value = ((BigDecimal) value).add(BigDecimal.valueOf(offset));
             }
         } else if (!isIdentity()) {
-            value = convert(value.doubleValue());
+            final double x;
+            if (value instanceof Float) {
+                // Because unit conversion factors are usually defined in base 10.
+                x = DecimalFunctions.floatToDouble((Float) value);
+            } else {
+                x = value.doubleValue();
+            }
+            value = convert(x);
         }
         return value;
     }
@@ -216,8 +253,11 @@ final class LinearConverter implements UnitConverter, Serializable {
     }
 
     /**
-     * Returns a string representation of this converter.
+     * Returns a string representation of this converter for debugging purpose.
+     * This string representation may change in any future SIS release.
+     * Current format is of the form "y = scale⋅x + offset".
      */
+    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder().append("\uD835\uDC66 = ");

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.Serializable;
 import javax.measure.UnitConverter;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -113,6 +114,10 @@ final class ConcatenatedConverter implements UnitConverter, Serializable {
      */
     @Override
     public UnitConverter concatenate(final UnitConverter converter) {
+        ArgumentChecks.ensureNonNull("converter", converter);
+        if (equals(converter.inverse())) {
+            return LinearConverter.IDENTITY;
+        }
         // Delegate to c1 and c2 because they may provide more intelligent 'concatenate' implementations.
         return c2.concatenate(c1.concatenate(converter));
     }

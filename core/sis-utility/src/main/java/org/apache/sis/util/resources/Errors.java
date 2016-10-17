@@ -574,9 +574,19 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NonLinearUnit_1 = 100;
 
         /**
+         * The scale of measurement for “{0}” unit is not a ratio scale.
+         */
+        public static final short NonRatioUnit_1 = 162;
+
+        /**
          * “{0}” is not a scale unit.
          */
         public static final short NonScaleUnit_1 = 101;
+
+        /**
+         * “{0}” is not a fundamental or derived unit.
+         */
+        public static final short NonSystemUnit_1 = 161;
 
         /**
          * “{0}” is not a time unit.

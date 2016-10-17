@@ -16,17 +16,16 @@
  */
 package org.apache.sis.measure;
 
-import java.io.Serializable;
 import java.util.Objects;
+import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.WeakHashSet;
 
 
 /**
- * Base class of all unit implementations. There is conceptually 5 kinds of units,
+ * Base class of all unit implementations. There is conceptually 4 kinds of units,
  * but some of them are implemented by the same class:
  *
  * <ul>
@@ -37,10 +36,9 @@ import org.apache.sis.util.collection.WeakHashSet;
  *       For example "m/s" is a derived units.</li>
  *   <li><b>Alternate units</b> are dimensionless units handled as if they had a dimension.
  *       An example is angular degrees.</li>
- *   <li><b>Scaled units</b> are units multiplied by a constant value compared to a base unit.
- *       For example "km" is a scaled unit equals to 1000 metres.</li>
- *   <li><b>Shifted units</b> are units shifted by a constant value compared to a base unit.
- *       For example "°C" is a shifted unit equals to a value in degree Kelvin minus 273.15.</li>
+ *   <li><b>Conventional units</b> are units multiplied or shifted by a constant value compared to a base,
+ *       derived or alternate unit. For example "km" is a unit equals to 1000 metres, and"°C" is a unit
+ *       shifted by 237.15 degrees compared to the Kelvin unit.</li>
  * </ul>
  *
  * In Apache SIS implementation, base and derived units are represented by the same class: {@link SystemUnit}.
@@ -55,10 +53,9 @@ import org.apache.sis.util.collection.WeakHashSet;
  */
 abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializable {
     /**
-     * Pool of all {@code AbstractUnit} instances created up to date.
+     * For cross-version compatibility.
      */
-    @SuppressWarnings("rawtypes")
-    private static final WeakHashSet<AbstractUnit> POOL = new WeakHashSet<>(AbstractUnit.class);
+    private static final long serialVersionUID = -5559950920796714303L;
 
     /**
      * The unit symbol, or {@code null} if this unit has no specific symbol. If {@code null},
@@ -157,109 +154,79 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     }
 
     /**
-     * Casts this unit to a parameterized unit of specified nature or throw a {@code ClassCastException}
-     * if the dimension of the specified quantity and this unit's dimension do not match.
+     * Returns the error message for an incompatible unit.
+     */
+    final String incompatible(final Unit<?> that) {
+        return Errors.format(Errors.Keys.IncompatibleUnits_2, this, that);
+    }
+
+    /**
+     * Returns the result of setting the origin of the scale of measurement to the given value.
+     * For example {@code CELSIUS = KELVIN.shift(273.15)} returns a unit where 0°C is equals to 273.15 K.
      *
-     * @param  <T>   the type of the quantity measured by the unit.
-     * @param  type  the quantity class identifying the nature of the unit.
-     * @return this unit parameterized with the specified type.
-     * @throws ClassCastException if the dimension of this unit is different from the specified quantity dimension.
+     * @param  offset  the value to add when converting from the new unit to this unit.
+     * @return this unit offset by the specified value, or {@code this} if the given offset is zero.
      */
     @Override
-    @SuppressWarnings("unchecked")
-    public final <T extends Quantity<T>> Unit<T> asType(final Class<T> type) throws ClassCastException {
-        ArgumentChecks.ensureNonNull("type", type);
-        final Class<Quantity<Q>> quantity = getSystemUnit().quantity;
-        if (type.equals(quantity)) {
-            return (Unit<T>) this;
-        }
-        throw new ClassCastException(Errors.format(Errors.Keys.CanNotConvertFromType_2,
-                "Unit<" + quantity.getSimpleName() + '>', "Unit<" + type.getSimpleName() + '>'));
+    public final Unit<Q> shift(final double offset) {
+        return transform(LinearConverter.create(1, offset));
     }
 
     /**
-     * Returns a unique instance of this unit. An initially empty pool of {@code AbstractUnit}
-     * instances is maintained. When invoked, this method first checks if an instance equals
-     * to this unit exists in the pool. If such instance is found, then it is returned.
-     * Otherwise this instance is added in the pool using weak references and returned.
-     */
-    final AbstractUnit<Q> intern() {
-        return POOL.unique(this);
-    }
-
-    /**
-     * Returns an instance equals to this unit, ignoring the symbol.
-     * If such instance exists in the pool of existing units, it is
-     * returned. Otherwise this method returns {@code this}.
-     */
-    final AbstractUnit<Q> internIgnoreSymbol() {
-        @SuppressWarnings("unchecked")
-        AbstractUnit<Q> unit = POOL.get(new Unamed(this));
-        if (unit == null) {
-            unit = this;
-        }
-        return unit;
-    }
-
-    /**
-     * Compares this unit with the given unit, ignoring symbol.
-     * Implementations shall check the {@code obj} type.
+     * Returns the result of multiplying this unit by the specified factor.
+     * For example {@code KILOMETRE = METRE.multiply(1000)} returns a unit where 1 km is equals to 1000 m.
      *
-     * @param  obj The object to compare with this unit, or {@code null}.
-     * @return {@code true} If the given unit is equals to this unit, ignoring symbol.
+     * @param  multiplier  the scale factor when converting from the new unit to this unit.
+     * @return this unit scaled by the specified multiplier.
      */
-    protected abstract boolean equalsIgnoreSymbol(Object obj);
+    @Override
+    public final Unit<Q> multiply(final double multiplier) {
+        return transform(LinearConverter.create(multiplier, 0));
+    }
+
+    /**
+     * Returns the result of dividing this unit by an approximate divisor.
+     * For example {@code GRAM = KILOGRAM.divide(1000)} returns a unit where 1 g is equals to 0.001 kg.
+     *
+     * @param  divisor  the inverse of the scale factor when converting from the new unit to this unit.
+     * @return this unit divided by the specified divisor.
+     */
+    @Override
+    public final Unit<Q> divide(final double divisor) {
+        return transform(LinearConverter.create(1/divisor, 0));
+    }
+
+    /**
+     * Returns the inverse of this unit.
+     *
+     * @return 1 / {@code this}
+     */
+    @Override
+    public final Unit<?> inverse() {
+        return pow(-1);
+    }
 
     /**
      * Compares this unit with the given object for equality.
      *
-     * @param  other The other object to compares with this unit, or {@code null}.
+     * @param  other  the other object to compares with this unit, or {@code null}.
      * @return {@code true} if the given object is equals to this unit.
      */
     @Override
-    public final boolean equals(Object other) {
-        if (other instanceof Unamed) {
-            other = ((Unamed) other).unit;
-        }
-        if (equalsIgnoreSymbol(other)) {
-            return Objects.equals(symbol, ((AbstractUnit<?>) other).symbol);
+    public boolean equals(final Object other) {
+        if (other != null && other.getClass() == getClass()) {
+            final AbstractUnit<?> that = (AbstractUnit<?>) other;
+            return epsg == that.epsg && Objects.equals(symbol, that.symbol) && Objects.equals(name, that.name);
         }
         return false;
     }
 
     /**
-     * A temporary proxy used by {@link #internIgnoreSymbol()} for finding an existing units,
-     * ignoring the symbol.
-     */
-    private static final class Unamed {
-        final AbstractUnit<?> unit;
-
-        Unamed(final AbstractUnit<?> unit)          {this.unit = unit;}
-        @Override public int hashCode()             {return unit.hashCode();}
-        @Override public boolean equals(Object obj) {return unit.equalsIgnoreSymbol(obj);}
-    }
-
-    /**
-     * Returns a hash code value for this unit, ignoring symbol.
+     * Returns a hash code value for this unit.
      */
     @Override
-    public abstract int hashCode();
-
-    /**
-     * Replaces the deserialized unit instance by a unique instance, if any.
-     *
-     * @return The unique unit instance.
-     */
-    protected final Object readResolve() {
-        return intern();
-    }
-
-    /**
-     * Returns the exception to throw when the given unit arguments are illegal
-     * for the operation to perform.
-     */
-    final ArithmeticException illegalUnitOperation(final String operation, final AbstractUnit<?> that) {
-        return new ArithmeticException(); // TODO: provide a message.
+    public int hashCode() {
+        return epsg + 31 * Objects.hashCode(symbol);
     }
 
     /**
