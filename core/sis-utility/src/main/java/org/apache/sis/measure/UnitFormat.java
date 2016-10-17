@@ -16,19 +16,25 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Locale;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.io.IOException;
-import java.io.UncheckedIOException;
+import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.XPaths;
+import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.resources.Errors;
@@ -76,11 +82,9 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * The default instance used by {@link Units#valueOf(String)} for parsing units of measurement.
      */
     static final UnitFormat INSTANCE = new UnitFormat();
-
-    /**
-     * Temporary helper class before we replace by our own implementation.
-     */
-    private final javax.measure.format.UnitFormat delegate = tec.units.ri.format.SimpleUnitFormat.getInstance();
+    static {
+        INSTANCE.longName = false;
+    }
 
     /**
      * The locale specified at construction time.
@@ -92,6 +96,12 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * Example: "meter" instead of "metre".
      */
     private boolean isLocaleUS;
+
+    /**
+     * Whether this {@code UnitFormat} should format long names like "metre".
+     * If {@code false}, then this instance will format only unit symbols.
+     */
+    private boolean longName = true;
 
     /**
      * Creates a new format for the given locale.
@@ -152,7 +162,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     @Override
     public void label(final Unit<?> unit, final String label) {
-        delegate.label(unit, label);
+        // TODO
     }
 
     /**
@@ -165,27 +175,139 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     @Override
     public Appendable format(final Unit<?> unit, final Appendable toAppendTo) throws IOException {
-        final String symbol = org.apache.sis.internal.util.PatchedUnitFormat.getSymbol(unit);
+        String symbol = org.apache.sis.internal.util.PatchedUnitFormat.getSymbol(unit);
         if (symbol != null) {
             return toAppendTo.append(symbol);
         }
-        /*
-         * Following are specific to the WKT format, which is currently the only user of this method.
-         * If we invoke this method for other purposes, then we would need to provide more control on
-         * what kind of formatting is desired.
-         */
-        if (Units.ONE.equals(unit)) {
-            return toAppendTo.append("unity");
-        } else if (Units.DEGREE.equals(unit)) {
-            return toAppendTo.append("degree");
-        } else if (Units.METRE.equals(unit)) {
-            return toAppendTo.append(isLocaleUS ? "meter" : "metre");
-        } else if (Units.FOOT_SURVEY_US.equals(unit)) {
-            return toAppendTo.append("US survey foot");
-        } else if (Units.PPM.equals(unit)) {
-            return toAppendTo.append("parts per million");
+        if (longName) {
+            /*
+             * Following are specific to the WKT format, which is currently the only user of this method.
+             * If we invoke this method for other purposes, then we would need to provide more control on
+             * what kind of formatting is desired.
+             */
+            if (Units.ONE.equals(unit)) {
+                return toAppendTo.append("unity");
+            } else if (Units.DEGREE.equals(unit)) {
+                return toAppendTo.append("degree");
+            } else if (Units.METRE.equals(unit)) {
+                return toAppendTo.append(isLocaleUS ? "meter" : "metre");
+            } else if (Units.FOOT_SURVEY_US.equals(unit)) {
+                return toAppendTo.append("US survey foot");
+            } else if (Units.PPM.equals(unit)) {
+                return toAppendTo.append("parts per million");
+            }
         }
-        return delegate.format(unit, toAppendTo);
+        symbol = unit.getSymbol();
+        if (symbol != null) {
+            return toAppendTo.append(symbol);
+        }
+        Map<? extends Unit<?>, ? extends Number> components;
+        if (unit instanceof AbstractUnit<?>) {
+            components = ((AbstractUnit<?>) unit).getBaseSystemUnits();
+        } else {
+            // Fallback for foreigner implementations.
+            components = unit.getBaseUnits();
+            if (components == null) {
+                components = Collections.singletonMap(unit, 1);
+            }
+        }
+        formatComponents(components, toAppendTo);
+        return toAppendTo;
+    }
+
+    /**
+     * Creates a new symbol (e.g. "m/s") from the given symbols and factors.
+     * Keys in the given map can be either {@link Unit} or {@link Dimension} instances.
+     */
+    static void formatComponents(final Map<?, ? extends Number> components, final Appendable toAppendTo) throws IOException {
+        boolean isFirst = true;
+        final List<Map.Entry<?,? extends Number>> deferred = new ArrayList<>(components.size());
+        for (final Map.Entry<?,? extends Number> entry : components.entrySet()) {
+            final Number power = entry.getValue();
+            final int n = (power instanceof Fraction) ? ((Fraction) power).numerator : power.intValue();
+            if (n > 0) {
+                if (!isFirst) {
+                    toAppendTo.append('⋅');
+                }
+                isFirst = false;
+                formatComponent(entry, false, toAppendTo);
+            } else if (n != 0) {
+                deferred.add(entry);
+            }
+        }
+        if (!isFirst && deferred.size() == 1) {
+            formatComponent(deferred.get(0), true, toAppendTo.append('∕'));
+        } else {
+            for (final Map.Entry<?,? extends Number> entry : deferred) {
+                if (!isFirst) {
+                    toAppendTo.append('⋅');
+                }
+                isFirst = false;
+                formatComponent(entry, false, toAppendTo);
+            }
+        }
+    }
+
+    /**
+     * Formats a single unit or dimension raised to the given power.
+     *
+     * @param  entry    the base unit or base dimension to format, together with its power.
+     * @param  inverse  {@code true} for inverting the power sign.
+     */
+    private static void formatComponent(final Map.Entry<?,? extends Number> entry,
+            final boolean inverse, final Appendable toAppendTo) throws IOException
+    {
+        formatSymbol(entry.getKey(), toAppendTo);
+        final Number power = entry.getValue();
+        int n;
+        if (power instanceof Fraction) {
+            Fraction f = (Fraction) power;
+            if (f.denominator != 1) {
+                if (inverse) {
+                    f = f.negate();
+                }
+                final String t = f.toString();
+                if (t.length() == 1) {
+                    toAppendTo.append('^').append(t);
+                } else {
+                    toAppendTo.append("^(").append(t).append(')');
+                }
+            }
+            n = f.numerator;
+        } else {
+            n = power.intValue();
+        }
+        if (inverse) n = -n;
+        if (n != 1) {
+            final String t = String.valueOf(n);
+            for (int i=0; i<t.length(); i++) {
+                toAppendTo.append(Characters.toSuperScript(t.charAt(i)));
+            }
+        }
+    }
+
+    /**
+     * Appends the symbol for the given base unit of base dimension, or "?" if no symbol was found.
+     *
+     * @param  base        the base unit or base dimension to format.
+     * @param  toAppendTo  where to append the symbol.
+     */
+    private static void formatSymbol(final Object base, final Appendable toAppendTo) throws IOException {
+        if (base instanceof UnitDimension) {
+            final char symbol = ((UnitDimension) base).symbol;
+            if (symbol != 0) {
+                toAppendTo.append(symbol);
+                return;
+            }
+        }
+        if (base instanceof Unit<?>) {
+            final String symbol = ((Unit<?>) base).getSymbol();
+            if (symbol != null) {
+                toAppendTo.append(symbol);
+                return;
+            }
+        }
+        toAppendTo.append('?');
     }
 
     /**
@@ -201,7 +323,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         try {
             return (StringBuffer) format((Unit<?>) unit, toAppendTo);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);      // Should never happen since we are writting to a StringBuffer.
+            throw new AssertionError(e);      // Should never happen since we are writting to a StringBuffer.
         }
     }
 
@@ -216,7 +338,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         try {
             return format(unit, new StringBuilder()).toString();
         } catch (IOException e) {
-            throw new UncheckedIOException(e);      // Should never happen since we are writting to a StringBuilder.
+            throw new AssertionError(e);      // Should never happen since we are writting to a StringBuilder.
         }
     }
 
@@ -313,7 +435,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         }
         final Unit<?> unit;
         try {
-            unit = delegate.parse(symbols);
+            unit = tec.units.ri.format.SimpleUnitFormat.getInstance().parse(symbols);
         } catch (ParserException e) {
             // Provides a better error message than the default JSR-275 0.9.4 implementation.
             throw Exceptions.setMessage(e, Errors.format(Errors.Keys.IllegalArgumentValue_2, "uom", uom), true);

@@ -154,6 +154,17 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
     }
 
     /**
+     * Returns the negative value of this fraction.
+     * This method does not simplify the fraction.
+     *
+     * @return the result of {@code -this}.
+     * @throws ArithmeticException if the result overflows.
+     */
+    public Fraction negate() {
+        return (numerator == 0) ? this : new Fraction(Math.negateExact(numerator), denominator);
+    }
+
+    /**
      * Returns the simplified result of adding the given fraction to this fraction.
      *
      * @param  other  the fraction to add to this fraction.

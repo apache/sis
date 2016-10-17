@@ -22,11 +22,11 @@ import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
-import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectStreamException;
 import javax.measure.Dimension;
 import org.apache.sis.math.Fraction;
-import org.apache.sis.util.Characters;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.UnsupportedImplementationException;
@@ -88,13 +88,13 @@ final class UnitDimension implements Dimension, Serializable {
      *
      * @see #getBaseDimensions()
      */
-    private final Map<UnitDimension,Fraction> components;
+    final Map<UnitDimension,Fraction> components;
 
     /**
      * If this {@code UnitDimension} is a base dimension, its symbol (not to be confused with unit symbol).
      * Otherwise (i.e. if this {@code UnitDimension} is a derived dimension), zero.
      */
-    private final char symbol;
+    final char symbol;
 
     /**
      * Creates a new base dimension with the given symbol, which shall not be zero.
@@ -338,17 +338,10 @@ final class UnitDimension implements Dimension, Serializable {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(8);
-        for (final Map.Entry<UnitDimension,Fraction> c : components.entrySet()) {
-            buffer.append(c.getKey().symbol);
-            final Fraction power = c.getValue();
-            if (power.denominator == 1) {
-                final int n = power.numerator;
-                if (n >= 0 && n <= 9) {
-                    buffer.append(Characters.toSuperScript((char) (n + '0')));
-                    continue;
-                }
-            }
-            buffer.append("^(").append(power).append(')');
+        try {
+            UnitFormat.formatComponents(components, buffer);
+        } catch (IOException e) {
+            throw new AssertionError(e);      // Should never happen since we are writting to a StringBuilder.
         }
         return buffer.toString();
     }

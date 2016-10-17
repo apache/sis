@@ -103,6 +103,7 @@ import org.junit.BeforeClass;
 
     // Measurements and formatting.
     org.apache.sis.measure.SexagesimalConverterTest.class,
+    org.apache.sis.measure.UnitFormatTest.class,
     org.apache.sis.measure.UnitsTest.class,
     org.apache.sis.measure.RangeTest.class,
     org.apache.sis.measure.DateRangeTest.class,

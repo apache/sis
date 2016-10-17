@@ -25,6 +25,7 @@ import javax.measure.UnconvertibleException;
 import javax.measure.IncommensurableException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.math.Fraction;
 
 
 /**
@@ -111,6 +112,15 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     @Override
     public Map<SystemUnit<?>, Integer> getBaseUnits() {
         return target.getBaseUnits();
+    }
+
+    /**
+     * Returns the base units used by Apache SIS implementations.
+     * Contrarily to {@link #getBaseUnits()}, this method never returns {@code null}.
+     */
+    @Override
+    final Map<SystemUnit<?>, Fraction> getBaseSystemUnits() {
+        return target.getBaseSystemUnits();
     }
 
     /**
