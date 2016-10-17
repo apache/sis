@@ -58,10 +58,11 @@ import static org.apache.sis.measure.SexagesimalConverter.EPS;
  */
 public final class Units extends Static {
     /**
-     * The units for given {@link UnitDimension} instances. This map contains mostly SI units (no imperial units)
-     * with the addition of some alternative units. This map must be unmodified after it has been populated.
+     * The units for given {@link UnitDimension} or {@code Class<Quantity>} instances.
+     * This map contains mostly SI units (no imperial units) with the addition of some alternative units.
+     * This map must be unmodified after it has been populated.
      */
-    private static final Map<UnitDimension, SystemUnit<?>> SYSTEM = new HashMap<>();
+    private static final Map<Object, SystemUnit<?>> SYSTEM = new HashMap<>();
 
     /**
      * Invoked by {@code Units} static class initializer for registering SI base and derived units.
@@ -69,9 +70,17 @@ public final class Units extends Static {
      * populated in a single thread by the {@code Units} class initializer, then never modified.
      */
     private static void add(final SystemUnit<?> unit) {
-        if (SYSTEM.put(unit.dimension, unit) != null) {
+        if (SYSTEM.put(unit.quantity, unit) != null && SYSTEM.put(unit.dimension, unit) != null) {
             throw new AssertionError();                 // Shall not map the same dimension twice.
         }
+    }
+
+    /**
+     * Returns the unit for the given dimension, or {@code null} if none.
+     */
+    @SuppressWarnings("unchecked")
+    static <Q extends Quantity<Q>> SystemUnit<Q> get(final Class<Q> type) {
+        return (SystemUnit<Q>) SYSTEM.get(type);
     }
 
     /**

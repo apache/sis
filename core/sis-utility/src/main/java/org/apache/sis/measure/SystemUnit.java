@@ -22,7 +22,12 @@ import java.io.ObjectStreamException;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.Dimension;
+import javax.measure.UnitConverter;
+import javax.measure.UnconvertibleException;
+import javax.measure.IncommensurableException;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.converter.SurjectiveConverter;
 
 
@@ -39,9 +44,14 @@ import org.apache.sis.internal.converter.SurjectiveConverter;
  * @version 0.8
  * @module
  */
-abstract class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
+final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     /**
-     * The type of quantity that uses this unit.
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 4097466138698631914L;
+
+    /**
+     * The type of quantity that uses this unit, or {@code null} if unknown.
      */
     final Class<Quantity<Q>> quantity;
 
@@ -53,6 +63,7 @@ abstract class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     /**
      * Creates a new unit having the given symbol and EPSG code.
      *
+     * @param  quantity   the type of quantity that uses this unit, or {@code null} if unknown.
      * @param  dimension  the unit dimension.
      * @param  name       the unit name,   or {@code null} if this unit has no specific name.
      * @param  symbol     the unit symbol, or {@code null} if this unit has no specific symbol.
@@ -64,6 +75,20 @@ abstract class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
         super(name, symbol, epsg);
         this.quantity  = quantity;
         this.dimension = dimension;
+    }
+
+    /**
+     * Returns a unit of the given dimension with default name and symbol.
+     */
+    private SystemUnit<?> create(final UnitDimension dim) {
+        if (dim == dimension) {
+            return this;
+        }
+        SystemUnit<?> result = Units.get(dim);
+        if (result == null) {
+            result = new SystemUnit<>(null, dim, null, null, (short) 0);
+        }
+        return result;
     }
 
     /**
@@ -160,5 +185,213 @@ abstract class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
         Object readResolve() throws ObjectStreamException {
             return INSTANCE;
         }
+    }
+
+    /**
+     * Casts this unit to a parameterized unit of specified nature or throw a {@code ClassCastException}
+     * if the dimension of the specified quantity and this unit's dimension do not match.
+     *
+     * @param  <T>   the type of the quantity measured by the unit.
+     * @param  type  the quantity class identifying the nature of the unit.
+     * @return this unit parameterized with the specified type.
+     * @throws ClassCastException if the dimension of this unit is different from the specified quantity dimension.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends Quantity<T>> Unit<T> asType(final Class<T> type) throws ClassCastException {
+        ArgumentChecks.ensureNonNull("type", type);
+        if (type == quantity) {
+            return (Unit<T>) this;
+        }
+        if (dimension.isDimensionless()) {
+            final SystemUnit<T> target = Units.get(type);
+            if (target != null && target.dimension.isDimensionless()) {
+                return target;
+            }
+        }
+        throw new ClassCastException(Errors.format(Errors.Keys.CanNotConvertFromType_2,
+                "Unit<" + (quantity != null ? quantity.getSimpleName() : "?") + '>',
+                "Unit<" + type.getSimpleName() + '>'));
+    }
+
+    /**
+     * Returns {@code true} if this unit is equals to the given unit ignoring name, symbol and EPSG code.
+     * This method should always returns {@code true} if parameterized type has not been compromised with
+     * raw types or unchecked casts.
+     *
+     * @param  other  the other unit, which must be a system unit.
+     */
+    final boolean equalsIgnoreMetadata(final Unit<Q> other) {
+        if (quantity != null && other instanceof SystemUnit<?>) {
+            /*
+             * For SIS implementation, we just need to compare the quantity class, if known.
+             * Two units for the same quantity implies that they are also for the same dimension.
+             */
+            final Class<?> c = ((SystemUnit<Q>) other).quantity;
+            if (c != null) {
+                final boolean status = (quantity == c);
+                assert status == dimension.equals(other.getDimension()) : this;
+                return status;
+            }
+        }
+        /*
+         * For foreigner implementations, comparing the units dimension is better than nothing.
+         * But this check is not as reliable as comparing the quantity classes.
+         */
+        assert other == other.getSystemUnit() : other;
+        return dimension.equals(other.getDimension());
+    }
+
+    /**
+     * Returns a converter of numeric values from this unit to another unit of same type.
+     *
+     * @param  that  the unit of same type to which to convert the numeric values.
+     * @return the converter from this unit to {@code that} unit.
+     * @throws UnconvertibleException if the converter can not be constructed.
+     */
+    @Override
+    public UnitConverter getConverterTo(final Unit<Q> that) throws UnconvertibleException {
+        ArgumentChecks.ensureNonNull("that", that);
+        final Unit<Q> step = that.getSystemUnit();
+        if (step != this && !equalsIgnoreMetadata(step)) {
+            // Should never occur unless parameterized type has been compromised.
+            throw new UnconvertibleException(incompatible(that));
+        }
+        if (step == that) {
+            return LinearConverter.IDENTITY;
+        }
+        /*
+         * At this point we know that the given units is not a system unit. Ask the conversion
+         * FROM the given units (before to inverse it) instead than TO the given units because
+         * in Apache SIS implementation, the former returns directly ConventionalUnit.toTarget
+         * while the later implies a recursive call to this method.
+         */
+        return that.getConverterTo(step).inverse();
+    }
+
+    /**
+     * Returns a converter from this unit to the specified unit of unknown type.
+     * This method can be used when the quantity type of the specified unit is unknown at compile-time
+     * or when dimensional analysis allows for conversion between units of different type.
+     *
+     * @param  that  the unit to which to convert the numeric values.
+     * @return the converter from this unit to {@code that} unit.
+     * @throws IncommensurableException if this unit is not {@linkplain #isCompatible(Unit) compatible} with {@code that} unit.
+     *
+     * @see #isCompatible(Unit)
+     */
+    @Override
+    public UnitConverter getConverterToAny(final Unit<?> that) throws IncommensurableException {
+        ArgumentChecks.ensureNonNull("that", that);
+        final Unit<?> step = that.getSystemUnit();
+        if (step != this && !isCompatible(step)) {
+            throw new IncommensurableException(incompatible(that));
+        }
+        if (step == that) {
+            return LinearConverter.IDENTITY;
+        }
+        // Same remark than in getConverterTo(Unit).
+        return that.getConverterToAny(step).inverse();
+    }
+
+    /**
+     * Returns a system unit equivalent to this unscaled standard unit but used in expressions
+     * to distinguish between quantities of a different nature but of the same dimensions.
+     *
+     * <p>The most important alternate unit in Apache SIS is {@link Units#RADIAN}, defined as below:</p>
+     *
+     * {@preformat java
+     *   Unit<Angle> RADIAN = ONE.alternate("rad").asType(Angle.class);
+     * }
+     *
+     * @param  symbol  the new symbol for the alternate unit.
+     * @return the alternate unit.
+     * @throws IllegalArgumentException if the specified symbol is already associated to a different unit.
+     */
+    @Override
+    public Unit<Q> alternate(final String symbol) {
+        ArgumentChecks.ensureNonNull("symbol", symbol);
+        if (symbol.equals(getSymbol())) {
+            return this;
+        }
+        // TODO: check for existing units.
+        return new SystemUnit<>(quantity, dimension, null, symbol, (short) 0);
+    }
+
+    /**
+     * Returns the product of this unit with the one specified.
+     *
+     * @param  multiplier  the unit multiplier.
+     * @return {@code this} × {@code multiplier}
+     */
+    @Override
+    public Unit<?> multiply(final Unit<?> multiplier) {
+        ArgumentChecks.ensureNonNull("multiplier", multiplier);
+        return combine(multiplier, false);
+    }
+
+    /**
+     * Returns the quotient of this unit with the one specified.
+     *
+     * @param  divisor  the unit divisor.
+     * @return {@code this} ÷ {@code divisor}
+     */
+    @Override
+    public Unit<?> divide(final Unit<?> divisor) {
+        ArgumentChecks.ensureNonNull("divisor", divisor);
+        return combine(divisor, true);
+    }
+
+    /**
+     * Implementation of {@link #multiply(Unit)} and {@link #divide(Unit)} methods.
+     */
+    private <T extends Quantity<T>> Unit<?> combine(final Unit<T> other, final boolean divide) {
+        final Unit<T> step = other.getSystemUnit();
+        final Dimension dim = step.getDimension();
+        Unit<?> result = create(divide ? dimension.divide(dim) : dimension.multiply(dim));
+        if (step != other) {
+            UnitConverter c = other.getConverterTo(step);
+            if (!c.isLinear()) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonRatioUnit_1, other));
+            }
+            if (divide) c = c.inverse();
+            result = result.transform(c);
+        }
+        return result;
+    }
+
+    /**
+     * Returns a unit equals to this unit raised to an exponent.
+     *
+     * @param  n  the exponent.
+     * @return the result of raising this unit to the exponent.
+     */
+    @Override
+    public Unit<?> pow(final int n) {
+        return create(dimension.pow(n));
+    }
+
+    /**
+     * Returns a unit equals to the given root of this unit.
+     *
+     * @param  n  the root's order.
+     * @return the result of taking the given root of this unit.
+     * @throws ArithmeticException if {@code n == 0}.
+     */
+    @Override
+    public Unit<?> root(final int n) {
+        return create(dimension.root(n));
+    }
+
+    /**
+     * Returns the unit derived from this unit using the specified converter.
+     *
+     * @param  operation  the converter from the transformed unit to this unit.
+     * @return the unit after the specified transformation.
+     */
+    @Override
+    public Unit<Q> transform(final UnitConverter operation) {
+        ArgumentChecks.ensureNonNull("operation", operation);
+        return ConventionalUnit.create(this, operation);
     }
 }
