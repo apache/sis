@@ -17,6 +17,7 @@
 package org.apache.sis.measure;
 
 import java.util.Map;
+import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import javax.measure.Unit;
@@ -56,7 +57,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     final Class<Quantity<Q>> quantity;
 
     /**
-     * The dimension of this unit of measurement.
+     * The dimension of this unit of measurement. Can not be null.
      */
     final UnitDimension dimension;
 
@@ -393,5 +394,31 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     public Unit<Q> transform(final UnitConverter operation) {
         ArgumentChecks.ensureNonNull("operation", operation);
         return ConventionalUnit.create(this, operation);
+    }
+
+    /**
+     * Compares this unit with the given object for equality.
+     *
+     * @param  other  the other object to compares with this unit, or {@code null}.
+     * @return {@code true} if the given object is equals to this unit.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (super.equals(other)) {
+            final SystemUnit<?> that = (SystemUnit<?>) other;
+            return Objects.equals(quantity, that.quantity) && dimension.equals(that.dimension);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this unit.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + 37 * dimension.hashCode();
     }
 }
