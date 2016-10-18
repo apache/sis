@@ -82,7 +82,7 @@ class MathTransformParser extends AbstractParser {
      * For each {@code UNIT_KEYWORDS[i]} element, the associated base unit is {@code BASE_UNIT[i]}.
      */
     private static final Unit<?>[] BASE_UNITS = {
-        Units.METRE, Units.RADIAN, Units.ONE, Units.SECOND
+        Units.METRE, Units.RADIAN, Units.UNITY, Units.SECOND
     };
 
     /**

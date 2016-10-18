@@ -176,7 +176,7 @@ public final class TransverseMercator extends AbstractMercator {
         }
         group.parameter(Constants.LATITUDE_OF_ORIGIN).setValue(latitude,  Units.DEGREE);
         group.parameter(Constants.CENTRAL_MERIDIAN)  .setValue(longitude, Units.DEGREE);
-        group.parameter(Constants.SCALE_FACTOR)      .setValue(0.9996, Units.ONE);
+        group.parameter(Constants.SCALE_FACTOR)      .setValue(0.9996, Units.UNITY);
         group.parameter(Constants.FALSE_EASTING)     .setValue(500000, Units.METRE);
         group.parameter(Constants.FALSE_NORTHING)    .setValue(isSouth ? 10000000 : 0, Units.METRE);
         return name;

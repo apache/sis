@@ -2227,7 +2227,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 buffer.append(number);
                 axes[i] = csFactory.createCoordinateSystemAxis(
                         singletonMap(CoordinateSystemAxis.NAME_KEY, buffer.toString()),
-                        number, AxisDirection.OTHER, Units.ONE);
+                        number, AxisDirection.OTHER, Units.UNITY);
             }
             final Map<String,Object> properties = parseMetadataAndClose(element, name, baseCRS);
             final CoordinateSystem derivedCS = referencing.createAbstractCS(

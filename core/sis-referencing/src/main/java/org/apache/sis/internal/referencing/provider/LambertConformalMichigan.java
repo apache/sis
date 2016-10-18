@@ -58,7 +58,7 @@ public final class LambertConformalMichigan extends AbstractLambert {
         SCALE_FACTOR = builder
                 .addIdentifier("1051")
                 .addName("Ellipsoid scaling factor")
-                .createStrictlyPositive(Double.NaN, Units.ONE);
+                .createStrictlyPositive(Double.NaN, Units.UNITY);
 
         PARAMETERS = builder
                 .addIdentifier(IDENTIFIER)

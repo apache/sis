@@ -85,7 +85,7 @@ public final strictfp class ParameterBuilderTest extends TestCase {
                    .addName(Citations.GEOTIFF, "NatOriginLong")
                    .setRemarks("Some remarks.")               .createBounded(-180, +180, 0, Units.DEGREE),
             builder.addName("Latitude of natural origin")     .createBounded( -80,  +84, 0, Units.DEGREE),
-            builder.addName("Scale factor at natural origin") .createStrictlyPositive(1, Units.ONE),
+            builder.addName("Scale factor at natural origin") .createStrictlyPositive(1, Units.UNITY),
             builder.addName("False easting")                  .create(0, Units.METRE),
             builder.addName("False northing")                 .create(0, Units.METRE)
         };

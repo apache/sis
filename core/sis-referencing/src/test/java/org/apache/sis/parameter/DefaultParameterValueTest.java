@@ -531,7 +531,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
             assertEquals ("Expected integer value", i,    p.intValue());
             assertEquals ("Expected integer value", i,    p.doubleValue(), STRICT);
 
-            p = create("Dimensionless double value", i, Units.ONE);
+            p = create("Dimensionless double value", i, Units.UNITY);
             d = p.getDescriptor();
             validate(p);
 
@@ -542,7 +542,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
             assertNull   ("Expected no enumeration.",     d.getValidValues());
             assertEquals ("Expected double type.",        Double.class, d.getValueClass());
             assertTrue   ("Expected double type.",        p.getValue() instanceof Double);
-            assertEquals ("Expected dimensionless.",      Units.ONE, p.getUnit());
+            assertEquals ("Expected dimensionless.",      Units.UNITY, p.getUnit());
             assertEquals ("Expected integer value", i,    p.intValue());
             assertEquals ("Expected integer value", i,    p.doubleValue(), STRICT);
 

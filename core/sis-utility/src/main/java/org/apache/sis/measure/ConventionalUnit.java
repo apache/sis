@@ -58,14 +58,11 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      *
      * @param  target     the base or derived units to which this {@code ConventionalUnit} is related.
      * @param  toTarget   the conversion from this unit to the {@code target} unit.
-     * @param  name       the unit name,   or {@code null} if this unit has no specific name.
      * @param  symbol     the unit symbol, or {@code null} if this unit has no specific symbol.
      * @param  epsg       the EPSG code,   or 0 if this unit has no EPSG code.
      */
-    ConventionalUnit(final SystemUnit<Q> target, final UnitConverter toTarget,
-            final String name, final String symbol, final short epsg)
-    {
-        super(name, symbol, epsg);
+    ConventionalUnit(final SystemUnit<Q> target, final UnitConverter toTarget, final String symbol, final short epsg) {
+        super(symbol, epsg);
         this.target   = target;
         this.toTarget = toTarget;
     }
@@ -78,7 +75,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
             return target;
         }
         // TODO: check for existing unit.
-        return new ConventionalUnit<>(target, toTarget, null, null, (short) 0);
+        return new ConventionalUnit<>(target, toTarget, null, (short) 0);
     }
 
     /**

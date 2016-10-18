@@ -82,7 +82,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      * The operation parameter descriptor for the <cite>Flattening difference</cite> optional
      * parameter value. This parameter is defined by the EPSG database and can be used in
      * replacement of {@link #TGT_SEMI_MINOR}.
-     * Valid values range from -1 to +1, {@linkplain Unit#ONE dimensionless}.
+     * Valid values range from -1 to +1, {@linkplain Units#UNITY dimensionless}.
      */
     public static final ParameterDescriptor<Double> FLATTENING_DIFFERENCE;
 
@@ -93,7 +93,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     static {
         final ParameterBuilder builder = builder();
         AXIS_LENGTH_DIFFERENCE = builder.addIdentifier("8654").addName("Semi-major axis length difference").create(Double.NaN, Units.METRE);
-        FLATTENING_DIFFERENCE  = builder.addIdentifier("8655").addName("Flattening difference").createBounded(-1, +1, Double.NaN, Units.ONE);
+        FLATTENING_DIFFERENCE  = builder.addIdentifier("8655").addName("Flattening difference").createBounded(-1, +1, Double.NaN, Units.UNITY);
         PARAMETERS = builder.setRequired(true)
                 .addIdentifier("9604")
                 .addName("Molodensky")

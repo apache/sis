@@ -55,7 +55,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     /**
      * The type of quantity that uses this unit, or {@code null} if unknown.
      */
-    final Class<Quantity<Q>> quantity;
+    final Class<Q> quantity;
 
     /**
      * The dimension of this unit of measurement. Can not be null.
@@ -67,14 +67,11 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      *
      * @param  quantity   the type of quantity that uses this unit, or {@code null} if unknown.
      * @param  dimension  the unit dimension.
-     * @param  name       the unit name,   or {@code null} if this unit has no specific name.
      * @param  symbol     the unit symbol, or {@code null} if this unit has no specific symbol.
      * @param  epsg       the EPSG code,   or 0 if this unit has no EPSG code.
      */
-    SystemUnit(final Class<Quantity<Q>> quantity, final UnitDimension dimension,
-            final String name, final String symbol, final short epsg)
-    {
-        super(name, symbol, epsg);
+    SystemUnit(final Class<Q> quantity, final UnitDimension dimension, final String symbol, final short epsg) {
+        super(symbol, epsg);
         this.quantity  = quantity;
         this.dimension = dimension;
     }
@@ -88,7 +85,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
         }
         SystemUnit<?> result = Units.get(dim);
         if (result == null) {
-            result = new SystemUnit<>(null, dim, null, null, (short) 0);
+            result = new SystemUnit<>(null, dim, null, (short) 0);
         }
         return result;
     }
@@ -326,7 +323,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
             return this;
         }
         // TODO: check for existing units.
-        return new SystemUnit<>(quantity, dimension, null, symbol, (short) 0);
+        return new SystemUnit<>(quantity, dimension, symbol, (short) 0);
     }
 
     /**

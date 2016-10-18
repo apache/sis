@@ -220,7 +220,7 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
         if (pg != context) {
             Δf = Δfmod / semiMinor;
             pg.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).setValue(Δa, unit);
-            pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Units.ONE);
+            pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Units.UNITY);
         }
         if (grid instanceof DatumShiftGridFile<?,?>) {
             ((DatumShiftGridFile<?,?>) grid).setFileParameters(pg);

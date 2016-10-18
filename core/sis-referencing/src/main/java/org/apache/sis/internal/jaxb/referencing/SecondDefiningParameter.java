@@ -49,7 +49,7 @@ public final class SecondDefiningParameter {
     /**
      * The measure, which is either the polar radius or the inverse of the flattening value.
      * We distinguish those two cases by the unit: if the measure is the inverse flattening,
-     * then the unit must be {@link Unit#ONE}.
+     * then the unit must be {@link Units#UNITY}.
      *
      * @see Ellipsoid#getSemiMinorAxis()
      * @see Ellipsoid#getInverseFlattening()
@@ -73,7 +73,7 @@ public final class SecondDefiningParameter {
             secondDefiningParameter = new SecondDefiningParameter(ellipsoid, false);
         } else {
             if (ellipsoid.isIvfDefinitive()) {
-                measure = new Measure(ellipsoid.getInverseFlattening(), Units.ONE);
+                measure = new Measure(ellipsoid.getInverseFlattening(), Units.UNITY);
             } else {
                 measure = new Measure(ellipsoid.getSemiMinorAxis(), ellipsoid.getAxisUnit());
             }
@@ -86,7 +86,7 @@ public final class SecondDefiningParameter {
      * @return {@code true} if the measure is the inverse of the flattening value.
      */
     public boolean isIvfDefinitive() {
-        return (measure != null) && Units.ONE.equals(measure.unit);
+        return (measure != null) && Units.UNITY.equals(measure.unit);
     }
 
     /**
@@ -131,7 +131,7 @@ public final class SecondDefiningParameter {
      * @param measure The inverse flattening value.
      */
     public void setInverseFlattening(final Measure measure) {
-        if (measure.setUnit(Units.ONE)) {
+        if (measure.setUnit(Units.UNITY)) {
             Context.warningOccured(Context.current(), SecondDefiningParameter.class, "setInverseFlattening",
                     Errors.class, Errors.Keys.IncompatiblePropertyValue_1, "uom");
         }

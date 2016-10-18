@@ -70,7 +70,7 @@ public final strictfp class UnitsTest extends TestCase {
     public void testIsTemporal() {
         // Standard units
         assertFalse(isTemporal(null));
-        assertFalse(isTemporal(ONE));
+        assertFalse(isTemporal(UNITY));
         assertFalse(isTemporal(METRE));
         assertFalse(isTemporal(RADIAN));
         assertFalse(isTemporal(DEGREE));
@@ -94,7 +94,7 @@ public final strictfp class UnitsTest extends TestCase {
     public void testIsLinear() {
         // Standard units
         assertFalse(isLinear(null));
-        assertFalse(isLinear(ONE));
+        assertFalse(isLinear(UNITY));
         assertTrue (isLinear(METRE));
         assertFalse(isLinear(RADIAN));
         assertFalse(isLinear(DEGREE));
@@ -118,7 +118,7 @@ public final strictfp class UnitsTest extends TestCase {
     public void testIsAngular() {
         // Standard units
         assertFalse(isAngular(null));
-        assertFalse(isAngular(ONE));
+        assertFalse(isAngular(UNITY));
         assertFalse(isAngular(METRE));
         assertTrue (isAngular(RADIAN));
         assertTrue (isAngular(DEGREE));
@@ -142,7 +142,7 @@ public final strictfp class UnitsTest extends TestCase {
     public void testIsScale() {
         // Standard units
         assertFalse(isScale(null));
-        assertTrue (isScale(ONE));
+        assertTrue (isScale(UNITY));
         assertFalse(isScale(METRE));
         assertFalse(isScale(RADIAN));
         assertFalse(isScale(DEGREE));
@@ -243,8 +243,8 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame  (HERTZ,                         valueOf("1/s"));
         assertSame  (HERTZ,                         valueOf("s-1"));
         assertSame  (PERCENT,                       valueOf("%"));
-        assertSame  (ONE,                           valueOf("kg/kg"));
-        assertSame  (ONE,                           valueOf("kg.kg-1"));
+        assertSame  (UNITY,                         valueOf("kg/kg"));
+        assertSame  (UNITY,                         valueOf("kg.kg-1"));
         assertSame  (PPM,                           valueOf("ppm"));            // Parts per million
         assertSame  (PSU,                           valueOf("psu"));            // Pratical Salinity Unit
         assertSame  (SIGMA,                         valueOf("sigma"));

@@ -48,19 +48,17 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertEquals("N",     f.format(Units.NEWTON));
         assertEquals("J",     f.format(Units.JOULE));
         assertEquals("W",     f.format(Units.WATT));
-        assertEquals("K",     f.format(Units.KELVIN));
-//      assertEquals("m∕s",   f.format(Units.METRES_PER_SECOND));
-//      assertEquals("km∕h",  f.format(Units.KILOMETRES_PER_HOUR));
-//      assertEquals("m²",    f.format(Units.SQUARE_METRE));
-//      assertEquals("m³",    f.format(Units.CUBIC_METRE));
-        assertEquals("",      f.format(Units.ONE));
-//      assertEquals("%",     f.format(Units.PERCENT));
+        assertEquals("K",     f.format(Units.KELVIN));
+        assertEquals("℃",     f.format(Units.CELSIUS));
+        assertEquals("m∕s",   f.format(Units.METRES_PER_SECOND));
+        assertEquals("km∕h",  f.format(Units.KILOMETRES_PER_HOUR));
+        assertEquals("m²",    f.format(Units.SQUARE_METRE));
+        assertEquals("m³",    f.format(Units.CUBIC_METRE));
+        assertEquals("",      f.format(Units.UNITY));
+        assertEquals("%",     f.format(Units.PERCENT));
         assertEquals("psu",   f.format(Units.PSU));
         assertEquals("px",    f.format(Units.PIXEL));
-
-        // Following symbol needs revision.
-//      assertEquals("°C",  f.format(Units.CELSIUS));
-        assertEquals("d",   f.format(Units.DAY));
-//      assertEquals("?",   f.format(Units.WEEK));
+        assertEquals("d",     f.format(Units.DAY));
+        assertEquals("wk",    f.format(Units.WEEK));
     }
 }

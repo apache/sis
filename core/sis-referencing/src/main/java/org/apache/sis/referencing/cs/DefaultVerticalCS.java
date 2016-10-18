@@ -172,7 +172,7 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
         if (unit.equals(Units.METRE)   ||   // Most usual case.
             unit.equals(Units.PASCAL)  ||   // Height or depth estimated by the atmospheric or ocean pressure.
             unit.equals(Units.SECOND)  ||   // Depth estimated by the time needed for an echo to travel.
-            unit.equals(Units.ONE))         // Sigma-level (percentage from sea surface to ocean floor).
+            unit.equals(Units.UNITY))         // Sigma-level (percentage from sea surface to ocean floor).
         {
             return VALID;
         }

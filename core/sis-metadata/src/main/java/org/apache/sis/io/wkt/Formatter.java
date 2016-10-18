@@ -1236,7 +1236,7 @@ public class Formatter implements Localized {
                 keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.LengthUnit;
             } else if (base.equals(Units.RADIAN)) {
                 keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.AngleUnit;
-            } else if (base.equals(Units.ONE)) {
+            } else if (base.equals(Units.UNITY)) {
                 keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.ScaleUnit;
             } else if (base.equals(Units.SECOND)) {
                 keyword = WKTKeywords.TimeUnit;  // "Unit" alone is not allowed for time units according ISO 19162.
