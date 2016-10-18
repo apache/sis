@@ -407,7 +407,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         final Iterator<GeneralParameterDescriptor> itd = group.getDescriptor().descriptors().iterator();
         verifyParameter(8801, "Latitude of natural origin",     "latitude_of_origin", 40, Units.DEGREE, itd.next(), it.next());
         verifyParameter(8802, "Longitude of natural origin",    "central_meridian",  -60, Units.DEGREE, itd.next(), it.next());
-        verifyParameter(8805, "Scale factor at natural origin", "scale_factor",        1, Units.ONE,    itd.next(), it.next());
+        verifyParameter(8805, "Scale factor at natural origin", "scale_factor",        1, Units.UNITY,    itd.next(), it.next());
         assertFalse("Unexpected parameter.", it.hasNext());
     }
 }

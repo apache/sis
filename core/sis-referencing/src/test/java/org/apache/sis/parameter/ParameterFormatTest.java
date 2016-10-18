@@ -79,7 +79,7 @@ public final strictfp class ParameterFormatTest extends TestCase {
                     .setRemarks("This parameter is shown for completeness, but should never have a value different than 0 for this projection.")
                     .createBounded( -80,  +84,  40, Units.DEGREE),
             builder.addIdentifier("8802").addName("Longitude of natural origin")     .addName(OGC, "central_meridian")  .createBounded(-180, +180, -60, Units.DEGREE),
-            builder.addIdentifier("8805").addName("Scale factor at natural origin")  .addName(OGC, "scale_factor")      .createStrictlyPositive(1, Units.ONE),
+            builder.addIdentifier("8805").addName("Scale factor at natural origin")  .addName(OGC, "scale_factor")      .createStrictlyPositive(1, Units.UNITY),
             builder.addIdentifier("8806").addName("False easting").setRequired(false).addName(OGC, "false_easting")     .create( 5000, Units.METRE),
             builder.addIdentifier("8807").addName("False northing")                  .addName(OGC, "false_northing")    .create(10000, Units.METRE)
         };

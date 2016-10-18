@@ -50,6 +50,30 @@ import static org.apache.sis.measure.SexagesimalConverter.EPS;
 
 /**
  * Provides constants for various Units of Measurement together with static methods working on {@link Unit} instances.
+ * This class focuses on the most commonly used units in the geospatial domain:
+ * angular units ({@linkplain #DEGREE degree}, {@linkplain #ARC_SECOND arc-second}, …),
+ * linear units ({@linkplain #KILOMETRE kilometre}, {@linkplain #NAUTICAL_MILE nautical mile}, …) and
+ * temporal units ({@linkplain #DAY day}, {@linkplain #YEAR year}, …).
+ * But some other kind of units are also provided for completeness.
+ *
+ * <p>All Units of Measurement are based on units from the International System (SI).
+ * The fundamental units are listed below, together with some dimensionless units:</p>
+ *
+ * <table class="sis">
+ *   <caption>SI fundamental units and dimensionless units</caption>
+ *   <tr><th>Quantity type</th>       <th>Dimension symbol</th> <th>Base unit</th></tr>
+ *   <tr><td>{@link Length}</td>            <td>L</td>          <td>{@link #METRE}</td></tr>
+ *   <tr><td>{@link Mass}</td>              <td>M</td>          <td>{@link #KILOGRAM}</td></tr>
+ *   <tr><td>{@link Time}</td>              <td>T</td>          <td>{@link #SECOND}</td></tr>
+ *   <tr><td>{@link ElectricCurrent}</td>   <td>I</td>          <td>{@link #AMPERE}</td></tr>
+ *   <tr><td>{@link Temperature}</td>       <td>Θ</td>          <td>{@link #KELVIN}</td></tr>
+ *   <tr><td>{@link AmountOfSubstance}</td> <td>N</td>          <td>{@link #MOLE}</td></tr>
+ *   <tr><td>{@link LuminousIntensity}</td> <td>J</td>          <td>{@link #CANDELA}</td></tr>
+ *   <tr><td>{@link Angle}</td>             <td></td>           <td>{@link #RADIAN}</td></tr>
+ * </table>
+ *
+ * Unit names and definitions in this class follow the definitions provided in the EPSG geodetic dataset
+ * (when the unit exists in that dataset).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
@@ -63,17 +87,6 @@ public final class Units extends Static {
      * This map must be unmodified after it has been populated.
      */
     private static final Map<Object, SystemUnit<?>> SYSTEM = new HashMap<>();
-
-    /**
-     * Invoked by {@code Units} static class initializer for registering SI base and derived units.
-     * We do not synchronize that method on the assumption that {@link #SYSTEM} map will be fully
-     * populated in a single thread by the {@code Units} class initializer, then never modified.
-     */
-    private static void add(final SystemUnit<?> unit) {
-        if (SYSTEM.put(unit.quantity, unit) != null && SYSTEM.put(unit.dimension, unit) != null) {
-            throw new AssertionError();                 // Shall not map the same dimension twice.
-        }
-    }
 
     /**
      * Returns the unit for the given dimension, or {@code null} if none.
@@ -91,427 +104,652 @@ public final class Units extends Static {
     }
 
     /**
-     * The SI base unit for distances (symbol “m”).
+     * Unit of measurement defined as 10<sup>-9</sup> metres (1 nm). This unit is often used in
+     * {@linkplain org.apache.sis.metadata.iso.content.DefaultBand#getBoundUnits() wavelength measurements}.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE}
+     * and the unlocalized name is "nanometre".
+     *
+     * @see #CENTIMETRE
+     * @see #MILLIMETRE
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> NANOMETRE;
+
+    /**
+     * Unit of measurement defined as 0.001 metres (1 mm).
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE},
+     * the unlocalized name is “millimetre” and the identifier is EPSG:1025.
+     *
+     * @see #NANOMETRE
+     * @see #CENTIMETRE
+     * @see #KILOMETRE
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> MILLIMETRE;
+
+    /**
+     * Unit of measurement defined as 0.01 metres (1 cm).
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE},
+     * the unlocalized name is “centimetre” and the identifier is EPSG:1033.
      *
      * @see #NANOMETRE
      * @see #MILLIMETRE
-     * @see #CENTIMETRE
+     * @see #KILOMETRE
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> CENTIMETRE;
+
+    /**
+     * The SI base unit for distances (m).
+     * The unlocalized name is “metre” and the identifier is EPSG:9001.
+     * This is the base of all other {@linkplain #isLinear(Unit) linear} units:
+     *
+     * {@link #NANOMETRE} (nm),
+     * {@link #MILLIMETRE} (mm),
+     * {@link #CENTIMETRE} (cm),
+     * {@link #KILOMETRE} (km),
+     * {@link #NAUTICAL_MILE} (M),
+     * {@link #STATUTE_MILE} (mi),
+     * {@link #US_SURVEY_FOOT},
+     * {@link #FOOT} (ft),
+     * {@link #INCH} (in) and
+     * {@link #POINT} (pt)
+     * among others.
+     *
+     * @see #SQUARE_METRE
+     * @see #CUBIC_METRE
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> METRE;
+
+    /**
+     * Unit of measurement defined as 1000 metres (1 km).
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE},
+     * the unlocalized name is “kilometre” and the identifier is EPSG:9036.
+     *
+     * @see #STATUTE_MILE
+     * @see #NAUTICAL_MILE
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> KILOMETRE;
+
+    /**
+     * Unit of measurement defined as exactly 1852 metres (1 M).
+     * This is approximatively the distance between two parallels of latitude
+     * separated by one {@linkplain #ARC_MINUTE arc-minute}.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE},
+     * the unlocalized name is “nautical mile” and the identifier is EPSG:9030.
+     *
+     * <p>There is no internationally agreed symbol for nautical mile. Apache SIS uses “M” in agreement with the
+     * International Hydrographic Organization (IHO) and the International Bureau of Weights and Measures (BIPM).
+     * But “NM” and “nmi” are also in use.</p>
+     *
+     * @see #STATUTE_MILE
+     * @see #KILOMETRE
+     * @see #ARC_MINUTE
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> NAUTICAL_MILE;
+
+    /**
+     * Unit of measurement defined as exactly 1609.344 metres (1 mi).
+     * This unit is often named “mile” without qualifier, but Apache SIS uses “statute mile”
+     * for emphasing the difference with {@linkplain #NAUTICAL_MILE nautical mile}.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE}.
+     * The unlocalized name is “statute mile” but is localized as "international mile" in the US
+     * for avoiding confusion with the US survey mile.
+     * The identifier is EPSG:9093.
+     *
      * @see #KILOMETRE
      * @see #NAUTICAL_MILE
-     * @see #MILE
      * @see #FOOT
-     * @see #FOOT_SURVEY_US
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> STATUTE_MILE;
+
+    /**
+     * Unit of measurement approximatively equals to 0.3048006096… metres.
+     * The legal definition is exactly 12/39.37 metres.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE},
+     * the unlocalized name is “US survey foot” and the identifier is EPSG:9003.
+     *
+     * @see #FOOT
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> US_SURVEY_FOOT;
+
+    /**
+     * Unit of measurement defined as exactly 0.3048 metres (1 ft).
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE},
+     * the unlocalized name is “foot” and the identifier is EPSG:9002.
+     *
+     * @see #US_SURVEY_FOOT
+     * @see #STATUTE_MILE
      * @see #INCH
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> FOOT;
+
+    /**
+     * Unit of measurement defined as 2.54 centimetres (1 in).
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE}
+     * and the unlocalized name is “inch”.
+     *
+     * @see #CENTIMETRE
+     * @see #POINT
+     * @see #FOOT
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> INCH;
+
+    /**
+     * Unit of measurement defined as 0.013837 inch (1 pt).
+     * This is commonly used to measure the height of a font.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE}
+     * and the unlocalized name is “point”.
+     *
+     * @see #INCH
+     * @see #MILLIMETRE
      * @see #PIXEL
      *
      * @since 0.8
      */
-    public static final Unit<Length> METRE = tec.units.ri.unit.Units.METRE;
+    public static final Unit<Length> POINT;
 
     /**
-     * Unit of measurement defined as 10<sup>-9</sup> metres.
-     * This unit is often used in wavelength measurements.
-     *
-     * @see #METRE
-     * @see #CENTIMETRE
-     * @see #MILLIMETRE
-     *
-     * @since 0.8
-     */
-    public static final Unit<Length> NANOMETRE = METRE.divide(1E9);
-
-    /**
-     * Unit of measurement defined as 0.001 metres.
-     *
-     * @see #METRE
-     * @see #NANOMETRE
-     * @see #CENTIMETRE
-     * @see #KILOMETRE
-     *
-     * @since 0.8
-     */
-    public static final Unit<Length> MILLIMETRE = METRE.divide(1000);
-
-    /**
-     * Unit of measurement defined as 0.01 metres.
-     *
-     * @see #METRE
-     * @see #NANOMETRE
-     * @see #MILLIMETRE
-     * @see #KILOMETRE
-     *
-     * @since 0.8
-     */
-    public static final Unit<Length> CENTIMETRE = METRE.divide(100);
-
-    /**
-     * Unit of measurement defined as 1000 metres.
-     *
-     * @see #METRE
-     * @see #NAUTICAL_MILE
-     *
-     * @since 0.8
-     */
-    public static final Unit<Length> KILOMETRE = METRE.multiply(1000);
-
-    /**
-     * Unit of measurement defined as 1852 metres.
-     * This is approximatively the distance between two parallels of latitude separated by one arc-minute.
-     *
-     * @see #METRE
-     * @see #KILOMETRE
-     * @see #MILE
-     *
-     * @since 0.8
-     */
-    public static final Unit<Length> NAUTICAL_MILE = METRE.multiply(1852);
-
-    /**
-     * Unit of measurement defined as 1609.344 metres.
-     *
-     * @see #METRE
-     * @see #KILOMETRE
-     * @see #NAUTICAL_MILE
-     *
-     * @since 0.8
-     */
-    public static final Unit<Length> MILE = METRE.multiply(1609.344);
-
-    /**
-     * Unit of measurement defined as 0.3048 metres.
-     *
-     * @see #METRE
-     * @see #FOOT_SURVEY_US
-     *
-     * @since 0.8
-     */
-    public static final Unit<Length> FOOT = METRE.multiply(0.3048);
-
-    /**
-     * Unit of measurement defined as 12/39.37 metres.
-     * This is approximatively 0.3048006096… metres.
-     *
-     * @see #METRE
-     * @see #FOOT
-     *
-     * @since 0.8
-     */
-    public static final Unit<Length> FOOT_SURVEY_US = METRE.multiply(12 / 39.37);
-
-    /**
-     * Unit of measurement defined as 2.54 centimetres.
-     *
-     * @since 0.8
-     */
-    public static final Unit<Length> INCH = METRE.multiply(2.54 / 100);
-
-    /**
-     * Unit of measurement defined as 0.013837 inch.
-     * This is commonly used to measure the height of a font.
-     *
-     * @since 0.8
-     */
-    public static final Unit<Length> POINT = METRE.multiply(0.996264 / 72);
-
-    /**
-     * The SI unit for plane angles.
+     * The SI unit for plane angles (rad).
      * There is 2π radians in a circle.
+     * The unlocalized name is “radian” and the identifier is EPSG:9101.
+     * This is the base of all other {@linkplain #isAngular(Unit) angular} units:
      *
-     * @see #DEGREE
-     * @see #GRAD
-     * @see #ARC_MINUTE
-     * @see #ARC_SECOND
-     * @see #MICRORADIAN
-     *
-     * @since 0.8
-     */
-    public static final Unit<Angle> RADIAN = tec.units.ri.unit.Units.RADIAN;
-
-    /**
-     * Unit of measurement defined as π/180 radians.
-     * There is 360° in a circle.
-     *
-     * @see #RADIAN
-     * @see #ARC_MINUTE
-     * @see #ARC_SECOND
+     * {@link #GRAD} (grad),
+     * {@link #DEGREE} (°),
+     * {@link #ARC_MINUTE} (′),
+     * {@link #ARC_SECOND} (″) and
+     * {@link #MICRORADIAN} (µrad)
+     * among others.
      *
      * @since 0.8
      */
-    public static final Unit<Angle> DEGREE = RADIAN.multiply(Math.PI/180);
+    public static final Unit<Angle> RADIAN;
 
     /**
-     * Unit of measurement defined as π/200 radians.
+     * Unit of measurement defined as π/200 radians (1 grad).
      * There is 400 grads in a circle.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #RADIAN},
+     * the unlocalized name is “grad” and the identifier is EPSG:9105.
      *
-     * @see #RADIAN
      * @see #DEGREE
      *
      * @since 0.8
      */
-    public static final Unit<Angle> GRAD = RADIAN.multiply(Math.PI/200);
+    public static final Unit<Angle> GRAD;
 
     /**
-     * Unit of measurement defined as 1/60 degree.
+     * Unit of measurement defined as π/180 radians (1°).
+     * There is 360° in a circle.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #RADIAN},
+     * the unlocalized name is “degree” and the identifier is EPSG:9102.
      *
-     * @see #RADIAN
+     * @see #ARC_MINUTE
+     * @see #ARC_SECOND
+     *
+     * @since 0.8
+     */
+    public static final Unit<Angle> DEGREE;
+
+    /**
+     * Unit of measurement defined as 1/60 degree (1′).
+     * The distance of one arc-minute of latitude on Earth is approximatively 1852 metres
+     * (one {@linkplain #NAUTICAL_MILE nautical mile}).
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #RADIAN},
+     * the unlocalized name is “arc-minute” and the identifier is EPSG:9103.
+     *
      * @see #DEGREE
+     * @see #ARC_SECOND
+     * @see #NAUTICAL_MILE
      *
      * @since 0.8
      */
-    public static final Unit<Angle> ARC_MINUTE = RADIAN.multiply(Math.PI / (180*60));
+    public static final Unit<Angle> ARC_MINUTE;
 
     /**
-     * Unit of measurement defined as 1/(60×60) degree.
+     * Unit of measurement defined as 1/(60×60) degree (1″).
+     * The distance of one arc-second of latitude on Earth is approximatively 31 metres.
+     * This unit of measurement is used for rotation terms in
+     * {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters}.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #RADIAN},
+     * the unlocalized name is “arc-second” and the identifier is EPSG:9104.
      *
-     * @see #RADIAN
      * @see #DEGREE
+     * @see #ARC_MINUTE
      *
      * @since 0.8
      */
-    public static final Unit<Angle> ARC_SECOND = RADIAN.multiply(Math.PI / (180*60*60));
+    public static final Unit<Angle> ARC_SECOND;
 
     /**
-     * Unit of measurement defined as 10<sup>-6</sup> radians.
+     * Unit of measurement defined as 10<sup>-6</sup> radians (1 µrad).
+     * The distance of one microradian of latitude on Earth is approximatively 2 millimetres.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #RADIAN},
+     * the unlocalized name is “microradian” and the identifier is EPSG:9109.
      *
-     * @see #RADIAN
+     * @see #ARC_MINUTE
+     * @see #ARC_SECOND
      *
      * @since 0.8
      */
-    public static final Unit<Angle> MICRORADIAN = RADIAN.divide(1E+6);
+    public static final Unit<Angle> MICRORADIAN;
 
     /**
-     * The SI base unit for durations (symbol “s”).
+     * Unit of measurement defined as 10<sup>-3</sup> seconds (1 ms).
+     * This unit is useful for inter-operability with various methods from the standard Java library.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #SECOND}
+     * and the unlocalized name is “millisecond”.
      *
-     * @see #MILLISECOND
-     * @see #MINUTE
+     * @see java.util.concurrent.TimeUnit#MILLISECONDS
+     */
+    public static final Unit<Time> MILLISECOND;
+
+    /**
+     * The SI base unit for durations (s).
+     * The unlocalized name is “second” and the identifier is EPSG:1040.
+     * This is the base of all other {@linkplain #isTemporal(Unit) temporal} units:
+     *
+     * {@link #MILLISECOND} (ms),
+     * {@link #MINUTE} (min),
+     * {@link #HOUR} (h),
+     * {@link #DAY} (d),
+     * {@link #WEEK} (wk) and
+     * {@link #TROPICAL_YEAR} (a)
+     * among others.
+     *
+     * @see #HERTZ
+     *
+     * @since 0.8
+     */
+    public static final Unit<Time> SECOND;
+
+    /**
+     * Unit of measurement defined as 60 seconds (1 min).
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #SECOND}
+     * and the unlocalized name is “minute”.
+     *
+     * @see #SECOND
      * @see #HOUR
      * @see #DAY
-     * @see #WEEK
-     * @see #YEAR
      *
      * @since 0.8
      */
-    public static final Unit<Time> SECOND = tec.units.ri.unit.Units.SECOND;
+    public static final Unit<Time> MINUTE;
 
     /**
-     * Unit of measurement defined as 10<sup>-3</sup> seconds.
-     * Useful for conversions from and to {@link java.util.Date} objects.
-     *
-     * @see #SECOND
-     */
-    public static final Unit<Time> MILLISECOND = SECOND.divide(1000);
-
-    /**
-     * Unit of measurement defined as 60 seconds.
-     *
-     * @see #SECOND
-     * @see #HOUR
-     *
-     * @since 0.8
-     */
-    public static final Unit<Time> MINUTE = tec.units.ri.unit.Units.MINUTE;
-
-    /**
-     * Unit of measurement defined as 60×60 seconds.
+     * Unit of measurement defined as 60×60 seconds (1 h).
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #SECOND}
+     * and the unlocalized name is “hour”.
      *
      * @see #SECOND
      * @see #MINUTE
-     *
-     * @since 0.8
-     */
-    public static final Unit<Time> HOUR = tec.units.ri.unit.Units.HOUR;
-
-    /**
-     * Unit of measurement defined as 24×60×60 seconds.
-     *
-     * @see #SECOND
-     * @see #WEEK
-     *
-     * @since 0.8
-     */
-    public static final Unit<Time> DAY = tec.units.ri.unit.Units.DAY;
-
-    /**
-     * Unit of measurement defined as 7 days.
-     *
-     * @see #SECOND
-     * @see #DAY
-     * @see #YEAR
-     *
-     * @since 0.8
-     */
-    public static final Unit<Time> WEEK = tec.units.ri.unit.Units.WEEK;
-
-    /**
-     * The EPSG:1029 definition of year.
-     *
-     * @see #SECOND
-     * @see #WEEK
      * @see #DAY
      *
      * @since 0.8
      */
-    private static final Unit<Time> YEAR = SECOND.divide(31556925.445);
+    public static final Unit<Time> HOUR;
 
     /**
-     * The SI unit for frequency (symbol “Hz”).
-     * A unit of frequency equal to one cycle per second.
+     * Unit of measurement defined as 24×60×60 seconds (1 d).
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #SECOND}
+     * and the unlocalized name is “day”.
+     *
+     * @see #HOUR
+     * @see #WEEK
+     * @see #TROPICAL_YEAR
      *
      * @since 0.8
      */
-    public static final Unit<Frequency> HERTZ = tec.units.ri.unit.Units.HERTZ;
+    public static final Unit<Time> DAY;
 
     /**
-     * The SI unit for pressure (symbol “Pa”).
+     * Unit of measurement defined as 7 days (1 wk).
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #SECOND}
+     * and the unlocalized name is “week”.
+     *
+     * @see #DAY
+     * @see #TROPICAL_YEAR
+     *
+     * @since 0.8
+     */
+    public static final Unit<Time> WEEK;
+
+    /**
+     * Unit of measurement approximatively equals to 365.24219 days (1 a).
+     * This is defined by the International Union of Geological Sciences (IUGS) as exactly 31556925.445 seconds,
+     * taken as the length of the tropical year in the the year 2000.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #SECOND},
+     * the unlocalized name is “year” and the identifier is EPSG:1029.
+     *
+     * @see #DAY
+     * @see #WEEK
+     *
+     * @since 0.8
+     */
+    public static final Unit<Time> TROPICAL_YEAR;
+
+    /**
+     * The SI derived unit for pressure (Pa).
      * One pascal is equal to 1 N/m².
      * Pressures are often used in {@linkplain org.apache.sis.referencing.crs.DefaultParametricCRS parametric CRS}
-     * for height measurements.
+     * for height measurements on a vertical axis.
+     * The unlocalized name is “pascal”.
      *
+     * @see #NEWTON
+     * @see #SQUARE_METRE
      * @see #HECTOPASCAL
      *
      * @since 0.8
      */
-    public static final Unit<Pressure> PASCAL = tec.units.ri.unit.Units.PASCAL;
+    public static final Unit<Pressure> PASCAL;
 
     /**
-     * Unit of measurement defined as 100 pascals.
+     * Unit of measurement defined as 100 pascals (1 hPa).
+     * The hectopascal is the international unit for measuring atmospheric or barometric pressure.
+     * One hectopascal is exactly equal to one millibar.
+     * The unlocalized name is “hectopascal”.
      *
      * @see #PASCAL
      *
      * @since 0.8
      */
-    public static final Unit<Pressure> HECTOPASCAL = PASCAL.multiply(100);
+    public static final Unit<Pressure> HECTOPASCAL;
 
     /**
-     * The SI base unit for mass (symbol “kg”).
+     * The SI derived unit for area (m²).
+     * The unlocalized name is “square metre”.
+     *
+     * @since 0.8
+     *
+     * @see #METRE
+     * @see #CUBIC_METRE
+     */
+    public static final Unit<Area> SQUARE_METRE;
+
+    /**
+     * The SI derived unit for volume (m³).
+     * The unlocalized name is “cubic metre”.
+     *
+     * @since 0.8
+     *
+     * @see #METRE
+     * @see #SQUARE_METRE
+     */
+    public static final Unit<Volume> CUBIC_METRE;
+
+    /**
+     * The SI derived unit for speed (m/s).
+     * The unlocalized name is “metres per second” and the identifier is EPSG:1026.
+     *
+     * @see #METRE
+     * @see #SECOND
+     * @see #KILOMETRES_PER_HOUR
      *
      * @since 0.8
      */
-    public static final Unit<Mass> KILOGRAM = tec.units.ri.unit.Units.KILOGRAM;
+    public static final Unit<Speed> METRES_PER_SECOND;
 
     /**
-     * The SI unit for force (symbol “N”).
+     * Unit of measurement defined as 60/1000 metres per second (1 “km/h”).
+     * The unlocalized name is “kilometres per hour”.
+     *
+     * @see #KILOMETRE
+     * @see #HOUR
+     * @see #METRES_PER_SECOND
+     *
+     * @since 0.8
+     */
+    public static final Unit<Speed> KILOMETRES_PER_HOUR;
+
+    /**
+     * The SI base unit for mass (kg).
+     * The unlocalized name is “kilogram”.
+     *
+     * @since 0.8
+     */
+    public static final Unit<Mass> KILOGRAM;
+
+    /**
+     * The SI derived unit for force (N).
      * One newton is the force required to give a mass of 1 kg an acceleration of 1 m/s².
+     * The unlocalized name is “newton”.
+     *
+     * @since 0.8
+     *
+     * @see #KILOGRAM
+     * @see #METRES_PER_SECOND
+     */
+    public static final Unit<Force> NEWTON;
+
+    /**
+     * The SI derived unit for energy (J).
+     * The unlocalized name is “joule”.
      *
      * @since 0.8
      */
-    public static final Unit<Force> NEWTON = tec.units.ri.unit.Units.NEWTON;
+    public static final Unit<Energy> JOULE;
 
     /**
-     * The SI unit for energy (symbol “J”).
-     *
-     * @since 0.8
-     */
-    public static final Unit<Energy> JOULE = tec.units.ri.unit.Units.JOULE;
-
-    /**
-     * The SI unit for power (symbol “W”).
+     * The SI derived unit for power (W).
      * One watt is equal to one joule per second.
+     * The unlocalized name is “watt”.
      *
      * @since 0.8
      */
-    public static final Unit<Power> WATT = tec.units.ri.unit.Units.WATT;
+    public static final Unit<Power> WATT;
 
     /**
-     * The SI base unit for thermodynamic temperature (symbol “K”).
+     * The SI base unit for thermodynamic temperature (K).
+     * The unlocalized name is “kelvin”.
      *
      * @see #CELSIUS
      *
      * @since 0.8
      */
-    public static final Unit<Temperature> KELVIN = tec.units.ri.unit.Units.KELVIN;
+    public static final Unit<Temperature> KELVIN;
 
     /**
      * Unit of measurement defined as the temperature in Kelvin minus 273.15.
+     * The symbol is ℃ and the unlocalized name is “celsius”.
      *
      * @see #KELVIN
      *
      * @since 0.8
      */
-    public static final Unit<Temperature> CELSIUS = tec.units.ri.unit.Units.CELSIUS;
+    public static final Unit<Temperature> CELSIUS;
 
     /**
-     * Derived unit of measurement for speed (symbol “m/s”).
+     * The SI derived unit for frequency (Hz).
+     * One hertz is equal to one cycle per second.
+     * The unlocalized name is “hertz”.
      *
-     * @see #KILOMETRES_PER_HOUR
+     * @since 0.8
+     *
+     * @see #SECOND
+     */
+    public static final Unit<Frequency> HERTZ;
+
+    /**
+     * The base dimensionless unit for scale measurements.
+     * The unlocalized name is “unity” and the identifier is EPSG:9201.
+     * This is the base of all other {@linkplain #isScale(Unit) scale} units:
+     *
+     * {@link #PERCENT} (%),
+     * {@link #PPM} (ppm) and
+     * {@link #PIXEL} (px)
+     * among others.
      *
      * @since 0.8
      */
-    public static final Unit<Speed> METRES_PER_SECOND = tec.units.ri.unit.Units.METRES_PER_SECOND;
+    public static final Unit<Dimensionless> UNITY;
 
     /**
-     * Derived unit of measurement for speed (symbol “km/h”).
+     * Dimensionless unit for percentages (%).
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #UNITY}
+     * and the unlocalized name is “percentage”.
      *
-     * @see #METRES_PER_SECOND
-     *
-     * @since 0.8
-     */
-    public static final Unit<Speed> KILOMETRES_PER_HOUR = tec.units.ri.unit.Units.KILOMETRES_PER_HOUR;
-
-    /**
-     * Derived unit of measurement for area (symbol “m²”).
-     *
-     * @since 0.8
-     */
-    public static final Unit<Area> SQUARE_METRE = tec.units.ri.unit.Units.SQUARE_METRE;
-
-    /**
-     * Derived unit of measurement for area (symbol “m²”).
-     *
-     * @since 0.8
-     */
-    public static final Unit<Volume> CUBIC_METRE = tec.units.ri.unit.Units.CUBIC_METRE;
-
-    /**
-     * Dimensionless unit for scale measurements.
-     *
-     * @see #PERCENT
+     * @see #UNITY
      * @see #PPM
      *
      * @since 0.8
      */
-    public static final Unit<Dimensionless> ONE = tec.units.ri.AbstractUnit.ONE;
+    public static final Unit<Dimensionless> PERCENT;
 
     /**
-     * Dimensionless unit for percentages.
+     * Dimensionless unit for parts per million (ppm).
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #UNITY},
+     * the unlocalized name is “parts per million” and the identifier is EPSG:9202.
      *
-     * @see #ONE
-     * @see #PPM
-     *
-     * @since 0.8
-     */
-    public static final Unit<Dimensionless> PERCENT = tec.units.ri.unit.Units.PERCENT;
-
-    /**
-     * Dimensionless unit for parts per million.
-     *
-     * @see #ONE
+     * @see #UNITY
      * @see #PERCENT
      */
-    public static final Unit<Dimensionless> PPM = ONE.divide(1E+6);
+    public static final Unit<Dimensionless> PPM;
 
     /**
      * Salinity measured using PSS-78. While this is a dimensionless measurement, the {@code "psu"} symbol
      * is sometime added to PSS-78 measurement. However this is officially discouraged.
+     *
+     * <p>If we make this field public in a future SIS version, we should consider introducing a
+     * {@code Salinity} quantity type.</p>
      */
-    static final Unit<Dimensionless> PSU = ONE.alternate("psu");
+    static final Unit<Dimensionless> PSU;
 
     /**
      * Sigma-level, used in oceanography. This is a way to measure a depth as a fraction of the sea floor depth.
+     *
+     * <p>If we make this field public in a future SIS version, we should consider introducing a new quantity type.
+     * The type to introduce has not yet been determined.</p>
      */
-    static final Unit<Dimensionless> SIGMA = ONE.alternate("sigma");
+    static final Unit<Dimensionless> SIGMA;
 
     /**
-     * Dimensionless unit for pixels.
+     * Dimensionless unit for pixels (px).
+     * The unlocalized name is “pixel”.
+     *
+     * @see #POINT
      */
-    public static final Unit<Dimensionless> PIXEL = ONE.alternate("px");
+    public static final Unit<Dimensionless> PIXEL;
 
     static {
-        final javax.measure.format.UnitFormat format = tec.units.ri.format.SimpleUnitFormat.getInstance();
-        format.label(METRE,  "m");
-        format.label(FOOT,  "ft");
-        format.label(DEGREE, "°");
-        format.label(GRAD, "grad");
+        final UnitDimension L = new UnitDimension('L');     // Length
+        final UnitDimension M = new UnitDimension('M');     // Mass
+        final UnitDimension T = new UnitDimension('T');     // Time
+        final UnitDimension Θ = new UnitDimension('Θ');     // Temperature
+        final UnitDimension Z = UnitDimension.NONE;         // Dimensionless
+        /*
+         * All base units except the ones for the Dimensionless quantity.
+         */
+        final SystemUnit<Angle>  rad = new SystemUnit<>(Angle.class,  Z, "rad", (short) 9101);
+        final SystemUnit<Length> m   = new SystemUnit<>(Length.class, L, "m",   Constants.EPSG_METRE);
+        final SystemUnit<Time>   s   = new SystemUnit<>(Time.class,   T, "s",   (short) 1040);
+        /*
+         * All SI prefix to be used below.
+         */
+        final LinearConverter nano  = LinearConverter.scale(1, 1000000000);
+        final LinearConverter micro = LinearConverter.scale(1,    1000000);
+        final LinearConverter milli = LinearConverter.scale(1,       1000);
+        final LinearConverter centi = LinearConverter.scale(1,        100);
+        final LinearConverter hecto = LinearConverter.scale(100,        1);
+        final LinearConverter kilo  = LinearConverter.scale(1000,       1);
+        /*
+         * All Unit<Angle>
+         */
+        RADIAN      = add(rad);
+        GRAD        = new ConventionalUnit<>(rad, LinearConverter.create(Math.PI /  200, 0),     "grad", (short) 9105);
+        DEGREE      = new ConventionalUnit<>(rad, LinearConverter.create(Math.PI /  180, 0),        "°", (short) 9102);
+        ARC_MINUTE  = new ConventionalUnit<>(rad, LinearConverter.create(Math.PI / (180*60),    0), "′", (short) 9103);
+        ARC_SECOND  = new ConventionalUnit<>(rad, LinearConverter.create(Math.PI / (180*60*60), 0), "″", (short) 9104);
+        MICRORADIAN = new ConventionalUnit<>(rad, micro, "µrad", (short) 9109);
+        /*
+         * All Unit<Length>
+         */
+        METRE          = add(m);
+        NANOMETRE      = new ConventionalUnit<>(m, nano,  "nm", (short) 0);
+        MILLIMETRE     = new ConventionalUnit<>(m, milli, "mm", (short) 1025);
+        CENTIMETRE     = new ConventionalUnit<>(m, centi, "cm", (short) 1033);
+        KILOMETRE      = new ConventionalUnit<>(m, kilo,  "km", (short) 9036);
+        NAUTICAL_MILE  = new ConventionalUnit<>(m, LinearConverter.scale(   1852,        1), "M",     (short) 9030);
+        STATUTE_MILE   = new ConventionalUnit<>(m, LinearConverter.scale(1609344,      100), "mi",    (short) 9093);
+        US_SURVEY_FOOT = new ConventionalUnit<>(m, LinearConverter.scale(   1200,     3937), "ft_US", (short) 9003);
+        FOOT           = new ConventionalUnit<>(m, LinearConverter.scale(   3048,    10000), "ft",    (short) 9002);
+        INCH           = new ConventionalUnit<>(m, LinearConverter.scale(    254,    10000), "in",    (short) 0);
+        POINT          = new ConventionalUnit<>(m, LinearConverter.scale( 996264, 72000000), "pt",    (short) 0);
+        /*
+         * All Unit<Time>
+         */
+        SECOND         = add(s);
+        MILLISECOND    = new ConventionalUnit<>(s, milli, "ms", (short) 0);
+        MINUTE         = new ConventionalUnit<>(s, LinearConverter.scale(         60,      1), "min", (short) 0);
+        HOUR           = new ConventionalUnit<>(s, LinearConverter.scale(      60*60,      1), "h",   (short) 0);
+        DAY            = new ConventionalUnit<>(s, LinearConverter.scale(   24*60*60,      1), "d",   (short) 0);
+        WEEK           = new ConventionalUnit<>(s, LinearConverter.scale( 7*24*60*60,      1), "wk",  (short) 0);
+        TROPICAL_YEAR  = new ConventionalUnit<>(s, LinearConverter.scale(31556925445.0, 1000), "a",   (short) 1029);
+        /*
+         * All Unit<Mass>
+         */
+        KILOGRAM = add(new SystemUnit<>(Mass.class, Z, "kg", (short) 0));
+        /*
+         * Derived units
+         */
+        final UnitDimension area   = L.pow(2);
+        final UnitDimension speed  = L.divide(T);
+        final UnitDimension force  = M.multiply(speed).divide(T);
+        final UnitDimension energy = force.multiply(L);
+        final SystemUnit<Temperature> K;
+        final SystemUnit<Pressure> Pa;
+        final SystemUnit<Speed> mps;
+        PASCAL              = add(Pa =  new SystemUnit<>(Pressure.class,    force.divide(area), "Pa",   (short) 0));
+        SQUARE_METRE        = add(      new SystemUnit<>(Area.class,        area,               "m²",   (short) 0));
+        CUBIC_METRE         = add(      new SystemUnit<>(Volume.class,      L.pow(3),           "m³",   (short) 0));
+        METRES_PER_SECOND   = add(mps = new SystemUnit<>(Speed.class,       speed,              "m∕s",  (short) 1026));
+        NEWTON              = add(      new SystemUnit<>(Force.class,       force,              "N",    (short) 0));
+        JOULE               = add(      new SystemUnit<>(Energy.class,      energy,             "J",    (short) 0));
+        WATT                = add(      new SystemUnit<>(Power.class,       energy.divide(T),   "W",    (short) 0));
+        KELVIN              = add(K =   new SystemUnit<>(Temperature.class, Θ,                  "K",    (short) 0));
+        HERTZ               = add(      new SystemUnit<>(Frequency.class,   T.pow(-1),          "Hz",   (short) 0));
+        HECTOPASCAL         = new ConventionalUnit<>(Pa,  hecto,                                "hPa",  (short) 0);
+        KILOMETRES_PER_HOUR = new ConventionalUnit<>(mps, LinearConverter.scale(6, 100),        "km∕h", (short) 0);
+        CELSIUS             = new ConventionalUnit<>(K,   LinearConverter.create(1, 273.15),    "℃",    (short) 0);
+        /*
+         * All Unit<Dimensionless>
+         */
+        final SystemUnit<Dimensionless> one = new SystemUnit<>(Dimensionless.class, Z, "", (short) 9201);
+        PERCENT = new ConventionalUnit<>(one, centi, "%",   (short) 0);
+        PPM     = new ConventionalUnit<>(one, micro, "ppm", (short) 9202);
+        PSU     = new SystemUnit<>(Dimensionless.class, Z, "psu",   (short) 0);
+        SIGMA   = new SystemUnit<>(Dimensionless.class, Z, "sigma", (short) 0);
+        PIXEL   = new SystemUnit<>(Dimensionless.class, Z, "px",    (short) 0);
+        UNITY   = add(one);     // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
+    }
+
+    /**
+     * Invoked by {@code Units} static class initializer for registering SI base and derived units.
+     * We do not synchronize that method on the assumption that {@link #SYSTEM} map will be fully
+     * populated in a single thread by the {@code Units} class initializer, then never modified.
+     */
+    private static <Q extends Quantity<Q>> SystemUnit<Q> add(final SystemUnit<Q> unit) {
+        SYSTEM.put(unit.dimension, unit);
+        if (SYSTEM.put(unit.quantity, unit) != null) {
+            throw new AssertionError();                 // Shall not map the same dimension twice.
+        }
+        return unit;
     }
 
     /**
@@ -525,7 +763,7 @@ public final class Units extends Static {
      * Linear units are convertible to {@link #DEGREE}.
      *
      * <p>Angular units are dimensionless, which may be a cause of confusion with other
-     * dimensionless units like {@link #ONE} or {@link #PPM}. This method take care
+     * dimensionless units like {@link #UNITY} or {@link #PPM}. This method take care
      * of differentiating angular units from other dimensionless units.</p>
      *
      * @param  unit  the unit to check (may be {@code null}).
@@ -544,6 +782,7 @@ public final class Units extends Static {
      * @param  unit  the unit to check (may be {@code null}).
      * @return {@code true} if the given unit is non-null and linear.
      *
+     * @see #METRE
      * @see #ensureLinear(Unit)
      */
     public static boolean isLinear(final Unit<?> unit) {
@@ -577,15 +816,16 @@ public final class Units extends Static {
 
     /**
      * Returns {@code true} if the given unit is a dimensionless scale unit.
-     * This include {@link Unit#ONE} and {@link #PPM}.
+     * This include {@link #UNITY} and {@link #PPM}.
      *
      * @param  unit  the unit to check (may be {@code null}).
      * @return {@code true} if the given unit is non-null and a dimensionless scale.
      *
+     * @see #UNITY
      * @see #ensureScale(Unit)
      */
     public static boolean isScale(final Unit<?> unit) {
-        return (unit != null) && unit.getSystemUnit().equals(ONE);
+        return (unit != null) && unit.getSystemUnit().equals(UNITY);
     }
 
     /**
@@ -693,7 +933,7 @@ public final class Units extends Static {
                 return (Unit<Q>) FOOT;
             }
             if (abs(factor - (1200.0/3937)) <= (EPS * (1200.0/3937))) {
-                return (Unit<Q>) FOOT_SURVEY_US;
+                return (Unit<Q>) US_SURVEY_FOOT;
             }
         }
         if (abs(factor - 1) > EPS) {
@@ -814,11 +1054,14 @@ public final class Units extends Static {
      *     </table></td>
      *     <td class="sep"><table class="compact" summary="Linear units">
      *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
+     *       <tr><td>1025</td><td>millimetre</td></tr>
+     *       <tr><td>1033</td><td>centimetre</td></tr>
      *       <tr><td>9001</td><td>metre</td></tr>
      *       <tr><td>9002</td><td>foot</td></tr>
      *       <tr><td>9003</td><td>US survey foot</td></tr>
      *       <tr><td>9030</td><td>nautical mile</td></tr>
      *       <tr><td>9036</td><td>kilometre</td></tr>
+     *       <tr><td>9093</td><td>statute mile</td></tr>
      *     </table></td>
      *     <td class="sep"><table class="compact" summary="Time units">
      *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
@@ -827,9 +1070,9 @@ public final class Units extends Static {
      *     </table></td>
      *     <td class="sep"><table class="compact" summary="Scale units">
      *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
-     *       <tr><td>9201</td><td>one</td></tr>
-     *       <tr><td>9202</td><td>part per million</td></tr>
-     *       <tr><td>9203</td><td>one</td></tr>
+     *       <tr><td>9201</td><td>unity</td></tr>
+     *       <tr><td>9202</td><td>parts per million</td></tr>
+     *       <tr><td>9203</td><td>unity</td></tr>
      *     </table></td>
      *   </tr>
      * </table>
@@ -850,10 +1093,10 @@ public final class Units extends Static {
             case Constants.EPSG_AXIS_DEGREES:   return DEGREE;
             case Constants.EPSG_METRE:          return METRE;
 
-            case 1029: return YEAR;
+            case 1029: return TROPICAL_YEAR;
             case 1040: return SECOND;
             case 9002: return FOOT;
-            case 9003: return FOOT_SURVEY_US;
+            case 9003: return US_SURVEY_FOOT;
             case 9030: return NAUTICAL_MILE;
             case 9036: return KILOMETRE;
             case 9101: return RADIAN;
@@ -866,7 +1109,7 @@ public final class Units extends Static {
             case 9110: return SexagesimalConverter.DMS;
             case 9111: return SexagesimalConverter.DM;
             case 9203: // Fall through
-            case 9201: return ONE;
+            case 9201: return UNITY;
             case 9202: return PPM;
             default:   return null;
         }

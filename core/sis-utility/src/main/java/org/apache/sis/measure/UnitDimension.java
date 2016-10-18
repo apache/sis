@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectStreamException;
@@ -79,7 +78,10 @@ final class UnitDimension implements Dimension, Serializable {
     /**
      * Pseudo-dimension for dimensionless units.
      */
-    private static final UnitDimension NONE = new UnitDimension(Collections.emptyMap());
+    static final UnitDimension NONE = new UnitDimension(Collections.emptyMap());
+    static {
+        POOL.put(NONE.components, NONE);
+    }
 
     /**
      * The product of base dimensions that make this dimension. All keys in this map shall be base dimensions
@@ -216,10 +218,7 @@ final class UnitDimension implements Dimension, Serializable {
      */
     @Override
     public UnitDimension multiply(final Dimension multiplicand) {
-        return combine(multiplicand, (sum, toAdd) -> {
-            sum = sum.add(toAdd);
-            return (sum.numerator != 0) ? sum : null;
-        });
+        return combine(multiplicand, false);
     }
 
     /**
@@ -230,10 +229,7 @@ final class UnitDimension implements Dimension, Serializable {
      */
     @Override
     public UnitDimension divide(final Dimension divisor) {
-        return combine(divisor, (sum, toRemove) -> {
-            sum = sum.subtract(toRemove);
-            return (sum.numerator != 0) ? sum : null;
-        });
+        return combine(divisor, true);
     }
 
     /**
@@ -243,13 +239,19 @@ final class UnitDimension implements Dimension, Serializable {
      * @param  mapping the operation to apply between the powers of {@code this} and {@code other} dimensions.
      * @return the product of this dimension by the given dimension raised to the given power.
      */
-    private UnitDimension combine(final Dimension other, final BiFunction<Fraction, Fraction, Fraction> mapping) {
+    private UnitDimension combine(final Dimension other, final boolean divide) {
         final Map<UnitDimension,Fraction> product = new LinkedHashMap<>(components);
         for (final Map.Entry<? extends Dimension, Fraction> entry : getBaseDimensions(other).entrySet()) {
             final Dimension dim = entry.getKey();
-            final Fraction p = entry.getValue();
+            Fraction p = entry.getValue();
+            if (divide) {
+                p = p.negate();
+            }
             if (dim instanceof UnitDimension) {
-                product.merge((UnitDimension) dim, p, mapping);
+                product.merge((UnitDimension) dim, p, (sum, toAdd) -> {
+                    sum = sum.add(toAdd);
+                    return (sum.numerator != 0) ? sum : null;
+                });
             } else if (p.numerator != 0) {
                 throw new UnsupportedImplementationException(Errors.format(Errors.Keys.UnsupportedImplementation_1, dim.getClass()));
             }

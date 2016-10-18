@@ -398,10 +398,10 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         assertEquals("Z",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_Z,     Units.METRE));
         assertEquals("D",   AxisDirections.suggestAbbreviation("not needed",             DOWN,             Units.METRE));
         assertEquals("t",   AxisDirections.suggestAbbreviation("not needed",             FUTURE,           Units.DAY));
-        assertEquals("i",   AxisDirections.suggestAbbreviation("not needed",             COLUMN_NEGATIVE,  Units.ONE));
-        assertEquals("j",   AxisDirections.suggestAbbreviation("not needed",             ROW_NEGATIVE,     Units.ONE));
-        assertEquals("x",   AxisDirections.suggestAbbreviation("not needed",             DISPLAY_RIGHT,    Units.ONE));
-        assertEquals("y",   AxisDirections.suggestAbbreviation("not needed",             DISPLAY_DOWN,     Units.ONE));
+        assertEquals("i",   AxisDirections.suggestAbbreviation("not needed",             COLUMN_NEGATIVE,  Units.UNITY));
+        assertEquals("j",   AxisDirections.suggestAbbreviation("not needed",             ROW_NEGATIVE,     Units.UNITY));
+        assertEquals("x",   AxisDirections.suggestAbbreviation("not needed",             DISPLAY_RIGHT,    Units.UNITY));
+        assertEquals("y",   AxisDirections.suggestAbbreviation("not needed",             DISPLAY_DOWN,     Units.UNITY));
         assertEquals("N",   AxisDirections.suggestAbbreviation("not needed",             NORTH,            Units.METRE));
         assertEquals("S",   AxisDirections.suggestAbbreviation("not needed",             SOUTH,            Units.METRE));
         assertEquals("E",   AxisDirections.suggestAbbreviation("not needed",             EAST,             Units.METRE));

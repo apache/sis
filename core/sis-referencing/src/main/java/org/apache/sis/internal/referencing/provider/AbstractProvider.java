@@ -174,7 +174,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * Creates a descriptor for a scale parameter with a default value of 1.
      */
     static ParameterDescriptor<Double> createScale(final ParameterBuilder builder) {
-        return builder.createStrictlyPositive(1.0, Units.ONE);
+        return builder.createStrictlyPositive(1.0, Units.UNITY);
     }
 
     /**

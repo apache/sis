@@ -72,6 +72,11 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     private static final long serialVersionUID = -3064428584419360693L;
 
     /**
+     * The resource bundles for {@linkplain AbstractUnit#getName() unit names}.
+     */
+    static final String RESOURCES = "org.apache.sis.measure.UnitNames";
+
+    /**
      * The suffixes that NetCDF files sometime put after the "degrees" unit.
      * Suffix at even index are for axes having the standard geometric direction,
      * while suffix at odd index are for axes having the reverse direction.
@@ -185,13 +190,13 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
              * If we invoke this method for other purposes, then we would need to provide more control on
              * what kind of formatting is desired.
              */
-            if (Units.ONE.equals(unit)) {
+            if (Units.UNITY.equals(unit)) {
                 return toAppendTo.append("unity");
             } else if (Units.DEGREE.equals(unit)) {
                 return toAppendTo.append("degree");
             } else if (Units.METRE.equals(unit)) {
                 return toAppendTo.append(isLocaleUS ? "meter" : "metre");
-            } else if (Units.FOOT_SURVEY_US.equals(unit)) {
+            } else if (Units.US_SURVEY_FOOT.equals(unit)) {
                 return toAppendTo.append("US survey foot");
             } else if (Units.PPM.equals(unit)) {
                 return toAppendTo.append("parts per million");
@@ -426,8 +431,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
             if (equalsIgnorePlural(uom, "grade"))       return Units.GRAD;
             if (equalsIgnorePlural(uom, "grad"))        return Units.GRAD;
             if (isCelsius(uom))                         return Units.CELSIUS;
-            if (uom.isEmpty())                          return Units.ONE;
-            if (uom.equalsIgnoreCase("US survey foot")) return Units.FOOT_SURVEY_US;
+            if (uom.isEmpty())                          return Units.UNITY;
+            if (uom.equalsIgnoreCase("US survey foot")) return Units.US_SURVEY_FOOT;
             if (uom.equalsIgnoreCase("ppm"))            return Units.PPM;
             if (uom.equalsIgnoreCase("psu"))            return Units.PSU;
             if (uom.equalsIgnoreCase("sigma"))          return Units.SIGMA;

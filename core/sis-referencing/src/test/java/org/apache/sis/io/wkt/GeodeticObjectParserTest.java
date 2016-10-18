@@ -568,7 +568,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("semi_major",   6378137.0, param.parameter("semi_major"      ).doubleValue(Units.METRE),  STRICT);
         assertEquals("semi_minor",   6356752.3, param.parameter("semi_minor"      ).doubleValue(Units.METRE),  0.1);
         assertEquals("central_meridian", -20.0, param.parameter("central_meridian").doubleValue(Units.DEGREE), STRICT);
-        assertEquals("scale_factor",       1.0, param.parameter("scale_factor"    ).doubleValue(Units.ONE),    STRICT);
+        assertEquals("scale_factor",       1.0, param.parameter("scale_factor"    ).doubleValue(Units.UNITY),    STRICT);
         assertEquals("false_easting", 500000.0, param.parameter("false_easting"   ).doubleValue(Units.METRE),  STRICT);
         assertEquals("false_northing",     0.0, param.parameter("false_northing"  ).doubleValue(Units.METRE),  STRICT);
     }
@@ -654,7 +654,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertNameAndIdentifierEqual("TransverseMercator", 0, crs);
         assertNameAndIdentifierEqual("Sphere", 0, crs.getBaseCRS());
         assertNameAndIdentifierEqual("Sphere", 0, crs.getDatum());
-        verifyProjectedCS(crs.getCoordinateSystem(), Units.FOOT_SURVEY_US);
+        verifyProjectedCS(crs.getCoordinateSystem(), Units.US_SURVEY_FOOT);
 
         final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
         assertEquals("Transverse Mercator", crs.getConversionFromBase().getMethod().getName().getCode());
@@ -803,7 +803,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("semi_major",     6378249.2, param.parameter("semi_major"      ).doubleValue(Units.METRE),  STRICT);
         assertEquals("semi_minor",     6356515.0, param.parameter("semi_minor"      ).doubleValue(Units.METRE),  1E-12);
         assertEquals("central_meridian",     0.0, param.parameter("central_meridian").doubleValue(Units.DEGREE), STRICT);
-        assertEquals("scale_factor",  0.99987742, param.parameter("scale_factor"    ).doubleValue(Units.ONE),    STRICT);
+        assertEquals("scale_factor",  0.99987742, param.parameter("scale_factor"    ).doubleValue(Units.UNITY),    STRICT);
         assertEquals("false_easting",   600000.0, param.parameter("false_easting"   ).doubleValue(Units.METRE),  STRICT);
         assertEquals("false_northing", 2200000.0, param.parameter("false_northing"  ).doubleValue(Units.METRE),  STRICT);
         return param.parameter("latitude_of_origin");
@@ -868,7 +868,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("semi_minor",        6356515.0, param.parameter("semi_minor"        ).doubleValue(Units.METRE),  1E-12);
         assertEquals("latitude_of_origin",     44.1, param.parameter("latitude_of_origin").doubleValue(Units.DEGREE), STRICT);
         assertEquals("central_meridian", 2.33722917, param.parameter("central_meridian"  ).doubleValue(Units.DEGREE), STRICT);
-        assertEquals("scale_factor",    0.999877499, param.parameter("scale_factor"      ).doubleValue(Units.ONE),    STRICT);
+        assertEquals("scale_factor",    0.999877499, param.parameter("scale_factor"      ).doubleValue(Units.UNITY),    STRICT);
         assertEquals("false_easting",      600000.0, param.parameter("false_easting"     ).doubleValue(Units.METRE),  STRICT);
         assertEquals("false_northing",     200000.0, param.parameter("false_northing"    ).doubleValue(Units.METRE),  STRICT);
     }

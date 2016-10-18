@@ -149,7 +149,7 @@ public final class Measure {
                 return DefinitionURI.PREFIX + ":uom:" + Constants.EPSG + "::" + code;
             }
         }
-        if (unit == null || unit.equals(Units.ONE)) {
+        if (unit == null || unit.equals(Units.UNITY)) {
             return "";
         }
         return Context.schema(Context.current(), "gmd", Schemas.METADATA_ROOT).append(Schemas.UOM_PATH)
@@ -187,7 +187,7 @@ public final class Measure {
      *
      * <div class="note"><b>Example:</b>
      * Some users wrongly assign the "m" unit to {@code Ellipsoid.inverseFlattening}.
-     * The SIS adapter forces the unit to {@link Unit#ONE}, but we want to let the user
+     * The SIS adapter forces the unit to {@link Units#UNITY}, but we want to let the user
      * know that he probably did something wrong.</div>
      *
      * @param  newUnit The new unit (can not be null).

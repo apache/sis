@@ -18,6 +18,8 @@ package org.apache.sis.measure;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.ResourceBundle;
+import java.util.MissingResourceException;
 import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.Quantity;
@@ -66,17 +68,12 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      * <p>Users can override this symbol by call to {@link UnitFormat#label(Unit, String)},
      * but such overriding applies only to the target {@code UnitFormat} instance.</p>
      *
+     * <p>The value given assigned to this field is also used by {@link #getName()}
+     * for fetching a localized name from the resource bundle.</p>
+     *
      * @see #getSymbol()
      */
     private final String symbol;
-
-    /**
-     * The unit name, or {@code null} if this unit has no specific name. If this unit exists
-     * in the EPSG database, then the value should be the name as specified in the database.
-     *
-     * @see #getName()
-     */
-    private final String name;
 
     /**
      * The EPSG code, or 0 if this unit has no EPSG code.
@@ -86,12 +83,10 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     /**
      * Creates a new unit having the given symbol and EPSG code.
      *
-     * @param  name    the unit name,   or {@code null} if this unit has no specific name.
      * @param  symbol  the unit symbol, or {@code null} if this unit has no specific symbol.
      * @param  epsg    the EPSG code,   or 0 if this unit has no EPSG code.
      */
-    AbstractUnit(final String name, final String symbol, final short epsg) {
-        this.name   = name;
+    AbstractUnit(final String symbol, final short epsg) {
         this.symbol = symbol;
         this.epsg   = epsg;
     }
@@ -123,7 +118,11 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      */
     @Override
     public final String getName() {
-        return name;
+        try {
+            return ResourceBundle.getBundle(UnitFormat.RESOURCES).getString(symbol);
+        } catch (MissingResourceException e) {
+            return null;
+        }
     }
 
     /**
@@ -224,7 +223,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     public boolean equals(final Object other) {
         if (other != null && other.getClass() == getClass()) {
             final AbstractUnit<?> that = (AbstractUnit<?>) other;
-            return epsg == that.epsg && Objects.equals(symbol, that.symbol) && Objects.equals(name, that.name);
+            return epsg == that.epsg && Objects.equals(symbol, that.symbol);
         }
         return false;
     }

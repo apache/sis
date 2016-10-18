@@ -70,9 +70,7 @@ final class UnitsMap extends Static {
      */
     private static final Map<Unit<?>,Unit<?>> COMMONS = new HashMap<>(48);
     static {
-        COMMONS.put(MILLISECOND, MILLISECOND);
-        COMMONS.put(tec.units.ri.AbstractUnit.ONE, tec.units.ri.AbstractUnit.ONE);
-        for (final Field field : tec.units.ri.unit.Units.class.getFields()) {
+        for (final Field field : Units.class.getFields()) {
             final int modifiers = field.getModifiers();
             if (Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)) {
                 final Object value;

@@ -82,7 +82,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *              .createBounded(-180, +180, 0, Units.DEGREE),  // Projection is valid on all the longitude range (±180°).
  *
  *       builder.addName("Scale factor at natural origin")
- *              .createStrictlyPositive(1, Units.ONE),
+ *              .createStrictlyPositive(1, Units.UNITY),
  *
  *       builder.addName("False easting")
  *              .create(0, Units.METRE),

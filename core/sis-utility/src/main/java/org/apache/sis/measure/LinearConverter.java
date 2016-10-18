@@ -92,6 +92,16 @@ final class LinearConverter implements UnitConverter, Serializable {
     }
 
     /**
+     * Returns a linear converter for the given ratio. The scale factor is specified as a ratio because
+     * the unit conversion factors are defined with a value which is exact in base 10.
+     *
+     * @todo modify the {@code LinearConverter} implementation for storing the ratio.
+     */
+    static LinearConverter scale(final double numerator, final double denominator) {
+        return new LinearConverter(numerator / denominator, 0);
+    }
+
+    /**
      * Raises the given converter to the given power. This method assumes that the given converter
      * {@linkplain #isLinear() is linear} (this is not verified) and take only the scale factor;
      * the offset (if any) is ignored.
