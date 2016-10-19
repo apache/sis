@@ -136,15 +136,14 @@ public final strictfp class UnitDimensionTest extends TestCase {
     /**
      * Tests {@link UnitDimension#getBaseDimensions()}. This method indirectly tests the results
      * of {@link UnitDimension#multiply(Dimension)}, {@link UnitDimension#divide(Dimension)} and
-     * {@link UnitDimension#pow(int)} since this tests use constant that were created with above
+     * {@link UnitDimension#pow(int)} since this test uses constants that were created with above
      * operations.
      */
     @Test
     public void testGetBaseDimensions() {
-        assertNull("METRE",  LENGTH       .getBaseDimensions());
-        assertNull("SECOND", TIME         .getBaseDimensions());
-        assertTrue("UNITY",  DIMENSIONLESS.getBaseDimensions().isEmpty());
-
+        assertNull("LENGTH",        LENGTH       .getBaseDimensions());
+        assertNull("TIME",          TIME         .getBaseDimensions());
+        assertTrue("DIMENSIONLESS", DIMENSIONLESS.getBaseDimensions().isEmpty());
         assertMapEquals(Collections.singletonMap(LENGTH, 3), VOLUME.getBaseDimensions());
 
         final Map<Dimension,Integer> expected = new HashMap<>(4);
@@ -196,10 +195,9 @@ public final strictfp class UnitDimensionTest extends TestCase {
     @Test
     @DependsOnMethod("testEqualsAndHashCode")
     public void testSerialization() {
-        Dimension dim;
-        assertSame(dim = Units.METRE .getDimension(), assertSerializedEquals(dim));
-        assertSame(dim = Units.SECOND.getDimension(), assertSerializedEquals(dim));
-        assertSame(dim = Units.NEWTON.getDimension(), assertSerializedEquals(dim));
-        assertSame(dim = Units.UNITY .getDimension(), assertSerializedEquals(dim));
+        assertSame(LENGTH,        assertSerializedEquals(LENGTH));
+        assertSame(TIME,          assertSerializedEquals(TIME));
+        assertSame(FORCE,         assertSerializedEquals(FORCE));
+        assertSame(DIMENSIONLESS, assertSerializedEquals(DIMENSIONLESS));
     }
 }

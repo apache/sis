@@ -237,9 +237,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
              */
             final Class<?> c = ((SystemUnit<Q>) other).quantity;
             if (c != null) {
-                final boolean status = (quantity == c);
-                assert status == dimension.equals(other.getDimension()) : this;
-                return status;
+                return (quantity == c);
             }
         }
         /*
@@ -427,5 +425,13 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     @Override
     public int hashCode() {
         return super.hashCode() + 37 * dimension.hashCode();
+    }
+
+    /**
+     * Invoked on deserialization for returning a unique instance of {@code SystemUnit}.
+     */
+    Object readResolve() throws ObjectStreamException {
+        final SystemUnit<Q> u = Units.get(quantity);
+        return (u != null) ? u : this;
     }
 }

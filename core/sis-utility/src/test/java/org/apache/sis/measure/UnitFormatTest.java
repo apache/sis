@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @module
  */
-@DependsOn(UnitDimensionTest.class)
+@DependsOn(SystemUnitTest.class)
 public final strictfp class UnitFormatTest extends TestCase {
     /**
      * Verifies all constants defined in {@link Units} class. This method verifies:
