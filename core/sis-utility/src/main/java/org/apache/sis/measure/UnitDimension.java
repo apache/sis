@@ -79,9 +79,7 @@ final class UnitDimension implements Dimension, Serializable {
      * Pseudo-dimension for dimensionless units.
      */
     static final UnitDimension NONE = new UnitDimension(Collections.emptyMap());
-    static {
-        POOL.put(NONE.components, NONE);
-    }
+    // No need to store in the POOL cache since UnitDimension performs special checks for dimensionless instances.
 
     /**
      * The product of base dimensions that make this dimension. All keys in this map shall be base dimensions
@@ -114,8 +112,8 @@ final class UnitDimension implements Dimension, Serializable {
     }
 
     /**
-     * Creates a new derived dimension. This constructor shall never be invoked directly;
-     * use {@link #create(Map)} instead.
+     * Creates a new derived dimension. This constructor shall never be invoked directly
+     * (except for {@link #NONE}); use {@link #create(Map)} instead.
      *
      * @param  components  the product of base dimensions together with their power.
      */
@@ -135,10 +133,9 @@ final class UnitDimension implements Dimension, Serializable {
             case 0: return NONE;
             case 1: {
                 final Map.Entry<UnitDimension,Fraction> entry = components.entrySet().iterator().next();
-                final UnitDimension base = entry.getKey();
                 final Fraction power = entry.getValue();
                 if (power.numerator == 1 && power.denominator == 1) {
-                    return base;
+                    return entry.getKey();
                 }
                 break;
             }
@@ -164,6 +161,7 @@ final class UnitDimension implements Dimension, Serializable {
      * Invoked on deserialization for returning a unique instance of {@code UnitDimension}.
      */
     Object readResolve() throws ObjectStreamException {
+        if (isDimensionless()) return NONE;
         final UnitDimension dim = POOL.putIfAbsent(components, this);
         return (dim != null) ? dim : this;
     }
@@ -316,7 +314,7 @@ final class UnitDimension implements Dimension, Serializable {
                  * Do not compare 'components' if 'symbols' is non-zero because in such case
                  * the components map contains 'this', which would cause an infinite loop.
                  */
-                return (symbol == 0) || components.equals(that.components);
+                return (symbol != 0) || components.equals(that.components);
             }
         }
         return false;
