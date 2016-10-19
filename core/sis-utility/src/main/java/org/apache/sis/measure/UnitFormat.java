@@ -277,6 +277,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 } else {
                     toAppendTo.append("^(").append(t).append(')');
                 }
+                return;
             }
             n = f.numerator;
         } else {

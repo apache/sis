@@ -53,7 +53,7 @@ import static org.apache.sis.measure.SexagesimalConverter.EPS;
  * This class focuses on the most commonly used units in the geospatial domain:
  * angular units ({@linkplain #DEGREE degree}, {@linkplain #ARC_SECOND arc-second}, …),
  * linear units ({@linkplain #KILOMETRE kilometre}, {@linkplain #NAUTICAL_MILE nautical mile}, …) and
- * temporal units ({@linkplain #DAY day}, {@linkplain #YEAR year}, …).
+ * temporal units ({@linkplain #DAY day}, {@linkplain #TROPICAL_YEAR year}, …).
  * But some other kind of units are also provided for completeness.
  *
  * <p>All Units of Measurement are based on units from the International System (SI).
@@ -73,7 +73,8 @@ import static org.apache.sis.measure.SexagesimalConverter.EPS;
  * </table>
  *
  * Unit names and definitions in this class follow the definitions provided in the EPSG geodetic dataset
- * (when the unit exists in that dataset).
+ * (when the unit exists in that dataset),
+ * except “year” which has been renamed “{@linkplain #TROPICAL_YEAR tropical year}”.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
@@ -507,7 +508,7 @@ public final class Units extends Static {
     public static final Unit<Speed> METRES_PER_SECOND;
 
     /**
-     * Unit of measurement defined as 60/1000 metres per second (1 “km/h”).
+     * Unit of measurement defined as 60/1000 metres per second (1 km/h).
      * The unlocalized name is “kilometres per hour”.
      *
      * @see #KILOMETRE
@@ -648,17 +649,26 @@ public final class Units extends Static {
     public static final Unit<Dimensionless> PIXEL;
 
     static {
-        final UnitDimension L = new UnitDimension('L');     // Length
-        final UnitDimension M = new UnitDimension('M');     // Mass
-        final UnitDimension T = new UnitDimension('T');     // Time
-        final UnitDimension Θ = new UnitDimension('Θ');     // Temperature
-        final UnitDimension Z = UnitDimension.NONE;         // Dimensionless
+        final UnitDimension length        = new UnitDimension('L');
+        final UnitDimension mass          = new UnitDimension('M');
+        final UnitDimension time          = new UnitDimension('T');
+        final UnitDimension temperature   = new UnitDimension('Θ');
+        final UnitDimension area          = length.pow(2);
+        final UnitDimension speed         = length.divide(time);
+        final UnitDimension force         = mass.multiply(speed).divide(time);
+        final UnitDimension energy        = force.multiply(length);
+        final UnitDimension pressure      = force.divide(area);
+        final UnitDimension dimensionless = UnitDimension.NONE;
         /*
-         * All base units except the ones for the Dimensionless quantity.
+         * Base, derived or alternate units that we need to reuse more than once in this static initializer.
          */
-        final SystemUnit<Angle>  rad = new SystemUnit<>(Angle.class,  Z, "rad", (short) 9101);
-        final SystemUnit<Length> m   = new SystemUnit<>(Length.class, L, "m",   Constants.EPSG_METRE);
-        final SystemUnit<Time>   s   = new SystemUnit<>(Time.class,   T, "s",   (short) 1040);
+        final SystemUnit<Length>        m   = new SystemUnit<>(Length.class,        length,        "m",   Constants.EPSG_METRE);
+        final SystemUnit<Time>          s   = new SystemUnit<>(Time.class,          time,          "s",   (short) 1040);
+        final SystemUnit<Temperature>   K   = new SystemUnit<>(Temperature.class,   temperature,   "K",   (short) 0);
+        final SystemUnit<Speed>         mps = new SystemUnit<>(Speed.class,         speed,         "m∕s", (short) 1026);
+        final SystemUnit<Pressure>      Pa  = new SystemUnit<>(Pressure.class,      pressure,      "Pa",  (short) 0);
+        final SystemUnit<Angle>         rad = new SystemUnit<>(Angle.class,         dimensionless, "rad", (short) 9101);
+        final SystemUnit<Dimensionless> one = new SystemUnit<>(Dimensionless.class, dimensionless, "",    (short) 9201);
         /*
          * All SI prefix to be used below.
          */
@@ -702,41 +712,30 @@ public final class Units extends Static {
         WEEK           = new ConventionalUnit<>(s, LinearConverter.scale( 7*24*60*60,      1), "wk",  (short) 0);
         TROPICAL_YEAR  = new ConventionalUnit<>(s, LinearConverter.scale(31556925445.0, 1000), "a",   (short) 1029);
         /*
-         * All Unit<Mass>
+         * Other units.
          */
-        KILOGRAM = add(new SystemUnit<>(Mass.class, Z, "kg", (short) 0));
-        /*
-         * Derived units
-         */
-        final UnitDimension area   = L.pow(2);
-        final UnitDimension speed  = L.divide(T);
-        final UnitDimension force  = M.multiply(speed).divide(T);
-        final UnitDimension energy = force.multiply(L);
-        final SystemUnit<Temperature> K;
-        final SystemUnit<Pressure> Pa;
-        final SystemUnit<Speed> mps;
-        PASCAL              = add(Pa =  new SystemUnit<>(Pressure.class,    force.divide(area), "Pa",   (short) 0));
-        SQUARE_METRE        = add(      new SystemUnit<>(Area.class,        area,               "m²",   (short) 0));
-        CUBIC_METRE         = add(      new SystemUnit<>(Volume.class,      L.pow(3),           "m³",   (short) 0));
-        METRES_PER_SECOND   = add(mps = new SystemUnit<>(Speed.class,       speed,              "m∕s",  (short) 1026));
-        NEWTON              = add(      new SystemUnit<>(Force.class,       force,              "N",    (short) 0));
-        JOULE               = add(      new SystemUnit<>(Energy.class,      energy,             "J",    (short) 0));
-        WATT                = add(      new SystemUnit<>(Power.class,       energy.divide(T),   "W",    (short) 0));
-        KELVIN              = add(K =   new SystemUnit<>(Temperature.class, Θ,                  "K",    (short) 0));
-        HERTZ               = add(      new SystemUnit<>(Frequency.class,   T.pow(-1),          "Hz",   (short) 0));
-        HECTOPASCAL         = new ConventionalUnit<>(Pa,  hecto,                                "hPa",  (short) 0);
-        KILOMETRES_PER_HOUR = new ConventionalUnit<>(mps, LinearConverter.scale(6, 100),        "km∕h", (short) 0);
-        CELSIUS             = new ConventionalUnit<>(K,   LinearConverter.create(1, 273.15),    "℃",    (short) 0);
+        KELVIN              = add(K);
+        PASCAL              = add(Pa);
+        METRES_PER_SECOND   = add(mps);
+        KILOGRAM            = add(new SystemUnit<>(Mass.class,      mass,                    "kg",   (short) 0));
+        SQUARE_METRE        = add(new SystemUnit<>(Area.class,      area,                    "m²",   (short) 0));
+        CUBIC_METRE         = add(new SystemUnit<>(Volume.class,    length.pow(3),           "m³",   (short) 0));
+        NEWTON              = add(new SystemUnit<>(Force.class,     force,                   "N",    (short) 0));
+        JOULE               = add(new SystemUnit<>(Energy.class,    energy,                  "J",    (short) 0));
+        WATT                = add(new SystemUnit<>(Power.class,     energy.divide(time),     "W",    (short) 0));
+        HERTZ               = add(new SystemUnit<>(Frequency.class, time.pow(-1),            "Hz",   (short) 0));
+        HECTOPASCAL         = new ConventionalUnit<>(Pa, hecto,                              "hPa",  (short) 0);
+        KILOMETRES_PER_HOUR = new ConventionalUnit<>(mps, LinearConverter.scale(6, 100),     "km∕h", (short) 0);
+        CELSIUS             = new ConventionalUnit<>(K, LinearConverter.create(1, 273.15),   "℃",    (short) 0);
         /*
          * All Unit<Dimensionless>
          */
-        final SystemUnit<Dimensionless> one = new SystemUnit<>(Dimensionless.class, Z, "", (short) 9201);
         PERCENT = new ConventionalUnit<>(one, centi, "%",   (short) 0);
         PPM     = new ConventionalUnit<>(one, micro, "ppm", (short) 9202);
-        PSU     = new SystemUnit<>(Dimensionless.class, Z, "psu",   (short) 0);
-        SIGMA   = new SystemUnit<>(Dimensionless.class, Z, "sigma", (short) 0);
-        PIXEL   = new SystemUnit<>(Dimensionless.class, Z, "px",    (short) 0);
-        UNITY   = add(one);     // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
+        PSU     = new SystemUnit<>(Dimensionless.class, dimensionless, "psu",   (short) 0);
+        SIGMA   = new SystemUnit<>(Dimensionless.class, dimensionless, "sigma", (short) 0);
+        PIXEL   = new SystemUnit<>(Dimensionless.class, dimensionless, "px",    (short) 0);
+        UNITY   = add(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
     }
 
     /**
