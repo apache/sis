@@ -90,7 +90,7 @@ public final class Units extends Static {
     private static final Map<Object, SystemUnit<?>> SYSTEM = new HashMap<>();
 
     /**
-     * Returns the unit for the given dimension, or {@code null} if none.
+     * Returns the system unit for the given quantity, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     static <Q extends Quantity<Q>> SystemUnit<Q> get(final Class<Q> type) {
@@ -98,7 +98,9 @@ public final class Units extends Static {
     }
 
     /**
-     * Returns the unit for the given dimension, or {@code null} if none.
+     * Returns the system unit for the given dimension, or {@code null} if none.
+     * Note that this method can not distinguish the different kinds of dimensionless units.
+     * If the quantity type is known, use {@link #get(Class)} instead.
      */
     static SystemUnit<?> get(final Dimension dim) {
         return SYSTEM.get(dim);
