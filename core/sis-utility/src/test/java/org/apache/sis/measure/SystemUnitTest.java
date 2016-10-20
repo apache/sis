@@ -16,12 +16,16 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import javax.measure.Unit;
 import javax.measure.UnconvertibleException;
 import javax.measure.IncommensurableException;
+import javax.measure.quantity.Length;
+import javax.measure.quantity.Time;
+import javax.measure.Quantity;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -259,5 +263,68 @@ public final strictfp class SystemUnitTest extends TestCase {
             final String message = e.getMessage();
             assertTrue(message, message.contains("°"));
         }
+    }
+
+    /**
+     * Tests {@link SystemUnit#asType(Class)}.
+     */
+    @Test
+    public void testAsType() {
+        assertSame(Units.METRE,  Units.METRE .asType(Length.class));
+        assertSame(Units.SECOND, Units.SECOND.asType(Time.class));
+        /*
+         * Test with units outside the pre-defined constants in the Units class.
+         */
+        final Unit<Length> anonymous = new SystemUnit<>(Length.class, (UnitDimension) Units.METRE.getDimension(), null,  (short) 0);
+        final Unit<Length> otherName = new SystemUnit<>(Length.class, (UnitDimension) Units.METRE.getDimension(), "Foo", (short) 0);
+        assertSame(Units.METRE, anonymous.asType(Length.class));
+        assertSame(otherName,   otherName.asType(Length.class));
+        /*
+         * Verify that the unit can not be casted to an incompatible units.
+         */
+        for (final Unit<Length> unit : Arrays.asList(Units.METRE, anonymous, otherName)) {
+            try {
+                unit.asType(Time.class);
+                fail("Expected an exception for incompatible quantity types.");
+            } catch (ClassCastException e) {
+                final String message = e.getMessage();
+                assertTrue(message, message.contains("Length"));
+                assertTrue(message, message.contains("Time"));
+            }
+        }
+    }
+
+    /**
+     * Tests {@link SystemUnit#asType(Class)} for a quantity unknown to Apache SIS.
+     */
+    @Test
+    @DependsOnMethod({"testAsType", "testAlternate"})
+    public void testAsTypeForNewQuantity() {
+        /*
+         * Tests with a new quantity type unknown to Apache SIS.
+         * SIS can not proof that the type is wrong, so it should accept it.
+         */
+        final Unit<Strange> strange = Units.METRE.asType(Strange.class);
+        final Unit<Strange> named   = strange.alternate("strange");
+        assertNull  ("Should not have symbol since this is a unit for a new quantity.", strange.getSymbol());
+        assertEquals("Should have a name since we invoked 'alternate'.", "strange", named.getSymbol());
+        assertSame  ("Should prefer the named instance.", named, Units.METRE.asType(Strange.class));
+        assertSame  ("Go back to the fundamental unit.",  Units.METRE, named.asType(Length.class));
+        for (final Unit<Strange> unit : Arrays.asList(strange, named)) {
+            try {
+                unit.asType(Time.class);
+                fail("Expected an exception for incompatible quantity types.");
+            } catch (ClassCastException e) {
+                final String message = e.getMessage();
+                assertTrue(message, message.contains("Strange"));
+                assertTrue(message, message.contains("Time"));
+            }
+        }
+    }
+
+    /**
+     * A dummy quantity type for tests using a quantity type unknown to Apache SIS.
+     */
+    private static interface Strange extends Quantity<Strange> {
     }
 }
