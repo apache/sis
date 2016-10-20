@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.Quantity;
@@ -249,5 +250,18 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
         } else {
             return UnitFormat.INSTANCE.format(this);
         }
+    }
+
+    /**
+     * Invoked on deserialization for returning a unique instance of {@code AbstractUnit} if possible.
+     */
+    final Object readResolve() throws ObjectStreamException {
+        if (Units.initialized) {                // Force Units class initialization.
+            final Unit<?> exising = (Unit<?>) UnitRegistry.putIfAbsent(symbol, this);
+            if (equals(exising)) {
+                return exising;
+            }
+        }
+        return this;
     }
 }

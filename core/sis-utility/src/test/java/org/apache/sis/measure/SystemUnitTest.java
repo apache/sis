@@ -99,7 +99,7 @@ public final strictfp class SystemUnitTest extends TestCase {
      */
     @Test
     public void testGetBaseDimensions() {
-        assertNull("METRE",  Units.METRE .getBaseUnits());
+        assertNull("METRE",  Units.METRE .getBaseUnits());      // Null value as per JSR-363 specification.
         assertNull("SECOND", Units.SECOND.getBaseUnits());
         assertTrue("UNITY",  Units.UNITY .getBaseUnits().isEmpty());
 
@@ -168,7 +168,7 @@ public final strictfp class SystemUnitTest extends TestCase {
         assertTrue (Units.RADIAN.isCompatible(Units.RADIAN));
         assertFalse(Units.RADIAN.isCompatible(Units.METRE ));
         assertFalse(Units.METRE .isCompatible(Units.RADIAN));
-        assertTrue (Units.UNITY .isCompatible(Units.RADIAN));   // Really 'true', not 'false'.
+        assertTrue (Units.UNITY .isCompatible(Units.RADIAN));   // Really true (not false) as per JSR-363 specification.
         assertTrue (Units.RADIAN.isCompatible(Units.UNITY ));
     }
 
@@ -243,5 +243,21 @@ public final strictfp class SystemUnitTest extends TestCase {
     @Test
     public void testAlternate() {
         assertSame(Units.RADIAN, Units.RADIAN.alternate("rad"));
+        assertSame(Units.PIXEL,  Units.PIXEL .alternate("px"));
+        assertSame(Units.PIXEL , Units.UNITY .alternate("px"));
+        try {
+            Units.UNITY.alternate("rad");
+            fail("Should not accept since “rad” is already used for a unit of another quantity type (Angle).");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("rad"));
+        }
+        try {
+            Units.RADIAN.alternate("°");
+            fail("Should not accept since “°” is already used for a unit of another type (ConventionalUnit).");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("°"));
+        }
     }
 }

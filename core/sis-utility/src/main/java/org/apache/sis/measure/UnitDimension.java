@@ -19,8 +19,6 @@ package org.apache.sis.measure;
 import java.util.Collections;
 import java.util.Map;
 import java.util.LinkedHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectStreamException;
@@ -67,19 +65,10 @@ final class UnitDimension implements Dimension, Serializable {
     private static final long serialVersionUID = 2568769237612674235L;
 
     /**
-     * Pool of all {@code UnitDimension} instances created up to date.
-     * Keys are the same map than {@link UnitDimension#components}, which shall be immutable.
-     * We hold the dimensions by strong reference on the assumption that we will not create many of them.
-     */
-    private static final ConcurrentMap<Map<UnitDimension,Fraction>, UnitDimension> POOL = new ConcurrentHashMap<>();
-
-    // The POOL map must be created before the following constants.
-
-    /**
      * Pseudo-dimension for dimensionless units.
      */
     static final UnitDimension NONE = new UnitDimension(Collections.emptyMap());
-    // No need to store in the POOL cache since UnitDimension performs special checks for dimensionless instances.
+    // No need to store in UnitRegistry since UnitDimension performs special checks for dimensionless instances.
 
     /**
      * The product of base dimensions that make this dimension. All keys in this map shall be base dimensions
@@ -106,9 +95,7 @@ final class UnitDimension implements Dimension, Serializable {
     UnitDimension(final char symbol) {
         this.symbol = symbol;
         components  = Collections.singletonMap(this, new Fraction(1,1).unique());
-        if (POOL.putIfAbsent(components, this) != null) {
-            throw new AssertionError(this);
-        }
+        UnitRegistry.init(components, this);
     }
 
     /**
@@ -144,14 +131,18 @@ final class UnitDimension implements Dimension, Serializable {
          * Implementation note: following code duplicates the functionality of Map.computeIfAbsent(…),
          * but we had to do it because we compute not only the value, but also the 'components' key.
          */
-        UnitDimension dim = POOL.get(components);
+        UnitDimension dim = (UnitDimension) UnitRegistry.get(components);
         if (dim == null) {
             components.replaceAll((c, power) -> power.unique());
             components = CollectionsExt.unmodifiableOrCopy(components);
             dim = new UnitDimension(components);
-            final UnitDimension c = POOL.putIfAbsent(components, dim);
-            if (c != null) {
-                return c;       // UnitDimension created concurrently in another thread.
+            if (!Units.initialized) {
+                UnitRegistry.init(components, dim);
+            } else {
+                final UnitDimension c = (UnitDimension) UnitRegistry.putIfAbsent(components, dim);
+                if (c != null) {
+                    return c;       // UnitDimension created concurrently in another thread.
+                }
             }
         }
         return dim;
@@ -161,9 +152,16 @@ final class UnitDimension implements Dimension, Serializable {
      * Invoked on deserialization for returning a unique instance of {@code UnitDimension}.
      */
     Object readResolve() throws ObjectStreamException {
-        if (isDimensionless()) return NONE;
-        final UnitDimension dim = POOL.putIfAbsent(components, this);
-        return (dim != null) ? dim : this;
+        if (isDimensionless()) {
+            return NONE;
+        }
+        if (Units.initialized) {        // Force Units class initialization.
+            final UnitDimension dim = (UnitDimension) UnitRegistry.putIfAbsent(components, this);
+            if (dim != null) {
+                return dim;
+            }
+        }
+        return this;
     }
 
     /**

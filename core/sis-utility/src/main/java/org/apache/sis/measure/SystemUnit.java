@@ -315,13 +315,23 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      * @throws IllegalArgumentException if the specified symbol is already associated to a different unit.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public Unit<Q> alternate(final String symbol) {
         ArgumentChecks.ensureNonNull("symbol", symbol);
         if (symbol.equals(getSymbol())) {
             return this;
         }
-        // TODO: check for existing units.
-        return new SystemUnit<>(quantity, dimension, symbol, (short) 0);
+        final SystemUnit<Q> alt = new SystemUnit<>(quantity, dimension, symbol, (short) 0);
+        final Unit<?> existing = (Unit<?>) UnitRegistry.putIfAbsent(symbol, alt);
+        if (existing != null) {
+            if (existing instanceof SystemUnit<?> && ((SystemUnit<?>) existing).quantity == quantity
+                    && dimension.equals(existing.getDimension()))
+            {
+                return (Unit<Q>) existing;
+            }
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, symbol));
+        }
+        return alt;
     }
 
     /**
@@ -425,13 +435,5 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     @Override
     public int hashCode() {
         return super.hashCode() + 37 * dimension.hashCode();
-    }
-
-    /**
-     * Invoked on deserialization for returning a unique instance of {@code SystemUnit}.
-     */
-    Object readResolve() throws ObjectStreamException {
-        final SystemUnit<Q> u = Units.get(quantity);
-        return (u != null) ? u : this;
     }
 }

@@ -16,8 +16,6 @@
  */
 package org.apache.sis.measure;
 
-import java.util.Map;
-import java.util.HashMap;
 import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -82,30 +80,6 @@ import static org.apache.sis.measure.SexagesimalConverter.EPS;
  * @module
  */
 public final class Units extends Static {
-    /**
-     * The units for given {@link UnitDimension} or {@code Class<Quantity>} instances.
-     * This map contains mostly SI units (no imperial units) with the addition of some alternative units.
-     * This map must be unmodified after it has been populated.
-     */
-    private static final Map<Object, SystemUnit<?>> SYSTEM = new HashMap<>();
-
-    /**
-     * Returns the system unit for the given quantity, or {@code null} if none.
-     */
-    @SuppressWarnings("unchecked")
-    static <Q extends Quantity<Q>> SystemUnit<Q> get(final Class<Q> type) {
-        return (SystemUnit<Q>) SYSTEM.get(type);
-    }
-
-    /**
-     * Returns the system unit for the given dimension, or {@code null} if none.
-     * Note that this method can not distinguish the different kinds of dimensionless units.
-     * If the quantity type is known, use {@link #get(Class)} instead.
-     */
-    static SystemUnit<?> get(final Dimension dim) {
-        return SYSTEM.get(dim);
-    }
-
     /**
      * Unit of measurement defined as 10<sup>-9</sup> metres (1 nm). This unit is often used in
      * {@linkplain org.apache.sis.metadata.iso.content.DefaultBand#getBoundUnits() wavelength measurements}.
@@ -650,6 +624,25 @@ public final class Units extends Static {
      */
     public static final Unit<Dimensionless> PIXEL;
 
+    /**
+     * Sets to {@code true} by the static initializer after the initialization has been completed.
+     * This is a safety against unexpected changes in the {@link UnitRegistry#HARD_CODED} map.
+     *
+     * <p>We use here a "lazy final initialization" pattern. We rely on the fact that this field is
+     * initialized to {@code true} only at the end of the following static initializer. All methods
+     * invoked in the static initializer will see the default value, which is {@code false}, until
+     * the initializer fully completed. While apparently dangerous, this behavior is actually documented
+     * in <a href="http://docs.oracle.com/javase/specs/jls/se8/html/jls-12.html#jls-12.4.1">section 12.4.1
+     * of Java language specification</a>:</p>
+     *
+     * <blockquote>The fact that initialization code is unrestricted allows examples to be constructed where
+     * the value of a class variable can be observed when it still has its initial default value, before its
+     * initializing expression is evaluated, but such examples are rare in practice. (…snip…) The full power
+     * of the Java programming language is available in these initializers; programmers must exercise some care.
+     * This power places an extra burden on code generators, but this burden would arise in any case because
+     * the Java programming language is concurrent.</blockquote>
+     */
+    static final boolean initialized;
     static {
         final UnitDimension length        = new UnitDimension('L');
         final UnitDimension mass          = new UnitDimension('M');
@@ -664,13 +657,13 @@ public final class Units extends Static {
         /*
          * Base, derived or alternate units that we need to reuse more than once in this static initializer.
          */
-        final SystemUnit<Length>        m   = new SystemUnit<>(Length.class,        length,        "m",   Constants.EPSG_METRE);
-        final SystemUnit<Time>          s   = new SystemUnit<>(Time.class,          time,          "s",   (short) 1040);
-        final SystemUnit<Temperature>   K   = new SystemUnit<>(Temperature.class,   temperature,   "K",   (short) 0);
-        final SystemUnit<Speed>         mps = new SystemUnit<>(Speed.class,         speed,         "m∕s", (short) 1026);
-        final SystemUnit<Pressure>      Pa  = new SystemUnit<>(Pressure.class,      pressure,      "Pa",  (short) 0);
-        final SystemUnit<Angle>         rad = new SystemUnit<>(Angle.class,         dimensionless, "rad", (short) 9101);
-        final SystemUnit<Dimensionless> one = new SystemUnit<>(Dimensionless.class, dimensionless, "",    (short) 9201);
+        final SystemUnit<Length>        m   = add(Length.class,        length,        "m",   Constants.EPSG_METRE);
+        final SystemUnit<Time>          s   = add(Time.class,          time,          "s",   (short) 1040);
+        final SystemUnit<Temperature>   K   = add(Temperature.class,   temperature,   "K",   (short) 0);
+        final SystemUnit<Speed>         mps = add(Speed.class,         speed,         "m∕s", (short) 1026);
+        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      pressure,      "Pa",  (short) 0);
+        final SystemUnit<Angle>         rad = add(Angle.class,         dimensionless, "rad", (short) 9101);
+        final SystemUnit<Dimensionless> one = add(Dimensionless.class, dimensionless, "",    (short) 9201);
         /*
          * All SI prefix to be used below.
          */
@@ -683,74 +676,113 @@ public final class Units extends Static {
         /*
          * All Unit<Angle>
          */
-        RADIAN      = add(rad);
-        GRAD        = new ConventionalUnit<>(rad, LinearConverter.create(Math.PI /  200, 0),     "grad", (short) 9105);
-        DEGREE      = new ConventionalUnit<>(rad, LinearConverter.create(Math.PI /  180, 0),        "°", (short) 9102);
-        ARC_MINUTE  = new ConventionalUnit<>(rad, LinearConverter.create(Math.PI / (180*60),    0), "′", (short) 9103);
-        ARC_SECOND  = new ConventionalUnit<>(rad, LinearConverter.create(Math.PI / (180*60*60), 0), "″", (short) 9104);
-        MICRORADIAN = new ConventionalUnit<>(rad, micro, "µrad", (short) 9109);
+        RADIAN      = rad;
+        GRAD        = add(rad, LinearConverter.scale(Math.PI, 200),    "grad", (short) 9105);
+        DEGREE      = add(rad, LinearConverter.scale(Math.PI, 180),       "°", (short) 9102);
+        ARC_MINUTE  = add(rad, LinearConverter.scale(Math.PI, 180*60),    "′", (short) 9103);
+        ARC_SECOND  = add(rad, LinearConverter.scale(Math.PI, 180*60*60), "″", (short) 9104);
+        MICRORADIAN = add(rad, micro, "µrad", (short) 9109);
         /*
          * All Unit<Length>
          */
-        METRE          = add(m);
-        NANOMETRE      = new ConventionalUnit<>(m, nano,  "nm", (short) 0);
-        MILLIMETRE     = new ConventionalUnit<>(m, milli, "mm", (short) 1025);
-        CENTIMETRE     = new ConventionalUnit<>(m, centi, "cm", (short) 1033);
-        KILOMETRE      = new ConventionalUnit<>(m, kilo,  "km", (short) 9036);
-        NAUTICAL_MILE  = new ConventionalUnit<>(m, LinearConverter.scale(   1852,        1), "M",     (short) 9030);
-        STATUTE_MILE   = new ConventionalUnit<>(m, LinearConverter.scale(1609344,      100), "mi",    (short) 9093);
-        US_SURVEY_FOOT = new ConventionalUnit<>(m, LinearConverter.scale(   1200,     3937), "ft_US", (short) 9003);
-        FOOT           = new ConventionalUnit<>(m, LinearConverter.scale(   3048,    10000), "ft",    (short) 9002);
-        INCH           = new ConventionalUnit<>(m, LinearConverter.scale(    254,    10000), "in",    (short) 0);
-        POINT          = new ConventionalUnit<>(m, LinearConverter.scale( 996264, 72000000), "pt",    (short) 0);
+        METRE          = m;
+        NANOMETRE      = add(m, nano,  "nm", (short) 0);
+        MILLIMETRE     = add(m, milli, "mm", (short) 1025);
+        CENTIMETRE     = add(m, centi, "cm", (short) 1033);
+        KILOMETRE      = add(m, kilo,  "km", (short) 9036);
+        NAUTICAL_MILE  = add(m, LinearConverter.scale(   1852,        1), "M",     (short) 9030);
+        STATUTE_MILE   = add(m, LinearConverter.scale(1609344,      100), "mi",    (short) 9093);
+        US_SURVEY_FOOT = add(m, LinearConverter.scale(   1200,     3937), "ft_US", (short) 9003);
+        FOOT           = add(m, LinearConverter.scale(   3048,    10000), "ft",    (short) 9002);
+        INCH           = add(m, LinearConverter.scale(    254,    10000), "in",    (short) 0);
+        POINT          = add(m, LinearConverter.scale( 996264, 72000000), "pt",    (short) 0);
         /*
          * All Unit<Time>
          */
-        SECOND         = add(s);
-        MILLISECOND    = new ConventionalUnit<>(s, milli, "ms", (short) 0);
-        MINUTE         = new ConventionalUnit<>(s, LinearConverter.scale(         60,      1), "min", (short) 0);
-        HOUR           = new ConventionalUnit<>(s, LinearConverter.scale(      60*60,      1), "h",   (short) 0);
-        DAY            = new ConventionalUnit<>(s, LinearConverter.scale(   24*60*60,      1), "d",   (short) 0);
-        WEEK           = new ConventionalUnit<>(s, LinearConverter.scale( 7*24*60*60,      1), "wk",  (short) 0);
-        TROPICAL_YEAR  = new ConventionalUnit<>(s, LinearConverter.scale(31556925445.0, 1000), "a",   (short) 1029);
+        SECOND         = s;
+        MILLISECOND    = add(s, milli, "ms", (short) 0);
+        MINUTE         = add(s, LinearConverter.scale(         60,      1), "min", (short) 0);
+        HOUR           = add(s, LinearConverter.scale(      60*60,      1), "h",   (short) 0);
+        DAY            = add(s, LinearConverter.scale(   24*60*60,      1), "d",   (short) 0);
+        WEEK           = add(s, LinearConverter.scale( 7*24*60*60,      1), "wk",  (short) 0);
+        TROPICAL_YEAR  = add(s, LinearConverter.scale(31556925445.0, 1000), "a",   (short) 1029);
         /*
          * Other units.
          */
-        KELVIN              = add(K);
-        PASCAL              = add(Pa);
-        METRES_PER_SECOND   = add(mps);
-        KILOGRAM            = add(new SystemUnit<>(Mass.class,      mass,                    "kg",   (short) 0));
-        SQUARE_METRE        = add(new SystemUnit<>(Area.class,      area,                    "m²",   (short) 0));
-        CUBIC_METRE         = add(new SystemUnit<>(Volume.class,    length.pow(3),           "m³",   (short) 0));
-        NEWTON              = add(new SystemUnit<>(Force.class,     force,                   "N",    (short) 0));
-        JOULE               = add(new SystemUnit<>(Energy.class,    energy,                  "J",    (short) 0));
-        WATT                = add(new SystemUnit<>(Power.class,     energy.divide(time),     "W",    (short) 0));
-        HERTZ               = add(new SystemUnit<>(Frequency.class, time.pow(-1),            "Hz",   (short) 0));
-        HECTOPASCAL         = new ConventionalUnit<>(Pa, hecto,                              "hPa",  (short) 0);
-        KILOMETRES_PER_HOUR = new ConventionalUnit<>(mps, LinearConverter.scale(6, 100),     "km∕h", (short) 0);
-        CELSIUS             = new ConventionalUnit<>(K, LinearConverter.create(1, 273.15),   "℃",    (short) 0);
+        KELVIN              = K;
+        PASCAL              = Pa;
+        METRES_PER_SECOND   = mps;
+        KILOGRAM            = add(Mass.class,      mass,                "kg",   (short) 0);
+        SQUARE_METRE        = add(Area.class,      area,                "m²",   (short) 0);
+        CUBIC_METRE         = add(Volume.class,    length.pow(3),       "m³",   (short) 0);
+        NEWTON              = add(Force.class,     force,               "N",    (short) 0);
+        JOULE               = add(Energy.class,    energy,              "J",    (short) 0);
+        WATT                = add(Power.class,     energy.divide(time), "W",    (short) 0);
+        HERTZ               = add(Frequency.class, time.pow(-1),        "Hz",   (short) 0);
+        HECTOPASCAL         = add(Pa, hecto,                            "hPa",  (short) 0);
+        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(6, 100),   "km∕h", (short) 0);
+        CELSIUS             = add(K, LinearConverter.create(1, 273.15), "℃",    (short) 0);
         /*
          * All Unit<Dimensionless>
          */
-        PERCENT = new ConventionalUnit<>(one, centi, "%",   (short) 0);
-        PPM     = new ConventionalUnit<>(one, micro, "ppm", (short) 9202);
-        PSU     = new SystemUnit<>(Dimensionless.class, dimensionless, "psu",   (short) 0);
-        SIGMA   = new SystemUnit<>(Dimensionless.class, dimensionless, "sigma", (short) 0);
-        PIXEL   = new SystemUnit<>(Dimensionless.class, dimensionless, "px",    (short) 0);
-        UNITY   = add(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
+        PERCENT = add(one, centi, "%",   (short) 0);
+        PPM     = add(one, micro, "ppm", (short) 9202);
+        PSU     = add(Dimensionless.class, dimensionless, "psu",   (short) 0);
+        SIGMA   = add(Dimensionless.class, dimensionless, "sigma", (short) 0);
+        PIXEL   = add(Dimensionless.class, dimensionless, "px",    (short) 0);
+        UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
+
+        initialized = true;
     }
 
     /**
      * Invoked by {@code Units} static class initializer for registering SI base and derived units.
-     * We do not synchronize that method on the assumption that {@link #SYSTEM} map will be fully
-     * populated in a single thread by the {@code Units} class initializer, then never modified.
+     * This method shall be invoked in a single thread by the {@code Units} class initializer only.
      */
-    private static <Q extends Quantity<Q>> SystemUnit<Q> add(final SystemUnit<Q> unit) {
-        SYSTEM.put(unit.dimension, unit);
-        if (SYSTEM.put(unit.quantity, unit) != null) {
-            throw new AssertionError();                 // Shall not map the same dimension twice.
-        }
-        return unit;
+    private static <Q extends Quantity<Q>> SystemUnit<Q> add(Class<Q> quantity, UnitDimension dimension, String symbol, short epsg) {
+        return UnitRegistry.init(new SystemUnit<>(quantity, dimension, symbol, epsg));
+    }
+
+    /**
+     * Invoked by {@code Units} static class initializer for registering SI conventional units.
+     * This method shall be invoked in a single thread by the {@code Units} class initializer only.
+     */
+    private static <Q extends Quantity<Q>> ConventionalUnit<Q> add(SystemUnit<Q> target, UnitConverter toTarget, String symbol, short epsg) {
+        return UnitRegistry.init(new ConventionalUnit<>(target, toTarget, symbol, epsg));
+    }
+
+    /**
+     * Returns the system unit for the given dimension, or {@code null} if none.
+     * Note that this method can not distinguish the different kinds of dimensionless units.
+     * If the symbol or the quantity type is known, use {@link #get(String)} or {@link #get(Class)} instead.
+     *
+     * <p><b>Implementation note:</b> this method must be defined in this {@code Units} class
+     * in order to force a class initialization before use.</p>
+     */
+    static SystemUnit<?> get(final Dimension dim) {
+        return (SystemUnit<?>) UnitRegistry.get(dim);
+    }
+
+    /**
+     * Returns the system unit for the given quantity, or {@code null} if none.
+     *
+     * <p><b>Implementation note:</b> this method must be defined in this {@code Units} class
+     * in order to force a class initialization before use.</p>
+     */
+    @SuppressWarnings("unchecked")
+    static <Q extends Quantity<Q>> SystemUnit<Q> get(final Class<Q> type) {
+        return (SystemUnit<Q>) UnitRegistry.get(type);
+    }
+
+    /**
+     * Returns the system unit for the given symbol, or {@code null} if none.
+     *
+     * <p><b>Implementation note:</b> this method must be defined in this {@code Units} class
+     * in order to force a class initialization before use.</p>
+     */
+    @SuppressWarnings("unchecked")
+    static Unit<?> get(final String symbol) {
+        return (Unit<?>) UnitRegistry.get(symbol);
     }
 
     /**
