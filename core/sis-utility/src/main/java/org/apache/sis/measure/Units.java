@@ -21,20 +21,8 @@ import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.format.ParserException;
 import javax.measure.Quantity;
-import javax.measure.quantity.Angle;
-import javax.measure.quantity.Area;
-import javax.measure.quantity.Dimensionless;
-import javax.measure.quantity.Energy;
-import javax.measure.quantity.Force;
-import javax.measure.quantity.Frequency;
-import javax.measure.quantity.Length;
-import javax.measure.quantity.Mass;
-import javax.measure.quantity.Power;
-import javax.measure.quantity.Pressure;
-import javax.measure.quantity.Speed;
-import javax.measure.quantity.Temperature;
-import javax.measure.quantity.Time;
-import javax.measure.quantity.Volume;
+import javax.measure.quantity.*;
+import javax.measure.quantity.Angle;            // Because of name collision with Angle in this SIS package.
 
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;

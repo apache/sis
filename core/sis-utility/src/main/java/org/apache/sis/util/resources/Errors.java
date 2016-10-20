@@ -388,6 +388,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IncompatiblePropertyValue_1 = 63;
 
         /**
+         * The “{0}” unit of measurement has dimension of ‘{1}’ ({2}). It is incompatible with
+         * dimension of ‘{3}’ ({4}).
+         */
+        public static final short IncompatibleUnitDimension_5 = 163;
+
+        /**
          * Unit “{0}” is incompatible with current value.
          */
         public static final short IncompatibleUnit_1 = 64;

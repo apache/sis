@@ -209,17 +209,32 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     public <T extends Quantity<T>> Unit<T> asType(final Class<T> type) throws ClassCastException {
         ArgumentChecks.ensureNonNull("type", type);
         if (type == quantity) {
+            if (getSymbol() == null) {
+                // If this unit has no symbol, opportunistically supply a symbol if we find it.
+                final SystemUnit<T> unit = Units.get(type);
+                if (unit != null) {
+                    return unit;
+                }
+            }
             return (Unit<T>) this;
         }
-        if (dimension.isDimensionless()) {
-            final SystemUnit<T> target = Units.get(type);
-            if (target != null && target.dimension.isDimensionless()) {
-                return target;
-            }
+        /*
+         * Verifies what are the expected dimensions of the given type by searching for the corresponding unit.
+         * If we find that unit, returns it on the assumption that its symbol is right while the symbol of this
+         * unit may no longer be right for the given type.  If we can not find a pre-defined units, then create
+         * a new unit with the requested type but no symbol since we do not know yet what the symbol should be
+         * for the new quantity.
+         */
+        SystemUnit<T> unit = Units.get(type);
+        if (unit == null) {
+            unit = new SystemUnit<>(type, dimension, null, (short) 0);              // Intentionally no symbol.
         }
-        throw new ClassCastException(Errors.format(Errors.Keys.CanNotConvertFromType_2,
-                "Unit<" + (quantity != null ? quantity.getSimpleName() : "?") + '>',
-                "Unit<" + type.getSimpleName() + '>'));
+        if (!dimension.equals(unit.dimension)) {
+            throw new ClassCastException(Errors.format(Errors.Keys.IncompatibleUnitDimension_5, new Object[] {
+                    this, (quantity != null) ? quantity.getSimpleName() : "?", dimension,
+                    type.getSimpleName(), unit.dimension}));
+        }
+        return unit;
     }
 
     /**
@@ -322,14 +337,28 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
             return this;
         }
         final SystemUnit<Q> alt = new SystemUnit<>(quantity, dimension, symbol, (short) 0);
-        final Unit<?> existing = (Unit<?>) UnitRegistry.putIfAbsent(symbol, alt);
-        if (existing != null) {
-            if (existing instanceof SystemUnit<?> && ((SystemUnit<?>) existing).quantity == quantity
-                    && dimension.equals(existing.getDimension()))
-            {
-                return (Unit<Q>) existing;
+        if (quantity != null) {
+            /*
+             * Use the cache only if this unit has a non-null quantity type. Do not use the cache even
+             * in read-only mode when 'quantity' is null because we would be unable to guarantee that
+             * the parameterized type <Q> is correct.
+             */
+            final Unit<?> existing = (Unit<?>) UnitRegistry.putIfAbsent(symbol, alt);
+            if (existing != null) {
+                if (existing instanceof SystemUnit<?>
+                        && ((SystemUnit<?>) existing).quantity == quantity
+                        && dimension.equals(existing.getDimension()))
+                {
+                    return (Unit<Q>) existing;
+                }
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, symbol));
             }
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, symbol));
+            /*
+             * This method may be invoked for a new quantity, after a call to 'asType(Class)'.
+             * Try to register the new unit for that Quantity. But if another unit is already
+             * registered for that Quantity, this is not necessarily an error.
+             */
+            UnitRegistry.putIfAbsent(quantity, alt);
         }
         return alt;
     }
