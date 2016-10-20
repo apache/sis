@@ -678,7 +678,7 @@ public final class Units extends Static {
          */
         RADIAN      = rad;
         GRAD        = add(rad, LinearConverter.scale(Math.PI, 200),    "grad", (short) 9105);
-        DEGREE      = add(rad, LinearConverter.scale(Math.PI, 180),       "°", (short) 9102);
+        DEGREE      = add(rad, LinearConverter.scale(Math.PI, 180),       "°", Constants.EPSG_PARAM_DEGREES);
         ARC_MINUTE  = add(rad, LinearConverter.scale(Math.PI, 180*60),    "′", (short) 9103);
         ARC_SECOND  = add(rad, LinearConverter.scale(Math.PI, 180*60*60), "″", (short) 9104);
         MICRORADIAN = add(rad, micro, "µrad", (short) 9109);
@@ -731,6 +731,13 @@ public final class Units extends Static {
         SIGMA   = add(Dimensionless.class, dimensionless, "sigma", (short) 0);
         PIXEL   = add(Dimensionless.class, dimensionless, "px",    (short) 0);
         UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
+
+        UnitRegistry.alias(UNITY,       Short.valueOf((short) 9203));
+        UnitRegistry.alias(DEGREE,      Short.valueOf(Constants.EPSG_AXIS_DEGREES));
+        UnitRegistry.alias(ARC_MINUTE,  "'");
+        UnitRegistry.alias(ARC_SECOND, "\"");
+        UnitRegistry.alias(KELVIN,      "K");       // Ordinary "K" letter (not the dedicated Unicode character).
+        UnitRegistry.alias(CELSIUS,    "°C");
 
         initialized = true;
     }
@@ -972,7 +979,7 @@ public final class Units extends Static {
         if (abs(factor - 1) > EPS) {
             unit = unit.multiply(factor);
         }
-        return UnitsMap.canonicalize(unit);
+        return unit;
     }
 
     /**
@@ -1121,31 +1128,7 @@ public final class Units extends Static {
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createUnit(String)
      */
     public static Unit<?> valueOfEPSG(final int code) {
-        switch (code) {
-            case Constants.EPSG_PARAM_DEGREES:  // Fall through
-            case Constants.EPSG_AXIS_DEGREES:   return DEGREE;
-            case Constants.EPSG_METRE:          return METRE;
-
-            case 1029: return TROPICAL_YEAR;
-            case 1040: return SECOND;
-            case 9002: return FOOT;
-            case 9003: return US_SURVEY_FOOT;
-            case 9030: return NAUTICAL_MILE;
-            case 9036: return KILOMETRE;
-            case 9101: return RADIAN;
-            case 9103: return ARC_MINUTE;
-            case 9104: return ARC_SECOND;
-            case 9105: return GRAD;
-            case 9109: return MICRORADIAN;
-            case 9107: // Fall through
-            case 9108: return SexagesimalConverter.DMS_SCALED;
-            case 9110: return SexagesimalConverter.DMS;
-            case 9111: return SexagesimalConverter.DM;
-            case 9203: // Fall through
-            case 9201: return UNITY;
-            case 9202: return PPM;
-            default:   return null;
-        }
+        return (code > 0 && code <= Short.MAX_VALUE) ? (Unit<?>) UnitRegistry.get((short) code) : null;
     }
 
     /**
@@ -1167,11 +1150,22 @@ public final class Units extends Static {
      *
      * @since 0.4
      */
-    public static Integer getEpsgCode(final Unit<?> unit, final boolean inAxis) {
-        Integer code = UnitsMap.EPSG_CODES.get(unit);
-        if (inAxis && code != null && code == Constants.EPSG_PARAM_DEGREES) {
-            code = UnitsMap.EPSG_AXIS_DEGREES;
+    public static Integer getEpsgCode(Unit<?> unit, final boolean inAxis) {
+        if (unit != null) {
+            if (!(unit instanceof AbstractUnit<?>)) {
+                unit = get(unit.getSymbol());
+                if (!(unit instanceof AbstractUnit<?>)) {
+                    return null;
+                }
+            }
+            short code = ((AbstractUnit<?>) unit).epsg;
+            if (code != 0) {
+                if (inAxis && code == Constants.EPSG_PARAM_DEGREES) {
+                    code = Constants.EPSG_AXIS_DEGREES;
+                }
+                return Integer.valueOf(code);
+            }
         }
-        return code;
+        return null;
     }
 }

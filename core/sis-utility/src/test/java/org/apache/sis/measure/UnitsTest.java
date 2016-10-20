@@ -41,12 +41,11 @@ import static org.apache.sis.test.Assert.*;
 })
 public final strictfp class UnitsTest extends TestCase {
     /**
-     * Sanity check of {@link UnitsMap}. This test fail if at least one code in the
-     * {@link UnitsMap#EPSG_CODES} static initializer is invalid.
+     * Verifies that the {@link Units#initialized} flag has been set.
      */
     @Test
-    public void testUnitsMap() {
-        assertFalse(UnitsMap.EPSG_CODES.containsKey(null));
+    public void testInitialized() {
+        assertTrue(Units.initialized);
     }
 
     /**
@@ -266,6 +265,25 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame(DEGREE, valueOf("urn:ogc:def:uom:EPSG::9102"));
         assertSame(METRE,  valueOf("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
         assertSame(METRE,  valueOf("gmxUom.xml#m"));
+
+        assertSame(TROPICAL_YEAR,   valueOfEPSG(1029));
+        assertSame(SECOND,          valueOfEPSG(1040));
+        assertSame(FOOT,            valueOfEPSG(9002));
+        assertSame(US_SURVEY_FOOT,  valueOfEPSG(9003));
+        assertSame(NAUTICAL_MILE,   valueOfEPSG(9030));
+        assertSame(KILOMETRE,       valueOfEPSG(9036));
+        assertSame(RADIAN,          valueOfEPSG(9101));
+        assertSame(ARC_MINUTE,      valueOfEPSG(9103));
+        assertSame(ARC_SECOND,      valueOfEPSG(9104));
+        assertSame(GRAD,            valueOfEPSG(9105));
+        assertSame(MICRORADIAN,     valueOfEPSG(9109));
+        assertSame(SexagesimalConverter.DMS_SCALED, valueOfEPSG(9107));
+        assertSame(SexagesimalConverter.DMS_SCALED, valueOfEPSG(9108));
+        assertSame(SexagesimalConverter.DMS,        valueOfEPSG(9110));
+        assertSame(SexagesimalConverter.DM,         valueOfEPSG(9111));
+        assertSame(UNITY,           valueOfEPSG(9203));
+        assertSame(UNITY,           valueOfEPSG(9201));
+        assertSame(PPM,             valueOfEPSG(9202));
     }
 
     /**
@@ -273,10 +291,25 @@ public final strictfp class UnitsTest extends TestCase {
      */
     @Test
     public void testGetEpsgCode() {
-        assertEquals(Integer.valueOf(9001), getEpsgCode(METRE,  false));
-        assertEquals(Integer.valueOf(9102), getEpsgCode(DEGREE, false));
-        assertEquals(Integer.valueOf(9122), getEpsgCode(DEGREE, true));
-        assertEquals(Integer.valueOf(9110), getEpsgCode(DMS,    false));
-        assertEquals(Integer.valueOf(9110), getEpsgCode(DMS,    true));
+        assertEquals(Integer.valueOf(9001), getEpsgCode(METRE,          false));
+        assertEquals(Integer.valueOf(9102), getEpsgCode(DEGREE,         false));
+        assertEquals(Integer.valueOf(9122), getEpsgCode(DEGREE,         true));
+        assertEquals(Integer.valueOf(9110), getEpsgCode(DMS,            false));
+        assertEquals(Integer.valueOf(9110), getEpsgCode(DMS,            true));
+        assertEquals(Integer.valueOf(9108), getEpsgCode(DMS_SCALED,     false));
+        assertEquals(Integer.valueOf(9111), getEpsgCode(DM,             false));
+        assertEquals(Integer.valueOf(1029), getEpsgCode(TROPICAL_YEAR,  false));
+        assertEquals(Integer.valueOf(1040), getEpsgCode(SECOND,         false));
+        assertEquals(Integer.valueOf(9002), getEpsgCode(FOOT,           false));
+        assertEquals(Integer.valueOf(9003), getEpsgCode(US_SURVEY_FOOT, false));
+        assertEquals(Integer.valueOf(9030), getEpsgCode(NAUTICAL_MILE,  false));
+        assertEquals(Integer.valueOf(9036), getEpsgCode(KILOMETRE,      false));
+        assertEquals(Integer.valueOf(9101), getEpsgCode(RADIAN,         false));
+        assertEquals(Integer.valueOf(9103), getEpsgCode(ARC_MINUTE,     false));
+        assertEquals(Integer.valueOf(9104), getEpsgCode(ARC_SECOND,     false));
+        assertEquals(Integer.valueOf(9105), getEpsgCode(GRAD,           false));
+        assertEquals(Integer.valueOf(9109), getEpsgCode(MICRORADIAN,    false));
+        assertEquals(Integer.valueOf(9201), getEpsgCode(UNITY,          false));
+        assertEquals(Integer.valueOf(9202), getEpsgCode(PPM,            false));
     }
 }

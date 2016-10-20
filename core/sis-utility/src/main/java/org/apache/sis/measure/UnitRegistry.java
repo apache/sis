@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.Dimension;
@@ -40,7 +41,12 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * @version 0.8
  * @module
  */
-final class UnitRegistry implements SystemOfUnits {
+final class UnitRegistry implements SystemOfUnits, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -84557361079506390L;
+
     /**
      * All {@link UnitDimension}, {@link SystemUnit} or {@link ConventionalUnit} that are hard-coded in Apache SIS.
      * This map is populated by {@link Units} static initializer and shall not be modified after initialization,
@@ -56,7 +62,7 @@ final class UnitRegistry implements SystemOfUnits {
      *   <tr><td>{@link Short}</td>                       <td>{@link AbstractUnit}</td>  <td>Key is the EPSG code.</td></tr>
      * </table>
      */
-    private static final Map<Object,Object> HARD_CODED = new HashMap<>(128);
+    private static final Map<Object,Object> HARD_CODED = new HashMap<>(256);
 
     /**
      * Units defined by the user. Accesses to this map implies synchronization.
@@ -91,7 +97,10 @@ final class UnitRegistry implements SystemOfUnits {
         existed  = HARD_CODED.put(unit.dimension,   unit) != null;
         existed |= HARD_CODED.put(unit.quantity,    unit) != null;
         existed |= HARD_CODED.put(unit.getSymbol(), unit) != null;
-        assert !existed || unit.dimension.components.isEmpty() : unit;   // Key collision tolerated for dimensionless unit only.
+        if (unit.epsg != 0) {
+            existed |= HARD_CODED.put(unit.epsg, unit) != null;
+        }
+        assert !existed || unit.dimension.isDimensionless() : unit;   // Key collision tolerated for dimensionless unit only.
         return unit;
     }
 
@@ -101,10 +110,23 @@ final class UnitRegistry implements SystemOfUnits {
      */
     static <Q extends Quantity<Q>> ConventionalUnit<Q> init(final ConventionalUnit<Q> unit) {
         assert !Units.initialized : unit;        // This assertion happens during Units initialization, but it is okay.
-        if (HARD_CODED.put(unit.getSymbol(), unit) != null) {
-            throw new AssertionError(unit);      // Shall not map the same unit twice.
+        if (HARD_CODED.put(unit.getSymbol(), unit) == null) {
+            if (unit.epsg == 0 || HARD_CODED.put(unit.epsg, unit) == null) {
+                return unit;
+            }
         }
-        return unit;
+        throw new AssertionError(unit);      // Shall not map the same unit twice.
+    }
+
+    /**
+     * Adds an alias for the given unit. The given alias shall be either an instance of {@link String}
+     * (for a symbol alias) or an instance of {@link Short} (for an EPSG code alias).
+     */
+    static void alias(final Unit<?> unit, final Comparable<?> alias) {
+        assert !Units.initialized : unit;        // This assertion happens during Units initialization, but it is okay.
+        if (HARD_CODED.put(alias, unit) != null) {
+            throw new AssertionError(unit);      // Shall not map the same alias twice.
+        }
     }
 
     /**
@@ -136,7 +158,7 @@ final class UnitRegistry implements SystemOfUnits {
     /**
      * The value returned by {@link #getUnits()}, created when first needed.
      */
-    private static Set<Unit<?>> units;
+    private transient Set<Unit<?>> units;
 
     /**
      * Creates a new unit system.
@@ -170,7 +192,7 @@ final class UnitRegistry implements SystemOfUnits {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Set<Unit<?>> getUnits() {
         if (Units.initialized) {                    // Force Units class initialization.
-            synchronized (UnitRegistry.class) {
+            synchronized (this) {
                 if (units == null) {
                     units = new HashSet<>();
                     for (final Object value : HARD_CODED.values()) {
