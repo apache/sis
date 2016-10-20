@@ -256,7 +256,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      * Invoked on deserialization for returning a unique instance of {@code AbstractUnit} if possible.
      */
     final Object readResolve() throws ObjectStreamException {
-        if (Units.initialized) {                // Force Units class initialization.
+        if (symbol != null && Units.initialized) {              // Force Units class initialization.
             final Unit<?> exising = (Unit<?>) UnitRegistry.putIfAbsent(symbol, this);
             if (equals(exising)) {
                 return exising;

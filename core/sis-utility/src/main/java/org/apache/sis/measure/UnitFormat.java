@@ -453,7 +453,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         if (unit.isCompatible(Units.HERTZ) && !uom.equals("Bd")) {
             return Units.HERTZ;
         }
-        return UnitsMap.canonicalize(unit);
+        return unit;
     }
 
     /**
