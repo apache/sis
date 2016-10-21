@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import java.text.Normalizer;
 import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Character.*;
@@ -34,7 +35,7 @@ import static java.lang.Character.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  *
  * @see CharSequences
@@ -42,6 +43,7 @@ import static java.lang.Character.*;
 public final class StringBuilders extends Static {
     /**
      * Letters in the range 00C0 (192) to 00FF (255) inclusive with their accent removed, when possible.
+     * This string partially duplicates the work done by {@link java.text.Normalizer}.
      */
     private static final String ASCII = "AAAAAAÆCEEEEIIIIDNOOOOO*OUUUUYÞsaaaaaaæceeeeiiiionooooo/ouuuuyþy";
     // Original letters (with accent) = "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ";
@@ -55,10 +57,10 @@ public final class StringBuilders extends Static {
     /**
      * Replaces every occurrences of the given character in the given buffer.
      *
-     * @param  buffer    The string in which to perform the replacements.
-     * @param  toSearch  The character to replace.
-     * @param  replaceBy The replacement for the searched character.
-     * @throws NullArgumentException If the {@code buffer} arguments is null.
+     * @param  buffer     the string in which to perform the replacements.
+     * @param  toSearch   the character to replace.
+     * @param  replaceBy  the replacement for the searched character.
+     * @throws NullArgumentException if the {@code buffer} arguments is null.
      *
      * @see String#replace(char, char)
      */
@@ -78,11 +80,11 @@ public final class StringBuilders extends Static {
      * This method invokes {@link StringBuilder#replace(int, int, String)}
      * for each occurrence of {@code search} found in the buffer.
      *
-     * @param  buffer    The string in which to perform the replacements.
-     * @param  toSearch  The string to replace.
-     * @param  replaceBy The replacement for the searched string.
-     * @throws NullArgumentException If any of the arguments is null.
-     * @throws IllegalArgumentException If the {@code toSearch} argument is empty.
+     * @param  buffer     the string in which to perform the replacements.
+     * @param  toSearch   the string to replace.
+     * @param  replaceBy  the replacement for the searched string.
+     * @throws NullArgumentException if any of the arguments is null.
+     * @throws IllegalArgumentException if the {@code toSearch} argument is empty.
      *
      * @see String#replace(char, char)
      * @see CharSequences#replace(CharSequence, CharSequence, CharSequence)
@@ -107,10 +109,10 @@ public final class StringBuilders extends Static {
      * The substring to be replaced begins at the specified {@code start} and extends to the
      * character at index {@code end - 1}.
      *
-     * @param  buffer The buffer in which to perform the replacement.
-     * @param  start  The beginning index in the {@code buffer}, inclusive.
-     * @param  end    The ending index in the {@code buffer}, exclusive.
-     * @param  chars  The array that will replace previous contents.
+     * @param  buffer  the buffer in which to perform the replacement.
+     * @param  start   the beginning index in the {@code buffer}, inclusive.
+     * @param  end     the ending index in the {@code buffer}, exclusive.
+     * @param  chars   the array that will replace previous contents.
      * @throws NullArgumentException if the {@code buffer} or {@code chars} argument is null.
      *
      * @see StringBuilder#replace(int, int, String)
@@ -140,10 +142,10 @@ public final class StringBuilders extends Static {
      * {@link StringBuilder#delete(int, int)} for each occurrence of {@code search} found in
      * the buffer.
      *
-     * @param  buffer   The string in which to perform the removals.
-     * @param  toSearch The string to remove.
-     * @throws NullPointerException If any of the arguments is null.
-     * @throws IllegalArgumentException If the {@code toSearch} argument is empty.
+     * @param  buffer    the string in which to perform the removals.
+     * @param  toSearch  the string to remove.
+     * @throws NullPointerException if any of the arguments is null.
+     * @throws IllegalArgumentException if the {@code toSearch} argument is empty.
      *
      * @see StringBuilder#delete(int, int)
      */
@@ -170,8 +172,8 @@ public final class StringBuilders extends Static {
      * This method is useful after a {@linkplain StringBuilder#append(double) double value has
      * been appended to the buffer}, in order to make it appears like an integer when possible.
      *
-     * @param buffer The buffer to trim if possible.
-     * @throws NullArgumentException If the given {@code buffer} is null.
+     * @param  buffer  the buffer to trim if possible.
+     * @throws NullArgumentException if the given {@code buffer} is null.
      *
      * @see CharSequences#trimFractionalPart(CharSequence)
      */
@@ -191,15 +193,16 @@ public final class StringBuilders extends Static {
 
     /**
      * Replaces some Unicode characters by ASCII characters on a "best effort basis".
-     * For example the {@code 'é'} character is replaced by {@code 'e'} (without accent).
+     * For example the “ é ” character is replaced by  “ e ” (without accent),
+     * the  “ ″ ” symbol for minutes of angle is replaced by straight double quotes “ " ”,
+     * and combined characters like ㎏, ㎎, ㎝, ㎞, ㎢, ㎦, ㎖, ㎧, ㎩, ㎐, <i>etc.</i> are replaced
+     * by the corresponding sequences of characters.
      *
-     * <p>The current implementation replaces the characters in the range {@code 00C0}
-     * to {@code 00FF} (inclusive) and some space and punctuation characters.</p>
-     *
-     * @param  buffer The text to scan for Unicode characters to replace by ASCII characters.
-     * @throws NullArgumentException If the given {@code buffer} is null.
+     * @param  buffer  the text to scan for Unicode characters to replace by ASCII characters.
+     * @throws NullArgumentException if the given {@code buffer} is null.
      *
      * @see CharSequences#toASCII(CharSequence)
+     * @see Normalizer#normalize(CharSequence, Normalizer.Form)
      */
     public static void toASCII(final StringBuilder buffer) {
         ArgumentChecks.ensureNonNull("buffer", buffer);
@@ -211,6 +214,7 @@ public final class StringBuilders extends Static {
      */
     static CharSequence toASCII(CharSequence text, StringBuilder buffer) {
         if (text != null) {
+            boolean doneNFKD = false;
             /*
              * Scan the buffer in reverse order because we may suppress some characters.
              */
@@ -219,41 +223,68 @@ public final class StringBuilders extends Static {
                 final int c = codePointBefore(text, i);
                 final int n = charCount(c);
                 final int r = c - 0xC0;
-                i -= n; // After this line, 'i' is the index of character 'c'.
+                i -= n;                                     // After this line, 'i' is the index of character 'c'.
                 if (r >= 0) {
-                    final char cr; // The character replacement.
+                    final char cr;                          // The character replacement.
                     if (r < ASCII.length()) {
                         cr = ASCII.charAt(r);
                     } else {
                         switch (getType(c)) {
                             case FORMAT:
-                            case CONTROL: buffer.delete(i, i + n); continue;  // Character.isIdentifierIgnorable
+                            case CONTROL:                   // Character.isIdentifierIgnorable
+                            case NON_SPACING_MARK:          cr = 0; break;
                             case PARAGRAPH_SEPARATOR:       // Fall through
                             case LINE_SEPARATOR:            cr = '\n'; break;
                             case SPACE_SEPARATOR:           cr = ' '; break;
                             case INITIAL_QUOTE_PUNCTUATION: cr = (c == '‘') ? '\'' : '"'; break;
                             case FINAL_QUOTE_PUNCTUATION:   cr = (c == '’') ? '\'' : '"'; break;
-                            case OTHER_PUNCTUATION: {
+                            case OTHER_PUNCTUATION:
+                            case MATH_SYMBOL: {
                                 switch (c) {
+                                    case '⋅': cr = '*';  break;
+                                    case '∕': cr = '/';  break;
                                     case '′': cr = '\''; break;
                                     case '″': cr = '"';  break;
                                     default:  continue;
                                 }
                                 break;
                             }
-                            default: continue;
+                            default: {
+                                /*
+                                 * For any unknown character, try to decompose the string in a sequence of simpler
+                                 * letters with their modifiers and restart the whole process from the beginning.
+                                 * If the character is still unknown after decomposition, leave it unchanged.
+                                 */
+                                if (!doneNFKD) {
+                                    doneNFKD = true;
+                                    final String decomposed = Normalizer.normalize(text, Normalizer.Form.NFKD);
+                                    if (!decomposed.contentEquals(text)) {
+                                        if (buffer == null) {
+                                            text = buffer = new StringBuilder(decomposed.length());
+                                        } else {
+                                            buffer.setLength(0);
+                                        }
+                                        i = buffer.append(decomposed).length();
+                                    }
+                                }
+                                continue;
+                            }
                         }
                     }
                     if (buffer == null) {
                         buffer = new StringBuilder(text.length()).append(text);
                         text = buffer;
                     }
-                    if (n == 2) {
-                        buffer.deleteCharAt(i + 1); // Remove the low surrogate of a surrogate pair.
+                    if (cr == 0) {
+                        buffer.delete(i, i + n);
+                    } else {
+                        if (n == 2) {
+                            buffer.deleteCharAt(i + 1);         // Remove the low surrogate of a surrogate pair.
+                        }
+                        // Nothing special to do about codepoint here, since 'c' is in
+                        // the basic plane (verified by the r < ASCII.length() check).
+                        buffer.setCharAt(i, cr);
                     }
-                    // Nothing special to do about codepoint here, since 'c' is in
-                    // the basic plane (verified by the r < ASCII.length() check).
-                    buffer.setCharAt(i, cr);
                 }
             }
         }

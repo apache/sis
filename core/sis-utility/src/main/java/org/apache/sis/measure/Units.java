@@ -722,10 +722,12 @@ public final class Units extends Static {
 
         UnitRegistry.alias(UNITY,       Short.valueOf((short) 9203));
         UnitRegistry.alias(DEGREE,      Short.valueOf(Constants.EPSG_AXIS_DEGREES));
+        UnitRegistry.alias(DEGREE,    "deg");
         UnitRegistry.alias(ARC_MINUTE,  "'");
         UnitRegistry.alias(ARC_SECOND, "\"");
         UnitRegistry.alias(KELVIN,      "K");       // Ordinary "K" letter (not the dedicated Unicode character).
         UnitRegistry.alias(CELSIUS,    "°C");
+        UnitRegistry.alias(CELSIUS,   "Cel");
 
         initialized = true;
     }

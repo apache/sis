@@ -346,6 +346,10 @@ public class Formatter implements Localized {
         this.dateFormat    = new StandardDateFormat(symbols.getLocale());
         this.unitFormat    = UnitFormat.getInstance(symbols.getLocale());
         this.buffer        = new StringBuffer();
+        unitFormat.setStyle(UnitFormat.Style.NAME);
+        if (convention.usesCommonUnits) {
+            unitFormat.setLocale(Locale.US);
+        }
     }
 
     /**
