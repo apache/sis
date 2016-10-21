@@ -340,6 +340,7 @@ abstract class AbstractParser implements Parser {
                 return Units.valueOf(text);             // Most common case.
             }
             unitFormat = UnitFormat.getInstance(locale);
+            unitFormat.setStyle(UnitFormat.Style.NAME);
         }
         return unitFormat.parse(text);
     }

@@ -33,6 +33,7 @@ import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.XPaths;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Exceptions;
@@ -87,26 +88,62 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * The default instance used by {@link Units#valueOf(String)} for parsing units of measurement.
      */
     static final UnitFormat INSTANCE = new UnitFormat();
-    static {
-        INSTANCE.longName = false;
-    }
 
     /**
-     * The locale specified at construction time.
+     * The locale specified at construction time or modified by {@link #setLocale(Locale)}.
+     *
+     * @see #getLocale()
      */
     private Locale locale;
 
     /**
-     * {@code true} for formatting the unit names using US spelling.
-     * Example: "meter" instead of "metre".
+     * Whether this {@code UnitFormat} should format long names like "metre" or use unit symbols.
+     *
+     * @see #getStyle()
      */
-    private boolean isLocaleUS;
+    private Style style;
 
     /**
-     * Whether this {@code UnitFormat} should format long names like "metre".
-     * If {@code false}, then this instance will format only unit symbols.
+     * Identify whether unit formatting uses ASCII symbols, Unicode symbols or full localized names.
+     * For example the {@link Units#CUBIC_METRE} units can be formatted in the following ways:
+     *
+     * <ul>
+     *   <li>As a symbol using Unicode characters: <b>m³</b></li>
+     *   <li>As a symbol restricted to the ASCII characters set: <b>m3</b></li>
+     *   <li>As a long name:<ul>
+     *     <li>in English: <cite>cubic metre</cite></li>
+     *     <li>in French: <cite>mètre cube</cite></li>
+     *   </ul></li>
+     * </ul>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.8
+     * @version 0.8
+     * @module
      */
-    private boolean longName = true;
+    public static enum Style {
+        /**
+         * Format unit symbols using Unicode characters. Units formatted in this style use superscript digits
+         * for exponents (as in “m³”), the dot operator (“⋅”) for multiplications, specialized characters when
+         * they exist (e.g. U+212A “K” for Kelvin sign), <i>etc.</i>
+         *
+         * <p>This is the default style of {@link UnitFormat}.</p>
+         */
+        SYMBOL,
+
+        /**
+         * Format unit symbols using the Unified Code for Units of Measure (UCUM) syntax.
+         * Those symbols are restricted to the ASCII character set.
+         *
+         * @see org.apache.sis.util.CharSequences#toASCII(CharSequence)
+         */
+        UCUM,
+
+        /**
+         * Format unit symbols as localized long names if known, or Unicode symbols otherwise.
+         */
+        NAME
+    }
 
     /**
      * Creates a new format for the given locale.
@@ -121,10 +158,14 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
-     * Creates a new format initialized to the {@link Locale#ROOT} locale.
+     * Creates a new format. This constructor is for subclasses only.
+     * Subclasses should {@linkplain #setLocale set the locale} to some default value.
+     *
+     * @see #getInstance(Locale)
      */
-    private UnitFormat() {
+    protected UnitFormat() {
         locale = Locale.ROOT;
+        style = Style.SYMBOL;
     }
 
     /**
@@ -138,29 +179,58 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
-     * Sets the locale used by this {@code UnitFormat}.
+     * Sets the locale that this {@code UnitFormat} will use for long names.
+     * For example a call to <code>setLocale({@linkplain Locale#US})</code>
+     * instructs this formatter to use the “meter” spelling instead of “metre”.
      *
-     * @param locale the new locale for this {@code UnitFormat}.
+     * @param  locale  the new locale for this {@code UnitFormat}.
      */
     public void setLocale(final Locale locale) {
-        isLocaleUS = locale.getCountry().equalsIgnoreCase("US");
+        ArgumentChecks.ensureNonNull("locale", locale);
         this.locale = locale;
     }
 
     /**
-     * Returns {@code true} since this {@code UnitFormat} depends on the {@link Locale}
-     * given at construction time for performing its tasks.
+     * Returns {@code true} if the locale is the US one.
+     */
+    private boolean isLocaleUS() {
+        return locale.getCountry().equalsIgnoreCase("US");
+    }
+
+    /**
+     * Returns whether this {@code UnitFormat} depends on the {@link Locale} given at construction time
+     * for performing its tasks. This method returns {@code true} if formatting long names (e.g. “metre”
+     * or “meter”} and {@code false} if formatting only the unit symbol (e.g. “m”).
      *
-     * @return {@code true}.
+     * @return {@code true} if formatting depends on the locale.
      */
     @Override
     public boolean isLocaleSensitive() {
-        return true;
+        return style == Style.NAME;
+    }
+
+    /**
+     * Returns whether unit formatting uses ASCII symbols, Unicode symbols or full localized names.
+     *
+     * @return the style of units formatted by this {@code UnitFormat} instance.
+     */
+    public Style getStyle() {
+        return style;
+    }
+
+    /**
+     * Sets whether unit formatting should use ASCII symbols, Unicode symbols or full localized names.
+     *
+     * @param  style  the desired style of units.
+     */
+    public void setStyle(final Style style) {
+        ArgumentChecks.ensureNonNull("style", style);
+        this.style = style;
     }
 
     /**
      * Attaches a label to the specified unit.
-     * If the specified label is already associated to another unit, then this method does nothing.
+     * If the specified label is already associated to another unit, then the previous association is discarded.
      *
      * @param  unit   the unit being labeled.
      * @param  label  the new label for the given unit.
@@ -184,7 +254,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         if (symbol != null) {
             return toAppendTo.append(symbol);
         }
-        if (longName) {
+        if (style == Style.NAME) {
             /*
              * Following are specific to the WKT format, which is currently the only user of this method.
              * If we invoke this method for other purposes, then we would need to provide more control on
@@ -195,7 +265,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
             } else if (Units.DEGREE.equals(unit)) {
                 return toAppendTo.append("degree");
             } else if (Units.METRE.equals(unit)) {
-                return toAppendTo.append(isLocaleUS ? "meter" : "metre");
+                return toAppendTo.append(isLocaleUS() ? "meter" : "metre");
             } else if (Units.US_SURVEY_FOOT.equals(unit)) {
                 return toAppendTo.append("US survey foot");
             } else if (Units.PPM.equals(unit)) {

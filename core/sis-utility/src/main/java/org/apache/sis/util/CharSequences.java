@@ -921,10 +921,10 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
 
     /**
      * Replaces some Unicode characters by ASCII characters on a "best effort basis".
-     * For example the {@code 'é'} character is replaced by {@code 'e'} (without accent).
-     *
-     * <p>The current implementation replaces the characters in the range {@code 00C0}
-     * to {@code 00FF} (inclusive) and some space and punctuation characters.</p>
+     * For example the “ é ” character is replaced by  “ e ” (without accent),
+     * the  “ ″ ” symbol for minutes of angle is replaced by straight double quotes “ " ”,
+     * and combined characters like ㎏, ㎎, ㎝, ㎞, ㎢, ㎦, ㎖, ㎧, ㎩, ㎐, <i>etc.</i> are replaced
+     * by the corresponding sequences of characters.
      *
      * <div class="note"><b>Note:</b>
      * the replacement of Greek letters is a more complex task than what this method can do,
@@ -938,6 +938,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @see StringBuilders#toASCII(StringBuilder)
      * @see org.apache.sis.io.wkt.Transliterator#filter(String)
+     * @see java.text.Normalizer
      */
     public static CharSequence toASCII(final CharSequence text) {
         return StringBuilders.toASCII(text, null);

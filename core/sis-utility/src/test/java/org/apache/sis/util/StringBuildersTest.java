@@ -29,7 +29,7 @@ import static org.apache.sis.util.StringBuilders.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 public final strictfp class StringBuildersTest extends TestCase {
@@ -87,13 +87,15 @@ public final strictfp class StringBuildersTest extends TestCase {
         final StringBuilder buffer = new StringBuilder("4.10");
         trimFractionalPart(buffer);
         assertEquals("4.10", buffer.toString());
-        buffer.setCharAt(2, '0'); // Replace the '1' by '0'.
+        buffer.setCharAt(2, '0');                                   // Replace the '1' by '0'.
         trimFractionalPart(buffer);
         assertEquals("4", buffer.toString());
     }
 
     /**
      * Tests the {@link StringBuilders#toASCII(StringBuilder)} method.
+     *
+     * @see CharSequencesTest#testToASCII()
      */
     @Test
     public void testToASCII() {
@@ -102,5 +104,20 @@ public final strictfp class StringBuildersTest extends TestCase {
                 " ‘single’, “double”, \"ascii' 30°20′10″.");
         toASCII(s);
         assertEquals("metres\n 'single', \"double\", \"ascii' 30°20'10\".", s.toString());
+        /*
+         * Characters below are in the Unicode CJK compatibility block. They are not intended for normal use.
+         * Note that in the decomposition form of ㎲, the first character is the Greek letter μ (U+03BC) instead
+         * of the micro sign µ (U+0085).
+         */
+        s.setLength(0);
+        toASCII(s.append("㎏, ㎎, ㎝, ㎞, ㎢, ㎦, ㎖, ㎧, ㎩, ㎐, ㏖, ㎳, ㎲, ㎥, ㎭"));
+        assertEquals("kg, mg, cm, km, km2, km3, ml, m/s, Pa, Hz, mol, ms, μs, m3, rad", s.toString());
+        /*
+         * Characters below are not from Unicode compatibility block, but nevertheless need decomposition or
+         * replacement. Note that the first K is the Kelvin sign (U+212A), to be replaced by the K letter.
+         */
+        s.setLength(0);
+        toASCII(s.append("℃, K, m⋅s"));
+        assertEquals("°C, K, m*s", s.toString());
     }
 }
