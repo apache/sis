@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
+import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.xml.bind.annotation.XmlType;
@@ -28,8 +29,9 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gml.Measure;
@@ -41,10 +43,6 @@ import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import java.util.Objects;
-import org.apache.sis.internal.referencing.Formulas;
 
 
 /**
@@ -149,9 +147,9 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *   </tr>
      * </table>
      *
-     * @param properties          The properties to be given to the identified object.
-     * @param greenwichLongitude  The longitude value relative to the Greenwich Meridian.
-     * @param angularUnit         The angular unit of the longitude.
+     * @param  properties          the properties to be given to the identified object.
+     * @param  greenwichLongitude  the longitude value relative to the Greenwich Meridian.
+     * @param  angularUnit         the angular unit of the longitude.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createPrimeMeridian(Map, double, Unit)
      */
@@ -172,7 +170,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param meridian The prime meridian to copy.
+     * @param  meridian  the prime meridian to copy.
      *
      * @see #castOrCopy(PrimeMeridian)
      */
@@ -188,8 +186,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultPrimeMeridian castOrCopy(final PrimeMeridian object) {
@@ -216,7 +214,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     /**
      * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
      *
-     * @return The prime meridian Greenwich longitude, in {@linkplain #getAngularUnit() angular unit}.
+     * @return the prime meridian Greenwich longitude, in {@linkplain #getAngularUnit() angular unit}.
      */
     @Override
     public double getGreenwichLongitude() {
@@ -232,8 +230,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *     double longitudeInDegrees = primeMeridian.getGreenwichLongitude(Units.DEGREE);
      * }
      *
-     * @param unit The unit in which to express longitude.
-     * @return The Greenwich longitude in the given units.
+     * @param  unit  the unit in which to express longitude.
+     * @return the Greenwich longitude in the given units.
      */
     public double getGreenwichLongitude(final Unit<Angle> unit) {
         return getAngularUnit().getConverterTo(unit).convert(getGreenwichLongitude());
@@ -242,7 +240,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     /**
      * Returns the angular unit of the Greenwich longitude.
      *
-     * @return The angular unit of the {@linkplain #getGreenwichLongitude() Greenwich longitude}.
+     * @return the angular unit of the {@linkplain #getGreenwichLongitude() Greenwich longitude}.
      */
     @Override
     public Unit<Angle> getAngularUnit() {
@@ -252,7 +250,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     /**
      * Compares this prime meridian with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
+     * @param  object  the object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
      *         relevant to coordinate transformations.
@@ -261,7 +259,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                // Slight optimization.
         }
         if (super.equals(object, mode)) switch (mode) {
             case STRICT: {
@@ -301,7 +299,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -376,7 +374,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         if (!isWKT1) {
             unit = getAngularUnit();
             if (convention != Convention.INTERNAL) {
-                unit = PatchedUnitFormat.toFormattable(unit);
+                unit = WKTUtilities.toFormattable(unit);
             }
         }
         formatter.append(getGreenwichLongitude(unit));

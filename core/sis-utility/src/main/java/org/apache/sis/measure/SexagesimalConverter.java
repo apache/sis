@@ -18,36 +18,34 @@ package org.apache.sis.measure;
 
 import java.util.List;
 import java.util.Collections;
-import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.UnitConverter;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 
 import static org.apache.sis.math.MathFunctions.truncate;
 
 
 /**
- * A converter from fractional degrees to sexagesimal degrees. Sexagesimal degrees are pseudo-unit
+ * A converter from decimal degrees to sexagesimal degrees. Sexagesimal degrees are pseudo-unit
  * in the <cite>sign - degrees - decimal point - minutes (two digits) - integer seconds (two digits) -
  * fraction of seconds (any precision)</cite> format.
  *
- * <p>When possible, Apache SIS always handles angles in radians, decimal degrees or any other
- * proportional units. Sexagesimal angles are considered a string representation issue (handled
- * by {@link AngleFormat}) rather than a unit issue. Unfortunately, this pseudo-unit is extensively
- * used in the EPSG database, so we have to support it.</p>
+ * <p>When possible, Apache SIS always handles angles in radians, decimal degrees or any other proportional units.
+ * Sexagesimal angles are considered a string representation issue (handled by {@link AngleFormat}) rather than a
+ * unit issue. Unfortunately, this pseudo-unit is extensively used in the EPSG database, so we have to support it.</p>
  *
  * <div class="section">Immutability and thread safety</div>
  * This class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.8
  * @module
  */
-class SexagesimalConverter implements UnitConverter, Serializable {
+class SexagesimalConverter extends AbstractConverter {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -70,12 +68,8 @@ class SexagesimalConverter implements UnitConverter, Serializable {
      * <p>This unit is non-linear and not practical for computation. Consequently, it should be
      * avoided as much as possible. This pseudo-unit is defined only because used in the EPSG
      * database (code 9111).</p>
-     *
-     * <p>This unit does not have an easily readable symbol because of the
-     * <a href="http://kenai.com/jira/browse/JSR_275-41">JSR-275 bug</a>.</p>
      */
-    static final Unit<Angle> DM = Units.DEGREE.transform(
-            new SexagesimalConverter(false, 100).inverse()).asType(Angle.class);//.alternate("D.M");
+    static final ConventionalUnit<Angle> DM;
 
     /**
      * Pseudo-unit for sexagesimal degree. Numbers in this pseudo-unit have the following format:
@@ -89,12 +83,8 @@ class SexagesimalConverter implements UnitConverter, Serializable {
      * <p>This unit is non-linear and not practical for computation. Consequently, it should be
      * avoided as much as possible. This pseudo-unit is defined only because extensively used in
      * the EPSG database (code 9110).</p>
-     *
-     * <p>This unit does not have an easily readable symbol because of the
-     * <a href="http://kenai.com/jira/browse/JSR_275-41">JSR-275 bug</a>.</p>
      */
-    static final Unit<Angle> DMS = Units.DEGREE.transform(
-            new SexagesimalConverter(true, 10000).inverse()).asType(Angle.class);//.alternate("D.MS");
+    static final Unit<Angle> DMS;
 
     /**
      * Pseudo-unit for degree - minute - second.
@@ -109,18 +99,19 @@ class SexagesimalConverter implements UnitConverter, Serializable {
      * <p>This unit is non-linear and not practical for computation. Consequently, it should be
      * avoided as much as possible. This pseudo-unit is defined only because extensively used in
      * EPSG database (code 9107).</p>
-     *
-     * <p>This unit does not have an easily readable symbol because of the
-     * <a href="http://kenai.com/jira/browse/JSR_275-41">JSR-275 bug</a>.</p>
      */
-    static final Unit<Angle> DMS_SCALED = Units.DEGREE.transform(
-            new SexagesimalConverter(true, 1).inverse()).asType(Angle.class);//.alternate("DMS");
-
-    /*
-     * Declares the units that we were not able to declare in calls to Unit.alternate(String).
-     */
+    static final Unit<Angle> DMS_SCALED;
     static {
-        PatchedUnitFormat.init(DM, "D.M", DMS, "D.MS", DMS_SCALED, "DMS");
+        final SystemUnit<Angle> rad = (SystemUnit<Angle>) Units.RADIAN;
+        final UnitConverter toRadian = Units.DEGREE.getConverterTo(rad);
+        DM = new ConventionalUnit<>(rad, new ConcatenatedConverter(
+                new SexagesimalConverter(false, 100).inverse(), toRadian), "D.M", (short) 9111);
+
+        DMS = new ConventionalUnit<>(rad, new ConcatenatedConverter(
+                new SexagesimalConverter(true, 10000).inverse(), toRadian), "D.MS", (short) 9110);
+
+        DMS_SCALED = new ConventionalUnit<>(rad, new ConcatenatedConverter(
+                new SexagesimalConverter(true, 1).inverse(), toRadian), "DMS", (short) 9107);
     }
 
     /**
@@ -225,11 +216,26 @@ class SexagesimalConverter implements UnitConverter, Serializable {
     }
 
     /**
-     * @todo not yet supported.
+     * Considers this converter as non-derivable. Actually it would be possible to provide a derivative value
+     * for input values other than the discontinuities points, but for now we presume that it is less dangerous
+     * to return NaN every time, so the user can not miss that this function is not derivable everywhere.
      */
     @Override
-    public UnitConverter concatenate(UnitConverter uc) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public final double derivative(double value) {
+        return Double.NaN;
+    }
+
+    /**
+     * Concatenates this converter with another converter. The resulting converter is equivalent to first converting
+     * by the specified converter (right converter), and then converting by this converter (left converter).
+     */
+    @Override
+    public UnitConverter concatenate(final UnitConverter converter) {
+        ArgumentChecks.ensureNonNull("converter", converter);
+        if (equals(converter.inverse())) {
+            return LinearConverter.IDENTITY;
+        }
+        return new ConcatenatedConverter(converter, this);
     }
 
     /**
@@ -250,7 +256,7 @@ class SexagesimalConverter implements UnitConverter, Serializable {
     }
 
     /**
-     * The inverse of {@link SexagesimalConverter}.
+     * The inverse of {@link SexagesimalConverter}, i.e. the converter from sexagesimal degrees to decimal degrees.
      */
     private static final class Inverse extends SexagesimalConverter {
         /**

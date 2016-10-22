@@ -18,7 +18,6 @@ package org.apache.sis.measure;
 
 import java.util.List;
 import java.util.Collections;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import javax.measure.UnitConverter;
 import org.apache.sis.util.Debug;
@@ -46,7 +45,7 @@ import org.apache.sis.internal.util.Numerics;
  * @version 0.8
  * @module
  */
-final class LinearConverter implements UnitConverter, Serializable {
+final class LinearConverter extends AbstractConverter {
     /**
      * For cross-version compatibility.
      */
@@ -165,6 +164,21 @@ final class LinearConverter implements UnitConverter, Serializable {
     }
 
     /**
+     * Returns the coefficient of this linear conversion.
+     */
+    @Override
+    @SuppressWarnings("fallthrough")
+    Number[] coefficients() {
+        final Number[] c = new Number[(scale != 1) ? 2 : (offset != 0) ? 1 : 0];
+        switch (c.length) {
+            case 2: c[1] = scale;
+            case 1: c[0] = offset;
+            case 0: break;
+        }
+        return c;
+    }
+
+    /**
      * Applies the linear conversion on the given IEEE 754 floating-point value.
      */
     @Override
@@ -201,6 +215,15 @@ final class LinearConverter implements UnitConverter, Serializable {
             value = convert(x);
         }
         return value;
+    }
+
+    /**
+     * Returns the derivative of the conversion at the given value.
+     * For a linear converter, the derivative is the same everywhere.
+     */
+    @Override
+    public double derivative(double value) {
+        return scale;
     }
 
     /**
