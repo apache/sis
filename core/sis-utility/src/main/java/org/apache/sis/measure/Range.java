@@ -22,7 +22,6 @@ import java.util.FormattableFlags;
 import java.io.Serializable;
 import javax.measure.Unit;
 import org.apache.sis.internal.util.Utilities;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
@@ -681,8 +680,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         }
         final Unit<?> unit = unit();
         if (unit != null) {
-            final String symbol = PatchedUnitFormat.toString(unit);
-            if (!symbol.isEmpty()) {
+            final String symbol = unit.toString();
+            if (symbol != null && !symbol.isEmpty()) {
                 if (Character.isLetterOrDigit(symbol.codePointAt(0))) {
                     buffer.append(' ');
                 }

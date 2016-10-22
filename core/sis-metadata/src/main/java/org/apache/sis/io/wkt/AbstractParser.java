@@ -339,7 +339,7 @@ abstract class AbstractParser implements Parser {
             if (locale == Locale.ROOT) {
                 return Units.valueOf(text);             // Most common case.
             }
-            unitFormat = UnitFormat.getInstance(locale);
+            unitFormat = new UnitFormat(locale);
             unitFormat.setStyle(UnitFormat.Style.NAME);
         }
         return unitFormat.parse(text);

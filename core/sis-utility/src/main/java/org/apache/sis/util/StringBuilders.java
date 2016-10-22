@@ -43,7 +43,9 @@ import static java.lang.Character.*;
 public final class StringBuilders extends Static {
     /**
      * Letters in the range 00C0 (192) to 00FF (255) inclusive with their accent removed, when possible.
-     * This string partially duplicates the work done by {@link java.text.Normalizer}.
+     * This string partially duplicates the work done by {@link Normalizer} with additional replacements.
+     * We use it for more direct character replacements (compared to using {@code Normalizer} than removing
+     * combining marks) for those common and easy cases.
      */
     private static final String ASCII = "AAAAAAÆCEEEEIIIIDNOOOOO*OUUUUYÞsaaaaaaæceeeeiiiionooooo/ouuuuyþy";
     // Original letters (with accent) = "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ";

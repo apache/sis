@@ -33,7 +33,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
 import org.apache.sis.measure.Range;
@@ -486,8 +485,8 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
      * or an empty string (never {@code null}) if none.
      */
     private static String getUnit(final ParameterDescriptor<?> param) {
-        final String unit = PatchedUnitFormat.toString(param.getUnit());
-        if (unit != null && !unit.isEmpty()) {
+        final String unit = param.getUnit().toString();
+        if (!unit.isEmpty()) {
             if (unit.equals("°")) {
                 return unit;
             }

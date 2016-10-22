@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
 import java.text.Format;
 import java.text.FieldPosition;
@@ -39,6 +40,7 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CorruptedObjectException;
 
 
 /**
@@ -46,18 +48,21 @@ import org.apache.sis.util.resources.Errors;
  * This class combines in a single class the API from {@link java.text} and the API from {@link javax.measure.format}.
  * In addition to the symbols of the <cite>Système international</cite> (SI), this class is also capable to handle
  * some symbols found in <cite>Well Known Text</cite> (WKT) definitions or in XML files.
-*
-* <div class="section">Parsing authority codes</div>
-* As a special case, if a character sequence given to the {@link #parse(CharSequence)} method is of the
-* {@code "EPSG:####"} or {@code "urn:ogc:def:uom:EPSG:####"} form (ignoring case and whitespaces),
-* then {@code "####"} is parsed as an integer and forwarded to the {@link Units#valueOfEPSG(int)} method.
-*
-* <div class="section">NetCDF unit symbols</div>
-* The attributes in NetCDF files often merge the axis direction with the angular unit,
-* as in {@code "degrees_east"} or {@code "degrees_north"}.
-* This class ignores those suffixes and unconditionally returns {@link Units#DEGREE} for all axis directions.
-* In particular, the units for {@code "degrees_west"} and {@code "degrees_east"} do <strong>not</strong> have
-* opposite sign. It is caller responsibility to handle the direction of axes associated to NetCDF units.
+ *
+ * <div class="section">Parsing authority codes</div>
+ * As a special case, if a character sequence given to the {@link #parse(CharSequence)} method is of the
+ * {@code "EPSG:####"} or {@code "urn:ogc:def:uom:EPSG:####"} form (ignoring case and whitespaces),
+ * then {@code "####"} is parsed as an integer and forwarded to the {@link Units#valueOfEPSG(int)} method.
+ *
+ * <div class="section">NetCDF unit symbols</div>
+ * The attributes in NetCDF files often merge the axis direction with the angular unit,
+ * as in {@code "degrees_east"} or {@code "degrees_north"}.
+ * This class ignores those suffixes and unconditionally returns {@link Units#DEGREE} for all axis directions.
+ * In particular, the units for {@code "degrees_west"} and {@code "degrees_east"} do <strong>not</strong> have
+ * opposite sign. It is caller responsibility to handle the direction of axes associated to NetCDF units.
+ *
+ * <div class="section">Multi-threading</div>
+ * {@code UnitFormat} is not thread-safe. Synchronization, if desired, is caller's responsibility.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
@@ -86,6 +91,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
 
     /**
      * The default instance used by {@link Units#valueOf(String)} for parsing units of measurement.
+     * While {@code UnitFormat} is generally not thread-safe, this particular instance is safe if
+     * we never invoke any setter method.
      */
     static final UnitFormat INSTANCE = new UnitFormat();
 
@@ -146,26 +153,41 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
-     * Creates a new format for the given locale.
+     * Symbols or names to use for formatting unit in replacement of the default unit symbols or names.
      *
-     * @param   locale  the locale to use for parsing and formatting units.
-     * @return  a new {@code UnitFormat} instance using the given locale.
+     * @see #label(Unit, String)
      */
-    public static UnitFormat getInstance(final Locale locale) {
-        final UnitFormat f = new UnitFormat();
-        f.setLocale(locale);
-        return f;
+    private final Map<Unit<?>,String> labels;
+
+    /**
+     * Units associated to a given label (in addition to the system-wide {@link UnitRegistry}).
+     * This map is the converse of {@link #labels}.
+     *
+     * @see #label(Unit, String)
+     */
+    private final Map<String,Unit<?>> units;
+
+    /**
+     * Creates the unique {@link #INSTANCE}.
+     */
+    private UnitFormat() {
+        locale = Locale.ROOT;
+        style  = Style.SYMBOL;
+        labels = Collections.emptyMap();
+        units  = Collections.emptyMap();
     }
 
     /**
-     * Creates a new format. This constructor is for subclasses only.
-     * Subclasses should {@linkplain #setLocale set the locale} to some default value.
+     * Creates a new format for the given locale.
      *
-     * @see #getInstance(Locale)
+     * @param   locale  the locale to use for parsing and formatting units.
      */
-    protected UnitFormat() {
-        locale = Locale.ROOT;
-        style = Style.SYMBOL;
+    public UnitFormat(final Locale locale) {
+        ArgumentChecks.ensureNonNull("locale", locale);
+        this.locale = locale;
+        style  = Style.SYMBOL;
+        labels = new HashMap<>();
+        units  = new HashMap<>();
     }
 
     /**
@@ -237,7 +259,20 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     @Override
     public void label(final Unit<?> unit, final String label) {
-        // TODO
+        ArgumentChecks.ensureNonNull("unit",  unit);
+        ArgumentChecks.ensureNonNull("label", label);
+        final Unit<?> unitForOldLabel = units.remove(labels.put(unit, label));
+        final Unit<?> oldUnitForLabel = units.put(label, unit);
+        if (!unit.equals(oldUnitForLabel) && !label.equals(labels.remove(oldUnitForLabel))) {
+            // Assuming there is no bug in our algorithm, this exception should never happen
+            // unless this UnitFormat has been modified concurrently in another thread.
+            throw new CorruptedObjectException("labels");
+        }
+        if (unitForOldLabel != null && !unitForOldLabel.equals(unit)) {
+            // Assuming there is no bug in our algorithm, this exception should never happen
+            // unless this UnitFormat has been modified concurrently in another thread.
+            throw new CorruptedObjectException("units");
+        }
     }
 
     /**
@@ -250,10 +285,6 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     @Override
     public Appendable format(final Unit<?> unit, final Appendable toAppendTo) throws IOException {
-        String symbol = org.apache.sis.internal.util.PatchedUnitFormat.getSymbol(unit);
-        if (symbol != null) {
-            return toAppendTo.append(symbol);
-        }
         if (style == Style.NAME) {
             /*
              * Following are specific to the WKT format, which is currently the only user of this method.
@@ -272,7 +303,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 return toAppendTo.append("parts per million");
             }
         }
-        symbol = unit.getSymbol();
+        String symbol = unit.getSymbol();
         if (symbol != null) {
             return toAppendTo.append(symbol);
         }

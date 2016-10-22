@@ -119,5 +119,11 @@ public final strictfp class StringBuildersTest extends TestCase {
         s.setLength(0);
         toASCII(s.append("℃, K, m⋅s"));
         assertEquals("°C, K, m*s", s.toString());
+        /*
+         * Tests the shortcut code path.
+         */
+        s.setLength(0);
+        toASCII(s.append("ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"));
+        assertEquals(    "AAAAAAÆCEEEEIIIIDNOOOOO*OUUUUYÞsaaaaaaæceeeeiiiionooooo/ouuuuyþy", s.toString());
     }
 }

@@ -18,7 +18,6 @@ package org.apache.sis.measure;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.io.Serializable;
 import javax.measure.UnitConverter;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -31,7 +30,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @version 0.8
  * @module
  */
-final class ConcatenatedConverter implements UnitConverter, Serializable {
+final class ConcatenatedConverter extends AbstractConverter {
     /**
      * For cross-version compatibility.
      */
@@ -106,6 +105,14 @@ final class ConcatenatedConverter implements UnitConverter, Serializable {
     @Override
     public Number convert(final Number value) {
         return c2.convert(c1.convert(value));
+    }
+
+    /**
+     * Returns the derivative of the conversion function at the given value, or {@code NaN} if unknown.
+     */
+    @Override
+    public double derivative(final double value) {
+        return derivative(c1, value) * derivative(c2, c1.convert(value));
     }
 
     /**

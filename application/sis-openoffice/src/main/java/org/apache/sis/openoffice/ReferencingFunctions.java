@@ -40,7 +40,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.storage.CodeType;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
@@ -232,7 +231,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
                             return Errors.getResources(getJavaLocale()).getString(Errors.Keys.IndexOutOfBounds_1, dimension);
                         }
                     }
-                    final String unit = PatchedUnitFormat.toString(axis.getUnit());
+                    final String unit = axis.getUnit().toString();
                     name = Transliterator.DEFAULT.toShortAxisName(cs, axis.getDirection(), axis.getName().getCode());
                     if (unit != null && !unit.isEmpty()) {
                         name = name + " (" + unit + ')';

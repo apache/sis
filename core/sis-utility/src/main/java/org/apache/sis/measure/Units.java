@@ -974,43 +974,87 @@ public final class Units extends Static {
 
     /**
      * Returns the factor by which to multiply the standard unit in order to get the given unit.
-     * The "standard" unit is usually the SI unit on which the given unit is based.
+     * The "standard" unit is usually the SI unit on which the given unit is based, as given by
+     * {@link Unit#getSystemUnit()}.
      *
-     * <p><b>Example:</b> if the given unit is <var>kilometre</var>, then this method returns 1000
-     * since a measurement in kilometres must be multiplied by 1000 in order to give the equivalent
-     * measurement in the "standard" units (here <var>metres</var>).</p>
+     * <div class="note"><b>Example:</b>
+     * if the given unit is {@link #KILOMETRE}, then this method returns 1000 since a measurement in kilometres
+     * must be multiplied by 1000 in order to give the equivalent measurement in the "standard" units
+     * (here {@link #METRE}).</div>
      *
-     * @param  <Q>   the quantity measured by the unit.
-     * @param  unit  the unit for which we want the multiplication factor to standard unit.
-     * @return the factor by which to multiply a measurement in the given unit in order to
-     *         get an equivalent measurement in the standard unit.
+     * If the given unit is {@code null} or if the conversion to the "standard" unit can not be expressed
+     * by a single multiplication factor, then this method returns {@link Double#NaN}.
+     *
+     * @param  <Q>   the quantity measured by the unit, or {@code null}.
+     * @param  unit  the unit for which we want the multiplication factor to standard unit, or {@code null}.
+     * @return the factor by which to multiply a measurement in the given unit in order to get an equivalent
+     *         measurement in the standard unit, or NaN if the conversion can not be expressed by a scale factor.
      */
-    @Workaround(library="JSR-275", version="0.9.3")
     public static <Q extends Quantity<Q>> double toStandardUnit(final Unit<Q> unit) {
-        return derivative(unit.getConverterTo(unit.getSystemUnit()), 0);
+        if (unit != null) {
+            final UnitConverter converter = unit.getConverterTo(unit.getSystemUnit());
+            if (converter.isLinear() && converter.convert(0) == 0) {
+                // Above check for converter(0) is a paranoiac check since
+                // JSR-363 said that a "linear" converter has no offset.
+                return converter.convert(1);
+            }
+        }
+        return Double.NaN;
     }
 
     /**
-     * Returns an estimation of the derivative of the given converter at the given value.
-     * This method is a workaround for a method which existed in previous JSR-275 API but
-     * have been removed in more recent releases.
+     * Returns the coefficients of the given converter expressed as a polynomial equation.
+     * This method returns the first of the following choices that apply:
      *
-     * <p>Current implementation computes the derivative as below:</p>
+     * <ul>
+     *   <li>If the given converter {@linkplain UnitConverter#isIdentity() is identity}, returns an empty array.</li>
+     *   <li>If the given converter shifts the values without scaling them (for example the conversion from Kelvin to
+     *       Celsius degrees), returns an array of length 1 containing only the offset.</li>
+     *   <li>If the given converter scales the values (optionally in addition to shifting them), returns an array of
+     *       length 2 containing the offset and scale factor, in that order.</li>
+     * </ul>
      *
-     * {@preformat java
-     *     return converter.convert(value + 1) - converter.convert(value);
-     * }
+     * This method returns {@code null} if it can not get the polynomial equation coefficients from the given converter.
      *
-     * The above is exact for linear converters, which is the case of the vast majority of unit converters in use.
-     * It may not be exact for a few unusual converter like the one from sexagesimal degrees to decimal degrees.
+     * @param  converter  the converter from which to get the coefficients of the polynomial equation, or {@code null}.
+     * @return the polynomial equation coefficients (may be any length, including zero), or {@code null} if the given
+     *         converter is {@code null} or if this method can not get the coefficients.
      *
-     * @param  converter  the converter for which we want the derivative at a given point.
-     * @param  value      the point at which to compute the derivative.
-     * @return the derivative at the given point.
+     * @since 0.8
      */
-    @Workaround(library="JSR-275", version="0.9.3")
+    public static Number[] coefficients(final UnitConverter converter) {
+        if (converter != null) {
+            if (converter instanceof AbstractConverter) {
+                return ((AbstractConverter) converter).coefficients();
+            }
+            if (converter.isIdentity()) {
+                return new Number[0];
+            }
+            if (converter.isLinear()) {
+                final double offset = converter.convert(0);  // Should be zero as per JSR-363 specification, but we are paranoiac.
+                final double scale  = converter.convert(1) - offset;
+                final Number[] c = new Number[(scale != 1) ? 2 : (offset != 0) ? 1 : 0];
+                switch (c.length) {
+                    case 2: c[1] = scale;
+                    case 1: c[0] = offset;
+                    case 0: break;
+                }
+                return c;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the derivative of the given converter at the given value,
+     * or {@code NaN} if this method can not compute it.
+     *
+     * @param  converter  the converter for which we want the derivative at a given point, or {@code null}.
+     * @param  value      the point at which to compute the derivative.
+     * @return the derivative at the given point, or {@code NaN} if unknown.
+     */
     public static double derivative(final UnitConverter converter, final double value) {
-        return converter.convert(value + 1) - converter.convert(value);
+        return AbstractConverter.derivative(converter, value);
     }
 
     /**
@@ -1118,7 +1162,27 @@ public final class Units extends Static {
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createUnit(String)
      */
     public static Unit<?> valueOfEPSG(final int code) {
-        return (code > 0 && code <= Short.MAX_VALUE) ? (Unit<?>) UnitRegistry.get((short) code) : null;
+        /*
+         * The switch for the SexagesimalConverter cases are needed since we did not put those units
+         * in the UnitRegistry map for reducing a little bit class loading in the common cases where
+         * those units are not needed. Other cases are redundant with the UnitRegistry check, but we
+         * add them opportunistically as a shortcut since those units are frequently used.
+         */
+        switch (code) {
+            case Constants.EPSG_PARAM_DEGREES:  // Fall through
+            case Constants.EPSG_AXIS_DEGREES:   return DEGREE;
+            case Constants.EPSG_METRE:          return METRE;
+
+            case 9107: // Fall through
+            case 9108: return SexagesimalConverter.DMS_SCALED;
+            case 9110: return SexagesimalConverter.DMS;
+            case 9111: return SexagesimalConverter.DM;
+            case 9203: // Fall through
+            case 9201: return UNITY;
+            default: {
+                return (code > 0 && code <= Short.MAX_VALUE) ? (Unit<?>) UnitRegistry.get((short) code) : null;
+            }
+        }
     }
 
     /**
