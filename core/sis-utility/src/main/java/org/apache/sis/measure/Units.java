@@ -23,6 +23,7 @@ import javax.measure.format.ParserException;
 import javax.measure.Quantity;
 import javax.measure.quantity.*;
 import javax.measure.quantity.Angle;            // Because of name collision with Angle in this SIS package.
+import org.opengis.geometry.DirectPosition;     // For javadoc
 
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
@@ -722,12 +723,12 @@ public final class Units extends Static {
 
         UnitRegistry.alias(UNITY,       Short.valueOf((short) 9203));
         UnitRegistry.alias(DEGREE,      Short.valueOf(Constants.EPSG_AXIS_DEGREES));
-        UnitRegistry.alias(DEGREE,    "deg");
         UnitRegistry.alias(ARC_MINUTE,  "'");
         UnitRegistry.alias(ARC_SECOND, "\"");
         UnitRegistry.alias(KELVIN,      "K");       // Ordinary "K" letter (not the dedicated Unicode character).
         UnitRegistry.alias(CELSIUS,    "°C");
         UnitRegistry.alias(CELSIUS,   "Cel");
+        UnitRegistry.alias(GRAD,      "gon");
 
         initialized = true;
     }
@@ -1022,6 +1023,7 @@ public final class Units extends Static {
      *
      * @since 0.8
      */
+    @SuppressWarnings("fallthrough")
     public static Number[] coefficients(final UnitConverter converter) {
         if (converter != null) {
             if (converter instanceof AbstractConverter) {
@@ -1035,7 +1037,7 @@ public final class Units extends Static {
                 final double scale  = converter.convert(1) - offset;
                 final Number[] c = new Number[(scale != 1) ? 2 : (offset != 0) ? 1 : 0];
                 switch (c.length) {
-                    case 2: c[1] = scale;
+                    case 2: c[1] = scale;       // Fall through
                     case 1: c[0] = offset;
                     case 0: break;
                 }
@@ -1052,6 +1054,8 @@ public final class Units extends Static {
      * @param  converter  the converter for which we want the derivative at a given point, or {@code null}.
      * @param  value      the point at which to compute the derivative.
      * @return the derivative at the given point, or {@code NaN} if unknown.
+     *
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#derivative(DirectPosition)
      */
     public static double derivative(final UnitConverter converter, final double value) {
         return AbstractConverter.derivative(converter, value);

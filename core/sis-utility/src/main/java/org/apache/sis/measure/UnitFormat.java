@@ -25,6 +25,8 @@ import java.util.Locale;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
+import java.util.ResourceBundle;
+import java.util.MissingResourceException;
 import java.io.IOException;
 import javax.measure.Dimension;
 import javax.measure.Unit;
@@ -33,14 +35,13 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.XPaths;
 import org.apache.sis.math.Fraction;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CorruptedObjectException;
+import org.apache.sis.util.collection.WeakValueHashMap;
 
 
 /**
@@ -76,18 +77,6 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -3064428584419360693L;
-
-    /**
-     * The resource bundles for {@linkplain AbstractUnit#getName() unit names}.
-     */
-    static final String RESOURCES = "org.apache.sis.measure.UnitNames";
-
-    /**
-     * The suffixes that NetCDF files sometime put after the "degrees" unit.
-     * Suffix at even index are for axes having the standard geometric direction,
-     * while suffix at odd index are for axes having the reverse direction.
-     */
-    private static final String[] CARDINAL_DIRECTIONS = {"east", "west", "north", "south"};
 
     /**
      * The default instance used by {@link Units#valueOf(String)} for parsing units of measurement.
@@ -135,8 +124,10 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          * they exist (e.g. U+212A “K” for Kelvin sign), <i>etc.</i>
          *
          * <p>This is the default style of {@link UnitFormat}.</p>
+         *
+         * @see Unit#getSymbol()
          */
-        SYMBOL,
+        SYMBOL('⋅', '∕'),
 
         /**
          * Format unit symbols using the Unified Code for Units of Measure (UCUM) syntax.
@@ -144,37 +135,124 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          *
          * @see org.apache.sis.util.CharSequences#toASCII(CharSequence)
          */
-        UCUM,
+        UCUM('.', '/') {
+            /** Replace non-ASCII characters on a "best effort" basis. */
+            @Override Appendable appendSymbol(final Appendable toAppendTo, final String value) throws IOException {
+                return toAppendTo.append(CharSequences.toASCII(value));
+            }
+
+            /** Formats the power for a unit symbol. */
+            @Override void appendPower(final Appendable toAppendTo, final int power) throws IOException {
+                toAppendTo.append(String.valueOf(power));
+            }
+
+            /** Actually illegal for UCUM, but at least ensure that it contains only ASCII characters. */
+            @Override void appendPower(final Appendable toAppendTo, final Fraction power) throws IOException {
+                toAppendTo.append("^(").append(String.valueOf(power.numerator))
+                           .append('/').append(String.valueOf(power.denominator)).append(')');
+            }
+        },
 
         /**
          * Format unit symbols as localized long names if known, or Unicode symbols otherwise.
+         *
+         * @see Unit#getName()
          */
-        NAME
+        NAME('⋅', '∕');
+
+        /**
+         * Symbols to use for unit multiplications or divisions.
+         */
+        final char multiply, divide;
+
+        /**
+         * Creates a new style using the given symbols.
+         */
+        private Style(final char multiply, final char divide) {
+            this.multiply = multiply;
+            this.divide   = divide;
+        }
+
+        /**
+         * Appends a string that may contains Unicode characters. The enumeration is responsible
+         * for converting the Unicode characters into ASCII ones if needed.
+         */
+        Appendable appendSymbol(final Appendable toAppendTo, final String value) throws IOException {
+            return toAppendTo.append(value);
+        }
+
+        /**
+         * Appends an integer power. The power may be added as an exponent if allowed by the format style.
+         */
+        void appendPower(final Appendable toAppendTo, final int power) throws IOException {
+            if (power >= 0 && power <= 9) {
+                toAppendTo.append(Characters.toSuperScript((char) (power + '0')));
+            } else {
+                toAppendTo.append(String.valueOf(power));
+            }
+        }
+
+        /**
+         * Appends a rational power.
+         */
+        void appendPower(final Appendable toAppendTo, final Fraction power) throws IOException {
+            final String value = power.toString();
+            if (value.length() == 1) {
+                toAppendTo.append('^').append(value);
+            } else {
+                toAppendTo.append("^(").append(value).append(')');
+            }
+        }
     }
 
     /**
-     * Symbols or names to use for formatting unit in replacement of the default unit symbols or names.
+     * Symbols or names to use for formatting unit in replacement to the default unit symbols or names.
      *
      * @see #label(Unit, String)
      */
-    private final Map<Unit<?>,String> labels;
+    private final Map<Unit<?>,String> unitToLabel;
 
     /**
      * Units associated to a given label (in addition to the system-wide {@link UnitRegistry}).
-     * This map is the converse of {@link #labels}.
+     * This map is the converse of {@link #unitToLabel}.
      *
      * @see #label(Unit, String)
      */
-    private final Map<String,Unit<?>> units;
+    private final Map<String,Unit<?>> labelToUnit;
+
+    /**
+     * The mapping from unit symbols to long localized names.
+     * Those resources are locale-dependent and loaded when first needed.
+     *
+     * @see #symbolToName()
+     */
+    private transient ResourceBundle symbolToName;
+
+    /**
+     * Mapping from long localized and unlocalized names to unit instances.
+     * This map is used only for parsing and created when first needed.
+     *
+     * @see #nameToUnit()
+     */
+    private transient volatile Map<String,Unit<?>> nameToUnit;
+
+    /**
+     * Cached values of {@link #nameToUnit}, for avoiding to load the same information many time and for saving memory
+     * if the user create many {@code UnitFormat} instances. Note that we do not cache {@link #symbolToName} because
+     * {@link ResourceBundle} already provides its own caching mechanism.
+     *
+     * @see #nameToUnit()
+     */
+    private static final WeakValueHashMap<Locale, Map<String,Unit<?>>> SHARED = new WeakValueHashMap<>(Locale.class);
 
     /**
      * Creates the unique {@link #INSTANCE}.
      */
     private UnitFormat() {
-        locale = Locale.ROOT;
-        style  = Style.SYMBOL;
-        labels = Collections.emptyMap();
-        units  = Collections.emptyMap();
+        locale      = Locale.ROOT;
+        style       = Style.SYMBOL;
+        unitToLabel = Collections.emptyMap();
+        labelToUnit = Collections.emptyMap();
     }
 
     /**
@@ -185,9 +263,9 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     public UnitFormat(final Locale locale) {
         ArgumentChecks.ensureNonNull("locale", locale);
         this.locale = locale;
-        style  = Style.SYMBOL;
-        labels = new HashMap<>();
-        units  = new HashMap<>();
+        style       = Style.SYMBOL;
+        unitToLabel = new HashMap<>();
+        labelToUnit = new HashMap<>();
     }
 
     /**
@@ -209,14 +287,9 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     public void setLocale(final Locale locale) {
         ArgumentChecks.ensureNonNull("locale", locale);
-        this.locale = locale;
-    }
-
-    /**
-     * Returns {@code true} if the locale is the US one.
-     */
-    private boolean isLocaleUS() {
-        return locale.getCountry().equalsIgnoreCase("US");
+        this.locale  = locale;
+        symbolToName = null;            // Force reloading for the new locale.
+        nameToUnit   = null;
     }
 
     /**
@@ -254,29 +327,136 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * Attaches a label to the specified unit.
      * If the specified label is already associated to another unit, then the previous association is discarded.
      *
+     * <p>The given label must be non-empty and can not ends with a digit, since such digit would be confused
+     * with unit power.</p>
+     *
      * @param  unit   the unit being labeled.
      * @param  label  the new label for the given unit.
+     * @throws IllegalArgumentException if the given label is not a valid unit name.
      */
     @Override
-    public void label(final Unit<?> unit, final String label) {
+    public void label(final Unit<?> unit, String label) {
         ArgumentChecks.ensureNonNull("unit",  unit);
-        ArgumentChecks.ensureNonNull("label", label);
-        final Unit<?> unitForOldLabel = units.remove(labels.put(unit, label));
-        final Unit<?> oldUnitForLabel = units.put(label, unit);
-        if (!unit.equals(oldUnitForLabel) && !label.equals(labels.remove(oldUnitForLabel))) {
+        label = CharSequences.trimWhitespaces(label);
+        ArgumentChecks.ensureNonEmpty("label", label);
+        int c = Character.codePointBefore(label, label.length());
+        if (Character.isBmpCodePoint(c)) {
+            c = Characters.toNormalScript((char) c);
+        }
+        if (Character.isDigit(c)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "label", label));
+        }
+        final Unit<?> unitForOldLabel = labelToUnit.remove(unitToLabel.put(unit, label));
+        final Unit<?> oldUnitForLabel = labelToUnit.put(label, unit);
+        if (oldUnitForLabel != null && !oldUnitForLabel.equals(unit) && !label.equals(unitToLabel.remove(oldUnitForLabel))) {
             // Assuming there is no bug in our algorithm, this exception should never happen
             // unless this UnitFormat has been modified concurrently in another thread.
-            throw new CorruptedObjectException("labels");
+            throw new CorruptedObjectException("unitToLabel");
         }
         if (unitForOldLabel != null && !unitForOldLabel.equals(unit)) {
             // Assuming there is no bug in our algorithm, this exception should never happen
             // unless this UnitFormat has been modified concurrently in another thread.
-            throw new CorruptedObjectException("units");
+            throw new CorruptedObjectException("labelToUnit");
+        }
+    }
+
+    /**
+     * Loads the {@code UnitNames} resource bundle for the given locale.
+     */
+    static ResourceBundle getBundle(final Locale locale) {
+        return ResourceBundle.getBundle("org.apache.sis.measure.UnitNames", locale, UnitFormat.class.getClassLoader());
+    }
+
+    /**
+     * Returns the mapping from unit symbols to long localized names.
+     * This mapping is loaded when first needed and memorized as long as the locale does not change.
+     */
+    private ResourceBundle symbolToName() {
+        ResourceBundle r = symbolToName;
+        if (r == null) {
+            symbolToName = r = getBundle(locale);
+        }
+        return r;
+    }
+
+    /**
+     * Returns the mapping from long localized and unlocalized names to unit instances.
+     * This mapping is somewhat the converse of {@link #symbolToName()}, but includes
+     * international and American spelling of unit names in addition of localized names.
+     * The intend is to recognize "meter" as well as "metre" (together with, for example,
+     * "mètre" if and only if the locale language is French).
+     *
+     * <p>While we said that {@code UnitFormat} is not thread safe, we make an exception for this method
+     * for allowing the singleton {@link #INSTANCE} to parse symbols in a multi-threads environment.</p>
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    private Map<String,Unit<?>> nameToUnit() {
+        Map<String,Unit<?>> map = nameToUnit;
+        if (map == null) {
+            map = SHARED.get(locale);
+            if (map == null) {
+                map = new HashMap<>(128);
+                copy(locale, symbolToName(), map);
+                if (!locale.equals(Locale.US))   copy(Locale.US,   getBundle(Locale.US),   map);
+                if (!locale.equals(Locale.ROOT)) copy(Locale.ROOT, getBundle(Locale.ROOT), map);
+                /*
+                 * The UnitAliases file contains names that are not unit symbols and are not included in the UnitNames
+                 * property files neither. It contains longer names somtime used (for example "decimal degree" instead
+                 * of "degree"), some plural forms (for example "feet" instead of "foot") and a few common misspellings
+                 * (for exemple "Celcius" instead of "Celsius").
+                 */
+                final ResourceBundle r = ResourceBundle.getBundle("org.apache.sis.measure.UnitAliases", locale, UnitFormat.class.getClassLoader());
+                for (final String name : r.keySet()) {
+                    map.put(name, Units.get(r.getString(name)));
+                }
+                map = Collections.unmodifiableMap(map);
+                /*
+                 * Cache the map so we can share it with other UnitFormat instances.
+                 * Sharing is safe if the map is unmodifiable.
+                 */
+                synchronized (SHARED) {
+                    for (final Map<String,Unit<?>> existing : SHARED.values()) {
+                        if (map.equals(existing)) {
+                            map = existing;
+                            break;
+                        }
+                    }
+                    SHARED.put(locale, map);
+                }
+            }
+            nameToUnit = map;
+        }
+        return map;
+    }
+
+    /**
+     * Copies all entries from the given "symbols to names" mapping to the given "names to units" mapping.
+     * During this copy, keys are converted from symbols to names and values are converted from symbols to
+     * {@code Unit} instance. We use {@code Unit} values instead of their symbols because all {@code Unit}
+     * instances are created at {@link Units} class initialization anyway (so we do not create new instance
+     * here), and it avoid to retain references to the {@link String} instances loaded by the resource bundle.
+     */
+    private static void copy(final Locale locale, final ResourceBundle symbolToName, final Map<String,Unit<?>> nameToUnit) {
+        for (final String symbol : symbolToName.keySet()) {
+            nameToUnit.put(symbolToName.getString(symbol).toLowerCase(locale), Units.get(symbol));
         }
     }
 
     /**
      * Formats the specified unit.
+     * This method performs the first of the following actions that can be done.
+     *
+     * <ol>
+     *   <li>If a {@linkplain #label(Unit, String) label has been specified} for the given unit,
+     *       then that label is appended unconditionally.</li>
+     *   <li>Otherwise if the formatting style is {@link Style#NAME} and the {@link Unit#getName()} method
+     *       returns a non-null value, then that value is appended. {@code Unit} instances implemented by
+     *       Apache SIS are handled in a special way for localizing the name according the
+     *       {@linkplain #setLocale(Locale) locale specified to this format}.</li>
+     *   <li>Otherwise if the {@link Unit#getSymbol()} method returns a non-null value,
+     *       then that value is appended.</li>
+     *   <li>Otherwise a default symbol is created from the entries returned by {@link Unit#getBaseUnits()}.</li>
+     * </ol>
      *
      * @param  unit        the unit to format.
      * @param  toAppendTo  where to format the unit.
@@ -285,47 +465,83 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     @Override
     public Appendable format(final Unit<?> unit, final Appendable toAppendTo) throws IOException {
+        ArgumentChecks.ensureNonNull("unit", unit);
+        ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
+        /*
+         * Choice 1: label specified by a call to label(Unit, String).
+         */
+        String label = unitToLabel.get(unit);
+        if (label != null) {
+            return toAppendTo.append(label);
+        }
         if (style == Style.NAME) {
             /*
-             * Following are specific to the WKT format, which is currently the only user of this method.
-             * If we invoke this method for other purposes, then we would need to provide more control on
-             * what kind of formatting is desired.
+             * Choice 2: value specified by Unit.getName(). We skip this check if the given Unit is an instance
+             * implemented by Apache SIS because  AbstractUnit.getName()  delegates to the same resource bundle
+             * than the one used by this block. We are better to use the resource bundle of the UnitFormat both
+             * for performance reasons and because the locale may not be the same.
              */
-            if (Units.UNITY.equals(unit)) {
-                return toAppendTo.append("unity");
-            } else if (Units.DEGREE.equals(unit)) {
-                return toAppendTo.append("degree");
-            } else if (Units.METRE.equals(unit)) {
-                return toAppendTo.append(isLocaleUS() ? "meter" : "metre");
-            } else if (Units.US_SURVEY_FOOT.equals(unit)) {
-                return toAppendTo.append("US survey foot");
-            } else if (Units.PPM.equals(unit)) {
-                return toAppendTo.append("parts per million");
+            if (!(unit instanceof AbstractUnit)) {
+                label = unit.getName();
+                if (label != null) {
+                    return toAppendTo.append(label);
+                }
+            } else {
+                label = unit.getSymbol();
+                if (label != null) {
+                    if (label.isEmpty()) {
+                        label = "unity";
+                    }
+                    // Following is not thread-safe, but it is okay since we do not use INSTANCE for unit names.
+                    final ResourceBundle names = symbolToName();
+                    try {
+                        label = names.getString(label);
+                    } catch (MissingResourceException e) {
+                        // Name not found; use the symbol as a fallback.
+                    }
+                    return toAppendTo.append(label);
+                }
             }
         }
-        String symbol = unit.getSymbol();
-        if (symbol != null) {
-            return toAppendTo.append(symbol);
+        /*
+         * Choice 3: if the unit has a specific symbol, appends that symbol.
+         */
+        label = unit.getSymbol();
+        if (label != null) {
+            return style.appendSymbol(toAppendTo, label);
         }
+        /*
+         * Choice 4: if all the above failed, fallback on a symbol created from the base units and their power.
+         * Note that this may produce more verbose symbols than needed since derived units like Volt or Watt are
+         * decomposed into their base SI units.
+         */
         Map<? extends Unit<?>, ? extends Number> components;
         if (unit instanceof AbstractUnit<?>) {
+            // In Apache SIS implementation, the powers may be ratios.
             components = ((AbstractUnit<?>) unit).getBaseSystemUnits();
         } else {
-            // Fallback for foreigner implementations.
+            // Fallback for foreigner implementations (powers restricted to integers).
             components = unit.getBaseUnits();
             if (components == null) {
                 components = Collections.singletonMap(unit, 1);
             }
         }
-        formatComponents(components, toAppendTo);
+        formatComponents(components, style, toAppendTo);
         return toAppendTo;
     }
 
     /**
      * Creates a new symbol (e.g. "m/s") from the given symbols and factors.
      * Keys in the given map can be either {@link Unit} or {@link Dimension} instances.
+     * Values in the given map are either {@link Integer} or {@link Fraction} instances.
+     *
+     * @param  components  the components of the symbol to format.
+     * @param  style       whether to allow Unicode characters.
+     * @param  toAppendTo  where to write the symbol.
      */
-    static void formatComponents(final Map<?, ? extends Number> components, final Appendable toAppendTo) throws IOException {
+    static void formatComponents(final Map<?, ? extends Number> components, final Style style, final Appendable toAppendTo)
+            throws IOException
+    {
         boolean isFirst = true;
         final List<Map.Entry<?,? extends Number>> deferred = new ArrayList<>(components.size());
         for (final Map.Entry<?,? extends Number> entry : components.entrySet()) {
@@ -333,23 +549,31 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
             final int n = (power instanceof Fraction) ? ((Fraction) power).numerator : power.intValue();
             if (n > 0) {
                 if (!isFirst) {
-                    toAppendTo.append('⋅');
+                    toAppendTo.append(style.multiply);
                 }
                 isFirst = false;
-                formatComponent(entry, false, toAppendTo);
+                formatComponent(entry, false, style, toAppendTo);
             } else if (n != 0) {
                 deferred.add(entry);
             }
         }
-        if (!isFirst && deferred.size() == 1) {
-            formatComponent(deferred.get(0), true, toAppendTo.append('∕'));
-        } else {
+        // At this point, all numerators have been appended. Now append the denominators together.
+        if (!deferred.isEmpty()) {
+            toAppendTo.append(style.divide);
+            final boolean useParenthesis = (deferred.size() > 1);
+            if (useParenthesis) {
+                toAppendTo.append('(');
+            }
+            isFirst = true;
             for (final Map.Entry<?,? extends Number> entry : deferred) {
                 if (!isFirst) {
-                    toAppendTo.append('⋅');
+                    toAppendTo.append(style.multiply);
                 }
                 isFirst = false;
-                formatComponent(entry, false, toAppendTo);
+                formatComponent(entry, true, style, toAppendTo);
+            }
+            if (useParenthesis) {
+                toAppendTo.append(')');
             }
         }
     }
@@ -359,11 +583,12 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *
      * @param  entry    the base unit or base dimension to format, together with its power.
      * @param  inverse  {@code true} for inverting the power sign.
+     * @param  style    whether to allow Unicode characters.
      */
-    private static void formatComponent(final Map.Entry<?,? extends Number> entry,
-            final boolean inverse, final Appendable toAppendTo) throws IOException
+    private static void formatComponent(final Map.Entry<?,? extends Number> entry, final boolean inverse,
+            final Style style, final Appendable toAppendTo) throws IOException
     {
-        formatSymbol(entry.getKey(), toAppendTo);
+        formatSymbol(entry.getKey(), style, toAppendTo);
         final Number power = entry.getValue();
         int n;
         if (power instanceof Fraction) {
@@ -372,12 +597,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 if (inverse) {
                     f = f.negate();
                 }
-                final String t = f.toString();
-                if (t.length() == 1) {
-                    toAppendTo.append('^').append(t);
-                } else {
-                    toAppendTo.append("^(").append(t).append(')');
-                }
+                style.appendPower(toAppendTo, f);
                 return;
             }
             n = f.numerator;
@@ -386,10 +606,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         }
         if (inverse) n = -n;
         if (n != 1) {
-            final String t = String.valueOf(n);
-            for (int i=0; i<t.length(); i++) {
-                toAppendTo.append(Characters.toSuperScript(t.charAt(i)));
-            }
+            style.appendPower(toAppendTo, n);
         }
     }
 
@@ -397,9 +614,10 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * Appends the symbol for the given base unit of base dimension, or "?" if no symbol was found.
      *
      * @param  base        the base unit or base dimension to format.
+     * @param  style       whether to allow Unicode characters.
      * @param  toAppendTo  where to append the symbol.
      */
-    private static void formatSymbol(final Object base, final Appendable toAppendTo) throws IOException {
+    private static void formatSymbol(final Object base, final Style style, final Appendable toAppendTo) throws IOException {
         if (base instanceof UnitDimension) {
             final char symbol = ((UnitDimension) base).symbol;
             if (symbol != 0) {
@@ -410,7 +628,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         if (base instanceof Unit<?>) {
             final String symbol = ((Unit<?>) base).getSymbol();
             if (symbol != null) {
-                toAppendTo.append(symbol);
+                style.appendSymbol(toAppendTo, symbol);
                 return;
             }
         }
@@ -418,7 +636,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
-     * Formats the specified unit.
+     * Formats the specified unit in the given buffer.
+     * This method delegates to {@link #format(Unit, Appendable)}.
      *
      * @param  unit        the unit to format.
      * @param  toAppendTo  where to format the unit.
@@ -436,6 +655,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
 
     /**
      * Formats the given unit.
+     * This method delegates to {@link #format(Unit, Appendable)}.
      *
      * @param  unit  the unit to format.
      * @return the formatted unit.
@@ -450,8 +670,29 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
+     * Returns {@code true} if the given unit seems to be an URI.
+     * Examples:
+     * <ul>
+     *   <li>{@code "urn:ogc:def:uom:EPSG::9001"}</li>
+     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"}</li>
+     * </ul>
+     */
+    private static boolean isURI(final CharSequence uom) {
+        for (int i=uom.length(); --i>=0;) {
+            final char c = uom.charAt(i);
+            if (c == ':' || c == '#') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Parses the given text as an instance of {@code Unit}.
      * If the parse completes without reading the entire length of the text, an exception is thrown.
+     *
+     * <p>In addition to unit symbols like “m∕s”, this method accepts also authority codes like
+     * {@code "urn:ogc:def:uom:EPSG:####"}. See class javadoc for more information.</p>
      *
      * @param  symbols  the unit symbols or URI to parse.
      * @return the unit parsed from the specified symbols.
@@ -461,8 +702,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     @Override
     public Unit<?> parse(final CharSequence symbols) throws ParserException {
-        String uom = CharSequences.trimWhitespaces(CharSequences.toASCII(symbols)).toString();
-        final int length = uom.length();
+        String uom = CharSequences.trimWhitespaces(symbols).toString();
         /*
          * Check for authority codes (currently only EPSG, but more could be added later).
          * If the unit is not an authority code (which is the most common case), then we
@@ -488,114 +728,94 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
             }
         }
         /*
-         * Check for degrees units. Note that "deg" could be both angular and Celsius degrees.
-         * We try to resolve this ambiguity in the code below by looking for the "Celsius" suffix.
-         * Other suffixes commonly found in NetCDF files are "west", "east", "north" or "south".
-         * Those suffixes are ignored.
+         * Check for labels explicitly given by users. Those labels have precedence over the Apache SIS hard-coded
+         * symbols. If no explicit label was found, check for symbols and names known to this UnitFormat instance.
          */
-        if (uom.regionMatches(true, 0, "deg", 0, 3)) {
-            switch (length) {
-                case 3: return Units.DEGREE;                // Exactly "deg"
-                case 4: {
-                    if (uom.charAt(3) == 'K') {             // Exactly "degK"
-                        return Units.KELVIN;
+        Unit<?> unit = labelToUnit.get(uom);
+        if (unit == null) {
+            unit = Units.get(uom);
+            if (unit == null) {
+                final int length = uom.length();
+                if (length == 0) {
+                    return Units.UNITY;
+                }
+                if (length >= 2) {
+                    /*
+                     * If the symbol ends with a digit (normal script or superscript), presume that this is the unit
+                     * exponent.  That exponent can be a Unicode character (only one character in current UnitFormat
+                     * implementation) or a number parseable with Integer.parseInt(String).
+                     */
+                    int  power = 1;
+                    int  i = length;
+                    char c = uom.charAt(--i);
+                    boolean canApply = false;
+                    if (Characters.isSuperScript(c)) {
+                        c = Characters.toNormalScript(c);
+                        if (c >= '0' && c <= '9') {
+                            power = c - '0';
+                            canApply = true;
+                        }
+                    } else if (c >= '0' && c <= '9') {
+                        do {
+                            c = uom.charAt(--i);
+                            if (c < '0' || c > '9') {
+                                if (c != '+' && c != '-') i++;
+                                try {
+                                    power = Integer.parseInt(uom.substring(i));
+                                } catch (NumberFormatException e) {
+                                    // Should never happen unless the number is larger than 'int' capacity.
+                                    throw (ParserException) new ParserException(Errors.format(
+                                            Errors.Keys.UnknownUnit_1, uom), symbols, i).initCause(e);
+                                }
+                                canApply = true;
+                                break;
+                            }
+                        } while (i != 0);
                     }
-                    break;
+                    if (canApply) {
+                        uom = CharSequences.trimWhitespaces(uom.substring(0, i));
+                        unit = Units.get(uom);
+                        if (unit != null) {
+                            return unit.pow(power);
+                        }
+                    }
+                }
+                /*
+                 * Check for degrees units. Note that "deg" could be both angular and Celsius degrees.
+                 * We try to resolve this ambiguity in the code below by looking for the "C" suffix.
+                 * We perform a special case for those checks because the above check for unit symbol
+                 * is case-sentive, the check for unit name (later) is case-insensitive, while this
+                 * check for "deg" is a mix of both.
+                 */
+                if (uom.regionMatches(true, 0, "deg", 0, 3)) {
+                    switch (length) {
+                        case 3: return Units.DEGREE;                    // Exactly "deg"  (ignoring case)
+                        case 4: switch (uom.charAt(3)) {
+                                    case 'K':                           // Unicode U+212A
+                                    case 'K': return Units.KELVIN;      // Exactly "degK" (ignoring case except for 'K')
+                                    case 'C': return Units.CELSIUS;
+                                }
+                    }
+                }
+                /*
+                 * At this point, we have determined that the label is not a known unit symbol.
+                 * It may be a unit name, in which case the label is not case-sensitive anymore.
+                 * The 'nameToUnit' map contains plural forms (declared in UnitAliases.properties),
+                 * but we make a special case for "degrees", "metres" and "meters" because they
+                 * appear in numerous places.
+                 */
+                String lc = uom.replace('_', ' ').toLowerCase(locale);
+                lc = CharSequences.replace(CharSequences.replace(CharSequences.replace(lc,
+                        "meters",  "meter"),
+                        "metres",  "metre"),
+                        "degrees", "degree").toString();
+                unit = nameToUnit().get(lc);
+                if (unit == null) {
+                    throw new ParserException(Errors.format(Errors.Keys.UnknownUnit_1, uom), symbols, 0);
                 }
             }
-            String prefix = uom;
-            boolean isTemperature = false;
-            final int s = Math.max(uom.lastIndexOf(' '), uom.lastIndexOf('_'));
-            if (s >= 1) {
-                final String suffix = (String) CharSequences.trimWhitespaces(uom, s+1, length);
-                if (ArraysExt.containsIgnoreCase(CARDINAL_DIRECTIONS, suffix) || (isTemperature = isCelsius(suffix))) {
-                    prefix = (String) CharSequences.trimWhitespaces(uom, 0, s);       // Remove the suffix only if we recognized it.
-                }
-            }
-            if (equalsIgnorePlural(prefix, "degree")) {
-                return isTemperature ? Units.CELSIUS : Units.DEGREE;
-            }
-        } else {
-            /*
-             * Check for unit symbols that do not begin with "deg". If a symbol begins
-             * with "deg", then the check should be put in the above block instead.
-             */
-            if (uom.equals("°")                      || equalsIgnorePlural(uom, "decimal_degree")) return Units.DEGREE;
-            if (uom.equalsIgnoreCase("arcsec"))                                                    return Units.ARC_SECOND;
-            if (uom.equalsIgnoreCase("rad")          || equalsIgnorePlural(uom, "radian"))         return Units.RADIAN;
-            if (equalsIgnorePlural(uom, "meter")     || equalsIgnorePlural(uom, "metre"))          return Units.METRE;
-            if (equalsIgnorePlural(uom, "kilometer") || equalsIgnorePlural(uom, "kilometre"))      return Units.KILOMETRE;
-            if (equalsIgnorePlural(uom, "week"))        return Units.WEEK;
-            if (equalsIgnorePlural(uom, "day"))         return Units.DAY;
-            if (equalsIgnorePlural(uom, "hour"))        return Units.HOUR;
-            if (equalsIgnorePlural(uom, "minute"))      return Units.MINUTE;
-            if (equalsIgnorePlural(uom, "second"))      return Units.SECOND;
-            if (equalsIgnorePlural(uom, "grade"))       return Units.GRAD;
-            if (equalsIgnorePlural(uom, "grad"))        return Units.GRAD;
-            if (isCelsius(uom))                         return Units.CELSIUS;
-            if (uom.isEmpty())                          return Units.UNITY;
-            if (uom.equalsIgnoreCase("US survey foot")) return Units.US_SURVEY_FOOT;
-            if (uom.equalsIgnoreCase("ppm"))            return Units.PPM;
-            if (uom.equalsIgnoreCase("psu"))            return Units.PSU;
-            if (uom.equalsIgnoreCase("sigma"))          return Units.SIGMA;
-            if (equalsIgnorePlural(uom, "pixel"))       return Units.PIXEL;
-        }
-        final Unit<?> unit;
-        try {
-            unit = tec.units.ri.format.SimpleUnitFormat.getInstance().parse(symbols);
-        } catch (ParserException e) {
-            // Provides a better error message than the default JSR-275 0.9.4 implementation.
-            throw Exceptions.setMessage(e, Errors.format(Errors.Keys.IllegalArgumentValue_2, "uom", uom), true);
-        }
-        /*
-         * Special case: JSR-275 version 0.6.1 parses "1/s" and "s-1" as "Baud", which is not what
-         * we use in geoscience. Replace "Baud" by "Hertz" if the symbol was not explicitely "Bd".
-         */
-        if (unit.isCompatible(Units.HERTZ) && !uom.equals("Bd")) {
-            return Units.HERTZ;
         }
         return unit;
-    }
-
-    /**
-     * Returns {@code true} if the given {@code uom} is equals to the given expected string,
-     * ignoring trailing {@code 's'} character (if any).
-     */
-    @SuppressWarnings("fallthrough")
-    private static boolean equalsIgnorePlural(final String uom, final String expected) {
-        final int length = expected.length();
-        switch (uom.length() - length) {
-            case 0:  break;                                                         // uom has exactly the expected length.
-            case 1:  if (Character.toLowerCase(uom.charAt(length)) == 's') break;   // else fallthrough.
-            default: return false;
-        }
-        return uom.regionMatches(true, 0, expected, 0, length);
-    }
-
-    /**
-     * Returns {@code true} if the given {@code uom} is equals to {@code "Celsius"} or {@code "Celcius"}.
-     * The later is a common misspelling.
-     */
-    private static boolean isCelsius(final String uom) {
-        return uom.equalsIgnoreCase("Celsius") || uom.equalsIgnoreCase("Celcius");
-    }
-
-    /**
-     * Returns {@code true} if the given unit seems to be an URI.
-     * Examples:
-     * <ul>
-     *   <li>{@code "urn:ogc:def:uom:EPSG::9001"}</li>
-     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"}</li>
-     * </ul>
-     */
-    private static boolean isURI(final CharSequence uom) {
-        for (int i=uom.length(); --i>=0;) {
-            final char c = uom.charAt(i);
-            if (c == ':' || c == '#') {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

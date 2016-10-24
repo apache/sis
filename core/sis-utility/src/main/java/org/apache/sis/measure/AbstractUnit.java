@@ -16,9 +16,9 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -116,11 +116,13 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      * If this unit exists in the EPSG database, then this method should return the name as specified in the database.
      *
      * @return the unit name, or {@code null} if this unit has no specific name.
+     *
+     * @see UnitFormat#format(Unit, Appendable)
      */
     @Override
     public final String getName() {
         try {
-            return ResourceBundle.getBundle(UnitFormat.RESOURCES).getString(symbol);
+            return UnitFormat.getBundle(Locale.getDefault()).getString(symbol);
         } catch (MissingResourceException e) {
             return null;
         }
