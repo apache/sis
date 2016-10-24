@@ -170,10 +170,6 @@
       <artifactId>unit-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>tec.units</groupId>
-      <artifactId>unit-ri</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-pending</artifactId>
     </dependency>

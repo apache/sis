@@ -18,8 +18,10 @@ package org.apache.sis.measure;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Locale;
 import java.lang.reflect.Field;
 import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -79,8 +81,8 @@ public final strictfp class UnitFormatTest extends TestCase {
         verify(declared, "DAY",                 "T",        "d",     Units.DAY);
         verify(declared, "WEEK",                "T",        "wk",    Units.WEEK);
         verify(declared, "TROPICAL_YEAR",       "T",        "a",     Units.TROPICAL_YEAR);
-        verify(declared, "PASCAL",              "M⋅L⁻¹⋅T⁻²", "Pa",    Units.PASCAL);
-        verify(declared, "HECTOPASCAL",         "M⋅L⁻¹⋅T⁻²", "hPa",   Units.HECTOPASCAL);
+        verify(declared, "PASCAL",              "M∕(L⋅T²)", "Pa",    Units.PASCAL);
+        verify(declared, "HECTOPASCAL",         "M∕(L⋅T²)", "hPa",   Units.HECTOPASCAL);
         verify(declared, "SQUARE_METRE",        "L²",       "m²",    Units.SQUARE_METRE);
         verify(declared, "CUBIC_METRE",         "L³",       "m³",    Units.CUBIC_METRE);
         verify(declared, "METRES_PER_SECOND",   "L∕T",      "m∕s",   Units.METRES_PER_SECOND);
@@ -91,7 +93,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         verify(declared, "WATT",                "M⋅L²∕T³",  "W",     Units.WATT);
         verify(declared, "KELVIN",              "Θ",        "K",     Units.KELVIN);
         verify(declared, "CELSIUS",             "Θ",        "℃",     Units.CELSIUS);
-        verify(declared, "HERTZ",               "T⁻¹",      "Hz",    Units.HERTZ);
+        verify(declared, "HERTZ",               "∕T",       "Hz",    Units.HERTZ);
         verify(declared, "UNITY",               "",         "",      Units.UNITY);
         verify(declared, "PERCENT",             "",         "%",     Units.PERCENT);
         verify(declared, "PPM",                 "",         "ppm",   Units.PPM);
@@ -121,6 +123,135 @@ public final strictfp class UnitFormatTest extends TestCase {
     @Test
     @DependsOnMethod("verifyUnitConstants")
     public void testRationalPower() {
-        assertEquals("T^(5⁄2)⋅M⁻¹⋅L⁻¹", UnitDimensionTest.specificDetectivity().toString());
+        assertEquals("T^(5⁄2)∕(M⋅L)", UnitDimensionTest.specificDetectivity().toString());
+    }
+
+    /**
+     * Tests {@link UnitFormat#label(Unit, String)}.
+     */
+    @Test
+    public void testLabel() {
+        final UnitFormat f = new UnitFormat(Locale.ENGLISH);
+        f.label(Units.METRE,  "mFoo");
+        f.label(Units.SECOND, "sFoo");
+        assertEquals("mFoo", f.format(Units.METRE));
+        assertEquals("sFoo", f.format(Units.SECOND));
+        assertSame(Units.METRE,  f.parse("mFoo"));
+        assertSame(Units.SECOND, f.parse("sFoo"));
+        /*
+         * Overwriting previous value should remove the assignment from "mFoo" to Units.METRE.
+         */
+        f.label(Units.METRE, "mètre");
+        assertEquals("mètre", f.format(Units.METRE));
+        assertEquals("sFoo",  f.format(Units.SECOND));
+        assertSame(Units.METRE, f.parse("mètre"));
+        try {
+            f.parse("mFoo");
+            fail("“mFoo” should not be assigned to unit anymore.");
+        } catch (ParserException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("mFoo"));
+        }
+        /*
+         * Verify that we can not specify invalid unit label.
+         */
+        try {
+            f.label(Units.METRE, "m¹");
+            fail("Should not accept labels ending with a digit.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("m¹"));
+        }
+    }
+
+    /**
+     * Tests unit formatting with {@link UnitFormat.Style#NAME}.
+     */
+    @Test
+    public void testNameFormatting() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        f.setStyle(UnitFormat.Style.NAME);
+        assertEquals("metre",        f.format(Units.METRE));
+        assertEquals("kilometre",    f.format(Units.KILOMETRE));
+        assertEquals("second",       f.format(Units.SECOND));
+        assertEquals("square metre", f.format(Units.SQUARE_METRE));
+        assertEquals("Celsius",      f.format(Units.CELSIUS));          // Really upper-case "C" - this is a SI exception.
+
+        f.setLocale(Locale.US);
+        assertEquals("meter",        f.format(Units.METRE));
+        assertEquals("kilometer",    f.format(Units.KILOMETRE));
+        assertEquals("second",       f.format(Units.SECOND));
+        assertEquals("square meter", f.format(Units.SQUARE_METRE));
+        assertEquals("Celsius",      f.format(Units.CELSIUS));
+
+        f.setLocale(Locale.FRANCE);
+        assertEquals("mètre",        f.format(Units.METRE));
+        assertEquals("kilomètre",    f.format(Units.KILOMETRE));
+        assertEquals("seconde",      f.format(Units.SECOND));
+        assertEquals("mètre carré",  f.format(Units.SQUARE_METRE));
+        assertEquals("Celsius",      f.format(Units.CELSIUS));
+    }
+
+    /**
+     * Tests parsing of names.
+     */
+    @Test
+    public void testNameParsing() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        f.setStyle(UnitFormat.Style.NAME);                          // As a matter of principle, but actually ignored.
+        assertSame(Units.METRE,         f.parse("metre"));
+        assertSame(Units.METRE,         f.parse("metres"));
+        assertSame(Units.METRE,         f.parse("meter"));
+        assertSame(Units.METRE,         f.parse("meters"));
+        assertSame(Units.KILOMETRE,     f.parse("kilometre"));
+        assertSame(Units.KILOMETRE,     f.parse("kilometer"));
+        assertSame(Units.KILOMETRE,     f.parse("kilometres"));
+        assertSame(Units.KILOMETRE,     f.parse("kilometers"));
+        assertSame(Units.SQUARE_METRE,  f.parse("square metre"));
+        assertSame(Units.SQUARE_METRE,  f.parse("square_meters"));
+        assertSame(Units.DEGREE,        f.parse("degree"));
+        assertSame(Units.DEGREE,        f.parse("degrees"));
+        assertSame(Units.DEGREE,        f.parse("decimal degrees"));
+        assertSame(Units.DEGREE,        f.parse("degree north"));
+        assertSame(Units.DEGREE,        f.parse("degree_east"));
+        assertSame(Units.DEGREE,        f.parse("Degree West"));
+        assertSame(Units.KELVIN,        f.parse("degree Kelvin"));
+        assertSame(Units.CELSIUS,       f.parse("degree Celsius"));
+        assertSame(Units.WATT,          f.parse("watt"));
+        try {
+            f.parse("degree foo");
+            fail("Should not accept unknown unit.");
+        } catch (ParserException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("foo"));
+        }
+        // Tests with localisation.
+        try {
+            f.parse("mètre cube");
+            fail("Should not accept localized unit unless requested.");
+        } catch (ParserException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("mètre cube"));
+        }
+        f.setLocale(Locale.FRANCE);
+        assertSame(Units.CUBIC_METRE, f.parse("mètre cube"));
+    }
+
+    /**
+     * Tests parsing of symbols without arithmetic operations other than exponent.
+     */
+    @Test
+    public void testSymbolParsing() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        assertSame(Units.METRE,         f.parse("m"));
+        assertSame(Units.UNITY,         f.parse("m⁰"));
+        assertSame(Units.METRE,         f.parse("m¹"));
+        assertSame(Units.SQUARE_METRE,  f.parse("m²"));
+        assertSame(Units.CUBIC_METRE,   f.parse("m³"));
+        assertSame(Units.UNITY,         f.parse("m-0"));
+        assertSame(Units.METRE,         f.parse("m01"));
+        assertSame(Units.SQUARE_METRE,  f.parse("m2"));
+        assertSame(Units.CUBIC_METRE,   f.parse("m3"));
+        assertSame(Units.HERTZ,         f.parse("s-1"));
     }
 }

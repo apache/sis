@@ -337,7 +337,7 @@ final class UnitDimension implements Dimension, Serializable {
     public String toString() {
         final StringBuilder buffer = new StringBuilder(8);
         try {
-            UnitFormat.formatComponents(components, buffer);
+            UnitFormat.formatComponents(components, UnitFormat.Style.SYMBOL, buffer);
         } catch (IOException e) {
             throw new AssertionError(e);      // Should never happen since we are writting to a StringBuilder.
         }
