@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @module
  */
-@DependsOn(SystemUnitTest.class)
+@DependsOn({SystemUnitTest.class, ConventionalUnitTest.class})
 public final strictfp class UnitFormatTest extends TestCase {
     /**
      * Verifies all constants defined in {@link Units} class. This method verifies:
@@ -83,6 +83,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         verify(declared, "TROPICAL_YEAR",       "T",        "a",     Units.TROPICAL_YEAR);
         verify(declared, "PASCAL",              "M∕(L⋅T²)", "Pa",    Units.PASCAL);
         verify(declared, "HECTOPASCAL",         "M∕(L⋅T²)", "hPa",   Units.HECTOPASCAL);
+        verify(declared, "HECTARE",             "L²",       "ha",    Units.HECTARE);
         verify(declared, "SQUARE_METRE",        "L²",       "m²",    Units.SQUARE_METRE);
         verify(declared, "CUBIC_METRE",         "L³",       "m³",    Units.CUBIC_METRE);
         verify(declared, "METRES_PER_SECOND",   "L∕T",      "m∕s",   Units.METRES_PER_SECOND);
@@ -92,7 +93,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         verify(declared, "JOULE",               "M⋅L²∕T²",  "J",     Units.JOULE);
         verify(declared, "WATT",                "M⋅L²∕T³",  "W",     Units.WATT);
         verify(declared, "KELVIN",              "Θ",        "K",     Units.KELVIN);
-        verify(declared, "CELSIUS",             "Θ",        "℃",     Units.CELSIUS);
+        verify(declared, "CELSIUS",             "Θ",        "°C",    Units.CELSIUS);
         verify(declared, "HERTZ",               "∕T",       "Hz",    Units.HERTZ);
         verify(declared, "UNITY",               "",         "",      Units.UNITY);
         verify(declared, "PERCENT",             "",         "%",     Units.PERCENT);
@@ -253,5 +254,31 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.SQUARE_METRE,  f.parse("m2"));
         assertSame(Units.CUBIC_METRE,   f.parse("m3"));
         assertSame(Units.HERTZ,         f.parse("s-1"));
+    }
+
+    /**
+     * Tests parsing of symbols with SI prefix.
+     * Note that the "da" prefix needs to be handled in a special way because it is the only two-letters long prefix.
+     */
+    @Test
+    @DependsOnMethod("testSymbolParsing")
+    public void testPrefixParsing() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        ConventionalUnitTest.verify(Units.JOULE,  f.parse("kJ"),   "kJ",  1E+3);
+        ConventionalUnitTest.verify(Units.HERTZ,  f.parse("MHz"),  "MHz", 1E+6);
+        ConventionalUnitTest.verify(Units.PASCAL, f.parse("daPa"), "daPa",  10);
+        /*
+         * Verify that prefix are not accepted for conventional units. It would either be illegal prefix duplication
+         * (for example we should not accept "kkm" as if it was "k" + "km") or confusing (for example "a" stands for
+         * the tropical year, "ha" could be understood as 100 tropical years but is actually used for hectare).
+         */
+        assertSame(Units.TROPICAL_YEAR, f.parse("a"));
+        try {
+            f.parse("ka");
+            fail("Should not accept prefix in ConventionalUnit.");
+        } catch (ParserException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("ka"));
+        }
     }
 }

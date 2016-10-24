@@ -407,7 +407,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                  */
                 final ResourceBundle r = ResourceBundle.getBundle("org.apache.sis.measure.UnitAliases", locale, UnitFormat.class.getClassLoader());
                 for (final String name : r.keySet()) {
-                    map.put(name, Units.get(r.getString(name)));
+                    map.put(name.intern(), Units.get(r.getString(name)));
                 }
                 map = Collections.unmodifiableMap(map);
                 /*
@@ -438,7 +438,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     private static void copy(final Locale locale, final ResourceBundle symbolToName, final Map<String,Unit<?>> nameToUnit) {
         for (final String symbol : symbolToName.keySet()) {
-            nameToUnit.put(symbolToName.getString(symbol).toLowerCase(locale), Units.get(symbol));
+            nameToUnit.put(symbolToName.getString(symbol).toLowerCase(locale).intern(), Units.get(symbol));
         }
     }
 
@@ -733,7 +733,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          */
         Unit<?> unit = labelToUnit.get(uom);
         if (unit == null) {
-            unit = Units.get(uom);
+            unit = withPrefix(uom);
             if (unit == null) {
                 final int length = uom.length();
                 if (length == 0) {
@@ -774,7 +774,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                     }
                     if (canApply) {
                         uom = CharSequences.trimWhitespaces(uom.substring(0, i));
-                        unit = Units.get(uom);
+                        unit = withPrefix(uom);
                         if (unit != null) {
                             return unit.pow(power);
                         }
@@ -814,6 +814,38 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                     throw new ParserException(Errors.format(Errors.Keys.UnknownUnit_1, uom), symbols, 0);
                 }
             }
+        }
+        return unit;
+    }
+
+    /**
+     * Returns the unit for the given symbol, taking the SI prefix in account.
+     * This method does not perform any arithmetic operation on {@code Unit}.
+     * Returns {@code null} if no unit is found.
+     */
+    private static Unit<?> withPrefix(final String uom) {
+        Unit<?> unit = Units.get(uom);
+        if (unit == null && uom.length() >= 2) {
+            int s = 1;
+            char prefix = uom.charAt(0);
+            if (prefix == 'd' && uom.charAt(1) == 'a') {
+                prefix = '㍲';
+                s = 2;
+            }
+            unit = Units.get(uom.substring(s));
+            if (unit instanceof SystemUnit<?> && ((SystemUnit<?>) unit).scope == UnitRegistry.SI) {
+                final LinearConverter c = LinearConverter.forPrefix(prefix);
+                if (c != null) {
+                    String symbol = unit.getSymbol();
+                    if (prefix == '㍲') {
+                        symbol = "da" + symbol;
+                    } else {
+                        symbol = prefix + symbol;
+                    }
+                    return new ConventionalUnit<>((SystemUnit<?>) unit, c, symbol.intern(), (byte) 0, (short) 0);
+                }
+            }
+            unit = null;
         }
         return unit;
     }
