@@ -515,6 +515,18 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          * Note that this may produce more verbose symbols than needed since derived units like Volt or Watt are
          * decomposed into their base SI units.
          */
+        final double scale = Units.toStandardUnit(unit);
+        if (scale != 1) {
+            if (Double.isNaN(scale)) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonRatioUnit_1, "?(" + unit.getSystemUnit() + ')'));
+            }
+            final String text = Double.toString(scale);
+            int length = text.length();
+            if (text.endsWith(".0")) {
+                length -= 2;
+            }
+            toAppendTo.append(text, 0, length).append(style.multiply);
+        }
         Map<? extends Unit<?>, ? extends Number> components;
         if (unit instanceof AbstractUnit<?>) {
             // In Apache SIS implementation, the powers may be ratios.

@@ -50,16 +50,13 @@ public final strictfp class UnitsTest extends TestCase {
 
     /**
      * Tests serialization of units.
-     *
-     * @todo The {@code assertEquals} in this method should actually be {@code assertSame},
-     *       but JSR-275 0.9.3 does not resolve units on deserialization.
      */
     @Test
     public void testSerialization() {
-        assertEquals(DEGREE,     assertSerializedEquals(DEGREE));
+        assertSame  (DEGREE,     assertSerializedEquals(DEGREE));
         assertEquals(DMS,        assertSerializedEquals(DMS));
         assertEquals(DMS_SCALED, assertSerializedEquals(DMS_SCALED));
-        assertEquals(PPM,        assertSerializedEquals(PPM));
+        assertSame  (PPM,        assertSerializedEquals(PPM));
     }
 
     /**
@@ -181,7 +178,7 @@ public final strictfp class UnitsTest extends TestCase {
      */
     @Test
     public void testMultiply() {
-        assertSame(KILOMETRE, multiply(METRE,  1000));
+        assertSame(KILOMETRE, multiply(METRE, 1000));
         assertSame(DEGREE, multiply(RADIAN, 0.017453292519943295));
     }
 
