@@ -439,11 +439,24 @@ public final class Units extends Static {
     public static final Unit<Pressure> HECTOPASCAL;
 
     /**
+     * Unit of measurement defined as 10,000 square metres (1 ha).
+     * One hectare is exactly equals to one hectometre (1 hm²).
+     * While not an SI unit, the hectare is often used in the measurement of land.
+     * The unlocalized name is “hectare”.
+     *
+     * @since 0.8
+     *
+     * @see #SQUARE_METRE
+     */
+    public static final Unit<Area> HECTARE;
+
+    /**
      * The SI derived unit for area (m²).
      * The unlocalized name is “square metre”.
      *
      * @since 0.8
      *
+     * @see #HECTARE
      * @see #METRE
      * @see #CUBIC_METRE
      */
@@ -533,7 +546,8 @@ public final class Units extends Static {
 
     /**
      * Unit of measurement defined as the temperature in Kelvin minus 273.15.
-     * The symbol is ℃ and the unlocalized name is “celsius”.
+     * The symbol is °C and the unlocalized name is “Celsius”.
+     * Note that this is the only SI unit with an upper-case letter in its name.
      *
      * @see #KELVIN
      *
@@ -646,79 +660,81 @@ public final class Units extends Static {
         /*
          * Base, derived or alternate units that we need to reuse more than once in this static initializer.
          */
-        final SystemUnit<Length>        m   = add(Length.class,        length,        "m",   Constants.EPSG_METRE);
-        final SystemUnit<Time>          s   = add(Time.class,          time,          "s",   (short) 1040);
-        final SystemUnit<Temperature>   K   = add(Temperature.class,   temperature,   "K",   (short) 0);
-        final SystemUnit<Speed>         mps = add(Speed.class,         speed,         "m∕s", (short) 1026);
-        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      pressure,      "Pa",  (short) 0);
-        final SystemUnit<Angle>         rad = add(Angle.class,         dimensionless, "rad", (short) 9101);
-        final SystemUnit<Dimensionless> one = add(Dimensionless.class, dimensionless, "",    (short) 9201);
+        final SystemUnit<Length>        m   = add(Length.class,        length,        "m",   UnitRegistry.SI, Constants.EPSG_METRE);
+        final SystemUnit<Area>          m2  = add(Area.class,          area,          "m²",  UnitRegistry.SI, (short) 0);
+        final SystemUnit<Time>          s   = add(Time.class,          time,          "s",   UnitRegistry.SI, (short) 1040);
+        final SystemUnit<Temperature>   K   = add(Temperature.class,   temperature,   "K",   UnitRegistry.SI, (short) 0);
+        final SystemUnit<Speed>         mps = add(Speed.class,         speed,         "m∕s", UnitRegistry.SI, (short) 1026);
+        final SystemUnit<Pressure>      Pa  = add(Pressure.class,      pressure,      "Pa",  UnitRegistry.SI, (short) 0);
+        final SystemUnit<Angle>         rad = add(Angle.class,         dimensionless, "rad", UnitRegistry.SI, (short) 9101);
+        final SystemUnit<Dimensionless> one = add(Dimensionless.class, dimensionless, "",    UnitRegistry.SI, (short) 9201);
         /*
          * All SI prefix to be used below.
          */
-        final LinearConverter nano  = LinearConverter.scale(1, 1000000000);
-        final LinearConverter micro = LinearConverter.scale(1,    1000000);
-        final LinearConverter milli = LinearConverter.scale(1,       1000);
-        final LinearConverter centi = LinearConverter.scale(1,        100);
-        final LinearConverter hecto = LinearConverter.scale(100,        1);
-        final LinearConverter kilo  = LinearConverter.scale(1000,       1);
+        final LinearConverter nano  = LinearConverter.forPrefix('n');
+        final LinearConverter micro = LinearConverter.forPrefix('µ');
+        final LinearConverter milli = LinearConverter.forPrefix('m');
+        final LinearConverter centi = LinearConverter.forPrefix('c');
+        final LinearConverter hecto = LinearConverter.forPrefix('h');
+        final LinearConverter kilo  = LinearConverter.forPrefix('k');
         /*
          * All Unit<Angle>
          */
         RADIAN      = rad;
-        GRAD        = add(rad, LinearConverter.scale(Math.PI, 200),    "grad", (short) 9105);
-        DEGREE      = add(rad, LinearConverter.scale(Math.PI, 180),       "°", Constants.EPSG_PARAM_DEGREES);
-        ARC_MINUTE  = add(rad, LinearConverter.scale(Math.PI, 180*60),    "′", (short) 9103);
-        ARC_SECOND  = add(rad, LinearConverter.scale(Math.PI, 180*60*60), "″", (short) 9104);
-        MICRORADIAN = add(rad, micro, "µrad", (short) 9109);
+        GRAD        = add(rad, LinearConverter.scale(Math.PI, 200),    "grad", UnitRegistry.OTHER,    (short) 9105);
+        DEGREE      = add(rad, LinearConverter.scale(Math.PI, 180),       "°", UnitRegistry.ACCEPTED, Constants.EPSG_PARAM_DEGREES);
+        ARC_MINUTE  = add(rad, LinearConverter.scale(Math.PI, 180*60),    "′", UnitRegistry.ACCEPTED, (short) 9103);
+        ARC_SECOND  = add(rad, LinearConverter.scale(Math.PI, 180*60*60), "″", UnitRegistry.ACCEPTED, (short) 9104);
+        MICRORADIAN = add(rad, micro,                                  "µrad", UnitRegistry.SI,       (short) 9109);
         /*
          * All Unit<Length>
          */
         METRE          = m;
-        NANOMETRE      = add(m, nano,  "nm", (short) 0);
-        MILLIMETRE     = add(m, milli, "mm", (short) 1025);
-        CENTIMETRE     = add(m, centi, "cm", (short) 1033);
-        KILOMETRE      = add(m, kilo,  "km", (short) 9036);
-        NAUTICAL_MILE  = add(m, LinearConverter.scale(   1852,        1), "M",     (short) 9030);
-        STATUTE_MILE   = add(m, LinearConverter.scale(1609344,      100), "mi",    (short) 9093);
-        US_SURVEY_FOOT = add(m, LinearConverter.scale(   1200,     3937), "ft_US", (short) 9003);
-        FOOT           = add(m, LinearConverter.scale(   3048,    10000), "ft",    (short) 9002);
-        INCH           = add(m, LinearConverter.scale(    254,    10000), "in",    (short) 0);
-        POINT          = add(m, LinearConverter.scale( 996264, 72000000), "pt",    (short) 0);
+        NANOMETRE      = add(m, nano,                                     "nm",    UnitRegistry.SI,       (short) 0);
+        MILLIMETRE     = add(m, milli,                                    "mm",    UnitRegistry.SI,       (short) 1025);
+        CENTIMETRE     = add(m, centi,                                    "cm",    UnitRegistry.SI,       (short) 1033);
+        KILOMETRE      = add(m, kilo,                                     "km",    UnitRegistry.SI,       (short) 9036);
+        NAUTICAL_MILE  = add(m, LinearConverter.scale(   1852,        1), "M",     UnitRegistry.OTHER,    (short) 9030);
+        STATUTE_MILE   = add(m, LinearConverter.scale(1609344,      100), "mi",    UnitRegistry.IMPERIAL, (short) 9093);
+        US_SURVEY_FOOT = add(m, LinearConverter.scale(   1200,     3937), "ft_US", UnitRegistry.OTHER,    (short) 9003);
+        FOOT           = add(m, LinearConverter.scale(   3048,    10000), "ft",    UnitRegistry.IMPERIAL, (short) 9002);
+        INCH           = add(m, LinearConverter.scale(    254,    10000), "in",    UnitRegistry.IMPERIAL, (short) 0);
+        POINT          = add(m, LinearConverter.scale( 996264, 72000000), "pt",    UnitRegistry.OTHER,    (short) 0);
         /*
          * All Unit<Time>
          */
         SECOND         = s;
-        MILLISECOND    = add(s, milli, "ms", (short) 0);
-        MINUTE         = add(s, LinearConverter.scale(         60,      1), "min", (short) 0);
-        HOUR           = add(s, LinearConverter.scale(      60*60,      1), "h",   (short) 0);
-        DAY            = add(s, LinearConverter.scale(   24*60*60,      1), "d",   (short) 0);
-        WEEK           = add(s, LinearConverter.scale( 7*24*60*60,      1), "wk",  (short) 0);
-        TROPICAL_YEAR  = add(s, LinearConverter.scale(31556925445.0, 1000), "a",   (short) 1029);
+        MILLISECOND    = add(s, milli, "ms", UnitRegistry.SI, (short) 0);
+        MINUTE         = add(s, LinearConverter.scale(         60,      1), "min", UnitRegistry.ACCEPTED, (short) 0);
+        HOUR           = add(s, LinearConverter.scale(      60*60,      1), "h",   UnitRegistry.ACCEPTED, (short) 0);
+        DAY            = add(s, LinearConverter.scale(   24*60*60,      1), "d",   UnitRegistry.ACCEPTED, (short) 0);
+        WEEK           = add(s, LinearConverter.scale( 7*24*60*60,      1), "wk",  UnitRegistry.OTHER,    (short) 0);
+        TROPICAL_YEAR  = add(s, LinearConverter.scale(31556925445.0, 1000), "a",   UnitRegistry.OTHER,    (short) 1029);
         /*
          * Other units.
          */
         KELVIN              = K;
         PASCAL              = Pa;
+        SQUARE_METRE        = m2;
         METRES_PER_SECOND   = mps;
-        KILOGRAM            = add(Mass.class,      mass,                "kg",   (short) 0);
-        SQUARE_METRE        = add(Area.class,      area,                "m²",   (short) 0);
-        CUBIC_METRE         = add(Volume.class,    length.pow(3),       "m³",   (short) 0);
-        NEWTON              = add(Force.class,     force,               "N",    (short) 0);
-        JOULE               = add(Energy.class,    energy,              "J",    (short) 0);
-        WATT                = add(Power.class,     energy.divide(time), "W",    (short) 0);
-        HERTZ               = add(Frequency.class, time.pow(-1),        "Hz",   (short) 0);
-        HECTOPASCAL         = add(Pa, hecto,                            "hPa",  (short) 0);
-        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(6, 100),   "km∕h", (short) 0);
-        CELSIUS             = add(K, LinearConverter.create(1, 273.15), "℃",    (short) 0);
+        KILOGRAM            = add(Mass.class,      mass,                  "kg",   UnitRegistry.SI,       (short) 0);
+        CUBIC_METRE         = add(Volume.class,    length.pow(3),         "m³",   UnitRegistry.SI,       (short) 0);
+        NEWTON              = add(Force.class,     force,                 "N",    UnitRegistry.SI,       (short) 0);
+        JOULE               = add(Energy.class,    energy,                "J",    UnitRegistry.SI,       (short) 0);
+        WATT                = add(Power.class,     energy.divide(time),   "W",    UnitRegistry.SI,       (short) 0);
+        HERTZ               = add(Frequency.class, time.pow(-1),          "Hz",   UnitRegistry.SI,       (short) 0);
+        HECTOPASCAL         = add(Pa, hecto,                              "hPa",  UnitRegistry.SI,       (short) 0);
+        HECTARE             = add(m2,  LinearConverter.scale(10000, 1),   "ha",   UnitRegistry.ACCEPTED, (short) 0);
+        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(6, 100),     "km∕h", UnitRegistry.ACCEPTED, (short) 0);
+        CELSIUS             = add(K,   LinearConverter.create(1, 273.15), "°C",   UnitRegistry.SI,       (short) 0);
         /*
          * All Unit<Dimensionless>
          */
-        PERCENT = add(one, centi, "%",   (short) 0);
-        PPM     = add(one, micro, "ppm", (short) 9202);
-        PSU     = add(Dimensionless.class, dimensionless, "psu",   (short) 0);
-        SIGMA   = add(Dimensionless.class, dimensionless, "sigma", (short) 0);
-        PIXEL   = add(Dimensionless.class, dimensionless, "px",    (short) 0);
+        PERCENT = add(one, centi,                         "%",     UnitRegistry.OTHER, (short) 0);
+        PPM     = add(one, micro,                         "ppm",   UnitRegistry.OTHER, (short) 9202);
+        PSU     = add(Dimensionless.class, dimensionless, "psu",   UnitRegistry.OTHER, (short) 0);
+        SIGMA   = add(Dimensionless.class, dimensionless, "sigma", UnitRegistry.OTHER, (short) 0);
+        PIXEL   = add(Dimensionless.class, dimensionless, "px",    UnitRegistry.OTHER, (short) 0);
         UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
 
         UnitRegistry.alias(UNITY,       Short.valueOf((short) 9203));
@@ -726,7 +742,7 @@ public final class Units extends Static {
         UnitRegistry.alias(ARC_MINUTE,  "'");
         UnitRegistry.alias(ARC_SECOND, "\"");
         UnitRegistry.alias(KELVIN,      "K");       // Ordinary "K" letter (not the dedicated Unicode character).
-        UnitRegistry.alias(CELSIUS,    "°C");
+        UnitRegistry.alias(CELSIUS,     "℃");
         UnitRegistry.alias(CELSIUS,   "Cel");
         UnitRegistry.alias(GRAD,      "gon");
 
@@ -737,16 +753,16 @@ public final class Units extends Static {
      * Invoked by {@code Units} static class initializer for registering SI base and derived units.
      * This method shall be invoked in a single thread by the {@code Units} class initializer only.
      */
-    private static <Q extends Quantity<Q>> SystemUnit<Q> add(Class<Q> quantity, UnitDimension dimension, String symbol, short epsg) {
-        return UnitRegistry.init(new SystemUnit<>(quantity, dimension, symbol, epsg));
+    private static <Q extends Quantity<Q>> SystemUnit<Q> add(Class<Q> quantity, UnitDimension dimension, String symbol, byte scope, short epsg) {
+        return UnitRegistry.init(new SystemUnit<>(quantity, dimension, symbol, scope, epsg));
     }
 
     /**
      * Invoked by {@code Units} static class initializer for registering SI conventional units.
      * This method shall be invoked in a single thread by the {@code Units} class initializer only.
      */
-    private static <Q extends Quantity<Q>> ConventionalUnit<Q> add(SystemUnit<Q> target, UnitConverter toTarget, String symbol, short epsg) {
-        return UnitRegistry.init(new ConventionalUnit<>(target, toTarget, symbol, epsg));
+    private static <Q extends Quantity<Q>> ConventionalUnit<Q> add(SystemUnit<Q> target, UnitConverter toTarget, String symbol, byte scope, short epsg) {
+        return UnitRegistry.init(new ConventionalUnit<>(target, toTarget, symbol, scope, epsg));
     }
 
     /**
@@ -774,6 +790,8 @@ public final class Units extends Static {
 
     /**
      * Returns the system unit for the given symbol, or {@code null} if none.
+     * This method does not perform any parsing (prefix, exponents, <i>etc</i>).
+     * It is only for getting one of the pre-defined constants, for example after deserialization.
      *
      * <p><b>Implementation note:</b> this method must be defined in this {@code Units} class
      * in order to force a class initialization before use.</p>

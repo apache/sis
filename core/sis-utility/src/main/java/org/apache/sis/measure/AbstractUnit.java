@@ -77,6 +77,15 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     private final String symbol;
 
     /**
+     * A code that identifies whether this unit is part of SI system, or outside SI but accepted for use with SI.
+     * Value can be {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
+     *
+     * <p>This information may be approximative since we can not always guess correctly whether the result of
+     * an operation is part of SI or not. Values given to the field may be adjusted in any future version.</p>
+     */
+    final byte scope;
+
+    /**
      * The EPSG code, or 0 if this unit has no EPSG code.
      */
     final short epsg;
@@ -85,10 +94,12 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      * Creates a new unit having the given symbol and EPSG code.
      *
      * @param  symbol  the unit symbol, or {@code null} if this unit has no specific symbol.
+     * @param  scope   {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
      * @param  epsg    the EPSG code,   or 0 if this unit has no EPSG code.
      */
-    AbstractUnit(final String symbol, final short epsg) {
+    AbstractUnit(final String symbol, final byte scope, final short epsg) {
         this.symbol = symbol;
+        this.scope  = scope;
         this.epsg   = epsg;
     }
 
@@ -226,7 +237,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     public boolean equals(final Object other) {
         if (other != null && other.getClass() == getClass()) {
             final AbstractUnit<?> that = (AbstractUnit<?>) other;
-            return epsg == that.epsg && Objects.equals(symbol, that.symbol);
+            return epsg == that.epsg && scope == that.scope && Objects.equals(symbol, that.symbol);
         }
         return false;
     }

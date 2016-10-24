@@ -48,6 +48,30 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
     private static final long serialVersionUID = -84557361079506390L;
 
     /**
+     * Identifies units defined by the SI system.
+     * All {@link SystemUnit} instances with this code can have a SI prefix.
+     */
+    static final byte SI = 1;
+
+    /**
+     * Identifies units defined outside the SI system but accepted for use with SI.
+     * The {@link #SI} value can be used as a bitmask for identifying the SI or accepted units.
+     */
+    static final byte ACCEPTED = 3;
+
+    // All following constants shall have an even value (unless accepted for use with SI).
+
+    /**
+     * Identifies units defined for use in British imperial system.
+     */
+    static final byte IMPERIAL = 2;
+
+    /**
+     * Identifies units defined in another system than the above.
+     */
+    static final byte OTHER = 4;
+
+    /**
      * All {@link UnitDimension}, {@link SystemUnit} or {@link ConventionalUnit} that are hard-coded in Apache SIS.
      * This map is populated by {@link Units} static initializer and shall not be modified after initialization,
      * in order to avoid the need for synchronization. Key and value types are restricted to the following pairs:

@@ -275,8 +275,8 @@ public final strictfp class SystemUnitTest extends TestCase {
         /*
          * Test with units outside the pre-defined constants in the Units class.
          */
-        final Unit<Length> anonymous = new SystemUnit<>(Length.class, (UnitDimension) Units.METRE.getDimension(), null,  (short) 0);
-        final Unit<Length> otherName = new SystemUnit<>(Length.class, (UnitDimension) Units.METRE.getDimension(), "Foo", (short) 0);
+        final Unit<Length> anonymous = new SystemUnit<>(Length.class, (UnitDimension) Units.METRE.getDimension(), null,  UnitRegistry.OTHER, (short) 0);
+        final Unit<Length> otherName = new SystemUnit<>(Length.class, (UnitDimension) Units.METRE.getDimension(), "Foo", UnitRegistry.OTHER, (short) 0);
         assertSame(Units.METRE, anonymous.asType(Length.class));
         assertSame(otherName,   otherName.asType(Length.class));
         /*

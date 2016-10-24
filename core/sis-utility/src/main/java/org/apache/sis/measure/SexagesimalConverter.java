@@ -105,13 +105,13 @@ class SexagesimalConverter extends AbstractConverter {
         final SystemUnit<Angle> rad = (SystemUnit<Angle>) Units.RADIAN;
         final UnitConverter toRadian = Units.DEGREE.getConverterTo(rad);
         DM = new ConventionalUnit<>(rad, new ConcatenatedConverter(
-                new SexagesimalConverter(false, 100).inverse(), toRadian), "D.M", (short) 9111);
+                new SexagesimalConverter(false, 100).inverse(), toRadian), "D.M", UnitRegistry.OTHER, (short) 9111);
 
         DMS = new ConventionalUnit<>(rad, new ConcatenatedConverter(
-                new SexagesimalConverter(true, 10000).inverse(), toRadian), "D.MS", (short) 9110);
+                new SexagesimalConverter(true, 10000).inverse(), toRadian), "D.MS", UnitRegistry.OTHER, (short) 9110);
 
         DMS_SCALED = new ConventionalUnit<>(rad, new ConcatenatedConverter(
-                new SexagesimalConverter(true, 1).inverse(), toRadian), "DMS", (short) 9107);
+                new SexagesimalConverter(true, 1).inverse(), toRadian), "DMS", UnitRegistry.OTHER, (short) 9107);
     }
 
     /**
