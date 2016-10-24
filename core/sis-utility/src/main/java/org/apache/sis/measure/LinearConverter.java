@@ -341,11 +341,11 @@ final class LinearConverter extends AbstractConverter {
     @Debug
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder().append("\uD835\uDC66 = ");
+        final StringBuilder buffer = new StringBuilder().append("y = ");
         if (scale != 1) {
             buffer.append(scale).append('⋅');
         }
-        buffer.append("\uD835\uDC65");
+        buffer.append('x');
         if (offset != 0) {
             buffer.append(" + ").append(offset);
         }
