@@ -433,7 +433,7 @@ public final strictfp class HardCodedAxes {
      * The abbreviation is lower case <cite>"i"</cite>.
      */
     public static final DefaultCoordinateSystemAxis COLUMN = create("Column", "i",
-            AxisDirection.COLUMN_POSITIVE, Units.ONE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+            AxisDirection.COLUMN_POSITIVE, Units.UNITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
      * Axis for row indices in a {@linkplain org.opengis.coverage.grid.GridCoverage grid coverage}.
@@ -441,7 +441,7 @@ public final strictfp class HardCodedAxes {
      * The abbreviation is lower case <cite>"j"</cite>.
      */
     public static final DefaultCoordinateSystemAxis ROW = create("Row", "j",
-            AxisDirection.ROW_POSITIVE, Units.ONE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+            AxisDirection.ROW_POSITIVE, Units.UNITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
      * Axis for <var>x</var> values in a display device.
@@ -449,7 +449,7 @@ public final strictfp class HardCodedAxes {
      * The abbreviation is lower case <cite>"x"</cite>.
      */
     public static final DefaultCoordinateSystemAxis DISPLAY_X = create("x", "x",
-            AxisDirection.DISPLAY_RIGHT, Units.ONE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+            AxisDirection.DISPLAY_RIGHT, Units.UNITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
      * Axis for <var>y</var> values in a display device.
@@ -457,7 +457,7 @@ public final strictfp class HardCodedAxes {
      * The abbreviation is lower case <cite>"y"</cite>.
      */
     public static final DefaultCoordinateSystemAxis DISPLAY_Y = create("y", "y",
-            AxisDirection.DISPLAY_DOWN, Units.ONE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+            AxisDirection.DISPLAY_DOWN, Units.UNITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
      * Undefined or unknown axis. Axis direction is {@link AxisDirection#OTHER OTHER}
@@ -465,7 +465,7 @@ public final strictfp class HardCodedAxes {
      * for axes that were not properly defined.
      */
     public static final DefaultCoordinateSystemAxis UNDEFINED = create("Undefined", "z",
-            AxisDirection.OTHER, Units.ONE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+            AxisDirection.OTHER, Units.UNITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
      * Creates a new axis of the given name, abbreviation, direction and unit.

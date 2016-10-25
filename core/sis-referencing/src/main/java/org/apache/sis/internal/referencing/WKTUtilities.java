@@ -16,6 +16,9 @@
  */
 package org.apache.sis.internal.referencing;
 
+import javax.measure.Unit;
+import javax.measure.Quantity;
+import javax.measure.quantity.Angle;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
@@ -39,6 +42,7 @@ import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Vocabulary;
@@ -54,7 +58,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class WKTUtilities extends Static {
@@ -67,8 +71,8 @@ public final class WKTUtilities extends Static {
     /**
      * Returns the given coordinate reference system as a formattable object.
      *
-     * @param  object The coordinate reference system, or {@code null}.
-     * @return The given coordinate reference system as a formattable object, or {@code null}.
+     * @param  object  the coordinate reference system, or {@code null}.
+     * @return the given coordinate reference system as a formattable object, or {@code null}.
      */
     public static FormattableObject toFormattable(final CoordinateReferenceSystem object) {
         if (object instanceof FormattableObject) {
@@ -81,8 +85,8 @@ public final class WKTUtilities extends Static {
     /**
      * Returns the given coordinate system as a formattable object.
      *
-     * @param  object The coordinate system, or {@code null}.
-     * @return The given coordinate system as a formattable object, or {@code null}.
+     * @param  object  the coordinate system, or {@code null}.
+     * @return the given coordinate system as a formattable object, or {@code null}.
      */
     public static FormattableObject toFormattable(final CoordinateSystem object) {
         if (object instanceof FormattableObject) {
@@ -95,8 +99,8 @@ public final class WKTUtilities extends Static {
     /**
      * Returns the given coordinate system axis as a formattable object.
      *
-     * @param  object The coordinate system axis, or {@code null}.
-     * @return The given coordinate system axis as a formattable object, or {@code null}.
+     * @param  object  the coordinate system axis, or {@code null}.
+     * @return the given coordinate system axis as a formattable object, or {@code null}.
      */
     public static FormattableObject toFormattable(final CoordinateSystemAxis object) {
         if (object instanceof FormattableObject) {
@@ -109,8 +113,8 @@ public final class WKTUtilities extends Static {
     /**
      * Returns the given datum as a formattable object.
      *
-     * @param  object The datum, or {@code null}.
-     * @return The given datum as a formattable object, or {@code null}.
+     * @param  object  the datum, or {@code null}.
+     * @return the given datum as a formattable object, or {@code null}.
      */
     public static FormattableObject toFormattable(final Datum object) {
         if (object instanceof FormattableObject) {
@@ -123,8 +127,8 @@ public final class WKTUtilities extends Static {
     /**
      * Returns the given geodetic datum as a formattable object.
      *
-     * @param  object The datum, or {@code null}.
-     * @return The given datum as a formattable object, or {@code null}.
+     * @param  object  the datum, or {@code null}.
+     * @return the given datum as a formattable object, or {@code null}.
      */
     public static FormattableObject toFormattable(final GeodeticDatum object) {
         if (object instanceof FormattableObject) {
@@ -137,8 +141,8 @@ public final class WKTUtilities extends Static {
     /**
      * Returns the ellipsoid as a formattable object.
      *
-     * @param  object The ellipsoid, or {@code null}.
-     * @return The given ellipsoid as a formattable object, or {@code null}.
+     * @param  object  the ellipsoid, or {@code null}.
+     * @return the given ellipsoid as a formattable object, or {@code null}.
      */
     public static FormattableObject toFormattable(final Ellipsoid object) {
         if (object instanceof FormattableObject) {
@@ -151,8 +155,8 @@ public final class WKTUtilities extends Static {
     /**
      * Returns the given prime meridian as a formattable object.
      *
-     * @param  object The prime meridian, or {@code null}.
-     * @return The given prime meridian as a formattable object, or {@code null}.
+     * @param  object  the prime meridian, or {@code null}.
+     * @return the given prime meridian as a formattable object, or {@code null}.
      */
     public static FormattableObject toFormattable(final PrimeMeridian object) {
         if (object instanceof FormattableObject) {
@@ -163,11 +167,31 @@ public final class WKTUtilities extends Static {
     }
 
     /**
+     * If the given unit is one of the unit that can not be formatted without ambiguity in WKT format,
+     * return a proposed replacement. Otherwise returns {@code unit} unchanged.
+     *
+     * @param  <Q>   the unit dimension.
+     * @param  unit  the unit to test.
+     * @return the replacement to format, or {@code unit} if not needed.
+     *
+     * @since 0.8
+     */
+    @SuppressWarnings("unchecked")
+    public static <Q extends Quantity<Q>> Unit<Q> toFormattable(Unit<Q> unit) {
+        if (Units.isAngular(unit)) {
+            if (!((Unit<Angle>) unit).getConverterTo(Units.RADIAN).isLinear()) {
+                unit = (Unit<Q>) Units.DEGREE;
+            }
+        }
+        return unit;
+    }
+
+    /**
      * Appends the name of the given object to the formatter.
      *
-     * @param object    The object from which to get the name.
-     * @param formatter The formatter where to append the name.
-     * @param type      The key of colors to apply if syntax colors are enabled.
+     * @param  object     the object from which to get the name.
+     * @param  formatter  the formatter where to append the name.
+     * @param  type       the key of colors to apply if syntax colors are enabled.
      */
     public static void appendName(final IdentifiedObject object, final Formatter formatter, final ElementKind type) {
         String name = IdentifiedObjects.getName(object, formatter.getNameAuthority());
@@ -183,8 +207,8 @@ public final class WKTUtilities extends Static {
     /**
      * Appends a {@linkplain ParameterValueGroup group of parameters} in a {@code Param_MT[…]} element.
      *
-     * @param parameters The parameter to append to the WKT, or {@code null} if none.
-     * @param formatter The formatter where to append the parameter.
+     * @param  parameters  the parameter to append to the WKT, or {@code null} if none.
+     * @param  formatter   the formatter where to append the parameter.
      */
     public static void appendParamMT(final ParameterValueGroup parameters, final Formatter formatter) {
         if (parameters != null) {
@@ -198,8 +222,8 @@ public final class WKTUtilities extends Static {
      * If the supplied parameter is actually a {@linkplain ParameterValueGroup parameter group},
      * all contained parameters will be flattened in a single list.
      *
-     * @param parameter The parameter to append to the WKT, or {@code null} if none.
-     * @param formatter The formatter where to append the parameter.
+     * @param  parameter  the parameter to append to the WKT, or {@code null} if none.
+     * @param  formatter  the formatter where to append the parameter.
      */
     public static void append(GeneralParameterValue parameter, final Formatter formatter) {
         if (parameter instanceof ParameterValueGroup) {
@@ -228,9 +252,9 @@ public final class WKTUtilities extends Static {
      * {@code affine}, {@code Cartesian}, {@code cylindrical}, {@code ellipsoidal}, {@code linear},
      * {@code parametric}, {@code polar}, {@code spherical}, {@code temporal} or {@code vertical}.
      *
-     * @param  base The abstract base interface.
-     * @param  type The interface or classes for which to get the WKT type.
-     * @return The WKT type for the given class or interface, or {@code null} if none.
+     * @param  base  the abstract base interface.
+     * @param  type  the interface or classes for which to get the WKT type.
+     * @return the WKT type for the given class or interface, or {@code null} if none.
      *
      * @see ReferencingUtilities#toPropertyName(Class, Class)
      */

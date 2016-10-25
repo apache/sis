@@ -52,7 +52,6 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.storage.CodeType;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.internal.util.X364;
@@ -476,8 +475,8 @@ final class TransformCommand extends MetadataCommand {
             final CoordinateSystemAxis axis = cs.getAxis(i);
             String name =  axis.getName().getCode();
             name = Transliterator.DEFAULT.toShortAxisName(cs, axis.getDirection(), name);
-            final String unit = PatchedUnitFormat.toString(axis.getUnit());
-            if (unit != null && !unit.isEmpty()) {
+            final String unit = axis.getUnit().toString();
+            if (!unit.isEmpty()) {
                 name = name + " (" + unit + ')';
             }
             printQuotedText(name, ordinateWidth, X364.FOREGROUND_CYAN);

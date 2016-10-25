@@ -46,8 +46,8 @@ public final class MetadataUtilities extends Static {
      * Returns the milliseconds value of the given date, or {@link Long#MIN_VALUE}
      * if the date us null.
      *
-     * @param  value The date, or {@code null}.
-     * @return The time in milliseconds, or {@code Long.MIN_VALUE} if none.
+     * @param  value  the date, or {@code null}.
+     * @return the time in milliseconds, or {@code Long.MIN_VALUE} if none.
      */
     public static long toMilliseconds(final Date value) {
         return (value != null) ? value.getTime() : Long.MIN_VALUE;
@@ -57,8 +57,8 @@ public final class MetadataUtilities extends Static {
      * Returns the given milliseconds time to a date object, or returns null
      * if the given time is {@link Long#MIN_VALUE}.
      *
-     * @param  value The time in milliseconds.
-     * @return The date for the given milliseconds value, or {@code null}.
+     * @param  value  the time in milliseconds.
+     * @return the date for the given milliseconds value, or {@code null}.
      */
     public static Date toDate(final long value) {
         return (value != Long.MIN_VALUE) ? new Date(value) : null;
@@ -69,10 +69,10 @@ public final class MetadataUtilities extends Static {
      * then this method logs a warning if we are in process of (un)marshalling a XML document or throw an exception
      * otherwise.
      *
-     * @param  classe   The class which invoke this method.
-     * @param  property The property name. Method name will be inferred by the usual Java bean convention.
-     * @param  strict   {@code true} if the value was expected to be strictly positive, or {@code false} if 0 is accepted.
-     * @param  newValue The argument value to verify.
+     * @param  classe    the class which invoke this method.
+     * @param  property  the property name. Method name will be inferred by the usual Java bean convention.
+     * @param  strict    {@code true} if the value was expected to be strictly positive, or {@code false} if 0 is accepted.
+     * @param  newValue  the argument value to verify.
      * @return {@code true} if the value is valid.
      * @throws IllegalArgumentException if the given value is negative and the problem has not been logged.
      */
@@ -81,7 +81,7 @@ public final class MetadataUtilities extends Static {
     {
         if (newValue != null) {
             final double value = newValue.doubleValue();
-            if (!(strict ? value > 0 : value >= 0)) {   // Use '!' for catching NaN.
+            if (!(strict ? value > 0 : value >= 0)) {                               // Use '!' for catching NaN.
                 if (NilReason.forObject(newValue) == null) {
                     final String msg = logOrFormat(classe, property, strict
                             ? Errors.Keys.ValueNotGreaterThanZero_2
@@ -101,11 +101,11 @@ public final class MetadataUtilities extends Static {
      * If the user argument is outside the expected range of values, then this method logs a warning
      * if we are in process of (un)marshalling a XML document or throw an exception otherwise.
      *
-     * @param  classe   The class which invoke this method.
-     * @param  property Name of the property to check.
-     * @param  minimum  The minimal legal value.
-     * @param  maximum  The maximal legal value.
-     * @param  newValue The value given by the user.
+     * @param  classe    the class which invoke this method.
+     * @param  property  name of the property to check.
+     * @param  minimum   the minimal legal value.
+     * @param  maximum   the maximal legal value.
+     * @param  newValue  the value given by the user.
      * @return {@code true} if the value is valid.
      * @throws IllegalArgumentException if the given value is out of range and the problem has not been logged.
      */
@@ -115,7 +115,7 @@ public final class MetadataUtilities extends Static {
     {
         if (newValue != null) {
             final double value = newValue.doubleValue();
-            if (!(value >= minimum.doubleValue() && value <= maximum.doubleValue())) {  // Use '!' for catching NaN.
+            if (!(value >= minimum.doubleValue() && value <= maximum.doubleValue())) {      // Use '!' for catching NaN.
                 if (NilReason.forObject(newValue) == null) {
                     final String msg = logOrFormat(classe, property,
                             Errors.Keys.ValueOutOfRange_4, property, minimum, maximum, newValue);
@@ -133,10 +133,10 @@ public final class MetadataUtilities extends Static {
      * Formats an error message and logs it if we are (un)marshalling a document, or return the message otherwise.
      * In the later case, it is caller's responsibility to use the message for throwing an exception.
      *
-     * @param  classe    The caller class, used only in case of warning message to log.
-     * @param  property  The property name. Method name will be inferred by the usual Java bean convention.
-     * @param  key       A {@code Errors.Keys} value.
-     * @param  arguments The argument to use for formatting the error message.
+     * @param  classe     the caller class, used only in case of warning message to log.
+     * @param  property   the property name. Method name will be inferred by the usual Java bean convention.
+     * @param  key        a {@code Errors.Keys} value.
+     * @param  arguments  the argument to use for formatting the error message.
      * @return {@code null} if the message has been logged, or the message to put in an exception otherwise.
      */
     private static String logOrFormat(final Class<?> classe, final String property, final short key, final Object... arguments) {
@@ -164,9 +164,9 @@ public final class MetadataUtilities extends Static {
      *       warning or error messages in future SIS versions.</li>
      * </ul>
      *
-     * @param  classe The caller class, used only in case of warning message to log.
-     * @param  method The caller method, used only in case of warning message to log.
-     * @param  name   The property name, used only in case of error message to format.
+     * @param  classe  the caller class, used only in case of warning message to log.
+     * @param  method  the caller method, used only in case of warning message to log.
+     * @param  name    the property name, used only in case of error message to format.
      * @throws IllegalStateException if {@code isDefined} is {@code true} and we are not unmarshalling an object.
      *
      * @since 0.7
@@ -186,8 +186,8 @@ public final class MetadataUtilities extends Static {
      * Returns the {@code gco:id} or {@code gml:id} value to use for the given object.
      * The returned identifier will be unique in the current XML document.
      *
-     * @param  object The object for which to get the unique identifier.
-     * @return The unique XML identifier, or {@code null} if none.
+     * @param  object  the object for which to get the unique identifier.
+     * @return the unique XML identifier, or {@code null} if none.
      *
      * @since 0.7
      */
@@ -206,7 +206,7 @@ public final class MetadataUtilities extends Static {
                     final int s = buffer.append('-').length();
                     int n = 0;
                     do {
-                        if (++n == 100) return null;    //  Arbitrary limit.
+                        if (++n == 100) return null;                        //  Arbitrary limit.
                         id = buffer.append(n).toString();
                         buffer.setLength(s);
                     } while (!Context.setObjectForID(context, object, id));
@@ -220,8 +220,8 @@ public final class MetadataUtilities extends Static {
      * Invoked by {@code setID(String)} method implementations for assigning an identifier to an object
      * at unmarshalling time.
      *
-     * @param object The object for which to assign an identifier.
-     * @param id The {@code gco:id} or {@code gml:id} value.
+     * @param object  the object for which to assign an identifier.
+     * @param id      the {@code gco:id} or {@code gml:id} value.
      *
      * @since 0.7
      */

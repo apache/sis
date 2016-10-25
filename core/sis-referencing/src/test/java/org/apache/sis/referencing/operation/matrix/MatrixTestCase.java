@@ -120,7 +120,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * (which happen only when performing some more extensive tests), then the given seed will be replaced
      * by a random one.
      *
-     * @param seed The initial seed.
+     * @param  seed  the initial seed.
      */
     final void initialize(final long seed) {
         random = DETERMINIST ? new Random(seed) : TestUtilities.createRandomNumberGenerator();
@@ -130,7 +130,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * Computes a random size for the next matrix to create. This method is overridden
      * only by subclasses that test matrix implementations supporting arbitrary sizes.
      *
-     * @param random The random number generator to use for computing a random matrix size.
+     * @param  random  the random number generator to use for computing a random matrix size.
      */
     void prepareNewMatrixSize(final Random random) {
     }
@@ -151,9 +151,9 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     /**
      * Verifies that the SIS matrix is equals to the JAMA one, up to the given tolerance value.
      *
-     * @param expected  The JAMA matrix used as a reference implementation.
-     * @param actual    The SIS matrix to compare to JAMA.
-     * @param tolerance The tolerance threshold, usually either {@link #STRICT} or {@link #TOLERANCE}.
+     * @param  expected   the JAMA matrix used as a reference implementation.
+     * @param  actual     the SIS matrix to compare to JAMA.
+     * @param  tolerance  the tolerance threshold, usually either {@link #STRICT} or {@link #TOLERANCE}.
      */
     static void assertEqualsJAMA(final Matrix expected, final MatrixSIS actual, final double tolerance) {
         final int numRow = actual.getNumRow();
@@ -396,9 +396,9 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * Consequently it is sub-classes responsibility to add a {@code testConvertBefore()} method
      * which invoke this method.
      *
-     * @param matrix The matrix of size 3×3 to test.
-     * @param withShear {@code true} for including shear in the matrix to test.
-     *        This value can be set to {@code false} if the subclass want to test a simpler case.
+     * @param  matrix     the matrix of size 3×3 to test.
+     * @param  withShear  {@code true} for including shear in the matrix to test.
+     *         This value can be set to {@code false} if the subclass want to test a simpler case.
      *
      * @since 0.6
      */
@@ -466,7 +466,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * Consequently it is sub-classes responsibility to add a {@code testConvertAfter()} method
      * which invoke this method.
      *
-     * @param matrix The matrix of size 3×3 to test.
+     * @param  matrix  the matrix of size 3×3 to test.
      *
      * @since 0.6
      */

@@ -70,7 +70,7 @@ public final strictfp class VerticalCRSMock extends IdentifiedObjectMock
      * Depth as a fraction of the sea floor depth at the location of the point for which the depth is evaluated.
      */
     public static final VerticalCRS SIGMA_LEVEL = new VerticalCRSMock("Sigma level",
-            VerticalDatumType.OTHER_SURFACE, 0, 1, Units.ONE, false);
+            VerticalDatumType.OTHER_SURFACE, 0, 1, Units.UNITY, false);
 
     /**
      * The datum type (geoidal, barometric, etc.).

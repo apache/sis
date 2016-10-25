@@ -189,7 +189,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
         pg.getOrCreate(Molodensky.TY)                    .setValue(tY, unit);
         pg.getOrCreate(Molodensky.TZ)                    .setValue(tZ, unit);
         pg.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).setValue(Δa, unit);
-        pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Units.ONE);
+        pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Units.UNITY);
         if (pg != context) {
             pg.parameter("abridged").setValue(isAbridged);  // Only in internal parameters.
         }

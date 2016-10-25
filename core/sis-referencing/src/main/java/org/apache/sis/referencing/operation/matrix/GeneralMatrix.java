@@ -36,7 +36,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see Matrices#createDiagonal(int, int)
@@ -89,12 +89,12 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * If {@code setToIdentity} is {@code true}, then the elements
      * on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      *
-     * @param numRow Number of rows.
-     * @param numCol Number of columns.
-     * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
-     *        or {@code false} for leaving it initialized to zero.
-     * @param precision 1 for normal precision, or 2 for extended precision.
-     *        No other value is allowed (this is not verified).
+     * @param  numRow         number of rows.
+     * @param  numCol         number of columns.
+     * @param  setToIdentity  {@code true} for initializing the matrix to the identity matrix,
+     *                        or {@code false} for leaving it initialized to zero.
+     * @param  precision      1 for normal precision, or 2 for extended precision.
+     *                        No other value is allowed (this is not verified).
      */
     GeneralMatrix(final int numRow, final int numCol, final boolean setToIdentity, final int precision) {
         ensureValidSize(numRow, numCol);
@@ -114,9 +114,9 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * The array values are copied in one row at a time in row major fashion.
      * The array shall be exactly {@code numRow*numCol} in length.
      *
-     * @param numRow Number of rows.
-     * @param numCol Number of columns.
-     * @param elements Initial values.
+     * @param  numRow    number of rows.
+     * @param  numCol    number of columns.
+     * @param  elements  initial values.
      */
     GeneralMatrix(final int numRow, final int numCol, final double[] elements) {
         ensureValidSize(numRow, numCol);
@@ -129,7 +129,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     /**
      * Constructs a new matrix and copies the initial values from the given matrix.
      *
-     * @param matrix The matrix to copy.
+     * @param  matrix  the matrix to copy.
      */
     GeneralMatrix(final Matrix matrix) {
         final int numRow = matrix.getNumRow();
@@ -158,10 +158,10 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     /**
      * Creates a new extended precision matrix of the given size.
      *
-     * @param numRow Number of rows.
-     * @param numCol Number of columns.
-     * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
-     *        or {@code false} for leaving it initialized to zero.
+     * @param  numRow         number of rows.
+     * @param  numCol         number of columns.
+     * @param  setToIdentity  {@code true} for initializing the matrix to the identity matrix,
+     *                        or {@code false} for leaving it initialized to zero.
      */
     static GeneralMatrix createExtendedPrecision(final int numRow, final int numCol, final boolean setToIdentity) {
         if (numRow == numCol) {
@@ -262,9 +262,9 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * Retrieves the value at the specified row and column of this matrix, wrapped in a {@code Number}
      * or a {@link DoubleDouble} depending on available precision.
      *
-     * @param row    The row index, from 0 inclusive to {@link #getNumRow()} exclusive.
-     * @param column The column index, from 0 inclusive to {@link #getNumCol()} exclusive.
-     * @return       The current value at the given row and column.
+     * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
+     * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
+     * @return the current value at the given row and column.
      */
     @Override
     public Number getNumber(int row, int column) {
@@ -285,9 +285,9 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     /**
      * Retrieves the value at the specified row and column of this matrix.
      *
-     * @param row    The row index, from 0 inclusive to {@link #getNumRow()} exclusive.
-     * @param column The column index, from 0 inclusive to {@link #getNumCol()} exclusive.
-     * @return       The current value at the given row and column.
+     * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
+     * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
+     * @return the current value at the given row and column.
      */
     @Override
     public final double getElement(final int row, final int column) {
@@ -301,9 +301,9 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     /**
      * Modifies the value at the specified row and column of this matrix.
      *
-     * @param row    The row index, from 0 inclusive to {@link #getNumRow() } exclusive.
-     * @param column The column index, from 0 inclusive to {@link #getNumCol()} exclusive.
-     * @param value  The new value to set at the given row and column.
+     * @param  row     the row index, from 0 inclusive to {@link #getNumRow() } exclusive.
+     * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
+     * @param  value   the new value to set at the given row and column.
      */
     @Override
     public final void setElement(final int row, final int column, final double value) {
@@ -326,7 +326,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * <p>This method may return a direct reference to the internal array. <strong>Do not modify.</strong>,
      * unless the {@code copy} argument is {@code true}.</p>
      *
-     * @param copy If {@code true}, then the returned array is guaranteed to be a copy, never the internal array.
+     * @param  copy  if {@code true}, then the returned array is guaranteed to be a copy, never the internal array.
      */
     static double[] getExtendedElements(final Matrix matrix, final int numRow, final int numCol, final boolean copy) {
         double[] elements;
@@ -406,11 +406,11 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      *       may have any values.</li>
      * </ul>
      *
-     * @param  elements The new matrix elements in a row-major array.
+     * @param  elements  the new matrix elements in a row-major array.
      * @return {@code true} if at leat one {@link DoubleDouble} instance has been found, in which case all
      *         errors terms have been initialized, or {@code false} otherwise, in which case no error term
      *         has been initialized (this is a <cite>all or nothing</cite> operation).
-     * @throws IllegalArgumentException If the given array does not have the expected length.
+     * @throws IllegalArgumentException if the given array does not have the expected length.
      *
      * @see Matrices#create(int, int, Number[])
      */
@@ -424,7 +424,10 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
         }
         boolean isExtended = false;
         for (int i=0; i<length; i++) {
-            final Number value = newValues[i];
+            Number value = newValues[i];
+            if (DoubleDouble.shouldConvert(value)) {
+                value = new DoubleDouble(value);
+            }
             final double element = value.doubleValue();
             elements[i] = element;
             final double error;
@@ -461,7 +464,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * Sets this matrix to the values of another matrix. This method overrides the default implementation with a more
      * efficient implementation in the particular case where the other matrix is an instance of {@code GeneralMatrix}.
      *
-     * @param matrix  The matrix to copy.
+     * @param  matrix  the matrix to copy.
      * @throws MismatchedMatrixSizeException if the given matrix has a different size than this matrix.
      *
      * @since 0.7
@@ -500,7 +503,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     /**
      * Implementation of {@link #isAffine()} with control on whether we require the matrix to be square.
      *
-     * @param square {@code true} if the matrix must be square, or {@code false} for allowing non-square matrices.
+     * @param  square  {@code true} if the matrix must be square, or {@code false} for allowing non-square matrices.
      */
     final boolean isAffine(final boolean square) {
         final int numRow = this.numRow;                     // Protection against accidental changes.
@@ -540,7 +543,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
         if (numRow != numCol) {
             return false;
         }
-        int di = 0; // Index of next diagonal element.
+        int di = 0;                                         // Index of next diagonal element.
         final int length = numRow * numCol;
         for (int i=0; i<length; i++) {
             final double element = elements[i];
@@ -630,7 +633,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * Returns {@code true} if the specified object is of type {@code GeneralMatrix} and
      * all of the data members are equal to the corresponding data members in this matrix.
      *
-     * @param object The object to compare with this matrix for equality.
+     * @param  object  the object to compare with this matrix for equality.
      * @return {@code true} if the given object is equal to this matrix.
      */
     @Override

@@ -44,7 +44,7 @@ public final strictfp class MeasureTest extends TestCase {
         assertEquals("urn:ogc:def:uom:EPSG::9001", measure.getUOM());
         measure.unit = Units.DEGREE;
         assertEquals("urn:ogc:def:uom:EPSG::9102", measure.getUOM());
-        measure.unit = Units.ONE;
+        measure.unit = Units.UNITY;
         assertEquals("urn:ogc:def:uom:EPSG::9201", measure.getUOM());
     }
 

@@ -117,7 +117,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 .setConversionMethod("Lambert Conic Conformal (1SP)")
                 .setConversionName("Lambert zone II")
                 .setParameter("Latitude of natural origin",             52, Units.GRAD)
-                .setParameter("Scale factor at natural origin", 0.99987742, Units.ONE)
+                .setParameter("Scale factor at natural origin", 0.99987742, Units.UNITY)
                 .setParameter("False easting",                      600000, Units.METRE)
                 .setParameter("False northing",                    2200000, Units.METRE)
                 .setCodeSpace(Citations.EPSG, Constants.EPSG)

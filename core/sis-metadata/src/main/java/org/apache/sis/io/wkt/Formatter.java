@@ -70,7 +70,6 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.simple.SimpleExtent;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -344,8 +343,12 @@ public class Formatter implements Localized {
         this.indentation   = (byte) indentation;
         this.numberFormat  = symbols.createNumberFormat();
         this.dateFormat    = new StandardDateFormat(symbols.getLocale());
-        this.unitFormat    = UnitFormat.getInstance(symbols.getLocale());
+        this.unitFormat    = new UnitFormat(symbols.getLocale());
         this.buffer        = new StringBuffer();
+        unitFormat.setStyle(UnitFormat.Style.NAME);
+        if (convention.usesCommonUnits) {
+            unitFormat.setLocale(Locale.US);
+        }
     }
 
     /**
@@ -1236,7 +1239,7 @@ public class Formatter implements Localized {
                 keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.LengthUnit;
             } else if (base.equals(Units.RADIAN)) {
                 keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.AngleUnit;
-            } else if (base.equals(Units.ONE)) {
+            } else if (base.equals(Units.UNITY)) {
                 keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.ScaleUnit;
             } else if (base.equals(Units.SECOND)) {
                 keyword = WKTKeywords.TimeUnit;  // "Unit" alone is not allowed for time units according ISO 19162.
@@ -1250,13 +1253,17 @@ public class Formatter implements Localized {
             closeQuote(fromIndex);
             resetColor();
             final double conversion = Units.toStandardUnit(unit);
-            appendExact(conversion);
+            if (Double.isNaN(conversion) && Units.isAngular(unit)) {
+                appendExact(Math.PI / 180);                 // Presume that we have sexagesimal degrees (see below).
+            } else {
+                appendExact(conversion);
+            }
             /*
-             * The EPSG code in UNIT elements is generally not recommended.
-             * But we make an exception for sexagesimal units (EPSG:9108, 9110 and 9111)
-             * because they can not be represented by a simple scale factor in WKT.
+             * The EPSG code in UNIT elements is generally not recommended. But we make an exception for sexagesimal
+             * units (EPSG:9108, 9110 and 9111) because they can not be represented by a simple scale factor in WKT.
+             * Those units are identified by a conversion factor set to NaN since the conversion is non-linear.
              */
-            if (convention == Convention.INTERNAL || PatchedUnitFormat.toFormattable(unit) != unit) {
+            if (convention == Convention.INTERNAL || Double.isNaN(conversion)) {
                 final Integer code = Units.getEpsgCode(unit, getEnclosingElement(1) instanceof CoordinateSystemAxis);
                 if (code != null) {
                     openElement(false, isWKT1 ? WKTKeywords.Authority : WKTKeywords.Id);

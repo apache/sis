@@ -40,7 +40,7 @@ import org.apache.sis.util.logging.Logging;
  */
 public final class DefaultFactories extends SystemListener {
     /**
-     * Cache of factories which are found by {@code META-INF/services}.
+     * Cache of factories found by {@link ServiceLoader} from {@code META-INF/services} files content.
      */
     private static final Map<Class<?>, Object> FACTORIES = new IdentityHashMap<>(4);
     static {

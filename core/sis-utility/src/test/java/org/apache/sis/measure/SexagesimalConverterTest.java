@@ -19,7 +19,6 @@ package org.apache.sis.measure;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.UnitConverter;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -94,13 +93,12 @@ public final strictfp class SexagesimalConverterTest extends TestCase {
     }
 
     /**
-     * Tests {@link PatchedUnitFormat#toString(Unit)}.
-     * Tested here because it can be tested only after {@link SexagesimalConverter} initialization.
+     * Verifies the unit symbols.
      */
     @Test
-    public void testPatchedUnitFormat() {
-        assertEquals("D.M",  PatchedUnitFormat.toString(DM));
-        assertEquals("D.MS", PatchedUnitFormat.toString(DMS));
-        assertEquals("DMS",  PatchedUnitFormat.toString(DMS_SCALED));
+    public void testToString() {
+        assertEquals("D.M",  DM.toString());
+        assertEquals("D.MS", DMS.toString());
+        assertEquals("DMS",  DMS_SCALED.toString());
     }
 }

@@ -38,3 +38,5 @@ org.apache.sis.internal.converter.DateConverter$SQL
 org.apache.sis.internal.converter.DateConverter$Timestamp
 org.apache.sis.internal.converter.CollectionConverter$List
 org.apache.sis.internal.converter.CollectionConverter$Set
+org.apache.sis.internal.converter.FractionConverter
+org.apache.sis.internal.converter.FractionConverter$FromInteger
