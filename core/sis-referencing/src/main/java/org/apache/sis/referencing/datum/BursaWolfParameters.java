@@ -548,7 +548,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
          * elements should have the same value, but we tolerate slight deviation
          * (this will be verified later).
          */
-        final DoubleDouble S = new DoubleDouble(getNumber(matrix, 0,0));
+        final DoubleDouble S = DoubleDouble.castOrCopy(getNumber(matrix, 0,0));
         S.add(getNumber(matrix, 1,1));
         S.add(getNumber(matrix, 2,2));
         S.divide(3, 0);

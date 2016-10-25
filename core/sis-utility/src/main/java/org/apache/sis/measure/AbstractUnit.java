@@ -190,7 +190,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      */
     @Override
     public final Unit<Q> shift(final double offset) {
-        return transform(LinearConverter.create(1, offset));
+        return transform(LinearConverter.offset(offset, 1));
     }
 
     /**
@@ -202,7 +202,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      */
     @Override
     public final Unit<Q> multiply(final double multiplier) {
-        return transform(LinearConverter.create(multiplier, 0));
+        return transform(LinearConverter.scale(multiplier, 1));
     }
 
     /**
@@ -214,7 +214,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      */
     @Override
     public final Unit<Q> divide(final double divisor) {
-        return transform(LinearConverter.create(1/divisor, 0));
+        return transform(LinearConverter.scale(1, divisor));
     }
 
     /**
