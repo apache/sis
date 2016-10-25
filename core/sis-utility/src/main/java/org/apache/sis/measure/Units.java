@@ -717,16 +717,16 @@ public final class Units extends Static {
         PASCAL              = Pa;
         SQUARE_METRE        = m2;
         METRES_PER_SECOND   = mps;
-        KILOGRAM            = add(Mass.class,      mass,                  "kg",   UnitRegistry.SI,       (short) 0);
-        CUBIC_METRE         = add(Volume.class,    length.pow(3),         "m³",   UnitRegistry.SI,       (short) 0);
-        NEWTON              = add(Force.class,     force,                 "N",    UnitRegistry.SI,       (short) 0);
-        JOULE               = add(Energy.class,    energy,                "J",    UnitRegistry.SI,       (short) 0);
-        WATT                = add(Power.class,     energy.divide(time),   "W",    UnitRegistry.SI,       (short) 0);
-        HERTZ               = add(Frequency.class, time.pow(-1),          "Hz",   UnitRegistry.SI,       (short) 0);
-        HECTOPASCAL         = add(Pa, hecto,                              "hPa",  UnitRegistry.SI,       (short) 0);
-        HECTARE             = add(m2,  LinearConverter.scale(10000, 1),   "ha",   UnitRegistry.ACCEPTED, (short) 0);
-        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(6, 100),     "km∕h", UnitRegistry.ACCEPTED, (short) 0);
-        CELSIUS             = add(K,   LinearConverter.create(1, 273.15), "°C",   UnitRegistry.SI,       (short) 0);
+        KILOGRAM            = add(Mass.class,      mass,                   "kg",   UnitRegistry.SI,       (short) 0);
+        CUBIC_METRE         = add(Volume.class,    length.pow(3),          "m³",   UnitRegistry.SI,       (short) 0);
+        NEWTON              = add(Force.class,     force,                  "N",    UnitRegistry.SI,       (short) 0);
+        JOULE               = add(Energy.class,    energy,                 "J",    UnitRegistry.SI,       (short) 0);
+        WATT                = add(Power.class,     energy.divide(time),    "W",    UnitRegistry.SI,       (short) 0);
+        HERTZ               = add(Frequency.class, time.pow(-1),           "Hz",   UnitRegistry.SI,       (short) 0);
+        HECTOPASCAL         = add(Pa, hecto,                               "hPa",  UnitRegistry.SI,       (short) 0);
+        HECTARE             = add(m2,  LinearConverter.scale(10000, 1),    "ha",   UnitRegistry.ACCEPTED, (short) 0);
+        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(6, 100),      "km∕h", UnitRegistry.ACCEPTED, (short) 0);
+        CELSIUS             = add(K,   LinearConverter.offset(27315, 100), "°C",   UnitRegistry.SI,       (short) 0);
         /*
          * All Unit<Dimensionless>
          */

@@ -20,11 +20,14 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import javax.measure.UnitConverter;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.StringBuilders;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.math.Fraction;
 import org.apache.sis.internal.util.Numerics;
 
 
@@ -74,50 +77,69 @@ final class LinearConverter extends AbstractConverter {
     /**
      * The identity linear converter.
      */
-    static final LinearConverter IDENTITY = new LinearConverter(1, 0);
+    static final LinearConverter IDENTITY = new LinearConverter(1, 0, 1);
 
     /**
-     * The scale to apply for converting values.
+     * The scale to apply for converting values, before division by {@link #divisor}.
      */
     private final double scale;
 
     /**
-     * The offset to apply after the scale.
+     * The offset to apply after the scale, before division by {@link #divisor}.
      */
     private final double offset;
 
     /**
-     * The inverse of this unit converter. Computed when first needed and stored in
-     * order to avoid rounding error if the user asks for the inverse of the inverse.
+     * A divisor applied after the conversion.
+     * The complete formula used by Apache SIS is {@code y = (x*scale + offset) / divisor}.
+     * This division is mathematically unneeded since we could divide the offset and scale factor directly,
+     * but we keep it for accuracy reasons because most unit conversion factors are defined in base 10 and
+     * IEEE 754 can not represent fractional values in base 10 accurately.
      */
-    private transient LinearConverter inverse;
+    private final double divisor;
+
+    /**
+     * The scale and offset factors represented in base 10, computed when first needed.
+     * Those terms are pre-divided by the {@linkplain #divisor}.
+     */
+    private transient volatile BigDecimal scale10, offset10;
 
     /**
      * Creates a new linear converter for the given scale and offset.
+     * The complete formula applied is {@code y = (x*scale + offset) / divisor}.
      */
-    private LinearConverter(final double scale, final double offset) {
-        this.scale  = scale;
-        this.offset = offset;
+    private LinearConverter(final double scale, final double offset, final double divisor) {
+        this.scale   = scale;
+        this.offset  = offset;
+        this.divisor = divisor;
     }
 
     /**
      * Returns a linear converter for the given scale and offset.
      */
-    static LinearConverter create(final double scale, final double offset) {
+    private static LinearConverter create(final double scale, final double offset, final double divisor) {
         if (offset == 0) {
-            if (scale == 1) return IDENTITY;
+            if (scale == divisor) return IDENTITY;
         }
-        return new LinearConverter(scale, offset);
+        return new LinearConverter(scale, offset, divisor);
     }
 
     /**
      * Returns a linear converter for the given ratio. The scale factor is specified as a ratio because
-     * the unit conversion factors are defined with a value which is exact in base 10.
-     *
-     * @todo modify the {@code LinearConverter} implementation for storing the ratio.
+     * the unit conversion factors are often defined with a value in base 10.  That value is considered
+     * exact by definition, but IEEE 754 has no exact representation of decimal fraction digits.
      */
     static LinearConverter scale(final double numerator, final double denominator) {
-        return new LinearConverter(numerator / denominator, 0);
+        return new LinearConverter(numerator, 0, denominator);
+    }
+
+    /**
+     * Returns a converter for the given shift. The translation is specified as a fraction because the
+     * unit conversion terms are often defined with a value in base 10. That value is considered exact
+     * by definition, but IEEE 754 has no exact representation of decimal fraction digits.
+     */
+    static LinearConverter offset(final double numerator, final double denominator) {
+        return new LinearConverter(denominator, numerator, denominator);
     }
 
     /**
@@ -150,7 +172,7 @@ final class LinearConverter extends AbstractConverter {
 
     /**
      * Raises the given converter to the given power. This method assumes that the given converter
-     * {@linkplain #isLinear() is linear} (this is not verified) and take only the scale factor;
+     * {@linkplain #isLinear() is linear} (this is not verified) and takes only the scale factor;
      * the offset (if any) is ignored.
      *
      * @param  converter  the converter to raise to the given power.
@@ -159,19 +181,35 @@ final class LinearConverter extends AbstractConverter {
      * @return the converter raised to the given power.
      */
     static LinearConverter pow(final UnitConverter converter, final int n, final boolean root) {
-        double scale = converter.convert(1.0) - converter.convert(0.0);
+        double numerator, denominator;
+        if (converter instanceof LinearConverter) {
+            final LinearConverter lc = (LinearConverter) converter;
+            numerator   = lc.scale;
+            denominator = lc.divisor;
+        } else {
+            // Subtraction by convert(0) is a paranoiac safety.
+            numerator   = converter.convert(1.0) - converter.convert(0.0);
+            denominator = 1;
+        }
         if (root) {
             switch (n) {
-                case 2:  scale = Math.sqrt(scale); break;
-                case 3:  scale = Math.cbrt(scale); break;
-                default: scale = Math.pow(scale, 1.0 / n); break;
+                case 1:  break;
+                case 2:  numerator   = Math.sqrt(numerator);
+                         denominator = Math.sqrt(denominator);
+                         break;
+                case 3:  numerator   = Math.cbrt(numerator);
+                         denominator = Math.cbrt(denominator);
+                         break;
+                default: final double r = 1.0 / n;
+                         numerator   = Math.pow(numerator,   r);
+                         denominator = Math.pow(denominator, r);
+                         break;
             }
-        } else if (scale == 10) {
-            scale = MathFunctions.pow10(n);
         } else {
-            scale = Math.pow(scale, n);
+            numerator   = (numerator   == 10) ? MathFunctions.pow10(n) : Math.pow(numerator,   n);
+            denominator = (denominator == 10) ? MathFunctions.pow10(n) : Math.pow(denominator, n);
         }
-        return create(scale, 0);
+        return scale(numerator, denominator);
     }
 
     /**
@@ -192,23 +230,30 @@ final class LinearConverter extends AbstractConverter {
     }
 
     /**
-     * Returns {@code true} if the scale is 1 and the offset is zero.
+     * Returns {@code true} if the effective scale factor is 1 and the offset is zero.
      */
     @Override
     public boolean isIdentity() {
-        return scale == 1 && offset == 0;
+        return scale == divisor && offset == 0;
     }
 
     /**
      * Returns the inverse of this unit converter.
+     * Given that the formula applied by this converter is:
+     *
+     * {@preformat math
+     *    y = (x⋅scale + offset) ∕ divisor
+     * }
+     *
+     * the inverse formula is:
+     *
+     * {@preformat math
+     *    x = (y⋅divisor - offset) ∕ scale
+     * }
      */
     @Override
     public synchronized UnitConverter inverse() {
-        if (inverse == null) {
-            inverse = new LinearConverter(1/scale, -offset/scale);
-            inverse.inverse = this;
-        }
-        return inverse;
+        return isIdentity() ? this : new LinearConverter(divisor, -offset, scale);
     }
 
     /**
@@ -217,13 +262,29 @@ final class LinearConverter extends AbstractConverter {
     @Override
     @SuppressWarnings("fallthrough")
     Number[] coefficients() {
-        final Number[] c = new Number[(scale != 1) ? 2 : (offset != 0) ? 1 : 0];
+        final Number[] c = new Number[(scale != divisor) ? 2 : (offset != 0) ? 1 : 0];
         switch (c.length) {
-            case 2: c[1] = scale;
-            case 1: c[0] = offset;
+            case 2: c[1] = ratio(scale,  divisor);
+            case 1: c[0] = ratio(offset, divisor);
             case 0: break;
         }
         return c;
+    }
+
+    /**
+     * Returns the given ratio as a {@link Fraction} if possible, or as a {@link Double} otherwise.
+     * The use of {@link Fraction} allows the {@link org.apache.sis.referencing.operation.matrix}
+     * package to perform more accurate calculations.
+     */
+    private static Number ratio(final double value, final double divisor) {
+        final int numerator = (int) value;
+        if (numerator == value) {
+            final int denominator = (int) divisor;
+            if (denominator == divisor) {
+                return (denominator == 1) ? numerator : new Fraction(numerator, denominator);
+            }
+        }
+        return value / divisor;
     }
 
     /**
@@ -231,36 +292,42 @@ final class LinearConverter extends AbstractConverter {
      */
     @Override
     public double convert(final double value) {
-        return value * scale + offset;
+        return (value * scale + offset) / divisor;
     }
 
     /**
      * Applies the linear conversion on the given value. This method uses {@link BigDecimal} arithmetic if
      * the given value is an instance of {@code BigDecimal}, or IEEE 754 floating-point arithmetic otherwise.
      *
-     * <p>This method is inefficient. Apache SIS rarely uses {@link BigDecimal} arithmetic, so providing an
-     * efficient implementation of this method is currently not a goal (this decision may be revisited in a
-     * future SIS version if the need for {@code BigDecimal} arithmetic increase).</p>
+     * <p>Apache SIS rarely uses {@link BigDecimal} arithmetic, so providing an efficient implementation of
+     * this method is not a goal.</p>
      */
     @Override
     public Number convert(Number value) {
         ArgumentChecks.ensureNonNull("value", value);
-        if (value instanceof BigDecimal) {
-            if (scale != 1) {
-                value = ((BigDecimal) value).multiply(BigDecimal.valueOf(scale));
+        if (!isIdentity()) {
+            if (value instanceof BigInteger) {
+                value = new BigDecimal((BigInteger) value);
             }
-            if (offset != 0) {
-                value = ((BigDecimal) value).add(BigDecimal.valueOf(offset));
-            }
-        } else if (!isIdentity()) {
-            final double x;
-            if (value instanceof Float) {
-                // Because unit conversion factors are usually defined in base 10.
-                x = DecimalFunctions.floatToDouble((Float) value);
+            if (value instanceof BigDecimal) {
+                BigDecimal scale10  = this.scale10;
+                BigDecimal offset10 = this.offset10;
+                if (scale10 == null || offset10 == null) {
+                    final BigDecimal divisor = BigDecimal.valueOf(this.divisor);
+                    this.scale10  = scale10  = BigDecimal.valueOf(scale) .divide(divisor);
+                    this.offset10 = offset10 = BigDecimal.valueOf(offset).divide(divisor);
+                }
+                value = ((BigDecimal) value).multiply(scale10).add(offset10);
             } else {
-                x = value.doubleValue();
+                final double x;
+                if (value instanceof Float) {
+                    // Because unit conversion factors are usually defined in base 10.
+                    x = DecimalFunctions.floatToDouble((Float) value);
+                } else {
+                    x = value.doubleValue();
+                }
+                value = convert(x);
             }
-            value = convert(x);
         }
         return value;
     }
@@ -271,12 +338,24 @@ final class LinearConverter extends AbstractConverter {
      */
     @Override
     public double derivative(double value) {
-        return scale;
+        return scale / divisor;
     }
 
     /**
      * Concatenates this converter with another converter. The resulting converter is equivalent to first converting
-     * by the specified converter (right converter), and then converting by this converter (left converter).
+     * by the specified converter (right converter), and then converting by this converter (left converter).  In the
+     * following equations, the 1 subscript is for the specified converter and the 2 subscript is for this converter:
+     *
+     * {@preformat math
+     *    t = (x⋅scale₁ + offset₁) ∕ divisor₁
+     *    y = (t⋅scale₂ + offset₂) ∕ divisor₂
+     * }
+     *
+     * We rewrite as:
+     *
+     * {@preformat math
+     *    y = (x⋅scale₁⋅scale₂ + offset₁⋅scale₂ + divisor₁⋅offset₂) ∕ (divisor₁⋅divisor₂)
+     * }
      */
     @Override
     public UnitConverter concatenate(final UnitConverter converter) {
@@ -287,22 +366,43 @@ final class LinearConverter extends AbstractConverter {
         if (isIdentity()) {
             return converter;
         }
-        final double otherScale, otherOffset;
+        double otherScale, otherOffset, otherDivisor;
         if (converter instanceof LinearConverter) {
-            otherScale  = ((LinearConverter) converter).scale;
-            otherOffset = ((LinearConverter) converter).offset;
+            final LinearConverter lc = (LinearConverter) converter;
+            otherScale   = lc.scale;
+            otherOffset  = lc.offset;
+            otherDivisor = lc.divisor;
         } else if (converter.isLinear()) {
             /*
              * Fallback for foreigner implementations. Note that 'otherOffset' should be restricted to zero
              * according JSR-363 definition of 'isLinear()', but let be safe; maybe we are not the only one
              * to have a different interpretation about the meaning of "linear".
              */
-            otherOffset = converter.convert(0.0);
-            otherScale  = converter.convert(1.0) - otherOffset;
+            otherOffset  = converter.convert(0.0);
+            otherScale   = converter.convert(1.0) - otherOffset;
+            otherDivisor = 1;
         } else {
             return new ConcatenatedConverter(converter, this);
         }
-        return create(otherScale * scale, otherOffset * scale + offset);
+        otherScale   *= scale;
+        otherOffset   = otherOffset * scale + otherDivisor * offset;
+        otherDivisor *= divisor;
+        /*
+         * Following loop is a little bit similar to simplifying a fraction, but checking only for the
+         * powers of 10 since unit conversions are often such values. Algorithm is not very efficient,
+         * but the loop should not be executed often.
+         */
+        if (otherScale != 0 || otherOffset != 0 || otherDivisor != 0) {
+            double cf, f = 1;
+            do {
+                cf = f;
+                f *= 10;
+            } while (otherScale % f == 0 && otherOffset % f == 0 && otherDivisor % f == 0);
+            otherScale   /= cf;
+            otherOffset  /= cf;
+            otherDivisor /= cf;
+        }
+        return create(otherScale, otherOffset, otherDivisor);
     }
 
     /**
@@ -318,7 +418,9 @@ final class LinearConverter extends AbstractConverter {
      */
     @Override
     public int hashCode() {
-        return Numerics.hashCode((Double.doubleToLongBits(scale) + 31*Double.doubleToLongBits(offset)) ^ serialVersionUID);
+        return Numerics.hashCode(Double.doubleToLongBits(scale)
+                         + 31 * (Double.doubleToLongBits(offset)
+                         + 37 *  Double.doubleToLongBits(divisor)));
     }
 
     /**
@@ -328,7 +430,9 @@ final class LinearConverter extends AbstractConverter {
     public boolean equals(final Object other) {
         if (other instanceof LinearConverter) {
             final LinearConverter o = (LinearConverter) other;
-            return Numerics.equals(scale, o.scale) && Numerics.equals(offset, o.offset);
+            return Numerics.equals(scale,   o.scale)  &&
+                   Numerics.equals(offset,  o.offset) &&
+                   Numerics.equals(divisor, o.divisor);
         }
         return false;
     }
@@ -342,12 +446,20 @@ final class LinearConverter extends AbstractConverter {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder().append("y = ");
+        if (offset != 0) {
+            buffer.append('(');
+        }
         if (scale != 1) {
-            buffer.append(scale).append('⋅');
+            StringBuilders.trimFractionalPart(buffer.append(scale));
+            buffer.append('⋅');
         }
         buffer.append('x');
         if (offset != 0) {
-            buffer.append(" + ").append(offset);
+            StringBuilders.trimFractionalPart(buffer.append(" + ").append(offset));
+            buffer.append(')');
+        }
+        if (divisor != 1) {
+            StringBuilders.trimFractionalPart(buffer.append('∕').append(divisor));
         }
         return buffer.toString();
     }
