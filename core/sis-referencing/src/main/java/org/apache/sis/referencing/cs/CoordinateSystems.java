@@ -31,6 +31,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -310,8 +311,7 @@ public final class CoordinateSystems extends Static {
         for (int j=0; j<targetDim; j++) {
             final Unit<?> targetUnit = targetCS.getAxis(j).getUnit();
             for (int i=0; i<sourceDim; i++) {
-                final double element = matrix.getElement(j,i);
-                if (element == 0) {
+                if (matrix.getElement(j,i) == 0) {
                     // There is no dependency between source[i] and target[j]
                     // (i.e. axes are orthogonal).
                     continue;
@@ -322,18 +322,24 @@ public final class CoordinateSystems extends Static {
                     // between source[i] and target[j].
                     continue;
                 }
-                double scale  = 1;
-                double offset = 0;
+                Number scale  = 1;
+                Number offset = 0;
                 final Number[] coefficients = Units.coefficients(sourceUnit.getConverterToAny(targetUnit));
                 switch (coefficients != null ? coefficients.length : -1) {
-                    case 2:  scale  = coefficients[1].doubleValue();       // Fall through
-                    case 1:  offset = coefficients[0].doubleValue();       // Fall through
+                    case 2:  scale  = coefficients[1];       // Fall through
+                    case 1:  offset = coefficients[0];       // Fall through
                     case 0:  break;
                     default: throw new IncommensurableException(Resources.format(
                                 Resources.Keys.NonLinearUnitConversion_2, sourceUnit, targetUnit));
                 }
-                matrix.setElement(j, i, element*scale);
-                matrix.setElement(j, sourceDim, matrix.getElement(j, sourceDim) + element*offset);
+                final DoubleDouble element = DoubleDouble.castOrCopy(matrix.getNumber(j,i));
+                final DoubleDouble r = new DoubleDouble(element);
+                r.multiply(scale);
+                matrix.setNumber(j, i, r);
+                r.setFrom(element);
+                r.multiply(offset);
+                r.add(matrix.getNumber(j, sourceDim));
+                matrix.setNumber(j, sourceDim, r);
             }
         }
         return matrix;
