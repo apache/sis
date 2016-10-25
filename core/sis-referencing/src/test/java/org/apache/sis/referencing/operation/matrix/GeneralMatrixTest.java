@@ -40,11 +40,11 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     /**
      * Computes a random size for the next matrix to create.
      *
-     * @param random The random number generator to use.
+     * @param  random  the random number generator to use.
      */
     @Override
     void prepareNewMatrixSize(final Random random) {
-        size = 5 + random.nextInt(8); // Matrix sizes from 5 to 12 inclusive.
+        size = 5 + random.nextInt(8);                   // Matrix sizes from 5 to 12 inclusive.
     }
 
     /** {@inheritDoc} */ @Override int getNumRow() {return size;}
@@ -69,10 +69,10 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     @Test
     public void testGetExtendedElements() {
         testGetExtendedElements(new GeneralMatrix(2, 2, new double[] {
-                StrictMath.PI / 180, // Degrees to radians
-                180 / StrictMath.PI, // Radians to degrees
-                0.9,                 // Gradians to degrees
-                0.1234567}));        // Random value with no special meaning.
+                StrictMath.PI / 180,            // Degrees to radians
+                180 / StrictMath.PI,            // Radians to degrees
+                0.9,                            // Gradians to degrees
+                0.1234567}));                   // Random value with no special meaning.
     }
 
     /**
