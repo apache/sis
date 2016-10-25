@@ -269,7 +269,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      *           .setConversionMethod("Lambert Conic Conformal (1SP)")
      *           .setConversionName("Lambert zone II")
      *           .setParameter("Latitude of natural origin",             52, Units.GRAD)
-     *           .setParameter("Scale factor at natural origin", 0.99987742, Units.ONE)
+     *           .setParameter("Scale factor at natural origin", 0.99987742, Units.UNITY)
      *           .setParameter("False easting",                      600000, Units.METRE)
      *           .setParameter("False northing",                    2200000, Units.METRE)
      *           .addName("NTF (Paris) / Lambert zone II")

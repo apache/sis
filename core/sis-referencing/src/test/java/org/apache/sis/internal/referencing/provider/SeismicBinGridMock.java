@@ -44,16 +44,16 @@ public final strictfp class SeismicBinGridMock extends ProviderMock {
     static {
         final ParameterBuilder builder = builder();
         final ParameterDescriptor<?>[] parameters = {
-            builder.addIdentifier("8733").addName("Bin grid origin I")                  .create(Double.NaN, Units.ONE),
-            builder.addIdentifier("8734").addName("Bin grid origin J")                  .create(Double.NaN, Units.ONE),
+            builder.addIdentifier("8733").addName("Bin grid origin I")                  .create(Double.NaN, Units.UNITY),
+            builder.addIdentifier("8734").addName("Bin grid origin J")                  .create(Double.NaN, Units.UNITY),
             builder.addIdentifier("8735").addName("Bin grid origin Easting")            .create(Double.NaN, Units.METRE),
             builder.addIdentifier("8736").addName("Bin grid origin Northing")           .create(Double.NaN, Units.METRE),
-            builder.addIdentifier("8737").addName("Scale factor of bin grid")           .create(Double.NaN, Units.ONE),
+            builder.addIdentifier("8737").addName("Scale factor of bin grid")           .create(Double.NaN, Units.UNITY),
             builder.addIdentifier("8738").addName("Bin width on I-axis")                .create(Double.NaN, Units.METRE),
             builder.addIdentifier("8739").addName("Bin width on J-axis")                .create(Double.NaN, Units.METRE),
             builder.addIdentifier("8740").addName("Map grid bearing of bin grid J-axis").create(Double.NaN, Units.DEGREE),
-            builder.addIdentifier("8741").addName("Bin node increment on I-axis")       .create(Double.NaN, Units.ONE),
-            builder.addIdentifier("8742").addName("Bin node increment on J-axis")       .create(Double.NaN, Units.ONE)
+            builder.addIdentifier("8741").addName("Bin node increment on I-axis")       .create(Double.NaN, Units.UNITY),
+            builder.addIdentifier("8742").addName("Bin node increment on J-axis")       .create(Double.NaN, Units.UNITY)
         };
         PARAMETERS = builder
                 .addIdentifier("1049")

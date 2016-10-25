@@ -241,6 +241,8 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @return Units in which sensor wavelengths are expressed.
      *
      * @since 0.5
+     *
+     * @see org.apache.sis.measure.Units#NANOMETRE
      */
     @Override
 /// @XmlElement(name = "boundUnits")

@@ -81,7 +81,7 @@ public final strictfp class MatricesTest extends TestCase {
         }
         final MatrixSIS matrix = Matrices.create(SIZE, SIZE, elements);
         assertInstanceOf("Created with DoubleDouble elements", GeneralMatrix.class, matrix);
-        assertFalse(expected.equals(matrix)); // Because not the same type.
+        assertFalse(expected.equals(matrix));                                       // Because not the same type.
         assertTrue(Matrices.equals(expected, matrix, ComparisonMode.BY_CONTRACT));
         final double[] errors = ((GeneralMatrix) matrix).elements;
         for (int i = 0; i < SIZE*SIZE; i++) {
@@ -130,12 +130,12 @@ public final strictfp class MatricesTest extends TestCase {
         assertFalse("isIdentity", matrix.isIdentity());
         assertEquals("numRow", 4, matrix.getNumRow());
         assertEquals("numCol", 4, matrix.getNumCol());
-        assertEquals(Matrices.create(4, 4, new double[] {
+        assertMatrixEquals("(N,E,U) → (W,U,S)", Matrices.create(4, 4, new double[] {
              0,-1, 0, 0,
              0, 0, 1, 0,
             -1, 0, 0, 0,
              0, 0, 0, 1
-        }), matrix);
+        }), matrix, STRICT);
     }
 
     /**
@@ -156,11 +156,11 @@ public final strictfp class MatricesTest extends TestCase {
         assertFalse("isIdentity", matrix.isIdentity());
         assertEquals("numRow", 3, matrix.getNumRow());
         assertEquals("numCol", 4, matrix.getNumCol());
-        assertEquals(Matrices.create(3, 4, new double[] {
+        assertMatrixEquals("(N,E,U) → (D,N)", Matrices.create(3, 4, new double[] {
             0, 0,-1, 0,
             1, 0, 0, 0,
             0, 0, 0, 1
-        }), matrix);
+        }), matrix, STRICT);
     }
 
     /**
@@ -181,11 +181,11 @@ public final strictfp class MatricesTest extends TestCase {
         assertFalse("isIdentity", matrix.isIdentity());
         assertEquals("numRow", 3, matrix.getNumRow());
         assertEquals("numCol", 4, matrix.getNumCol());
-        assertEquals(Matrices.create(3, 4, new double[] {
+        assertMatrixEquals("(N,E,U) → (D,D)", Matrices.create(3, 4, new double[] {
             0, 0,-1, 0,
             0, 0,-1, 0,
             0, 0, 0, 1
-        }), matrix);
+        }), matrix, STRICT);
     }
 
     /**
@@ -303,11 +303,11 @@ public final strictfp class MatricesTest extends TestCase {
         assertFalse("isIdentity", matrix.isIdentity());
         assertEquals("numRow", 3, matrix.getNumRow());
         assertEquals("numCol", 3, matrix.getNumCol());
-        assertEquals(Matrices.create(3, 3, new double[] {
+        assertMatrixEquals("(N,E) → (E,N)", Matrices.create(3, 3, new double[] {
             0,   -3.0, 350,
             2.5,  0,    75,
             0,    0,     1
-        }), matrix);
+        }), matrix, STRICT);
         /*
          * Test dropping a dimension.
          */
@@ -319,11 +319,11 @@ public final strictfp class MatricesTest extends TestCase {
                 dstEnvelope, new AxisDirection[] {EAST, NORTH});
         assertEquals("numRow", 3, matrix.getNumRow());
         assertEquals("numCol", 4, matrix.getNumCol());
-        assertEquals(Matrices.create(3, 4, new double[] {
+        assertMatrixEquals("(N,E,U) → (E,N)", Matrices.create(3, 4, new double[] {
             0,   -3.0, 0, 350,
             2.5,  0,   0,  75,
             0,    0,   0,   1
-        }), matrix);
+        }), matrix, STRICT);
     }
 
     /**

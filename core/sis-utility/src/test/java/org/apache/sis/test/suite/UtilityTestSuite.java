@@ -56,6 +56,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.logging.WarningListenersTest.class,
     org.apache.sis.util.logging.MonolineFormatterTest.class,
     org.apache.sis.util.logging.LoggerAdapterTest.class,
+    org.apache.sis.math.FractionTest.class,
     org.apache.sis.math.VectorTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
     org.apache.sis.math.DecimalFunctionsTest.class,
@@ -102,6 +103,11 @@ import org.junit.BeforeClass;
 
     // Measurements and formatting.
     org.apache.sis.measure.SexagesimalConverterTest.class,
+    org.apache.sis.measure.LinearConverterTest.class,
+    org.apache.sis.measure.UnitDimensionTest.class,
+    org.apache.sis.measure.SystemUnitTest.class,
+    org.apache.sis.measure.ConventionalUnitTest.class,
+    org.apache.sis.measure.UnitFormatTest.class,
     org.apache.sis.measure.UnitsTest.class,
     org.apache.sis.measure.RangeTest.class,
     org.apache.sis.measure.DateRangeTest.class,

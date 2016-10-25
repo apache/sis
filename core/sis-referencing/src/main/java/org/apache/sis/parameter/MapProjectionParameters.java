@@ -254,7 +254,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          */
         static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
                 toMap(Constants.INVERSE_FLATTENING), 0, 1, Double.class,
-                MeasurementRange.createGreaterThan(0.0, Units.ONE), null, null);
+                MeasurementRange.createGreaterThan(0.0, Units.UNITY), null, null);
 
         /**
          * Helper method for {@link #DESCRIPTOR} constructions.

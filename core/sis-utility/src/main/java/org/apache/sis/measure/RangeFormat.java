@@ -342,7 +342,7 @@ public class RangeFormat extends Format {
             unitFormat    = null;
         } else if (Number.class.isAssignableFrom(elementType)) {
             elementFormat = NumberFormat.getNumberInstance(locale);
-            unitFormat    = UnitFormat.getInstance(locale);
+            unitFormat    = new UnitFormat(locale);
         } else if (Date.class.isAssignableFrom(elementType)) {
             elementFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
             unitFormat    = null;

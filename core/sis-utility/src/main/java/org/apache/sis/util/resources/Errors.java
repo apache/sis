@@ -388,6 +388,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IncompatiblePropertyValue_1 = 63;
 
         /**
+         * The “{0}” unit of measurement has dimension of ‘{1}’ ({2}). It is incompatible with
+         * dimension of ‘{3}’ ({4}).
+         */
+        public static final short IncompatibleUnitDimension_5 = 163;
+
+        /**
          * Unit “{0}” is incompatible with current value.
          */
         public static final short IncompatibleUnit_1 = 64;
@@ -574,9 +580,19 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NonLinearUnit_1 = 100;
 
         /**
+         * The scale of measurement for “{0}” unit is not a ratio scale.
+         */
+        public static final short NonRatioUnit_1 = 162;
+
+        /**
          * “{0}” is not a scale unit.
          */
         public static final short NonScaleUnit_1 = 101;
+
+        /**
+         * “{0}” is not a fundamental or derived unit.
+         */
+        public static final short NonSystemUnit_1 = 161;
 
         /**
          * “{0}” is not a time unit.
