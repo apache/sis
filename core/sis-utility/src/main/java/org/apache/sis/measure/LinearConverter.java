@@ -292,6 +292,7 @@ final class LinearConverter extends AbstractConverter {
      */
     @Override
     public double convert(final double value) {
+        // TODO: use JDK9' Math.fma(…) and verify if it solve the accuracy issue in LinearConverterTest.inverse().
         return (value * scale + offset) / divisor;
     }
 
@@ -314,8 +315,10 @@ final class LinearConverter extends AbstractConverter {
                 BigDecimal offset10 = this.offset10;
                 if (scale10 == null || offset10 == null) {
                     final BigDecimal divisor = BigDecimal.valueOf(this.divisor);
-                    this.scale10  = scale10  = BigDecimal.valueOf(scale) .divide(divisor);
-                    this.offset10 = offset10 = BigDecimal.valueOf(offset).divide(divisor);
+                    scale10  = BigDecimal.valueOf(scale) .divide(divisor);
+                    offset10 = BigDecimal.valueOf(offset).divide(divisor);
+                    this.scale10  = scale10;            // Volatile fields
+                    this.offset10 = offset10;
                 }
                 value = ((BigDecimal) value).multiply(scale10).add(offset10);
             } else {
@@ -435,6 +438,16 @@ final class LinearConverter extends AbstractConverter {
                    Numerics.equals(divisor, o.divisor);
         }
         return false;
+    }
+
+    /**
+     * Returns {@code true} if the given converter perform the same conversion than this converter,
+     * except for rounding errors.
+     */
+    boolean equivalent(final LinearConverter other) {
+        double r;
+        return Math.abs((r = scale  * other.divisor) - other.scale  * divisor) <= Math.ulp(r) &&
+               Math.abs((r = offset * other.divisor) - other.offset * divisor) <= Math.ulp(r);
     }
 
     /**
