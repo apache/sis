@@ -65,6 +65,8 @@ public final strictfp class LinearConverterTest extends TestCase {
      * and that {@link LinearConverter#POWERS} has the same length.
      *
      * @throws ReflectiveOperationException if this test can not access the private fields of {@link LinearConverter}.
+     *
+     * @see ConventionalUnitTest#verifyPrefixes()
      */
     @Test
     public void verifyPrefixes() throws ReflectiveOperationException {
@@ -200,6 +202,7 @@ public final strictfp class LinearConverterTest extends TestCase {
         c = LinearConverter.offset(27315, 100);
         inv = (LinearConverter) c.inverse();
         assertEquals(12.3, c.convert(inv.convert(12.3)), 1E-13);
+        // TODO: use JDK9' Math.fma(…) in LinearConverter.convert(double) and verify if it solve the accuracy issue.
     }
 
     /**

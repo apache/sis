@@ -69,7 +69,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      * @param  dimension  the unit dimension.
      * @param  symbol     the unit symbol, or {@code null} if this unit has no specific symbol.
      * @param  scope      {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
-     * @param  epsg       the EPSG code,   or 0 if this unit has no EPSG code.
+     * @param  epsg       the EPSG code, or 0 if this unit has no EPSG code.
      */
     SystemUnit(final Class<Q> quantity, final UnitDimension dimension, final String symbol, final byte scope, final short epsg) {
         super(symbol, scope, epsg);
@@ -334,7 +334,15 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     @Override
     @SuppressWarnings("unchecked")
     public Unit<Q> alternate(final String symbol) {
-        ArgumentChecks.ensureNonNull("symbol", symbol);
+        ArgumentChecks.ensureNonEmpty("symbol", symbol);
+        for (int i=0; i < symbol.length();) {
+            final int c = symbol.codePointAt(i);
+            if (!isSymbolChar(c)) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCharacter_2,
+                        "symbol", String.valueOf(Character.toChars(c))));
+            }
+            i += Character.charCount(c);
+        }
         if (symbol.equals(getSymbol())) {
             return this;
         }
@@ -345,13 +353,13 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
              * in read-only mode when 'quantity' is null because we would be unable to guarantee that
              * the parameterized type <Q> is correct.
              */
-            final Unit<?> existing = (Unit<?>) UnitRegistry.putIfAbsent(symbol, alt);
+            final Object existing = UnitRegistry.putIfAbsent(symbol, alt);
             if (existing != null) {
-                if (existing instanceof SystemUnit<?>
-                        && ((SystemUnit<?>) existing).quantity == quantity
-                        && dimension.equals(existing.getDimension()))
-                {
-                    return (Unit<Q>) existing;
+                if (existing instanceof SystemUnit<?>) {
+                    final SystemUnit<?> unit = (SystemUnit<?>) existing;
+                    if (quantity.equals(unit.quantity) && dimension.equals(unit.dimension)) {
+                        return (SystemUnit<Q>) unit;
+                    }
                 }
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, symbol));
             }

@@ -79,6 +79,13 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     private static final long serialVersionUID = -3064428584419360693L;
 
     /**
+     * The SI "“deca” prefix. This is the only SI prefix encoded on two letters instead than one.
+     * It can be represented by the CJK compatibility character “㍲”, but use of those characters
+     * is generally not recommended outside of Chinese, Japanese or Korean texts.
+     */
+    static final String DECA = "da";
+
+    /**
      * The default instance used by {@link Units#valueOf(String)} for parsing units of measurement.
      * While {@code UnitFormat} is generally not thread-safe, this particular instance is safe if
      * we never invoke any setter method.
@@ -328,7 +335,10 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * If the specified label is already associated to another unit, then the previous association is discarded.
      *
      * <p>The given label must be non-empty and can not ends with a digit, since such digit would be confused
-     * with unit power.</p>
+     * with unit power. Current implementation does not put additional restrictions. However if the label will
+     * be used as a {@linkplain AbstractUnit#getSymbol() unit symbol} (as opposed to {@link AbstractUnit#getName()
+     * unit name}), then we recommend to restrict the characters to {@linkplain Character#isLetter(int) letters}
+     * and {@linkplain Characters#isSubScript(int) subscripts}.</p>
      *
      * @param  unit   the unit being labeled.
      * @param  label  the new label for the given unit.
@@ -336,7 +346,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     @Override
     public void label(final Unit<?> unit, String label) {
-        ArgumentChecks.ensureNonNull("unit",  unit);
+        ArgumentChecks.ensureNonNull ("unit", unit);
         label = CharSequences.trimWhitespaces(label);
         ArgumentChecks.ensureNonEmpty("label", label);
         int c = Character.codePointBefore(label, label.length());
@@ -850,7 +860,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 if (c != null) {
                     String symbol = unit.getSymbol();
                     if (prefix == '㍲') {
-                        symbol = "da" + symbol;
+                        symbol = DECA + symbol;
                     } else {
                         symbol = prefix + symbol;
                     }

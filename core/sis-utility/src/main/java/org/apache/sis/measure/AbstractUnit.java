@@ -25,6 +25,7 @@ import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import org.apache.sis.math.Fraction;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -65,6 +66,12 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     /**
      * The unit symbol, or {@code null} if this unit has no specific symbol. If {@code null},
      * then the {@link #toString()} method is responsible for creating a representation on the fly.
+     * If non-null, this symbol should complies with the {@link UnitFormat.Style#SYMBOL} formatting
+     * (<strong>not</strong> the UCUM format). In particular, this symbol uses Unicode characters
+     * for arithmetic operators and superscripts, as in “m/s²”. However this symbol should never
+     * contains the unit conversion terms. For example “km” is okay, but “1000⋅m” is not.
+     * The intend of those rules is to make easier to analyze the symbol in methods like
+     * {@link ConventionalUnit#power(String)}.
      *
      * <p>Users can override this symbol by call to {@link UnitFormat#label(Unit, String)},
      * but such overriding applies only to the target {@code UnitFormat} instance.</p>
@@ -73,6 +80,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      * for fetching a localized name from the resource bundle.</p>
      *
      * @see #getSymbol()
+     * @see SystemUnit#alternate(String)
      */
     private final String symbol;
 
@@ -95,7 +103,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      *
      * @param  symbol  the unit symbol, or {@code null} if this unit has no specific symbol.
      * @param  scope   {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
-     * @param  epsg    the EPSG code,   or 0 if this unit has no EPSG code.
+     * @param  epsg    the EPSG code, or 0 if this unit has no EPSG code.
      */
     AbstractUnit(final String symbol, final byte scope, final short epsg) {
         this.symbol = symbol;
@@ -266,13 +274,26 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     }
 
     /**
+     * Returns {@code true} if the given Unicode code point is a valid character for a unit symbol.
+     * Current implementation accepts only letters and subscripts, but the set of legal characters
+     * may be expanded in any future SIS version. The most important goal is to avoid confusion with
+     * exponents.
+     *
+     * <p>Note that some units defined in the {@link Units} class break this rule. But the hard-coded
+     * symbols in that class are known to be consistent with SI usage or with {@link UnitFormat} work.</p>
+     */
+    static boolean isSymbolChar(final int c) {
+        return Character.isLetter(c) || Characters.isSubScript(c);
+    }
+
+    /**
      * Invoked on deserialization for returning a unique instance of {@code AbstractUnit} if possible.
      */
     final Object readResolve() throws ObjectStreamException {
         if (symbol != null && Units.initialized) {              // Force Units class initialization.
-            final Unit<?> exising = (Unit<?>) UnitRegistry.putIfAbsent(symbol, this);
-            if (equals(exising)) {
-                return exising;
+            final Object existing = UnitRegistry.putIfAbsent(symbol, this);
+            if (equals(existing)) {
+                return (Unit<?>) existing;
             }
         }
         return this;
