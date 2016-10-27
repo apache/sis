@@ -57,6 +57,11 @@ public final class Loggers extends Static {
     public static final String MATH = "org.apache.sis.math";
 
     /**
+     * The logger for operations related to units of measurement.
+     */
+    public static final String MEASURE = "org.apache.sis.measure";
+
+    /**
      * The logger for operations related to JDBC operations.
      */
     public static final String SQL = "org.apache.sis.sql";

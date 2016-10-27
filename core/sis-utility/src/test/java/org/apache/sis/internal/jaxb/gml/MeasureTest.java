@@ -51,7 +51,7 @@ public final strictfp class MeasureTest extends TestCase {
     /**
      * Tests the {@link Measure#setUOM(String)}.
      *
-     * @throws URISyntaxException Should not happen.
+     * @throws URISyntaxException if the URI used by the test is invalid.
      */
     @Test
     @DependsOnMethod("testGetUOM")
@@ -73,7 +73,7 @@ public final strictfp class MeasureTest extends TestCase {
 
         measure.unit = null;
         measure.asXPointer = true;
-        measure.setUOM("gmxUom.xml#kg"); // Not really an existing unit in 'gmxUom'.
+        measure.setUOM("gmxUom.xml#kg");                        // Not really an existing unit in 'gmxUom'.
         assertEquals(Units.KILOGRAM, measure.unit);
         assertEquals(Schemas.METADATA_ROOT + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='kg'])", measure.getUOM());
     }

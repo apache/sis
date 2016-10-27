@@ -25,7 +25,10 @@ import javax.measure.UnconvertibleException;
 import javax.measure.IncommensurableException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Characters;
 import org.apache.sis.math.Fraction;
+import org.apache.sis.math.MathFunctions;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -43,6 +46,19 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     private static final long serialVersionUID = 6963634855104019466L;
 
     /**
+     * The SI prefixes form smallest to largest. Power of tens go from -24 to +24 inclusive with a step of 3,
+     * except for the addition of -2, -1, +1, +2 and the omission of 0.
+     *
+     * @see #prefix(double)
+     */
+    private static final char[] PREFIXES = {'y','z','a','f','p','n','µ','m','c','d','㍲','h','k','M','G','T','P','E','Z','Y'};
+
+    /**
+     * The maximal power of 1000 for the prefixes in the {@link #PREFIXES} array. Note that 1000⁸ = 1E+24.
+     */
+    static final int MAX_POWER = 8;
+
+    /**
      * The base, derived or alternate units to which this {@code ConventionalUnit} is related.
      * This is called "preferred unit" in GML.
      */
@@ -56,11 +72,11 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     /**
      * Creates a new unit having the given symbol and EPSG code.
      *
-     * @param  target     the base or derived units to which this {@code ConventionalUnit} is related.
-     * @param  toTarget   the conversion from this unit to the {@code target} unit.
-     * @param  symbol     the unit symbol, or {@code null} if this unit has no specific symbol.
-     * @param  scope   {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
-     * @param  epsg       the EPSG code,   or 0 if this unit has no EPSG code.
+     * @param  target    the base or derived units to which this {@code ConventionalUnit} is related.
+     * @param  toTarget  the conversion from this unit to the {@code target} unit.
+     * @param  symbol    the unit symbol, or {@code null} if this unit has no specific symbol.
+     * @param  scope     {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
+     * @param  epsg      the EPSG code, or 0 if this unit has no EPSG code.
      */
     ConventionalUnit(final SystemUnit<Q> target, final UnitConverter toTarget, final String symbol, final byte scope, final short epsg) {
         super(symbol, scope, epsg);
@@ -71,12 +87,140 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     /**
      * Creates a new unit with default name and symbol for the given converter.
      */
+    @SuppressWarnings("unchecked")
     static <Q extends Quantity<Q>> AbstractUnit<Q> create(final SystemUnit<Q> target, final UnitConverter toTarget) {
         if (toTarget.isIdentity()) {
             return target;
         }
-        // TODO: check for existing unit.
-        return new ConventionalUnit<>(target, toTarget, null, (byte) 0, (short) 0);
+        /*
+         * If the unit is a SI unit, try to create the SI symbol by the concatenation of the SI prefix
+         * with the system unit symbol. The unit symbol are used later as a key for searching existing
+         * unit instances.
+         */
+        String symbol = null;
+        if (target.scope == UnitRegistry.SI) {
+            final String ts = target.getSymbol();
+            if (ts != null && !ts.isEmpty() && toTarget.isLinear()) {
+                final int power = power(ts);
+                if (power != 0) {
+                    double scale = toTarget.convert(1);
+                    switch (power) {
+                        case 1:  break;
+                        case 2:  scale = Math.sqrt(scale); break;
+                        case 3:  scale = Math.cbrt(scale); break;
+                        default: scale = Math.pow(scale, 1.0/power);
+                    }
+                    final char prefix = prefix(scale);
+                    if (prefix != 0) {
+                        if (prefix == '㍲') {
+                            symbol = UnitFormat.DECA + ts;
+                        } else {
+                            symbol = prefix + ts;
+                        }
+                    }
+                }
+            }
+        }
+        /*
+         * Create the unit, but we may discard it later if an equivalent unit already exists in the cache.
+         * The use of the cache is not only for sharing instances, but also because existing instances may
+         * have more information.  For example instances provided by Units static constants may contain an
+         * EPSG code, or even an alternative symbol (e.g. “hm²” will be replaced by “ha” for hectare).
+         */
+        final ConventionalUnit<Q> unit = new ConventionalUnit<>(target, toTarget, symbol, (byte) 0, (short) 0);
+        if (symbol != null) {
+            final Object existing = UnitRegistry.putIfAbsent(symbol, unit);
+            if (existing instanceof ConventionalUnit<?>) {
+                final ConventionalUnit<?> c = (ConventionalUnit<?>) existing;
+                if (target.equals(c.target)) {
+                    final boolean equivalent;
+                    if (toTarget instanceof LinearConverter && c.toTarget instanceof LinearConverter) {
+                        equivalent = ((LinearConverter) toTarget).equivalent((LinearConverter) c.toTarget);
+                    } else {
+                        equivalent = toTarget.equals(c.toTarget);   // Fallback for unknown implementations.
+                    }
+                    if (equivalent) {
+                        return (ConventionalUnit<Q>) c;
+                    }
+                }
+            }
+        }
+        return unit;
+    }
+
+    /**
+     * Returns the positive power after the given unit symbol, or in case of doubt.
+     * For example this method returns 1 for “m” and 2 for “m²”. We parse the unit symbol instead
+     * than the {@link SystemUnit#dimension} because we can not extract easily the power from the
+     * product of dimensions (e.g. what is the M⋅L²∕T³ power?) Furthermore the power will be used
+     * for choosing a symbol prefix, so we want it to be consistent with the symbol more than the
+     * internal representation.
+     *
+     * <p>If the unit is itself a product of other units, then this method returns the power of
+     * the first unit. For example the power of “m/s²” is 1. This means that the “k” prefix in
+     * “km/s²” apply only to the “m” unit.</p>
+     */
+    static int power(final String symbol) {
+        final int length = symbol.length();
+        int i = 0, c;
+        do {
+            if (i >= length) return 1;              // Single symbol (no product, no exponent).
+            c = symbol.codePointAt(i);
+            i += Character.charCount(c);
+        } while (isSymbolChar(c));
+        /*
+         * At this point we found the first character which is not part of a unit symbol.
+         * We may have found the exponent as in “m²”, or we may have found an arithmetic
+         * operator like the “/” in “m/s²”. In any cases we stop here because we want the
+         * exponent of the first symbol, not the “²” in “m/s²”.
+         */
+        if (Character.isBmpCodePoint(c)) {
+            final int p = Characters.toNormalScript((char) c) - '0';
+            if (p >= 0 && p <= 9) {
+                if (i < length) {
+                    c = symbol.codePointAt(i);
+                    if (isSymbolChar(c)) {
+                        // Exponent is immediately followed by a another unit symbol character.
+                        // We would have expected something else, like an arithmetic operator.
+                        return 0;
+                    }
+                    if (Character.isBmpCodePoint(c)) {
+                        c = Characters.toNormalScript((char) c);
+                        if (c >= '0' && c <= '9') {
+                            // Exponent on two digits. We do not expect so high power after unit symbol.
+                            return 0;
+                        }
+                    }
+                }
+                return p;
+            }
+        }
+        return 1;
+    }
+
+    /**
+     * Returns the SI prefix for the given scale factor, or 0 if none.
+     */
+    @SuppressWarnings("null")
+    static char prefix(final double scale) {
+        final int n = Numerics.toExp10(Math.getExponent(scale)) + 1;
+        if (Math.abs(MathFunctions.pow10(n) - scale) <= Math.ulp(scale)) {
+            int i = Math.abs(n);
+            switch (i) {
+                case 0:  return 0;
+                case 1:  // Fallthrough
+                case 2:  break;
+                default: {
+                    if (i > (MAX_POWER*3) || (i % 3) != 0) {
+                        return 0;
+                    }
+                    i = i/3 + 2;
+                    break;
+                }
+            }
+            return PREFIXES[n >= 0 ? (MAX_POWER+1) + i : (MAX_POWER+2) - i];
+        }
+        return 0;
     }
 
     /**

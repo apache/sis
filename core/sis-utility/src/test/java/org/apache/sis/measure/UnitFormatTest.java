@@ -81,6 +81,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         verify(declared, "DAY",                 "T",        "d",     Units.DAY);
         verify(declared, "WEEK",                "T",        "wk",    Units.WEEK);
         verify(declared, "TROPICAL_YEAR",       "T",        "a",     Units.TROPICAL_YEAR);
+        verify(declared, "HERTZ",               "∕T",       "Hz",    Units.HERTZ);
         verify(declared, "PASCAL",              "M∕(L⋅T²)", "Pa",    Units.PASCAL);
         verify(declared, "HECTOPASCAL",         "M∕(L⋅T²)", "hPa",   Units.HECTOPASCAL);
         verify(declared, "HECTARE",             "L²",       "ha",    Units.HECTARE);
@@ -89,12 +90,14 @@ public final strictfp class UnitFormatTest extends TestCase {
         verify(declared, "METRES_PER_SECOND",   "L∕T",      "m∕s",   Units.METRES_PER_SECOND);
         verify(declared, "KILOMETRES_PER_HOUR", "L∕T",      "km∕h",  Units.KILOMETRES_PER_HOUR);
         verify(declared, "KILOGRAM",            "M",        "kg",    Units.KILOGRAM);
+        verify(declared, "AMPERE",              "I",        "A",     Units.AMPERE);
         verify(declared, "NEWTON",              "M⋅L∕T²",   "N",     Units.NEWTON);
         verify(declared, "JOULE",               "M⋅L²∕T²",  "J",     Units.JOULE);
         verify(declared, "WATT",                "M⋅L²∕T³",  "W",     Units.WATT);
         verify(declared, "KELVIN",              "Θ",        "K",     Units.KELVIN);
         verify(declared, "CELSIUS",             "Θ",        "°C",    Units.CELSIUS);
-        verify(declared, "HERTZ",               "∕T",       "Hz",    Units.HERTZ);
+        verify(declared, "CANDELA",             "J",        "cd",    Units.CANDELA);
+        verify(declared, "MOLE",                "N",        "mol",   Units.MOLE);
         verify(declared, "UNITY",               "",         "",      Units.UNITY);
         verify(declared, "PERCENT",             "",         "%",     Units.PERCENT);
         verify(declared, "PPM",                 "",         "ppm",   Units.PPM);
@@ -280,5 +283,20 @@ public final strictfp class UnitFormatTest extends TestCase {
             final String message = e.getMessage();
             assertTrue(message, message.contains("ka"));
         }
+    }
+
+    /**
+     * Tests parsing of symbols composed of terms combined by arithmetic operations (e.g. "m/s").
+     */
+    @Test
+    @DependsOnMethod("testPrefixParsing")
+    public void testTermsParsing() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        assertSame(Units.SQUARE_METRE,      f.parse("m⋅m"));
+        assertSame(Units.CUBIC_METRE,       f.parse("m⋅m⋅m"));
+        assertSame(Units.CUBIC_METRE,       f.parse("m²⋅m"));
+        assertSame(Units.CUBIC_METRE,       f.parse("m2.m"));
+        assertSame(Units.METRES_PER_SECOND, f.parse("m∕s"));
+        assertSame(Units.HERTZ,             f.parse("1/s"));
     }
 }

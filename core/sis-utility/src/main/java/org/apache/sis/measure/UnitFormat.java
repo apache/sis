@@ -63,7 +63,10 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * opposite sign. It is caller responsibility to handle the direction of axes associated to NetCDF units.
  *
  * <div class="section">Multi-threading</div>
- * {@code UnitFormat} is not thread-safe. Synchronization, if desired, is caller's responsibility.
+ * {@code UnitFormat} is generally not thread-safe.
+ * However if there is no call to any setter method or to {@link #label(Unit, String)} after construction,
+ * then the {@link #parse(CharSequence)} and {@link #format(Unit)} methods can be invoked concurrently in
+ * different threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
@@ -77,6 +80,13 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -3064428584419360693L;
+
+    /**
+     * The SI "“deca” prefix. This is the only SI prefix encoded on two letters instead than one.
+     * It can be represented by the CJK compatibility character “㍲”, but use of those characters
+     * is generally not recommended outside of Chinese, Japanese or Korean texts.
+     */
+    static final String DECA = "da";
 
     /**
      * The default instance used by {@link Units#valueOf(String)} for parsing units of measurement.
@@ -284,6 +294,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * instructs this formatter to use the “meter” spelling instead of “metre”.
      *
      * @param  locale  the new locale for this {@code UnitFormat}.
+     *
+     * @see UnitServices#getUnitFormat(String)
      */
     public void setLocale(final Locale locale) {
         ArgumentChecks.ensureNonNull("locale", locale);
@@ -328,7 +340,10 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * If the specified label is already associated to another unit, then the previous association is discarded.
      *
      * <p>The given label must be non-empty and can not ends with a digit, since such digit would be confused
-     * with unit power.</p>
+     * with unit power. Current implementation does not put additional restrictions. However if the label will
+     * be used as a {@linkplain AbstractUnit#getSymbol() unit symbol} (as opposed to {@link AbstractUnit#getName()
+     * unit name}), then we recommend to restrict the characters to {@linkplain Character#isLetter(int) letters}
+     * and {@linkplain Characters#isSubScript(int) subscripts}.</p>
      *
      * @param  unit   the unit being labeled.
      * @param  label  the new label for the given unit.
@@ -336,7 +351,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     @Override
     public void label(final Unit<?> unit, String label) {
-        ArgumentChecks.ensureNonNull("unit",  unit);
+        ArgumentChecks.ensureNonNull ("unit", unit);
         label = CharSequences.trimWhitespaces(label);
         ArgumentChecks.ensureNonEmpty("label", label);
         int c = Character.codePointBefore(label, label.length());
@@ -383,8 +398,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * Returns the mapping from long localized and unlocalized names to unit instances.
      * This mapping is somewhat the converse of {@link #symbolToName()}, but includes
      * international and American spelling of unit names in addition of localized names.
-     * The intend is to recognize "meter" as well as "metre" (together with, for example,
-     * "mètre" if and only if the locale language is French).
+     * The intend is to recognize "meter" as well as "metre".
      *
      * <p>While we said that {@code UnitFormat} is not thread safe, we make an exception for this method
      * for allowing the singleton {@link #INSTANCE} to parse symbols in a multi-threads environment.</p>
@@ -438,7 +452,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     private static void copy(final Locale locale, final ResourceBundle symbolToName, final Map<String,Unit<?>> nameToUnit) {
         for (final String symbol : symbolToName.keySet()) {
-            nameToUnit.put(symbolToName.getString(symbol).toLowerCase(locale).intern(), Units.get(symbol));
+            nameToUnit.put(CharSequences.toASCII(symbolToName.getString(symbol).toLowerCase(locale)).toString().intern(), Units.get(symbol));
         }
     }
 
@@ -713,6 +727,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * @see Units#valueOf(String)
      */
     @Override
+    @SuppressWarnings("null")
     public Unit<?> parse(final CharSequence symbols) throws ParserException {
         String uom = CharSequences.trimWhitespaces(symbols).toString();
         /*
@@ -740,12 +755,60 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
             }
         }
         /*
+         * Split the unit around the multiplication and division operators and parse each term individually.
+         */
+        int offset    = 0;                  // Index of the first character of the next unit term to parse.
+        int operation = 0;                  // 1 = multiplication,  2 = division.
+        Unit<?> unit  = null;
+        final int length = uom.length();
+        for (int i=0; i<length; i++) {
+            final char c = uom.charAt(i);   // No need to use code points because we search characters in BMP.
+            final int next;
+            switch (c) {
+                case '.':
+                case '⋅': next = 1; break;
+                case '/':
+                case '∕': next = 2; break;
+                default:  continue;
+            }
+            final Unit<?> term = parseSymbol(CharSequences.trimWhitespaces(uom, offset, i).toString(), symbols, offset);
+            switch (operation) {
+                case 0:  unit = term; break;
+                case 1:  unit = unit.multiply(term); break;
+                case 2:  unit = unit.divide(term); break;
+                default: throw new AssertionError(operation);
+            }
+            operation = next;
+            offset = i+1;
+        }
+        final Unit<?> term = parseSymbol(CharSequences.trimWhitespaces(uom, offset, length).toString(), symbols, offset);
+        switch (operation) {
+            case 0:  unit = term; break;
+            case 1:  unit = unit.multiply(term); break;
+            case 2:  unit = unit.divide(term); break;
+            default: throw new AssertionError(operation);
+        }
+        return unit;
+    }
+
+    /**
+     * Parses a single unit symbol with its exponent.
+     * The given symbol shall not contain multiplication or division operator.
+     *
+     * @param  uom      the single unit symbol to parse.
+     * @param  symbols  the complete string specified by the user, used for error reporting.
+     * @param  offset   index of {@code uom} in the {@code symbols} string, used for error reporting.
+     * @return the parsed unit symbol (never {@code null}).
+     * @throws ParserException if a problem occurred while parsing the given symbols.
+     */
+    private Unit<?> parseSymbol(final String uom, final CharSequence symbols, final int offset) throws ParserException {
+        /*
          * Check for labels explicitly given by users. Those labels have precedence over the Apache SIS hard-coded
          * symbols. If no explicit label was found, check for symbols and names known to this UnitFormat instance.
          */
         Unit<?> unit = labelToUnit.get(uom);
         if (unit == null) {
-            unit = withPrefix(uom);
+            unit = getPrefixed(uom);
             if (unit == null) {
                 final int length = uom.length();
                 if (length == 0) {
@@ -777,7 +840,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                                 } catch (NumberFormatException e) {
                                     // Should never happen unless the number is larger than 'int' capacity.
                                     throw (ParserException) new ParserException(Errors.format(
-                                            Errors.Keys.UnknownUnit_1, uom), symbols, i).initCause(e);
+                                            Errors.Keys.UnknownUnit_1, uom), symbols, offset+i).initCause(e);
                                 }
                                 canApply = true;
                                 break;
@@ -785,8 +848,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                         } while (i != 0);
                     }
                     if (canApply) {
-                        uom = CharSequences.trimWhitespaces(uom.substring(0, i));
-                        unit = withPrefix(uom);
+                        unit = getPrefixed(CharSequences.trimWhitespaces(uom, 0, i).toString());
                         if (unit != null) {
                             return unit.pow(power);
                         }
@@ -817,13 +879,13 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                  * appear in numerous places.
                  */
                 String lc = uom.replace('_', ' ').toLowerCase(locale);
-                lc = CharSequences.replace(CharSequences.replace(CharSequences.replace(lc,
+                lc = CharSequences.replace(CharSequences.replace(CharSequences.replace(CharSequences.toASCII(lc),
                         "meters",  "meter"),
                         "metres",  "metre"),
                         "degrees", "degree").toString();
                 unit = nameToUnit().get(lc);
                 if (unit == null) {
-                    throw new ParserException(Errors.format(Errors.Keys.UnknownUnit_1, uom), symbols, 0);
+                    throw new ParserException(Errors.format(Errors.Keys.UnknownUnit_1, uom), symbols, offset);
                 }
             }
         }
@@ -835,7 +897,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * This method does not perform any arithmetic operation on {@code Unit}.
      * Returns {@code null} if no unit is found.
      */
-    private static Unit<?> withPrefix(final String uom) {
+    private static Unit<?> getPrefixed(final String uom) {
         Unit<?> unit = Units.get(uom);
         if (unit == null && uom.length() >= 2) {
             int s = 1;
@@ -850,7 +912,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 if (c != null) {
                     String symbol = unit.getSymbol();
                     if (prefix == '㍲') {
-                        symbol = "da" + symbol;
+                        symbol = DECA + symbol;
                     } else {
                         symbol = prefix + symbol;
                     }

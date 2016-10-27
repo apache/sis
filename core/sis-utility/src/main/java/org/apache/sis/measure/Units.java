@@ -412,6 +412,17 @@ public final class Units extends Static {
     public static final Unit<Time> TROPICAL_YEAR;
 
     /**
+     * The SI derived unit for frequency (Hz).
+     * One hertz is equal to one cycle per second.
+     * The unlocalized name is “hertz”.
+     *
+     * @since 0.8
+     *
+     * @see #SECOND
+     */
+    public static final Unit<Frequency> HERTZ;
+
+    /**
      * The SI derived unit for pressure (Pa).
      * One pascal is equal to 1 N/m².
      * Pressures are often used in {@linkplain org.apache.sis.referencing.crs.DefaultParametricCRS parametric CRS}
@@ -506,6 +517,14 @@ public final class Units extends Static {
     public static final Unit<Mass> KILOGRAM;
 
     /**
+     * The SI base unit for electric current (A).
+     * The unlocalized name is “ampere”.
+     *
+     * @since 0.8
+     */
+    public static final Unit<ElectricCurrent> AMPERE;
+
+    /**
      * The SI derived unit for force (N).
      * One newton is the force required to give a mass of 1 kg an acceleration of 1 m/s².
      * The unlocalized name is “newton”.
@@ -556,15 +575,20 @@ public final class Units extends Static {
     public static final Unit<Temperature> CELSIUS;
 
     /**
-     * The SI derived unit for frequency (Hz).
-     * One hertz is equal to one cycle per second.
-     * The unlocalized name is “hertz”.
+     * The SI base unit for luminous intensity (cd).
+     * The unlocalized name is “candela”.
      *
      * @since 0.8
-     *
-     * @see #SECOND
      */
-    public static final Unit<Frequency> HERTZ;
+    public static final Unit<LuminousIntensity> CANDELA;
+
+    /**
+     * The SI base unit for amount of substance (mol).
+     * The unlocalized name is “mole”.
+     *
+     * @since 0.8
+     */
+    public static final Unit<AmountOfSubstance> MOLE;
 
     /**
      * The base dimensionless unit for scale measurements.
@@ -650,7 +674,10 @@ public final class Units extends Static {
         final UnitDimension length        = new UnitDimension('L');
         final UnitDimension mass          = new UnitDimension('M');
         final UnitDimension time          = new UnitDimension('T');
+        final UnitDimension electric      = new UnitDimension('I');
         final UnitDimension temperature   = new UnitDimension('Θ');
+        final UnitDimension amount        = new UnitDimension('N');
+        final UnitDimension luminous      = new UnitDimension('J');
         final UnitDimension area          = length.pow(2);
         final UnitDimension speed         = length.divide(time);
         final UnitDimension force         = mass.multiply(speed).divide(time);
@@ -717,16 +744,19 @@ public final class Units extends Static {
         PASCAL              = Pa;
         SQUARE_METRE        = m2;
         METRES_PER_SECOND   = mps;
-        KILOGRAM            = add(Mass.class,      mass,                  "kg",   UnitRegistry.SI,       (short) 0);
-        CUBIC_METRE         = add(Volume.class,    length.pow(3),         "m³",   UnitRegistry.SI,       (short) 0);
-        NEWTON              = add(Force.class,     force,                 "N",    UnitRegistry.SI,       (short) 0);
-        JOULE               = add(Energy.class,    energy,                "J",    UnitRegistry.SI,       (short) 0);
-        WATT                = add(Power.class,     energy.divide(time),   "W",    UnitRegistry.SI,       (short) 0);
-        HERTZ               = add(Frequency.class, time.pow(-1),          "Hz",   UnitRegistry.SI,       (short) 0);
-        HECTOPASCAL         = add(Pa, hecto,                              "hPa",  UnitRegistry.SI,       (short) 0);
-        HECTARE             = add(m2,  LinearConverter.scale(10000, 1),   "ha",   UnitRegistry.ACCEPTED, (short) 0);
-        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(6, 100),     "km∕h", UnitRegistry.ACCEPTED, (short) 0);
-        CELSIUS             = add(K,   LinearConverter.create(1, 273.15), "°C",   UnitRegistry.SI,       (short) 0);
+        HERTZ               = add(Frequency.class,         time.pow(-1),           "Hz",   UnitRegistry.SI,       (short) 0);
+        KILOGRAM            = add(Mass.class,              mass,                   "kg",   UnitRegistry.SI,       (short) 0);
+        CUBIC_METRE         = add(Volume.class,            length.pow(3),          "m³",   UnitRegistry.SI,       (short) 0);
+        AMPERE              = add(ElectricCurrent.class,   electric,               "A",    UnitRegistry.SI,       (short) 0);
+        NEWTON              = add(Force.class,             force,                  "N",    UnitRegistry.SI,       (short) 0);
+        JOULE               = add(Energy.class,            energy,                 "J",    UnitRegistry.SI,       (short) 0);
+        WATT                = add(Power.class,             energy.divide(time),    "W",    UnitRegistry.SI,       (short) 0);
+        CANDELA             = add(LuminousIntensity.class, luminous,               "cd",   UnitRegistry.SI,       (short) 0);
+        MOLE                = add(AmountOfSubstance.class, amount,                 "mol",  UnitRegistry.SI,       (short) 0);
+        HECTOPASCAL         = add(Pa,  hecto,                                      "hPa",  UnitRegistry.SI,       (short) 0);
+        HECTARE             = add(m2,  LinearConverter.scale(10000, 1),            "ha",   UnitRegistry.ACCEPTED, (short) 0);
+        KILOMETRES_PER_HOUR = add(mps, LinearConverter.scale(6, 100),              "km∕h", UnitRegistry.ACCEPTED, (short) 0);
+        CELSIUS             = add(K,   LinearConverter.offset(27315, 100),         "°C",   UnitRegistry.SI,       (short) 0);
         /*
          * All Unit<Dimensionless>
          */
@@ -745,6 +775,8 @@ public final class Units extends Static {
         UnitRegistry.alias(CELSIUS,     "℃");
         UnitRegistry.alias(CELSIUS,   "Cel");
         UnitRegistry.alias(GRAD,      "gon");
+        UnitRegistry.alias(HECTARE,   "hm²");
+        UnitRegistry.alias(UNITY,       "1");
 
         initialized = true;
     }

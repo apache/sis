@@ -1621,7 +1621,7 @@ cmp:    while (ia < lga) {
      * @param  s1          the first characters sequence to compare, or {@code null}.
      * @param  s2          the second characters sequence to compare, or {@code null}.
      * @param  filter      the subset of characters to compare, or {@code null} for comparing all characters.
-     * @param  ignoreCase  {@code true} for comparing cases, or {@code false} for requiring exact match.
+     * @param  ignoreCase  {@code true} for ignoring cases, or {@code false} for requiring exact match.
      * @return {@code true} if both arguments are {@code null} or if the two given texts are equal,
      *         optionally ignoring case and filtered-out characters.
      */
