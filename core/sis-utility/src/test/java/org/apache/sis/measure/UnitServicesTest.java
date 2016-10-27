@@ -23,6 +23,7 @@ import javax.measure.Unit;
 import javax.measure.format.UnitFormat;
 import javax.measure.spi.ServiceProvider;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -37,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 @DependsOn(UnitsTest.class)
-public final strictfp class UnitServicesTest {
+public final strictfp class UnitServicesTest extends TestCase {
     /**
      * Tests the default system of units.
      */
