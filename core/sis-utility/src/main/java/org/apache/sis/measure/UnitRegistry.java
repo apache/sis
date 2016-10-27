@@ -55,21 +55,18 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
 
     /**
      * Identifies units defined outside the SI system but accepted for use with SI.
-     * The {@link #SI} value can be used as a bitmask for identifying the SI or accepted units.
      */
-    static final byte ACCEPTED = 3;
-
-    // All following constants shall have an even value (unless accepted for use with SI).
+    static final byte ACCEPTED = 2;
 
     /**
      * Identifies units defined for use in British imperial system.
      */
-    static final byte IMPERIAL = 2;
+    static final byte IMPERIAL = 4;
 
     /**
      * Identifies units defined in another system than the above.
      */
-    static final byte OTHER = 4;
+    static final byte OTHER = 8;
 
     /**
      * All {@link UnitDimension}, {@link SystemUnit} or {@link ConventionalUnit} that are hard-coded in Apache SIS.
@@ -180,6 +177,17 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
     }
 
     /**
+     * Name of this system of units.
+     */
+    final String name;
+
+    /**
+     * The bitmask for units to include. Can be any combination of {@link #SI}, {@link #ACCEPTED},
+     * {@link #IMPERIAL} or {@link #OTHER} bits.
+     */
+    private final int includes;
+
+    /**
      * The value returned by {@link #getUnits()}, created when first needed.
      */
     private transient Set<Unit<?>> units;
@@ -187,16 +195,17 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
     /**
      * Creates a new unit system.
      */
-    UnitRegistry() {
+    UnitRegistry(final String name, final int includes) {
+        this.name     = name;
+        this.includes = includes;
     }
 
     /**
-     * Returns the well-known acronym that stands for "Système International"
-     * together with the name of other systems used.
+     * Returns the name of this system of units.
      */
     @Override
     public String getName() {
-        return "SI and others";
+        return name;
     }
 
     /**
@@ -220,8 +229,11 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
                 if (units == null) {
                     units = new HashSet<>();
                     for (final Object value : HARD_CODED.values()) {
-                        if (value instanceof Unit<?>) {
-                            units.add((Unit<?>) value);
+                        if (value instanceof AbstractUnit<?>) {
+                            final AbstractUnit<?> unit = (AbstractUnit<?>) value;
+                            if ((unit.scope & includes) != 0) {
+                                units.add(unit);
+                            }
                         }
                     }
                     units = Collections.unmodifiableSet(units);

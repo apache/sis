@@ -51,7 +51,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.LocalesTest.class,
     org.apache.sis.util.resources.LoaderTest.class,
     org.apache.sis.util.resources.IndexedResourceBundleTest.class,
-    org.apache.sis.util.ArgumentChecksTest.class, // Uses resources.
+    org.apache.sis.util.ArgumentChecksTest.class,                       // Uses resources.
     org.apache.sis.util.logging.PerformanceLevelTest.class,
     org.apache.sis.util.logging.WarningListenersTest.class,
     org.apache.sis.util.logging.MonolineFormatterTest.class,
@@ -109,6 +109,7 @@ import org.junit.BeforeClass;
     org.apache.sis.measure.ConventionalUnitTest.class,
     org.apache.sis.measure.UnitFormatTest.class,
     org.apache.sis.measure.UnitsTest.class,
+    org.apache.sis.measure.UnitServicesTest.class,
     org.apache.sis.measure.RangeTest.class,
     org.apache.sis.measure.DateRangeTest.class,
     org.apache.sis.measure.NumberRangeTest.class,
@@ -136,7 +137,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.converter.ArrayConverterTest.class,
     org.apache.sis.internal.converter.ConverterRegistryTest.class,
     org.apache.sis.internal.converter.SystemRegistryTest.class,
-    org.apache.sis.internal.converter.NumberConverterTest.class, // Shall be after SystemRegistryTest.
+    org.apache.sis.internal.converter.NumberConverterTest.class,        // Shall be after SystemRegistryTest.
 
     // XML most basic types.
     org.apache.sis.xml.XLinkTest.class,

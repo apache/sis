@@ -291,6 +291,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * instructs this formatter to use the “meter” spelling instead of “metre”.
      *
      * @param  locale  the new locale for this {@code UnitFormat}.
+     *
+     * @see UnitServices#getUnitFormat(String)
      */
     public void setLocale(final Locale locale) {
         ArgumentChecks.ensureNonNull("locale", locale);
