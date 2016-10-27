@@ -169,15 +169,32 @@ public final strictfp class UnitFormatTest extends TestCase {
     }
 
     /**
+     * Tests unit formatting with {@link UnitFormat.Style#UCUM}.
+     */
+    @Test
+    public void testFormatUCUM() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        f.setStyle(UnitFormat.Style.UCUM);
+        assertEquals("m",   f.format(Units.METRE));
+        assertEquals("km",  f.format(Units.KILOMETRE));
+        assertEquals("s",   f.format(Units.SECOND));
+        assertEquals("min", f.format(Units.MINUTE));
+        assertEquals("m2",  f.format(Units.SQUARE_METRE));
+        assertEquals("Cel", f.format(Units.CELSIUS));
+        assertEquals("K",   f.format(Units.KELVIN));
+    }
+
+    /**
      * Tests unit formatting with {@link UnitFormat.Style#NAME}.
      */
     @Test
-    public void testNameFormatting() {
+    public void testFormatName() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         f.setStyle(UnitFormat.Style.NAME);
         assertEquals("metre",        f.format(Units.METRE));
         assertEquals("kilometre",    f.format(Units.KILOMETRE));
         assertEquals("second",       f.format(Units.SECOND));
+        assertEquals("minute",       f.format(Units.MINUTE));
         assertEquals("square metre", f.format(Units.SQUARE_METRE));
         assertEquals("Celsius",      f.format(Units.CELSIUS));          // Really upper-case "C" - this is a SI exception.
 
@@ -200,7 +217,7 @@ public final strictfp class UnitFormatTest extends TestCase {
      * Tests parsing of names.
      */
     @Test
-    public void testNameParsing() {
+    public void testParseName() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         f.setStyle(UnitFormat.Style.NAME);                          // As a matter of principle, but actually ignored.
         assertSame(Units.METRE,         f.parse("metre"));
@@ -242,10 +259,22 @@ public final strictfp class UnitFormatTest extends TestCase {
     }
 
     /**
+     * Tests parsing a unit defined by a URI in OGC namespace.
+     * Example: {@code "urn:ogc:def:uom:EPSG::1026"} is for metres per second.
+     */
+    @Test
+    public void testParseEPSG() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        assertSame(Units.METRE,             f.parse("urn:ogc:def:uom:EPSG::9001"));
+        assertSame(Units.METRES_PER_SECOND, f.parse("urn:ogc:def:uom:EPSG::1026"));
+        assertSame(Units.METRE, f.parse("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+    }
+
+    /**
      * Tests parsing of symbols without arithmetic operations other than exponent.
      */
     @Test
-    public void testSymbolParsing() {
+    public void testParseSymbol() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         assertSame(Units.METRE,         f.parse("m"));
         assertSame(Units.UNITY,         f.parse("m⁰"));
@@ -264,8 +293,8 @@ public final strictfp class UnitFormatTest extends TestCase {
      * Note that the "da" prefix needs to be handled in a special way because it is the only two-letters long prefix.
      */
     @Test
-    @DependsOnMethod("testSymbolParsing")
-    public void testPrefixParsing() {
+    @DependsOnMethod("testParseSymbol")
+    public void testParsePrefix() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         ConventionalUnitTest.verify(Units.JOULE,  f.parse("kJ"),   "kJ",  1E+3);
         ConventionalUnitTest.verify(Units.HERTZ,  f.parse("MHz"),  "MHz", 1E+6);
@@ -289,8 +318,8 @@ public final strictfp class UnitFormatTest extends TestCase {
      * Tests parsing of symbols composed of terms combined by arithmetic operations (e.g. "m/s").
      */
     @Test
-    @DependsOnMethod("testPrefixParsing")
-    public void testTermsParsing() {
+    @DependsOnMethod("testParsePrefix")
+    public void testParseTerms() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         assertSame(Units.SQUARE_METRE,      f.parse("m⋅m"));
         assertSame(Units.CUBIC_METRE,       f.parse("m⋅m⋅m"));
@@ -298,5 +327,19 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.CUBIC_METRE,       f.parse("m2.m"));
         assertSame(Units.METRES_PER_SECOND, f.parse("m∕s"));
         assertSame(Units.HERTZ,             f.parse("1/s"));
+    }
+
+    /**
+     * Tests parsing of symbols composed of terms combined by arithmetic operations (e.g. "m/s").
+     */
+    @Test
+    @DependsOnMethod("testParseTerms")
+    public void testParseMultiplier() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        assertSame(Units.MILLIMETRE, f.parse("m/1000"));
+        ConventionalUnitTest.verify(Units.METRE, f.parse("10*-6⋅m"),   "µm", 1E-6);
+        ConventionalUnitTest.verify(Units.METRE, f.parse("10*-6.m"),   "µm", 1E-6);
+        ConventionalUnitTest.verify(Units.METRE, f.parse( "1000*m"),   "km", 1E+3);
+        ConventionalUnitTest.verify(Units.METRE, f.parse( "1000.0*m"), "km", 1E+3);
     }
 }

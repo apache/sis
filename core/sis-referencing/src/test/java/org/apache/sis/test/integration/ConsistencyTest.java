@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
  *   <li>Format in WKT, parse, reformat again and verify that we get the same WKT string.</li>
  * </ul>
  *
- * This test is executed only of {@link #RUN_EXTENSIVE_TESTS} is {@code true}.
+ * This test is executed only if {@link #RUN_EXTENSIVE_TESTS} is {@code true}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -135,10 +135,10 @@ public final strictfp class ConsistencyTest extends TestCase {
      * Formats the given CRS using the given formatter, parses it and reformat again.
      * Then the two WKT are compared.
      *
-     * @param  f    The formatter to use.
-     * @param  code The authority code, used only in case of errors.
-     * @param  crs  The CRS to test.
-     * @return The parsed CRS.
+     * @param  f     the formatter to use.
+     * @param  code  the authority code, used only in case of errors.
+     * @param  crs   the CRS to test.
+     * @return the parsed CRS.
      */
     private static CoordinateReferenceSystem parseAndFormat(final WKTFormat f,
             final String code, final CoordinateReferenceSystem crs)

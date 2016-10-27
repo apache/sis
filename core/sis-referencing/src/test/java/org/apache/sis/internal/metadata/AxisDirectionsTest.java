@@ -448,6 +448,6 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         final String name = AxisDirections.appendTo(buffer, new CoordinateSystemAxis[] {
             HardCodedAxes.EASTING, HardCodedAxes.NORTHING, HardCodedAxes.HEIGHT_cm, HardCodedAxes.TIME
         });
-        assertEquals("Compound CS: East (m), North (m), Up (cm), Future (day).", name);
+        assertEquals("Compound CS: East (m), North (m), Up (cm), Future (d).", name);
     }
 }

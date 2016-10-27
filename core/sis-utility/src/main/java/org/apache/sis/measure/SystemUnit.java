@@ -63,6 +63,13 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     final UnitDimension dimension;
 
     /**
+     * Units for the same quantity but with scale factors that are not the SI one.
+     * This is initialized by {@link Units} only and shall not change anymore after.
+     * All units in this array shall use an instance of {@link LinearConverter}.
+     */
+    transient ConventionalUnit<Q>[] related;
+
+    /**
      * Creates a new unit having the given symbol and EPSG code.
      *
      * @param  quantity   the type of quantity that uses this unit, or {@code null} if unknown.
