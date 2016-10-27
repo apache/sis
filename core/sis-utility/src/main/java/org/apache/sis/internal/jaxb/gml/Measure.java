@@ -122,7 +122,7 @@ public final class Measure {
      *     http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
      * }
      *
-     * @return The string representation of the unit of measure.
+     * @return the string representation of the unit of measure.
      *
      * @todo Strictly speaking, the above URL should be used only for "m", "deg" and "rad" units because they
      *       are the only ones defined in the <code>gmxUom.xml</code> file. What should we do for other units?
@@ -137,10 +137,10 @@ public final class Measure {
      * {@code uom} attribute, instead of letting the {@code uom} attribute on the measurement value.
      * The main example is {@link org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis}.
      *
-     * @param  unit The unit to format.
+     * @param  unit       the unit to format.
      * @param  asXPointer {@code true} if the units shall be formatted as {@code xpointer}.
-     * @param  inAxis {@code true} for a unit used in Coordinate System Axis definition.
-     * @return The string representation of the unit of measure.
+     * @param  inAxis     {@code true} for a unit used in Coordinate System Axis definition.
+     * @return the string representation of the unit of measure.
      */
     public static String getUOM(final Unit<?> unit, final boolean asXPointer, final boolean inAxis) {
         if (!asXPointer) {
@@ -159,8 +159,8 @@ public final class Measure {
     /**
      * Sets the unit of measure. This method is invoked by JAXB at unmarshalling time.
      *
-     * @param uom The unit of measure as a string.
-     * @throws URISyntaxException If the {@code uom} looks like a URI, but can not be parsed.
+     * @param  uom  the unit of measure as a string.
+     * @throws URISyntaxException if the {@code uom} looks like a URI, but can not be parsed.
      */
     public void setUOM(String uom) throws URISyntaxException {
         final Context context = Context.current();
@@ -173,9 +173,9 @@ public final class Measure {
      * @todo For now, this method does not format useful error message in case of wrong unit type.
      *       We define this method merely as a placeholder for future improvement in error handling.
      *
-     * @param  <Q>  Compile-time type of the {@code type} argument.
-     * @param  type The quantity for the desired unit.
-     * @return A unit compatible with the given type, or {@code null} if none.
+     * @param  <Q>   compile-time type of the {@code type} argument.
+     * @param  type  the quantity for the desired unit.
+     * @return a unit compatible with the given type, or {@code null} if none.
      */
     public <Q extends Quantity<Q>> Unit<Q> getUnit(final Class<Q> type) {
         return (unit != null) ? unit.asType(type) : null;
@@ -190,7 +190,7 @@ public final class Measure {
      * The SIS adapter forces the unit to {@link Units#UNITY}, but we want to let the user
      * know that he probably did something wrong.</div>
      *
-     * @param  newUnit The new unit (can not be null).
+     * @param  newUnit  the new unit (can not be null).
      * @return {@code true} if a different unit was defined before this method call.
      */
     public boolean setUnit(final Unit<?> newUnit) {
@@ -202,8 +202,8 @@ public final class Measure {
     /**
      * Sends a warning for a missing {@code "uom"} attribute.
      *
-     * @param caller     The class of the method invoking this method.
-     * @param methodName The name of the method invoking this method.
+     * @param  caller      the class of the method invoking this method.
+     * @param  methodName  the name of the method invoking this method.
      */
     public static void missingUOM(final Class<?> caller, final String methodName) {
         Context.warningOccured(Context.current(), caller, methodName,

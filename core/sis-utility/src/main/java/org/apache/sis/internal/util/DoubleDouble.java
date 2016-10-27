@@ -17,10 +17,12 @@
 package org.apache.sis.internal.util;
 
 import java.util.Arrays;
+import java.math.BigInteger;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.DecimalFunctions;
-// No BigDecimal dependency - see class javadoc
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
@@ -46,8 +48,6 @@ import org.apache.sis.internal.jdk8.JDK8;
  * {@preformat java
  *     BigDecimal decimal = new BigDecimal(dd.value).add(new BigDecimal(dd.error));
  * }
- *
- * We do not provide convenience method for the above in order to avoid dependency to {@code BigDecimal}.
  *
  * <div class="section">Impact of availability of FMA instructions</div>
  * If <cite>fused multiply-add</cite> (FMA) instruction are available in a future Java version
@@ -204,17 +204,28 @@ public final class DoubleDouble extends Number {
 
     /**
      * Creates a new value initialized to the given number. If the given number is an instance of
-     * {@code DoubleDouble} or {@link Fraction}, then the error term will be taken in account.
+     * {@code DoubleDouble}, {@link BigDecimal}, {@link BigInteger} or {@link Fraction}, then the
+     * error term will be taken in account.
      *
      * @param  otherValue  the initial value.
      */
-    public DoubleDouble(final Number otherValue) {
+    public DoubleDouble(Number otherValue) {
         if (otherValue instanceof Fraction) {
             value = ((Fraction) otherValue).denominator;
             inverseDivide(((Fraction) otherValue).numerator, 0);
         } else {
+            if (otherValue instanceof BigInteger) {
+                otherValue = new BigDecimal((BigInteger) otherValue, MathContext.DECIMAL128);
+            }
             value = otherValue.doubleValue();
-            error = (otherValue instanceof DoubleDouble) ? ((DoubleDouble) otherValue).error : errorForWellKnownValue(value);
+            if (otherValue instanceof DoubleDouble) {
+                error = ((DoubleDouble) otherValue).error;
+            } else if (otherValue instanceof BigDecimal) {
+                // Really need new BigDecimal(value) below, not BigDecimal.valueOf(value).
+                error = ((BigDecimal) otherValue).subtract(new BigDecimal(value), MathContext.DECIMAL64).doubleValue();
+            } else {
+                error = errorForWellKnownValue(value);
+            }
         }
     }
 
@@ -229,7 +240,7 @@ public final class DoubleDouble extends Number {
      * @since 0.8
      */
     public static boolean shouldConvert(final Number value) {
-        return (value instanceof Fraction);
+        return (value instanceof Fraction) || (value instanceof BigInteger) || (value instanceof BigDecimal);
     }
 
     /**
