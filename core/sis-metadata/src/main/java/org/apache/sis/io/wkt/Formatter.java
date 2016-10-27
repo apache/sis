@@ -727,6 +727,7 @@ public class Formatter implements Localized {
      * A {@code <remark>} can be included within the descriptions of source and target CRS embedded within
      * a coordinate transformation as well as within the coordinate transformation itself.</blockquote>
      */
+    @SuppressWarnings("null")
     private void appendComplement(final IdentifiedObject object, final FormattableObject parent, final FormattableObject gp) {
         isComplement = true;
         final boolean showIDs;      // Whether to format ID[…] elements.
@@ -780,7 +781,6 @@ public class Formatter implements Localized {
             appendForSubtypes(object);
         }
         if (showIDs) {
-            @SuppressWarnings("null")
             Collection<? extends Identifier> identifiers = object.getIdentifiers();
             if (identifiers != null) {  // Paranoiac check
                 if (filterID) {

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Arrays;
 import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -708,11 +709,11 @@ public final class Units extends Static {
          * All Unit<Angle>
          */
         RADIAN      = rad;
-        GRAD        = add(rad, LinearConverter.scale(Math.PI, 200),    "grad", UnitRegistry.OTHER,    (short) 9105);
-        DEGREE      = add(rad, LinearConverter.scale(Math.PI, 180),       "°", UnitRegistry.ACCEPTED, Constants.EPSG_PARAM_DEGREES);
-        ARC_MINUTE  = add(rad, LinearConverter.scale(Math.PI, 180*60),    "′", UnitRegistry.ACCEPTED, (short) 9103);
-        ARC_SECOND  = add(rad, LinearConverter.scale(Math.PI, 180*60*60), "″", UnitRegistry.ACCEPTED, (short) 9104);
-        MICRORADIAN = add(rad, micro,                                  "µrad", UnitRegistry.SI,       (short) 9109);
+        GRAD        = add(rad, LinearConverter.scale(Math.PI / 20, 200       / 20), "grad", UnitRegistry.OTHER,    (short) 9105);
+        DEGREE      = add(rad, LinearConverter.scale(Math.PI / 20, 180       / 20), "°",    UnitRegistry.ACCEPTED, Constants.EPSG_PARAM_DEGREES);
+        ARC_MINUTE  = add(rad, LinearConverter.scale(Math.PI / 20, 180*60    / 20), "′",    UnitRegistry.ACCEPTED, (short) 9103);
+        ARC_SECOND  = add(rad, LinearConverter.scale(Math.PI / 20, 180*60*60 / 20), "″",    UnitRegistry.ACCEPTED, (short) 9104);
+        MICRORADIAN = add(rad, micro,                                         "µrad", UnitRegistry.SI,       (short) 9109);
         /*
          * All Unit<Length>
          */
@@ -793,8 +794,20 @@ public final class Units extends Static {
      * Invoked by {@code Units} static class initializer for registering SI conventional units.
      * This method shall be invoked in a single thread by the {@code Units} class initializer only.
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static <Q extends Quantity<Q>> ConventionalUnit<Q> add(SystemUnit<Q> target, UnitConverter toTarget, String symbol, byte scope, short epsg) {
-        return UnitRegistry.init(new ConventionalUnit<>(target, toTarget, symbol, scope, epsg));
+        final ConventionalUnit<Q> unit = UnitRegistry.init(new ConventionalUnit<>(target, toTarget, symbol, scope, epsg));
+        if (unit.scope != UnitRegistry.SI && toTarget instanceof LinearConverter) {
+            ConventionalUnit<Q>[] related = target.related;
+            if (related == null) {
+                related = new ConventionalUnit[1];
+            } else {
+                related = Arrays.copyOf(related, related.length + 1);
+            }
+            related[related.length - 1] = unit;
+            target.related = related;
+        }
+        return unit;
     }
 
     /**

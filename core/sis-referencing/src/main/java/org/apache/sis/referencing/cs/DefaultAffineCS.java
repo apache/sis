@@ -52,7 +52,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 @XmlType(name = "AffineCSType")
@@ -106,9 +106,9 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
+     * @param properties  the properties to be given to the identified object.
+     * @param axis0       the first axis.
+     * @param axis1       the second axis.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createAffineCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      */
@@ -123,10 +123,10 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * Constructs a three-dimensional coordinate system from a set of properties.
      * The properties map is given unchanged to the superclass constructor.
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
-     * @param axis2 The third axis.
+     * @param properties  the properties to be given to the identified object.
+     * @param axis0       the first axis.
+     * @param axis1       the second axis.
+     * @param axis2       the third axis.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createAffineCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
      */
@@ -145,7 +145,7 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param cs The coordinate system to copy.
+     * @param  cs  the coordinate system to copy.
      *
      * @see #castOrCopy(AffineCS)
      */
@@ -162,8 +162,8 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * <p>This method checks for the {@link CartesianCS} sub-interface. If that interface is found,
      * then this method delegates to the corresponding {@code castOrCopy} static method.</p>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultAffineCS castOrCopy(final AffineCS object) {
@@ -190,7 +190,7 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
         if (!AxisDirections.isSpatialOrUserDefined(direction, true)) {
             return INVALID_DIRECTION;
         }
-        if (!Units.isLinear(unit) && !Units.UNITY.equals(unit)) {
+        if (!Units.isLinear(unit) && !Units.UNITY.equals(unit) && !Units.PIXEL.equals(unit)) {
             return INVALID_UNIT;
         }
         return VALID;
@@ -201,7 +201,7 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * The default implementation returns {@code AffineCS.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The affine coordinate system interface implemented by this class.
+     * @return the affine coordinate system interface implemented by this class.
      */
     @Override
     public Class<? extends AffineCS> getInterface() {

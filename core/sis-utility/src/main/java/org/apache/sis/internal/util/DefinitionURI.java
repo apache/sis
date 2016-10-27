@@ -215,8 +215,8 @@ public final class DefinitionURI {
      * If this method does not recognize the given URI, then it returns {@code null}.
      * If the given URI is incomplete, then the {@link #code} value will be {@code null}.
      *
-     * @param  uri The URI to parse.
-     * @return The parse result, or {@code null} if the given URI is not recognized.
+     * @param  uri  the URI to parse.
+     * @return the parse result, or {@code null} if the given URI is not recognized.
      */
     public static DefinitionURI parse(final String uri) {
         ensureNonNull("uri", uri);
@@ -315,10 +315,10 @@ public final class DefinitionURI {
      * Returns {@code true} if a sub-region of {@code urn} matches the given {@code component},
      * ignoring case, leading and trailing whitespaces.
      *
-     * @param  component The expected component ({@code "urn"}, {@code "ogc"}, {@code "def"}, <i>etc.</i>)
-     * @param  urn       The URN for which to test a subregion.
-     * @param  lower     Index of the first character in {@code urn} to compare, after skipping whitespaces.
-     * @param  upper     Index after the last character in {@code urn} to compare, ignoring whitespaces.
+     * @param  component  the expected component ({@code "urn"}, {@code "ogc"}, {@code "def"}, <i>etc.</i>)
+     * @param  urn        the URN for which to test a subregion.
+     * @param  lower      index of the first character in {@code urn} to compare, after skipping whitespaces.
+     * @param  upper      index after the last character in {@code urn} to compare, ignoring whitespaces.
      * @return {@code true} if the given sub-region of {@code urn} match the given component.
      */
     static boolean regionMatches(final String component, final String urn, int lower, int upper) {
@@ -338,15 +338,15 @@ public final class DefinitionURI {
      * returns {@code null}. The presence of more {@code ':'} characters means that the code has parameters,
      * (e.g. {@code "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45"}) which are not handled by this method.</p>
      *
-     * @param  urn The URN from which to get the code.
-     * @param  fromIndex Index of the first character in {@code urn} to check.
-     * @return The code part of the URN, or {@code null} if empty or invalid.
+     * @param  urn        the URN from which to get the code.
+     * @param  fromIndex  index of the first character in {@code urn} to check.
+     * @return the code part of the URN, or {@code null} if empty or invalid.
      */
     private static String codeIgnoreVersion(final String urn, int fromIndex) {
         final int length = urn.length();
         fromIndex = skipLeadingWhitespaces(urn, fromIndex, length);
         if (fromIndex >= length) {
-            return null; // Empty code.
+            return null;                            // Empty code.
         }
         final int s = urn.indexOf(SEPARATOR, fromIndex);
         if (s >= 0) {
@@ -379,10 +379,10 @@ public final class DefinitionURI {
      *   <li>The HTTP form (e.g. {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}).</li>
      * </ul>
      *
-     * @param  type      The expected object type (e.g. {@code "crs"}) in lower cases. See class javadoc for a list of types.
-     * @param  authority The expected authority, typically {@code "epsg"}. See class javadoc for a list of authorities.
-     * @param  uri       The URI to parse.
-     * @return The code part of the given URI, or {@code null} if the codespace does not match the given type
+     * @param  type       the expected object type (e.g. {@code "crs"}) in lower cases. See class javadoc for a list of types.
+     * @param  authority  the expected authority, typically {@code "epsg"}. See class javadoc for a list of authorities.
+     * @param  uri        the URI to parse.
+     * @return the code part of the given URI, or {@code null} if the codespace does not match the given type
      *         and authority, the code is empty, or the code is followed by parameters.
      */
     public static String codeOf(final String type, final String authority, final String uri) {
@@ -427,13 +427,12 @@ public final class DefinitionURI {
             lower = upper + 1;
             upper = uri.indexOf(SEPARATOR, lower);
             if (upper < 0) {
-                return null; // No more components.
+                return null;                                                    // No more components.
             }
             switch (p) {
-                case 0: if (regionMatches("ogc", uri, lower, upper)) {
-                            continue; // "ogc" is tested before "x-ogc" because more common.
-                        }
-                        component = "x-ogc";   break; // Fallback if the component is not "ogc".
+                // "ogc" is tested before "x-ogc" because more common.
+                case 0: if (regionMatches("ogc", uri, lower, upper)) continue;
+                        component = "x-ogc";   break;       // Fallback if the component is not "ogc".
                 case 1: component = "def";     break;
                 case 2: component = type;      break;
                 case 3: component = authority; break;
@@ -455,15 +454,13 @@ public final class DefinitionURI {
      *       (example: {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"})</li>
      * </ul>
      *
-     * @param type      The expected type in lower cases, or {@code null} for any.
-     * @param authority The expected authority, or {@code null} for any.
-     * @param url       The URL to parse.
-     * @param result    If non-null, store the type, authority and code in that object.
+     * @param  type       the expected type in lower cases, or {@code null} for any.
+     * @param  authority  the expected authority, or {@code null} for any.
+     * @param  url        the URL to parse.
+     * @param  result     if non-null, store the type, authority and code in that object.
      */
     @SuppressWarnings("fallthrough")
-    private static String codeForGML(final String type, String authority, final String url, int lower,
-            final DefinitionURI result)
-    {
+    private static String codeForGML(final String type, String authority, final String url, int lower, final DefinitionURI result) {
         Map<String, String> paths = PATHS;
         if (type != null) {
             final String path = paths.get(type);
@@ -527,24 +524,24 @@ public final class DefinitionURI {
      * version and code are appended omitting any characters that are not valid for a Unicode identifier.
      * If some information are missing in the given identifier, then this method returns {@code null}.
      *
-     * @param  type      The object type as one of the types documented in class javadoc, or {@code null}.
-     * @param  authority The authority as one of the values documented in class javadoc, or {@code null}.
-     * @param  version   The code version, or {@code null}. This is the only optional information.
-     * @param  code      The code, or {@code null}.
-     * @return An identifier using the URN syntax, or {@code null} if a mandatory information is missing.
+     * @param  type       the object type as one of the types documented in class javadoc, or {@code null}.
+     * @param  authority  the authority as one of the values documented in class javadoc, or {@code null}.
+     * @param  version    the code version, or {@code null}. This is the only optional information.
+     * @param  code       the code, or {@code null}.
+     * @return an identifier using the URN syntax, or {@code null} if a mandatory information is missing.
      *
      * @see org.apache.sis.internal.metadata.NameMeaning#toURN(Class, String, String, String)
      */
     public static String format(final String type, final String authority, final String version, final String code) {
         final StringBuilder buffer = new StringBuilder(PREFIX);
-        for (int p=0; p<4; p++) {
+loop:   for (int p=0; ; p++) {
             final String component;
             switch (p) {
                 case 0:  component = type;      break;
                 case 1:  component = authority; break;
                 case 2:  component = version;   break;
                 case 3:  component = code;      break;
-                default: throw new AssertionError(p);
+                default: break loop;
             }
             if (!appendUnicodeIdentifier(buffer.append(SEPARATOR), '\u0000', component, ".-", false)) {
                 /*
@@ -565,7 +562,7 @@ public final class DefinitionURI {
      * then this method formats the URI in the {@code "http://www.opengis.net/"} namespace.
      * Otherwise this method formats the URI as a URN.
      *
-     * @return The string representation of this URI.
+     * @return the string representation of this URI.
      */
     @Override
     public String toString() {
