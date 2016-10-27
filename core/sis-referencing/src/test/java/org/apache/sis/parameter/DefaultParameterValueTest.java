@@ -592,7 +592,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
         assertWktEquals(Convention.WKT1, "PARAMETER[“Count”, 4]", count);
         assertWktEquals(Convention.WKT1, "PARAMETER[“Length”, 30.0]", length);
         assertWktEquals(Convention.WKT2, "PARAMETER[“Count”, 4]", count);
-        assertWktEquals(Convention.WKT2, "PARAMETER[“Length”, 30.0, LENGTHUNIT[“cm”, 0.01]]", length);
+        assertWktEquals(Convention.WKT2, "PARAMETER[“Length”, 30.0, LENGTHUNIT[“centimetre”, 0.01]]", length);
     }
 
     /**

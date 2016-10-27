@@ -93,6 +93,19 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
             return target;
         }
         /*
+         * Verifies if an instance already exists for the given converter.
+         */
+        final ConventionalUnit<Q>[] related = target.related;
+        if (related != null && toTarget instanceof LinearConverter) {
+            final LinearConverter c = (LinearConverter) toTarget;
+            for (final ConventionalUnit<Q> existing : related) {
+                // Units.add(…) verified the UnitConverter class.
+                if (c.equivalent((LinearConverter) existing.toTarget)) {
+                    return existing;
+                }
+            }
+        }
+        /*
          * If the unit is a SI unit, try to create the SI symbol by the concatenation of the SI prefix
          * with the system unit symbol. The unit symbol are used later as a key for searching existing
          * unit instances.

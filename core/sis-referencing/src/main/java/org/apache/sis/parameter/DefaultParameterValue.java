@@ -910,7 +910,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *     PARAMETER[“scale_factor”, 0.99987742],
      *     PARAMETER[“false_easting”, 600.0],           // In kilometres
      *     PARAMETER[“false_northing”, 2200.0],         // In kilometres
-     *     UNIT[“km”, 1000]]                            // Unit for all lengths
+     *     UNIT[“kilometre”, 1000]]                            // Unit for all lengths
      * }
      *
      * <p><b>WKT 2:</b></p>
@@ -918,14 +918,14 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *   ProjectedCRS[…
      *     BaseGeodCRS[…
      *       AngleUnit[“grad”, 0.015707963267948967]],
-     *     Conversion["Lambert zone II",
-     *       Method["Lambert Conic Conformal (1SP)"],
-     *       Parameter["Latitude of natural origin", 52.0],
-     *       Parameter["Scale factor at natural origin", 0.99987742],
-     *       Parameter["False easting", 600.0],
-     *       Parameter["False northing", 2200.0]],
-     *     CS["Cartesian", 2],
-     *       LengthUnit["km", 1000]]
+     *     Conversion[“Lambert zone II”,
+     *       Method[“Lambert Conic Conformal (1SP)”],
+     *       Parameter[“Latitude of natural origin”, 52.0],
+     *       Parameter[“Scale factor at natural origin”, 0.99987742],
+     *       Parameter[“False easting”, 600.0],
+     *       Parameter[“False northing”, 2200.0]],
+     *     CS[“Cartesian”, 2],
+     *       LengthUnit[“kilometre”, 1000]]
      * }
      * </div>
      *

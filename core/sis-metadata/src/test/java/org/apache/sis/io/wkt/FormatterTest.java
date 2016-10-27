@@ -88,12 +88,12 @@ public final strictfp class FormatterTest extends TestCase {
     @Test
     public void testAppendVerticalExtent() {
         final DefaultVerticalExtent extent = new DefaultVerticalExtent(102, 108, VerticalCRSMock.HEIGHT_ft);
-        assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalExtent[102, 108, Unit[“ft”, 0.3048]]", extent);
-        assertWktEquals(Convention.WKT2, "VERTICALEXTENT[102, 108, LENGTHUNIT[“ft”, 0.3048]]", extent);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalExtent[102, 108, Unit[“foot”, 0.3048]]", extent);
+        assertWktEquals(Convention.WKT2, "VERTICALEXTENT[102, 108, LENGTHUNIT[“foot”, 0.3048]]", extent);
 
         extent.setMinimumValue(100.2);
         extent.setMaximumValue(100.8);
-        assertWktEquals(Convention.WKT2, "VERTICALEXTENT[100.2, 100.8, LENGTHUNIT[“ft”, 0.3048]]", extent);
+        assertWktEquals(Convention.WKT2, "VERTICALEXTENT[100.2, 100.8, LENGTHUNIT[“foot”, 0.3048]]", extent);
     }
 
     /**

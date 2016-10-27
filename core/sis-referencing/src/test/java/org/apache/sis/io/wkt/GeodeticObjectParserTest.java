@@ -94,9 +94,9 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     /**
      * Parses the given text. It is caller's responsibility to verify if some warnings have been emitted.
      *
-     * @param  type The expected object type.
-     * @param  text The WKT string to parse.
-     * @return The parsed object.
+     * @param  type  the expected object type.
+     * @param  text  the WKT string to parse.
+     * @return the parsed object.
      * @throws ParseException if an error occurred during the parsing.
      */
     private <T> T parseIgnoreWarnings(final Class<T> type, final String text) throws ParseException {
@@ -114,9 +114,9 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     /**
      * Parses the given text and ensure that no warnings have been emitted.
      *
-     * @param  type The expected object type.
-     * @param  text The WKT string to parse.
-     * @return The parsed object.
+     * @param  type  the expected object type.
+     * @param  text  the WKT string to parse.
+     * @return the parsed object.
      * @throws ParseException if an error occurred during the parsing.
      */
     private <T> T parse(final Class<T> type, final String text) throws ParseException {
@@ -133,8 +133,8 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * <p>This method is similar to {@link #assertEpsgNameAndIdentifierEqual(String, int, IdentifiedObject)} except
      * that the given name is not necessarily in the EPSG namespace and the EPSG code is allowed to be absent.</p>
      *
-     * @param name The expected name.
-     * @param epsg The expected EPSG identifier, or {@code 0} if the object shall have no identifier.
+     * @param name  the expected name.
+     * @param epsg  the expected EPSG identifier, or {@code 0} if the object shall have no identifier.
      */
     static void assertNameAndIdentifierEqual(final String name, final int epsg, final IdentifiedObject object) {
         final String message = object.getClass().getSimpleName();
@@ -226,7 +226,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     public void testDatum() throws ParseException {
         final GeodeticDatum datum = parse(GeodeticDatum.class,
                 "DATUM[“Tananarive 1925”,\n" +
-                "  ELLIPSOID[“International 1924”, 6378.388, 297.0, LENGTHUNIT[“km”, 1000]],\n" +
+                "  ELLIPSOID[“International 1924”, 6378.388, 297.0, LENGTHUNIT[“kilometre”, 1000]],\n" +
                 "  ANCHOR[“Tananarive observatory”]]");
 
         assertNameAndIdentifierEqual("Tananarive 1925", 0, datum);
@@ -497,7 +497,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * Implementation of {@link #testGeographicCRS()} and {@link #testWithAxisSwapping()}.
      * This test expects no {@code AUTHORITY} element on any component.
      *
-     * @param swap 1 if axes are expected to be swapped, or 0 otherwise.
+     * @param  swap  1 if axes are expected to be swapped, or 0 otherwise.
      */
     private void verifyGeographicCRS(final int swap, final GeographicCRS crs) throws ParseException {
         assertNameAndIdentifierEqual("WGS 84", 0, crs);
@@ -650,7 +650,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                "  PARAMETER[“scale_factor”, 0.95],\n" +
                "  PARAMETER[“false_easting”, 0.0],\n" +
                "  PARAMETER[“false_northing”, 0.0],\n" +
-               "  UNIT[“feet”, 0.304800609601219],\n" +
+               "  UNIT[“US survey foot”, 0.304800609601219],\n" +
                "  AXIS[“E”, EAST],\n" +
                "  AXIS[“N”, NORTH]]");
 
@@ -744,7 +744,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                      "  CS[Cartesian, 2],\n" +
                      "    Axis[“Easting (E)”, east],\n" +
                      "    Axis[“Northing (N)”, north],\n" +
-                     "    LengthUnit[“km”, 1000],\n" +
+                     "    LengthUnit[“kilometre”, 1000],\n" +
                      "  Scope[“Large and medium scale topographic mapping and engineering survey.”],\n" +
                      "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]";
 
@@ -1100,7 +1100,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                     "  DATUM[“North American Datum 1983”,\n" +
                     "    SPHEROID[“GRS 1980”, 6378137.0, 298.257222]],\n" +
                     "  PRIMEM[“Greenwich”, 0],\n" +
-                    "  UNIT[“km”, 1000]]");                                             // Wrong unit
+                    "  UNIT[“kilometre”, 1000]]");                                      // Wrong unit
             fail("Should not have parsed a CRS with wrong unit of measurement.");
         } catch (ParseException e) {
             final String message = e.getMessage();
