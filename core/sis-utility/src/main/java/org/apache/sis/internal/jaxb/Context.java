@@ -198,14 +198,14 @@ public final class Context extends MarshalContext {
      *     }
      * }
      *
-     * @param  bitMasks        A combination of {@link #MARSHALLING}, {@code SUBSTITUTE_*} or other bit masks.
-     * @param  locale          The locale, or {@code null} if unspecified.
-     * @param  timezone        The timezone, or {@code null} if unspecified.
-     * @param  schemas         The schemas root URL, or {@code null} if none.
-     * @param  versionGML      The GML version, or {@code null}.
-     * @param  resolver        The resolver in use.
-     * @param  converter       The converter in use.
-     * @param  warningListener The object to inform about warnings.
+     * @param  bitMasks         a combination of {@link #MARSHALLING}, {@code SUBSTITUTE_*} or other bit masks.
+     * @param  locale           the locale, or {@code null} if unspecified.
+     * @param  timezone         the timezone, or {@code null} if unspecified.
+     * @param  schemas          the schemas root URL, or {@code null} if none.
+     * @param  versionGML       the GML version, or {@code null}.
+     * @param  resolver         the resolver in use.
+     * @param  converter        the converter in use.
+     * @param  warningListener  the object to inform about warnings.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public Context(final int                bitMasks,
@@ -217,7 +217,7 @@ public final class Context extends MarshalContext {
         this.bitMasks          = bitMasks;
         this.locales           = new LinkedList<>();
         this.timezone          = timezone;
-        this.schemas           = schemas; // No clone, because this class is internal.
+        this.schemas           = schemas;               // No clone, because this class is internal.
         this.versionGML        = versionGML;
         this.resolver          = resolver;
         this.converter         = converter;
@@ -239,7 +239,7 @@ public final class Context extends MarshalContext {
     /**
      * Returns the locale to use for marshalling, or {@code null} if no locale were explicitly specified.
      *
-     * @return The locale in the context of current (un)marshalling process.
+     * @return the locale in the context of current (un)marshalling process.
      */
     @Override
     public final Locale getLocale() {
@@ -249,7 +249,7 @@ public final class Context extends MarshalContext {
     /**
      * Returns the timezone to use for marshalling, or {@code null} if none were explicitely specified.
      *
-     * @return The timezone in the context of current (un)marshalling process.
+     * @return the timezone in the context of current (un)marshalling process.
      */
     @Override
     public final TimeZone getTimeZone() {
@@ -260,7 +260,7 @@ public final class Context extends MarshalContext {
      * Returns the schema version of the XML document being (un)marshalled.
      * See the super-class javadoc for the list of prefix that we shall support.
      *
-     * @return The version in the context of current (un)marshalling process.
+     * @return the version in the context of current (un)marshalling process.
      */
     @Override
     public final Version getVersion(final String prefix) {
@@ -288,7 +288,7 @@ public final class Context extends MarshalContext {
      * Returns the context of the XML (un)marshalling currently progressing in the current thread,
      * or {@code null} if none.
      *
-     * @return The current (un)marshalling context, or {@code null} if none.
+     * @return the current (un)marshalling context, or {@code null} if none.
      */
     public static Context current() {
         return CURRENT.get();
@@ -310,7 +310,7 @@ public final class Context extends MarshalContext {
      *     }
      * }
      *
-     * @param locale The locale to set, or {@code null}.
+     * @param  locale  the locale to set, or {@code null}.
      */
     public static void push(Locale locale) {
         final Context current = current();
@@ -336,9 +336,9 @@ public final class Context extends MarshalContext {
     /**
      * Returns {@code true} if the given flag is set.
      *
-     * @param  context The current context, or {@code null} if none.
-     * @param  flag One of {@link #MARSHALLING}, {@link #SUBSTITUTE_LANGUAGE},
-     *         {@link #SUBSTITUTE_COUNTRY} or other bit masks.
+     * @param  context  the current context, or {@code null} if none.
+     * @param  flag     one of {@link #MARSHALLING}, {@link #SUBSTITUTE_LANGUAGE}, {@link #SUBSTITUTE_COUNTRY}
+     *                  or other bit masks.
      * @return {@code true} if the given flag is set.
      */
     public static boolean isFlagSet(final Context context, final int flag) {
@@ -353,8 +353,8 @@ public final class Context extends MarshalContext {
      * <div class="note"><b>API note:</b>
      * This method is static for the convenience of performing the check for null context.</div>
      *
-     * @param  context The current context, or {@code null} if none.
-     * @param  version The version to compare to.
+     * @param  context  the current context, or {@code null} if none.
+     * @param  version  the version to compare to.
      * @return {@code true} if the GML version is equals or newer than the specified version.
      *
      * @see #getVersion(String)
@@ -377,11 +377,11 @@ public final class Context extends MarshalContext {
      * <div class="note"><b>API note:</b>
      * This method is static for the convenience of performing the check for null context.</div>
      *
-     * @param  context The current context, or {@code null} if none.
-     * @param  key One of the value documented in the <cite>"Map key"</cite> column of
-     *         {@link org.apache.sis.xml.XML#SCHEMAS}.
-     * @param  defaultSchema The value to return if no schema is found for the given key.
-     * @return The base URL of the schema, or an empty buffer if none were specified.
+     * @param  context        the current context, or {@code null} if none.
+     * @param  key            one of the value documented in the <cite>"Map key"</cite> column of
+     *                        {@link org.apache.sis.xml.XML#SCHEMAS}.
+     * @param  defaultSchema  the value to return if no schema is found for the given key.
+     * @return the base URL of the schema, or an empty buffer if none were specified.
      */
     public static StringBuilder schema(final Context context, final String key, String defaultSchema) {
         final StringBuilder buffer = new StringBuilder(128);
@@ -426,8 +426,8 @@ public final class Context extends MarshalContext {
      * For performance reasons, this {@code wrapper} information is not provided by default.
      * See {@link #setWrapper(Context, PropertyType)} for more information.
      *
-     * @param  context The current context, or {@code null} if none.
-     * @return The {@code <gml:*PropertyType>} which is wrapping the {@code <gml:*Type>} object to (un)marshal,
+     * @param  context  the current context, or {@code null} if none.
+     * @return the {@code <gml:*PropertyType>} which is wrapping the {@code <gml:*Type>} object to (un)marshal,
      *         or {@code null} if unknown.
      */
     public static PropertyType<?,?> getWrapper(final Context context) {
@@ -443,9 +443,9 @@ public final class Context extends MarshalContext {
      * {@code beforeUnmarshal(…)} method. For an implementation example, see
      * {@link org.apache.sis.internal.jaxb.referencing.CC_OperationParameter}.</p>
      *
-     * @param context The current context, or {@code null} if none.
-     * @param wrapper The {@code <gml:*PropertyType>} which is wrapping the {@code <gml:*Type>} object to (un)marshal,
-     *                or {@code null} if unknown.
+     * @param context  the current context, or {@code null} if none.
+     * @param wrapper  the {@code <gml:*PropertyType>} which is wrapping the {@code <gml:*Type>} object to (un)marshal,
+     *                 or {@code null} if unknown.
      */
     public static void setWrapper(final Context context, final PropertyType<?,?> wrapper) {
         if (context != null) {
@@ -457,9 +457,9 @@ public final class Context extends MarshalContext {
      * If a {@code gml:id} value has already been used for the given object in the current XML document,
      * returns that identifier. Otherwise returns {@code null}.
      *
-     * @param  context The current context, or {@code null} if none.
-     * @param  object  The object for which to get the {@code gml:id}.
-     * @return The identifier used in the current XML document for the given object, or {@code null} if none.
+     * @param  context  the current context, or {@code null} if none.
+     * @param  object   the object for which to get the {@code gml:id}.
+     * @return the identifier used in the current XML document for the given object, or {@code null} if none.
      *
      * @since 0.7
      */
@@ -471,9 +471,9 @@ public final class Context extends MarshalContext {
      * Returns the object for the given {@code gml:id}, or {@code null} if none.
      * This association is valid only for the current XML document.
      *
-     * @param  context The current context, or {@code null} if none.
-     * @param  id      The identifier for which to get the object.
-     * @return The object associated to the given identifier, or {@code null} if none.
+     * @param  context  the current context, or {@code null} if none.
+     * @param  id       the identifier for which to get the object.
+     * @return the object associated to the given identifier, or {@code null} if none.
      *
      * @since 0.7
      */
@@ -487,9 +487,9 @@ public final class Context extends MarshalContext {
      * invocation of {@code Context} method.  If this method returns {@code false}, then the caller is responsible
      * for computing an other identifier candidate.
      *
-     * @param  context The current context, or {@code null} if none.
-     * @param  object  The object for which to assign the {@code gml:id}.
-     * @param  id      The identifier to assign to the given object.
+     * @param  context  the current context, or {@code null} if none.
+     * @param  object   the object for which to assign the {@code gml:id}.
+     * @param  id       the identifier to assign to the given object.
      * @return {@code true} if the given identifier can be used.
      *
      * @since 0.7
@@ -515,8 +515,8 @@ public final class Context extends MarshalContext {
      * <div class="note"><b>API note:</b>
      * This method is static for the convenience of performing the check for null context.</div>
      *
-     * @param  context The current context, or {@code null} if none.
-     * @return The current reference resolver (never null).
+     * @param  context  the current context, or {@code null} if none.
+     * @return the current reference resolver (never null).
      */
     public static ReferenceResolver resolver(final Context context) {
         if (context != null) {
@@ -535,8 +535,8 @@ public final class Context extends MarshalContext {
      * <div class="note"><b>API note:</b>
      * This method is static for the convenience of performing the check for null context.</div>
      *
-     * @param  context The current context, or {@code null} if none.
-     * @return The current value converter (never null).
+     * @param  context  the current context, or {@code null} if none.
+     * @return the current value converter (never null).
      */
     public static ValueConverter converter(final Context context) {
         if (context != null) {
@@ -555,14 +555,14 @@ public final class Context extends MarshalContext {
      * <p>If the given {@code resources} is {@code null}, then this method will build the log
      * message from the {@code exception}.</p>
      *
-     * @param context   The current context, or {@code null} if none.
-     * @param level     The logging level.
-     * @param classe    The class to declare as the warning source.
-     * @param method    The name of the method to declare as the warning source.
-     * @param exception The exception thrown, or {@code null} if none.
-     * @param resources Either {@code Errors.class}, {@code Messages.class} or {@code null} for the exception message.
-     * @param key       The resource keys as one of the constants defined in the {@code Keys} inner class.
-     * @param arguments The arguments to be given to {@code MessageFormat} for formatting the log message.
+     * @param  context    the current context, or {@code null} if none.
+     * @param  level      the logging level.
+     * @param  classe     the class to declare as the warning source.
+     * @param  method     the name of the method to declare as the warning source.
+     * @param  exception  the exception thrown, or {@code null} if none.
+     * @param  resources  either {@code Errors.class}, {@code Messages.class} or {@code null} for the exception message.
+     * @param  key        the resource keys as one of the constants defined in the {@code Keys} inner class.
+     * @param  arguments  the arguments to be given to {@code MessageFormat} for formatting the log message.
      *
      * @since 0.5
      */
@@ -607,12 +607,12 @@ public final class Context extends MarshalContext {
      * Convenience method for sending a warning for the given message from the {@link Errors} or {@link Messages}
      * resources. The message will be logged at {@link Level#WARNING}.
      *
-     * @param context   The current context, or {@code null} if none.
-     * @param classe    The class to declare as the warning source.
-     * @param method    The name of the method to declare as the warning source.
-     * @param resources Either {@code Errors.class} or {@code Messages.class}.
-     * @param key       The resource keys as one of the constants defined in the {@code Keys} inner class.
-     * @param arguments The arguments to be given to {@code MessageFormat} for formatting the log message.
+     * @param  context    the current context, or {@code null} if none.
+     * @param  classe     the class to declare as the warning source.
+     * @param  method     the name of the method to declare as the warning source.
+     * @param  resources  either {@code Errors.class} or {@code Messages.class}.
+     * @param  key        the resource keys as one of the constants defined in the {@code Keys} inner class.
+     * @param  arguments  the arguments to be given to {@code MessageFormat} for formatting the log message.
      *
      * @since 0.5
      */
@@ -626,11 +626,11 @@ public final class Context extends MarshalContext {
      * Convenience method for sending a warning for the given exception.
      * The logger will be {@code "org.apache.sis.xml"}.
      *
-     * @param context   The current context, or {@code null} if none.
-     * @param classe    The class to declare as the warning source.
-     * @param method    The name of the method to declare as the warning source.
-     * @param cause     The exception which occurred.
-     * @param isWarning {@code true} for {@link Level#WARNING}, or {@code false} for {@link Level#FINE}.
+     * @param  context    the current context, or {@code null} if none.
+     * @param  classe     the class to declare as the warning source.
+     * @param  method     the name of the method to declare as the warning source.
+     * @param  cause      the exception which occurred.
+     * @param  isWarning  {@code true} for {@link Level#WARNING}, or {@code false} for {@link Level#FINE}.
      */
     public static void warningOccured(final Context context, final Class<?> classe,
             final String method, final Exception cause, final boolean isWarning)

@@ -63,7 +63,10 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * opposite sign. It is caller responsibility to handle the direction of axes associated to NetCDF units.
  *
  * <div class="section">Multi-threading</div>
- * {@code UnitFormat} is not thread-safe. Synchronization, if desired, is caller's responsibility.
+ * {@code UnitFormat} is generally not thread-safe.
+ * However if there is no call to any setter method or to {@link #label(Unit, String)} after construction,
+ * then the {@link #parse(CharSequence)} and {@link #format(Unit)} methods can be invoked concurrently in
+ * different threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
