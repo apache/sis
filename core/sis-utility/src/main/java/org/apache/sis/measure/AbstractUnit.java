@@ -210,6 +210,10 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      */
     @Override
     public final Unit<Q> multiply(final double multiplier) {
+        final double r = inverse(multiplier);
+        if (!Double.isNaN(r)) {
+            return divide(r);
+        }
         return transform(LinearConverter.scale(multiplier, 1));
     }
 
@@ -222,7 +226,27 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
      */
     @Override
     public final Unit<Q> divide(final double divisor) {
+        final double r = inverse(divisor);
+        if (!Double.isNaN(r)) {
+            return multiply(r);
+        }
         return transform(LinearConverter.scale(1, divisor));
+    }
+
+    /**
+     * If the inverse of the given multiplier is an integer, returns that inverse. Otherwise returns NaN.
+     * This method is used for replacing e.g. {@code multiply(0.001)} calls by {@code divide(1000)} calls.
+     * The later allows more accurate operations because of the way {@link LinearConverter} is implemented.
+     */
+    private static double inverse(final double multiplier) {
+        if (Math.abs(multiplier) < 1) {
+            final double inverse = 1 / multiplier;
+            final double r = Math.rint(inverse);
+            if (Math.abs(inverse - r) <= Math.ulp(inverse)) {
+                return r;
+            }
+        }
+        return Double.NaN;
     }
 
     /**

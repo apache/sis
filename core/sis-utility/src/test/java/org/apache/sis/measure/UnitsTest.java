@@ -35,6 +35,7 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 @DependsOn({
+    UnitFormatTest.class,
     SexagesimalConverterTest.class,
     org.apache.sis.internal.util.DefinitionURITest.class,
     org.apache.sis.internal.util.XPathsTest.class
@@ -293,7 +294,7 @@ public final strictfp class UnitsTest extends TestCase {
         assertEquals(Integer.valueOf(9122), getEpsgCode(DEGREE,         true));
         assertEquals(Integer.valueOf(9110), getEpsgCode(DMS,            false));
         assertEquals(Integer.valueOf(9110), getEpsgCode(DMS,            true));
-        assertEquals(Integer.valueOf(9108), getEpsgCode(DMS_SCALED,     false));
+        assertEquals(Integer.valueOf(9107), getEpsgCode(DMS_SCALED,     false));
         assertEquals(Integer.valueOf(9111), getEpsgCode(DM,             false));
         assertEquals(Integer.valueOf(1029), getEpsgCode(TROPICAL_YEAR,  false));
         assertEquals(Integer.valueOf(1040), getEpsgCode(SECOND,         false));

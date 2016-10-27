@@ -776,6 +776,7 @@ public final class Units extends Static {
         UnitRegistry.alias(CELSIUS,   "Cel");
         UnitRegistry.alias(GRAD,      "gon");
         UnitRegistry.alias(HECTARE,   "hm²");
+        UnitRegistry.alias(UNITY,       "1");
 
         initialized = true;
     }

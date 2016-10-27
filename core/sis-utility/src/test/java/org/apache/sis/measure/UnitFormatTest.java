@@ -284,4 +284,19 @@ public final strictfp class UnitFormatTest extends TestCase {
             assertTrue(message, message.contains("ka"));
         }
     }
+
+    /**
+     * Tests parsing of symbols composed of terms combined by arithmetic operations (e.g. "m/s").
+     */
+    @Test
+    @DependsOnMethod("testPrefixParsing")
+    public void testTermsParsing() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        assertSame(Units.SQUARE_METRE,      f.parse("m⋅m"));
+        assertSame(Units.CUBIC_METRE,       f.parse("m⋅m⋅m"));
+        assertSame(Units.CUBIC_METRE,       f.parse("m²⋅m"));
+        assertSame(Units.CUBIC_METRE,       f.parse("m2.m"));
+        assertSame(Units.METRES_PER_SECOND, f.parse("m∕s"));
+        assertSame(Units.HERTZ,             f.parse("1/s"));
+    }
 }
