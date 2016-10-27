@@ -180,6 +180,8 @@ public final strictfp class ConventionalUnitTest extends TestCase {
         assertSame(Units.CUBIC_METRE,  Units.CUBIC_METRE .multiply(   1));
         verify    (Units.CUBIC_METRE,  Units.CUBIC_METRE .multiply(1E+9), "km³", 1E+9);
         verify    (Units.CUBIC_METRE,  Units.CUBIC_METRE .divide  (1E+9), "mm³", 1E-9);
+
+        assertSame(Units.HOUR, Units.SECOND.multiply(3600));
     }
 
     /**
@@ -198,6 +200,17 @@ public final strictfp class ConventionalUnitTest extends TestCase {
         assertSame(Units.NANOMETRE,  Units.KILOMETRE .multiply(1E-12));
 
         verify(Units.SQUARE_METRE, Units.HECTARE.divide(1E+10), "mm²", 1E-6);
+    }
+
+    /**
+     * Tests conversion of an angular value between two conventional units.
+     * The use of angular units is of special interest because of rounding errors.
+     */
+    @Test
+    public void testConvertAngle() {
+        final UnitConverter c = Units.GRAD.getConverterTo(Units.DEGREE);
+        assertEquals(180,        c.convert(200),       STRICT);
+        assertEquals(2.33722917, c.convert(2.5969213), STRICT);
     }
 
     /**

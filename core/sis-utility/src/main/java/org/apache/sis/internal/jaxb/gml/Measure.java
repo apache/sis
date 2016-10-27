@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
+import java.util.Locale;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import javax.measure.Unit;
 import javax.measure.Quantity;
@@ -26,6 +28,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 
@@ -70,6 +73,16 @@ import org.apache.sis.measure.Units;
  */
 @XmlType(name = "MeasureType")
 public final class Measure {
+    /**
+     * An instance for formatting units with a syntax close to the UCUM one.
+     * While {@code UnitFormat} is generally not thread-safe, this particular
+     * instance is safe if we never invoke any setter method.
+     */
+    private static final UnitFormat UCUM = new UnitFormat(Locale.ROOT);
+    static {
+        UCUM.setStyle(UnitFormat.Style.UCUM);
+    }
+
     /**
      * The value of the measure.
      */
@@ -152,8 +165,14 @@ public final class Measure {
         if (unit == null || unit.equals(Units.UNITY)) {
             return "";
         }
-        return Context.schema(Context.current(), "gmd", Schemas.METADATA_ROOT).append(Schemas.UOM_PATH)
-                .append("#xpointer(//*[@gml:id='").append(unit).append("'])").toString();
+        final StringBuilder buffer = Context.schema(Context.current(), "gmd", Schemas.METADATA_ROOT)
+                                            .append(Schemas.UOM_PATH).append("#xpointer(//*[@gml:id='");
+        try {
+            UCUM.format(unit, buffer);
+        } catch (IOException e) {
+            throw new AssertionError(e);        // Should never happen since we wrote to a StringBuilder.
+        }
+        return buffer.append("'])").toString();
     }
 
     /**

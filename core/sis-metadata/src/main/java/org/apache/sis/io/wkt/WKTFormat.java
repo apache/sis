@@ -232,8 +232,8 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Creates a format for the given locale and timezone. The given locale will be used for
      * {@link InternationalString} localization; this is <strong>not</strong> the locale for number format.
      *
-     * @param locale   The locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
-     * @param timezone The timezone, or {@code null} for UTC.
+     * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
+     * @param  timezone  the timezone, or {@code null} for UTC.
      */
     public WKTFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
@@ -276,8 +276,8 @@ public class WKTFormat extends CompoundFormat<Object> {
      *       used for {@link InternationalString} localization.</li>
      * </ul>
      *
-     * @param  category The category for which a locale is desired.
-     * @return The locale for the given category (never {@code null}).
+     * @param  category  the category for which a locale is desired.
+     * @return the locale for the given category (never {@code null}).
      */
     @Override
     public Locale getLocale(final Locale.Category category) {
@@ -290,7 +290,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Returns the symbols used for parsing and formatting WKT.
      *
-     * @return The current set of symbols used for parsing and formatting WKT.
+     * @return the current set of symbols used for parsing and formatting WKT.
      */
     public Symbols getSymbols() {
         return symbols;
@@ -299,7 +299,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Sets the symbols used for parsing and formatting WKT.
      *
-     * @param symbols The new set of symbols to use for parsing and formatting WKT.
+     * @param  symbols  the new set of symbols to use for parsing and formatting WKT.
      */
     public void setSymbols(final Symbols symbols) {
         ArgumentChecks.ensureNonNull("symbols", symbols);
@@ -322,7 +322,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *   <li>Any other user-supplied mapping.</li>
      * </ul>
      *
-     * @return The mapper between Java character sequences and the characters to write in WKT.
+     * @return the mapper between Java character sequences and the characters to write in WKT.
      *
      * @since 0.6
      */
@@ -341,7 +341,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * then the default mapper is {@link Transliterator#DEFAULT} except for WKT formatted according
      * the {@linkplain Convention#INTERNAL internal convention}.</p>
      *
-     * @param transliterator The new mapper to use, or {@code null} for restoring the default value.
+     * @param  transliterator  the new mapper to use, or {@code null} for restoring the default value.
      *
      * @since 0.6
      */
@@ -356,7 +356,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Returns whether WKT keywords should be written with upper cases or camel cases.
      *
-     * @return The case to use for formatting keywords.
+     * @return the case to use for formatting keywords.
      */
     public KeywordCase getKeywordCase() {
         return keywordCase;
@@ -365,7 +365,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Sets whether WKT keywords should be written with upper cases or camel cases.
      *
-     * @param keywordCase The case to use for formatting keywords.
+     * @param  keywordCase  the case to use for formatting keywords.
      */
     public void setKeywordCase(final KeywordCase keywordCase) {
         ArgumentChecks.ensureNonNull("keywordCase", keywordCase);
@@ -376,7 +376,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Returns whether to use short or long WKT keywords.
      *
-     * @return The style used for formatting keywords.
+     * @return the style used for formatting keywords.
      *
      * @since 0.6
      */
@@ -387,7 +387,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Sets whether to use short or long WKT keywords.
      *
-     * @param keywordStyle The style to use for formatting keywords.
+     * @param  keywordStyle  the style to use for formatting keywords.
      *
      * @since 0.6
      */
@@ -401,7 +401,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Returns the colors to use for syntax coloring, or {@code null} if none.
      * By default there is no syntax coloring.
      *
-     * @return The colors for syntax coloring, or {@code null} if none.
+     * @return the colors for syntax coloring, or {@code null} if none.
      */
     public Colors getColors() {
         return colors;
@@ -416,7 +416,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * method tries to highlight most of the elements that are relevant to
      * {@link org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)}.</p>
      *
-     * @param colors The colors for syntax coloring, or {@code null} if none.
+     * @param  colors  the colors for syntax coloring, or {@code null} if none.
      */
     public void setColors(Colors colors) {
         if (colors != null) {
@@ -430,7 +430,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Returns the convention for parsing and formatting WKT elements.
      * The default value is {@link Convention#WKT2}.
      *
-     * @return The convention to use for formatting WKT elements (never {@code null}).
+     * @return the convention to use for formatting WKT elements (never {@code null}).
      */
     public Convention getConvention() {
         return convention;
@@ -439,7 +439,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Sets the convention for parsing and formatting WKT elements.
      *
-     * @param convention The new convention to use for parsing and formatting WKT elements.
+     * @param  convention  the new convention to use for parsing and formatting WKT elements.
      */
     public void setConvention(final Convention convention) {
         ArgumentChecks.ensureNonNull("convention", convention);
@@ -468,7 +468,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * If no authority has been {@linkplain #setNameAuthority(Citation) explicitly set}, then this
      * method returns the default authority for the current {@linkplain #getConvention() convention}.
      *
-     * @return The organization, standard or project to look for when fetching projection and parameter names.
+     * @return the organization, standard or project to look for when fetching projection and parameter names.
      *
      * @see Formatter#getNameAuthority()
      */
@@ -486,7 +486,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * associated to the {@linkplain #getConvention() convention}. A {@code null} value
      * restore the default behavior.
      *
-     * @param authority The new authority, or {@code null} for inferring it from the convention.
+     * @param  authority  the new authority, or {@code null} for inferring it from the convention.
      *
      * @see Formatter#getNameAuthority()
      */
@@ -527,7 +527,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Returns the current indentation to be used for formatting objects.
      * The {@value #SINGLE_LINE} value means that the whole WKT is to be formatted on a single line.
      *
-     * @return The current indentation.
+     * @return the current indentation.
      */
     public int getIndentation() {
         return indentation;
@@ -537,7 +537,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Sets a new indentation to be used for formatting objects.
      * The {@value #SINGLE_LINE} value means that the whole WKT is to be formatted on a single line.
      *
-     * @param indentation The new indentation to use.
+     * @param  indentation  the new indentation to use.
      */
     public void setIndentation(final int indentation) {
         ArgumentChecks.ensureBetween("indentation", SINGLE_LINE, Byte.MAX_VALUE, indentation);
@@ -573,9 +573,9 @@ public class WKTFormat extends CompoundFormat<Object> {
      *   <li><code>{@linkplain CoordinateOperationFactory}.class</code></li>
      * </ul>
      *
-     * @param  <T>  The compile-time type of the {@code type} argument.
-     * @param  type The factory type.
-     * @return The factory used by this {@code WKTFormat} for the given type.
+     * @param  <T>   the compile-time type of the {@code type} argument.
+     * @param  type  the factory type.
+     * @return the factory used by this {@code WKTFormat} for the given type.
      * @throws IllegalArgumentException if the {@code type} argument is not one of the valid values.
      */
     public <T extends Factory> T getFactory(final Class<T> type) {
@@ -609,9 +609,9 @@ public class WKTFormat extends CompoundFormat<Object> {
      * {@link java.io.Serializable}. The factories used by {@code WKTFormat} instances after deserialization
      * are the default ones.
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
-     * @param  type    The factory type.
-     * @param  factory The factory to be used by this {@code WKTFormat} for the given type.
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  type     the factory type.
+     * @param  factory  the factory to be used by this {@code WKTFormat} for the given type.
      * @throws IllegalArgumentException if the {@code type} argument is not one of the valid values.
      */
     public <T extends Factory> void setFactory(final Class<T> type, final T factory) {
@@ -640,7 +640,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * <p>The returned collection is modifiable. In particular, a call to {@link Set#clear()}
      * removes all fragments from this {@code WKTFormat}.</p>
      *
-     * @return The name of all fragments known to this {@code WKTFormat}.
+     * @return the name of all fragments known to this {@code WKTFormat}.
      */
     public Set<String> getFragmentNames() {
         return fragments().keySet();
@@ -667,10 +667,10 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * For removing a fragment, use <code>{@linkplain #getFragmentNames()}.remove(name)</code>.
      *
-     * @param  name The name to assign to the WKT fragment. Identifiers are case-sensitive.
-     * @param  wkt The Well Know Text (WKT) fragment represented by the given identifier.
+     * @param  name  the name to assign to the WKT fragment. Identifiers are case-sensitive.
+     * @param  wkt   the Well Know Text (WKT) fragment represented by the given identifier.
      * @throws IllegalArgumentException if the name is invalid or if a fragment is already present for that name.
-     * @throws ParseException If an error occurred while parsing the given WKT.
+     * @throws ParseException if an error occurred while parsing the given WKT.
      */
     public void addFragment(final String name, final String wkt) throws IllegalArgumentException, ParseException {
         ArgumentChecks.ensureNonEmpty("wkt", wkt);
@@ -700,10 +700,10 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Creates an object from the given character sequence.
      * The parsing begins at the index given by the {@code pos} argument.
      *
-     * @param  wkt The character sequence for the object to parse.
-     * @param  pos The position where to start the parsing.
-     * @return The parsed object.
-     * @throws ParseException If an error occurred while parsing the WKT.
+     * @param  wkt  the character sequence for the object to parse.
+     * @param  pos  the position where to start the parsing.
+     * @return the parsed object.
+     * @throws ParseException if an error occurred while parsing the WKT.
      */
     @Override
     public Object parse(final CharSequence wkt, final ParsePosition pos) throws ParseException {
@@ -764,9 +764,9 @@ public class WKTFormat extends CompoundFormat<Object> {
      * {@link org.opengis.metadata.extent.TemporalExtent}
      * and {@link Unit}.
      *
-     * @param  object     The object to format.
-     * @param  toAppendTo Where the text is to be appended.
-     * @throws IOException If an error occurred while writing to {@code toAppendTo}.
+     * @param  object      the object to format.
+     * @param  toAppendTo  where the text is to be appended.
+     * @throws IOException if an error occurred while writing to {@code toAppendTo}.
      *
      * @see FormattableObject#toWKT()
      */
@@ -804,7 +804,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             formatter.setBuffer(buffer);
             valid = formatter.appendElement(object) || formatter.appendValue(object);
         } finally {
-            warnings = formatter.getWarnings();  // Must be saved before formatter.clear() is invoked.
+            warnings = formatter.getWarnings();     // Must be saved before formatter.clear() is invoked.
             formatter.setBuffer(null);
             formatter.clear();
         }
@@ -826,8 +826,8 @@ public class WKTFormat extends CompoundFormat<Object> {
      * The {@code valueType} can be any types declared in the
      * {@linkplain CompoundFormat#createFormat(Class) parent class}.
      *
-     * @param  valueType The base type of values to parse or format.
-     * @return The format to use for parsing of formatting values of the given type, or {@code null} if none.
+     * @param  valueType  the base type of values to parse or format.
+     * @return the format to use for parsing of formatting values of the given type, or {@code null} if none.
      */
     @Override
     protected Format createFormat(final Class<?> valueType) {
@@ -837,7 +837,11 @@ public class WKTFormat extends CompoundFormat<Object> {
         if (valueType == Date.class) {
             return new StandardDateFormat(symbols.getLocale(), getTimeZone());
         }
-        return super.createFormat(valueType);
+        final Format format = super.createFormat(valueType);
+        if (format instanceof UnitFormat) {
+            ((UnitFormat) format).setStyle(UnitFormat.Style.NAME);
+        }
+        return format;
     }
 
     /**
@@ -845,7 +849,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * {@linkplain #format(Object, Appendable) formatting}, returns the warnings. Otherwise returns {@code null}.
      * The warnings are cleared every time a new object is parsed or formatted.
      *
-     * @return The warnings of the last parsing of formatting operation, or {@code null} if none.
+     * @return the warnings of the last parsing of formatting operation, or {@code null} if none.
      *
      * @since 0.6
      */
@@ -860,12 +864,12 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Returns a clone of this format.
      *
-     * @return A clone of this format.
+     * @return a clone of this format.
      */
     @Override
     public WKTFormat clone() {
         final WKTFormat clone = (WKTFormat) super.clone();
-        clone.formatter = null; // Do not share the formatter.
+        clone.formatter = null;                                 // Do not share the formatter.
         clone.parser    = null;
         clone.warnings  = null;
         return clone;

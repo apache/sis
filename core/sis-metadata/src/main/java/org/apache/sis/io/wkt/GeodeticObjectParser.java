@@ -637,7 +637,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         Unit<?> verify = parseUnitID(element);
         element.close(ignoredElements);
         /*
-         * Consider the following element: UNIT[“km”, 1000, ID[“EPSG”, “9036”]]
+         * Consider the following element: UNIT[“kilometre”, 1000, ID[“EPSG”, “9036”]]
          *
          *  - if the authority code (“9036”) refers to a unit incompatible with 'baseUnit' (“metre”), log a warning.
          *  - otherwise: 1) unconditionally replace the parsed unit (“km”) by the unit referenced by the authority code.
