@@ -66,6 +66,8 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      * Units for the same quantity but with scale factors that are not the SI one.
      * This is initialized by {@link Units} only and shall not change anymore after.
      * All units in this array shall use an instance of {@link LinearConverter}.
+     *
+     * @see #related(int)
      */
     transient ConventionalUnit<Q>[] related;
 
@@ -455,6 +457,15 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     public Unit<Q> transform(final UnitConverter operation) {
         ArgumentChecks.ensureNonNull("operation", operation);
         return ConventionalUnit.create(this, operation);
+    }
+
+    /**
+     * Invoked by {@link Units} initializer before to fill the {@link #related} array.
+     * We define this method only for isolating the generic array creation.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    final void related(final int n) {
+        related = new ConventionalUnit[n];
     }
 
     /**

@@ -94,13 +94,15 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
         }
         /*
          * Verifies if an instance already exists for the given converter.
+         * The 'related' array is populated only by the Units class static initializer.
+         * The SystemUnitTest.verifyRelatedUnits() method verified that the array does
+         * not contain null element and that all 'toTarget' are instances of LinearConverter.
          */
         final ConventionalUnit<Q>[] related = target.related;
         if (related != null && toTarget instanceof LinearConverter) {
             final LinearConverter c = (LinearConverter) toTarget;
             for (final ConventionalUnit<Q> existing : related) {
-                // Units.add(…) verified the UnitConverter class.
-                if (c.equivalent((LinearConverter) existing.toTarget)) {
+                if (c.equivalent((LinearConverter) existing.toTarget)) {        // Cast is safe - see above comment.
                     return existing;
                 }
             }

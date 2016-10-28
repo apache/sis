@@ -16,7 +16,6 @@
  */
 package org.apache.sis.measure;
 
-import java.util.Arrays;
 import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -707,16 +706,21 @@ public final class Units extends Static {
         final LinearConverter kilo  = LinearConverter.forPrefix('k');
         /*
          * All Unit<Angle>
+         * 20 is the greatest common denominator between 180 and 200. The intend is to have arguments as small
+         * as possible in the call to the scale(double, double) method, while keeping the right side integer.
+         * Staying closer to zero during conversions helo to reduce rounding errors.
          */
+        rad.related(4);
         RADIAN      = rad;
         GRAD        = add(rad, LinearConverter.scale(Math.PI / 20, 200       / 20), "grad", UnitRegistry.OTHER,    (short) 9105);
         DEGREE      = add(rad, LinearConverter.scale(Math.PI / 20, 180       / 20), "°",    UnitRegistry.ACCEPTED, Constants.EPSG_PARAM_DEGREES);
         ARC_MINUTE  = add(rad, LinearConverter.scale(Math.PI / 20, 180*60    / 20), "′",    UnitRegistry.ACCEPTED, (short) 9103);
         ARC_SECOND  = add(rad, LinearConverter.scale(Math.PI / 20, 180*60*60 / 20), "″",    UnitRegistry.ACCEPTED, (short) 9104);
-        MICRORADIAN = add(rad, micro,                                         "µrad", UnitRegistry.SI,       (short) 9109);
+        MICRORADIAN = add(rad, micro,                                               "µrad", UnitRegistry.SI,       (short) 9109);
         /*
          * All Unit<Length>
          */
+        m.related(6);
         METRE          = m;
         NANOMETRE      = add(m, nano,                                     "nm",    UnitRegistry.SI,       (short) 0);
         MILLIMETRE     = add(m, milli,                                    "mm",    UnitRegistry.SI,       (short) 1025);
@@ -731,6 +735,7 @@ public final class Units extends Static {
         /*
          * All Unit<Time>
          */
+        s.related(5);
         SECOND         = s;
         MILLISECOND    = add(s, milli, "ms", UnitRegistry.SI, (short) 0);
         MINUTE         = add(s, LinearConverter.scale(         60,      1), "min", UnitRegistry.ACCEPTED, (short) 0);
@@ -794,18 +799,14 @@ public final class Units extends Static {
      * Invoked by {@code Units} static class initializer for registering SI conventional units.
      * This method shall be invoked in a single thread by the {@code Units} class initializer only.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     private static <Q extends Quantity<Q>> ConventionalUnit<Q> add(SystemUnit<Q> target, UnitConverter toTarget, String symbol, byte scope, short epsg) {
         final ConventionalUnit<Q> unit = UnitRegistry.init(new ConventionalUnit<>(target, toTarget, symbol, scope, epsg));
-        if (unit.scope != UnitRegistry.SI && toTarget instanceof LinearConverter) {
-            ConventionalUnit<Q>[] related = target.related;
-            if (related == null) {
-                related = new ConventionalUnit[1];
-            } else {
-                related = Arrays.copyOf(related, related.length + 1);
-            }
-            related[related.length - 1] = unit;
-            target.related = related;
+        final ConventionalUnit<Q>[] related = target.related;
+        if (related != null && unit.scope != UnitRegistry.SI) {
+            // Search first empty slot. This algorithm is inefficient, but the length of those arrays is small (<= 6).
+            int i = 0;
+            while (related[i] != null) i++;
+            related[i] = unit;
         }
         return unit;
     }
