@@ -126,6 +126,12 @@ Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadat
       <artifactId>geoapi-netcdf</artifactId>
       <version>${geoapi.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>tec.units</groupId>
+          <artifactId>unit-ri</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.opengis.wrapper</groupId>
@@ -133,6 +139,12 @@ Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadat
       <version>${geoapi.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>tec.units</groupId>
+          <artifactId>unit-ri</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

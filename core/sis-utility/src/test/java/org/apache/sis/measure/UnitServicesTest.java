@@ -30,7 +30,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Test {@link UnitServicesTest}.
+ * Test {@link UnitServices}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8

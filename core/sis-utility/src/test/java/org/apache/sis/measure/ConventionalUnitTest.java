@@ -181,7 +181,11 @@ public final strictfp class ConventionalUnitTest extends TestCase {
         verify    (Units.CUBIC_METRE,  Units.CUBIC_METRE .multiply(1E+9), "km³", 1E+9);
         verify    (Units.CUBIC_METRE,  Units.CUBIC_METRE .divide  (1E+9), "mm³", 1E-9);
 
-        assertSame(Units.HOUR, Units.SECOND.multiply(3600));
+        assertSame(Units.HOUR,        Units.SECOND.multiply(3600));
+        assertSame(Units.DEGREE,      Units.RADIAN.multiply(Math.PI/180));
+        assertSame(Units.GRAD,        Units.RADIAN.multiply(Math.PI/200));
+        assertSame(Units.ARC_SECOND,  Units.RADIAN.multiply(Math.PI / (180*60*60)));
+        assertSame(Units.MICRORADIAN, Units.RADIAN.divide(1E6));
     }
 
     /**
@@ -200,6 +204,17 @@ public final strictfp class ConventionalUnitTest extends TestCase {
         assertSame(Units.NANOMETRE,  Units.KILOMETRE .multiply(1E-12));
 
         verify(Units.SQUARE_METRE, Units.HECTARE.divide(1E+10), "mm²", 1E-6);
+    }
+
+    /**
+     * Tests {@link ConventionalUnit#isCompatible(Unit)}.
+     */
+    @Test
+    public void testIsCompatible() {
+        assertTrue (Units.KILOMETRE.isCompatible(Units.METRE));
+        assertFalse(Units.KILOMETRE.isCompatible(Units.SECOND));
+        assertTrue (Units.DEGREE   .isCompatible(Units.GRAD));
+        assertTrue (Units.DEGREE   .isCompatible(Units.PPM));       // Because those units are dimensionless.
     }
 
     /**
