@@ -125,6 +125,12 @@ Console application.
       <version>${geoapi.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>tec.units</groupId>
+          <artifactId>unit-ri</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.sis.core</groupId>

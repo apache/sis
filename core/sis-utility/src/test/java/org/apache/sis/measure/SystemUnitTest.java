@@ -20,7 +20,9 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.lang.reflect.Field;
 import javax.measure.Unit;
+import javax.measure.UnitConverter;
 import javax.measure.UnconvertibleException;
 import javax.measure.IncommensurableException;
 import javax.measure.quantity.Length;
@@ -44,6 +46,32 @@ import static org.apache.sis.test.Assert.*;
  */
 @DependsOn(UnitDimensionTest.class)
 public final strictfp class SystemUnitTest extends TestCase {
+    /**
+     * Verifies the {@link SystemUnit#related} array content of all system units declared in {@link Units}.
+     * This tests verify that the array has been fully populated and that the converter of all units are
+     * instance of {@link LinearConverter}.
+     *
+     * @throws ReflectiveOperationException if an error occurred while iterating over the field values.
+     *
+     * @see ConventionalUnit#create(SystemUnit, UnitConverter)
+     */
+    @Test
+    public void verifyRelatedUnits() throws ReflectiveOperationException {
+        for (final Field f : Units.class.getFields()) {
+            final Object value = f.get(null);
+            if (value instanceof SystemUnit<?>) {
+                final ConventionalUnit<?>[] related = ((SystemUnit<?>) value).related;
+                if (related != null) {
+                    final String symbol = ((SystemUnit<?>) value).getSymbol();
+                    for (final ConventionalUnit<?> r : related) {
+                        assertNotNull(symbol, r);
+                        assertInstanceOf(symbol, LinearConverter.class, r.toTarget);
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Tests {@link SystemUnit#multiply(Unit)}.
      */
