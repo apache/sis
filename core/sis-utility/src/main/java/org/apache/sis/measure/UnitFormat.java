@@ -912,17 +912,34 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                      * If the first character is a digit, presume that the term is a multiplication factor.
                      * The "*" character is used for raising the number on the left to the power on the right.
                      * Example: "10*6" is equal to one million.
+                     *
+                     * In principle, spaces are not allowed in unit symbols (in particular, UCUM specifies that
+                     * spaces should not be interpreted as multication operators).  However in practice we have
+                     * sometime units written in a form like "100 feet".
                      */
                     final char c = uom.charAt(0);
                     if (isDigit(c) || isSign(c)) {
                         final double multiplier;
-                        final int s = uom.lastIndexOf('*');
-                        if (s >= 0) {
-                            final int base = Integer.parseInt(uom.substring(0, s));
-                            final int exp  = Integer.parseInt(uom.substring(s+1));
-                            multiplier = Math.pow(base, exp);
-                        } else {
-                            multiplier = Double.parseDouble(uom);
+                        try {
+                            int s = uom.lastIndexOf(' ');
+                            if (s >= 0) {
+                                final int next = CharSequences.skipLeadingWhitespaces(uom, s, length);
+                                if (next < length && Character.isLetter(uom.codePointAt(next))) {
+                                    multiplier = Double.parseDouble(uom.substring(0, s));
+                                    return parseSymbol(uom, s, length).multiply(multiplier);
+                                }
+                            }
+                            s = uom.lastIndexOf('*');
+                            if (s >= 0) {
+                                final int base = Integer.parseInt(uom.substring(0, s));
+                                final int exp  = Integer.parseInt(uom.substring(s+1));
+                                multiplier = Math.pow(base, exp);
+                            } else {
+                                multiplier = Double.parseDouble(uom);
+                            }
+                        } catch (NumberFormatException e) {
+                            throw (ParserException) new ParserException(Errors.format(
+                                    Errors.Keys.UnknownUnit_1, uom), symbols, lower).initCause(e);
                         }
                         return Units.UNITY.multiply(multiplier);
                     }
