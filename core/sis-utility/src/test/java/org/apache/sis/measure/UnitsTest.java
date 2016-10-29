@@ -17,6 +17,15 @@
 package org.apache.sis.measure;
 
 import javax.measure.Unit;
+import javax.measure.quantity.Angle;
+import javax.measure.quantity.Area;
+import javax.measure.quantity.Dimensionless;
+import javax.measure.quantity.Length;
+import javax.measure.quantity.Mass;
+import javax.measure.quantity.Speed;
+import javax.measure.quantity.Temperature;
+import javax.measure.quantity.Time;
+import javax.measure.quantity.Volume;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -181,6 +190,22 @@ public final strictfp class UnitsTest extends TestCase {
     public void testMultiply() {
         assertSame(KILOMETRE, multiply(METRE, 1000));
         assertSame(DEGREE, multiply(RADIAN, 0.017453292519943295));
+    }
+
+    /**
+     * Tests getting a unit for a given quantity type.
+     */
+    @Test
+    public void testGetForQuantity() {
+        assertSame("Length",        Units.METRE,             Units.get(Length.class));
+        assertSame("Mass",          Units.KILOGRAM,          Units.get(Mass.class));
+        assertSame("Time",          Units.SECOND,            Units.get(Time.class));
+        assertSame("Temperature",   Units.KELVIN,            Units.get(Temperature.class));
+        assertSame("Area",          Units.SQUARE_METRE,      Units.get(Area.class));
+        assertSame("Volume",        Units.CUBIC_METRE,       Units.get(Volume.class));
+        assertSame("Speed",         Units.METRES_PER_SECOND, Units.get(Speed.class));
+        assertSame("Angle",         Units.RADIAN,            Units.get(Angle.class));
+        assertSame("Dimensionless", Units.UNITY,             Units.get(Dimensionless.class));
     }
 
     /**

@@ -263,7 +263,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *
      * @see #symbolToName()
      */
-    private transient ResourceBundle symbolToName;
+    private transient volatile ResourceBundle symbolToName;
 
     /**
      * Mapping from long localized and unlocalized names to unit instances.
