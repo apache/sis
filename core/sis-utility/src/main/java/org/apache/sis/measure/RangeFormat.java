@@ -682,7 +682,7 @@ public class RangeFormat extends Format {
      * {@link #parse(String)} with no additional work.
      *
      * @param  source  the text, part of which should be parsed.
-     * @return a range parsed from the string, or {@code null} in case of error.
+     * @return a range parsed from the string.
      * @throws ParseException if the given string can not be fully parsed.
      */
     @Override
@@ -954,8 +954,7 @@ public class RangeFormat extends Format {
                 // At this point we found a character that could be
                 // the beginning of a unit symbol. Try to parse that.
                 pos.setIndex(index);
-// TODO: Uncomment when we have upgrated JSR-275 dependency.
-//              unit = unitFormat.parse(source, pos);
+                unit = unitFormat.parse(source, pos);
                 break;
             }
         }

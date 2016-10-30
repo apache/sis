@@ -445,9 +445,8 @@ final class LinearConverter extends AbstractConverter {
      * except for rounding errors.
      */
     boolean equivalent(final LinearConverter other) {
-        double r;
-        return Math.abs((r = scale  * other.divisor) - other.scale  * divisor) <= Math.ulp(r) &&
-               Math.abs((r = offset * other.divisor) - other.offset * divisor) <= Math.ulp(r);
+        return AbstractUnit.epsilonEquals(scale  * other.divisor, other.scale  * divisor) &&
+               AbstractUnit.epsilonEquals(offset * other.divisor, other.offset * divisor);
     }
 
     /**

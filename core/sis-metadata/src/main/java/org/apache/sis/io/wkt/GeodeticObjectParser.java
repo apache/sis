@@ -633,7 +633,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final String name   = element.pullString("name");
         final double factor = element.pullDouble("factor");
-        Unit<Q> unit   = Units.multiply(baseUnit, factor);
+        Unit<Q> unit   = baseUnit.multiply(factor);
         Unit<?> verify = parseUnitID(element);
         element.close(ignoredElements);
         /*
@@ -660,7 +660,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (verify == null) {
             try {
                 verify = parseUnit(name);
-            } catch (ParserException | ParseException e) {
+            } catch (ParserException e) {
                 log(new LogRecord(Level.FINE, e.toString()));
             }
             if (verify != null) try {

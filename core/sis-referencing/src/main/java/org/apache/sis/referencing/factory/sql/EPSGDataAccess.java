@@ -159,7 +159,7 @@ import org.apache.sis.internal.util.StandardDateFormat;
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
@@ -2405,7 +2405,7 @@ addURIs:    for (int i=0; ; i++) {
                 if (unit == null) {
                     final Unit<?> base = Units.valueOfEPSG(target);
                     if (base != null && !Double.isNaN(b) && !Double.isNaN(c)) {     // May be NaN if the conversion is non-linear.
-                        unit = Units.multiply(base, b/c);
+                        unit = Units.multiply(base, b, c);
                     } else try {
                         unit = Units.valueOf(getString(code, result, 5));           // Try parsing the unit symbol as a fallback.
                     } catch (ParserException e) {

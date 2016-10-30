@@ -184,15 +184,6 @@ public final strictfp class UnitsTest extends TestCase {
     }
 
     /**
-     * Tests {@link Units#multiply(Unit, double)}.
-     */
-    @Test
-    public void testMultiply() {
-        assertSame(KILOMETRE, multiply(METRE, 1000));
-        assertSame(DEGREE, multiply(RADIAN, 0.017453292519943295));
-    }
-
-    /**
      * Tests getting a unit for a given quantity type.
      */
     @Test
