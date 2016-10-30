@@ -83,8 +83,8 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
     /**
      * Creates a new converter for the given target class.
      *
-     * @param targetClass The {@linkplain #getTargetClass() target class}.
-     * @param inverse The inverse converter from the target to the source class.
+     * @param  targetClass  the {@linkplain #getTargetClass() target class}.
+     * @param  inverse      the inverse converter from the target to the source class.
      */
     @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
     StringConverter(final Class<T> targetClass) {
@@ -122,7 +122,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * This method verifies that the given string is non-null and non-empty,
      * then delegates to {@link #doConvert(String)}.
      *
-     * @param  source The string to convert, or {@code null}.
+     * @param  source  the string to convert, or {@code null}.
      * @return The converted value, or {@code null} if the given string was null or empty.
      * @throws UnconvertibleObjectException If an error occurred during the conversion.
      */
@@ -145,7 +145,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * Invoked by {@link #apply(String)} for converting the given string to the target
      * type of this converter.
      *
-     * @param  source The string to convert, guaranteed to be non-null and non-empty.
+     * @param  source  the string to convert, guaranteed to be non-null and non-empty.
      * @return The converted value.
      * @throws Exception If an error occurred during the conversion.
      */
