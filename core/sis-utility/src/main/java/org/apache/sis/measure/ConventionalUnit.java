@@ -219,7 +219,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     @SuppressWarnings("null")
     static char prefix(final double scale) {
         final int n = Numerics.toExp10(Math.getExponent(scale)) + 1;
-        if (Math.abs(MathFunctions.pow10(n) - scale) <= Math.ulp(scale)) {
+        if (epsilonEquals(MathFunctions.pow10(n), scale)) {
             int i = Math.abs(n);
             switch (i) {
                 case 0:  return 0;

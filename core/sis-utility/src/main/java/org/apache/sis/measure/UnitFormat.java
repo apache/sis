@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
+import java.text.ParseException;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.io.IOException;
@@ -370,7 +371,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *
      * <div class="section">Restriction on character set</div>
      * Current implementation accepts only {@linkplain Character#isLetter(int) letters},
-     * {@linkplain Characters#isSubScript(int) subscripts} and {@linkplain Character#isWhitespace(int) whitespaces},
+     * {@linkplain Characters#isSubScript(int) subscripts}, {@linkplain Character#isWhitespace(int) whitespaces}
+     * and the degree sign (°),
      * but the set of legal characters may be expanded in future Apache SIS versions.
      * However the following restrictions are likely to remain:
      *
@@ -924,7 +926,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                             int s = uom.lastIndexOf(' ');
                             if (s >= 0) {
                                 final int next = CharSequences.skipLeadingWhitespaces(uom, s, length);
-                                if (next < length && Character.isLetter(uom.codePointAt(next))) {
+                                if (next < length && AbstractUnit.isSymbolChar(uom.codePointAt(next))) {
                                     multiplier = Double.parseDouble(uom.substring(0, s));
                                     return parseSymbol(uom, s, length).multiply(multiplier);
                                 }
@@ -1063,22 +1065,51 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * @return the unit parsed from the specified symbols.
      * @throws ParserException if a problem occurred while parsing the given symbols.
      */
-    @Override
-    public Object parseObject(final String symbols, final ParsePosition pos) {
+    public Unit<?> parse(final CharSequence symbols, final ParsePosition pos) {
         final int start = pos.getIndex();
         int stop = start;
         while (stop < symbols.length()) {
-            final int c = symbols.codePointAt(stop);
-            if (Character.isWhitespace(c) || c == ']') break;       // Temporary hack before we implement our own parser.
+            final int c = Character.codePointAt(symbols, stop);
+            if (Character.isWhitespace(c) || c == ']') break;       // Temporary hack before we complete the JSR-275 replacement.
             stop += Character.charCount(c);
         }
         try {
-            final Unit<?> unit = parse(symbols.substring(start, stop));
+            final Unit<?> unit = parse(symbols.subSequence(start, stop));
             pos.setIndex(stop);
             return unit;
         } catch (ParserException e) {
             pos.setErrorIndex(start);
             return null;
         }
+    }
+
+    /**
+     * Parses text from a string to produce a unit. The default implementation delegates to {@link #parse(CharSequence)}
+     * and wraps the {@link ParserException} into a {@link ParseException} for compatibility with {@code java.text} API.
+     *
+     * @param  source  the text, part of which should be parsed.
+     * @return a unit parsed from the string.
+     * @throws ParseException if the given string can not be fully parsed.
+     */
+    @Override
+    public Object parseObject(final String source) throws ParseException {
+        try {
+            return parse(source);
+        } catch (ParserException e) {
+            throw (ParseException) new ParseException(e.getLocalizedMessage(), e.getPosition()).initCause(e);
+        }
+    }
+
+    /**
+     * Parses text from a string to produce a unit. The default implementation delegates to
+     * {@link #parse(CharSequence, ParsePosition)} with no additional work.
+     *
+     * @param  source  the text, part of which should be parsed.
+     * @param  pos     index and error index information as described above.
+     * @return a unit parsed from the string, or {@code null} in case of error.
+     */
+    @Override
+    public Object parseObject(final String source, final ParsePosition pos) {
+        return parse(source, pos);
     }
 }
