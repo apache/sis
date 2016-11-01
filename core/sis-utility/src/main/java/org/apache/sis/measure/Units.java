@@ -996,6 +996,24 @@ public final class Units extends Static {
     }
 
     /**
+     * Multiplies the given unit by the given ratio. For example multiplying {@link #CENTIMETRE} by 254/100 gives
+     * {@link #INCH}. Invoking this method is equivalent to invoking <code>{@linkplain Unit#multiply(double)
+     * Unit.multiply}(numerator / denominator)</code> except that the use of a ration of integer values help
+     * Apache SIS to improve accuracy when more than one arithmetic operation are chained.
+     *
+     * @param  <Q>          the quantity measured by the unit.
+     * @param  unit         the unit to multiply.
+     * @param  numerator    the numerator of the multiplication factor.
+     * @param  denominator  the denominator of the multiplication factor.
+     * @return the unit multiplied by the given factor.
+     *
+     * @since 0.8
+     */
+    public static <Q extends Quantity<Q>> Unit<Q> multiply(Unit<Q> unit, double numerator, double denominator) {
+        return unit.transform(LinearConverter.scale(numerator, denominator));
+    }
+
+    /**
      * Multiplies the given unit by the given factor. For example multiplying {@link #METRE}
      * by 1000 gives {@link #KILOMETRE}. Invoking this method is equivalent to invoking
      * {@link Unit#multiply(double)} except for the following:
@@ -1012,7 +1030,10 @@ public final class Units extends Static {
      * @param  unit    the unit to multiply.
      * @param  factor  the multiplication factor.
      * @return the unit multiplied by the given factor.
+     *
+     * @deprecated Replaced by Apache SIS implementation of {@link Unit#multiply(double)}.
      */
+    @Deprecated
     @Workaround(library="JSR-275", version="0.9.3")
     @SuppressWarnings("unchecked")
     public static <Q extends Quantity<Q>> Unit<Q> multiply(Unit<Q> unit, final double factor) {

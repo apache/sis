@@ -96,14 +96,14 @@ public class ValueConverter {
      * {@code toXXX(…)} methods, like the example provided in this <a href="#skip-navbar_top">class
      * javadoc</a>.</p>
      *
-     * @param  <T> The compile-time type of the {@code sourceType} argument.
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value The value that can't be converted.
-     * @param  sourceType The base type of the value to convert. This is determined by the argument
-     *         type of the method that caught the exception. For example the source type is always
-     *         {@code URI.class} if the exception has been caught by the {@link #toURL(MarshalContext, URI)} method.
-     * @param  targetType The expected type of the converted object.
-     * @param  exception The exception that occurred during the conversion attempt.
+     * @param  <T>         the compile-time type of the {@code sourceType} argument.
+     * @param  context     context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value       the value that can't be converted.
+     * @param  sourceType  the base type of the value to convert. This is determined by the argument type of the method
+     *                     that caught the exception. For example the source type is always {@code URI.class}
+     *                     if the exception has been caught by the {@link #toURL(MarshalContext, URI)} method.
+     * @param  targetType  the expected type of the converted object.
+     * @param  exception   the exception that occurred during the conversion attempt.
      * @return {@code true} if the (un)marshalling process should continue despite this error,
      *         or {@code false} (the default) if the exception should be propagated, thus causing
      *         the (un)marshalling to fail.
@@ -132,10 +132,10 @@ public class ValueConverter {
      *   </ul></li>
      * </ul>
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value The locale to convert to a language code, or {@code null}.
-     * @return The language code, or {@code null} if the given value was null or does not contains a language code.
-     * @throws MissingResourceException If no language code can be found for the given locale.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the locale to convert to a language code, or {@code null}.
+     * @return the language code, or {@code null} if the given value was null or does not contains a language code.
+     * @throws MissingResourceException if no language code can be found for the given locale.
      *
      * @see Locale#getISO3Language()
      * @see Locale#getLanguage()
@@ -164,10 +164,10 @@ public class ValueConverter {
      *
      * <p>The default implementation returns {@link Locale#getCountry()} if non-empty, or {@code null} otherwise.</p>
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value The locale to convert to a country code, or {@code null}.
-     * @return The country code, or {@code null} if the given value was null or does not contains a country code.
-     * @throws MissingResourceException If no country code can be found for the given locale.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the locale to convert to a country code, or {@code null}.
+     * @return the country code, or {@code null} if the given value was null or does not contains a country code.
+     * @throws MissingResourceException if no country code can be found for the given locale.
      *
      * @see Locale#getISO3Country()
      * @see Locale#getCountry()
@@ -230,9 +230,9 @@ public class ValueConverter {
      *   </tr>
      * </table>
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value The locale to convert to a character set code, or {@code null}.
-     * @return The country code, or {@code null} if the given value was null.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the locale to convert to a character set code, or {@code null}.
+     * @return the country code, or {@code null} if the given value was null.
      *
      * @see Charset#name()
      *
@@ -251,11 +251,11 @@ public class ValueConverter {
      * character and the country code (again either as 2 or 3 letters), optionally followed
      * by {@code '_'} and the variant.
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value The string to convert to a locale, or {@code null}.
-     * @return The converted locale, or {@code null} if the given value was null or empty, or
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the string to convert to a locale, or {@code null}.
+     * @return the converted locale, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws IllformedLocaleException If the given string can not be converted to a locale.
+     * @throws IllformedLocaleException if the given string can not be converted to a locale.
      *
      * @see Locales#parse(String)
      */
@@ -276,11 +276,11 @@ public class ValueConverter {
      * <a href="http://www.iana.org/assignments/character-sets">IANA</a> identifier,
      * or one of the ISO 19115:2003 {@code MD_CharacterSetCode} identifier.
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value The string to convert to a character set, or {@code null}.
-     * @return The converted character set, or {@code null} if the given value was null or empty, or
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the string to convert to a character set, or {@code null}.
+     * @return the converted character set, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws IllegalCharsetNameException If the given string can not be converted to a character set.
+     * @throws IllegalCharsetNameException if the given string can not be converted to a character set.
      *
      * @see Charset#forName(String)
      *
@@ -310,11 +310,11 @@ public class ValueConverter {
      *     return Units.valueOf(value);
      * }
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value The string to convert to a unit, or {@code null}.
-     * @return The converted unit, or {@code null} if the given value was null or empty, or
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the string to convert to a unit, or {@code null}.
+     * @return the converted unit, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws IllegalArgumentException If the given string can not be converted to a unit.
+     * @throws IllegalArgumentException if the given string can not be converted to a unit.
      *
      * @see Units#valueOf(String)
      */
@@ -339,11 +339,11 @@ public class ValueConverter {
      *     return UUID.fromString(value);
      * }
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value The string to convert to a UUID, or {@code null}.
-     * @return The converted UUID, or {@code null} if the given value was null or empty, or
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the string to convert to a UUID, or {@code null}.
+     * @return the converted UUID, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws IllegalArgumentException If the given string can not be converted to a UUID.
+     * @throws IllegalArgumentException if the given string can not be converted to a UUID.
      *
      * @see UUID#fromString(String)
      */
@@ -368,11 +368,11 @@ public class ValueConverter {
      *     return new URI(value);
      * }
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value The string to convert to a URI, or {@code null}.
-     * @return The converted URI, or {@code null} if the given value was null or empty, or if
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the string to convert to a URI, or {@code null}.
+     * @return the converted URI, or {@code null} if the given value was null or empty, or if
      *         an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws URISyntaxException If the given string can not be converted to a URI.
+     * @throws URISyntaxException if the given string can not be converted to a URI.
      *
      * @see URI#URI(String)
      */
@@ -397,11 +397,11 @@ public class ValueConverter {
      *     return value.toURI();
      * }
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value The URL to convert to a URI, or {@code null}.
-     * @return The converted URI, or {@code null} if the given value was null or if an
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the URL to convert to a URI, or {@code null}.
+     * @return the converted URI, or {@code null} if the given value was null or if an
      *         exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws URISyntaxException If the given URL can not be converted to a URI.
+     * @throws URISyntaxException if the given URL can not be converted to a URI.
      *
      * @see URL#toURI()
      */
@@ -425,11 +425,11 @@ public class ValueConverter {
      *     return value.toURL();
      * }
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value The URI to convert to a URL, or {@code null}.
-     * @return The converted URL, or {@code null} if the given value was null or if an
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the URI to convert to a URL, or {@code null}.
+     * @return the converted URL, or {@code null} if the given value was null or if an
      *         exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws MalformedURLException If the given URI can not be converted to a URL.
+     * @throws MalformedURLException if the given URI can not be converted to a URL.
      *
      * @see URI#toURL()
      */
@@ -453,11 +453,11 @@ public class ValueConverter {
      *     return NilReason.valueOf(value);
      * }
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value The string to convert to a nil reason, or {@code null}.
-     * @return The converted nil reason, or {@code null} if the given value was null or empty, or
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the string to convert to a nil reason, or {@code null}.
+     * @return the converted nil reason, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws URISyntaxException If the given string can not be converted to a nil reason.
+     * @throws URISyntaxException if the given string can not be converted to a nil reason.
      *
      * @see NilReason#valueOf(String)
      */
