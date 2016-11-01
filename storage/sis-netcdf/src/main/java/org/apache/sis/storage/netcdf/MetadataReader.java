@@ -27,11 +27,10 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Collection;
 import java.io.IOException;
-import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.ConversionException;
+import javax.measure.Unit;
+import javax.measure.UnitConverter;
+import javax.measure.IncommensurableException;
+import javax.measure.format.ParserException;
 
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
@@ -684,8 +683,8 @@ final class MetadataReader {
          * If at least one geographic ordinates above is available, add a GeographicBoundingBox.
          */
         if (xmin != null || xmax != null || ymin != null || ymax != null) {
-            final UnitConverter xConv = getConverterTo(decoder.unitValue(LONGITUDE.UNITS), NonSI.DEGREE_ANGLE);
-            final UnitConverter yConv = getConverterTo(decoder.unitValue(LATITUDE .UNITS), NonSI.DEGREE_ANGLE);
+            final UnitConverter xConv = getConverterTo(decoder.unitValue(LONGITUDE.UNITS), Units.DEGREE);
+            final UnitConverter yConv = getConverterTo(decoder.unitValue(LATITUDE .UNITS), Units.DEGREE);
             extent = new DefaultExtent(null, new DefaultGeographicBoundingBox(
                     valueOf(xmin, xConv), valueOf(xmax, xConv),
                     valueOf(ymin, yConv), valueOf(ymax, yConv)), null, null);
@@ -694,7 +693,7 @@ final class MetadataReader {
          * If at least one vertical ordinates above is available, add a VerticalExtent.
          */
         if (zmin != null || zmax != null) {
-            final UnitConverter c = getConverterTo(decoder.unitValue(VERTICAL.UNITS), SI.METRE);
+            final UnitConverter c = getConverterTo(decoder.unitValue(VERTICAL.UNITS), Units.METRE);
             double min = valueOf(zmin, c);
             double max = valueOf(zmax, c);
             if (CF.POSITIVE_DOWN.equals(stringValue(VERTICAL.POSITIVE))) {
@@ -760,7 +759,7 @@ final class MetadataReader {
     private UnitConverter getConverterTo(final Unit<?> source, final Unit<?> target) {
         if (source != null) try {
             return source.getConverterToAny(target);
-        } catch (ConversionException e) {
+        } catch (IncommensurableException e) {
             warning(e);
         }
         return null;
@@ -866,7 +865,7 @@ final class MetadataReader {
         final String units = variable.getUnitsString();
         if (units != null) try {
             band.setUnits(Units.valueOf(units));
-        } catch (RuntimeException e) { // IllegalArgumentException or ClassCastException (specific to this branch).
+        } catch (ClassCastException | ParserException e) {
             decoder.listeners.warning(errors().getString(Errors.Keys.CanNotAssignUnitToDimension_2, name, units), e);
         }
         return band;

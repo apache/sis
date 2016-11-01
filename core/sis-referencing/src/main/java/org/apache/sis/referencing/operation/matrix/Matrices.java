@@ -122,9 +122,9 @@ public final class Matrices extends Static {
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
      * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
      *
-     * @param numRow For a math transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
-     * @param numCol For a math transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
-     * @return An identity matrix of the given size.
+     * @param  numRow  for a math transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
+     * @param  numCol  for a math transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
+     * @return an identity matrix of the given size.
      */
     public static MatrixSIS createDiagonal(final int numRow, final int numCol) {
         if (numRow == numCol) {
@@ -144,9 +144,9 @@ public final class Matrices extends Static {
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
      * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
      *
-     * @param numRow For a math transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
-     * @param numCol For a math transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
-     * @return A matrix of the given size with only zero values.
+     * @param  numRow  for a math transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
+     * @param  numCol  for a math transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
+     * @return a matrix of the given size with only zero values.
      */
     public static MatrixSIS createZero(final int numRow, final int numCol) {
         if (numRow == numCol) switch (numRow) {
@@ -176,10 +176,10 @@ public final class Matrices extends Static {
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
      * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
      *
-     * @param  numRow   Number of rows.
-     * @param  numCol   Number of columns.
-     * @param  elements The matrix elements in a row-major array. Column indices vary fastest.
-     * @return A matrix initialized to the given elements.
+     * @param  numRow    number of rows.
+     * @param  numCol    number of columns.
+     * @param  elements  the matrix elements in a row-major array. Column indices vary fastest.
+     * @return a matrix initialized to the given elements.
      *
      * @see MatrixSIS#setElements(double[])
      */
@@ -198,10 +198,10 @@ public final class Matrices extends Static {
      * Creates a matrix of size {@code numRow} × {@code numCol} initialized to the given numbers.
      * The elements array size must be equals to {@code numRow*numCol}. Column indices vary fastest.
      *
-     * @param  numRow   Number of rows.
-     * @param  numCol   Number of columns.
-     * @param  elements The matrix elements in a row-major array. Column indices vary fastest.
-     * @return A matrix initialized to the given elements.
+     * @param  numRow    number of rows.
+     * @param  numCol    number of columns.
+     * @param  elements  the matrix elements in a row-major array. Column indices vary fastest.
+     * @return a matrix initialized to the given elements.
      */
     public static MatrixSIS create(final int numRow, final int numCol, final Number[] elements) {
         ArgumentChecks.ensureNonNull("elements", elements);
@@ -240,7 +240,12 @@ public final class Matrices extends Static {
         } else {
             dstCorner = srcCorner = srcOppositeCorner = null;
         }
-        final MatrixSIS matrix = createZero(dstAxes.length+1, srcAxes.length+1);
+        /*
+         * Unconditionally create extended precision matrix even if standard precision would be
+         * enough because callers in other package may perform additional arithmetic operations
+         * on it (for example org.apache.sis.referencing.cs.CoordinateSystems.swapAndScaleAxes).
+         */
+        final MatrixSIS matrix = new GeneralMatrix(dstAxes.length+1, srcAxes.length+1, false, 2);
         /*
          * Maps source axes to destination axes. If no axis is moved (for example if the user
          * want to transform (NORTH,EAST) to (SOUTH,EAST)), then source and destination index
@@ -265,18 +270,23 @@ public final class Matrices extends Static {
                      * They will be left to zero, which is their desired value.
                      */
                     final boolean same = srcDir.equals(dstDir);
-                    double scale = same ? +1 : -1;
-                    double translate = 0;
                     if (useEnvelopes) {
                         // See the comment in transform(Envelope, Envelope) for an explanation about why
                         // we use the lower/upper corners instead than getMinimum()/getMaximum() methods.
-                        translate  = dstCorner.getOrdinate(dstIndex);
-                        scale     *= dstEnvelope.getSpan(dstIndex) /
-                                     srcEnvelope.getSpan(srcIndex);
-                        translate -= scale * (same ? srcCorner : srcOppositeCorner).getOrdinate(srcIndex);
+                        final DoubleDouble scale = new DoubleDouble(same ? +1 : -1, 0);
+                        scale.multiply(dstEnvelope.getSpan(dstIndex));
+                        scale.divide  (srcEnvelope.getSpan(srcIndex));
+
+                        final DoubleDouble translate = new DoubleDouble(scale);
+                        translate.multiply((same ? srcCorner : srcOppositeCorner).getOrdinate(srcIndex));
+                        translate.negate();
+                        translate.add(dstCorner.getOrdinate(dstIndex));
+
+                        matrix.setNumber(dstIndex, srcIndex,       scale);
+                        matrix.setNumber(dstIndex, srcAxes.length, translate);
+                    } else {
+                        matrix.setElement(dstIndex, srcIndex, same ? +1 : -1);
                     }
-                    matrix.setElement(dstIndex, srcIndex,       scale);
-                    matrix.setElement(dstIndex, srcAxes.length, translate);
                 }
             }
             if (!hasFound) {
@@ -332,9 +342,9 @@ public final class Matrices extends Static {
      *   └     ┘   └              ┘   └     ┘
      * }
      *
-     * @param  srcEnvelope The source envelope.
-     * @param  dstEnvelope The destination envelope.
-     * @return The transform from the given source envelope to target envelope.
+     * @param  srcEnvelope  the source envelope.
+     * @param  dstEnvelope  the destination envelope.
+     * @return the transform from the given source envelope to target envelope.
      *
      * @see #createTransform(AxisDirection[], AxisDirection[])
      * @see #createTransform(Envelope, AxisDirection[], Envelope, AxisDirection[])
@@ -409,10 +419,10 @@ public final class Matrices extends Static {
      *   └    ┘   └         ┘   └    ┘
      * }
      *
-     * @param  srcAxes The ordered sequence of axis directions for source coordinate system.
-     * @param  dstAxes The ordered sequence of axis directions for destination coordinate system.
-     * @return The transform from the given source axis directions to the given target axis directions.
-     * @throws IllegalArgumentException If {@code dstAxes} contains at least one axis not found in {@code srcAxes},
+     * @param  srcAxes  the ordered sequence of axis directions for source coordinate system.
+     * @param  dstAxes  the ordered sequence of axis directions for destination coordinate system.
+     * @return the transform from the given source axis directions to the given target axis directions.
+     * @throws IllegalArgumentException if {@code dstAxes} contains at least one axis not found in {@code srcAxes},
      *         or if some colinear axes were found.
      *
      * @see #createTransform(Envelope, Envelope)
@@ -469,15 +479,15 @@ public final class Matrices extends Static {
      * }
      * </div>
      *
-     * @param  srcEnvelope The source envelope.
-     * @param  srcAxes     The ordered sequence of axis directions for source coordinate system.
-     * @param  dstEnvelope The destination envelope.
-     * @param  dstAxes     The ordered sequence of axis directions for destination coordinate system.
-     * @return The transform from the given source envelope and axis directions
+     * @param  srcEnvelope  the source envelope.
+     * @param  srcAxes      the ordered sequence of axis directions for source coordinate system.
+     * @param  dstEnvelope  the destination envelope.
+     * @param  dstAxes      the ordered sequence of axis directions for destination coordinate system.
+     * @return the transform from the given source envelope and axis directions
      *         to the given envelope and target axis directions.
-     * @throws MismatchedDimensionException If an envelope {@linkplain Envelope#getDimension() dimension} does not
+     * @throws MismatchedDimensionException if an envelope {@linkplain Envelope#getDimension() dimension} does not
      *         match the length of the axis directions sequence.
-     * @throws IllegalArgumentException If {@code dstAxes} contains at least one axis not found in {@code srcAxes},
+     * @throws IllegalArgumentException if {@code dstAxes} contains at least one axis not found in {@code srcAxes},
      *         or if some colinear axes were found.
      *
      * @see #createTransform(Envelope, Envelope)
@@ -531,8 +541,8 @@ public final class Matrices extends Static {
      * The inverse of the matrix created by this method will put {@link Double#NaN} values in the extra dimensions.
      * Other dimensions will work as expected.
      *
-     * @param  sourceDimensions The number of dimensions in source coordinates.
-     * @param  selectedDimensions The 0-based indices of source ordinate values to keep.
+     * @param  sourceDimensions    the number of dimensions in source coordinates.
+     * @param  selectedDimensions  the 0-based indices of source ordinate values to keep.
      *         The length of this array will be the number of dimensions in target coordinates.
      * @return An affine transform matrix keeping only the given source dimensions, and discarding all others.
      * @throws IllegalArgumentException if a value of {@code selectedDimensions} is lower than 0
@@ -607,10 +617,10 @@ public final class Matrices extends Static {
      * }
      * </div>
      *
-     * @param  firstAffectedOrdinate The lowest index of the affected ordinates.
-     * @param  subMatrix The matrix to use for affected ordinates.
-     * @param  numTrailingOrdinates Number of trailing ordinates to pass through.
-     * @return A matrix for the same transform than the given matrix,
+     * @param  firstAffectedOrdinate  the lowest index of the affected ordinates.
+     * @param  subMatrix              the matrix to use for affected ordinates.
+     * @param  numTrailingOrdinates   number of trailing ordinates to pass through.
+     * @return a matrix for the same transform than the given matrix,
      *         augmented with leading and trailing pass-through coordinates.
      *
      * @see org.apache.sis.referencing.operation.DefaultMathTransformFactory#createPassThroughTransform(int, MathTransform, int)
@@ -761,8 +771,8 @@ public final class Matrices extends Static {
      * and {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the returned matrix is
      * usually an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
      *
-     * @param matrix The matrix to copy, or {@code null}.
-     * @return A copy of the given matrix, or {@code null} if the given matrix was null.
+     * @param  matrix  the matrix to copy, or {@code null}.
+     * @return a copy of the given matrix, or {@code null} if the given matrix was null.
      *
      * @see MatrixSIS#clone()
      * @see MatrixSIS#castOrCopy(Matrix)
@@ -790,8 +800,8 @@ public final class Matrices extends Static {
      * Returns an unmodifiable view of the given matrix. The returned matrix is immutable
      * only if the given {@code matrix} is not modified anymore after this method call.
      *
-     * @param matrix The matrix for which to get an unmodifiable view, or {@code null}.
-     * @return A unmodifiable view of the given matrix, or {@code null} if the given matrix was null.
+     * @param  matrix  the matrix for which to get an unmodifiable view, or {@code null}.
+     * @return a unmodifiable view of the given matrix, or {@code null} if the given matrix was null.
      *
      * @since 0.6
      */
@@ -807,9 +817,9 @@ public final class Matrices extends Static {
      * Returns a new matrix which is the result of multiplying the first matrix with the second one.
      * In other words, returns {@code m1} × {@code m2}.
      *
-     * @param  m1 The first matrix to multiply.
-     * @param  m2 The second matrix to multiply.
-     * @return The result of {@code m1} × {@code m2}.
+     * @param  m1  the first matrix to multiply.
+     * @param  m2  the second matrix to multiply.
+     * @return the result of {@code m1} × {@code m2}.
      * @throws MismatchedMatrixSizeException if the number of columns in {@code m1} is not equals to the
      *         number of rows in {@code m2}.
      *
@@ -831,8 +841,8 @@ public final class Matrices extends Static {
     /**
      * Returns the inverse of the given matrix.
      *
-     * @param  matrix The matrix to inverse, or {@code null}.
-     * @return The inverse of this matrix, or {@code null} if the given matrix was null.
+     * @param  matrix  the matrix to inverse, or {@code null}.
+     * @return the inverse of this matrix, or {@code null} if the given matrix was null.
      * @throws NoninvertibleMatrixException if the given matrix is not invertible.
      *
      * @see MatrixSIS#inverse()
@@ -856,7 +866,7 @@ public final class Matrices extends Static {
      * A transform is affine if the matrix is square and its last row contains
      * only zeros, except in the last column which contains 1.
      *
-     * @param matrix The matrix to test.
+     * @param  matrix  the matrix to test.
      * @return {@code true} if the matrix represents an affine transform.
      *
      * @see MatrixSIS#isAffine()
@@ -874,7 +884,7 @@ public final class Matrices extends Static {
      * This method returns {@code true} if the given matrix {@linkplain #isAffine(Matrix) is affine}
      * and differs from the identity matrix only in the last column.
      *
-     * @param matrix The matrix to test.
+     * @param  matrix  the matrix to test.
      * @return {@code true} if the matrix represents a translation.
      *
      * @since 0.7
@@ -906,8 +916,8 @@ public final class Matrices extends Static {
      * errors. In case of doubt, it is often safer to use the strict {@link MatrixSIS#isIdentity()} method instead
      * than this one.</p>
      *
-     * @param  matrix The matrix to test for identity.
-     * @param  tolerance The tolerance value, or 0 for a strict comparison.
+     * @param  matrix     the matrix to test for identity.
+     * @param  tolerance  the tolerance value, or 0 for a strict comparison.
      * @return {@code true} if this matrix is close to the identity matrix given the tolerance threshold.
      *
      * @see MatrixSIS#isIdentity()
@@ -924,7 +934,7 @@ public final class Matrices extends Static {
                 if (i == j) {
                     e--;
                 }
-                if (!(Math.abs(e) <= tolerance)) {  // Uses '!' in order to catch NaN values.
+                if (!(Math.abs(e) <= tolerance)) {              // Uses '!' in order to catch NaN values.
                     return false;
                 }
             }
@@ -947,13 +957,13 @@ public final class Matrices extends Static {
      * and <var>v2</var><sub>j,i</sub> to compare, the tolerance threshold is scaled by
      * {@code max(abs(v1), abs(v2))}. Otherwise the threshold is used as-is.
      *
-     * @param  m1       The first matrix to compare, or {@code null}.
-     * @param  m2       The second matrix to compare, or {@code null}.
-     * @param  epsilon  The tolerance value.
-     * @param  relative If {@code true}, then the tolerance value is relative to the magnitude
-     *         of the matrix elements being compared.
-     * @return {@code true} if the values of the two matrix do not differ by a quantity
-     *         greater than the given tolerance threshold.
+     * @param  m1        the first matrix to compare, or {@code null}.
+     * @param  m2        the second matrix to compare, or {@code null}.
+     * @param  epsilon   the tolerance value.
+     * @param  relative  if {@code true}, then the tolerance value is relative to the magnitude
+     *                   of the matrix elements being compared.
+     * @return {@code true} if the values of the two matrix do not differ by a quantity greater
+     *         than the given tolerance threshold.
      *
      * @see MatrixSIS#equals(Matrix, double)
      */
@@ -1010,9 +1020,9 @@ public final class Matrices extends Static {
      *       For more control, use {@link #equals(Matrix, Matrix, double, boolean)} instead.</li>
      * </ul>
      *
-     * @param  m1  The first matrix to compare, or {@code null}.
-     * @param  m2  The second matrix to compare, or {@code null}.
-     * @param  mode The strictness level of the comparison.
+     * @param  m1    the first matrix to compare, or {@code null}.
+     * @param  m2    the second matrix to compare, or {@code null}.
+     * @param  mode  the strictness level of the comparison.
      * @return {@code true} if both matrices are equal.
      *
      * @see MatrixSIS#equals(Object, ComparisonMode)
@@ -1059,8 +1069,8 @@ public final class Matrices extends Static {
      * reference system. In addition, the last column is often a translation vector having a magnitude very
      * different than the other columns.</div>
      *
-     * @param  matrix The matrix for which to get a string representation.
-     * @return A string representation of the given matrix.
+     * @param  matrix  the matrix for which to get a string representation.
+     * @return a string representation of the given matrix.
      */
     public static String toString(final Matrix matrix) {
         final int numRow = matrix.getNumRow();
@@ -1077,7 +1087,7 @@ public final class Matrices extends Static {
          * Create now the string representation of all matrix elements and measure the width
          * of the integer field and the fraction field, then the total width of each column.
          */
-        int spacing = 1; // Spacing is 1 before the first column only, then SPACING for other columns.
+        int spacing = 1;                // Spacing is 1 before the first column only, then SPACING for other columns.
         for (int i=0; i<numCol; i++) {
             for (int j=0; j<numRow; j++) {
                 final int flatIndex = j*numCol + i;
@@ -1091,7 +1101,7 @@ public final class Matrices extends Static {
                  */
                 if (value == -1 || value == 0 || value == +1) {
                     noFractionDigits[flatIndex] = true;
-                    width = spacing + element.length() - 2; // The -2 is for ignoring the trailing ".0"
+                    width = spacing + element.length() - 2;           // The -2 is for ignoring the trailing ".0"
                     widthBeforeFraction[i] = (byte) Math.max(widthBeforeFraction[i], width);
                 } else {
                     /*
@@ -1128,7 +1138,7 @@ public final class Matrices extends Static {
                 elements[flatIndex] = element;
             }
             totalWidth += columnWidth[i];
-            spacing = SPACING; // Specing before all columns after the first one.
+            spacing = SPACING;                              // Spacing before all columns after the first one.
         }
         /*
          * Now append the formatted elements with the appropriate amount of spaces before each value,
@@ -1147,9 +1157,9 @@ public final class Matrices extends Static {
                 int spaces, s = element.lastIndexOf('.');
                 if (s >= 0) {
                     if (hasDecimalSeparator[i]) s++;
-                    spaces = widthBeforeFraction[i] - s; // Number of spaces for alignment on the decimal separator
+                    spaces = widthBeforeFraction[i] - s;    // Number of spaces for alignment on the decimal separator
                 } else {
-                    spaces = columnWidth[i] - width; // Number of spaces for right alignment (NaN or ∞ cases)
+                    spaces = columnWidth[i] - width;        // Number of spaces for right alignment (NaN or ∞ cases)
                 }
                 buffer.append(CharSequences.spaces(spaces)).append(element);
                 if (s >= 0) {
@@ -1159,7 +1169,7 @@ public final class Matrices extends Static {
                      */
                     s += maximumFractionDigits[i] - width;
                     if (noFractionDigits[flatIndex]) {
-                        buffer.setLength(buffer.length() - 2); // Erase the trailing ".0"
+                        buffer.setLength(buffer.length() - 2);      // Erase the trailing ".0"
                         s += 2;
                     } else {
                         int n = Math.min(s, maximumPaddingZeros[flatIndex]);

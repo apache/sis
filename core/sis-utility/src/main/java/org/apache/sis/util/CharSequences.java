@@ -921,10 +921,10 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
 
     /**
      * Replaces some Unicode characters by ASCII characters on a "best effort basis".
-     * For example the {@code 'é'} character is replaced by {@code 'e'} (without accent).
-     *
-     * <p>The current implementation replaces the characters in the range {@code 00C0}
-     * to {@code 00FF} (inclusive) and some space and punctuation characters.</p>
+     * For example the “ é ” character is replaced by  “ e ” (without accent),
+     * the  “ ″ ” symbol for minutes of angle is replaced by straight double quotes “ " ”,
+     * and combined characters like ㎏, ㎎, ㎝, ㎞, ㎢, ㎦, ㎖, ㎧, ㎩, ㎐, <i>etc.</i> are replaced
+     * by the corresponding sequences of characters.
      *
      * <div class="note"><b>Note:</b>
      * the replacement of Greek letters is a more complex task than what this method can do,
@@ -938,6 +938,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @see StringBuilders#toASCII(StringBuilder)
      * @see org.apache.sis.io.wkt.Transliterator#filter(String)
+     * @see java.text.Normalizer
      */
     public static CharSequence toASCII(final CharSequence text) {
         return StringBuilders.toASCII(text, null);
@@ -1620,7 +1621,7 @@ cmp:    while (ia < lga) {
      * @param  s1          the first characters sequence to compare, or {@code null}.
      * @param  s2          the second characters sequence to compare, or {@code null}.
      * @param  filter      the subset of characters to compare, or {@code null} for comparing all characters.
-     * @param  ignoreCase  {@code true} for comparing cases, or {@code false} for requiring exact match.
+     * @param  ignoreCase  {@code true} for ignoring cases, or {@code false} for requiring exact match.
      * @return {@code true} if both arguments are {@code null} or if the two given texts are equal,
      *         optionally ignoring case and filtered-out characters.
      */

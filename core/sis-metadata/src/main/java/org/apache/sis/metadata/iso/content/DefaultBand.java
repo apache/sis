@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.content;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -249,6 +249,8 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      * @return Units in which sensor wavelengths are expressed.
      *
      * @since 0.5
+     *
+     * @see org.apache.sis.measure.Units#NANOMETRE
      */
 /// @XmlElement(name = "boundUnits")
     @UML(identifier="boundUnits", obligation=OPTIONAL, specification=ISO_19115)

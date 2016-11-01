@@ -51,11 +51,11 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     /**
      * Computes a random size for the next matrix to create.
      *
-     * @param random The random number generator to use.
+     * @param  random  the random number generator to use.
      */
     @Override
     void prepareNewMatrixSize(final Random random) {
-        numRow = 5 + random.nextInt(8); // Matrix sizes from 5 to 12 inclusive.
+        numRow = 5 + random.nextInt(8);                 // Matrix sizes from 5 to 12 inclusive.
         int n;
         do n = 5 + random.nextInt(8);
         while (n == numRow);
@@ -150,9 +150,9 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      * Tests {@link NonSquareMatrix#inverse()} or {@link NonSquareMatrix#solve(Matrix)} with a conversion
      * matrix having more source dimensions (columns) than target dimensions (rows).
      *
-     * @param  Y    The matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
-     * @param  sf   The scale factor by which to multiply all expected scale elements.
-     * @param  uks  Value of unknown scales (O for {@code inverse()}, or NaN for {@code solve(Y)}).
+     * @param  Y    the matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
+     * @param  sf   the scale factor by which to multiply all expected scale elements.
+     * @param  uks  value of unknown scales (O for {@code inverse()}, or NaN for {@code solve(Y)}).
      * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
     private static void testDimensionReduction(final MatrixSIS Y, final double sf, final double uks)
@@ -178,8 +178,8 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      * Tests {@link NonSquareMatrix#inverse()} or {@link NonSquareMatrix#solve(Matrix)} with a conversion
      * matrix having more target dimensions (rows) than source dimensions (columns).
      *
-     * @param  Y    The matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
-     * @param  sf   The scale factor by which to multiply all expected scale elements.
+     * @param  Y   the matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
+     * @param  sf  the scale factor by which to multiply all expected scale elements.
      * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
     private static void testDimensionIncrease(final MatrixSIS Y, final double sf)

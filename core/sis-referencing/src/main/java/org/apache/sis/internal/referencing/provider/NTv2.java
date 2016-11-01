@@ -28,8 +28,7 @@ import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -49,6 +48,7 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
 import java.nio.file.Files;
@@ -64,7 +64,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -299,13 +299,13 @@ public final class NTv2 extends AbstractProvider {
             final double precision;
             final String name = (String) get("GS_TYPE");
             if (name.equalsIgnoreCase("SECONDS")) {         // Most common value
-                unit = NonSI.SECOND_ANGLE;
+                unit = Units.ARC_SECOND;
                 precision = SECOND_PRECISION;                       // Used only as a hint; will not hurt if wrong.
             } else if (name.equalsIgnoreCase("MINUTES")) {
-                unit = NonSI.MINUTE_ANGLE;
+                unit = Units.ARC_MINUTE;
                 precision = SECOND_PRECISION / 60;                  // Used only as a hint; will not hurt if wrong.
             } else if (name.equalsIgnoreCase("DEGREES")) {
-                unit = NonSI.DEGREE_ANGLE;
+                unit = Units.DEGREE;
                 precision = SECOND_PRECISION / DEGREES_TO_SECONDS;  // Used only as a hint; will not hurt if wrong.
             } else {
                 throw new FactoryException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "GS_TYPE", name));

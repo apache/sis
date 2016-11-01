@@ -21,15 +21,14 @@ import java.util.Iterator;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.bind.JAXBException;
-import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import org.opengis.test.Validators;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
+import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.test.DependsOn;
@@ -50,7 +49,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -246,8 +245,8 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testStringValue")
     public void testDoubleValue() throws JAXBException {
         final DefaultParameterValue<Double> parameter = create(Double.class,
-                new MeasurementRange<Double>(Double.class, null, false, null, false, SI.METRE));
-        parameter.setValue(3000, SI.METRE);
+                new MeasurementRange<>(Double.class, null, false, null, false, Units.METRE));
+        parameter.setValue(3000, Units.METRE);
         testMarshallAndUnmarshall(parameter,
                 "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:value uom=\"urn:ogc:def:uom:EPSG::9001\">3000.0</gml:value>\n"
@@ -268,8 +267,8 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testStringValue")
     public void testValueList() throws JAXBException {
         final DefaultParameterValue<double[]> parameter = create(double[].class,
-                new MeasurementRange<Double>(Double.class, null, false, null, false, SI.METRE));
-        parameter.setValue(new double[] {203, 207, 204}, SI.METRE);
+                new MeasurementRange<>(Double.class, null, false, null, false, Units.METRE));
+        parameter.setValue(new double[] {203, 207, 204}, Units.METRE);
         testMarshallAndUnmarshall(parameter,
                 "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:valueList uom=\"urn:ogc:def:uom:EPSG::9001\">203.0 207.0 204.0</gml:valueList>\n"
@@ -406,9 +405,9 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         verifyDescriptorGroup(group.getDescriptor());
         final Iterator<GeneralParameterValue> it = group.values().iterator();
         final Iterator<GeneralParameterDescriptor> itd = group.getDescriptor().descriptors().iterator();
-        verifyParameter(8801, "Latitude of natural origin",     "latitude_of_origin", 40, NonSI.DEGREE_ANGLE, itd.next(), it.next());
-        verifyParameter(8802, "Longitude of natural origin",    "central_meridian",  -60, NonSI.DEGREE_ANGLE, itd.next(), it.next());
-        verifyParameter(8805, "Scale factor at natural origin", "scale_factor",        1, Unit.ONE,           itd.next(), it.next());
+        verifyParameter(8801, "Latitude of natural origin",     "latitude_of_origin", 40, Units.DEGREE, itd.next(), it.next());
+        verifyParameter(8802, "Longitude of natural origin",    "central_meridian",  -60, Units.DEGREE, itd.next(), it.next());
+        verifyParameter(8805, "Scale factor at natural origin", "scale_factor",        1, Units.UNITY,    itd.next(), it.next());
         assertFalse("Unexpected parameter.", it.hasNext());
     }
 }

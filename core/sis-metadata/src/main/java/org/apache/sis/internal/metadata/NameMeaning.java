@@ -19,7 +19,7 @@ package org.apache.sis.internal.metadata;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.parameter.*;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;

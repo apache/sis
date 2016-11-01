@@ -19,8 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.Collections;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -37,6 +36,7 @@ import org.apache.sis.referencing.operation.transform.MolodenskyTransform;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
@@ -60,7 +60,7 @@ import org.apache.sis.util.Debug;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -74,7 +74,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      * The operation parameter descriptor for the <cite>Semi-major axis length difference</cite>
      * optional parameter value. This parameter is defined by the EPSG database and can be used
      * in replacement of {@link #TGT_SEMI_MAJOR}.
-     * Units are {@linkplain SI#METRE metres}.
+     * Units are {@linkplain Units#METRE metres}.
      */
     public static final ParameterDescriptor<Double> AXIS_LENGTH_DIFFERENCE;
 
@@ -82,7 +82,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      * The operation parameter descriptor for the <cite>Flattening difference</cite> optional
      * parameter value. This parameter is defined by the EPSG database and can be used in
      * replacement of {@link #TGT_SEMI_MINOR}.
-     * Valid values range from -1 to +1, {@linkplain Unit#ONE dimensionless}.
+     * Valid values range from -1 to +1, {@linkplain Units#UNITY dimensionless}.
      */
     public static final ParameterDescriptor<Double> FLATTENING_DIFFERENCE;
 
@@ -92,8 +92,8 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        AXIS_LENGTH_DIFFERENCE = builder.addIdentifier("8654").addName("Semi-major axis length difference").create(Double.NaN, SI.METRE);
-        FLATTENING_DIFFERENCE  = builder.addIdentifier("8655").addName("Flattening difference").createBounded(-1, +1, Double.NaN, Unit.ONE);
+        AXIS_LENGTH_DIFFERENCE = builder.addIdentifier("8654").addName("Semi-major axis length difference").create(Double.NaN, Units.METRE);
+        FLATTENING_DIFFERENCE  = builder.addIdentifier("8655").addName("Flattening difference").createBounded(-1, +1, Double.NaN, Units.UNITY);
         PARAMETERS = builder.setRequired(true)
                 .addIdentifier("9604")
                 .addName("Molodensky")
@@ -267,7 +267,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
 
         /** Creates a new temporary ellipsoid with explicitely provided Δa and Δf values. */
         Ellipsoid(Map<String,?> name, double a, double b, double Δa, double Δf) {
-            super(name, a, b, Formulas.getInverseFlattening(a, b), false, SI.METRE);
+            super(name, a, b, Formulas.getInverseFlattening(a, b), false, Units.METRE);
             this.Δa = Δa;
             this.Δf = Δf;
         }

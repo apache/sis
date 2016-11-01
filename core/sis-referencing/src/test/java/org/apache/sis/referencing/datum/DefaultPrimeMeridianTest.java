@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.datum;
 
-import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -43,7 +42,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
@@ -74,7 +73,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
     public void testWKT_inGrads() {
         final DefaultPrimeMeridian pm = HardCodedDatum.PARIS;
         assertWktEquals(Convention.WKT1, "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“EPSG”, “8903”]]", pm);
-        assertWktEquals(Convention.WKT2_SIMPLIFIED, "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967],"
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967],"
                 + " Id[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
     }
 
@@ -183,17 +182,17 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
     public void testParisMeridian() throws JAXBException {
         final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, "PrimeMeridian.xml");
         assertIsParis(pm);
-        assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(NonSI.DEGREE_ANGLE), 1E-12);
+        assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(Units.DEGREE), 1E-12);
         assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());
         assertNull("name.codeSpace", pm.getName().getCodeSpace());
         assertWktEquals(Convention.WKT1,
                 "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“EPSG”, “8903”]]", pm);
         assertWktEquals(Convention.WKT2,
-                "PRIMEM[“Paris”, 2.5969213, ANGLEUNIT[“grade”, 0.015707963267948967], ID[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
+                "PRIMEM[“Paris”, 2.5969213, ANGLEUNIT[“grad”, 0.015707963267948967], ID[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
-                "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
+                "PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967], Id[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
         assertWktEquals(Convention.INTERNAL,
-                "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967, Id[“EPSG”, 9105]], Id[“EPSG”, 8903],\n" +
+                "PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967, Id[“EPSG”, 9105]], Id[“EPSG”, 8903],\n" +
                 "  Remark[“Equivalent to 2°20′14.025″.”]]", pm);
         assertXmlEquals(
                 "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +

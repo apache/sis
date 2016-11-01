@@ -17,7 +17,6 @@
 package org.apache.sis.metadata;
 
 import java.util.Arrays;
-import javax.measure.unit.SI;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.util.collection.TableColumn;
@@ -31,6 +30,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -70,7 +70,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final DefaultBand band = new DefaultBand();
         band.setMinValue(min);
         band.setMaxValue(max);
-        band.setUnits(SI.CENTIMETRE);
+        band.setUnits(Units.CENTIMETRE);
         return band;
     }
 

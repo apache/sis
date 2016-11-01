@@ -17,9 +17,7 @@
 package org.apache.sis.internal.jaxb.gml;
 
 import java.net.URISyntaxException;
-import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
+import org.apache.sis.measure.Units;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -42,25 +40,25 @@ public final strictfp class MeasureTest extends TestCase {
      */
     @Test
     public void testGetUOM() {
-        final Measure measure = new Measure(10, SI.METRE);
+        final Measure measure = new Measure(10, Units.METRE);
         assertEquals("urn:ogc:def:uom:EPSG::9001", measure.getUOM());
-        measure.unit = NonSI.DEGREE_ANGLE;
+        measure.unit = Units.DEGREE;
         assertEquals("urn:ogc:def:uom:EPSG::9102", measure.getUOM());
-        measure.unit = Unit.ONE;
+        measure.unit = Units.UNITY;
         assertEquals("urn:ogc:def:uom:EPSG::9201", measure.getUOM());
     }
 
     /**
      * Tests the {@link Measure#setUOM(String)}.
      *
-     * @throws URISyntaxException Should not happen.
+     * @throws URISyntaxException if the URI used by the test is invalid.
      */
     @Test
     @DependsOnMethod("testGetUOM")
     public void testSetUOM() throws URISyntaxException {
         final Measure measure = new Measure();
         measure.setUOM("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#m");
-        assertEquals(SI.METRE, measure.unit);
+        assertEquals(Units.METRE, measure.unit);
         assertEquals("urn:ogc:def:uom:EPSG::9001", measure.getUOM());
         measure.asXPointer = true;
         assertEquals(Schemas.METADATA_ROOT + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='m'])", measure.getUOM());
@@ -68,15 +66,15 @@ public final strictfp class MeasureTest extends TestCase {
         measure.unit = null;
         measure.asXPointer = false;
         measure.setUOM("../uom/ML_gmxUom.xml#xpointer(//*[@gml:id='deg'])");
-        assertEquals(NonSI.DEGREE_ANGLE, measure.unit);
+        assertEquals(Units.DEGREE, measure.unit);
         assertEquals("urn:ogc:def:uom:EPSG::9102", measure.getUOM());
         measure.asXPointer = true;
         assertEquals(Schemas.METADATA_ROOT + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='deg'])", measure.getUOM());
 
         measure.unit = null;
         measure.asXPointer = true;
-        measure.setUOM("gmxUom.xml#kg"); // Not really an existing unit in 'gmxUom'.
-        assertEquals(SI.KILOGRAM, measure.unit);
+        measure.setUOM("gmxUom.xml#kg");                        // Not really an existing unit in 'gmxUom'.
+        assertEquals(Units.KILOGRAM, measure.unit);
         assertEquals(Schemas.METADATA_ROOT + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='kg'])", measure.getUOM());
     }
 }

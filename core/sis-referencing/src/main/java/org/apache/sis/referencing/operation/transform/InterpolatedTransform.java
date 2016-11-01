@@ -17,11 +17,9 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
-import javax.measure.quantity.Quantity;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.LinearConverter;
+import java.util.Objects;
+import javax.measure.Unit;
+import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -40,9 +38,6 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.provider.NTv2;
 import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
-
-// Branch-specific imports
-import java.util.Objects;
 
 
 /**
@@ -75,7 +70,7 @@ import java.util.Objects;
  * @author  Simon Reynard (Geomatys)
  * @author  Rueben Schulz (UBC)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public class InterpolatedTransform extends DatumShiftTransform {
@@ -124,15 +119,15 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * <code>{@linkplain #getContextualParameters()}.{@linkplain ContextualParameters#completeTransform
      * completeTransform}(factory, this)}</code>.
      *
-     * @param  <T> Dimension of the coordinate and the translation unit.
-     * @param  grid The grid of datum shifts from source to target datum.
+     * @param  <T>   dimension of the coordinate and the translation unit.
+     * @param  grid  the grid of datum shifts from source to target datum.
      * @throws NoninvertibleMatrixException if the conversion from geodetic coordinates
      *         to grid indices can not be inverted.
      *
      * @see #createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
-    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
-    protected <T extends Quantity> InterpolatedTransform(final DatumShiftGrid<T,T> grid)
+    @SuppressWarnings( {"OverridableMethodCallDuringObjectConstruction", "fallthrough"})
+    protected <T extends Quantity<T>> InterpolatedTransform(final DatumShiftGrid<T,T> grid)
             throws NoninvertibleMatrixException
     {
         /*
@@ -166,14 +161,17 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * We concatenate the unit conversion with above "coordinate to grid" conversion.
          */
         @SuppressWarnings("unchecked")
-        final Unit<T> normalized = Units.isAngular(unit) ? (Unit<T>) NonSI.DEGREE_ANGLE : unit.toSI();
+        final Unit<T> normalized = Units.isAngular(unit) ? (Unit<T>) Units.DEGREE : unit.getSystemUnit();
         if (!unit.equals(normalized)) {
-            final UnitConverter converter = normalized.getConverterTo(unit);
-            if (!(converter instanceof LinearConverter)) {
-                throw new IllegalArgumentException(Resources.format(Resources.Keys.NonLinearUnitConversion_2, normalized, unit));
+            Number scale  = 1.0;
+            Number offset = 0.0;
+            final Number[] coefficients = Units.coefficients(normalized.getConverterTo(unit));
+            switch (coefficients != null ? coefficients.length : -1) {
+                case 2:  scale  = coefficients[1];       // Fall through
+                case 1:  offset = coefficients[0];       // Fall through
+                case 0:  break;
+                default: throw new IllegalArgumentException(Resources.format(Resources.Keys.NonLinearUnitConversion_2, normalized, unit));
             }
-            final Double offset = converter.convert(0);
-            final Double scale  = Units.derivative(converter, 0);
             for (int j=0; j<dimension; j++) {
                 normalize.convertBefore(j, scale, offset);
             }
@@ -203,16 +201,16 @@ public class InterpolatedTransform extends DatumShiftTransform {
      *       coordinates in the unit given by {@link Unit#toSI()}.</li>
      * </ul>
      *
-     * @param <T>      Dimension of the coordinate and the translation unit.
-     * @param factory  The factory to use for creating the transform.
-     * @param grid     The grid of datum shifts from source to target datum.
-     *                 The {@link DatumShiftGrid#interpolateInCell DatumShiftGrid.interpolateInCell(…)}
-     *                 method shall compute translations from <em>source</em> to <em>target</em> as
-     *                 {@linkplain DatumShiftGrid#isCellValueRatio() ratio of offsets divided by cell sizes}.
-     * @return The transformation between geodetic coordinates.
+     * @param  <T>      dimension of the coordinate and the translation unit.
+     * @param  factory  the factory to use for creating the transform.
+     * @param  grid     the grid of datum shifts from source to target datum.
+     *                  The {@link DatumShiftGrid#interpolateInCell DatumShiftGrid.interpolateInCell(…)}
+     *                  method shall compute translations from <em>source</em> to <em>target</em> as
+     *                  {@linkplain DatumShiftGrid#isCellValueRatio() ratio of offsets divided by cell sizes}.
+     * @return the transformation between geodetic coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
-    public static <T extends Quantity> MathTransform createGeodeticTransformation(
+    public static <T extends Quantity<T>> MathTransform createGeodeticTransformation(
             final MathTransformFactory factory, final DatumShiftGrid<T,T> grid) throws FactoryException
     {
         ArgumentChecks.ensureNonNull("grid", grid);
@@ -233,7 +231,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * Returns the number of input dimensions.
      * This fixed to {@link DatumShiftGrid#getTranslationDimensions()}.
      *
-     * @return The dimension of input points.
+     * @return the dimension of input points.
      */
     @Override
     public final int getSourceDimensions() {
@@ -244,7 +242,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * Returns the number of target dimensions.
      * This fixed to {@link DatumShiftGrid#getTranslationDimensions()}.
      *
-     * @return The dimension of output points.
+     * @return the dimension of output points.
      */
     @Override
     public final int getTargetDimensions() {
@@ -357,7 +355,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * Returns the inverse of this interpolated transform.
      * The source ellipsoid of the returned transform will be the target ellipsoid of this transform, and conversely.
      *
-     * @return A transform from the target ellipsoid to the source ellipsoid of this transform.
+     * @return a transform from the target ellipsoid to the source ellipsoid of this transform.
      */
     @Override
     public MathTransform inverse() {
@@ -433,7 +431,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * Transforms a single coordinate in a list of ordinal values,
          * and optionally returns the derivative at that location.
          *
-         * @throws TransformException If there is no convergence.
+         * @throws TransformException if there is no convergence.
          */
         @Override
         public final Matrix transform(final double[] srcPts, final int srcOff, double[] dstPts, int dstOff,
@@ -454,7 +452,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                 final double oy = yi;
                 xi = x - vector[0];
                 yi = y - vector[1];
-                if (!(Math.abs(xi - ox) > tolerance ||    // Use '!' for catching NaN.
+                if (!(Math.abs(xi - ox) > tolerance ||          // Use '!' for catching NaN.
                       Math.abs(yi - oy) > tolerance))
                 {
                     if (dimension > GRID_DIMENSION) {
@@ -523,7 +521,7 @@ nextPoint:  while (--numPts >= 0) {
                     final double oy = yi;
                     xi = x - vector[0];
                     yi = y - vector[1];
-                    if (!(Math.abs(xi - ox) > tolerance ||    // Use '!' for catching NaN.
+                    if (!(Math.abs(xi - ox) > tolerance ||          // Use '!' for catching NaN.
                           Math.abs(yi - oy) > tolerance))
                     {
                         if (dimension > GRID_DIMENSION) {
@@ -540,7 +538,7 @@ nextPoint:  while (--numPts >= 0) {
                             do dstPts[dstOff + --i] += vector[i];
                             while (i > GRID_DIMENSION);
                         }
-                        dstPts[dstOff  ] = xi;      // Shall not be done before above loop.
+                        dstPts[dstOff  ] = xi;          // Shall not be done before above loop.
                         dstPts[dstOff+1] = yi;
                         dstOff += inc;
                         srcOff += inc;

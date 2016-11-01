@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
-import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
@@ -31,6 +30,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -48,7 +48,7 @@ import java.nio.file.StandardOpenOption;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
@@ -92,7 +92,7 @@ public final strictfp class NTv2Test extends TestCase {
      * because Apache SIS does not redistribute the {@code "NTF_R93.gsb"}. But developers can invoke this method
      * explicitely if they can provide a path to the {@code "NTF_R93.gsb"} file.
      *
-     * @param  file Path to the official {@code "NTF_R93.gsb"} file.
+     * @param  file  path to the official {@code "NTF_R93.gsb"} file.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
      * @throws TransformException if an error occurred while computing the envelope or testing the point.
@@ -104,10 +104,10 @@ public final strictfp class NTv2Test extends TestCase {
     /**
      * Implementation of {@link #testLoader()} and {@link #testRGF93(Path)}.
      *
-     * @param xmin Negative of value of {@code "W_LONG"} record.
-     * @param xmax Negative of value of {@code "E_LONG"} record.
-     * @param ymin Value of the {@code "S_LAT"} record.
-     * @param ymax Value of the {@code "N_LAT"} record.
+     * @param  xmin  negative of value of {@code "W_LONG"} record.
+     * @param  xmax  negative of value of {@code "E_LONG"} record.
+     * @param  ymin  value of the {@code "S_LAT"} record.
+     * @param  ymax  value of the {@code "N_LAT"} record.
      */
     private static void testRGF93(final Path file, final double xmin, final double xmax,
             final double ymin, final double ymax) throws IOException, FactoryException, TransformException
@@ -115,8 +115,8 @@ public final strictfp class NTv2Test extends TestCase {
         final double cellSize = 360;
         final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(file);
         assertInstanceOf("Should not be compressed.", DatumShiftGridFile.Float.class, grid);
-        assertEquals("coordinateUnit",  NonSI.SECOND_ANGLE, grid.getCoordinateUnit());
-        assertEquals("translationUnit", NonSI.SECOND_ANGLE, grid.getTranslationUnit());
+        assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());
+        assertEquals("translationUnit", Units.ARC_SECOND, grid.getTranslationUnit());
         assertEquals("translationDimensions", 2, grid.getTranslationDimensions());
         assertTrue  ("isCellValueRatio", grid.isCellValueRatio());
         assertEquals("cellPrecision", (ACCURACY / 10) / cellSize, grid.getCellPrecision(), 0.5E-6 / cellSize);
@@ -198,12 +198,12 @@ public final strictfp class NTv2Test extends TestCase {
      * is rounding errors. This is usually the case when using the {@code "SECONDS"} unit of measurement.
      * This assumption does not apply to the shift values.
      *
-     * @param grid  The full grid from which to extract a few values.
-     * @param out   Where to write the test file.
-     * @param gridX Index along the longitude axis of the first cell to write.
-     * @param gridY Index along the latitude axis of the first cell to write.
-     * @param nx    Number of cells to write along the longitude axis.
-     * @param ny    Number of cells to write along the latitude axis.
+     * @param  grid   the full grid from which to extract a few values.
+     * @param  out    where to write the test file.
+     * @param  gridX  index along the longitude axis of the first cell to write.
+     * @param  gridY  index along the latitude axis of the first cell to write.
+     * @param  nx     number of cells to write along the longitude axis.
+     * @param  ny     number of cells to write along the latitude axis.
      * @throws TransformException if an error occurred while computing the envelope.
      * @throws IOException if an error occurred while writing the test file.
      */
@@ -219,12 +219,12 @@ public final strictfp class NTv2Test extends TestCase {
         writeString(buffer, "NUM_FILE"); buffer.putInt(1); nextRecord(buffer);
         writeString(buffer, "GS_TYPE");  writeString(buffer, "SECONDS");
         writeString(buffer, "VERSION");  writeString(buffer, "SIS_TEST");   // Last overview record.
-        writeString(buffer, "S_LAT");    buffer.putDouble(Math.rint( envelope.getMinimum(1)));
-        writeString(buffer, "N_LAT");    buffer.putDouble(Math.rint( envelope.getMaximum(1)));
-        writeString(buffer, "E_LONG");   buffer.putDouble(Math.rint(-envelope.getMaximum(0)));  // Sign reversed.
-        writeString(buffer, "W_LONG");   buffer.putDouble(Math.rint(-envelope.getMinimum(0)));
-        writeString(buffer, "LAT_INC");  buffer.putDouble(Math.rint( envelope.getSpan(1) / (ny - 1)));
-        writeString(buffer, "LONG_INC"); buffer.putDouble(Math.rint( envelope.getSpan(0) / (nx - 1)));
+        writeString(buffer, "S_LAT");    buffer.putDouble(StrictMath.rint( envelope.getMinimum(1)));
+        writeString(buffer, "N_LAT");    buffer.putDouble(StrictMath.rint( envelope.getMaximum(1)));
+        writeString(buffer, "E_LONG");   buffer.putDouble(StrictMath.rint(-envelope.getMaximum(0)));  // Sign reversed.
+        writeString(buffer, "W_LONG");   buffer.putDouble(StrictMath.rint(-envelope.getMinimum(0)));
+        writeString(buffer, "LAT_INC");  buffer.putDouble(StrictMath.rint( envelope.getSpan(1) / (ny - 1)));
+        writeString(buffer, "LONG_INC"); buffer.putDouble(StrictMath.rint( envelope.getSpan(0) / (nx - 1)));
         writeString(buffer, "GS_COUNT"); buffer.putInt(nx * ny); nextRecord(buffer);
         for (int y=0; y<ny; y++) {
             for (int x=0; x<nx; x++) {

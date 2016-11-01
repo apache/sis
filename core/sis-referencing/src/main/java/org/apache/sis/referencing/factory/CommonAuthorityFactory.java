@@ -23,9 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Collections;
 import java.util.Arrays;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -191,7 +189,7 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.ce
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see CommonCRS
@@ -275,7 +273,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * of that authority is set to {@code "OGC"}. Apache SIS does that for consistency with the namespace used
      * in URNs (for example {@code "urn:ogc:def:crs:OGC:1.3:CRS84"}).</p>
      *
-     * @return The <cite>"Web Map Service"</cite> authority.
+     * @return the <cite>"Web Map Service"</cite> authority.
      *
      * @see #getCodeSpaces()
      * @see Citations#WMS
@@ -303,7 +301,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * {@code "AUTO1"} or {@code "AUTO2"} namespaces if present. If a namespace is found and is a legacy one, then
      * this {@link #LEGACY_MASK} bit will be set.
      *
-     * @return Index where the code begin, possibly with the {@link #LEGACY_MASK} bit set.
+     * @return index where the code begin, possibly with the {@link #LEGACY_MASK} bit set.
      * @throws NoSuchAuthorityCodeException if an authority is present but is not one of the recognized authorities.
      */
     private static int skipNamespace(final String code) throws NoSuchAuthorityCodeException {
@@ -360,8 +358,8 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * The returned set contains a namespace followed by numeric identifiers
      * like {@code "CRS:84"}, {@code "CRS:27"}, {@code "AUTO2:42001"}, <i>etc</i>.
      *
-     * @param  type The spatial reference objects type.
-     * @return The set of authority codes for spatial reference objects of the given type.
+     * @param  type  the spatial reference objects type.
+     * @return the set of authority codes for spatial reference objects of the given type.
      * @throws FactoryException if this method failed to provide the set of codes.
      */
     @Override
@@ -414,7 +412,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      *       but its scope is wider than the above-cited namespaces.</li>
      * </ul>
      *
-     * @return A set containing at least the {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"} strings.
+     * @return a set containing at least the {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"} strings.
      *
      * @see #getAuthority()
      * @see Citations#WMS
@@ -439,8 +437,8 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      *   <tr><td>{@code AUTO2:42001,1,-100,45}</td> <td>WGS 84 / UTM zone 47N</td></tr>
      * </table>
      *
-     * @param  code Value in the CRS or AUTO(2) code space.
-     * @return A description of the object.
+     * @param  code  value in the CRS or AUTO(2) code space.
+     * @return a description of the object.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if an error occurred while fetching the description.
      */
@@ -493,8 +491,8 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      *       Note that some codes require coma-separated parameters after the integer value.</li>
      * </ol>
      *
-     * @param  code Value allocated by OGC.
-     * @return The coordinate reference system for the given code.
+     * @param  code  value allocated by OGC.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -566,13 +564,13 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     /**
      * Creates a projected CRS from parameters in the {@code AUTO(2)} namespace.
      *
-     * @param  code        The user-specified code, used only for error reporting.
-     * @param  projection  The projection code (e.g. 42001).
+     * @param  code        the user-specified code, used only for error reporting.
+     * @param  projection  the projection code (e.g. 42001).
      * @param  isLegacy    {@code true} if the code was found in {@code "AUTO"} or {@code "AUTO1"} namespace.
-     * @param  factor      The multiplication factor for the unit of measurement.
-     * @param  longitude   A longitude in the desired projection zone.
-     * @param  latitude    A latitude in the desired projection zone.
-     * @return The projected CRS for the given projection and parameters.
+     * @param  factor      the multiplication factor for the unit of measurement.
+     * @param  longitude   a longitude in the desired projection zone.
+     * @param  latitude    a latitude in the desired projection zone.
+     * @return the projected CRS for the given projection and parameters.
      */
     @SuppressWarnings("null")
     private ProjectedCRS createAuto(final String code, final int projection, final boolean isLegacy,
@@ -627,13 +625,14 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
              * At this point we got a coordinate system with axes in metres.
              * If the user asked for another unit of measurement, change the axes now.
              */
-            final Unit<Length> unit;
+            Unit<Length> unit;
             if (isLegacy) {
                 unit = createUnitFromEPSG(factor).asType(Length.class);
             } else {
-                unit = (factor != 1) ? Units.multiply(SI.METRE, factor) : SI.METRE;
+                unit = Units.METRE;
+                if (factor != 1) unit = unit.multiply(factor);
             }
-            if (!SI.METRE.equals(unit)) {
+            if (!Units.METRE.equals(unit)) {
                 cs = (CartesianCS) CoordinateSystems.replaceLinearUnit(cs, unit);
             }
             /*
@@ -649,9 +648,9 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             } else {
                 builder.setConversionMethod(method)
                        .addName(PROJECTION_NAMES[projection - FIRST_PROJECTION_CODE])
-                       .setParameter(Constants.CENTRAL_MERIDIAN, longitude, NonSI.DEGREE_ANGLE);
+                       .setParameter(Constants.CENTRAL_MERIDIAN, longitude, Units.DEGREE);
                 if (param != null) {
-                    builder.setParameter(param, latitude, NonSI.DEGREE_ANGLE);
+                    builder.setParameter(param, latitude, Units.DEGREE);
                 }
             }
             return builder.createProjectedCRS(baseCRS, cs);
@@ -693,8 +692,8 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             final CSFactory csFactory = DefaultFactories.forBuildin(CSFactory.class);
             final CartesianCS cs = csFactory.createCartesianCS(
                     Collections.singletonMap(CartesianCS.NAME_KEY, "Computer display"),
-                    csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "i"), "i", AxisDirection.EAST, NonSI.PIXEL),
-                    csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "j"), "j", AxisDirection.SOUTH, NonSI.PIXEL));
+                    csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "i"), "i", AxisDirection.EAST,  Units.PIXEL),
+                    csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "j"), "j", AxisDirection.SOUTH, Units.PIXEL));
 
             final Map<String,Object> properties = new HashMap<>(4);
             properties.put(EngineeringDatum.NAME_KEY, cs.getName());
@@ -708,10 +707,10 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     /**
      * Creates an exception for an unknown authority code.
      *
-     * @param  localCode  The unknown authority code, without namespace.
-     * @param  code       The unknown authority code as specified by the user (may include namespace).
-     * @param  cause      The failure cause, or {@code null} if none.
-     * @return An exception initialized with an error message built from the specified informations.
+     * @param  localCode  the unknown authority code, without namespace.
+     * @param  code       the unknown authority code as specified by the user (may include namespace).
+     * @param  cause      the failure cause, or {@code null} if none.
+     * @return an exception initialized with an error message built from the specified informations.
      */
     private static NoSuchAuthorityCodeException noSuchAuthorityCode(String localCode, String code, Exception cause) {
         return (NoSuchAuthorityCodeException) new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.NoSuchAuthorityCode_3,

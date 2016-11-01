@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.crs;
 
-import javax.measure.unit.SI;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -24,6 +23,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.internal.referencing.Legacy;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -38,7 +38,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -117,13 +117,13 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
     public void testWKT1_kilometres() {
         DefaultGeocentricCRS crs = HardCodedCRS.GEOCENTRIC;
         crs = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(crs), crs.getDatum(),
-                Legacy.replaceUnit((CartesianCS) crs.getCoordinateSystem(), SI.KILOMETRE));
+                Legacy.replaceUnit((CartesianCS) crs.getCoordinateSystem(), Units.KILOMETRE));
         assertWktEquals(Convention.WKT1,
                 "GEOCCS[“Geocentric”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
                 "    PRIMEM[“Greenwich”, 0.0],\n" +
-                "  UNIT[“km”, 1000],\n" +
+                "  UNIT[“kilometre”, 1000],\n" +
                 "  AXIS[“X”, OTHER],\n" +
                 "  AXIS[“Y”, EAST],\n" +
                 "  AXIS[“Z”, NORTH]]",

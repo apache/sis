@@ -17,10 +17,10 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Collections;
-import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -33,7 +33,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn(AbstractCSTest.class)
@@ -59,7 +59,7 @@ public final strictfp class DefaultPolarCSTest extends TestCase {
     @Test
     public void testChangeAxisOrder() {
         final DefaultCoordinateSystemAxis radius = HardCodedAxes.create("Radius", "r",
-                AxisDirection.SOUTH, SI.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
+                AxisDirection.SOUTH, Units.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
 
         final DefaultPolarCS cs = new DefaultPolarCS(
                 Collections.singletonMap(DefaultPolarCS.NAME_KEY, "Polar"),

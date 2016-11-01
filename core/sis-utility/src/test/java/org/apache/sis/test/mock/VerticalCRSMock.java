@@ -17,9 +17,7 @@
 package org.apache.sis.test.mock;
 
 import java.util.Date;
-import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.cs.AxisDirection;
@@ -29,6 +27,7 @@ import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.util.InternationalString;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -36,7 +35,7 @@ import org.opengis.util.InternationalString;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @SuppressWarnings("serial")
@@ -47,31 +46,31 @@ public final strictfp class VerticalCRSMock extends IdentifiedObjectMock
      * Height in metres.
      */
     public static final VerticalCRS HEIGHT = new VerticalCRSMock("Height",
-            VerticalDatumType.GEOIDAL, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, true);
+            VerticalDatumType.GEOIDAL, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, true);
 
     /**
      * Height in feet.
      */
     public static final VerticalCRS HEIGHT_ft = new VerticalCRSMock("Height",
-            VerticalDatumType.GEOIDAL, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, NonSI.FOOT, true);
+            VerticalDatumType.GEOIDAL, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.FOOT, true);
 
     /**
      * Height estimated from hPa.
      */
     public static final VerticalCRS BAROMETRIC_HEIGHT = new VerticalCRSMock("Barometric height",
-            VerticalDatumType.BAROMETRIC, 0, Double.POSITIVE_INFINITY, SI.MetricPrefix.HECTO(SI.PASCAL), true);
+            VerticalDatumType.BAROMETRIC, 0, Double.POSITIVE_INFINITY, Units.HECTOPASCAL, true);
 
     /**
      * Depth in metres.
      */
     public static final VerticalCRS DEPTH = new VerticalCRSMock("Depth",
-            VerticalDatumType.DEPTH, 0, Double.POSITIVE_INFINITY, SI.METRE, false);
+            VerticalDatumType.DEPTH, 0, Double.POSITIVE_INFINITY, Units.METRE, false);
 
     /**
      * Depth as a fraction of the sea floor depth at the location of the point for which the depth is evaluated.
      */
     public static final VerticalCRS SIGMA_LEVEL = new VerticalCRSMock("Sigma level",
-            VerticalDatumType.OTHER_SURFACE, 0, 1, Unit.ONE, false);
+            VerticalDatumType.OTHER_SURFACE, 0, 1, Units.UNITY, false);
 
     /**
      * The datum type (geoidal, barometric, etc.).

@@ -16,14 +16,12 @@
  */
 package org.apache.sis.measure;
 
-import javax.measure.unit.Unit;
-import javax.measure.quantity.Quantity;
-import javax.measure.converter.UnitConverter;
-import org.apache.sis.internal.util.PatchedUnitFormat;
+import javax.measure.Unit;
+import javax.measure.Quantity;
+import javax.measure.UnitConverter;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static javax.measure.unit.NonSI.DEGREE_ANGLE;
 import static org.apache.sis.measure.SexagesimalConverter.*;
 import static org.apache.sis.test.Assert.*;
 
@@ -33,7 +31,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public final strictfp class SexagesimalConverterTest extends TestCase {
@@ -46,7 +44,7 @@ public final strictfp class SexagesimalConverterTest extends TestCase {
      * Converts the given value to an other unit, compares with the expected value, and verify
      * the inverse conversion. Then tries again with the negative of the given values.
      */
-    private static <Q extends Quantity> void checkConversion(
+    private static <Q extends Quantity<Q>> void checkConversion(
             final double expected, final Unit<Q> unitExpected,
             final double actual,   final Unit<Q> unitActual)
     {
@@ -63,11 +61,11 @@ public final strictfp class SexagesimalConverterTest extends TestCase {
      */
     @Test
     public void testDM() {
-        checkConversion(10.00,              DEGREE_ANGLE, 10.0000,    DM);
-        checkConversion(10.006,             DEGREE_ANGLE, 10.0036,    DM);
-        checkConversion(10.50,              DEGREE_ANGLE, 10.3000,    DM);
-        checkConversion(10.987333333333333, DEGREE_ANGLE, 10.5924,    DM);
-        checkConversion(44.503354166666666, DEGREE_ANGLE, 44.3020125, DM);
+        checkConversion(10.00,              Units.DEGREE, 10.0000,    DM);
+        checkConversion(10.006,             Units.DEGREE, 10.0036,    DM);
+        checkConversion(10.50,              Units.DEGREE, 10.3000,    DM);
+        checkConversion(10.987333333333333, Units.DEGREE, 10.5924,    DM);
+        checkConversion(44.503354166666666, Units.DEGREE, 44.3020125, DM);
     }
 
     /**
@@ -75,11 +73,11 @@ public final strictfp class SexagesimalConverterTest extends TestCase {
      */
     @Test
     public void testDMS() {
-        checkConversion(10.00,              DEGREE_ANGLE, 10.0000,    DMS);
-        checkConversion(10.01,              DEGREE_ANGLE, 10.0036,    DMS);
-        checkConversion(10.50,              DEGREE_ANGLE, 10.3000,    DMS);
-        checkConversion(10.99,              DEGREE_ANGLE, 10.5924,    DMS);
-        checkConversion(44.505590277777777, DEGREE_ANGLE, 44.3020125, DMS);
+        checkConversion(10.00,              Units.DEGREE, 10.0000,    DMS);
+        checkConversion(10.01,              Units.DEGREE, 10.0036,    DMS);
+        checkConversion(10.50,              Units.DEGREE, 10.3000,    DMS);
+        checkConversion(10.99,              Units.DEGREE, 10.5924,    DMS);
+        checkConversion(44.505590277777777, Units.DEGREE, 44.3020125, DMS);
     }
 
     /**
@@ -87,21 +85,20 @@ public final strictfp class SexagesimalConverterTest extends TestCase {
      */
     @Test
     public void testDMS_Scaled() {
-        checkConversion(10.00,              DEGREE_ANGLE, 100000,     DMS_SCALED);
-        checkConversion(10.01,              DEGREE_ANGLE, 100036,     DMS_SCALED);
-        checkConversion(10.50,              DEGREE_ANGLE, 103000,     DMS_SCALED);
-        checkConversion(10.99,              DEGREE_ANGLE, 105924,     DMS_SCALED);
-        checkConversion(44.505590277777777, DEGREE_ANGLE, 443020.125, DMS_SCALED);
+        checkConversion(10.00,              Units.DEGREE, 100000,     DMS_SCALED);
+        checkConversion(10.01,              Units.DEGREE, 100036,     DMS_SCALED);
+        checkConversion(10.50,              Units.DEGREE, 103000,     DMS_SCALED);
+        checkConversion(10.99,              Units.DEGREE, 105924,     DMS_SCALED);
+        checkConversion(44.505590277777777, Units.DEGREE, 443020.125, DMS_SCALED);
     }
 
     /**
-     * Tests {@link PatchedUnitFormat#toString(Unit)}.
-     * Tested here because it can be tested only after {@link SexagesimalConverter} initialization.
+     * Verifies the unit symbols.
      */
     @Test
-    public void testPatchedUnitFormat() {
-        assertEquals("D.M",  PatchedUnitFormat.toString(DM));
-        assertEquals("D.MS", PatchedUnitFormat.toString(DMS));
-        assertEquals("DMS",  PatchedUnitFormat.toString(DMS_SCALED));
+    public void testToString() {
+        assertEquals("D.M",  DM.toString());
+        assertEquals("D.MS", DMS.toString());
+        assertEquals("DMS",  DMS_SCALED.toString());
     }
 }

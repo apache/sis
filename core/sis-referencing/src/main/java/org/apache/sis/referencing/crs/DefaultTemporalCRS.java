@@ -21,8 +21,8 @@ import java.util.Date;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.measure.quantity.Duration;
-import javax.measure.converter.UnitConverter;
+import javax.measure.quantity.Time;
+import javax.measure.UnitConverter;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -59,7 +59,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
@@ -212,7 +212,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     private void initializeConverter() {
         origin   = datum.getOrigin().getTime();
-        toMillis = getCoordinateSystem().getAxis(0).getUnit().asType(Duration.class).getConverterTo(Units.MILLISECOND);
+        toMillis = getCoordinateSystem().getAxis(0).getUnit().asType(Time.class).getConverterTo(Units.MILLISECOND);
     }
 
     /**

@@ -70,7 +70,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -322,7 +322,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
                 "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Latitude (φ)”, NORTH],\n" +
                 "    Axis[“Longitude (λ)”, EAST],\n" +
-                "    Unit[“grade”, 0.015707963267949],\n" +
+                "    Unit[“grad”, 0.015707963267949],\n" +
                 "  Id[“EPSG”, “4807”]]");
 
         final GeographicCRS       targetCRS = CommonCRS.WGS84.geographic();
@@ -369,7 +369,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
                 "    Axis[“(X)”, geocentricX],\n" +
                 "    Axis[“(Y)”, geocentricY],\n" +
                 "    Axis[“(Z)”, geocentricZ],\n" +
-                "    Unit[“km”, 1000]]");
+                "    Unit[“kilometre”, 1000]]");
 
         final GeocentricCRS       targetCRS = CommonCRS.WGS84.geocentric();
         final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);

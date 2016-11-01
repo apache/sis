@@ -17,7 +17,7 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.Arrays;
-import javax.measure.quantity.Quantity;
+import javax.measure.Quantity;
 import org.apache.sis.math.DecimalFunctions;
 
 
@@ -36,7 +36,7 @@ import org.apache.sis.math.DecimalFunctions;
  * @version 0.7
  * @module
  */
-final class DatumShiftGridCompressed<C extends Quantity, T extends Quantity> extends DatumShiftGridFile<C,T> {
+final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -86,7 +86,7 @@ final class DatumShiftGridCompressed<C extends Quantity, T extends Quantity> ext
      * @param  scale     The factor by which to multiply each compressed value before to add to the average value.
      * @return The grid to use (may or may not be compressed).
      */
-    static <C extends Quantity, T extends Quantity> DatumShiftGridFile<C,T> compress(
+    static <C extends Quantity<C>, T extends Quantity<T>> DatumShiftGridFile<C,T> compress(
             final DatumShiftGridFile.Float<C,T> grid, double[] averages, final double scale)
     {
         final short[][] data = new short[grid.offsets.length][];

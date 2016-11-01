@@ -30,9 +30,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.io.Serializable;
 import javax.measure.quantity.Length;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
-import javax.measure.converter.ConversionException;
+import javax.measure.Unit;
+import javax.measure.IncommensurableException;
 
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -73,6 +72,7 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
@@ -164,7 +164,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see MathTransformProvider
@@ -662,7 +662,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 } else {
                     return CoordinateSystems.swapAndScaleAxes(specified, normalized);
                 }
-            } catch (IllegalArgumentException | ConversionException cause) {
+            } catch (IllegalArgumentException | IncommensurableException cause) {
                 throw new InvalidGeodeticParameterException(cause.getLocalizedMessage(), cause);
             }
         }
@@ -787,7 +787,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                      */
                     final double a   = getValue(ap, unit);
                     final double b   = getValue(bp, unit);
-                    final double tol = SI.METRE.getConverterTo(unit).convert(ELLIPSOID_PRECISION);
+                    final double tol = Units.METRE.getConverterTo(unit).convert(ELLIPSOID_PRECISION);
                     if (ensureSet(ap, a, ellipsoid.getSemiMajorAxis(), unit, tol)) {
                         mismatchedParam = ap;
                         mismatchedValue = a;

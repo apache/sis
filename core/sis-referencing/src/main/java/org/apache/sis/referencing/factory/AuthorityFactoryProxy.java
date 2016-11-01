@@ -19,7 +19,7 @@ package org.apache.sis.referencing.factory;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;

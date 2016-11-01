@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.util.InternationalString;

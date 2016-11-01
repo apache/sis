@@ -34,7 +34,7 @@ import static org.apache.sis.util.CharSequences.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -233,6 +233,8 @@ public final strictfp class CharSequencesTest extends TestCase {
 
     /**
      * Tests the {@link CharSequences#toASCII(CharSequence)} method.
+     *
+     * @see StringBuildersTest#testToASCII()
      */
     @Test
     public void testToASCII() {
@@ -240,6 +242,8 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertSame  (metre, toASCII(metre));
         assertEquals(metre, toASCII("mètre").toString());
         assertNull  (       toASCII(null));
+        assertEquals("kg, mg, cm, km, km2, km3, ml, m/s, Pa, Hz, mol, ms, μs, m3, rad",
+                toASCII("㎏, ㎎, ㎝, ㎞, ㎢, ㎦, ㎖, ㎧, ㎩, ㎐, ㏖, ㎳, ㎲, ㎥, ㎭").toString());
     }
 
     /**

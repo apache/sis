@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.extent;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.metadata.extent.Extent;

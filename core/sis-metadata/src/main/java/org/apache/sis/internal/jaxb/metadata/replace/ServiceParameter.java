@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;

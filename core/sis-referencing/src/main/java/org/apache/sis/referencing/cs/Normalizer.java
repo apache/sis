@@ -19,9 +19,9 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
-import javax.measure.unit.Unit;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.ConversionException;
+import javax.measure.Unit;
+import javax.measure.UnitConverter;
+import javax.measure.IncommensurableException;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -252,7 +252,7 @@ final class Normalizer implements Comparable<Normalizer> {
             final UnitConverter c;
             try {
                 c = unit.getConverterToAny(newUnit);
-            } catch (ConversionException e) {
+            } catch (IncommensurableException e) {
                 // Use IllegalStateException because the public API is an AbstractCS member method.
                 throw new IllegalStateException(Resources.format(Resources.Keys.IllegalUnitFor_2, "axis", unit), e);
             }

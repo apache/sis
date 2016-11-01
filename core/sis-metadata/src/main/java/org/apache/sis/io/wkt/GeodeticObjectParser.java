@@ -32,15 +32,13 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import javax.measure.unit.Unit;
-import javax.measure.unit.UnitFormat;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
-import javax.measure.quantity.Quantity;
-import javax.measure.quantity.Duration;
-import javax.measure.converter.ConversionException;
+import javax.measure.Quantity;
+import javax.measure.quantity.Time;
+import javax.measure.format.ParserException;
+import javax.measure.IncommensurableException;
 
 import org.opengis.util.Factory;
 import org.opengis.metadata.Identifier;
@@ -59,6 +57,7 @@ import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 
 import org.apache.sis.measure.Units;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -93,7 +92,7 @@ import static java.util.Collections.singletonMap;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 class GeodeticObjectParser extends MathTransformParser implements Comparator<CoordinateSystemAxis> {
@@ -133,7 +132,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
 
     /**
      * During WKT 1 parsing, {@code true} means that {@code PRIMEM} and {@code PARAMETER} angular units
-     * need to be forced to {@code NonSI.DEGREE_ANGLE} instead than inferred from the context.
+     * need to be forced to {@code Units.DEGREE} instead than inferred from the context.
      * Note that this rule does not apply to {@code AXIS} elements
      *
      * <p>This flag is ignored during WKT 2 parsing.</p>
@@ -195,9 +194,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Do not change the method signature even if it doesn't break the compilation, unless the
      * reflection code is also updated.</p>
      *
-     * @param defaultProperties Default properties to give to the object to create.
-     * @param factories An object implementing {@link DatumFactory}, {@link CSFactory} and {@link CRSFactory}.
-     * @param mtFactory The factory to use to create {@link MathTransform} objects.
+     * @param  defaultProperties  default properties to give to the object to create.
+     * @param  factories  an object implementing {@link DatumFactory}, {@link CSFactory} and {@link CRSFactory}.
+     * @param  mtFactory  the factory to use to create {@link MathTransform} objects.
      */
     public GeodeticObjectParser(final Map<String,?> defaultProperties,
             final ObjectFactory factories, final MathTransformFactory mtFactory)
@@ -218,14 +217,14 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Constructs a parser for the specified set of symbols using the specified set of factories.
      * This constructor is for {@link WKTFormat} usage only.
      *
-     * @param symbols       The set of symbols to use.
-     * @param fragments     Reference to the {@link WKTFormat#fragments} map, or an empty map if none.
-     * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
-     * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
-     * @param unitFormat    The unit format provided by {@link WKTFormat}, or {@code null} for a default format.
-     * @param convention    The WKT convention to use.
-     * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
-     * @param factories     On input, the factories to use. On output, the factories used. Can be null.
+     * @param  symbols       the set of symbols to use.
+     * @param  fragments     reference to the {@link WKTFormat#fragments} map, or an empty map if none.
+     * @param  numberFormat  the number format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param  dateFormat    the date format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param  unitFormat    the unit format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param  convention    the WKT convention to use.
+     * @param  errorLocale   the locale for error messages (not for parsing), or {@code null} for the system default.
+     * @param  factories     on input, the factories to use. On output, the factories used. Can be null.
      */
     GeodeticObjectParser(final Symbols symbols, final Map<String,Element> fragments,
             final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
@@ -275,9 +274,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     /**
      * Parses a <cite>Well Know Text</cite> (WKT).
      *
-     * @param  text The text to be parsed.
-     * @param  position The position to start parsing from.
-     * @return The parsed object.
+     * @param  text      the text to be parsed.
+     * @param  position  the position to start parsing from.
+     * @return the parsed object.
      * @throws ParseException if the string can not be parsed.
      */
     @Override
@@ -321,8 +320,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     /**
      * Parses the next element in the specified <cite>Well Know Text</cite> (WKT) tree.
      *
-     * @param  element The element to be parsed.
-     * @return The object.
+     * @param  element  the element to be parsed.
+     * @return the parsed object.
      * @throws ParseException if the element can not be parsed.
      */
     @Override
@@ -336,8 +335,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             return value;
         }
         Object object;
-        if ((object = parseAxis             (FIRST, element, null, SI.METRE)) == null &&
-            (object = parsePrimeMeridian    (FIRST, element, false, NonSI.DEGREE_ANGLE)) == null &&
+        if ((object = parseAxis             (FIRST, element, null,  Units.METRE )) == null &&
+            (object = parsePrimeMeridian    (FIRST, element, false, Units.DEGREE)) == null &&
             (object = parseDatum            (FIRST, element, null )) == null &&
             (object = parseEllipsoid        (FIRST, element       )) == null &&
             (object = parseToWGS84          (FIRST, element       )) == null &&
@@ -356,9 +355,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     /**
      * Parses a coordinate reference system element.
      *
-     * @param  element The parent element.
-     * @param  mandatory {@code true} if a CRS must be present, or {@code false} if optional.
-     * @return The next element as a {@code CoordinateReferenceSystem} object.
+     * @param  element    the parent element.
+     * @param  mandatory  {@code true} if a CRS must be present, or {@code false} if optional.
+     * @return the next element as a {@code CoordinateReferenceSystem} object.
      * @throws ParseException if the next element can not be parsed.
      */
     private CoordinateReferenceSystem parseCoordinateReferenceSystem(final Element element, final boolean mandatory)
@@ -385,10 +384,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     /**
      * Parses a coordinate reference system wrapped in an element of the given name.
      *
-     * @param  parent   The parent element containing the CRS to parse.
+     * @param  parent   the parent element containing the CRS to parse.
      * @param  mode     {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  keyword  "SourceCRS", "TargetCRS" or "InterpolationCRS".
-     * @return The coordinate reference system, or {@code null} if none.
+     * @return the coordinate reference system, or {@code null} if none.
      * @throws ParseException if the CRS can not be parsed.
      */
     private CoordinateReferenceSystem parseCoordinateReferenceSystem(final Element parent, final int mode,
@@ -407,8 +406,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Returns the value associated to {@link IdentifiedObject#IDENTIFIERS_KEY} as an {@code Identifier} object.
      * This method shall accept all value types that {@link #parseMetadataAndClose(Element, Object)} may store.
      *
-     * @param  identifier The {@link #properties} value, or {@code null}.
-     * @return The identifier, or {@code null} if the given value was null.
+     * @param  identifier  the {@link #properties} value, or {@code null}.
+     * @return the identifier, or {@code null} if the given value was null.
      */
     private static Identifier toIdentifier(final Object identifier) {
         return (identifier instanceof Identifier[]) ? ((Identifier[]) identifier)[0] : (Identifier) identifier;
@@ -428,10 +427,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * we will use the name of the enclosed datum. Indeed, it is not uncommon to have the same name for
      * a geographic CRS and its geodetic datum.
      *
-     * @param  parent   The parent element.
-     * @param  name     The name of the parent object being parsed.
-     * @param  fallback The fallback to use if {@code name} is empty.
-     * @return A properties map with the parent name and the optional authority code.
+     * @param  parent    the parent element.
+     * @param  name      the name of the parent object being parsed.
+     * @param  fallback  the fallback to use if {@code name} is empty.
+     * @return a properties map with the parent name and the optional authority code.
      * @throws ParseException if an element can not be parsed.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -540,9 +539,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             while ((element = parent.pullElement(OPTIONAL, WKTKeywords.VerticalExtent)) != null) {
                 final double minimum = element.pullDouble("minimum");
                 final double maximum = element.pullDouble("maximum");
-                Unit<Length> unit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+                Unit<Length> unit = parseScaledUnit(element, WKTKeywords.LengthUnit, Units.METRE);
                 element.close(ignoredElements);
-                if (unit   == null) unit   = SI.METRE;
+                if (unit   == null) unit   = Units.METRE;
                 if (extent == null) extent = new DefaultExtent();
                 verticalElements = new VerticalInfo(verticalElements, extent, minimum, maximum, unit).resolve(verticalCRS);
             }
@@ -616,17 +615,17 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Unit was a mandatory element in WKT 1, but became optional in WKT 2 because the unit may be specified
      * in each {@code AXIS[…]} element instead than for the whole coordinate system.
      *
-     * @param  parent   The parent element.
-     * @param  keyword  The unit keyword (e.g. {@code "LengthUnit"} or {@code "AngleUnit"}).
-     * @param  baseUnit The base unit, usually {@code SI.METRE} or {@code SI.RADIAN}.
-     * @return The {@code "UNIT"} element as an {@link Unit} object, or {@code null} if none.
+     * @param  parent    the parent element.
+     * @param  keyword   the unit keyword (e.g. {@code "LengthUnit"} or {@code "AngleUnit"}).
+     * @param  baseUnit  the base unit, usually {@code Units.METRE} or {@code Units.RADIAN}.
+     * @return the {@code "UNIT"} element as an {@link Unit} object, or {@code null} if none.
      * @throws ParseException if the {@code "UNIT"} can not be parsed.
      *
      * @todo Authority code is currently discarded after parsing. We may consider to create a subclass of
      *       {@link Unit} which implements {@link IdentifiedObject} in a future version.
      */
     @SuppressWarnings("unchecked")
-    private <Q extends Quantity> Unit<Q> parseScaledUnit(final Element parent,
+    private <Q extends Quantity<Q>> Unit<Q> parseScaledUnit(final Element parent,
             final String keyword, final Unit<Q> baseUnit) throws ParseException
     {
         final Element element = parent.pullElement(OPTIONAL, keyword, WKTKeywords.Unit);
@@ -635,18 +634,18 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final String name   = element.pullString("name");
         final double factor = element.pullDouble("factor");
-        Unit<Q> unit   = Units.multiply(baseUnit, factor);
+        Unit<Q> unit   = baseUnit.multiply(factor);
         Unit<?> verify = parseUnitID(element);
         element.close(ignoredElements);
         /*
-         * Consider the following element: UNIT[“km”, 1000, ID[“EPSG”, “9036”]]
+         * Consider the following element: UNIT[“kilometre”, 1000, ID[“EPSG”, “9036”]]
          *
          *  - if the authority code (“9036”) refers to a unit incompatible with 'baseUnit' (“metre”), log a warning.
          *  - otherwise: 1) unconditionally replace the parsed unit (“km”) by the unit referenced by the authority code.
          *               2) if the new unit is not equivalent to the old one (i.e. different scale factor), log a warning.
          */
         if (verify != null) {
-            if (!baseUnit.toSI().equals(verify.toSI())) {
+            if (!baseUnit.getSystemUnit().equals(verify.getSystemUnit())) {
                 warning(parent, element, Errors.formatInternational(Errors.Keys.InconsistentUnitsForCS_1, verify), null);
             } else if (Math.abs(unit.getConverterTo(unit = (Unit<Q>) verify).convert(1) - 1) > Numerics.COMPARISON_THRESHOLD) {
                 warning(parent, element, Errors.formatInternational(Errors.Keys.UnexpectedScaleFactorForUnit_2, verify, factor), null);
@@ -662,14 +661,14 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (verify == null) {
             try {
                 verify = parseUnit(name);
-            } catch (IllegalArgumentException | ParseException e) {
+            } catch (ParserException e) {
                 log(new LogRecord(Level.FINE, e.toString()));
             }
             if (verify != null) try {
                 if (Math.abs(verify.getConverterToAny(unit).convert(1) - 1) > Numerics.COMPARISON_THRESHOLD) {
                     warning(parent, element, Errors.formatInternational(Errors.Keys.UnexpectedScaleFactorForUnit_2, verify, factor), null);
                 }
-            } catch (ConversionException e) {
+            } catch (IncommensurableException e) {
                 throw (ParseException) new LocalizedParseException(errorLocale,
                         Errors.Keys.InconsistentUnitsForCS_1, new Object[] {verify}, element.offset).initCause(e);
             }
@@ -707,13 +706,13 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *   <li>Otherwise if {@code dimension is 3}, then the CS is assumed to be for a geocentric CRS.</li>
      * </ul>
      *
-     * @param  parent      The parent element.
-     * @param  type        The expected type (Cartesian | ellipsoidal | vertical | etc…), or null if unknown.
-     * @param  dimension   The minimal number of dimensions. Can be 1 if unknown.
-     * @param  isWKT1      {@code true} if the parent element is an element from the WKT 1 standard.
-     * @param  defaultUnit The contextual unit (usually {@code SI.METRE} or {@code SI.RADIAN}), or {@code null} if unknown.
-     * @param  datum       The datum of the enclosing CRS, or {@code null} if unknown.
-     * @return The {@code "CS"}, {@code "UNIT"} and/or {@code "AXIS"} elements as a Coordinate System, or {@code null}.
+     * @param  parent       the parent element.
+     * @param  type         the expected type (Cartesian | ellipsoidal | vertical | etc…), or null if unknown.
+     * @param  dimension    the minimal number of dimensions. Can be 1 if unknown.
+     * @param  isWKT1       {@code true} if the parent element is an element from the WKT 1 standard.
+     * @param  defaultUnit  the contextual unit (usually {@code Units.METRE} or {@code Units.RADIAN}), or {@code null} if unknown.
+     * @param  datum        the datum of the enclosing CRS, or {@code null} if unknown.
+     * @return the {@code "CS"}, {@code "UNIT"} and/or {@code "AXIS"} elements as a Coordinate System, or {@code null}.
      * @throws ParseException if an element can not be parsed.
      * @throws FactoryException if the factory can not create the coordinate system.
      */
@@ -816,7 +815,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     if (dimension >= 3) {   // Non-standard but SIS is tolerant to this case.
                         z    = "h";
                         nz   = AxisNames.ELLIPSOIDAL_HEIGHT;
-                        unit = SI.METRE;
+                        unit = Units.METRE;
                     }
                     break;
                 }
@@ -842,7 +841,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                         direction = AxisDirection.UP;
                         z    = "h";
                         nz   = AxisNames.ELLIPSOIDAL_HEIGHT;
-                        unit = SI.METRE;
+                        unit = Units.METRE;
                     }
                     break;
                 }
@@ -1014,12 +1013,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     AXIS["Easting (E(X))", EAST]
      * }
      *
-     * @param  mode        {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent      The parent element.
-     * @param  csType      The coordinate system type (Cartesian | ellipsoidal | vertical | etc…), or null if unknown.
-     * @param  defaultUnit The contextual unit (usually {@code SI.METRE} or {@code SI.RADIAN}), or {@code null} if unknown.
-     * @return The {@code "AXIS"} element as a {@link CoordinateSystemAxis} object, or {@code null}
-     *         if the axis was not required and there is no axis object.
+     * @param  mode         {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent       the parent element.
+     * @param  csType       the coordinate system type (Cartesian | ellipsoidal | vertical | etc…), or null if unknown.
+     * @param  defaultUnit  the contextual unit (usually {@code Units.METRE} or {@code Units.RADIAN}), or {@code null} if unknown.
+     * @return the {@code "AXIS"} element as a {@link CoordinateSystemAxis} object,
+     *         or {@code null} if the axis was not required and there is no axis object.
      * @throws ParseException if the {@code "AXIS"} element can not be parsed.
      */
     private CoordinateSystemAxis parseAxis(final int mode, final Element parent, final String csType,
@@ -1049,10 +1048,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Element meridian = element.pullElement(OPTIONAL, WKTKeywords.Meridian);
         if (meridian != null) {
             double angle = meridian.pullDouble("meridian");
-            final Unit<Angle> m = parseScaledUnit(meridian, WKTKeywords.AngleUnit, SI.RADIAN);
+            final Unit<Angle> m = parseScaledUnit(meridian, WKTKeywords.AngleUnit, Units.RADIAN);
             meridian.close(ignoredElements);
             if (m != null) {
-                angle = m.getConverterTo(NonSI.DEGREE_ANGLE).convert(angle);
+                angle = m.getConverterTo(Units.DEGREE).convert(angle);
             }
             direction = referencing.directionAlongMeridian(direction, angle);
         }
@@ -1120,8 +1119,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * some axes have an {@code ORDER} element (which is illegal according ISO 19162), then those axes will
      * be sorted before the axes without {@code ORDER} element.
      *
-     * @param  o1 The first axis to compare.
-     * @param  o2 The second axis to compare.
+     * @param  o1  the first axis to compare.
+     * @param  o2  the second axis to compare.
      * @return -1 if {@code o1} should be before {@code o2},
      *         +1 if {@code o2} should be before {@code o1}, or
      *          0 if undetermined (no axis order change).
@@ -1151,11 +1150,11 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     PRIMEM["<name>", <longitude> {,<authority>}]
      * }
      *
-     * @param  mode        {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent      The parent element.
-     * @param  isWKT1      {@code true} if this method is invoked while parsing a WKT 1 element.
-     * @param  angularUnit The contextual unit.
-     * @return The {@code "PrimeMeridian"} element as a {@link PrimeMeridian} object.
+     * @param  mode         {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent       the parent element.
+     * @param  isWKT1       {@code true} if this method is invoked while parsing a WKT 1 element.
+     * @param  angularUnit  the contextual unit.
+     * @return the {@code "PrimeMeridian"} element as a {@link PrimeMeridian} object.
      * @throws ParseException if the {@code "PrimeMeridian"} element can not be parsed.
      *
      * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian#formatTo(Formatter)
@@ -1164,7 +1163,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             throws ParseException
     {
         if (isWKT1 && usesCommonUnits) {
-            angularUnit = NonSI.DEGREE_ANGLE;
+            angularUnit = Units.DEGREE;
         }
         final Element element = parent.pullElement(mode, WKTKeywords.PrimeMeridian, WKTKeywords.PrimeM);
         if (element == null) {
@@ -1172,7 +1171,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final String name      = element.pullString("name");
         final double longitude = element.pullDouble("longitude");
-        final Unit<Angle> unit = parseScaledUnit(element, WKTKeywords.AngleUnit, SI.RADIAN);
+        final Unit<Angle> unit = parseScaledUnit(element, WKTKeywords.AngleUnit, Units.RADIAN);
         if (unit != null) {
             angularUnit = unit;
         } else if (angularUnit == null) {
@@ -1193,9 +1192,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     TOWGS84[<dx>, <dy>, <dz>, <ex>, <ey>, <ez>, <ppm>]
      * }
      *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @return The {@code "TOWGS84"} element as a {@link org.apache.sis.referencing.datum.BursaWolfParameters} object,
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @return the {@code "TOWGS84"} element as a {@link org.apache.sis.referencing.datum.BursaWolfParameters} object,
      *         or {@code null} if no {@code "TOWGS84"} has been found.
      * @throws ParseException if the {@code "TOWGS84"} can not be parsed.
      */
@@ -1225,9 +1224,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     SPHEROID["<name>", <semi-major axis>, <inverse flattening> {,<authority>}]
      * }
      *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @return The {@code "Ellipsoid"} element as an {@link Ellipsoid} object.
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @return the {@code "Ellipsoid"} element as an {@link Ellipsoid} object.
      * @throws ParseException if the {@code "Ellipsoid"} element can not be parsed.
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#formatTo(Formatter)
@@ -1240,9 +1239,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final String name          = element.pullString("name");
         final double semiMajorAxis = element.pullDouble("semiMajorAxis");
         double inverseFlattening   = element.pullDouble("inverseFlattening");
-        Unit<Length> unit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+        Unit<Length> unit = parseScaledUnit(element, WKTKeywords.LengthUnit, Units.METRE);
         if (unit == null) {
-            unit = SI.METRE;
+            unit = Units.METRE;
         }
         final Map<String,?> properties = parseMetadataAndClose(element, name, null);
         try {
@@ -1272,9 +1271,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     /**
      * Parses a {@code "Method"} (WKT 2) element, without the parameters.
      *
-     * @param  parent   The parent element.
-     * @param  keywords The element keywords.
-     * @return The operation method.
+     * @param  parent    the parent element.
+     * @param  keywords  the element keywords.
+     * @return the operation method.
      * @throws ParseException if the {@code "Method"} element can not be parsed.
      */
     private OperationMethod parseMethod(final Element parent, final String... keywords) throws ParseException {
@@ -1321,12 +1320,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * element which is itself inside the {@code ProjectedCRS} element. This is different than WKT 1, which
      * puts this element right into the the {@code ProjectedCRS} element without {@code Conversion} wrapper.
      *
-     * @param  mode               {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent             The parent element.
-     * @param  wrapper            "Conversion" or "DerivingConversion" wrapper name, or null if parsing a WKT 1.
-     * @param  defaultUnit        The unit (usually linear) of the parent element, or {@code null}.
-     * @param  defaultAngularUnit The angular unit of the sibling {@code GeographicCRS} element, or {@code null}.
-     * @return The {@code "Method"} element and its parameters as a defining conversion.
+     * @param  mode                {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent              the parent element.
+     * @param  wrapper             "Conversion" or "DerivingConversion" wrapper name, or null if parsing a WKT 1.
+     * @param  defaultUnit         the unit (usually linear) of the parent element, or {@code null}.
+     * @param  defaultAngularUnit  the angular unit of the sibling {@code GeographicCRS} element, or {@code null}.
+     * @return the {@code "Method"} element and its parameters as a defining conversion.
      * @throws ParseException if the {@code "Method"} element can not be parsed.
      */
     private Conversion parseDerivingConversion(final int mode, Element parent, final String wrapper,
@@ -1391,10 +1390,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     DATUM["<name>", <spheroid> {,<to wgs84>} {,<authority>}]
      * }
      *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @param  meridian the prime meridian, or {@code null} for Greenwich.
-     * @return The {@code "Datum"} element as a {@link GeodeticDatum} object.
+     * @param  mode      {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent    the parent element.
+     * @param  meridian  the prime meridian, or {@code null} for Greenwich.
+     * @return the {@code "Datum"} element as a {@link GeodeticDatum} object.
      * @throws ParseException if the {@code "Datum"} element can not be parsed.
      *
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum#formatTo(Formatter)
@@ -1431,10 +1430,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     VERT_DATUM["<name>", <datum type> {,<authority>}]
      * }
      *
-     * @param  mode   {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @param  isWKT1 {@code true} if the parent is a WKT 1 element.
-     * @return The {@code "VerticalDatum"} element as a {@link VerticalDatum} object.
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @param  isWKT1  {@code true} if the parent is a WKT 1 element.
+     * @return the {@code "VerticalDatum"} element as a {@link VerticalDatum} object.
      * @throws ParseException if the {@code "VerticalDatum"} element can not be parsed.
      */
     private VerticalDatum parseVerticalDatum(final int mode, final Element parent, final boolean isWKT1)
@@ -1469,9 +1468,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     TimeDatum["<name>", TimeOrigin[<time origin>] {,<authority>}]
      * }
      *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @return The {@code "TimeDatum"} element as a {@link TemporalDatum} object.
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @return the {@code "TimeDatum"} element as a {@link TemporalDatum} object.
      * @throws ParseException if the {@code "TimeDatum"} element can not be parsed.
      */
     private TemporalDatum parseTimeDatum(final int mode, final Element parent) throws ParseException {
@@ -1497,9 +1496,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     ParametricDatum["<name>", Anchor[...] {,<authority>}]
      * }
      *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @return The {@code "ParametricDatum"} element as a {@link ParametricDatum} object.
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @return the {@code "ParametricDatum"} element as a {@link ParametricDatum} object.
      * @throws ParseException if the {@code "ParametricDatum"} element can not be parsed.
      */
     private Datum parseParametricDatum(final int mode, final Element parent) throws ParseException {
@@ -1527,10 +1526,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * The datum type (WKT 1 only) is currently ignored.
      *
-     * @param  mode   {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @param  isWKT1 {@code true} if the parent is a WKT 1 element.
-     * @return The {@code "EngineeringDatum"} element as an {@link EngineeringDatum} object.
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @param  isWKT1  {@code true} if the parent is a WKT 1 element.
+     * @return the {@code "EngineeringDatum"} element as an {@link EngineeringDatum} object.
      * @throws ParseException if the {@code "EngineeringDatum"} element can not be parsed.
      */
     private EngineeringDatum parseEngineeringDatum(final int mode, final Element parent, final boolean isWKT1) throws ParseException {
@@ -1556,9 +1555,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Parses an {@code "ImageDatum"} (WKT 2) element. The syntax is given by
      * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#81">WKT 2 specification §12.2</a>.
      *
-     * @param  mode   {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @return The {@code "ImageDatum"} element as an {@link ImageDatum} object.
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @return the {@code "ImageDatum"} element as an {@link ImageDatum} object.
      * @throws ParseException if the {@code "ImageDatum"} element can not be parsed.
      */
     private ImageDatum parseImageDatum(final int mode, final Element parent) throws ParseException {
@@ -1586,10 +1585,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     LOCAL_CS["<name>", <local datum>, <unit>, <axis>, {,<axis>}* {,<authority>}]
      * }
      *
-     * @param  mode      {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent    The parent element.
-     * @param  isBaseCRS {@code true} if parsing the CRS inside a {@code DerivedCRS}.
-     * @return The {@code "EngineeringCRS"} element as an {@link EngineeringCRS} object.
+     * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent     the parent element.
+     * @param  isBaseCRS  {@code true} if parsing the CRS inside a {@code DerivedCRS}.
+     * @return the {@code "EngineeringCRS"} element as an {@link EngineeringCRS} object.
      * @throws ParseException if the {@code "EngineeringCRS"} element can not be parsed.
      */
     private SingleCRS parseEngineeringCRS(final int mode, final Element parent, final boolean isBaseCRS)
@@ -1659,9 +1658,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Parses an {@code "ImageCRS"} (WKT 2) element. The syntax is given by
      * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#79">WKT 2 specification §12</a>.
      *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @return The {@code "ImageCRS"} element as an {@link ImageCRS} object.
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @return the {@code "ImageCRS"} element as an {@link ImageCRS} object.
      * @throws ParseException if the {@code "ImageCRS"} element can not be parsed.
      */
     private ImageCRS parseImageCRS(final int mode, final Element parent) throws ParseException {
@@ -1701,12 +1700,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     GEOCCS["<name>", <datum>, <prime meridian>, <linear unit> {,<axis> ,<axis> ,<axis>} {,<authority>}]
      * }
      *
-     * @param  mode      {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent    The parent element.
-     * @param  dimension The minimal number of dimensions (usually 2).
-     * @param  csType    The default coordinate system type, or {@code null} if unknown.
-     *                   Should be non-null only when parsing a {@link GeneralDerivedCRS#getBaseCRS()} component.
-     * @return The {@code "GeodeticCRS"} element as a {@link GeographicCRS} or {@link GeocentricCRS} object.
+     * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent     the parent element.
+     * @param  dimension  the minimal number of dimensions (usually 2).
+     * @param  csType     the default coordinate system type, or {@code null} if unknown.
+     *                    Should be non-null only when parsing a {@link GeneralDerivedCRS#getBaseCRS()} component.
+     * @return the {@code "GeodeticCRS"} element as a {@link GeographicCRS} or {@link GeocentricCRS} object.
      * @throws ParseException if the {@code "GeodeticCRS"} element can not be parsed.
      *
      * @see org.apache.sis.referencing.crs.DefaultGeographicCRS#formatTo(Formatter)
@@ -1751,7 +1750,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 if (Units.isAngular(csUnit)) {
                     angularUnit = csUnit.asType(Angle.class);
                 } else {
-                    angularUnit = NonSI.DEGREE_ANGLE;
+                    angularUnit = Units.DEGREE;
                     if (csUnit == null) {
                         /*
                          * A UNIT[…] is mandatory either in the CoordinateSystem as a whole (csUnit != null),
@@ -1760,7 +1759,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                          * We recognize those cases by a non-null 'csType' given in argument to this method.
                          */
                         if (WKTKeywords.ellipsoidal.equals(csType)) {
-                            csUnit = NonSI.DEGREE_ANGLE;                        // For BaseGeodCRS in ProjectedCRS.
+                            csUnit = Units.DEGREE;                        // For BaseGeodCRS in ProjectedCRS.
                         }
                     }
                 }
@@ -1772,7 +1771,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  */
                 isWKT1      = true;
                 csType      = WKTKeywords.ellipsoidal;
-                angularUnit = parseScaledUnit(element, WKTKeywords.AngleUnit, SI.RADIAN);
+                angularUnit = parseScaledUnit(element, WKTKeywords.AngleUnit, Units.RADIAN);
                 csUnit      = angularUnit;
                 dimension   = 2;
                 break;
@@ -1783,8 +1782,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  */
                 isWKT1      = true;
                 csType      = WKTKeywords.Cartesian;
-                angularUnit = NonSI.DEGREE_ANGLE;
-                csUnit      = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+                angularUnit = Units.DEGREE;
+                csUnit      = parseScaledUnit(element, WKTKeywords.LengthUnit, Units.METRE);
                 dimension   = 3;
                 break;
             }
@@ -1868,10 +1867,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     VERT_CS["<name>", <vert datum>, <linear unit>, {<axis>,} {,<authority>}]
      * }
      *
-     * @param  mode      {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent    The parent element.
-     * @param  isBaseCRS {@code true} if parsing the CRS inside a {@code DerivedCRS}.
-     * @return The {@code "VerticalCRS"} element as a {@link VerticalCRS} object.
+     * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent     the parent element.
+     * @param  isBaseCRS  {@code true} if parsing the CRS inside a {@code DerivedCRS}.
+     * @return the {@code "VerticalCRS"} element as a {@link VerticalCRS} object.
      * @throws ParseException if the {@code "VerticalCRS"} element can not be parsed.
      */
     @SuppressWarnings("null")
@@ -1953,10 +1952,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     /**
      * Parses {@code "TimeCRS"} element.
      *
-     * @param  mode      {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent    The parent element.
-     * @param  isBaseCRS {@code true} if parsing the CRS inside a {@code DerivedCRS}.
-     * @return The {@code "TimeCRS"} element as a {@link TemporalCRS} object.
+     * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent     the parent element.
+     * @param  isBaseCRS  {@code true} if parsing the CRS inside a {@code DerivedCRS}.
+     * @return the {@code "TimeCRS"} element as a {@link TemporalCRS} object.
      * @throws ParseException if the {@code "TimeCRS"} element can not be parsed.
      */
     private SingleCRS parseTimeCRS(final int mode, final Element parent, final boolean isBaseCRS)
@@ -1966,8 +1965,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (element == null) {
             return null;
         }
-        final String         name = element.pullString("name");
-        final Unit<Duration> unit = parseScaledUnit(element, WKTKeywords.TimeUnit, SI.SECOND);
+        final String     name = element.pullString("name");
+        final Unit<Time> unit = parseScaledUnit(element, WKTKeywords.TimeUnit, Units.SECOND);
         /*
          * A TemporalCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind TemporalCRS.
          * In the later case, the datum is null and we have instead DerivingConversion element from a BaseTimeCRS.
@@ -2013,10 +2012,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     /**
      * Parses {@code "ParametricCRS"} element.
      *
-     * @param  mode      {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent    The parent element.
-     * @param  isBaseCRS {@code true} if parsing the CRS inside a {@code DerivedCRS}.
-     * @return The {@code "ParametricCRS"} object.
+     * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent     the parent element.
+     * @param  isBaseCRS  {@code true} if parsing the CRS inside a {@code DerivedCRS}.
+     * @return the {@code "ParametricCRS"} object.
      * @throws ParseException if the {@code "ParametricCRS"} element can not be parsed.
      */
     private SingleCRS parseParametricCRS(final int mode, final Element parent, final boolean isBaseCRS)
@@ -2081,10 +2080,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *            <linear unit> {,<twin axes>}{,<authority>}]
      * }
      *
-     * @param  mode      {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent    The parent element.
-     * @param  isBaseCRS {@code true} if parsing the CRS inside a {@code DerivedCRS}.
-     * @return The {@code "ProjectedCRS"} element as a {@link ProjectedCRS} object.
+     * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent     the parent element.
+     * @param  isBaseCRS  {@code true} if parsing the CRS inside a {@code DerivedCRS}.
+     * @return the {@code "ProjectedCRS"} element as a {@link ProjectedCRS} object.
      * @throws ParseException if the {@code "ProjectedCRS"} element can not be parsed.
      */
     private ProjectedCRS parseProjectedCRS(final int mode, final Element parent, final boolean isBaseCRS)
@@ -2116,15 +2115,15 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          *    - lengths shall be given in the unit for the projected CRS axes.
          *    - angles shall be given in the unit for the base geographic CRS of the projected CRS.
          */
-        Unit<Length> csUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+        Unit<Length> csUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, Units.METRE);
         final Unit<Length> linearUnit;
         final Unit<Angle>  angularUnit;
         if (isWKT1 && usesCommonUnits) {
-            linearUnit  = SI.METRE;
-            angularUnit = NonSI.DEGREE_ANGLE;
+            linearUnit  = Units.METRE;
+            angularUnit = Units.DEGREE;
         } else {
             linearUnit  = csUnit;
-            angularUnit = AxisDirections.getAngularUnit(geoCRS.getCoordinateSystem(), NonSI.DEGREE_ANGLE);
+            angularUnit = AxisDirections.getAngularUnit(geoCRS.getCoordinateSystem(), Units.DEGREE);
         }
         final Conversion conversion = parseDerivingConversion(MANDATORY, element,
                 isWKT1 ? null : WKTKeywords.Conversion, linearUnit, angularUnit);
@@ -2137,7 +2136,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * in the WKT of base CRS. In this case only, we will default to metre.
          */
         if (csUnit == null && isBaseCRS) {
-            csUnit = SI.METRE;
+            csUnit = Units.METRE;
         }
         final CoordinateSystem cs;
         try {
@@ -2165,9 +2164,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * In the particular case where there is a geographic CRS and an ellipsoidal height,
      * this method rather build a three-dimensional geographic CRS.
      *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @return The {@code "CompoundCRS"} element as a {@link CompoundCRS} object.
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @return the {@code "CompoundCRS"} element as a {@link CompoundCRS} object.
      * @throws ParseException if the {@code "CompoundCRS"} element can not be parsed.
      */
     private CoordinateReferenceSystem parseCompoundCRS(final int mode, final Element parent) throws ParseException {
@@ -2197,9 +2196,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     FITTED_CS["<name>", <to base>, <base cs>]
      * }
      *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @return The {@code "FITTED_CS"} element as a {@link CompoundCRS} object.
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @return the {@code "FITTED_CS"} element as a {@link CompoundCRS} object.
      * @throws ParseException if the {@code "COMPD_CS"} element can not be parsed.
      */
     private DerivedCRS parseFittedCS(final int mode, final Element parent) throws ParseException {
@@ -2230,7 +2229,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 buffer.append(number);
                 axes[i] = csFactory.createCoordinateSystemAxis(
                         singletonMap(CoordinateSystemAxis.NAME_KEY, buffer.toString()),
-                        number, AxisDirection.OTHER, Unit.ONE);
+                        number, AxisDirection.OTHER, Units.UNITY);
             }
             final Map<String,Object> properties = parseMetadataAndClose(element, name, baseCRS);
             final CoordinateSystem derivedCS = referencing.createAbstractCS(
@@ -2250,9 +2249,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Parses a {@code "CoordinateOperation"} element. The syntax is given by
      * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#113">WKT 2 specification §17</a>.
      *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @return The {@code "CoordinateOperation"} element as a {@link CoordinateOperation} object.
+     * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent  the parent element.
+     * @return the {@code "CoordinateOperation"} element as a {@link CoordinateOperation} object.
      * @throws ParseException if the {@code "CoordinateOperation"} element can not be parsed.
      */
     private CoordinateOperation parseOperation(final int mode, final Element parent) throws ParseException {

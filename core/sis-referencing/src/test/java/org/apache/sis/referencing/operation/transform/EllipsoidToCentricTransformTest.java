@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Iterator;
-import javax.measure.unit.SI;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -29,6 +28,7 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.measure.Units;
 
 import static java.lang.StrictMath.toRadians;
 
@@ -46,7 +46,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -152,7 +152,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
     public void testHighEccentricity() throws FactoryException, TransformException, FactoryException {
         transform = EllipsoidToCentricTransform.createGeodeticConversion(
                 DefaultFactories.forBuildin(MathTransformFactory.class),
-                6000000, 4000000, SI.METRE, true, EllipsoidToCentricTransform.TargetType.CARTESIAN);
+                6000000, 4000000, Units.METRE, true, EllipsoidToCentricTransform.TargetType.CARTESIAN);
 
         final double delta = toRadians(100.0 / 60) / 1852;
         derivativeDeltas  = new double[] {delta, delta, 100};

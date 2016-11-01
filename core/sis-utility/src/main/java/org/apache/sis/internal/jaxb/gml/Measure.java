@@ -16,10 +16,11 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
+import java.util.Locale;
+import java.io.IOException;
 import java.net.URISyntaxException;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
-import javax.measure.quantity.Quantity;
+import javax.measure.Unit;
+import javax.measure.Quantity;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -27,6 +28,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 
@@ -62,7 +64,7 @@ import org.apache.sis.measure.Units;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.measure.Measure
@@ -71,6 +73,16 @@ import org.apache.sis.measure.Units;
  */
 @XmlType(name = "MeasureType")
 public final class Measure {
+    /**
+     * An instance for formatting units with a syntax close to the UCUM one.
+     * While {@code UnitFormat} is generally not thread-safe, this particular
+     * instance is safe if we never invoke any setter method.
+     */
+    private static final UnitFormat UCUM = new UnitFormat(Locale.ROOT);
+    static {
+        UCUM.setStyle(UnitFormat.Style.UCUM);
+    }
+
     /**
      * The value of the measure.
      */
@@ -123,7 +135,7 @@ public final class Measure {
      *     http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
      * }
      *
-     * @return The string representation of the unit of measure.
+     * @return the string representation of the unit of measure.
      *
      * @todo Strictly speaking, the above URL should be used only for "m", "deg" and "rad" units because they
      *       are the only ones defined in the <code>gmxUom.xml</code> file. What should we do for other units?
@@ -138,10 +150,10 @@ public final class Measure {
      * {@code uom} attribute, instead of letting the {@code uom} attribute on the measurement value.
      * The main example is {@link org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis}.
      *
-     * @param  unit The unit to format.
+     * @param  unit       the unit to format.
      * @param  asXPointer {@code true} if the units shall be formatted as {@code xpointer}.
-     * @param  inAxis {@code true} for a unit used in Coordinate System Axis definition.
-     * @return The string representation of the unit of measure.
+     * @param  inAxis     {@code true} for a unit used in Coordinate System Axis definition.
+     * @return the string representation of the unit of measure.
      */
     public static String getUOM(final Unit<?> unit, final boolean asXPointer, final boolean inAxis) {
         if (!asXPointer) {
@@ -150,21 +162,24 @@ public final class Measure {
                 return DefinitionURI.PREFIX + ":uom:" + Constants.EPSG + "::" + code;
             }
         }
-        if (unit == null || unit.equals(Unit.ONE)) {
+        if (unit == null || unit.equals(Units.UNITY)) {
             return "";
         }
-        if (unit.equals(NonSI.PIXEL)) {
-            return "pixel"; // TODO: maybe not the most appropriate unit.
+        final StringBuilder buffer = Context.schema(Context.current(), "gmd", Schemas.METADATA_ROOT)
+                                            .append(Schemas.UOM_PATH).append("#xpointer(//*[@gml:id='");
+        try {
+            UCUM.format(unit, buffer);
+        } catch (IOException e) {
+            throw new AssertionError(e);        // Should never happen since we wrote to a StringBuilder.
         }
-        return Context.schema(Context.current(), "gmd", Schemas.METADATA_ROOT).append(Schemas.UOM_PATH)
-                .append("#xpointer(//*[@gml:id='").append(unit).append("'])").toString();
+        return buffer.append("'])").toString();
     }
 
     /**
      * Sets the unit of measure. This method is invoked by JAXB at unmarshalling time.
      *
-     * @param uom The unit of measure as a string.
-     * @throws URISyntaxException If the {@code uom} looks like a URI, but can not be parsed.
+     * @param  uom  the unit of measure as a string.
+     * @throws URISyntaxException if the {@code uom} looks like a URI, but can not be parsed.
      */
     public void setUOM(String uom) throws URISyntaxException {
         final Context context = Context.current();
@@ -177,11 +192,11 @@ public final class Measure {
      * @todo For now, this method does not format useful error message in case of wrong unit type.
      *       We define this method merely as a placeholder for future improvement in error handling.
      *
-     * @param  <Q>  Compile-time type of the {@code type} argument.
-     * @param  type The quantity for the desired unit.
-     * @return A unit compatible with the given type, or {@code null} if none.
+     * @param  <Q>   compile-time type of the {@code type} argument.
+     * @param  type  the quantity for the desired unit.
+     * @return a unit compatible with the given type, or {@code null} if none.
      */
-    public <Q extends Quantity> Unit<Q> getUnit(final Class<Q> type) {
+    public <Q extends Quantity<Q>> Unit<Q> getUnit(final Class<Q> type) {
         return (unit != null) ? unit.asType(type) : null;
     }
 
@@ -191,10 +206,10 @@ public final class Measure {
      *
      * <div class="note"><b>Example:</b>
      * Some users wrongly assign the "m" unit to {@code Ellipsoid.inverseFlattening}.
-     * The SIS adapter forces the unit to {@link Unit#ONE}, but we want to let the user
+     * The SIS adapter forces the unit to {@link Units#UNITY}, but we want to let the user
      * know that he probably did something wrong.</div>
      *
-     * @param  newUnit The new unit (can not be null).
+     * @param  newUnit  the new unit (can not be null).
      * @return {@code true} if a different unit was defined before this method call.
      */
     public boolean setUnit(final Unit<?> newUnit) {
@@ -206,8 +221,8 @@ public final class Measure {
     /**
      * Sends a warning for a missing {@code "uom"} attribute.
      *
-     * @param caller     The class of the method invoking this method.
-     * @param methodName The name of the method invoking this method.
+     * @param  caller      the class of the method invoking this method.
+     * @param  methodName  the name of the method invoking this method.
      */
     public static void missingUOM(final Class<?> caller, final String methodName) {
         Context.warningOccured(Context.current(), caller, methodName,

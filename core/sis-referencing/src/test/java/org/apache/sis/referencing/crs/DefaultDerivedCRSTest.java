@@ -18,8 +18,6 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Collections;
 import javax.xml.bind.JAXBException;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -33,6 +31,7 @@ import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultConversionTest;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
@@ -46,7 +45,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -181,7 +180,7 @@ public final strictfp class DefaultDerivedCRSTest extends XMLTestCase {
                 "  BASEGEODCRS[“NTF (Paris)”,\n" +
                 "    DATUM[“Nouvelle Triangulation Francaise”,\n" +
                 "      ELLIPSOID[“NTF”, 6378249.2, 293.4660212936269, LENGTHUNIT[“metre”, 1]]],\n" +
-                "      PRIMEM[“Paris”, 2.5969213, ANGLEUNIT[“grade”, 0.015707963267948967]]],\n" +
+                "      PRIMEM[“Paris”, 2.5969213, ANGLEUNIT[“grad”, 0.015707963267948967]]],\n" +
                 "  DERIVINGCONVERSION[“Paris to Greenwich”,\n" +
                 "    METHOD[“Longitude rotation”, ID[“EPSG”, 9601]],\n" +
                 "    PARAMETER[“Longitude offset”, 2.33722917, ID[“EPSG”, 8602]]],\n" +
@@ -203,7 +202,7 @@ public final strictfp class DefaultDerivedCRSTest extends XMLTestCase {
                 "  BaseGeodCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
-                "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967]],\n" +
+                "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967]],\n" +
                 "    Unit[“degree”, 0.017453292519943295]],\n" +
                 "  DerivingConversion[“Paris to Greenwich”,\n" +
                 "    Method[“Longitude rotation”],\n" +
@@ -233,9 +232,9 @@ public final strictfp class DefaultDerivedCRSTest extends XMLTestCase {
         final Conversion conversion = crs.getConversionFromBase();
         final ParameterValueGroup pg = conversion.getParameterValues();
         assertEpsgNameAndIdentifierEqual("Geographic/topocentric conversions", 9837, conversion.getMethod());
-        assertEquals("Latitude", 55, pg.parameter("Latitude of topocentric origin" ).doubleValue(NonSI.DEGREE_ANGLE), STRICT);
-        assertEquals("Longitude", 5, pg.parameter("Longitude of topocentric origin").doubleValue(NonSI.DEGREE_ANGLE), STRICT);
-        assertEquals("Height",    0, pg.parameter("Ellipsoidal height of topocentric origin").doubleValue(SI.METRE),  STRICT);
+        assertEquals("Latitude", 55, pg.parameter("Latitude of topocentric origin" ).doubleValue(Units.DEGREE), STRICT);
+        assertEquals("Longitude", 5, pg.parameter("Longitude of topocentric origin").doubleValue(Units.DEGREE), STRICT);
+        assertEquals("Height",    0, pg.parameter("Ellipsoidal height of topocentric origin").doubleValue(Units.METRE),  STRICT);
         /*
          * Test marshalling and compare with the original file.
          */

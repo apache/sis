@@ -17,8 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Date;
-import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
@@ -27,6 +26,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -34,7 +34,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @SuppressWarnings("serial")
@@ -122,7 +122,7 @@ public final strictfp class GeodeticDatumMock extends IdentifiedObjectMock imple
 
     @Override public PrimeMeridian        getPrimeMeridian()      {return PrimeMeridianMock.GREENWICH;}
     @Override public Ellipsoid            getEllipsoid()          {return this;}
-    @Override public Unit<Length>         getAxisUnit()           {return SI.METRE;}
+    @Override public Unit<Length>         getAxisUnit()           {return Units.METRE;}
     @Override public double               getSemiMajorAxis()      {return semiMajorAxis;}
     @Override public double               getSemiMinorAxis()      {return semiMinorAxis;}
     @Override public double               getInverseFlattening()  {return inverseFlattening;}

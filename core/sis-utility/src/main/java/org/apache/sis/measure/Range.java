@@ -20,9 +20,8 @@ import java.util.Formatter;
 import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.io.Serializable;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.apache.sis.internal.util.Utilities;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
@@ -86,7 +85,7 @@ import java.util.Objects;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  *
  * @see RangeFormat
@@ -681,8 +680,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         }
         final Unit<?> unit = unit();
         if (unit != null) {
-            final String symbol = PatchedUnitFormat.toString(unit);
-            if (!symbol.isEmpty()) {
+            final String symbol = unit.toString();
+            if (symbol != null && !symbol.isEmpty()) {
                 if (Character.isLetterOrDigit(symbol.codePointAt(0))) {
                     buffer.append(' ');
                 }

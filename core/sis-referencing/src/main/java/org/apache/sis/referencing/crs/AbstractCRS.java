@@ -19,7 +19,7 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import java.util.EnumMap;
 import java.util.ConcurrentModificationException;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
