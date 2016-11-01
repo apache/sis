@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Map;
 import java.util.Collections;
-import javax.measure.converter.ConversionException;
+import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.cs.CartesianCS;
@@ -47,7 +47,7 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 abstract class CoordinateSystemTransform extends AbstractMathTransform {
@@ -204,7 +204,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
                 return factory.createConcatenatedTransform(before,
                        factory.createConcatenatedTransform(tr, after));
             }
-        } catch (IllegalArgumentException | ConversionException e) {
+        } catch (IllegalArgumentException | IncommensurableException e) {
             cause = e;
         }
         throw new OperationNotFoundException(Resources.format(Resources.Keys.CoordinateOperationNotFound_2,

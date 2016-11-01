@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.SphericalCS;

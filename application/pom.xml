@@ -116,6 +116,7 @@
   <modules>
     <module>sis-webapp</module>
     <module>sis-console</module>
+<!--<module>sis-openoffice</module>     Omitted for now because of the numerous warnings emitted by Pack200. -->
   </modules>
 
 </project>

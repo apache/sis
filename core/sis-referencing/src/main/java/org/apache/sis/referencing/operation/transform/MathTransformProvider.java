@@ -60,8 +60,8 @@ import org.opengis.referencing.operation.MathTransformFactory;
  *
  *         &#64;Override
  *         public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
- *             double semiMajor = values.parameter("semi_major").doubleValue(SI.METRE);
- *             double semiMinor = values.parameter("semi_minor").doubleValue(SI.METRE);
+ *             double semiMajor = values.parameter("semi_major").doubleValue(Units.METRE);
+ *             double semiMinor = values.parameter("semi_minor").doubleValue(Units.METRE);
  *             // etc...
  *             return new MyProjection(semiMajor, semiMinor, ...);
  *         }
@@ -94,8 +94,8 @@ public interface MathTransformProvider {
      *
      * {@preformat java
      *     public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
-     *         double semiMajor = values.parameter("semi_major").doubleValue(SI.METRE);
-     *         double semiMinor = values.parameter("semi_minor").doubleValue(SI.METRE);
+     *         double semiMajor = values.parameter("semi_major").doubleValue(Units.METRE);
+     *         double semiMinor = values.parameter("semi_minor").doubleValue(Units.METRE);
      *         // etc...
      *         return new MyProjection(semiMajor, semiMinor, ...);
      *     }

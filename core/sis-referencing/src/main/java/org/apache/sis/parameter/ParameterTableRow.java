@@ -29,7 +29,7 @@ import java.lang.reflect.Array;
 import java.io.IOException;
 import java.text.Format;
 import java.text.FieldPosition;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;

@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;

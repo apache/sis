@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.LinearCS;
@@ -157,7 +157,7 @@ public class DefaultLinearCS extends AbstractCS implements LinearCS {
         if (!AxisDirections.isSpatialOrUserDefined(direction, false)) {
             return INVALID_DIRECTION;
         }
-        if (!Units.isLinear(unit) && !Unit.ONE.equals(unit)) {
+        if (!Units.isLinear(unit) && !Units.UNITY.equals(unit)) {
             return INVALID_UNIT;
         }
         return VALID;

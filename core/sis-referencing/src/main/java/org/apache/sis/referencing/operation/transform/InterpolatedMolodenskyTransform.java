@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
@@ -36,6 +36,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 
@@ -61,7 +62,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see InterpolatedGeocentricTransform
@@ -219,7 +220,7 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
         if (pg != context) {
             Δf = Δfmod / semiMinor;
             pg.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).setValue(Δa, unit);
-            pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Unit.ONE);
+            pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Units.UNITY);
         }
         if (grid instanceof DatumShiftGridFile<?,?>) {
             ((DatumShiftGridFile<?,?>) grid).setFileParameters(pg);

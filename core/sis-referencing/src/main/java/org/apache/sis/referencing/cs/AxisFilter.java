@@ -19,7 +19,7 @@ package org.apache.sis.referencing.cs;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 
 
 /**
@@ -93,7 +93,7 @@ public interface AxisFilter {
      *     &#64;Override
      *     public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
      *         if (Units.isAngular(unit)) {
-     *             unit = NonSI.DEGREE_ANGLE;
+     *             unit = Units.DEGREE;
      *         }
      *         return unit;
      *     }

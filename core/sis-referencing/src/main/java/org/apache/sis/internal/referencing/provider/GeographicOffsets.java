@@ -16,8 +16,6 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -29,6 +27,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -38,7 +37,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -69,9 +68,9 @@ public class GeographicOffsets extends GeodeticOperation {
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        TY = builder.addIdentifier("8601").addName("Latitude offset") .create(0, NonSI.DEGREE_ANGLE);
-        TX = builder.addIdentifier("8602").addName("Longitude offset").create(0, NonSI.DEGREE_ANGLE);
-        TZ = builder.addIdentifier("8603").addName("Vertical Offset") .create(0, SI.METRE);
+        TY = builder.addIdentifier("8601").addName("Latitude offset") .create(0, Units.DEGREE);
+        TX = builder.addIdentifier("8602").addName("Longitude offset").create(0, Units.DEGREE);
+        TZ = builder.addIdentifier("8603").addName("Vertical Offset") .create(0, Units.METRE);
         PARAMETERS = builder.addIdentifier("9660").addName("Geographic3D offsets").createGroup(TY, TX, TZ);
     }
 

@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Collection;
 import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterValue;

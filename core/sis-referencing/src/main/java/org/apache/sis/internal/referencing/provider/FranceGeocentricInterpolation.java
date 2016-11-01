@@ -26,8 +26,6 @@ import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.parameter.ParameterValueGroup;
@@ -45,6 +43,7 @@ import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -85,7 +84,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -256,7 +255,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             return candidate;
         }
         return DefaultEllipsoid.createEllipsoid(Collections.singletonMap(Ellipsoid.NAME_KEY,
-                NilReferencingObject.UNNAMED), semiMajorAxis, semiMinorAxis, SI.METRE);
+                NilReferencingObject.UNNAMED), semiMajorAxis, semiMinorAxis, Units.METRE);
     }
 
     /**
@@ -418,7 +417,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
                             nx = JDK8.toIntExact(Math.round((xf - x0) / Δx + 1));
                             ny = JDK8.toIntExact(Math.round((yf - y0) / Δy + 1));
                             grid = new DatumShiftGridFile.Float<>(3,
-                                    NonSI.DEGREE_ANGLE, SI.METRE, false,
+                                    Units.DEGREE, Units.METRE, false,
                                     x0, y0, Δx, Δy, nx, ny, PARAMETERS, file);
                         }
                         break;

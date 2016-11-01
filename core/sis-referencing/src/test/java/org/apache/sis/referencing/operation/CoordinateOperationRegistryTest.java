@@ -154,7 +154,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
                 "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Latitude (φ)”, NORTH],\n" +
                 "    Axis[“Longitude (λ)”, EAST],\n" +
-                "    Unit[“grade”, 0.015707963267948967]]");
+                "    Unit[“grad”, 0.015707963267948967]]");
                 // Intentionally omit Id[“EPSG”, 4807] for testing capability to find it back.
 
         final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geographic();
@@ -224,7 +224,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
                 "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Longitude (λ)”, EAST],\n" +
                 "    Axis[“Latitude (φ)”, NORTH],\n" +
-                "    Unit[“grade”, 0.015707963267948967]]");
+                "    Unit[“grad”, 0.015707963267948967]]");
 
         final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.normalizedGeographic();
         final CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
@@ -254,8 +254,8 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
                 "  $NTF,\n" +
                 "    PrimeMeridian[“Paris”, 2.5969213],\n" +
                 "  CS[ellipsoidal, 3],\n" +
-                "    Axis[“Latitude (φ)”, NORTH, Unit[“grade”, 0.015707963267948967]],\n" +
-                "    Axis[“Longitude (λ)”, EAST, Unit[“grade”, 0.015707963267948967]],\n" +
+                "    Axis[“Latitude (φ)”, NORTH, Unit[“grad”, 0.015707963267948967]],\n" +
+                "    Axis[“Longitude (λ)”, EAST, Unit[“grad”, 0.015707963267948967]],\n" +
                 "    Axis[“Height (h)”, UP, Unit[“m”, 1]]]");
 
         final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geographic3D();

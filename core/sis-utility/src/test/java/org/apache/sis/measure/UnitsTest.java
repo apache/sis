@@ -16,34 +16,20 @@
  */
 package org.apache.sis.measure;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
+import javax.measure.quantity.Angle;
+import javax.measure.quantity.Area;
+import javax.measure.quantity.Dimensionless;
+import javax.measure.quantity.Length;
+import javax.measure.quantity.Mass;
+import javax.measure.quantity.Speed;
+import javax.measure.quantity.Temperature;
+import javax.measure.quantity.Time;
+import javax.measure.quantity.Volume;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static javax.measure.unit.Unit.ONE;
-import static javax.measure.unit.SI.CELSIUS;
-import static javax.measure.unit.SI.KELVIN;
-import static javax.measure.unit.SI.METRE;
-import static javax.measure.unit.SI.METRES_PER_SECOND;
-import static javax.measure.unit.SI.SQUARE_METRE;
-import static javax.measure.unit.SI.KILOMETRE;
-import static javax.measure.unit.SI.KILOGRAM;
-import static javax.measure.unit.SI.JOULE;
-import static javax.measure.unit.SI.PASCAL;
-import static javax.measure.unit.SI.SECOND;
-import static javax.measure.unit.SI.HERTZ;
-import static javax.measure.unit.SI.RADIAN;
-import static javax.measure.unit.NonSI.CENTIRADIAN;
-import static javax.measure.unit.NonSI.DEGREE_ANGLE;
-import static javax.measure.unit.NonSI.MINUTE_ANGLE;
-import static javax.measure.unit.NonSI.SECOND_ANGLE;
-import static javax.measure.unit.NonSI.GRADE;
-import static javax.measure.unit.NonSI.DAY;
-import static javax.measure.unit.NonSI.SPHERE;
-import static javax.measure.unit.NonSI.ATMOSPHERE;
-import static javax.measure.unit.NonSI.NAUTICAL_MILE;
-import static javax.measure.unit.NonSI.PERCENT;
 import static org.apache.sis.measure.SexagesimalConverter.*;
 import static org.apache.sis.measure.Units.*;
 import static org.apache.sis.test.Assert.*;
@@ -54,36 +40,33 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 @DependsOn({
+    UnitFormatTest.class,
     SexagesimalConverterTest.class,
     org.apache.sis.internal.util.DefinitionURITest.class,
     org.apache.sis.internal.util.XPathsTest.class
 })
 public final strictfp class UnitsTest extends TestCase {
     /**
-     * Sanity check of {@link UnitsMap}. This test fail if at least one code in the
-     * {@link UnitsMap#EPSG_CODES} static initializer is invalid.
+     * Verifies that the {@link Units#initialized} flag has been set.
      */
     @Test
-    public void testUnitsMap() {
-        assertFalse(UnitsMap.EPSG_CODES.containsKey(null));
+    public void testInitialized() {
+        assertTrue(Units.initialized);
     }
 
     /**
      * Tests serialization of units.
-     *
-     * @todo The {@code assertEquals} in this method should actually be {@code assertSame},
-     *       but JSR-275 0.9.3 does not resolve units on deserialization.
      */
     @Test
     public void testSerialization() {
-        assertEquals(DEGREE_ANGLE,         assertSerializedEquals(DEGREE_ANGLE));
-        assertEquals(DMS,      assertSerializedEquals(DMS));
+        assertSame  (DEGREE,     assertSerializedEquals(DEGREE));
+        assertEquals(DMS,        assertSerializedEquals(DMS));
         assertEquals(DMS_SCALED, assertSerializedEquals(DMS_SCALED));
-        assertEquals(PPM,                  assertSerializedEquals(PPM));
+        assertSame  (PPM,        assertSerializedEquals(PPM));
     }
 
     /**
@@ -93,17 +76,14 @@ public final strictfp class UnitsTest extends TestCase {
     public void testIsTemporal() {
         // Standard units
         assertFalse(isTemporal(null));
-        assertFalse(isTemporal(ONE));
+        assertFalse(isTemporal(UNITY));
         assertFalse(isTemporal(METRE));
         assertFalse(isTemporal(RADIAN));
-        assertFalse(isTemporal(CENTIRADIAN));
-        assertFalse(isTemporal(DEGREE_ANGLE));
-        assertFalse(isTemporal(MINUTE_ANGLE));
-        assertFalse(isTemporal(SECOND_ANGLE));
-        assertFalse(isTemporal(GRADE));
+        assertFalse(isTemporal(DEGREE));
+        assertFalse(isTemporal(ARC_MINUTE));
+        assertFalse(isTemporal(ARC_SECOND));
+        assertFalse(isTemporal(GRAD));
         assertTrue (isTemporal(DAY));
-        assertFalse(isTemporal(SPHERE));
-        assertFalse(isTemporal(ATMOSPHERE));
         assertFalse(isTemporal(NAUTICAL_MILE));
 
         // Additional units
@@ -120,17 +100,14 @@ public final strictfp class UnitsTest extends TestCase {
     public void testIsLinear() {
         // Standard units
         assertFalse(isLinear(null));
-        assertFalse(isLinear(ONE));
+        assertFalse(isLinear(UNITY));
         assertTrue (isLinear(METRE));
         assertFalse(isLinear(RADIAN));
-        assertFalse(isLinear(CENTIRADIAN));
-        assertFalse(isLinear(DEGREE_ANGLE));
-        assertFalse(isLinear(MINUTE_ANGLE));
-        assertFalse(isLinear(SECOND_ANGLE));
-        assertFalse(isLinear(GRADE));
+        assertFalse(isLinear(DEGREE));
+        assertFalse(isLinear(ARC_MINUTE));
+        assertFalse(isLinear(ARC_SECOND));
+        assertFalse(isLinear(GRAD));
         assertFalse(isLinear(DAY));
-        assertFalse(isLinear(SPHERE));
-        assertFalse(isLinear(ATMOSPHERE));
         assertTrue (isLinear(NAUTICAL_MILE));
 
         // Additional units
@@ -147,17 +124,14 @@ public final strictfp class UnitsTest extends TestCase {
     public void testIsAngular() {
         // Standard units
         assertFalse(isAngular(null));
-        assertFalse(isAngular(ONE));
+        assertFalse(isAngular(UNITY));
         assertFalse(isAngular(METRE));
         assertTrue (isAngular(RADIAN));
-        assertTrue (isAngular(CENTIRADIAN));
-        assertTrue (isAngular(DEGREE_ANGLE));
-        assertTrue (isAngular(MINUTE_ANGLE));
-        assertTrue (isAngular(SECOND_ANGLE));
-        assertTrue (isAngular(GRADE));
+        assertTrue (isAngular(DEGREE));
+        assertTrue (isAngular(ARC_MINUTE));
+        assertTrue (isAngular(ARC_SECOND));
+        assertTrue (isAngular(GRAD));
         assertFalse(isAngular(DAY));
-        assertFalse(isAngular(SPHERE));
-        assertFalse(isAngular(ATMOSPHERE));
         assertFalse(isAngular(NAUTICAL_MILE));
 
         // Additional units
@@ -174,17 +148,14 @@ public final strictfp class UnitsTest extends TestCase {
     public void testIsScale() {
         // Standard units
         assertFalse(isScale(null));
-        assertTrue (isScale(ONE));
+        assertTrue (isScale(UNITY));
         assertFalse(isScale(METRE));
         assertFalse(isScale(RADIAN));
-        assertFalse(isScale(CENTIRADIAN));
-        assertFalse(isScale(DEGREE_ANGLE));
-        assertFalse(isScale(MINUTE_ANGLE));
-        assertFalse(isScale(SECOND_ANGLE));
-        assertFalse(isScale(GRADE));
+        assertFalse(isScale(DEGREE));
+        assertFalse(isScale(ARC_MINUTE));
+        assertFalse(isScale(ARC_SECOND));
+        assertFalse(isScale(GRAD));
         assertFalse(isScale(DAY));
-        assertFalse(isScale(SPHERE));
-        assertFalse(isScale(ATMOSPHERE));
         assertFalse(isScale(NAUTICAL_MILE));
 
         // Additional units
@@ -201,7 +172,6 @@ public final strictfp class UnitsTest extends TestCase {
     public void testIsPressure() {
         assertFalse(isPressure(null));
         assertFalse(isPressure(METRE));
-        assertTrue (isPressure(ATMOSPHERE));
     }
 
     /**
@@ -210,16 +180,23 @@ public final strictfp class UnitsTest extends TestCase {
     @Test
     public void testToStandardUnit() {
         assertEquals(1000.0,               toStandardUnit(KILOMETRE),    1E-15);
-        assertEquals(0.017453292519943295, toStandardUnit(DEGREE_ANGLE), 1E-15);
+        assertEquals(0.017453292519943295, toStandardUnit(DEGREE), 1E-15);
     }
 
     /**
-     * Tests {@link Units#multiply(Unit, double)}.
+     * Tests getting a unit for a given quantity type.
      */
     @Test
-    public void testMultiply() {
-        assertSame(KILOMETRE,    multiply(METRE,  1000));
-        assertSame(DEGREE_ANGLE, multiply(RADIAN, 0.017453292519943295));
+    public void testGetForQuantity() {
+        assertSame("Length",        Units.METRE,             Units.get(Length.class));
+        assertSame("Mass",          Units.KILOGRAM,          Units.get(Mass.class));
+        assertSame("Time",          Units.SECOND,            Units.get(Time.class));
+        assertSame("Temperature",   Units.KELVIN,            Units.get(Temperature.class));
+        assertSame("Area",          Units.SQUARE_METRE,      Units.get(Area.class));
+        assertSame("Volume",        Units.CUBIC_METRE,       Units.get(Volume.class));
+        assertSame("Speed",         Units.METRES_PER_SECOND, Units.get(Speed.class));
+        assertSame("Angle",         Units.RADIAN,            Units.get(Angle.class));
+        assertSame("Dimensionless", Units.UNITY,             Units.get(Dimensionless.class));
     }
 
     /**
@@ -227,18 +204,18 @@ public final strictfp class UnitsTest extends TestCase {
      */
     @Test
     public void testValueOf() {
-        assertSame(DEGREE_ANGLE, valueOf("°"));
-        assertSame(DEGREE_ANGLE, valueOf("deg"));
-        assertSame(DEGREE_ANGLE, valueOf("degree"));
-        assertSame(DEGREE_ANGLE, valueOf("degrees"));
-        assertSame(DEGREE_ANGLE, valueOf("degrées"));
-        assertSame(DEGREE_ANGLE, valueOf("DEGREES"));
-        assertSame(DEGREE_ANGLE, valueOf("DEGRÉES"));
-        assertSame(DEGREE_ANGLE, valueOf("degrees_east"));
-        assertSame(DEGREE_ANGLE, valueOf("degrees_north"));
-        assertSame(DEGREE_ANGLE, valueOf("degrées_north"));
-        assertSame(DEGREE_ANGLE, valueOf("decimal_degree"));
-        assertSame(SECOND_ANGLE, valueOf("arcsec"));
+        assertSame(DEGREE,       valueOf("°"));
+        assertSame(DEGREE,       valueOf("deg"));
+        assertSame(DEGREE,       valueOf("degree"));
+        assertSame(DEGREE,       valueOf("degrees"));
+        assertSame(DEGREE,       valueOf("degrées"));
+        assertSame(DEGREE,       valueOf("DEGREES"));
+        assertSame(DEGREE,       valueOf("DEGRÉES"));
+        assertSame(DEGREE,       valueOf("degrees_east"));
+        assertSame(DEGREE,       valueOf("degrees_north"));
+        assertSame(DEGREE,       valueOf("degrées_north"));
+        assertSame(DEGREE,       valueOf("decimal_degree"));
+        assertSame(ARC_SECOND,   valueOf("arcsec"));
         assertSame(RADIAN,       valueOf("rad"));
         assertSame(RADIAN,       valueOf("radian"));
         assertSame(RADIAN,       valueOf("radians"));
@@ -269,7 +246,7 @@ public final strictfp class UnitsTest extends TestCase {
      */
     @Test
     public void testAdvancedValueOf() {
-        assertSame  (Units.MILLISECOND,             valueOf("ms"));
+        assertSame  (MILLISECOND,                   valueOf("ms"));
         assertEquals(METRES_PER_SECOND,             valueOf("m/s"));
         assertEquals(METRES_PER_SECOND,             valueOf("m.s-1"));
         assertEquals(SQUARE_METRE.divide(SECOND),   valueOf("m2.s-1"));
@@ -279,14 +256,14 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame  (HERTZ,                         valueOf("1/s"));
         assertSame  (HERTZ,                         valueOf("s-1"));
         assertSame  (PERCENT,                       valueOf("%"));
-        assertSame  (Unit.ONE,                      valueOf("kg/kg"));
-        assertSame  (Unit.ONE,                      valueOf("kg.kg-1"));
-        assertSame  (Units.PPM,                     valueOf("ppm")); // Parts per million
-        assertSame  (Units.PSU,                     valueOf("psu")); // Pratical Salinity Unit
-        assertSame  (Units.SIGMA,                   valueOf("sigma"));
+        assertSame  (UNITY,                         valueOf("kg/kg"));
+        assertSame  (UNITY,                         valueOf("kg.kg-1"));
+        assertSame  (PPM,                           valueOf("ppm"));            // Parts per million
+        assertSame  (PSU,                           valueOf("psu"));            // Pratical Salinity Unit
+        assertSame  (SIGMA,                         valueOf("sigma"));
 
         // Potential vorticity surface
-        assertEquals(KELVIN.times(SQUARE_METRE).divide(KILOGRAM.times(SECOND)), valueOf("K.m2.kg-1.s-1"));
+        assertEquals(KELVIN.multiply(SQUARE_METRE).divide(KILOGRAM.multiply(SECOND)), valueOf("K.m2.kg-1.s-1"));
     }
 
     /**
@@ -294,14 +271,33 @@ public final strictfp class UnitsTest extends TestCase {
      */
     @Test
     public void testValueOfEPSG() {
-        assertSame(METRE,        valueOfEPSG(9001));
-        assertSame(DEGREE_ANGLE, valueOfEPSG(9102)); // Used in prime meridian and operation parameters.
-        assertSame(DEGREE_ANGLE, valueOfEPSG(9122)); // Used in coordinate system axes.
-        assertSame(METRE,        valueOf("EPSG:9001"));
-        assertSame(DEGREE_ANGLE, valueOf(" epsg : 9102"));
-        assertSame(DEGREE_ANGLE, valueOf("urn:ogc:def:uom:EPSG::9102"));
-        assertSame(METRE,        valueOf("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
-        assertSame(METRE,        valueOf("gmxUom.xml#m"));
+        assertSame(METRE,  valueOfEPSG(9001));
+        assertSame(DEGREE, valueOfEPSG(9102));              // Used in prime meridian and operation parameters.
+        assertSame(DEGREE, valueOfEPSG(9122));              // Used in coordinate system axes.
+        assertSame(METRE,  valueOf("EPSG:9001"));
+        assertSame(DEGREE, valueOf(" epsg : 9102"));
+        assertSame(DEGREE, valueOf("urn:ogc:def:uom:EPSG::9102"));
+        assertSame(METRE,  valueOf("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+        assertSame(METRE,  valueOf("gmxUom.xml#m"));
+
+        assertSame(TROPICAL_YEAR,   valueOfEPSG(1029));
+        assertSame(SECOND,          valueOfEPSG(1040));
+        assertSame(FOOT,            valueOfEPSG(9002));
+        assertSame(US_SURVEY_FOOT,  valueOfEPSG(9003));
+        assertSame(NAUTICAL_MILE,   valueOfEPSG(9030));
+        assertSame(KILOMETRE,       valueOfEPSG(9036));
+        assertSame(RADIAN,          valueOfEPSG(9101));
+        assertSame(ARC_MINUTE,      valueOfEPSG(9103));
+        assertSame(ARC_SECOND,      valueOfEPSG(9104));
+        assertSame(GRAD,            valueOfEPSG(9105));
+        assertSame(MICRORADIAN,     valueOfEPSG(9109));
+        assertSame(SexagesimalConverter.DMS_SCALED, valueOfEPSG(9107));
+        assertSame(SexagesimalConverter.DMS_SCALED, valueOfEPSG(9108));
+        assertSame(SexagesimalConverter.DMS,        valueOfEPSG(9110));
+        assertSame(SexagesimalConverter.DM,         valueOfEPSG(9111));
+        assertSame(UNITY,           valueOfEPSG(9203));
+        assertSame(UNITY,           valueOfEPSG(9201));
+        assertSame(PPM,             valueOfEPSG(9202));
     }
 
     /**
@@ -309,10 +305,25 @@ public final strictfp class UnitsTest extends TestCase {
      */
     @Test
     public void testGetEpsgCode() {
-        assertEquals(Integer.valueOf(9001), getEpsgCode(METRE, false));
-        assertEquals(Integer.valueOf(9102), getEpsgCode(DEGREE_ANGLE, false));
-        assertEquals(Integer.valueOf(9122), getEpsgCode(DEGREE_ANGLE, true));
-        assertEquals(Integer.valueOf(9110), getEpsgCode(DMS, false));
-        assertEquals(Integer.valueOf(9110), getEpsgCode(DMS, true));
+        assertEquals(Integer.valueOf(9001), getEpsgCode(METRE,          false));
+        assertEquals(Integer.valueOf(9102), getEpsgCode(DEGREE,         false));
+        assertEquals(Integer.valueOf(9122), getEpsgCode(DEGREE,         true));
+        assertEquals(Integer.valueOf(9110), getEpsgCode(DMS,            false));
+        assertEquals(Integer.valueOf(9110), getEpsgCode(DMS,            true));
+        assertEquals(Integer.valueOf(9107), getEpsgCode(DMS_SCALED,     false));
+        assertEquals(Integer.valueOf(9111), getEpsgCode(DM,             false));
+        assertEquals(Integer.valueOf(1029), getEpsgCode(TROPICAL_YEAR,  false));
+        assertEquals(Integer.valueOf(1040), getEpsgCode(SECOND,         false));
+        assertEquals(Integer.valueOf(9002), getEpsgCode(FOOT,           false));
+        assertEquals(Integer.valueOf(9003), getEpsgCode(US_SURVEY_FOOT, false));
+        assertEquals(Integer.valueOf(9030), getEpsgCode(NAUTICAL_MILE,  false));
+        assertEquals(Integer.valueOf(9036), getEpsgCode(KILOMETRE,      false));
+        assertEquals(Integer.valueOf(9101), getEpsgCode(RADIAN,         false));
+        assertEquals(Integer.valueOf(9103), getEpsgCode(ARC_MINUTE,     false));
+        assertEquals(Integer.valueOf(9104), getEpsgCode(ARC_SECOND,     false));
+        assertEquals(Integer.valueOf(9105), getEpsgCode(GRAD,           false));
+        assertEquals(Integer.valueOf(9109), getEpsgCode(MICRORADIAN,    false));
+        assertEquals(Integer.valueOf(9201), getEpsgCode(UNITY,          false));
+        assertEquals(Integer.valueOf(9202), getEpsgCode(PPM,            false));
     }
 }

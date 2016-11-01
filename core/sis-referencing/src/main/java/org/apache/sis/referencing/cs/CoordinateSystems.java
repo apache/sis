@@ -17,11 +17,10 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Arrays;
-import javax.measure.unit.Unit;
+import java.util.Objects;
+import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.LinearConverter;
-import javax.measure.converter.ConversionException;
+import javax.measure.IncommensurableException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -32,15 +31,13 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -51,7 +48,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class CoordinateSystems extends Static {
@@ -74,8 +71,8 @@ public final class CoordinateSystems extends Static {
      *       to Greenwich (see {@link #directionAlongMeridian directionAlongMeridian(…)} for more information).</li>
      * </ul>
      *
-     * @param  name The direction name (e.g. "north", "north-east", <i>etc.</i>).
-     * @return The axis direction for the given name.
+     * @param  name  the direction name (e.g. "north", "north-east", <i>etc.</i>).
+     * @return the axis direction for the given name.
      * @throws IllegalArgumentException if the given name is not a known axis direction.
      */
     public static AxisDirection parseAxisDirection(String name) throws IllegalArgumentException {
@@ -119,10 +116,10 @@ public final class CoordinateSystems extends Static {
      * This policy is consistent with
      * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#40">WKT 2 specification §7.5.4(iv)</a>.
      *
-     * @param  baseDirection The base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
-     * @param  meridian The meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
+     * @param  baseDirection  the base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
+     * @param  meridian       the meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
      *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
-     * @return The axis direction along the given meridian.
+     * @return the axis direction along the given meridian.
      *
      * @since 0.6
      */
@@ -166,9 +163,9 @@ public final class CoordinateSystems extends Static {
      *   <li>{@code angle(A, B) = -angle(B, A)}</li>
      * </ul>
      *
-     * @param  source The source axis direction.
-     * @param  target The target axis direction.
-     * @return The arithmetic angle (in degrees) of the rotation to apply on a line pointing toward
+     * @param  source  the source axis direction.
+     * @param  target  the target axis direction.
+     * @return the arithmetic angle (in degrees) of the rotation to apply on a line pointing toward
      *         the source direction in order to make it point toward the target direction, or
      *         {@code null} if this value can not be computed.
      */
@@ -234,8 +231,8 @@ public final class CoordinateSystems extends Static {
     /**
      * Returns the axis direction for the specified coordinate system.
      *
-     * @param  cs The coordinate system.
-     * @return The axis directions for the specified coordinate system.
+     * @param  cs  the coordinate system.
+     * @return the axis directions for the specified coordinate system.
      */
     private static AxisDirection[] getAxisDirections(final CoordinateSystem cs) {
         final AxisDirection[] directions = new AxisDirection[cs.getDimension()];
@@ -271,18 +268,19 @@ public final class CoordinateSystems extends Static {
      * }
      * </div>
      *
-     * @param  sourceCS The source coordinate system.
-     * @param  targetCS The target coordinate system.
-     * @return The conversion from {@code sourceCS} to {@code targetCS} as an affine transform.
+     * @param  sourceCS  the source coordinate system.
+     * @param  targetCS  the target coordinate system.
+     * @return the conversion from {@code sourceCS} to {@code targetCS} as an affine transform.
      *         Only axis direction and units are taken in account.
      * @throws IllegalArgumentException if the CS are not of the same type, or axes do not match.
-     * @throws ConversionException if the units are not compatible, or the conversion is non-linear.
+     * @throws IncommensurableException if the units are not compatible, or the conversion is non-linear.
      *
      * @see Matrices#createTransform(AxisDirection[], AxisDirection[])
      */
+    @SuppressWarnings("fallthrough")
     public static Matrix swapAndScaleAxes(final CoordinateSystem sourceCS,
                                           final CoordinateSystem targetCS)
-            throws IllegalArgumentException, ConversionException
+            throws IllegalArgumentException, IncommensurableException
     {
         ensureNonNull("sourceCS", sourceCS);
         ensureNonNull("targetCS", targetCS);
@@ -313,8 +311,7 @@ public final class CoordinateSystems extends Static {
         for (int j=0; j<targetDim; j++) {
             final Unit<?> targetUnit = targetCS.getAxis(j).getUnit();
             for (int i=0; i<sourceDim; i++) {
-                final double element = matrix.getElement(j,i);
-                if (element == 0) {
+                if (matrix.getElement(j,i) == 0) {
                     // There is no dependency between source[i] and target[j]
                     // (i.e. axes are orthogonal).
                     continue;
@@ -325,15 +322,24 @@ public final class CoordinateSystems extends Static {
                     // between source[i] and target[j].
                     continue;
                 }
-                final UnitConverter converter = sourceUnit.getConverterToAny(targetUnit);
-                if (!(converter instanceof LinearConverter)) {
-                    throw new ConversionException(Resources.format(
-                              Resources.Keys.NonLinearUnitConversion_2, sourceUnit, targetUnit));
+                Number scale  = 1;
+                Number offset = 0;
+                final Number[] coefficients = Units.coefficients(sourceUnit.getConverterToAny(targetUnit));
+                switch (coefficients != null ? coefficients.length : -1) {
+                    case 2:  scale  = coefficients[1];       // Fall through
+                    case 1:  offset = coefficients[0];       // Fall through
+                    case 0:  break;
+                    default: throw new IncommensurableException(Resources.format(
+                                Resources.Keys.NonLinearUnitConversion_2, sourceUnit, targetUnit));
                 }
-                final double offset = converter.convert(0);
-                final double scale  = Units.derivative(converter, 0);
-                matrix.setElement(j, i, element*scale);
-                matrix.setElement(j, sourceDim, matrix.getElement(j, sourceDim) + element*offset);
+                final DoubleDouble element = DoubleDouble.castOrCopy(matrix.getNumber(j,i));
+                final DoubleDouble r = new DoubleDouble(element);
+                r.multiply(scale);
+                matrix.setNumber(j, i, r);
+                r.setFrom(element);
+                r.multiply(offset);
+                r.add(matrix.getNumber(j, sourceDim));
+                matrix.setNumber(j, sourceDim, r);
             }
         }
         return matrix;
@@ -353,7 +359,7 @@ public final class CoordinateSystems extends Static {
      *         &#64;Override
      *         public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
      *             if (Units.isAngular(unit)) {
-     *                 unit = NonSI.DEGREE_ANGLE;
+     *                 unit = Units.DEGREE;
      *             }
      *             return unit;
      *         }
@@ -377,9 +383,9 @@ public final class CoordinateSystems extends Static {
      * A rational for normalized axis order and units is explained in the <cite>Axis units and direction</cite> section
      * in the description of the {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
      *
-     * @param  cs     The coordinate system, or {@code null}.
-     * @param  filter The modifications to apply on coordinate system axes.
-     * @return The modified coordinate system as a new instance,
+     * @param  cs      the coordinate system, or {@code null}.
+     * @param  filter  the modifications to apply on coordinate system axes.
+     * @return the modified coordinate system as a new instance,
      *         or {@code cs} if the given coordinate system was null or does not need any change.
      * @throws IllegalArgumentException if the specified coordinate system can not be normalized.
      *
@@ -421,9 +427,9 @@ public final class CoordinateSystems extends Static {
      *     });
      * }
      *
-     * @param  cs       The coordinate system in which to replace linear units, or {@code null}.
-     * @param  newUnit  The new linear unit.
-     * @return The modified coordinate system as a new instance,
+     * @param  cs       the coordinate system in which to replace linear units, or {@code null}.
+     * @param  newUnit  the new linear unit.
+     * @return the modified coordinate system as a new instance,
      *         or {@code cs} if all linear units were already equal to the given one.
      *
      * @see Units#isLinear(Unit)
@@ -462,9 +468,9 @@ public final class CoordinateSystems extends Static {
      *     });
      * }
      *
-     * @param  cs       The coordinate system in which to replace angular units, or {@code null}.
-     * @param  newUnit  The new angular unit.
-     * @return The modified coordinate system as a new instance,
+     * @param  cs       the coordinate system in which to replace angular units, or {@code null}.
+     * @param  newUnit  the new angular unit.
+     * @return the modified coordinate system as a new instance,
      *         or {@code cs} if all angular units were already equal to the given one.
      *
      * @see Units#isAngular(Unit)

@@ -17,7 +17,6 @@
 package org.apache.sis.test.integration;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.text.ParseException;
@@ -51,11 +50,11 @@ import static org.junit.Assert.*;
  *   <li>Format in WKT, parse, reformat again and verify that we get the same WKT string.</li>
  * </ul>
  *
- * This test is executed only of {@link #RUN_EXTENSIVE_TESTS} is {@code true}.
+ * This test is executed only if {@link #RUN_EXTENSIVE_TESTS} is {@code true}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final strictfp class ConsistencyTest extends TestCase {
@@ -66,15 +65,6 @@ public final strictfp class ConsistencyTest extends TestCase {
             "CRS:1",            // Computer display
             "EPSG:5819"         // EPSG topocentric example A
     ));
-
-    /**
-     * Codes to exclude from the {@link #lookup(CoordinateReferenceSystem, CoordinateReferenceSystem)} test.
-     * The reason why those tests are excluded now is related to the way JSR-275 parse units. We may resolve
-     * those issues when we will replace JSR-275 by another library.
-     */
-    private static final Set<String> LOOKUP_EXCLUDES = Collections.singleton(
-            "EPSG:5754"         // Poolbeg height. Uses British foot (1936).
-    );
 
     /**
      * Verifies the WKT consistency of all CRS instances.
@@ -135,10 +125,10 @@ public final strictfp class ConsistencyTest extends TestCase {
      * Formats the given CRS using the given formatter, parses it and reformat again.
      * Then the two WKT are compared.
      *
-     * @param  f    The formatter to use.
-     * @param  code The authority code, used only in case of errors.
-     * @param  crs  The CRS to test.
-     * @return The parsed CRS.
+     * @param  f     the formatter to use.
+     * @param  code  the authority code, used only in case of errors.
+     * @param  crs   the CRS to test.
+     * @return the parsed CRS.
      */
     private static CoordinateReferenceSystem parseAndFormat(final WKTFormat f,
             final String code, final CoordinateReferenceSystem crs)
@@ -227,9 +217,6 @@ public final strictfp class ConsistencyTest extends TestCase {
             throws FactoryException
     {
         final Identifier id = IdentifiedObjects.getIdentifier(crs, null);
-        if (LOOKUP_EXCLUDES.contains(IdentifiedObjects.toString(id))) {
-            return;
-        }
         /*
          * Lookup operation is not going to work if the CRS are not approximatively equal.
          */

@@ -21,10 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.sql.ResultSet;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.SI;
-import javax.measure.converter.ConversionException;
+import javax.measure.Unit;
+import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.internal.referencing.ExtentSelector;
@@ -46,7 +44,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see BursaWolfParameters
@@ -92,13 +90,13 @@ final class BursaWolfInfo {
     {
         Unit<?> target = unit;
         if (code >= 8605) {
-            if      (code <= 8607) target = SI   .METRE;
-            else if (code <= 8610) target = NonSI.SECOND_ANGLE;
+            if      (code <= 8607) target = Units.METRE;
+            else if (code <= 8610) target = Units.ARC_SECOND;
             else if (code == 8611) target = Units.PPM;
         }
         if (target != unit) try {
             value = unit.getConverterToAny(target).convert(value);
-        } catch (ConversionException e) {
+        } catch (IncommensurableException e) {
             throw new FactoryDataException(Errors.getResources(locale).getString(Errors.Keys.IncompatibleUnit_1, unit), e);
         }
         switch (code) {

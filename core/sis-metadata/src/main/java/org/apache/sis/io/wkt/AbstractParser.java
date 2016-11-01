@@ -29,14 +29,15 @@ import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-import javax.measure.unit.Unit;
-import javax.measure.unit.UnitFormat;
+import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
@@ -58,7 +59,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 abstract class AbstractParser implements Parser {
@@ -142,12 +143,12 @@ abstract class AbstractParser implements Parser {
     /**
      * Constructs a parser using the specified set of symbols.
      *
-     * @param symbols       The set of symbols to use.
-     * @param fragments     Reference to the {@link WKTFormat#fragments} map, or an empty map if none.
-     * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
-     * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
-     * @param unitFormat    The unit format provided by {@link WKTFormat}, or {@code null} for a default format.
-     * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
+     * @param  symbols       the set of symbols to use.
+     * @param  fragments     reference to the {@link WKTFormat#fragments} map, or an empty map if none.
+     * @param  numberFormat  the number format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param  dateFormat    the date format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param  unitFormat    the unit format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param  errorLocale   the locale for error messages (not for parsing), or {@code null} for the system default.
      */
     AbstractParser(final Symbols symbols, final Map<String,Element> fragments, NumberFormat numberFormat,
             final DateFormat dateFormat, final UnitFormat unitFormat, final Locale errorLocale)
@@ -200,8 +201,8 @@ abstract class AbstractParser implements Parser {
      * Creates the object from a string. This method is for implementation of {@code createFromWKT(String)}
      * method is SIS factories only.
      *
-     * @param  text Coordinate system encoded in Well-Known Text format (version 1 or 2).
-     * @return The result of parsing the given text.
+     * @param  text  coordinate system encoded in Well-Known Text format (version 1 or 2).
+     * @return the result of parsing the given text.
      * @throws FactoryException if the object creation failed.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)
@@ -255,9 +256,9 @@ abstract class AbstractParser implements Parser {
     /**
      * Parses a <cite>Well Know Text</cite> (WKT).
      *
-     * @param  text The text to be parsed.
-     * @param  position The position to start parsing from.
-     * @return The parsed object.
+     * @param  text      the text to be parsed.
+     * @param  position  the position to start parsing from.
+     * @return the parsed object.
      * @throws ParseException if the string can not be parsed.
      */
     public Object parseObject(final String text, final ParsePosition position) throws ParseException {
@@ -288,8 +289,8 @@ abstract class AbstractParser implements Parser {
     /**
      * Parses the next element in the specified <cite>Well Know Text</cite> (WKT) tree.
      *
-     * @param  element The element to be parsed.
-     * @return The parsed object.
+     * @param  element  the element to be parsed.
+     * @return the parsed object.
      * @throws ParseException if the element can not be parsed.
      */
     abstract Object parseObject(final Element element) throws ParseException;
@@ -332,35 +333,25 @@ abstract class AbstractParser implements Parser {
     /**
      * Parses the given unit symbol.
      */
-    final Unit<?> parseUnit(final String text) throws ParseException, IllegalArgumentException {
+    final Unit<?> parseUnit(final String text) throws ParserException {
         if (unitFormat == null) {
-            if (symbols.getLocale() == Locale.ROOT) {
-                return Units.valueOf(text);             // Most common case, avoid the convolved code below.
+            final Locale locale = symbols.getLocale();
+            if (locale == Locale.ROOT) {
+                return Units.valueOf(text);             // Most common case.
             }
-            unitFormat = UnitFormat.getInstance(symbols.getLocale());
+            unitFormat = new UnitFormat(locale);
+            unitFormat.setStyle(UnitFormat.Style.NAME);
         }
-        /*
-         * This convolved code tries to workaround JSR-275 limitations.
-         */
-        try {
-            return (Unit<?>) unitFormat.parseObject(text);
-        } catch (ParseException e) {
-            try {
-                return Units.valueOf(text);
-            } catch (IllegalArgumentException e2) {
-                e.addSuppressed(e2);
-                throw e;
-            }
-        }
+        return unitFormat.parse(text);
     }
 
     /**
      * Reports a non-fatal warning that occurred while parsing a WKT.
      *
-     * @param parent  The parent element, or {@code null} if unknown.
-     * @param element The element that we can not parse, or {@code null} if unknown.
-     * @param message The message. Can be {@code null} only if {@code ex} is non-null.
-     * @param ex      The non-fatal exception that occurred while parsing the element, or {@code null}.
+     * @param  parent   the parent element, or {@code null} if unknown.
+     * @param  element  the element that we can not parse, or {@code null} if unknown.
+     * @param  message  the message. Can be {@code null} only if {@code ex} is non-null.
+     * @param  ex       the non-fatal exception that occurred while parsing the element, or {@code null}.
      */
     final void warning(final Element parent, final Element element, final InternationalString message, final Exception ex) {
         warning(parent, (element != null) ? element.keyword : null, message, ex);
@@ -369,10 +360,10 @@ abstract class AbstractParser implements Parser {
     /**
      * Reports a non-fatal warning that occurred while parsing a WKT.
      *
-     * @param parent  The parent element, or {@code null} if unknown.
-     * @param element The name of the element that we can not parse, or {@code null} if unknown.
-     * @param message The message. Can be {@code null} only if {@code ex} is non-null.
-     * @param ex      The non-fatal exception that occurred while parsing the element, or {@code null}.
+     * @param  parent   the parent element, or {@code null} if unknown.
+     * @param  element  the name of the element that we can not parse, or {@code null} if unknown.
+     * @param  message  the message. Can be {@code null} only if {@code ex} is non-null.
+     * @param  ex       the non-fatal exception that occurred while parsing the element, or {@code null}.
      */
     final void warning(final Element parent, final String element, final InternationalString message, final Exception ex) {
         if (warnings == null) {
@@ -389,7 +380,7 @@ abstract class AbstractParser implements Parser {
      * <p>The returned object is valid only before a new parsing starts. If a longer lifetime is desired,
      * then the caller <strong>must</strong> invokes {@link Warnings#publish()}.</p>
      *
-     * @param object The object that resulted from the parsing operation, or {@code null}.
+     * @param  object  the object that resulted from the parsing operation, or {@code null}.
      */
     final Warnings getAndClearWarnings(final Object object) {
         Warnings w = warnings;

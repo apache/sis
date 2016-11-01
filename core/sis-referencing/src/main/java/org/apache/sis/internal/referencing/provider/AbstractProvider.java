@@ -19,9 +19,6 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
-import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
@@ -29,6 +26,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
@@ -143,7 +141,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      */
     static ParameterDescriptor<Double> createZeroConstant(final ParameterBuilder builder) {
         final Double zero = +0.0;
-        return builder.createBounded(MeasurementRange.create(-0.0, true, zero, true, NonSI.DEGREE_ANGLE), zero);
+        return builder.createBounded(MeasurementRange.create(-0.0, true, zero, true, Units.DEGREE), zero);
     }
 
     /**
@@ -152,7 +150,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * where the default value should be the value of another parameter instead than 0°.
      */
     static ParameterDescriptor<Double> createMandatoryLatitude(final ParameterBuilder builder) {
-        return builder.createBounded(Latitude.MIN_VALUE, Latitude.MAX_VALUE, Double.NaN, NonSI.DEGREE_ANGLE);
+        return builder.createBounded(Latitude.MIN_VALUE, Latitude.MAX_VALUE, Double.NaN, Units.DEGREE);
     }
 
     /**
@@ -162,28 +160,28 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
         return builder.createBounded(MeasurementRange.create(
                 Latitude.MIN_VALUE, includePoles,
                 Latitude.MAX_VALUE, includePoles,
-                NonSI.DEGREE_ANGLE), 0.0);
+                Units.DEGREE), 0.0);
     }
 
     /**
      * Creates a descriptor for a longitude parameter in degrees with a default value of 0°.
      */
     static ParameterDescriptor<Double> createLongitude(final ParameterBuilder builder) {
-        return builder.createBounded(Longitude.MIN_VALUE, Longitude.MAX_VALUE, 0.0, NonSI.DEGREE_ANGLE);
+        return builder.createBounded(Longitude.MIN_VALUE, Longitude.MAX_VALUE, 0.0, Units.DEGREE);
     }
 
     /**
      * Creates a descriptor for a scale parameter with a default value of 1.
      */
     static ParameterDescriptor<Double> createScale(final ParameterBuilder builder) {
-        return builder.createStrictlyPositive(1.0, Unit.ONE);
+        return builder.createStrictlyPositive(1.0, Units.UNITY);
     }
 
     /**
      * Creates a false easting, false northing or height parameter in metre with a default value of 0.
      */
     static ParameterDescriptor<Double> createShift(final ParameterBuilder builder) {
-        return builder.create(0.0, SI.METRE);
+        return builder.create(0.0, Units.METRE);
     }
 
     /**

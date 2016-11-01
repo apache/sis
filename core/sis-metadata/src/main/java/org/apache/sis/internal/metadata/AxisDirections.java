@@ -18,13 +18,12 @@ package org.apache.sis.internal.metadata;
 
 import java.util.Map;
 import java.util.HashMap;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
@@ -41,7 +40,7 @@ import static org.apache.sis.util.CharSequences.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class AxisDirections extends Static {
@@ -188,8 +187,8 @@ public final class AxisDirections extends Static {
      *   <tr align="center"><td>{@code OTHER}</td><td>{@code OTHER}</td></tr>
      * </table>
      *
-     * @param  dir The direction for which to return the absolute direction, or {@code null}.
-     * @return The direction from the above table, or {@code null} if the given direction was null.
+     * @param  dir  the direction for which to return the absolute direction, or {@code null}.
+     * @return the direction from the above table, or {@code null} if the given direction was null.
      */
     public static AxisDirection absolute(AxisDirection dir) {
         final AxisDirection opposite = opposite(dir);
@@ -212,8 +211,8 @@ public final class AxisDirections extends Static {
      * The same applies to {@code EAST}-{@code WEST}, {@code UP}-{@code DOWN} and {@code FUTURE}-{@code PAST},
      * <i>etc.</i> If the given axis direction has no opposite, then this method returns {@code null}.
      *
-     * @param  dir The direction for which to return the opposite direction, or {@code null}.
-     * @return The opposite direction, or {@code null} if none or unknown.
+     * @param  dir  the direction for which to return the opposite direction, or {@code null}.
+     * @return the opposite direction, or {@code null} if none or unknown.
      */
     public static AxisDirection opposite(AxisDirection dir) {
         return OPPOSITES.get(dir);
@@ -224,7 +223,7 @@ public final class AxisDirections extends Static {
      * If the given argument is {@code null} or is not a known direction, then
      * this method conservatively returns {@code false}.
      *
-     * @param  dir The direction to test, or {@code null}.
+     * @param  dir  the direction to test, or {@code null}.
      * @return {@code true} if the given direction is an "opposite".
      */
     public static boolean isOpposite(final AxisDirection dir) {
@@ -236,7 +235,7 @@ public final class AxisDirections extends Static {
      * Returns {@code true} if the specified direction is a compass direction.
      * Compass directions are {@code NORTH}, {@code EAST}, {@code NORTH_EAST}, etc.
      *
-     * @param  dir The direction to test, or {@code null}.
+     * @param  dir  the direction to test, or {@code null}.
      * @return {@code true} if the given direction is a compass direction.
      *
      * @see #angleForCompass(AxisDirection, AxisDirection)
@@ -251,7 +250,7 @@ public final class AxisDirections extends Static {
      * Returns {@code true} if the specified direction is an inter-cardinal direction.
      * Inter-cardinal directions are {@code NORTH_EAST}, {@code SOUTH_SOUTH_EAST}, etc.
      *
-     * @param  dir The direction to test, or {@code null}.
+     * @param  dir  the direction to test, or {@code null}.
      * @return {@code true} if the given direction is an inter-cardinal direction.
      */
     public static boolean isIntercardinal(final AxisDirection dir) {
@@ -263,7 +262,7 @@ public final class AxisDirections extends Static {
     /**
      * Returns {@code true} if the given direction is {@code UP} or {@code DOWN}.
      *
-     * @param  dir The direction to test, or {@code null}.
+     * @param  dir  the direction to test, or {@code null}.
      * @return {@code true} if the direction is vertical, or {@code false} otherwise.
      */
     public static boolean isVertical(final AxisDirection dir) {
@@ -275,7 +274,7 @@ public final class AxisDirections extends Static {
      * Returns {@code true} if the given direction is {@code GEOCENTRIC_X}, {@code GEOCENTRIC_Y}
      * or {@code GEOCENTRIC_Z}.
      *
-     * @param  dir The direction to test, or {@code null}.
+     * @param  dir  the direction to test, or {@code null}.
      * @return {@code true} if the given direction is one of geocentric directions.
      */
     public static boolean isGeocentric(final AxisDirection dir) {
@@ -295,8 +294,8 @@ public final class AxisDirections extends Static {
      *
      * <p>The rules implemented by this method may change in any future SIS version.</p>
      *
-     * @param  dir The direction to test, or {@code null}.
-     * @param  image {@code true} for accepting grid and image axis directions in addition to spatial ones.
+     * @param  dir    the direction to test, or {@code null}.
+     * @param  image  {@code true} for accepting grid and image axis directions in addition to spatial ones.
      * @return {@code true} if the given direction is presumed for spatial CS.
      */
     public static boolean isSpatialOrUserDefined(final AxisDirection dir, final boolean image) {
@@ -308,7 +307,7 @@ public final class AxisDirections extends Static {
     /**
      * Returns {@code true} if the given direction is a user-defined direction (i.e. is not defined by GeoAPI).
      *
-     * @param  dir The direction to test, or {@code null}.
+     * @param  dir  the direction to test, or {@code null}.
      * @return {@code true} if the given direction is user-defined.
      */
     public static boolean isUserDefined(final AxisDirection dir) {
@@ -319,7 +318,7 @@ public final class AxisDirections extends Static {
      * Returns {@code true} if the given direction is {@code COLUMN_POSITIVE}, {@code COLUMN_NEGATICE},
      * {@code ROW_POSITIVE} or {@code ROW_NEGATIVE}.
      *
-     * @param  dir The direction to test, or {@code null}.
+     * @param  dir  the direction to test, or {@code null}.
      * @return {@code true} if the given direction is presumed for grid CS.
      */
     public static boolean isGrid(final AxisDirection dir) {
@@ -331,9 +330,9 @@ public final class AxisDirections extends Static {
     /**
      * Angle between geocentric directions only.
      *
-     * @param  source The start direction.
-     * @param  target The final direction.
-     * @return The angle as a multiple of 90°, or {@link Integer#MIN_VALUE} if none.
+     * @param  source  the start direction.
+     * @param  target  the final direction.
+     * @return the angle as a multiple of 90°, or {@link Integer#MIN_VALUE} if none.
      */
     public static int angleForGeocentric(final AxisDirection source, final AxisDirection target) {
         final int base = GEOCENTRIC_X.ordinal();
@@ -352,9 +351,9 @@ public final class AxisDirections extends Static {
     /**
      * Angle between compass directions only (not for angle between direction along meridians).
      *
-     * @param  source The start direction.
-     * @param  target The final direction.
-     * @return The arithmetic angle as a multiple of 360/{@link #COMPASS_COUNT}, or {@link Integer#MIN_VALUE} if none.
+     * @param  source  the start direction.
+     * @param  target  the final direction.
+     * @return the arithmetic angle as a multiple of 360/{@link #COMPASS_COUNT}, or {@link Integer#MIN_VALUE} if none.
      *
      * @see #isCompass(AxisDirection)
      */
@@ -379,9 +378,9 @@ public final class AxisDirections extends Static {
     /**
      * Angle between display directions only.
      *
-     * @param  source The start direction.
-     * @param  target The final direction.
-     * @return The arithmetic angle as a multiple of 360/{@link #DISPLAY_COUNT}, or {@link Integer#MIN_VALUE} if none.
+     * @param  source  the start direction.
+     * @param  target  the final direction.
+     * @return the arithmetic angle as a multiple of 360/{@link #DISPLAY_COUNT}, or {@link Integer#MIN_VALUE} if none.
      */
     public static int angleForDisplay(final AxisDirection source, final AxisDirection target) {
         final int base = DISPLAY_RIGHT.ordinal();
@@ -415,9 +414,9 @@ public final class AxisDirections extends Static {
      * Returns the angular unit of the specified coordinate system.
      * The preference will be given to the longitude axis, if found.
      *
-     * @param  cs The coordinate system from which to get the angular unit, or {@code null}.
-     * @param  unit The default unit to return if no angular unit is found.
-     * @return The angular unit, of {@code unit} if no angular unit was found.
+     * @param  cs    the coordinate system from which to get the angular unit, or {@code null}.
+     * @param  unit  the default unit to return if no angular unit is found.
+     * @return the angular unit, of {@code unit} if no angular unit was found.
      *
      * @since 0.6
      *
@@ -447,9 +446,9 @@ public final class AxisDirections extends Static {
      * If both the given direction and its opposite exist, then the dimension for the given
      * direction has precedence over the opposite direction.
      *
-     * @param  cs The coordinate system to inspect, or {@code null}.
-     * @param  direction The direction of the axis to search.
-     * @return The dimension of the axis using the given direction or its opposite, or -1 if none.
+     * @param  cs         the coordinate system to inspect, or {@code null}.
+     * @param  direction  the direction of the axis to search.
+     * @return the dimension of the axis using the given direction or its opposite, or -1 if none.
      */
     public static int indexOfColinear(final CoordinateSystem cs, final AxisDirection direction) {
         int fallback = -1;
@@ -472,9 +471,9 @@ public final class AxisDirections extends Static {
      * Returns the index of the first dimension in {@code cs} where axes are colinear with the {@code subCS} axes.
      * If no such dimension is found, returns -1.
      *
-     * @param  cs    The coordinate system which contains all axes.
-     * @param  subCS The coordinate system to search into {@code cs}.
-     * @return The first dimension of a sequence of axes colinear with {@code subCS} axes, or {@code -1} if none.
+     * @param  cs     the coordinate system which contains all axes.
+     * @param  subCS  the coordinate system to search into {@code cs}.
+     * @return the first dimension of a sequence of axes colinear with {@code subCS} axes, or {@code -1} if none.
      *
      * @since 0.5
      */
@@ -508,9 +507,9 @@ public final class AxisDirections extends Static {
      *       then it will be considered equivalent to {@code "WEST"}.</li>
      * </ul>
      *
-     * @param  name The name of the axis direction to search.
-     * @param  directions The list of axis directions in which to search.
-     * @return The first axis direction having a name matching the given one, or {@code null} if none.
+     * @param  name        the name of the axis direction to search.
+     * @param  directions  the list of axis directions in which to search.
+     * @return the first axis direction having a name matching the given one, or {@code null} if none.
      */
     public static AxisDirection find(final String name, final AxisDirection[] directions) {
         for (final AxisDirection candidate : directions) {
@@ -533,8 +532,8 @@ public final class AxisDirections extends Static {
      * The later is a parser which may create new directions, while this method searches only in a set
      * of predefined directions and never create new ones.</p>
      *
-     * @param  name The name of the axis direction to search.
-     * @return The first axis direction having a name matching the given one, or {@code null} if none.
+     * @param  name  the name of the axis direction to search.
+     * @return the first axis direction having a name matching the given one, or {@code null} if none.
      */
     public static AxisDirection valueOf(String name) {
         name = trimWhitespaces(name.replace('_', ' '));
@@ -615,10 +614,10 @@ public final class AxisDirections extends Static {
      * for resolving some ambiguities like whether {@link AxisDirection#EAST} is for "x" (Easting)
      * or "λ" (Longitude).
      *
-     * @param name      The axis name for which to suggest an abbreviation.
-     * @param direction The axis direction for which to suggest an abbreviation.
-     * @param unit      The axis unit of measurement, for disambiguation.
-     * @return A suggested abbreviation.
+     * @param  name       the axis name for which to suggest an abbreviation.
+     * @param  direction  the axis direction for which to suggest an abbreviation.
+     * @param  unit       the axis unit of measurement, for disambiguation.
+     * @return a suggested abbreviation.
      *
      * @since 0.6
      */
@@ -686,9 +685,9 @@ public final class AxisDirections extends Static {
      *   <li>Compound CS: East (km), North (km), Up (m).</li>
      * </ul>
      *
-     * @param  buffer A buffer pre-filled with the name header.
-     * @param  axes The axes to append in the given buffer.
-     * @return A name for the given coordinate system type and axes.
+     * @param  buffer  a buffer pre-filled with the name header.
+     * @param  axes    the axes to append in the given buffer.
+     * @return a name for the given coordinate system type and axes.
      *
      * @since 0.6
      */
@@ -697,9 +696,12 @@ public final class AxisDirections extends Static {
         for (final CoordinateSystemAxis axis : axes) {
             buffer.append(separator).append(Types.getCodeLabel(axis.getDirection()));
             separator = ", ";
-            final String symbol = PatchedUnitFormat.toString(axis.getUnit());
-            if (symbol != null && !symbol.isEmpty()) {
-                buffer.append(" (").append(symbol).append(')');
+            final Unit<?> unit = axis.getUnit();
+            if (unit != null) {
+                final String symbol = unit.toString();
+                if (symbol != null && !symbol.isEmpty()) {
+                    buffer.append(" (").append(symbol).append(')');
+                }
             }
         }
         return buffer.append('.').toString();

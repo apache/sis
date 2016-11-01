@@ -17,14 +17,13 @@
 package org.apache.sis.internal.metadata;
 
 import java.lang.reflect.Field;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -45,7 +44,7 @@ import static org.apache.sis.internal.metadata.AxisDirections.COUNTER_CLOCKWISE;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public final strictfp class AxisDirectionsTest extends TestCase {
@@ -383,37 +382,37 @@ public final strictfp class AxisDirectionsTest extends TestCase {
      */
     @Test
     public void testSuggestAbbreviation() {
-        assertEquals("x",   AxisDirections.suggestAbbreviation("x",                      EAST,             SI.METRE));
-        assertEquals("λ",   AxisDirections.suggestAbbreviation("Geodetic longitude",     EAST,          NonSI.DEGREE_ANGLE));
-        assertEquals("φ",   AxisDirections.suggestAbbreviation("Geodetic latitude",      NORTH,         NonSI.DEGREE_ANGLE));
-        assertEquals("θ",   AxisDirections.suggestAbbreviation("Spherical longitude",    EAST,          NonSI.DEGREE_ANGLE));
-        assertEquals("φ′",  AxisDirections.suggestAbbreviation("Spherical latitude",     NORTH,         NonSI.DEGREE_ANGLE));
-        assertEquals("h",   AxisDirections.suggestAbbreviation("Ellipsoidal height",     UP,               SI.METRE));
-        assertEquals("H",   AxisDirections.suggestAbbreviation("Gravity-related height", UP,               SI.METRE));
-        assertEquals("φ",   AxisDirections.suggestAbbreviation("Elevation",              UP,               SI.METRE));
-        assertEquals("R",   AxisDirections.suggestAbbreviation("Geocentric radius",      UP,               SI.METRE));
-        assertEquals("r",   AxisDirections.suggestAbbreviation("Distance",               AWAY_FROM,        SI.METRE));
-        assertEquals("θ",   AxisDirections.suggestAbbreviation("Bearing",                CLOCKWISE,     NonSI.DEGREE_ANGLE));
-        assertEquals("X",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_X,     SI.METRE));
-        assertEquals("Y",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_Y,     SI.METRE));
-        assertEquals("Z",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_Z,     SI.METRE));
-        assertEquals("D",   AxisDirections.suggestAbbreviation("not needed",             DOWN,             SI.METRE));
-        assertEquals("t",   AxisDirections.suggestAbbreviation("not needed",             FUTURE,        NonSI.DAY));
-        assertEquals("i",   AxisDirections.suggestAbbreviation("not needed",             COLUMN_NEGATIVE,  Unit.ONE));
-        assertEquals("j",   AxisDirections.suggestAbbreviation("not needed",             ROW_NEGATIVE,     Unit.ONE));
-        assertEquals("x",   AxisDirections.suggestAbbreviation("not needed",             DISPLAY_RIGHT,    Unit.ONE));
-        assertEquals("y",   AxisDirections.suggestAbbreviation("not needed",             DISPLAY_DOWN,     Unit.ONE));
-        assertEquals("N",   AxisDirections.suggestAbbreviation("not needed",             NORTH,            SI.METRE));
-        assertEquals("S",   AxisDirections.suggestAbbreviation("not needed",             SOUTH,            SI.METRE));
-        assertEquals("E",   AxisDirections.suggestAbbreviation("not needed",             EAST,             SI.METRE));
-        assertEquals("W",   AxisDirections.suggestAbbreviation("not needed",             WEST,             SI.METRE));
-        assertEquals("NE",  AxisDirections.suggestAbbreviation("not needed",             NORTH_EAST,       SI.METRE));
-        assertEquals("NW",  AxisDirections.suggestAbbreviation("not needed",             NORTH_WEST,       SI.METRE));
-        assertEquals("SE",  AxisDirections.suggestAbbreviation("not needed",             SOUTH_EAST,       SI.METRE));
-        assertEquals("SW",  AxisDirections.suggestAbbreviation("not needed",             SOUTH_WEST,       SI.METRE));
-        assertEquals("SSE", AxisDirections.suggestAbbreviation("not needed",             SOUTH_SOUTH_EAST, SI.METRE));
-        assertEquals("NNW", AxisDirections.suggestAbbreviation("not needed",             NORTH_NORTH_WEST, SI.METRE));
-        assertEquals("ENE", AxisDirections.suggestAbbreviation("not needed",             EAST_NORTH_EAST,  SI.METRE));
+        assertEquals("x",   AxisDirections.suggestAbbreviation("x",                      EAST,             Units.METRE));
+        assertEquals("λ",   AxisDirections.suggestAbbreviation("Geodetic longitude",     EAST,             Units.DEGREE));
+        assertEquals("φ",   AxisDirections.suggestAbbreviation("Geodetic latitude",      NORTH,            Units.DEGREE));
+        assertEquals("θ",   AxisDirections.suggestAbbreviation("Spherical longitude",    EAST,             Units.DEGREE));
+        assertEquals("φ′",  AxisDirections.suggestAbbreviation("Spherical latitude",     NORTH,            Units.DEGREE));
+        assertEquals("h",   AxisDirections.suggestAbbreviation("Ellipsoidal height",     UP,               Units.METRE));
+        assertEquals("H",   AxisDirections.suggestAbbreviation("Gravity-related height", UP,               Units.METRE));
+        assertEquals("φ",   AxisDirections.suggestAbbreviation("Elevation",              UP,               Units.METRE));
+        assertEquals("R",   AxisDirections.suggestAbbreviation("Geocentric radius",      UP,               Units.METRE));
+        assertEquals("r",   AxisDirections.suggestAbbreviation("Distance",               AWAY_FROM,        Units.METRE));
+        assertEquals("θ",   AxisDirections.suggestAbbreviation("Bearing",                CLOCKWISE,        Units.DEGREE));
+        assertEquals("X",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_X,     Units.METRE));
+        assertEquals("Y",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_Y,     Units.METRE));
+        assertEquals("Z",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_Z,     Units.METRE));
+        assertEquals("D",   AxisDirections.suggestAbbreviation("not needed",             DOWN,             Units.METRE));
+        assertEquals("t",   AxisDirections.suggestAbbreviation("not needed",             FUTURE,           Units.DAY));
+        assertEquals("i",   AxisDirections.suggestAbbreviation("not needed",             COLUMN_NEGATIVE,  Units.UNITY));
+        assertEquals("j",   AxisDirections.suggestAbbreviation("not needed",             ROW_NEGATIVE,     Units.UNITY));
+        assertEquals("x",   AxisDirections.suggestAbbreviation("not needed",             DISPLAY_RIGHT,    Units.UNITY));
+        assertEquals("y",   AxisDirections.suggestAbbreviation("not needed",             DISPLAY_DOWN,     Units.UNITY));
+        assertEquals("N",   AxisDirections.suggestAbbreviation("not needed",             NORTH,            Units.METRE));
+        assertEquals("S",   AxisDirections.suggestAbbreviation("not needed",             SOUTH,            Units.METRE));
+        assertEquals("E",   AxisDirections.suggestAbbreviation("not needed",             EAST,             Units.METRE));
+        assertEquals("W",   AxisDirections.suggestAbbreviation("not needed",             WEST,             Units.METRE));
+        assertEquals("NE",  AxisDirections.suggestAbbreviation("not needed",             NORTH_EAST,       Units.METRE));
+        assertEquals("NW",  AxisDirections.suggestAbbreviation("not needed",             NORTH_WEST,       Units.METRE));
+        assertEquals("SE",  AxisDirections.suggestAbbreviation("not needed",             SOUTH_EAST,       Units.METRE));
+        assertEquals("SW",  AxisDirections.suggestAbbreviation("not needed",             SOUTH_WEST,       Units.METRE));
+        assertEquals("SSE", AxisDirections.suggestAbbreviation("not needed",             SOUTH_SOUTH_EAST, Units.METRE));
+        assertEquals("NNW", AxisDirections.suggestAbbreviation("not needed",             NORTH_NORTH_WEST, Units.METRE));
+        assertEquals("ENE", AxisDirections.suggestAbbreviation("not needed",             EAST_NORTH_EAST,  Units.METRE));
     }
 
     /**

@@ -17,8 +17,8 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
+import java.util.Objects;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -29,8 +29,9 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gml.Measure;
@@ -38,13 +39,10 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import java.util.Objects;
-import org.apache.sis.internal.referencing.Formulas;
 
 
 /**
@@ -149,9 +147,9 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *   </tr>
      * </table>
      *
-     * @param properties          The properties to be given to the identified object.
-     * @param greenwichLongitude  The longitude value relative to the Greenwich Meridian.
-     * @param angularUnit         The angular unit of the longitude.
+     * @param  properties          the properties to be given to the identified object.
+     * @param  greenwichLongitude  the longitude value relative to the Greenwich Meridian.
+     * @param  angularUnit         the angular unit of the longitude.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createPrimeMeridian(Map, double, Unit)
      */
@@ -172,7 +170,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param meridian The prime meridian to copy.
+     * @param  meridian  the prime meridian to copy.
      *
      * @see #castOrCopy(PrimeMeridian)
      */
@@ -188,8 +186,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultPrimeMeridian castOrCopy(final PrimeMeridian object) {
@@ -216,7 +214,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     /**
      * Longitude of the prime meridian measured from the Greenwich meridian, positive eastward.
      *
-     * @return The prime meridian Greenwich longitude, in {@linkplain #getAngularUnit() angular unit}.
+     * @return the prime meridian Greenwich longitude, in {@linkplain #getAngularUnit() angular unit}.
      */
     @Override
     public double getGreenwichLongitude() {
@@ -229,11 +227,11 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * code, regardless of the underlying angular units of this prime meridian:
      *
      * {@preformat java
-     *     double longitudeInDegrees = primeMeridian.getGreenwichLongitude(NonSI.DEGREE_ANGLE);
+     *     double longitudeInDegrees = primeMeridian.getGreenwichLongitude(Units.DEGREE);
      * }
      *
-     * @param unit The unit in which to express longitude.
-     * @return The Greenwich longitude in the given units.
+     * @param  unit  the unit in which to express longitude.
+     * @return the Greenwich longitude in the given units.
      */
     public double getGreenwichLongitude(final Unit<Angle> unit) {
         return getAngularUnit().getConverterTo(unit).convert(getGreenwichLongitude());
@@ -242,7 +240,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     /**
      * Returns the angular unit of the Greenwich longitude.
      *
-     * @return The angular unit of the {@linkplain #getGreenwichLongitude() Greenwich longitude}.
+     * @return the angular unit of the {@linkplain #getGreenwichLongitude() Greenwich longitude}.
      */
     @Override
     public Unit<Angle> getAngularUnit() {
@@ -252,7 +250,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     /**
      * Compares this prime meridian with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
+     * @param  object  the object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
      *         relevant to coordinate transformations.
@@ -261,7 +259,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                // Slight optimization.
         }
         if (super.equals(object, mode)) switch (mode) {
             case STRICT: {
@@ -275,8 +273,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
                         Objects.equals(getAngularUnit(),        that.getAngularUnit());
             }
             default: {
-                final double v1 = getGreenwichLongitude(NonSI.DEGREE_ANGLE);
-                final double v2 = ReferencingUtilities.getGreenwichLongitude((PrimeMeridian) object, NonSI.DEGREE_ANGLE);
+                final double v1 = getGreenwichLongitude(Units.DEGREE);
+                final double v2 = ReferencingUtilities.getGreenwichLongitude((PrimeMeridian) object, Units.DEGREE);
                 if (mode == ComparisonMode.IGNORE_METADATA) {
                     /*
                      * We relax the check on unit of measurement because EPSG uses sexagesimal degrees
@@ -301,7 +299,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -319,7 +317,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *       Datum[“Nouvelle Triangulation Francaise”,
      *         Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],
      *       PrimeMeridian[“Paris”, 2.5969213],
-     *       AngleUnit[“grade”, 0.015707963267948967]],
+     *       AngleUnit[“grad”, 0.015707963267948967]],
      *     Conversion[“Lambert zone II”,
      *       etc...
      * }
@@ -356,7 +354,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * See {@link #isElementOfBaseCRS(Formatter)} for more discussion.
      */
     private static boolean beConservative(final Formatter formatter, final Unit<Angle> contextualUnit) {
-        return !contextualUnit.equals(NonSI.DEGREE_ANGLE) && !isElementOfBaseCRS(formatter);
+        return !contextualUnit.equals(Units.DEGREE) && !isElementOfBaseCRS(formatter);
     }
 
     /**
@@ -371,12 +369,12 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         super.formatTo(formatter);
         final Convention  convention = formatter.getConvention();
         final boolean     isWKT1 = (convention.majorVersion() == 1);
-        final Unit<Angle> contextualUnit = formatter.toContextualUnit(NonSI.DEGREE_ANGLE);
+        final Unit<Angle> contextualUnit = formatter.toContextualUnit(Units.DEGREE);
         Unit<Angle> unit = contextualUnit;
         if (!isWKT1) {
             unit = getAngularUnit();
             if (convention != Convention.INTERNAL) {
-                unit = PatchedUnitFormat.toFormattable(unit);
+                unit = WKTUtilities.toFormattable(unit);
             }
         }
         formatter.append(getGreenwichLongitude(unit));
@@ -439,7 +437,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
                  * (assuming that the missing unit was not applying an offset), so we can select a default.
                  * If the Greenwich longitude is not zero, presume egrees but log a warning.
                  */
-                angularUnit = NonSI.DEGREE_ANGLE;
+                angularUnit = Units.DEGREE;
                 if (greenwichLongitude != 0) {
                     Measure.missingUOM(DefaultPrimeMeridian.class, "setGreenwichMeasure");
                 }

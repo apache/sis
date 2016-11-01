@@ -16,11 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gml.Measure;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 
 
 /**
@@ -29,7 +28,7 @@ import org.apache.sis.internal.util.PatchedUnitFormat;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  *
  * @see Measure
@@ -56,7 +55,7 @@ public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
      */
     @Override
     public String marshal(final Unit<?> value) {
-        return PatchedUnitFormat.toString(value);
+        return (value != null) ? value.toString() : null;
     }
 
     /**

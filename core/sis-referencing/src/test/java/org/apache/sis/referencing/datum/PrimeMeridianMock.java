@@ -16,11 +16,11 @@
  */
 package org.apache.sis.referencing.datum;
 
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -28,7 +28,7 @@ import org.apache.sis.test.mock.IdentifiedObjectMock;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 @SuppressWarnings("serial")
@@ -56,12 +56,12 @@ final strictfp class PrimeMeridianMock extends IdentifiedObjectMock implements P
     }
 
     /**
-     * Returns the angular unit, which is fixed to {@link NonSI#DEGREE_ANGLE}.
+     * Returns the angular unit, which is fixed to {@link Units#DEGREE}.
      *
-     * @return {@link NonSI#DEGREE_ANGLE}.
+     * @return {@link Units#DEGREE}.
      */
     @Override
     public Unit<Angle> getAngularUnit() {
-        return NonSI.DEGREE_ANGLE;
+        return Units.DEGREE;
     }
 }

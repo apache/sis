@@ -18,7 +18,7 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Set;
 import java.util.LinkedHashSet;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;

@@ -17,14 +17,14 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -59,7 +59,7 @@ import org.apache.sis.internal.metadata.AxisDirections;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
@@ -168,11 +168,11 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
         if (!AxisDirection.UP.equals(AxisDirections.absolute(direction))) {
             return INVALID_DIRECTION;
         }
-        unit = unit.toSI();
-        if (unit.equals(SI.METRE)   ||  // Most usual case.
-            unit.equals(SI.PASCAL)  ||  // Height or depth estimated by the atmospheric or ocean pressure.
-            unit.equals(SI.SECOND)  ||  // Depth estimated by the time needed for an echo to travel.
-            unit.equals(Unit.ONE))      // Sigma-level (percentage from sea surface to ocean floor).
+        unit = unit.getSystemUnit();
+        if (unit.equals(Units.METRE)   ||   // Most usual case.
+            unit.equals(Units.PASCAL)  ||   // Height or depth estimated by the atmospheric or ocean pressure.
+            unit.equals(Units.SECOND)  ||   // Depth estimated by the time needed for an echo to travel.
+            unit.equals(Units.UNITY))         // Sigma-level (percentage from sea surface to ocean floor).
         {
             return VALID;
         }

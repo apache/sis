@@ -16,6 +16,8 @@
  */
 package org.apache.sis.parameter;
 
+import java.util.Objects;
+import java.nio.file.Path;
 import java.io.Serializable;
 import java.io.File;
 import java.net.URL;
@@ -25,9 +27,9 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.measure.unit.Unit;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.ConversionException;
+import javax.measure.Unit;
+import javax.measure.UnitConverter;
+import javax.measure.IncommensurableException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
@@ -43,7 +45,6 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.Numbers;
@@ -56,10 +57,6 @@ import org.apache.sis.util.UnconvertibleObjectException;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.Utilities.deepEquals;
-
-// Branch-dependent imports
-import java.util.Objects;
-import java.nio.file.Path;
 
 
 /**
@@ -117,7 +114,7 @@ import java.nio.file.Path;
  * Consequently, the above-cited methods provide single points that subclasses can override
  * for modifying the behavior of all getter and setter methods.
  *
- * @param <T> The type of the value stored in this parameter.
+ * @param  <T>  the type of the value stored in this parameter.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
@@ -172,7 +169,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Creates a parameter value from the specified descriptor.
      * The value will be initialized to the default value, if any.
      *
-     * @param descriptor The abstract definition of this parameter.
+     * @param  descriptor  the abstract definition of this parameter.
      */
     public DefaultParameterValue(final ParameterDescriptor<T> descriptor) {
         ensureNonNull("descriptor", descriptor);
@@ -186,7 +183,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * This is a <em>shallow</em> copy constructor, since the value contained in the given
      * object is not cloned.
      *
-     * @param parameter The parameter to copy values from.
+     * @param  parameter  the parameter to copy values from.
      *
      * @see #clone()
      * @see #unmodifiable(ParameterValue)
@@ -201,7 +198,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     /**
      * Returns the definition of this parameter.
      *
-     * @return The definition of this parameter.
+     * @return the definition of this parameter.
      */
     @Override
     @XmlElement(name = "operationParameter", required = true)
@@ -218,7 +215,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * All getter methods which need unit information will invoke this {@code getUnit()} method.
      * Subclasses can override this method if they need to compute the unit dynamically.
      *
-     * @return The unit of measure, or {@code null} if none.
+     * @return the unit of measure, or {@code null} if none.
      *
      * @see #doubleValue()
      * @see #doubleValueList()
@@ -238,7 +235,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * All getter methods will invoke this {@code getValue()} method.
      * Subclasses can override this method if they need to compute the value dynamically.
      *
-     * @return The parameter value as an object, or {@code null} if no value has been set
+     * @return the parameter value as an object, or {@code null} if no value has been set
      *         and there is no default value.
      *
      * @see #setValue(Object)
@@ -256,7 +253,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
      * or throws an exception otherwise.</p>
      *
-     * @return The boolean value represented by this parameter.
+     * @return the boolean value represented by this parameter.
      * @throws InvalidParameterTypeException if the value is not a boolean type.
      * @throws IllegalStateException if the value is not defined and there is no default value.
      *
@@ -279,7 +276,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
      * or throws an exception otherwise.</p>
      *
-     * @return The numeric value represented by this parameter after conversion to type {@code int}.
+     * @return the numeric value represented by this parameter after conversion to type {@code int}.
      * @throws InvalidParameterTypeException if the value is not an integer type.
      * @throws IllegalStateException if the value is not defined and there is no default value.
      *
@@ -306,7 +303,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * or throws an exception otherwise. If the value can be casted, then the array is cloned before
      * to be returned.</p>
      *
-     * @return A copy of the sequence of values represented by this parameter.
+     * @return a copy of the sequence of values represented by this parameter.
      * @throws InvalidParameterTypeException if the value is not an array of {@code int}s.
      * @throws IllegalStateException if the value is not defined and there is no default value.
      *
@@ -330,7 +327,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>The default implementation invokes {@link #getValue()} and casts the result if possible,
      * or throws an exception otherwise.</p>
      *
-     * @return The numeric value represented by this parameter after conversion to type {@code double}.
+     * @return the numeric value represented by this parameter after conversion to type {@code double}.
      *         This method returns {@link Double#NaN} only if such "value" has been explicitely set.
      * @throws InvalidParameterTypeException if the value is not a numeric type.
      * @throws IllegalStateException if the value is not defined and there is no default value.
@@ -357,7 +354,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * or throws an exception otherwise. If the value can be casted, then the array is cloned before
      * to be returned.</p>
      *
-     * @return A copy of the sequence of values represented by this parameter.
+     * @return a copy of the sequence of values represented by this parameter.
      * @throws InvalidParameterTypeException if the value is not an array of {@code double}s.
      * @throws IllegalStateException if the value is not defined and there is no default value.
      *
@@ -389,7 +386,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         }
         try {
             return source.getConverterToAny(unit);
-        } catch (ConversionException e) {
+        } catch (IncommensurableException e) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2, source, unit), e);
         }
     }
@@ -401,8 +398,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>The default implementation invokes {@link #doubleValue()} and {@link #getUnit()},
      * then converts the values to the given unit of measurement.</p>
      *
-     * @param  unit The unit of measure for the value to be returned.
-     * @return The numeric value represented by this parameter after conversion to type
+     * @param  unit  the unit of measure for the value to be returned.
+     * @return the numeric value represented by this parameter after conversion to type
      *         {@code double} and conversion to {@code unit}.
      * @throws IllegalArgumentException if the specified unit is invalid for this parameter.
      * @throws InvalidParameterTypeException if the value is not a numeric type.
@@ -426,7 +423,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>The default implementation invokes {@link #doubleValueList()} and {@link #getUnit()},
      * then converts the values to the given unit of measurement.</p>
      *
-     * @param  unit The unit of measure for the value to be returned.
+     * @param  unit  the unit of measure for the value to be returned.
      * @return The sequence of values represented by this parameter after conversion to type
      *         {@code double} and conversion to {@code unit}.
      * @throws IllegalArgumentException if the specified unit is invalid for this parameter.
@@ -452,7 +449,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Returns the string value of this parameter.
      * A string value does not have an associated unit of measure.
      *
-     * @return The string value represented by this parameter.
+     * @return the string value represented by this parameter.
      * @throws InvalidParameterTypeException if the value is not a string.
      * @throws IllegalStateException if the value is not defined and there is no default value.
      *
@@ -474,7 +471,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * The default implementation can convert the following value types:
      * {@link URI}, {@link URL}, {@link Path}, {@link File}.
      *
-     * @return The reference to a file containing parameter values.
+     * @return the reference to a file containing parameter values.
      * @throws InvalidParameterTypeException if the value is not a reference to a file or an URI.
      * @throws IllegalStateException if the value is not defined and there is no default value.
      *
@@ -558,7 +555,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * This implementation does not clone the given value. In particular, references to {@code int[]}
      * and {@code double[]} arrays are stored <cite>as-is</cite>.</p>
      *
-     * @param  value The parameter value, or {@code null} to restore the default.
+     * @param  value  the parameter value, or {@code null} to restore the default.
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
      *
@@ -592,7 +589,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
      *
-     * @param  value The parameter value.
+     * @param  value  the parameter value.
      * @throws InvalidParameterValueException if the boolean type is inappropriate for this parameter.
      *
      * @see #booleanValue()
@@ -610,7 +607,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>The default implementation wraps the given integer in an object of the type specified by the
      * {@linkplain #getDescriptor() descriptor}, then delegates to {@link #setValue(Object, Unit)}.</p>
      *
-     * @param  value The parameter value.
+     * @param  value  the parameter value.
      * @throws InvalidParameterValueException if the integer type is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example a value out of range).
      *
@@ -635,7 +632,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     /**
      * Wraps the given value in a type compatible with the expected value class, if possible.
      *
-     * @throws IllegalArgumentException If the given value can not be converted to the given type.
+     * @throws IllegalArgumentException if the given value can not be converted to the given type.
      */
     @SuppressWarnings("unchecked")
     private static Number wrap(final double value, final Class<?> valueClass) throws IllegalArgumentException {
@@ -652,10 +649,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>The default implementation wraps the given number in an object of the type specified by the
      * {@linkplain #getDescriptor() descriptor}, then delegates to {@link #setValue(Object, Unit)}.</p>
      *
-     * @param value The parameter value.
-     * @throws InvalidParameterValueException if the floating point type is inappropriate for this
-     *         parameter, or if the value is illegal for some other reason (for example a value out
-     *         of range).
+     * @param  value  the parameter value.
+     * @throws InvalidParameterValueException if the floating point type is inappropriate for this parameter,
+     *         or if the value is illegal for some other reason (for example a value out of range).
      *
      * @see #setValue(double,Unit)
      * @see #doubleValue()
@@ -677,8 +673,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>The default implementation wraps the given number in an object of the type specified by the
      * {@linkplain #getDescriptor() descriptor}, then delegates to {@link #setValue(Object, Unit)}.</p>
      *
-     * @param  value The parameter value.
-     * @param  unit The unit for the specified value.
+     * @param  value  the parameter value.
+     * @param  unit   the unit for the specified value.
      * @throws InvalidParameterValueException if the floating point type is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example a value out of range).
      *
@@ -702,8 +698,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
      *
-     * @param  values The parameter values.
-     * @param  unit The unit for the specified value.
+     * @param  values  the parameter values.
+     * @param  unit    the unit for the specified value.
      * @throws InvalidParameterValueException if the floating point array type is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example a value out of range).
      */
@@ -725,8 +721,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * subclasses can override if they want to perform more processing on the value before its storage,
      * or to be notified about value changes.
      *
-     * @param  value The parameter value, or {@code null} to restore the default.
-     * @param  unit  The unit associated to the new parameter value, or {@code null}.
+     * @param  value  the parameter value, or {@code null} to restore the default.
+     * @param  unit   the unit associated to the new parameter value, or {@code null}.
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
      *
@@ -760,8 +756,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * {@linkplain DefaultParameterDescriptor#getValidValues() valid values} are performed
      * before this method is invoked. The default implementation of this method does nothing.
      *
-     * @param  value The value converted to the unit of measurement specified by the descriptor.
-     * @throws InvalidParameterValueException If the given value is invalid for implementation-specific reasons.
+     * @param  value  the value converted to the unit of measurement specified by the descriptor.
+     * @throws InvalidParameterValueException if the given value is invalid for implementation-specific reasons.
      */
     protected void validate(final T value) throws InvalidParameterValueException {
     }
@@ -770,8 +766,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Compares the specified object with this parameter for equality.
      * The strictness level is controlled by the second argument.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode The strictness level of the comparison.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal according the given comparison mode.
      */
     @Override
@@ -808,7 +804,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead than this method.
      *
-     * @param  object The object to compare to {@code this}.
+     * @param  object  the object to compare to {@code this}.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -818,9 +814,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
 
     /**
      * Returns a hash value for this parameter.
+     * This value does not need to be the same in past or future versions of this class.
      *
-     * @return The hash code value. This value doesn't need to be the same
-     *         in past or future versions of this class.
+     * @return the hash code value.
      */
     @Override
     public int hashCode() {
@@ -842,7 +838,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         try {
             return (DefaultParameterValue<T>) super.clone();
         } catch (CloneNotSupportedException exception) {
-            throw new AssertionError(exception); // Should not happen, since we are cloneable
+            throw new AssertionError(exception);                // Should not happen, since we are cloneable
         }
     }
 
@@ -871,9 +867,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Transverse Mercator</cite> (UTM) projections use the same scale factor (0.9996) and false easting (500000 metres).
      * </div>
      *
-     * @param  <T> The type of the value stored in the given parameter.
-     * @param  parameter The parameter to make unmodifiable, or {@code null}.
-     * @return An unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
+     * @param  <T>        the type of the value stored in the given parameter.
+     * @param  parameter  the parameter to make unmodifiable, or {@code null}.
+     * @return a unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
      *
      * @since 0.6
      *
@@ -914,7 +910,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *     PARAMETER[“scale_factor”, 0.99987742],
      *     PARAMETER[“false_easting”, 600.0],           // In kilometres
      *     PARAMETER[“false_northing”, 2200.0],         // In kilometres
-     *     UNIT[“km”, 1000]]                            // Unit for all lengths
+     *     UNIT[“kilometre”, 1000]]                            // Unit for all lengths
      * }
      *
      * <p><b>WKT 2:</b></p>
@@ -922,18 +918,18 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *   ProjectedCRS[…
      *     BaseGeodCRS[…
      *       AngleUnit[“grad”, 0.015707963267948967]],
-     *     Conversion["Lambert zone II",
-     *       Method["Lambert Conic Conformal (1SP)"],
-     *       Parameter["Latitude of natural origin", 52.0],
-     *       Parameter["Scale factor at natural origin", 0.99987742],
-     *       Parameter["False easting", 600.0],
-     *       Parameter["False northing", 2200.0]],
-     *     CS["Cartesian", 2],
-     *       LengthUnit["km", 1000]]
+     *     Conversion[“Lambert zone II”,
+     *       Method[“Lambert Conic Conformal (1SP)”],
+     *       Parameter[“Latitude of natural origin”, 52.0],
+     *       Parameter[“Scale factor at natural origin”, 0.99987742],
+     *       Parameter[“False easting”, 600.0],
+     *       Parameter[“False northing”, 2200.0]],
+     *     CS[“Cartesian”, 2],
+     *       LengthUnit[“kilometre”, 1000]]
      * }
      * </div>
      *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "Parameter"} or {@code "ParameterFile"}.
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#119">WKT 2 specification §17.2.4</a>
@@ -974,7 +970,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                 ignoreUnits = true;
             } else {
                 if (convention != Convention.INTERNAL) {
-                    unit = PatchedUnitFormat.toFormattable(unit);
+                    unit = WKTUtilities.toFormattable(unit);
                 }
                 ignoreUnits = unit.equals(contextualUnit);
             }
@@ -1092,7 +1088,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         @XmlElement(name = "valueList",         type = MeasureList.class)
     })
     private Object getXmlValue() {
-        final Object value = getValue();    // Give to user a chance to override.
+        final Object value = getValue();                        // Give to user a chance to override.
         if (value != null) {
             if (value instanceof Number) {
                 final Number n = (Number) value;

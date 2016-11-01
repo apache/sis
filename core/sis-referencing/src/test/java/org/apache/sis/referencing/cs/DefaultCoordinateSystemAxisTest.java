@@ -16,11 +16,10 @@
  */
 package org.apache.sis.referencing.cs;
 
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.test.Validators;
+import org.apache.sis.measure.Units;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.test.DependsOnMethod;
@@ -39,7 +38,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -92,8 +91,8 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
         assertWktEquals("AXIS[“x”, east, LENGTHUNIT[“metre”, 1]]",  X);
         assertWktEquals("AXIS[“y”, north, LENGTHUNIT[“metre”, 1]]", Y);
         assertWktEquals("AXIS[“z”, up, LENGTHUNIT[“metre”, 1]]",    Z);
-        assertWktEquals("AXIS[“Longitude (λ)”, east, ANGLEUNIT[“grade”, 0.015707963267948967]]",             LONGITUDE_gon);
-        assertWktEquals("AXIS[“Latitude (φ)”, north, ANGLEUNIT[“grade”, 0.015707963267948967]]",             LATITUDE_gon);
+        assertWktEquals("AXIS[“Longitude (λ)”, east, ANGLEUNIT[“grad”, 0.015707963267948967]]",              LONGITUDE_gon);
+        assertWktEquals("AXIS[“Latitude (φ)”, north, ANGLEUNIT[“grad”, 0.015707963267948967]]",              LATITUDE_gon);
         assertWktEquals("AXIS[“Altitude (h)”, up, LENGTHUNIT[“metre”, 1]]",                                  ALTITUDE);
         assertWktEquals("AXIS[“Time (t)”, future, TIMEUNIT[“day”, 86400]]",                                  TIME);
         assertWktEquals("AXIS[“Longitude (λ)”, east, ANGLEUNIT[“degree”, 0.017453292519943295]]",            GEODETIC_LONGITUDE);
@@ -118,7 +117,7 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
     public void testMeridianWKT() {
         assertWktEquals("AXIS[“South along 90°W (x)”, south, MERIDIAN[-90.0, ANGLEUNIT[“degree”, 0.017453292519943295]], LENGTHUNIT[“metre”, 1]]",
                 new DefaultCoordinateSystemAxis(singletonMap(DefaultCoordinateSystemAxis.NAME_KEY, "South along 90°W"),
-                        "x", new DirectionAlongMeridian(AxisDirection.SOUTH, -90).getDirection(), SI.METRE));
+                        "x", new DirectionAlongMeridian(AxisDirection.SOUTH, -90).getDirection(), Units.METRE));
     }
 
     /**
@@ -146,9 +145,9 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
          * (GEODETIC_LONGITUDE, GEODETIC_LATITUDE) except for the name.
          */
         final DefaultCoordinateSystemAxis LONGITUDE = new DefaultCoordinateSystemAxis(getProperties(LONGITUDE_gon),
-                "λ", AxisDirection.EAST, NonSI.DEGREE_ANGLE);
+                "λ", AxisDirection.EAST, Units.DEGREE);
         final DefaultCoordinateSystemAxis LATITUDE = new DefaultCoordinateSystemAxis(getProperties(LATITUDE_gon),
-                "φ", AxisDirection.NORTH, NonSI.DEGREE_ANGLE);
+                "φ", AxisDirection.NORTH, Units.DEGREE);
         /*
          * Verifies the properties inferred by the constructor.
          */

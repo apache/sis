@@ -17,13 +17,12 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
-import javax.measure.unit.Unit;
-import javax.measure.quantity.Quantity;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.LinearConverter;
+import javax.measure.Unit;
+import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
@@ -36,9 +35,6 @@ import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.Units;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -126,18 +122,18 @@ import java.util.Objects;
  * same version of Apache SIS. But for long term storage, an established datum shift grid format like
  * NTv2 should be preferred.
  *
- * @param <C> Dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
- * @param <T> Dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
- *            or {@link javax.measure.quantity.Length}).
+ * @param  <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
+ * @param  <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
+ *              or {@link javax.measure.quantity.Length}).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.referencing.operation.transform.DatumShiftTransform
  */
-public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> implements Serializable {
+public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T>> implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -145,7 +141,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
 
     /**
      * The unit of measurements of input values, before conversion to grid indices by {@link #coordinateToGrid}.
-     * The coordinate unit is typically {@link javax.measure.unit.NonSI#DEGREE_ANGLE}.
+     * The coordinate unit is typically {@link javax.measure.Units#DEGREE}.
      *
      * @see #getCoordinateUnit()
      */
@@ -203,11 +199,11 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      * methods. The argument order is roughly the order in which they are used in the process of
      * interpolating translation vectors.</p>
      *
-     * @param coordinateUnit    The unit of measurement of input values, before conversion to grid indices by {@code coordinateToGrid}.
-     * @param coordinateToGrid  Conversion from the "real world" coordinates to grid indices including fractional parts.
-     * @param gridSize          Number of cells along each axis in the grid. The length of this array shall be equal to {@code coordinateToGrid} target dimensions.
-     * @param isCellValueRatio  {@code true} if results of {@link #interpolateInCell interpolateInCell(…)} are divided by grid cell size.
-     * @param translationUnit   The unit of measurement of output values.
+     * @param  coordinateUnit    the unit of measurement of input values, before conversion to grid indices by {@code coordinateToGrid}.
+     * @param  coordinateToGrid  conversion from the "real world" coordinates to grid indices including fractional parts.
+     * @param  gridSize          number of cells along each axis in the grid. The length of this array shall be equal to {@code coordinateToGrid} target dimensions.
+     * @param  isCellValueRatio  {@code true} if results of {@link #interpolateInCell interpolateInCell(…)} are divided by grid cell size.
+     * @param  translationUnit   the unit of measurement of output values.
      */
     protected DatumShiftGrid(final Unit<C> coordinateUnit, final LinearTransform coordinateToGrid,
             int[] gridSize, final boolean isCellValueRatio, final Unit<T> translationUnit)
@@ -247,15 +243,14 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
         scaleY = Double.NaN;
         x0     = Double.NaN;
         y0     = Double.NaN;
-        final UnitConverter c = coordinateUnit.toSI().getConverterTo(coordinateUnit);
-        if (c instanceof LinearConverter && c.convert(0) == 0) {
+        final double toStandardUnit = Units.toStandardUnit(coordinateUnit);
+        if (!Double.isNaN(toStandardUnit)) {
             final Matrix m = coordinateToGrid.getMatrix();
             if (Matrices.isAffine(m)) {
                 final int n = m.getNumCol() - 1;
-                final double toUnit = Units.derivative(c, 0);
                 switch (m.getNumRow()) {
-                    default: y0 = m.getElement(1,n); scaleY = diagonal(m, 1, n) * toUnit;   // Fall through
-                    case 1:  x0 = m.getElement(0,n); scaleX = diagonal(m, 0, n) * toUnit;
+                    default: y0 = m.getElement(1,n); scaleY = diagonal(m, 1, n) / toStandardUnit;   // Fall through
+                    case 1:  x0 = m.getElement(0,n); scaleX = diagonal(m, 0, n) / toStandardUnit;
                     case 0:  break;
                 }
             }
@@ -265,10 +260,10 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
     /**
      * Returns the value on the diagonal of the given matrix, provided that all other non-translation terms are 0.
      *
-     * @param m The matrix from which to get the scale factor on a row.
-     * @param j The row for which to get the scale factor.
-     * @param n Index of the last column.
-     * @return The scale factor on the diagonal, or NaN.
+     * @param  m  the matrix from which to get the scale factor on a row.
+     * @param  j  the row for which to get the scale factor.
+     * @param  n  index of the last column.
+     * @return the scale factor on the diagonal, or NaN.
      */
     private static double diagonal(final Matrix m, final int j, int n) {
         while (--n >= 0) {
@@ -282,7 +277,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
     /**
      * Creates a new datum shift grid with the same grid geometry (size and units) than the given grid.
      *
-     * @param other The other datum shift grid from which to copy the grid geometry.
+     * @param  other  the other datum shift grid from which to copy the grid geometry.
      */
     protected DatumShiftGrid(final DatumShiftGrid<C,T> other) {
         ArgumentChecks.ensureNonNull("other", other);
@@ -298,10 +293,10 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
     }
 
     /**
-     * Returns the number of cells along each axis in the grid. The length of this array is equal to
-     * {@code coordinateToGrid} target dimensions.
+     * Returns the number of cells along each axis in the grid.
+     * The length of this array is equal to {@code coordinateToGrid} target dimensions.
      *
-     * @return The number of cells along each axis in the grid.
+     * @return the number of cells along each axis in the grid.
      */
     public int[] getGridSize() {
         return gridSize.clone();
@@ -315,7 +310,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      * <p>The unit of measurement for the coordinate values in the returned envelope is
      * given by {@link #getCoordinateUnit()}. The complete CRS is undefined.</p>
      *
-     * @return The domain covered by this grid.
+     * @return the domain covered by this grid.
      * @throws TransformException if an error occurred while computing the envelope.
      */
     public Envelope getDomainOfValidity() throws TransformException {
@@ -328,9 +323,9 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
 
     /**
      * Returns the unit of measurement of input values, before conversion to grid indices.
-     * The coordinate unit is usually {@link javax.measure.unit.NonSI#DEGREE_ANGLE}, but other units are allowed.
+     * The coordinate unit is usually {@link javax.measure.Units#DEGREE}, but other units are allowed.
      *
-     * @return The unit of measurement of input values before conversion to grid indices.
+     * @return the unit of measurement of input values before conversion to grid indices.
      *
      * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getInterpolationCRS()
      */
@@ -368,7 +363,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      *   └                      ┘
      * }
      *
-     * @return Conversion from the "real world" coordinates to grid indices including fractional parts.
+     * @return conversion from the "real world" coordinates to grid indices including fractional parts.
      */
     public LinearTransform getCoordinateToGrid() {
         return coordinateToGrid;
@@ -379,8 +374,8 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#toSI()}.
      * For angular coordinates, this is radians. For linear coordinates, this is metres.
      *
-     * @param x The "real world" ordinate (often longitude in radians) of the point for which to get the translation.
-     * @return The grid index for the given ordinate. May be out of bounds.
+     * @param  x  the "real world" ordinate (often longitude in radians) of the point for which to get the translation.
+     * @return the grid index for the given ordinate. May be out of bounds.
      */
     public final double normalizedToGridX(final double x) {
         return x * scaleX + x0;
@@ -391,8 +386,8 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#toSI()}.
      * For angular coordinates, this is radians. For linear coordinates, this is metres.
      *
-     * @param y The "real world" ordinate (often latitude in radians) of the point for which to get the translation.
-     * @return The grid index for the given ordinate. May be out of bounds.
+     * @param  y  the "real world" ordinate (often latitude in radians) of the point for which to get the translation.
+     * @return the grid index for the given ordinate. May be out of bounds.
      */
     public final double normalizedToGridY(final double y) {
         return y * scaleY + y0;
@@ -419,7 +414,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      *       the translation unit shall be the same than the unit of source ellipsoid axis lengths.</li>
      * </ul>
      *
-     * @return The unit of measurement of output values interpolated by {@code interpolateAt(…)}.
+     * @return the unit of measurement of output values interpolated by {@code interpolateAt(…)}.
      *
      * @see #interpolateAt
      */
@@ -442,9 +437,9 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      *       the translation vector by the inverse of the conversion given at step 1.</li>
      * </ol>
      *
-     * @param ordinates  The "real world" ordinate (often longitude and latitude, but not necessarily)
+     * @param ordinates  the "real world" ordinate (often longitude and latitude, but not necessarily)
      *                   of the point for which to get the translation.
-     * @return The translation vector at the given position.
+     * @return the translation vector at the given position.
      * @throws TransformException if an error occurred while computing the translation vector.
      */
     public double[] interpolateAt(final double... ordinates) throws TransformException {
@@ -479,9 +474,9 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      *   <li>Apply a bilinear interpolation and store the result in {@code vector[dim]}.</li>
      * </ol>
      *
-     * @param gridX   First grid ordinate of the point for which to get the translation.
-     * @param gridY   Second grid ordinate of the point for which to get the translation.
-     * @param vector  A pre-allocated array where to write the translation vector.
+     * @param  gridX   first grid ordinate of the point for which to get the translation.
+     * @param  gridY   second grid ordinate of the point for which to get the translation.
+     * @param  vector  a pre-allocated array where to write the translation vector.
      */
     public void interpolateInCell(double gridX, double gridY, final double[] vector) {
         int ix = (int) gridX;  gridX -= ix;
@@ -525,9 +520,9 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      * and {@code gridY}, because empirical tests suggest that the accuracy of such interpolation
      * is uncertain.
      *
-     * @param  gridX First grid ordinate of the point for which to get the translation.
-     * @param  gridY Second grid ordinate of the point for which to get the translation.
-     * @return The derivative at the given location.
+     * @param  gridX  first grid ordinate of the point for which to get the translation.
+     * @param  gridY  second grid ordinate of the point for which to get the translation.
+     * @return the derivative at the given location.
      */
     public Matrix derivativeInCell(final double gridX, final double gridY) {
         final int ix = Math.max(0, Math.min(gridSize[0] - 2, (int) gridX));
@@ -554,11 +549,11 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      *       {@linkplain #DatumShiftGrid(Unit, LinearTransform, int[], boolean, Unit) constructor javadoc}).</li>
      * </ul>
      *
-     * @param dim    The dimension of the translation vector component to get,
-     *               from 0 inclusive to {@link #getTranslationDimensions()} exclusive.
-     * @param gridX  The grid index on the <var>x</var> axis, from 0 inclusive to {@code gridSize[0]} exclusive.
-     * @param gridY  The grid index on the <var>y</var> axis, from 0 inclusive to {@code gridSize[1]} exclusive.
-     * @return The translation for the given dimension in the grid cell at the given index.
+     * @param  dim    the dimension of the translation vector component to get,
+     *                from 0 inclusive to {@link #getTranslationDimensions()} exclusive.
+     * @param  gridX  the grid index on the <var>x</var> axis, from 0 inclusive to {@code gridSize[0]} exclusive.
+     * @param  gridY  the grid index on the <var>y</var> axis, from 0 inclusive to {@code gridSize[1]} exclusive.
+     * @return the translation for the given dimension in the grid cell at the given index.
      */
     public abstract double getCellValue(int dim, int gridX, int gridY);
 
@@ -576,9 +571,9 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      * are fixed by definition to -168, -60 and +320 metres for dimensions 0, 1 and 2 respectively
      * (geocentric <var>X</var>, <var>Y</var> and <var>Z</var>).</div>
      *
-     * @param dim  The dimension for which to get an average translation value,
-     *             from 0 inclusive to {@link #getTranslationDimensions()} exclusive.
-     * @return A translation value close to the average for the given dimension.
+     * @param  dim  the dimension for which to get an average translation value,
+     *              from 0 inclusive to {@link #getTranslationDimensions()} exclusive.
+     * @return a translation value close to the average for the given dimension.
      */
     public double getCellMean(final int dim) {
         final DoubleDouble sum = new DoubleDouble();
@@ -610,7 +605,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      *
      * <p>This information is used for determining a tolerance threshold in iterative calculation.</p>
      *
-     * @return An estimation of cell value precision.
+     * @return an estimation of cell value precision.
      */
     public abstract double getCellPrecision();
 
@@ -631,7 +626,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
     /**
      * Returns {@code true} if the given object is a grid containing the same data than this grid.
      *
-     * @param  other The other object to compare with this datum shift grid.
+     * @param  other  the other object to compare with this datum shift grid.
      * @return {@code true} if the given object is non-null, of the same class than this {@code DatumShiftGrid}
      *         and contains the same data.
      */
@@ -653,7 +648,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      * This method does not need to compute a hash code from all grid values.
      * Comparing some metadata like the grid filename is considered sufficient
      *
-     * @return A hash code based on metadata.
+     * @return a hash code based on metadata.
      */
     @Override
     public int hashCode() {
@@ -663,7 +658,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
     /**
      * Invoked after deserialization. This method computes the transient fields.
      *
-     * @param  in The input stream from which to deserialize the datum shift grid.
+     * @param  in  the input stream from which to deserialize the datum shift grid.
      * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
      * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */

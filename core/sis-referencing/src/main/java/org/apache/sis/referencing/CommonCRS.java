@@ -22,10 +22,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.Unit;
-import javax.measure.quantity.Duration;
+import javax.measure.Unit;
+import javax.measure.quantity.Time;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
@@ -128,7 +126,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
@@ -148,7 +146,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
      *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257223563 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 60 in North and South hemispheres</td></tr>
      * </table></blockquote>
      */
@@ -166,7 +164,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-major axis length:</th>  <td>6378135</td></tr>
      *   <tr><th>Semi-minor axis length:</th>  <td>6356751 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.26 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 60 in North and South hemispheres</td></tr>
      * </table></blockquote>
      */
@@ -187,7 +185,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
      *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 23 in the North hemisphere</td></tr>
      * </table></blockquote>
      *
@@ -210,7 +208,7 @@ public enum CommonCRS {
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6378206.4</td></tr>
      *   <tr><th>Semi-minor axis length:</th>  <td>6356583.8 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 22 in the North hemisphere</td></tr>
      * </table></blockquote>
      */
@@ -230,7 +228,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
      *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>28 to 37 in the North hemisphere</td></tr>
      * </table></blockquote>
      *
@@ -253,7 +251,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-major axis length:</th>  <td>6378388</td></tr>
      *   <tr><th>Semi-minor axis length:</th>  <td>6356912 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>297 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>28 to 38 in the North hemisphere</td></tr>
      * </table></blockquote>
      */
@@ -271,7 +269,7 @@ public enum CommonCRS {
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
      *   <tr><th>Semi-major axis length:</th>  <td>6371007</td></tr>
      *   <tr><th>Semi-minor axis length:</th>  <td>6371007 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      * </table></blockquote>
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
@@ -430,7 +428,7 @@ public enum CommonCRS {
      * <ul>
      *   <li>Axis order is (<var>longitude</var>, <var>latitude</var>).</li>
      *   <li>Axis directions are ({@linkplain AxisDirection#EAST East}, {@linkplain AxisDirection#NORTH North}).</li>
-     *   <li>Angular unit is {@link NonSI#DEGREE_ANGLE}.</li>
+     *   <li>Angular unit is {@link Units#DEGREE}.</li>
      *   <li>Prime meridian in Greenwich.</li>
      * </ul>
      *
@@ -1052,7 +1050,7 @@ public enum CommonCRS {
          *   <tr><th>Primary names:</th>            <td>"MSL height" &nbsp;(<i>datum:</i> "Mean Sea Level")</td></tr>
          *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level height" &nbsp;(<i>datum:</i> "MSL")</td></tr>
          *   <tr><th>Direction:</th>                <td>{@link AxisDirection#UP}</td></tr>
-         *   <tr><th>Unit:</th>                     <td>{@link SI#METRE}</td></tr>
+         *   <tr><th>Unit:</th>                     <td>{@link Units#METRE}</td></tr>
          * </table></blockquote>
          *
          * @see VerticalDatumType#GEOIDAL
@@ -1067,7 +1065,7 @@ public enum CommonCRS {
          *   <tr><th>Primary names:</th>            <td>"MSL depth" &nbsp;(<i>datum:</i> "Mean Sea Level")</td></tr>
          *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level depth" &nbsp;(<i>datum:</i> "MSL")</td></tr>
          *   <tr><th>Direction:</th>                <td>{@link AxisDirection#DOWN}</td></tr>
-         *   <tr><th>Unit:</th>                     <td>{@link SI#METRE}</td></tr>
+         *   <tr><th>Unit:</th>                     <td>{@link Units#METRE}</td></tr>
          * </table></blockquote>
          *
          * @see VerticalDatumType#GEOIDAL
@@ -1083,7 +1081,7 @@ public enum CommonCRS {
          *   <tr><th>Primary names:</th>            <td>"NAVD88 height" &nbsp;(<i>datum:</i> "North American Vertical Datum 1988")</td></tr>
          *   <tr><th>Abbreviations or aliases:</th> <td>" North American Vertical Datum of 1988 height (m)" &nbsp;(<i>datum:</i> "NAVD88")</td></tr>
          *   <tr><th>Direction:</th>                <td>{@link AxisDirection#UP}</td></tr>
-         *   <tr><th>Unit:</th>                     <td>{@link SI#METRE}</td></tr>
+         *   <tr><th>Unit:</th>                     <td>{@link Units#METRE}</td></tr>
          * </table></blockquote>
          *
          * @see CommonCRS#NAD83
@@ -1224,11 +1222,11 @@ public enum CommonCRS {
             final Unit<?> unit;
             switch (this) {
                 default: {
-                    unit = SI.METRE;
+                    unit = Units.METRE;
                     break;
                 }
                 case BAROMETRIC: {
-                    unit = SI.MetricPrefix.HECTO(SI.PASCAL);
+                    unit = Units.HECTOPASCAL;
                     break;
                 }
             }
@@ -1459,14 +1457,14 @@ public enum CommonCRS {
         @SuppressWarnings("fallthrough")
         private TimeCS cs() {
             final Map<String,?> cs, axis;
-            Unit<Duration> unit = SI.SECOND;
+            Unit<Time> unit = Units.SECOND;
             switch (this) {
                 default: {
                     // Share the coordinate system created for truncated Julian.
                     return TRUNCATED_JULIAN.crs().getCoordinateSystem();
                 }
                 case TRUNCATED_JULIAN: {
-                    unit = NonSI.DAY;
+                    unit = Units.DAY;
                     // Fall through
                 }
                 case UNIX: {

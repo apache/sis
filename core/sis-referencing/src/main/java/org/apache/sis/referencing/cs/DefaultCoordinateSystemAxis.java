@@ -19,10 +19,9 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
+import javax.measure.Unit;
 import javax.measure.quantity.Angle;
-import javax.measure.converter.UnitConverter;
+import javax.measure.UnitConverter;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -92,7 +91,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see AbstractCS
@@ -314,7 +313,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             double min = Double.NEGATIVE_INFINITY;
             double max = Double.POSITIVE_INFINITY;
             if (Units.isAngular(unit)) {
-                final UnitConverter fromDegrees = NonSI.DEGREE_ANGLE.getConverterTo(unit.asType(Angle.class));
+                final UnitConverter fromDegrees = Units.DEGREE.getConverterTo(unit.asType(Angle.class));
                 final AxisDirection dir = AxisDirections.absolute(direction);
                 if (dir.equals(AxisDirection.NORTH)) {
                     min = fromDegrees.convert(Latitude.MIN_VALUE);

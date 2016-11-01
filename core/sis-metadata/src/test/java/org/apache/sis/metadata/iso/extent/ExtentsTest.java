@@ -19,10 +19,9 @@ package org.apache.sis.metadata.iso.extent;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
-import javax.measure.converter.UnitConverter;
-import javax.measure.converter.ConversionException;
+import javax.measure.Unit;
+import javax.measure.UnitConverter;
+import javax.measure.IncommensurableException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.MeasurementRange;
@@ -44,7 +43,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)
@@ -57,11 +56,11 @@ public final strictfp class ExtentsTest extends TestCase {
     /**
      * Tests {@link Extents#getVerticalRange(Extent)}.
      *
-     * @throws ConversionException should never happen in this test.
+     * @throws IncommensurableException if a conversion between incompatible units were attempted.
      */
     @Test
     @SuppressWarnings("null")
-    public void testGetVerticalRange() throws ConversionException {
+    public void testGetVerticalRange() throws IncommensurableException {
         final List<DefaultVerticalExtent> extents = Arrays.asList(
                 new DefaultVerticalExtent( -200,  -100, VerticalCRSMock.HEIGHT),
                 new DefaultVerticalExtent(  150,   300, VerticalCRSMock.DEPTH),
@@ -80,7 +79,7 @@ public final strictfp class ExtentsTest extends TestCase {
             unit = e.getVerticalCRS().getCoordinateSystem().getAxis(0).getUnit();
             if (Units.isLinear(unit)) break;
         }
-        final UnitConverter c = unit.getConverterToAny(SI.METRE);
+        final UnitConverter c = unit.getConverterToAny(Units.METRE);
         /*
          * The actual test. Arbitrarily compare the heights in metres, converting them if needed.
          */

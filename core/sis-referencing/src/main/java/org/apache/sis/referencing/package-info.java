@@ -89,7 +89,7 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/referenceSystems.xsd",

@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -46,6 +45,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.metadata.AxisDirections;
@@ -770,7 +770,7 @@ check:  while (lower != 0 || upper != dimension) {
      */
     public static double getGreenwichLongitude(final GeodeticCRS crs) {
         ArgumentChecks.ensureNonNull("crs", crs);
-        return ReferencingUtilities.getGreenwichLongitude(crs.getDatum().getPrimeMeridian(), NonSI.DEGREE_ANGLE);
+        return ReferencingUtilities.getGreenwichLongitude(crs.getDatum().getPrimeMeridian(), Units.DEGREE);
     }
 
     /**

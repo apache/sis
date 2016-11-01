@@ -16,9 +16,6 @@
  */
 package org.apache.sis.referencing.crs;
 
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.Unit;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -36,6 +33,7 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
+import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.opengis.test.Validators;
@@ -55,7 +53,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -108,8 +106,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     }
 
     /**
-     * Creates the "NTF (Paris) / Lambert zone II" CRS. The prime meridian is always in grades,
-     * but the axes can be in degrees or in grades depending if the {@code baseCRS} argument is
+     * Creates the "NTF (Paris) / Lambert zone II" CRS. The prime meridian is always in grads,
+     * but the axes can be in degrees or in grads depending if the {@code baseCRS} argument is
      * {@link HardCodedCRS.NTF_NORMALIZED_AXES} or {@link HardCodedCRS.NTF} respectively.
      *
      * @see HardCodedCRS#NTF
@@ -118,10 +116,10 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
         return new GeodeticObjectBuilder()
                 .setConversionMethod("Lambert Conic Conformal (1SP)")
                 .setConversionName("Lambert zone II")
-                .setParameter("Latitude of natural origin",             52, NonSI.GRADE)
-                .setParameter("Scale factor at natural origin", 0.99987742, Unit.ONE)
-                .setParameter("False easting",                      600000, SI.METRE)
-                .setParameter("False northing",                    2200000, SI.METRE)
+                .setParameter("Latitude of natural origin",             52, Units.GRAD)
+                .setParameter("Scale factor at natural origin", 0.99987742, Units.UNITY)
+                .setParameter("False easting",                      600000, Units.METRE)
+                .setParameter("False northing",                    2200000, Units.METRE)
                 .setCodeSpace(Citations.EPSG, Constants.EPSG)
                 .addName("NTF (Paris) / Lambert zone II")
                 .addIdentifier("27572")
@@ -133,11 +131,11 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
      * or something equivalent.
      */
     private static void verifyParameters(final ParameterValueGroup pg) {
-        assertEquals("Latitude of natural origin",    52,          pg.parameter("Latitude of natural origin")    .doubleValue(NonSI.GRADE), STRICT);
-        assertEquals("Longitude of natural origin",    0,          pg.parameter("Longitude of natural origin")   .doubleValue(NonSI.GRADE), STRICT);
+        assertEquals("Latitude of natural origin",    52,          pg.parameter("Latitude of natural origin")    .doubleValue(Units.GRAD),  STRICT);
+        assertEquals("Longitude of natural origin",    0,          pg.parameter("Longitude of natural origin")   .doubleValue(Units.GRAD),  STRICT);
         assertEquals("Scale factor at natural origin", 0.99987742, pg.parameter("Scale factor at natural origin").doubleValue(),            STRICT);
-        assertEquals("False easting",             600000,          pg.parameter("False easting")                 .doubleValue(SI.METRE),    STRICT);
-        assertEquals("False northing",           2200000,          pg.parameter("False northing")                .doubleValue(SI.METRE),    STRICT);
+        assertEquals("False easting",             600000,          pg.parameter("False easting")                 .doubleValue(Units.METRE), STRICT);
+        assertEquals("False northing",           2200000,          pg.parameter("False northing")                .doubleValue(Units.METRE), STRICT);
     }
 
     /**
@@ -155,7 +153,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    DATUM[“Nouvelle Triangulation Francaise”,\n" +
                 "      SPHEROID[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "      PRIMEM[“Paris”, 2.5969213],\n" +
-                "    UNIT[“grade”, 0.015707963267948967],\n" +
+                "    UNIT[“grad”, 0.015707963267948967],\n" +
                 "    AXIS[“Longitude”, EAST],\n" +
                 "    AXIS[“Latitude”, NORTH]],\n" +
                 "  PROJECTION[“Lambert_Conformal_Conic_1SP”, AUTHORITY[“EPSG”, “9801”]],\n" +
@@ -186,7 +184,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    DATUM[“Nouvelle Triangulation Francaise”,\n" +
                 "      SPHEROID[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "      PRIMEM[“Paris”, 2.33722917],\n" +                    // Note the conversion from 2.5969213 grads.
-                "    UNIT[“grade”, 0.015707963267948967],\n" +
+                "    UNIT[“grad”, 0.015707963267948967],\n" +
                 "    AXIS[“Longitude”, EAST],\n" +
                 "    AXIS[“Latitude”, NORTH]],\n" +
                 "  PROJECTION[“Lambert_Conformal_Conic_1SP”, AUTHORITY[“EPSG”, “9801”]],\n" +
@@ -257,7 +255,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    CS[ellipsoidal, 2],\n" +
                 "      Axis[“Longitude (λ)”, east],\n" +
                 "      Axis[“Latitude (φ)”, north],\n" +
-                "      Unit[“grade”, 0.015707963267948967, Id[“EPSG”, 9105]]],\n" +
+                "      Unit[“grad”, 0.015707963267948967, Id[“EPSG”, 9105]]],\n" +
                 "  Conversion[“Lambert zone II”,\n" +
                 "    Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801], Id[“GeoTIFF”, 9]],\n" +
                 "    Parameter[“Latitude of natural origin”, 52.0, Id[“EPSG”, 8801]],\n" +
@@ -288,7 +286,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213],\n" +
-                "    Unit[“grade”, 0.015707963267948967]],\n" +
+                "    Unit[“grad”, 0.015707963267948967]],\n" +
                 "  Conversion[“Lambert zone II”,\n" +
                 "    Method[“Lambert Conic Conformal (1SP)”],\n" +
                 "    Parameter[“Latitude of natural origin”, 52.0],\n" +
@@ -312,11 +310,11 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "  BaseGeodCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
-                "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967]],\n" +
+                "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967]],\n" +
                 "    Unit[“degree”, 0.017453292519943295]],\n" +
                 "  Conversion[“Lambert zone II”,\n" +
                 "    Method[“Lambert Conic Conformal (1SP)”],\n" +
-                "    Parameter[“Latitude of natural origin”, 52.0, Unit[“grade”, 0.015707963267948967]],\n" +
+                "    Parameter[“Latitude of natural origin”, 52.0, Unit[“grad”, 0.015707963267948967]],\n" +
                 "    Parameter[“Longitude of natural origin”, 0.0],\n" +
                 "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
                 "    Parameter[“False easting”, 600000.0],\n" +
@@ -344,10 +342,10 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "  BASEGEODCRS[“NTF (Paris)”,\n" +
                 "    DATUM[“Nouvelle Triangulation Francaise”,\n" +
                 "      ELLIPSOID[“NTF”, 6378249.2, 293.4660212936269, LENGTHUNIT[“metre”, 1]]],\n" +
-                "      PRIMEM[“Paris”, 2.5969213, ANGLEUNIT[“grade”, 0.015707963267948967]]],\n" +
+                "      PRIMEM[“Paris”, 2.5969213, ANGLEUNIT[“grad”, 0.015707963267948967]]],\n" +
                 "  CONVERSION[“Lambert zone II”,\n" +
                 "    METHOD[“Lambert Conic Conformal (1SP)”, ID[“EPSG”, 9801]],\n" +
-                "    PARAMETER[“Latitude of natural origin”, 52.0, ANGLEUNIT[“grade”, 0.015707963267948967], ID[“EPSG”, 8801]],\n" +
+                "    PARAMETER[“Latitude of natural origin”, 52.0, ANGLEUNIT[“grad”, 0.015707963267948967], ID[“EPSG”, 8801]],\n" +
                 "    PARAMETER[“Longitude of natural origin”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295], ID[“EPSG”, 8802]],\n" +
                 "    PARAMETER[“Scale factor at natural origin”, 0.99987742, SCALEUNIT[“unity”, 1], ID[“EPSG”, 8805]],\n" +
                 "    PARAMETER[“False easting”, 600000.0, LENGTHUNIT[“metre”, 1], ID[“EPSG”, 8806]],\n" +
@@ -364,11 +362,11 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "  BaseGeodCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
-                "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967]],\n" +
+                "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grad”, 0.015707963267948967]],\n" +
                 "    Unit[“degree”, 0.017453292519943295]],\n" +
                 "  Conversion[“Lambert zone II”,\n" +
                 "    Method[“Lambert Conic Conformal (1SP)”],\n" +
-                "    Parameter[“Latitude of natural origin”, 52.0, Unit[“grade”, 0.015707963267948967]],\n" +
+                "    Parameter[“Latitude of natural origin”, 52.0, Unit[“grad”, 0.015707963267948967]],\n" +
                 "    Parameter[“Longitude of natural origin”, 0.0],\n" +
                 "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
                 "    Parameter[“False easting”, 600000.0],\n" +
@@ -396,8 +394,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
         final ProjectedCRS crs = new GeodeticObjectBuilder()
                 .setConversionMethod("Mercator (variant A)")
                 .setConversionName("Popular Visualisation Pseudo-Mercator")
-                .setParameter("semi-major", 6378137, SI.METRE)
-                .setParameter("semi-minor", 6378137, SI.METRE)
+                .setParameter("semi-major", 6378137, Units.METRE)
+                .setParameter("semi-minor", 6378137, Units.METRE)
                 .addName("WGS 84 / Pseudo-Mercator")
                 .createProjectedCRS(HardCodedCRS.WGS84, HardCodedCS.PROJECTED);
 
@@ -439,8 +437,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
         final ProjectedCRS crs = new GeodeticObjectBuilder()
                 .setConversionMethod("Equirectangular")
                 .setConversionName("Equidistant Cylindrical (Spherical)")
-                .setParameter("False easting",  1000, SI.METRE)
-                .setParameter("False northing", 2000, SI.METRE)
+                .setParameter("False easting",  1000, Units.METRE)
+                .setParameter("False northing", 2000, Units.METRE)
                 .addName("Equidistant Cylindrical (Spherical)")
                 .createProjectedCRS(HardCodedCRS.WGS84, HardCodedCS.PROJECTED);
 

@@ -18,15 +18,13 @@ package org.apache.sis.parameter;
 
 import java.util.List;
 import java.util.Locale;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.Unit;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterValue;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -79,11 +77,11 @@ public final strictfp class ParameterFormatTest extends TestCase {
         ParameterDescriptor<?>[] parameters = {
             builder.addIdentifier("8801").addName("Latitude of natural origin").addName(OGC, "latitude_of_origin")
                     .setRemarks("This parameter is shown for completeness, but should never have a value different than 0 for this projection.")
-                    .createBounded( -80,  +84,  40, NonSI.DEGREE_ANGLE),
-            builder.addIdentifier("8802").addName("Longitude of natural origin")     .addName(OGC, "central_meridian")  .createBounded(-180, +180, -60, NonSI.DEGREE_ANGLE),
-            builder.addIdentifier("8805").addName("Scale factor at natural origin")  .addName(OGC, "scale_factor")      .createStrictlyPositive(1, Unit.ONE),
-            builder.addIdentifier("8806").addName("False easting").setRequired(false).addName(OGC, "false_easting")     .create( 5000, SI.METRE),
-            builder.addIdentifier("8807").addName("False northing")                  .addName(OGC, "false_northing")    .create(10000, SI.METRE)
+                    .createBounded( -80,  +84,  40, Units.DEGREE),
+            builder.addIdentifier("8802").addName("Longitude of natural origin")     .addName(OGC, "central_meridian")  .createBounded(-180, +180, -60, Units.DEGREE),
+            builder.addIdentifier("8805").addName("Scale factor at natural origin")  .addName(OGC, "scale_factor")      .createStrictlyPositive(1, Units.UNITY),
+            builder.addIdentifier("8806").addName("False easting").setRequired(false).addName(OGC, "false_easting")     .create( 5000, Units.METRE),
+            builder.addIdentifier("8807").addName("False northing")                  .addName(OGC, "false_northing")    .create(10000, Units.METRE)
         };
         builder.addIdentifier("9804")
                .addName("Mercator (variant A)")
@@ -110,7 +108,7 @@ public final strictfp class ParameterFormatTest extends TestCase {
         final ParameterValueGroup group = descriptor.createValue();
         group.parameter("latitude_of_origin").setValue(20);
         group.parameter("scale_factor").setValue(0.997);
-        group.parameter("false_northing").setValue(20, SI.KILOMETRE);
+        group.parameter("false_northing").setValue(20, Units.KILOMETRE);
         return group;
     }
 

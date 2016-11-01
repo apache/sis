@@ -73,8 +73,8 @@
  *
  * {@preformat java
  *     ParameterValueGroup group = Mercator.PARAMETERS.createValue();
- *     group.parameter("Longitude of natural origin").setValue(-60);   // Using default units (e.g. degrees).
- *     group.parameter("False easting").setValue(200.0, SI.KILOMETRE); // Using explicit units.
+ *     group.parameter("Longitude of natural origin").setValue(-60);        // Using default units (e.g. degrees).
+ *     group.parameter("False easting").setValue(200.0, Units.KILOMETRE);   // Using explicit units.
  * }
  * </div>
  *

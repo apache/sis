@@ -629,7 +629,7 @@ public final class IdentifiedObjects extends Static {
      *   <tr><td>{@link org.opengis.referencing.operation.OperationMethod}</td>     <td>{@code method}</td>              <td>Operation method definition</td></tr>
      *   <tr><td>{@link org.opengis.parameter.ParameterDescriptor}</td>             <td>{@code parameter}</td>           <td>Operation parameter definition</td></tr>
      *   <tr><td>{@link org.opengis.referencing.ReferenceSystem}</td>               <td>{@code referenceSystem}</td>     <td>Value reference system definition</td></tr>
-     *   <tr><td>{@link javax.measure.unit.Unit}</td>                               <td>{@code uom}</td>                 <td>Unit of measure definition</td></tr>
+     *   <tr><td>{@link javax.measure.Unit}</td>                                    <td>{@code uom}</td>                 <td>Unit of measure definition</td></tr>
      * </table>
      *
      * The type is followed by the {@linkplain NamedIdentifier#getVersion() codespace version} if available,

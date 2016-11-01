@@ -19,8 +19,8 @@ package org.apache.sis.internal.referencing;
 import java.util.Map;
 import java.util.Date;
 import java.util.Collections;
-import javax.measure.unit.Unit;
-import javax.measure.quantity.Duration;
+import javax.measure.Unit;
+import javax.measure.quantity.Time;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -60,7 +60,7 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
@@ -270,10 +270,10 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      *   ProjectedCRS crs = builder
      *           .setConversionMethod("Lambert Conic Conformal (1SP)")
      *           .setConversionName("Lambert zone II")
-     *           .setParameter("Latitude of natural origin",             52, NonSI.GRADE)
-     *           .setParameter("Scale factor at natural origin", 0.99987742, Unit.ONE)
-     *           .setParameter("False easting",                      600000, SI.METRE)
-     *           .setParameter("False northing",                    2200000, SI.METRE)
+     *           .setParameter("Latitude of natural origin",             52, Units.GRAD)
+     *           .setParameter("Scale factor at natural origin", 0.99987742, Units.UNITY)
+     *           .setParameter("False easting",                      600000, Units.METRE)
+     *           .setParameter("False northing",                    2200000, Units.METRE)
      *           .addName("NTF (Paris) / Lambert zone II")
      *           .createProjectedCRS(baseCRS, derivedCS);
      * }
@@ -320,7 +320,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @return a temporal CRS using the given origin and units.
      * @throws FactoryException if an error occurred while building the temporal CRS.
      */
-    public TemporalCRS createTemporalCRS(final Date origin, final Unit<Duration> unit) throws FactoryException {
+    public TemporalCRS createTemporalCRS(final Date origin, final Unit<Time> unit) throws FactoryException {
         /*
          * Try to use one of the pre-defined datum and coordinate system if possible.
          * This not only saves a little bit of memory, but also provides better names.

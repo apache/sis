@@ -84,7 +84,7 @@ public enum Convention {
      *   <li>{@code Axis} element omits the {@code Order} sub-element.</li>
      *   <li>{@code Unit} elements are less verbose:<ul>
      *     <li>{@code Ellipsoid} and {@code VerticalExtent} elements omit the {@code LengthUnit} sub-element
-     *         if that unit is {@link javax.measure.unit.SI#METRE}.</li>
+     *         if that unit is {@link org.apache.sis.measure.Units#METRE}.</li>
      *     <li>{@code Parameter} elements omit the {@code LengthUnit} sub-element
      *         if that unit is the same than the unit of the {@code ProjectedCRS} axes.</li>
      *     <li>{@code Parameter} and {@code PrimeMeridian} elements omit the {@code AngleUnit} sub-element

@@ -21,7 +21,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URISyntaxException;
-import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
@@ -29,6 +28,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -46,7 +46,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final strictfp class NADCONTest extends TestCase {
@@ -145,8 +145,8 @@ public final strictfp class NADCONTest extends TestCase {
     {
         final DatumShiftGridFile<Angle,Angle> grid = NADCON.getOrLoad(latitudeShifts, longitudeShifts);
         assertInstanceOf("Should not be compressed.", DatumShiftGridFile.Float.class, grid);
-        assertEquals("coordinateUnit",  NonSI.DEGREE_ANGLE, grid.getCoordinateUnit());
-        assertEquals("translationUnit", NonSI.DEGREE_ANGLE, grid.getTranslationUnit());
+        assertEquals("coordinateUnit",  Units.DEGREE, grid.getCoordinateUnit());
+        assertEquals("translationUnit", Units.DEGREE, grid.getTranslationUnit());
         assertEquals("translationDimensions", 2, grid.getTranslationDimensions());
         assertTrue  ("isCellValueRatio", grid.isCellValueRatio());
         assertTrue  ("cellPrecision", grid.getCellPrecision() > 0);

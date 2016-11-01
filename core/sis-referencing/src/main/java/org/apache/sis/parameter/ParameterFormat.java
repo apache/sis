@@ -33,7 +33,7 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.io.Console;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.measure.unit.Unit;
+import javax.measure.Unit;
 
 import org.opengis.parameter.*;
 import org.opengis.util.ScopedName;
