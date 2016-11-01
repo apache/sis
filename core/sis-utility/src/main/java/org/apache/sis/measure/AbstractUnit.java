@@ -242,11 +242,19 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
         if (Math.abs(multiplier) < 1) {
             final double inverse = 1 / multiplier;
             final double r = Math.rint(inverse);
-            if (Math.abs(inverse - r) <= Math.ulp(inverse)) {
+            if (epsilonEquals(inverse, r)) {
                 return r;
             }
         }
         return Double.NaN;
+    }
+
+    /**
+     * Returns {@code true} if the given floating point numbers are considered equal.
+     * The tolerance factor used in this method is arbitrary and may change in any future version.
+     */
+    static boolean epsilonEquals(final double expected, final double actual) {
+        return Math.abs(expected - actual) <= Math.scalb(Math.ulp(expected), 4);
     }
 
     /**
@@ -299,15 +307,15 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
 
     /**
      * Returns {@code true} if the given Unicode code point is a valid character for a unit symbol.
-     * Current implementation accepts only letters and subscripts, but the set of legal characters
-     * may be expanded in any future SIS version. The most important goal is to avoid confusion with
-     * exponents.
+     * Current implementation accepts only letters, subscripts and the degree sign, but the set of
+     * legal characters may be expanded in any future SIS version.
+     * The most important goal is to avoid confusion with exponents.
      *
      * <p>Note that some units defined in the {@link Units} class break this rule. But the hard-coded
      * symbols in that class are known to be consistent with SI usage or with {@link UnitFormat} work.</p>
      */
     static boolean isSymbolChar(final int c) {
-        return Character.isLetter(c) || Characters.isSubScript(c);
+        return Character.isLetter(c) || Characters.isSubScript(c) || c == '°';
     }
 
     /**

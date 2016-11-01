@@ -341,5 +341,6 @@ public final strictfp class UnitFormatTest extends TestCase {
         ConventionalUnitTest.verify(Units.METRE, f.parse("10*-6.m"),   "µm", 1E-6);
         ConventionalUnitTest.verify(Units.METRE, f.parse( "1000*m"),   "km", 1E+3);
         ConventionalUnitTest.verify(Units.METRE, f.parse( "1000.0*m"), "km", 1E+3);
+        ConventionalUnitTest.verify(Units.METRE, f.parse( "100 feet"), null, 30.48);
     }
 }

@@ -242,7 +242,7 @@ class MathTransformParser extends AbstractParser {
             return unit;
         }
         if (index >= 0 && index < BASE_UNITS.length) {
-            return Units.multiply(BASE_UNITS[index], factor);
+            return BASE_UNITS[index].multiply(factor);
         }
         // If we can not infer the base type, we have to rely on the name.
         try {
