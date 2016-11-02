@@ -121,7 +121,11 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
         if (unit.epsg != 0) {
             existed |= HARD_CODED.put(unit.epsg, unit) != null;
         }
-        assert !existed || unit.dimension.isDimensionless() : unit;   // Key collision tolerated for dimensionless unit only.
+        /*
+         * Key collision on dimension and quantity tolerated for dimensionless units only, with an
+         * an exception for "candela" because "lumen" is candela divided by a dimensionless unit.
+         */
+        assert !existed || unit.dimension.isDimensionless() || "cd".equals(unit.getSymbol()) : unit;
         return unit;
     }
 
