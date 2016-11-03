@@ -76,7 +76,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         person.email = "jean-pierre@test.com";
         person.link = new URI("http://son-site.com");
 
-        final CopyRight copyright = new CopyRight();
+        final Copyright copyright = new Copyright();
         copyright.author = "GNU";
         copyright.year = 2010;
         copyright.license = new URI("http://gnu.org");

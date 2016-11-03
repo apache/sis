@@ -102,7 +102,7 @@ public final class GPXConstants extends Static {
     public static final String TAG_AUTHOR_EMAIL = "email";
 
     /*
-     * CopyRight tag.
+     * Copyright tag.
      */
     /** used in version : 1.1 */
     public static final String TAG_COPYRIGHT = "copyright";
