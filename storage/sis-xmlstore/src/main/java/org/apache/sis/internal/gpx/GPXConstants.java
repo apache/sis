@@ -277,7 +277,7 @@ public final class GPXConstants extends Static {
         builder.addAttribute(String  .class).setName(TAG_CMT);
         builder.addAttribute(String  .class).setName(TAG_DESC);
         builder.addAttribute(String  .class).setName(TAG_SRC);
-        builder.addAttribute(URI     .class).setName(TAG_LINK).setCardinality(0, Integer.MAX_VALUE);
+        builder.addAttribute(URI     .class).setName(TAG_LINK).setMaximumOccurs(Integer.MAX_VALUE);
         builder.addAttribute(String  .class).setName(TAG_WPT_SYM);
         builder.addAttribute(String  .class).setName(TAG_TYPE);
         builder.addAttribute(String  .class).setName(TAG_WPT_FIX);

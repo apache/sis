@@ -79,7 +79,7 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
         assertSame(builder, builder.setDesignation ("test designation"));
         assertSame(builder, builder.setDescription ("test description"));
         assertSame(builder, builder.setDefaultValue("test default value."));
-        assertSame(builder, builder.setCardinality(10, 60));
+        assertSame(builder, builder.setMinimumOccurs(10).setMaximumOccurs(60));
         assertSame(builder, builder.setMaximalLength(80));
         final AttributeType<?> att = builder.build();
 
