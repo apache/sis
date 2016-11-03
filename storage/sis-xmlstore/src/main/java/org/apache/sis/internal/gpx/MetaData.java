@@ -62,7 +62,7 @@ public class MetaData extends SimpleMetadata {
     public String name;
     public String description;
     public Person person;
-    public CopyRight copyRight;
+    public Copyright copyRight;
     public final List<URI> links = new ArrayList<>();
     public Temporal time;
     public String keywords;
@@ -142,7 +142,7 @@ public class MetaData extends SimpleMetadata {
         }
         return super.getDates();
     }
-    
+
     @Override
     public String toString() {
         final StringWriter writer = new StringWriter();
@@ -167,11 +167,11 @@ public class MetaData extends SimpleMetadata {
         }
 
         if(copyRight != null){
-            tablewriter.append("CopyRight - Author\t"+copyRight.author+"\n");
-            tablewriter.append("CopyRight - Year\t"+copyRight.year+"\n");
-            tablewriter.append("CopyRight - License\t"+copyRight.license+"\n");
+            tablewriter.append("Copyright - Author\t"+copyRight.author+"\n");
+            tablewriter.append("Copyright - Year\t"+copyRight.year+"\n");
+            tablewriter.append("Copyright - License\t"+copyRight.license+"\n");
         }else{
-            tablewriter.append("CopyRight\t"+copyRight+"\n");
+            tablewriter.append("Copyright\t"+copyRight+"\n");
         }
 
         tablewriter.append("Links\t");

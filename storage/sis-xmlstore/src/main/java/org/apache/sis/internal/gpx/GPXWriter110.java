@@ -63,7 +63,7 @@ public class GPXWriter110 extends GPXWriter100{
         writeSimpleTag(namespace, TAG_NAME, metadata.name);
         writeSimpleTag(namespace, TAG_DESC, metadata.description);
         writePerson(metadata.person);
-        writeCopyRight(metadata.copyRight);
+        writeCopyright(metadata.copyRight);
         for (URI uri : metadata.links) {
             writeLink(uri);
         }
@@ -132,7 +132,7 @@ public class GPXWriter110 extends GPXWriter100{
      * @param copyRight if null nothing will be written
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
-    public void writeCopyRight(final CopyRight copyRight) throws XMLStreamException {
+    public void writeCopyright(final Copyright copyRight) throws XMLStreamException {
         if (copyRight == null) return;
 
         writer.writeStartElement(namespace, TAG_COPYRIGHT);

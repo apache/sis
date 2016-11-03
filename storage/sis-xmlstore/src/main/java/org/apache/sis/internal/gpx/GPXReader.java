@@ -308,7 +308,7 @@ public class GPXReader extends StaxStreamReader {
                     }else if(TAG_AUTHOR.equalsIgnoreCase(localName)){
                         metadata.person = parsePerson();
                     }else if(TAG_COPYRIGHT.equalsIgnoreCase(localName)){
-                        metadata.copyRight = parseCopyRight();
+                        metadata.copyRight = parseCopyright();
                     }else if(TAG_LINK.equalsIgnoreCase(localName)){
                         metadata.links.add(parseLink());
                     }else if(TAG_METADATA_TIME.equalsIgnoreCase(localName)){
@@ -335,11 +335,11 @@ public class GPXReader extends StaxStreamReader {
      * Parse current copyright element.
      * The stax reader must be placed to the start element of the copyright.
      *
-     * @return CopyRight
+     * @return Copyright
      */
-    private CopyRight parseCopyRight() throws IOException, XMLStreamException {
+    private Copyright parseCopyright() throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
-        final CopyRight copyright = new CopyRight();
+        final Copyright copyright = new Copyright();
         copyright.author = reader.getAttributeValue(null, ATT_COPYRIGHT_AUTHOR);
 
         while (reader.hasNext()) {

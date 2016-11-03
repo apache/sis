@@ -34,7 +34,7 @@ import org.opengis.util.InternationalString;
 
 /**
  * Person object as defined in GPX.
- * 
+ *
  * @author Johann Sorel (Geomatys)
  * @since   0.7
  * @version 0.8
@@ -47,13 +47,13 @@ public class Person implements Party, Contact, Address, Responsibility {
     public URI link;
 
     @Override
-    public Collection<? extends Contact> getContactInfo() {
+    public Collection<Contact> getContactInfo() {
         return Collections.singleton(this);
     }
 
     @Override
-    public Collection<? extends Telephone> getPhones() {
-        return Collections.EMPTY_LIST;
+    public Collection<Telephone> getPhones() {
+        return Collections.emptyList();
     }
 
     @Override
@@ -62,7 +62,7 @@ public class Person implements Party, Contact, Address, Responsibility {
     }
 
     @Override
-    public Collection<? extends Address> getAddresses() {
+    public Collection<Address> getAddresses() {
         return Collections.singleton(this);
     }
 
@@ -72,11 +72,11 @@ public class Person implements Party, Contact, Address, Responsibility {
     }
 
     @Override
-    public Collection<? extends OnlineResource> getOnlineResources() {
+    public Collection<OnlineResource> getOnlineResources() {
         if (link!=null) {
             return Collections.singleton(new DefaultOnlineResource(link));
         }
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override
@@ -88,8 +88,8 @@ public class Person implements Party, Contact, Address, Responsibility {
     }
 
     @Override
-    public Collection<? extends InternationalString> getHoursOfService() {
-        return Collections.EMPTY_LIST;
+    public Collection<InternationalString> getHoursOfService() {
+        return Collections.emptyList();
     }
 
     @Override
@@ -111,8 +111,8 @@ public class Person implements Party, Contact, Address, Responsibility {
     }
 
     @Override
-    public Collection<? extends InternationalString> getDeliveryPoints() {
-        return Collections.EMPTY_LIST;
+    public Collection<InternationalString> getDeliveryPoints() {
+        return Collections.emptyList();
     }
 
     @Override
@@ -140,21 +140,26 @@ public class Person implements Party, Contact, Address, Responsibility {
         if (email != null) {
             return Collections.singleton(email);
         }
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
+    /**
+     * ISO 19115 metadata property fixed to {@link Role#ORIGINATOR}.
+     *
+     * @return function performed by the responsible party.
+     */
     @Override
     public Role getRole() {
         return Role.ORIGINATOR;
     }
 
     @Override
-    public Collection<? extends Extent> getExtents() {
-        return Collections.EMPTY_LIST;
+    public Collection<Extent> getExtents() {
+        return Collections.emptyList();
     }
 
     @Override
-    public Collection<? extends Party> getParties() {
+    public Collection<Party> getParties() {
         return Collections.singleton(this);
     }
 
