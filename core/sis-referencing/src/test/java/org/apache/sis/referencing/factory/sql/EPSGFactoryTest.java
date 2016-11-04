@@ -253,8 +253,8 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     /**
      * Verifies the parameter values of the given Universal Transverse Mercator projection.
      *
-     * @param parameters The parameter value to verify.
-     * @param cm The expected central meridian value.
+     * @param  parameters  the parameter value to verify.
+     * @param  cm  the expected central meridian value.
      */
     private static void verifyTransverseMercatorParmeters(final ParameterValueGroup parameters, final double cm) {
         assertEquals("Transverse Mercator",       parameters.getDescriptor().getName().getCode());
@@ -667,6 +667,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         final Set<String> geographicCRS = factory.getAuthorityCodes(GeographicCRS.class);
         assertFalse("GeographicCRS not found.",          geographicCRS.isEmpty());
         assertTrue ("Shall contain WGS84.",              geographicCRS.contains("4326"));
+        assertFalse("Shall not contain geocentric CRS.", geographicCRS.contains("4978"));
         assertFalse("Shall not contain projected CRS.",  geographicCRS.contains("3395"));
         if (RUN_EXTENSIVE_TESTS) {
             assertTrue ("Check size() consistency.",                  geographicCRS.size() >= 468);
