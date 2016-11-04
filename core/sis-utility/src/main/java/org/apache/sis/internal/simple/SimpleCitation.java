@@ -17,6 +17,7 @@
 package org.apache.sis.internal.simple;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
@@ -31,9 +32,6 @@ import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.Debug;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -64,7 +62,7 @@ public class SimpleCitation implements Citation, Serializable {
     /**
      * Creates a new object for the given title.
      *
-     * @param title The title to be returned by {@link #getTitle()}.
+     * @param  title  the title to be returned by {@link #getTitle()}.
      */
     public SimpleCitation(final String title) {
         this.title = title;
@@ -73,7 +71,7 @@ public class SimpleCitation implements Citation, Serializable {
     /**
      * Returns the title as an international string.
      *
-     * @return The title given at construction time.
+     * @return the title given at construction time.
      */
     @Override
     public InternationalString getTitle() {
@@ -84,7 +82,7 @@ public class SimpleCitation implements Citation, Serializable {
      * Methods inherited from the {@link Citation} interface which are not of interest to this
      * {@code SimpleCitation} implementation. Those methods may be removed in the JDK8 branch.
      *
-     * @return An empty list.
+     * @return an empty list.
      */
     @Override public Collection<? extends InternationalString>  getAlternateTitles()         {return Collections.emptyList();}
     @Override public Collection<? extends CitationDate>         getDates()                   {return Collections.emptyList();}
@@ -105,7 +103,7 @@ public class SimpleCitation implements Citation, Serializable {
     /**
      * Compares the given object with this citation for equality.
      *
-     * @param  obj The object to compare with this citation.
+     * @param  obj  the object to compare with this citation.
      * @return {@code true} if both objects are equal.
      */
     @Override

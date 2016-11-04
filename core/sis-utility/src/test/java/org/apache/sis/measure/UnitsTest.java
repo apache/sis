@@ -21,7 +21,10 @@ import javax.measure.quantity.Angle;
 import javax.measure.quantity.Area;
 import javax.measure.quantity.Dimensionless;
 import javax.measure.quantity.Length;
+import javax.measure.quantity.LuminousFlux;
+import javax.measure.quantity.LuminousIntensity;
 import javax.measure.quantity.Mass;
+import javax.measure.quantity.SolidAngle;
 import javax.measure.quantity.Speed;
 import javax.measure.quantity.Temperature;
 import javax.measure.quantity.Time;
@@ -188,15 +191,37 @@ public final strictfp class UnitsTest extends TestCase {
      */
     @Test
     public void testGetForQuantity() {
-        assertSame("Length",        Units.METRE,             Units.get(Length.class));
-        assertSame("Mass",          Units.KILOGRAM,          Units.get(Mass.class));
-        assertSame("Time",          Units.SECOND,            Units.get(Time.class));
-        assertSame("Temperature",   Units.KELVIN,            Units.get(Temperature.class));
-        assertSame("Area",          Units.SQUARE_METRE,      Units.get(Area.class));
-        assertSame("Volume",        Units.CUBIC_METRE,       Units.get(Volume.class));
-        assertSame("Speed",         Units.METRES_PER_SECOND, Units.get(Speed.class));
-        assertSame("Angle",         Units.RADIAN,            Units.get(Angle.class));
-        assertSame("Dimensionless", Units.UNITY,             Units.get(Dimensionless.class));
+        assertSame("Length",            Units.METRE,             Units.get(Length.class));
+        assertSame("Mass",              Units.KILOGRAM,          Units.get(Mass.class));
+        assertSame("Time",              Units.SECOND,            Units.get(Time.class));
+        assertSame("Temperature",       Units.KELVIN,            Units.get(Temperature.class));
+        assertSame("Area",              Units.SQUARE_METRE,      Units.get(Area.class));
+        assertSame("Volume",            Units.CUBIC_METRE,       Units.get(Volume.class));
+        assertSame("Speed",             Units.METRES_PER_SECOND, Units.get(Speed.class));
+        assertSame("LuminousIntensity", Units.CANDELA,           Units.get(LuminousIntensity.class));
+        assertSame("LuminousFlux",      Units.LUMEN,             Units.get(LuminousFlux.class));
+        assertSame("SolidAngle",        Units.STERADIAN,         Units.get(SolidAngle.class));
+        assertSame("Angle",             Units.RADIAN,            Units.get(Angle.class));
+        assertSame("Dimensionless",     Units.UNITY,             Units.get(Dimensionless.class));
+    }
+
+    /**
+     * Tests getting a unit for a given dimension.
+     */
+    @Test
+    public void testGetForDimension() {
+        assertSame("Length",            Units.METRE,             Units.get(Units.METRE            .getDimension()));
+        assertSame("Mass",              Units.KILOGRAM,          Units.get(Units.KILOGRAM         .getDimension()));
+        assertSame("Time",              Units.SECOND,            Units.get(Units.SECOND           .getDimension()));
+        assertSame("Temperature",       Units.KELVIN,            Units.get(Units.KELVIN           .getDimension()));
+        assertSame("Area",              Units.SQUARE_METRE,      Units.get(Units.SQUARE_METRE     .getDimension()));
+        assertSame("Volume",            Units.CUBIC_METRE,       Units.get(Units.CUBIC_METRE      .getDimension()));
+        assertSame("Speed",             Units.METRES_PER_SECOND, Units.get(Units.METRES_PER_SECOND.getDimension()));
+        assertSame("LuminousIntensity", Units.CANDELA,           Units.get(Units.CANDELA          .getDimension()));
+        assertSame("LuminousFlux",      Units.CANDELA,           Units.get(Units.LUMEN            .getDimension()));    // Because lumen is candela divided by a dimensionless unit.
+        assertSame("SolidAngle",        Units.UNITY,             Units.get(Units.STERADIAN        .getDimension()));
+        assertSame("Angle",             Units.UNITY,             Units.get(Units.RADIAN           .getDimension()));
+        assertSame("Dimensionless",     Units.UNITY,             Units.get(Units.UNITY            .getDimension()));
     }
 
     /**

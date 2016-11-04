@@ -57,52 +57,67 @@ public final strictfp class UnitFormatTest extends TestCase {
                 declared.add(f.getName());
             }
         }
-        verify(declared, "NANOMETRE",           "L",        "nm",    Units.NANOMETRE);
-        verify(declared, "MILLIMETRE",          "L",        "mm",    Units.MILLIMETRE);
-        verify(declared, "CENTIMETRE",          "L",        "cm",    Units.CENTIMETRE);
-        verify(declared, "METRE",               "L",        "m",     Units.METRE);
-        verify(declared, "KILOMETRE",           "L",        "km",    Units.KILOMETRE);
-        verify(declared, "NAUTICAL_MILE",       "L",        "M",     Units.NAUTICAL_MILE);
-        verify(declared, "STATUTE_MILE",        "L",        "mi",    Units.STATUTE_MILE);
-        verify(declared, "US_SURVEY_FOOT",      "L",        "ft_US", Units.US_SURVEY_FOOT);
-        verify(declared, "FOOT",                "L",        "ft",    Units.FOOT);
-        verify(declared, "INCH",                "L",        "in",    Units.INCH);
-        verify(declared, "POINT",               "L",        "pt",    Units.POINT);
-        verify(declared, "RADIAN",              "",         "rad",   Units.RADIAN);
-        verify(declared, "GRAD",                "",         "grad",  Units.GRAD);
-        verify(declared, "DEGREE",              "",         "°",     Units.DEGREE);
-        verify(declared, "ARC_MINUTE",          "",         "′",     Units.ARC_MINUTE);
-        verify(declared, "ARC_SECOND",          "",         "″",     Units.ARC_SECOND);
-        verify(declared, "MICRORADIAN",         "",         "µrad",  Units.MICRORADIAN);
-        verify(declared, "MILLISECOND",         "T",        "ms",    Units.MILLISECOND);
-        verify(declared, "SECOND",              "T",        "s",     Units.SECOND);
-        verify(declared, "MINUTE",              "T",        "min",   Units.MINUTE);
-        verify(declared, "HOUR",                "T",        "h",     Units.HOUR);
-        verify(declared, "DAY",                 "T",        "d",     Units.DAY);
-        verify(declared, "WEEK",                "T",        "wk",    Units.WEEK);
-        verify(declared, "TROPICAL_YEAR",       "T",        "a",     Units.TROPICAL_YEAR);
-        verify(declared, "HERTZ",               "∕T",       "Hz",    Units.HERTZ);
-        verify(declared, "PASCAL",              "M∕(L⋅T²)", "Pa",    Units.PASCAL);
-        verify(declared, "HECTOPASCAL",         "M∕(L⋅T²)", "hPa",   Units.HECTOPASCAL);
-        verify(declared, "HECTARE",             "L²",       "ha",    Units.HECTARE);
-        verify(declared, "SQUARE_METRE",        "L²",       "m²",    Units.SQUARE_METRE);
-        verify(declared, "CUBIC_METRE",         "L³",       "m³",    Units.CUBIC_METRE);
-        verify(declared, "METRES_PER_SECOND",   "L∕T",      "m∕s",   Units.METRES_PER_SECOND);
-        verify(declared, "KILOMETRES_PER_HOUR", "L∕T",      "km∕h",  Units.KILOMETRES_PER_HOUR);
-        verify(declared, "KILOGRAM",            "M",        "kg",    Units.KILOGRAM);
-        verify(declared, "AMPERE",              "I",        "A",     Units.AMPERE);
-        verify(declared, "NEWTON",              "M⋅L∕T²",   "N",     Units.NEWTON);
-        verify(declared, "JOULE",               "M⋅L²∕T²",  "J",     Units.JOULE);
-        verify(declared, "WATT",                "M⋅L²∕T³",  "W",     Units.WATT);
-        verify(declared, "KELVIN",              "Θ",        "K",     Units.KELVIN);
-        verify(declared, "CELSIUS",             "Θ",        "°C",    Units.CELSIUS);
-        verify(declared, "CANDELA",             "J",        "cd",    Units.CANDELA);
-        verify(declared, "MOLE",                "N",        "mol",   Units.MOLE);
-        verify(declared, "UNITY",               "",         "",      Units.UNITY);
-        verify(declared, "PERCENT",             "",         "%",     Units.PERCENT);
-        verify(declared, "PPM",                 "",         "ppm",   Units.PPM);
-        verify(declared, "PSU",                 "",         "psu",   Units.PSU);
-        verify(declared, "PIXEL",               "",         "px",    Units.PIXEL);
+        verify(declared, "NANOMETRE",           "L",            "nm",    "nanometre",               Units.NANOMETRE);
+        verify(declared, "MILLIMETRE",          "L",            "mm",    "millimetre",              Units.MILLIMETRE);
+        verify(declared, "CENTIMETRE",          "L",            "cm",    "centimetre",              Units.CENTIMETRE);
+        verify(declared, "METRE",               "L",            "m",     "metre",                   Units.METRE);
+        verify(declared, "KILOMETRE",           "L",            "km",    "kilometre",               Units.KILOMETRE);
+        verify(declared, "NAUTICAL_MILE",       "L",            "M",     "nautical mile",           Units.NAUTICAL_MILE);
+        verify(declared, "STATUTE_MILE",        "L",            "mi",    "statute mile",            Units.STATUTE_MILE);
+        verify(declared, "US_SURVEY_FOOT",      "L",            "ft_US", "US survey foot",          Units.US_SURVEY_FOOT);
+        verify(declared, "FOOT",                "L",            "ft",    "foot",                    Units.FOOT);
+        verify(declared, "INCH",                "L",            "in",    "inch",                    Units.INCH);
+        verify(declared, "POINT",               "L",            "pt",    "point",                   Units.POINT);
+        verify(declared, "SQUARE_METRE",        "L²",           "m²",    "square metre",            Units.SQUARE_METRE);
+        verify(declared, "HECTARE",             "L²",           "ha",    "hectare",                 Units.HECTARE);
+        verify(declared, "CUBIC_METRE",         "L³",           "m³",    "cubic metre",             Units.CUBIC_METRE);
+        verify(declared, "STERADIAN",           "",             "sr",    "steradian",               Units.STERADIAN);
+        verify(declared, "MICRORADIAN",         "",             "µrad",  "microradian",             Units.MICRORADIAN);
+        verify(declared, "RADIAN",              "",             "rad",   "radian",                  Units.RADIAN);
+        verify(declared, "DEGREE",              "",             "°",     "degree",                  Units.DEGREE);
+        verify(declared, "ARC_MINUTE",          "",             "′",     "arc-minute",              Units.ARC_MINUTE);
+        verify(declared, "ARC_SECOND",          "",             "″",     "arc-second",              Units.ARC_SECOND);
+        verify(declared, "GRAD",                "",             "grad",  "grad",                    Units.GRAD);
+        verify(declared, "MILLISECOND",         "T",            "ms",    "millisecond",             Units.MILLISECOND);
+        verify(declared, "SECOND",              "T",            "s",     "second",                  Units.SECOND);
+        verify(declared, "MINUTE",              "T",            "min",   "minute",                  Units.MINUTE);
+        verify(declared, "HOUR",                "T",            "h",     "hour",                    Units.HOUR);
+        verify(declared, "DAY",                 "T",            "d",     "day",                     Units.DAY);
+        verify(declared, "WEEK",                "T",            "wk",    "week",                    Units.WEEK);
+        verify(declared, "TROPICAL_YEAR",       "T",            "a",     "year",                    Units.TROPICAL_YEAR);
+        verify(declared, "HERTZ",               "∕T",           "Hz",    "hertz",                   Units.HERTZ);
+        verify(declared, "METRES_PER_SECOND",   "L∕T",          "m∕s",   "metres per second",       Units.METRES_PER_SECOND);
+        verify(declared, "KILOMETRES_PER_HOUR", "L∕T",          "km∕h",  "kilometres per hour",     Units.KILOMETRES_PER_HOUR);
+        verify(declared, "PASCAL",              "M∕(L⋅T²)",     "Pa",    "pascal",                  Units.PASCAL);
+        verify(declared, "HECTOPASCAL",         "M∕(L⋅T²)",     "hPa",   "hectopascal",             Units.HECTOPASCAL);
+        verify(declared, "DECIBAR",             "M∕(L⋅T²)",     "dbar",  "decibar",                 Units.DECIBAR);
+        verify(declared, "BAR",                 "M∕(L⋅T²)",     "bar",    null,                     Units.BAR);
+        verify(declared, "ATMOSPHERE",          "M∕(L⋅T²)",     "atm",   "atmosphere",              Units.ATMOSPHERE);
+        verify(declared, "NEWTON",              "M⋅L∕T²",       "N",     "newton",                  Units.NEWTON);
+        verify(declared, "JOULE",               "M⋅L²∕T²",      "J",     "joule",                   Units.JOULE);
+        verify(declared, "WATT",                "M⋅L²∕T³",      "W",     "watt",                    Units.WATT);
+        verify(declared, "VOLT",                "M⋅L²∕(T³⋅I)",  "V",     "volt",                    Units.VOLT);
+        verify(declared, "AMPERE",              "I",            "A",     "ampere",                  Units.AMPERE);
+        verify(declared, "COULOMB",             "I⋅T",          "C",     "coulomb",                 Units.COULOMB);
+        verify(declared, "FARAD",               "I²⋅T⁴∕(M⋅L²)", "F",     "farad",                   Units.FARAD);
+        verify(declared, "OHM",                 "M⋅L²∕(T³⋅I²)", "Ω",     "ohm",                     Units.OHM);
+        verify(declared, "SIEMENS",             "I²⋅T³∕(M⋅L²)", "S",     "siemens",                 Units.SIEMENS);
+        verify(declared, "WEBER",               "M⋅L²∕(T²⋅I)",  "Wb",    "weber",                   Units.WEBER);
+        verify(declared, "TESLA",               "M∕(T²⋅I)",     "T",     "tesla",                   Units.TESLA);
+        verify(declared, "HENRY",               "M⋅L²∕(T²⋅I²)", "H",     "henry",                   Units.HENRY);
+        verify(declared, "KELVIN",              "Θ",            "K",     "kelvin",                  Units.KELVIN);
+        verify(declared, "CELSIUS",             "Θ",            "°C",    "Celsius",                 Units.CELSIUS);
+        verify(declared, "FAHRENHEIT",          "Θ",            "°F",    "Fahrenheit",              Units.FAHRENHEIT);
+        verify(declared, "CANDELA",             "J",            "cd",    "candela",                 Units.CANDELA);
+        verify(declared, "LUMEN",               "J",            "lm",    "lumen",                   Units.LUMEN);
+        verify(declared, "LUX",                 "J∕L²",         "lx",    "lux",                     Units.LUX);
+        verify(declared, "KILOGRAM",            "M",            "kg",    "kilogram",                Units.KILOGRAM);
+        verify(declared, "MOLE",                "N",            "mol",   "mole",                    Units.MOLE);
+        verify(declared, "UNITY",               "",             "",       null,                     Units.UNITY);
+        verify(declared, "PERCENT",             "",             "%",     "percentage",              Units.PERCENT);
+        verify(declared, "PPM",                 "",             "ppm",   "parts per million",       Units.PPM);
+        verify(declared, "PSU",                 "",             "psu",   "practical salinity unit", Units.PSU);
+        verify(declared, "PIXEL",               "",             "px",    "pixel",                   Units.PIXEL);
         assertTrue("Missing units in test:" + declared, declared.isEmpty());
     }
 
@@ -113,11 +128,15 @@ public final strictfp class UnitFormatTest extends TestCase {
      * @param field      the name of the constant to be verified.
      * @param dimension  the expected string representation of the unit dimension.
      * @param symbol     the expected string representation of the unit.
+     * @param name       the expected name, or {@code null} for skipping this test.
      * @param unit       the unit to verify.
      */
-    private static void verify(final Set<String> declared, final String field, final String dimension, final String symbol, final Unit<?> unit) {
+    private static void verify(final Set<String> declared, final String field, final String dimension, final String symbol, final String name, final Unit<?> unit) {
         assertEquals(field, dimension, String.valueOf(unit.getDimension()));
         assertEquals(field, symbol,    UnitFormat.INSTANCE.format(unit));
+        if (name != null) {
+            assertEquals(field, name, UnitFormat.getBundle(Locale.UK).getString(symbol));
+        }
         declared.remove(field);
     }
 
@@ -233,11 +252,16 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.DEGREE,        f.parse("degree"));
         assertSame(Units.DEGREE,        f.parse("degrees"));
         assertSame(Units.DEGREE,        f.parse("decimal degrees"));
+        assertSame(Units.DEGREE,        f.parse("degrees north"));
         assertSame(Units.DEGREE,        f.parse("degree north"));
+        assertSame(Units.DEGREE,        f.parse("degrees_east"));
         assertSame(Units.DEGREE,        f.parse("degree_east"));
         assertSame(Units.DEGREE,        f.parse("Degree West"));
         assertSame(Units.KELVIN,        f.parse("degree Kelvin"));
         assertSame(Units.CELSIUS,       f.parse("degree Celsius"));
+        assertSame(Units.KELVIN,        f.parse("degK"));
+        assertSame(Units.CELSIUS,       f.parse("degC"));
+        assertSame(Units.CELSIUS,       f.parse("deg C"));
         assertSame(Units.WATT,          f.parse("watt"));
         try {
             f.parse("degree foo");

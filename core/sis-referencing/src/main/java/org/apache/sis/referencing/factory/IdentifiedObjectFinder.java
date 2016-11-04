@@ -19,6 +19,8 @@ package org.apache.sis.referencing.factory;
 import java.util.Set;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
@@ -165,7 +167,7 @@ public class IdentifiedObjectFinder {
      * this constructor is protected because instances of this class should not be created directly.
      * Use {@link GeodeticAuthorityFactory#newIdentifiedObjectFinder()} instead.</div>
      *
-     * @param factory The factory to scan for the identified objects.
+     * @param  factory  the factory to scan for the identified objects.
      *
      * @see GeodeticAuthorityFactory#newIdentifiedObjectFinder()
      */
@@ -182,7 +184,7 @@ public class IdentifiedObjectFinder {
      * <p>This method also copies the configuration of the given finder, thus providing a central place
      * where to add calls to setters methods if such methods are added in a future SIS version.</p>
      *
-     * @param other The cache or the adapter wrapping this finder.
+     * @param  other  the cache or the adapter wrapping this finder.
      */
     final void setWrapper(final IdentifiedObjectFinder other) {
         wrapper = other;
@@ -197,7 +199,7 @@ public class IdentifiedObjectFinder {
      *
      * <p>The default value is {@link Domain#VALID_DATASET}.</p>
      *
-     * @return The domain of the search.
+     * @return the domain of the search.
      */
     public Domain getSearchDomain() {
         return domain;
@@ -207,7 +209,7 @@ public class IdentifiedObjectFinder {
      * Sets the domain of the search (for example whether to include deprecated objects in the search).
      * If this method is never invoked, then the default value is {@link Domain#VALID_DATASET}.
      *
-     * @param domain The domain of the search.
+     * @param  domain  the domain of the search.
      */
     public void setSearchDomain(final Domain domain) {
         ArgumentChecks.ensureNonNull("domain", domain);
@@ -231,7 +233,7 @@ public class IdentifiedObjectFinder {
      * method may return a Coordinate Reference System object with (<var>latitude</var>, <var>longitude</var>)
      * axes even if the given object had (<var>longitude</var>, <var>latitude</var>) axes.
      *
-     * @param ignore {@code true} if the search should ignore coordinate system axes.
+     * @param  ignore  {@code true} if the search should ignore coordinate system axes.
      */
     public void setIgnoringAxes(final boolean ignore) {
         ignoreAxes = ignore;
@@ -259,7 +261,7 @@ public class IdentifiedObjectFinder {
      * This method will be invoked by {@link #find(IdentifiedObject)}
      * only if {@link #getSearchDomain()} is not {@link Domain#DECLARATION}.
      *
-     * @return The given {@code result}, or another set equal to the result if it has been computed
+     * @return the given {@code result}, or another set equal to the result if it has been computed
      *         concurrently in another thread.
      */
     Set<IdentifiedObject> cache(final IdentifiedObject object, Set<IdentifiedObject> result) {
@@ -288,8 +290,8 @@ public class IdentifiedObjectFinder {
      * The created objects which are equal to the specified object in the
      * the sense of {@link ComparisonMode#APPROXIMATIVE} are returned.
      *
-     * @param  object The object looked up.
-     * @return The identified objects, or an empty set if not found.
+     * @param  object  the object looked up.
+     * @return the identified objects, or an empty set if not found.
      * @throws FactoryException if an error occurred while creating an object.
      */
     public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {
@@ -348,8 +350,8 @@ public class IdentifiedObjectFinder {
      *   <li>Otherwise this method considers that there is ambiguity and returns {@code null}.</li>
      * </ul>
      *
-     * @param  object The object looked up.
-     * @return The identified object, or {@code null} if none or ambiguous.
+     * @param  object  the object looked up.
+     * @return the identified object, or {@code null} if none or ambiguous.
      * @throws FactoryException if an error occurred while creating an object.
      */
     public IdentifiedObject findSingleton(final IdentifiedObject object) throws FactoryException {
@@ -385,8 +387,8 @@ public class IdentifiedObjectFinder {
      *
      * <p>This method may be used in order to get a fully identified object from a partially identified one.</p>
      *
-     * @param  object The object looked up.
-     * @return The identified object, or {@code null} if not found.
+     * @param  object  the object looked up.
+     * @return the identified object, or {@code null} if not found.
      * @throws FactoryException if an error occurred while creating an object.
      *
      * @see #createFromCodes(IdentifiedObject)
@@ -427,8 +429,8 @@ public class IdentifiedObjectFinder {
      * implementations like the one backed by the EPSG database, which are capable to find an object
      * from its name when the identifier is unknown.</p>
      *
-     * @param  object The object looked up.
-     * @return The identified object, or {@code null} if not found.
+     * @param  object  the object looked up.
+     * @return the identified object, or {@code null} if not found.
      * @throws FactoryException if an error occurred while creating an object.
      *
      * @see #createFromCodes(IdentifiedObject)
@@ -482,8 +484,8 @@ public class IdentifiedObjectFinder {
      * <code>{@linkplain #createFromNames createFromNames}(object)</code> before to fallback
      * on this method.</p>
      *
-     * @param  object The object looked up.
-     * @return The identified object, or {@code null} if not found.
+     * @param  object  the object looked up.
+     * @return the identified object, or {@code null} if not found.
      * @throws FactoryException if an error occurred while scanning through authority codes.
      *
      * @see #createFromIdentifiers(IdentifiedObject)
@@ -511,8 +513,8 @@ public class IdentifiedObjectFinder {
      * method implementation of for each code returned by the {@link #getCodeCandidates(IdentifiedObject)} method,
      * in iteration order.
      *
-     * @param  code The authority code for which to create an object.
-     * @return The identified object for the given code, or {@code null} to stop attempts.
+     * @param  code  the authority code for which to create an object.
+     * @return the identified object for the given code, or {@code null} to stop attempts.
      * @throws FactoryException if an error occurred while creating the object.
      */
     private IdentifiedObject create(final String code) throws FactoryException {
@@ -537,8 +539,8 @@ public class IdentifiedObjectFinder {
      * where {@code type} is the interface specified at construction type.
      * Subclasses should override this method in order to return a smaller set, if they can.
      *
-     * @param  object The object looked up.
-     * @return A set of code candidates.
+     * @param  object  the object looked up.
+     * @return a set of code candidates.
      * @throws FactoryException if an error occurred while fetching the set of code candidates.
      */
     protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
@@ -549,6 +551,8 @@ public class IdentifiedObjectFinder {
      * Invoked when an exception occurred during the creation of a candidate from a code.
      */
     private static void exceptionOccurred(final FactoryException exception) {
-        Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), IdentifiedObjectFinder.class, "find", exception);
+        final LogRecord record = new LogRecord(Level.FINER, exception.getLocalizedMessage());
+        record.setLoggerName(Loggers.CRS_FACTORY);
+        Logging.log(IdentifiedObjectFinder.class, "find", record);
     }
 }

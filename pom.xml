@@ -693,6 +693,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
           <validateLinks>true</validateLinks>                   <!-- Validates content of package-list resources. -->
           <links>
+            <link>http://static.javadoc.io/javax.measure/unit-api/1.0</link>
             <link>http://www.geoapi.org/snapshot/pending</link>
           </links>
 
@@ -829,8 +830,8 @@ Apache SIS is a free software, Java language library for developing geospatial a
     </pluginRepository>
   </pluginRepositories>
 
-  <!-- Used for GeoAPI snapshots and latest vecmath releases
-       on SIS branches only. Shall be removed on SIS trunk. -->
+  <!-- Used for GeoAPI snapshots only.
+       Shall be removed on SIS trunk. -->
   <repositories>
     <repository>
       <id>geotoolkit</id>

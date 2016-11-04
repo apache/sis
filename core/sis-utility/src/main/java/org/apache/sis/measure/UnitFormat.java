@@ -896,6 +896,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * @return the parsed unit symbol (never {@code null}).
      * @throws ParserException if a problem occurred while parsing the given symbols.
      */
+    @SuppressWarnings("fallthrough")
     private Unit<?> parseSymbol(final CharSequence symbols, final int lower, final int upper) throws ParserException {
         final String uom = CharSequences.trimWhitespaces(symbols, lower, upper).toString();
         /*
@@ -996,7 +997,10 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 if (uom.regionMatches(true, 0, "deg", 0, 3)) {
                     switch (length) {
                         case 3: return Units.DEGREE;                    // Exactly "deg"  (ignoring case)
-                        case 4: switch (uom.charAt(3)) {
+                        case 5: final char c = uom.charAt(3);
+                                if (c != '_' && !Character.isSpaceChar(c)) break;
+                                // else fallthrough
+                        case 4: switch (uom.charAt(length - 1)) {
                                     case 'K':                           // Unicode U+212A
                                     case 'K': return Units.KELVIN;      // Exactly "degK" (ignoring case except for 'K')
                                     case 'C': return Units.CELSIUS;

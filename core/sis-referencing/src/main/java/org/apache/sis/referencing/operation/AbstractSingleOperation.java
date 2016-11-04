@@ -160,7 +160,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param operation The coordinate operation to copy.
+     * @param  operation  the coordinate operation to copy.
      */
     protected AbstractSingleOperation(final SingleOperation operation) {
         super(operation);
@@ -189,10 +189,10 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *       is taken. Only one non-ignorable step may exist, otherwise we do not try to select any of them.</li>
      * </ul>
      *
-     * @param  method     The operation method to compare to the math transform.
-     * @param  interpDim  The number of interpolation dimension, or 0 if none.
-     * @param  transform  The math transform to compare to the operation method.
-     * @param  properties Properties of the caller object being constructed, used only for formatting error message.
+     * @param  method      the operation method to compare to the math transform.
+     * @param  interpDim   the number of interpolation dimension, or 0 if none.
+     * @param  transform   the math transform to compare to the operation method.
+     * @param  properties  properties of the caller object being constructed, used only for formatting error message.
      * @throws IllegalArgumentException if the number of dimensions are incompatible.
      */
     static void checkDimensions(final OperationMethod method, final int interpDim, MathTransform transform,
@@ -277,7 +277,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * Returns a description of the operation method, including a list of expected parameter names.
      * The returned object does not contains any parameter value.
      *
-     * @return A description of the operation method.
+     * @return a description of the operation method.
      */
     @Override
     @XmlElement(name = "method", required = true)
@@ -301,7 +301,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * should be very similar. If they differ, it should be only in minor details like remarks, default
      * values or units of measurement.</div>
      *
-     * @return A description of the parameters.
+     * @return a description of the parameters.
      *
      * @see DefaultOperationMethod#getParameters()
      * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterDescriptors()
@@ -322,7 +322,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *   <li>Otherwise throw {@link org.apache.sis.util.UnsupportedImplementationException}.</li>
      * </ul>
      *
-     * @return The parameter values.
+     * @return the parameter values.
      * @throws UnsupportedOperationException if the parameter values can not be determined
      *         for the current math transform implementation.
      *
@@ -344,7 +344,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true;   // Slight optimization.
+            return true;                            // Slight optimization.
         }
         if (!super.equals(object, mode)) {
             return false;
