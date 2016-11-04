@@ -229,6 +229,17 @@ public final strictfp class ConventionalUnitTest extends TestCase {
     }
 
     /**
+     * Tests conversion of a temperature value between two conventional units.
+     */
+    @Test
+    public void testConvertTemperature() {
+        final UnitConverter c = Units.FAHRENHEIT.getConverterTo(Units.CELSIUS);
+        assertEquals("50°F",  10, c.convert(50),          STRICT);
+        assertEquals("5°F",  -15, c.convert(5),           STRICT);
+        assertEquals("0°C",   32, c.inverse().convert(0), STRICT);
+    }
+
+    /**
      * Serializes some units, deserializes them and verifies that we get the same instance.
      */
     @Test

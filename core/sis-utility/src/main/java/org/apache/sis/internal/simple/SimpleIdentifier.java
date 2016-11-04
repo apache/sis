@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.simple;
 
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -28,9 +29,6 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Deprecable;
 
 import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -78,8 +76,8 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
     /**
      * Creates a new reference identifier.
      *
-     * @param authority     Responsible party for definition and maintenance of the code, or null.
-     * @param code          Alphanumeric value identifying an instance in the namespace.
+     * @param authority     responsible party for definition and maintenance of the code, or null.
+     * @param code          alphanumeric value identifying an instance in the namespace.
      * @param isDeprecated  {@code true} if this identifier is deprecated.
      */
     public SimpleIdentifier(final Citation authority, final String code, final boolean isDeprecated) {
@@ -93,9 +91,9 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
      * of the {@linkplain #getCode() code}, or {@code null} if none. It can be a
      * bibliographical reference to an international standard such as ISO 19115.
      *
-     * <p>The default implementation returns the citation specified at construction time;</p>
+     * <p>The default implementation returns the citation specified at construction time.</p>
      *
-     * @return The authority given at construction time, or {@code null} if none.
+     * @return the authority given at construction time, or {@code null} if none.
      */
     @Override
     public Citation getAuthority() {
@@ -107,7 +105,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
      * The default implementation returns the shortest identifier of the {@linkplain #getAuthority() authority},
      * if any.
      *
-     * @return A code space inferred from the authority given at construction time, or {@code null} if none.
+     * @return a code space inferred from the authority given at construction time, or {@code null} if none.
      */
     @Override
     public String getCodeSpace() {
@@ -119,9 +117,9 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
      * It can be for example the name of a class defined by the international standard
      * referenced by the {@linkplain #getAuthority() authority} citation.
      *
-     * <p>The default implementation returns the code specified at construction time;</p>
+     * <p>The default implementation returns the code specified at construction time.</p>
      *
-     * @return The code given at construction time, or {@code null} if none.
+     * @return the code given at construction time, or {@code null} if none.
      */
     @Override
     public String getCode() {
@@ -133,7 +131,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
      * When appropriate, the edition is identified by the effective date, coded
      * using ISO 8601 date format.
      *
-     * @return A version inferred from the authority given at construction time, or {@code null} if none.
+     * @return a version inferred from the authority given at construction time, or {@code null} if none.
      */
     @Override
     public String getVersion() {
@@ -170,7 +168,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
      * Returns {@code true} if the given object is of the same class than this
      * {@code SimpleIdentifier} and has the same values.
      *
-     * @param  obj The object to compare with this {@code SimpleIdentifier} for equality.
+     * @param  obj  the object to compare with this {@code SimpleIdentifier} for equality.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -187,7 +185,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
     /**
      * Returns a hash code value for this identifier.
      *
-     * @return A hash code value for this identifier.
+     * @return a hash code value for this identifier.
      */
     @Override
     public int hashCode() {
@@ -203,7 +201,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
         final String classname = Classes.getShortClassName(this);
         final StringBuilder buffer = new StringBuilder(classname.length() + CharSequences.length(code) + 10);
         buffer.append(classname).append('[');
-        final String codespace = getCodeSpace(); // Subclasses may have overridden this method.
+        final String codespace = getCodeSpace();                // Subclasses may have overridden this method.
         boolean open = false;
         if (codespace != null) {
             buffer.append('“').append(codespace);
@@ -224,8 +222,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
      * Invoked by {@link #toString()} in order to allow subclasses to add additional information.
      * This method is invoked just before the final {@code ']'} is appended to the buffer.
      *
-     * @param buffer A buffer filled with the {@link #toString()} characters,
-     *               that subclasses can update.
+     * @param  buffer  a buffer filled with the {@link #toString()} characters, that subclasses can update.
      */
     protected void appendToString(final StringBuilder buffer) {
     }
@@ -235,7 +232,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
      * While this method is not defined in the {@link Identifier} interface, it is often
      * defined in related interfaces like {@link org.opengis.referencing.IdentifiedObject}.
      *
-     * @return Pseudo Well Known Text for this identifier.
+     * @return pseudo Well Known Text for this identifier.
      */
     public String toWKT() {
         final StringBuilder buffer = new StringBuilder(40).append("Id[");   // Consistent with WKTKeywords.Id.

@@ -287,8 +287,8 @@ class CoordinateOperationRegistry {
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
-     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}, or {@code null}
-     *         if no such operation is explicitly defined in the underlying database.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS},
+     *         or {@code null} if no such operation is explicitly defined in the underlying database.
      * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation creation failed for some other reason.
      */
@@ -354,9 +354,7 @@ class CoordinateOperationRegistry {
      *
      * @param  sourceCRS  source coordinate reference system.
      * @param  targetCRS  target coordinate reference system.
-     * @return A coordinate operation from {@code sourceCRS} to {@code targetCRS},
-     *         or {@code null} if no such operation is explicitly defined in the underlying database.
-     * @return A coordinate operation from {@code sourceCRS} to {@code targetCRS}, or {@code null}
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}, or {@code null}
      *         if no such operation is explicitly defined in the underlying database.
      * @throws IllegalArgumentException if the coordinate systems are not of the same type or axes do not match.
      * @throws IncommensurableException if the units are not compatible or a unit conversion is non-linear.
@@ -540,8 +538,8 @@ class CoordinateOperationRegistry {
      * a new query of EPSG database may be necessary, and if no explicit definition is found there is too many arbitrary
      * values to set in a default inverse operation for making that API public.</p>
      *
-     * @param  operation The operation to invert, or {@code null}.
-     * @return The inverse of {@code operation}, or {@code null} if none.
+     * @param  operation  the operation to invert, or {@code null}.
+     * @return the inverse of {@code operation}, or {@code null} if none.
      * @throws NoninvertibleTransformException if the operation is not invertible.
      * @throws FactoryException if the operation creation failed for an other reason.
      */
@@ -957,7 +955,7 @@ class CoordinateOperationRegistry {
      * Consequently, the Apache SIS implementation relaxes the rule requiring an operation
      * version and we do not try to provide this information here for now.</div>
      *
-     * @param  name  The name to put in a map.
+     * @param  name  the name to put in a map.
      * @return a modifiable map containing the given name. Callers can put other entries in this map.
      */
     static Map<String,Object> properties(final Identifier name) {
@@ -997,14 +995,14 @@ class CoordinateOperationRegistry {
      *       DefaultCoordinateOperationFactory.createSingleOperation(…)}.</li>
      * </ul>
      *
-     * @param  properties The properties to give to the operation, as a modifiable map.
-     * @param  sourceCRS  The source coordinate reference system.
-     * @param  targetCRS  The destination coordinate reference system.
-     * @param  transform  The math transform.
-     * @param  method     The operation method, or {@code null} if unknown.
-     * @param  parameters The operations parameters, or {@code null} for automatic detection (not always reliable).
-     * @param  type       {@code Conversion.class}, {@code Transformation.class}, or {@code null} if unknown.
-     * @return A coordinate operation using the specified math transform.
+     * @param  properties  the properties to give to the operation, as a modifiable map.
+     * @param  sourceCRS   the source coordinate reference system.
+     * @param  targetCRS   the destination coordinate reference system.
+     * @param  transform   the math transform.
+     * @param  method      the operation method, or {@code null} if unknown.
+     * @param  parameters  the operations parameters, or {@code null} for automatic detection (not always reliable).
+     * @param  type        {@code Conversion.class}, {@code Transformation.class}, or {@code null} if unknown.
+     * @return a coordinate operation using the specified math transform.
      * @throws FactoryException if the operation can not be created.
      */
     final CoordinateOperation createFromMathTransform(final Map<String,Object>        properties,

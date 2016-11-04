@@ -28,7 +28,7 @@ import org.opengis.util.TypeName;
  * Such simple type are suitable for use in ISO 19103 {@link org.opengis.util.RecordType}
  * in addition to ISO 19109 {@link org.opengis.feature.FeatureType}.
  *
- * @param <V> The type of attribute value.
+ * @param  <V>  the type of attribute value.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -54,8 +54,8 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Creates a new attribute type for the given name and class of values.
      *
-     * @param name       The name for this attribute type (shall not be null).
-     * @param valueClass The class of value for attributes of this type (shall not be null).
+     * @param  name        the name for this attribute type (shall not be null).
+     * @param  valueClass  the class of value for attributes of this type (shall not be null).
      */
     public SimpleAttributeType(final TypeName name, final Class<V> valueClass) {
         this.name       = name;
@@ -65,7 +65,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Returns the name of this attribute type (ISO 19109).
      *
-     * @return The name of this attribute type.
+     * @return the name of this attribute type.
      */
     public GenericName getName() {
         return name;
@@ -74,7 +74,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Returns the name of this attribute type (ISO 19103).
      *
-     * @return The name of this attribute type.
+     * @return the name of this attribute type.
      */
     @Override
     public TypeName getTypeName() {
@@ -84,7 +84,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Returns the class of value for attributes of this type.
      *
-     * @return The class of value for attributes of this type.
+     * @return the class of value for attributes of this type.
      */
     public Class<V> getValueClass() {
         return valueClass;
@@ -93,7 +93,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Returns 1 as of simple feature definition.
      *
-     * @return Always 1.
+     * @return always 1.
      */
     public int getMinimumOccurs() {
         return 1;
@@ -102,7 +102,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Returns 1 as of simple feature definition.
      *
-     * @return Always 1.
+     * @return always 1.
      */
     public int getMaximumOccurs() {
         return 1;
@@ -111,7 +111,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Not used for this simple attribute type.
      *
-     * @return Always {@code null}.
+     * @return always {@code null}.
      */
     public V getDefaultValue() {
         return null;
@@ -120,7 +120,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Not used for this simple attribute type.
      *
-     * @return Always {@code null}.
+     * @return always {@code null}.
      */
     public InternationalString getDefinition() {
         return null;
@@ -129,7 +129,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Not used for this simple attribute type.
      *
-     * @return Always {@code null}.
+     * @return always {@code null}.
      */
     public InternationalString getDesignation() {
         return null;
@@ -147,7 +147,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Returns a hash code value for this type.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {
@@ -157,7 +157,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Compares this attribute type with the given object for equality.
      *
-     * @param object The object to compare with this attribute type.
+     * @param  object  the object to compare with this attribute type.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -175,7 +175,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Returns the type name.
      *
-     * @return The type name.
+     * @return the type name.
      */
     @Override
     public String toString() {

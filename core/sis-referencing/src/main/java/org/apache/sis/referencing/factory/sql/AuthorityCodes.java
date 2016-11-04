@@ -48,7 +48,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class AuthorityCodes extends AbstractMap<String,String> implements Serializable {
@@ -124,10 +124,10 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     /**
      * Creates a new map of authority codes for the specified type.
      *
-     * @param  connection The connection to the EPSG database.
-     * @param  table      The table to query.
-     * @param  type       The type to query.
-     * @param  factory    The factory originator.
+     * @param  connection  the connection to the EPSG database.
+     * @param  table       the table to query.
+     * @param  type        the type to query.
+     * @param  factory     the factory originator.
      */
     AuthorityCodes(final Connection connection, final TableInfo table, final Class<?> type, final EPSGDataAccess factory)
             throws SQLException
@@ -142,21 +142,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         final int columnNameStart = buffer.append("SELECT ").length();
         final int columnNameEnd = buffer.append(table.codeColumn).length();
         buffer.append(" FROM ").append(table.table);
-        boolean hasWhere = false;
-        Class<?> tableType = table.type;
-        if (table.typeColumn != null) {
-            for (int i=0; i<table.subTypes.length; i++) {
-                final Class<?> candidate = table.subTypes[i];
-                if (candidate.isAssignableFrom(type)) {
-                    buffer.append(" WHERE (CAST(").append(table.typeColumn).append(" AS ").append(TableInfo.ENUM_REPLACEMENT)
-                          .append(") LIKE '").append(table.typeNames[i]).append("%')");
-                    hasWhere = true;
-                    tableType = candidate;
-                    break;
-                }
-            }
-        }
-        buffer.append(hasWhere ? " AND " : " WHERE ");
+        final Class<?> tableType = table.where(type, buffer);
         final int conditionStart = buffer.length();
         if (table.showColumn != null) {
             buffer.append(table.showColumn).append("<>0 AND ");
@@ -204,8 +190,8 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     /**
      * Returns the code at the given index, or -1 if the index is out of bounds.
      *
-     * @param  index index of the code to fetch.
-     * @return The code at the given index, or -1 if out of bounds.
+     * @param  index  index of the code to fetch.
+     * @return the code at the given index, or -1 if out of bounds.
      * @throws SQLException if an error occurred while querying the database.
      */
     private int getCodeAt(final int index) throws SQLException {
@@ -273,8 +259,8 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      * If there is no name for the {@linkplain #type} of object being queried, then this method
      * returns the code itself.
      *
-     * @param  code  The code for which to get the description. May be a string or an integer.
-     * @return The description for the given code, or {@code null} if none.
+     * @param  code  the code for which to get the description. May be a string or an integer.
+     * @return the description for the given code, or {@code null} if none.
      */
     @Override
     public String get(final Object code) {

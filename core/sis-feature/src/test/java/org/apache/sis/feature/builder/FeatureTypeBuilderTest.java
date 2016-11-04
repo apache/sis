@@ -84,7 +84,7 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         builder.addAttribute(String .class).setName("name");
         builder.addAttribute(Integer.class).setName("age");
         builder.addAttribute(Point  .class).setName("location").setCRS(HardCodedCRS.WGS84);
-        builder.addAttribute(Double .class).setName("score").setDefaultValue(10.0).setCardinality(5, 50);
+        builder.addAttribute(Double .class).setName("score").setDefaultValue(10.0).setMinimumOccurs(5).setMaximumOccurs(50);
 
         final DefaultFeatureType type = builder.build();
         assertEquals("name",        "myScope:myName",   type.getName().toString());

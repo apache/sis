@@ -108,7 +108,7 @@ final class LinearConverter extends AbstractConverter {
      * Creates a new linear converter for the given scale and offset.
      * The complete formula applied is {@code y = (x*scale + offset) / divisor}.
      */
-    private LinearConverter(final double scale, final double offset, final double divisor) {
+    LinearConverter(final double scale, final double offset, final double divisor) {
         this.scale   = scale;
         this.offset  = offset;
         this.divisor = divisor;
