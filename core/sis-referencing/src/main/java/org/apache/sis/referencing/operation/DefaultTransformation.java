@@ -97,12 +97,12 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param sourceCRS  The source CRS.
-     * @param targetCRS  The target CRS.
-     * @param interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
-     * @param method     The coordinate operation method (mandatory in all cases).
-     * @param transform  Transform from positions in the source CRS to positions in the target CRS.
+     * @param  properties        the properties to be given to the identified object.
+     * @param  sourceCRS         the source CRS.
+     * @param  targetCRS         the target CRS.
+     * @param  interpolationCRS  the CRS of additional coordinates needed for the operation, or {@code null} if none.
+     * @param  method            the coordinate operation method (mandatory in all cases).
+     * @param  transform         transform from positions in the source CRS to positions in the target CRS.
      */
     public DefaultTransformation(final Map<String,?>             properties,
                                  final CoordinateReferenceSystem sourceCRS,
@@ -123,7 +123,7 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param operation The coordinate operation to copy.
+     * @param  operation  the coordinate operation to copy.
      *
      * @see #castOrCopy(Transformation)
      */
@@ -139,8 +139,8 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
      * Note that this is a <cite>shallow</cite> copy operation, since the other properties contained in the given
      * object are not recursively copied.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultTransformation castOrCopy(final Transformation object) {
