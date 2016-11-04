@@ -143,7 +143,6 @@ final class InverseOperationMethod extends DefaultOperationMethod {
          * parameter values, copies those parameters in a "parameters" entry in the properties map.
          * Otherwise does nothing.
          */
-        final boolean isInvertible = isInvertible(source.getMethod());
         final ParameterValueGroup parameters = source.getParameterValues();
         final ParameterValueGroup copy = parameters.getDescriptor().createValue();
         for (final GeneralParameterValue gp : parameters.values()) {
@@ -154,30 +153,36 @@ final class InverseOperationMethod extends DefaultOperationMethod {
                     final ParameterDescriptor<?> descriptor = src.getDescriptor();
                     final InternationalString remarks = descriptor.getRemarks();
                     if (remarks != SignReversalComment.SAME) {
-                        boolean isOpposite = (remarks == SignReversalComment.OPPOSITE);
-                        if (!isOpposite) {
+                        if (remarks != SignReversalComment.OPPOSITE) {
                             /*
-                             * If the parameter descriptor does not contain an information about whether the
-                             * inverse operation uses values of opposite sign or not, use heuristic rules.
+                             * The parameter descriptor does not specify whether the values for the inverse operation
+                             * have the same sign or opposite sign. We could heuristically presume that we can invert
+                             * the sign if the minimum value has the opposite sign than the maximum value  (as in the
+                             * [-10 … 10] range), but such assumption is dangerous. For example the values in a matrix
+                             * could be bounded to a range like [-1 … 1], which would mislead above heuristic rule.
+                             *
+                             * Note that abandoning here does not mean that we will never know the parameter values.
+                             * As a fallback, AbstractCoordinateOperation will try to get the parameter values from
+                             * the MathTransform. This is the appropriate thing to do at least for Affine operation.
                              */
-                            if (!isInvertible) {
-                                return;                 // Can not create inverse parameter values - abandon.
-                            }
-                            final Comparable<?> minimum = descriptor.getMinimumValue();
-                            isOpposite = (minimum == null || (minimum instanceof Number && ((Number) minimum).doubleValue() < 0));
+                            return;
                         }
-                        if (isOpposite) {
-                            final ParameterValue<?> tgt = copy.parameter(descriptor.getName().getCode());
-                            final Unit<?> unit = src.getUnit();
-                            if (unit != null) {
-                                tgt.setValue(-src.doubleValue(), unit);
-                            } else if (value instanceof Integer || value instanceof Short || value instanceof Byte) {
-                                tgt.setValue(-src.intValue());
-                            } else {
-                                tgt.setValue(-src.doubleValue());
-                            }
-                            continue;
+                        /*
+                         * The parameter value of the inverse operation is (or is presumed to be) the negative of
+                         * the parameter value of the source operation.  We need to preserve units of measurement
+                         * if they were specified.
+                         */
+                        final ParameterValue<?> tgt = copy.parameter(descriptor.getName().getCode());
+                        final Unit<?> unit = src.getUnit();
+                        if (unit != null) {
+                            tgt.setValue(-src.doubleValue(), unit);
+                        } else if (value instanceof Integer || value instanceof Short || value instanceof Byte) {
+                            tgt.setValue(-src.intValue());
+                        } else {
+                            tgt.setValue(-src.doubleValue());
                         }
+                        // No need to add 'tgt' to 'copy' since it was done by the call to copy.parameter(…).
+                        continue;
                     }
                 }
             }

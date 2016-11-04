@@ -3080,11 +3080,13 @@ next:               while (r.next()) {
             String from   = "Coordinate Reference System";
             final String where;
             final Set<Number> codes;
+            final TableInfo table;
             boolean isFloat = false;
             if (object instanceof Ellipsoid) {
                 select  = "ELLIPSOID_CODE";
                 from    = "Ellipsoid";
                 where   = "SEMI_MAJOR_AXIS";
+                table   = TableInfo.ELLIPSOID;
                 codes   = Collections.<Number>singleton(((Ellipsoid) object).getSemiMajorAxis());
                 isFloat = true;
             } else {
@@ -3092,14 +3094,17 @@ next:               while (r.next()) {
                 if (object instanceof GeneralDerivedCRS) {
                     dependency = ((GeneralDerivedCRS) object).getBaseCRS();
                     where      = "SOURCE_GEOGCRS_CODE";
+                    table      = TableInfo.CRS;
                 } else if (object instanceof SingleCRS) {
                     dependency = ((SingleCRS) object).getDatum();
                     where      = "DATUM_CODE";
+                    table      = TableInfo.CRS;
                 } else if (object instanceof GeodeticDatum) {
                     dependency = ((GeodeticDatum) object).getEllipsoid();
                     select     = "DATUM_CODE";
                     from       = "Datum";
                     where      = "ELLIPSOID_CODE";
+                    table      = TableInfo.DATUM;
                 } else {
                     // Not a supported type. Returns all codes.
                     return super.getCodeCandidates(object);
@@ -3129,7 +3134,6 @@ next:               while (r.next()) {
                         Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), Finder.class, "getCodeCandidates", e);
                     }
                 }
-                codes.remove(null);                 // Paranoiac safety.
                 if (codes.isEmpty()) {
                     // Dependency not found.
                     return Collections.emptySet();
@@ -3142,8 +3146,10 @@ next:               while (r.next()) {
              * - If EPSG code, there is only one parameter which is the code to search.
              * - If numeric, there is 3 parameters: lower value, upper value, exact value to search.
              */
-            final StringBuilder buffer = new StringBuilder(60);
-            buffer.append("SELECT ").append(select).append(" FROM [").append(from).append("] WHERE ").append(where);
+            final StringBuilder buffer = new StringBuilder(200);
+            buffer.append("SELECT ").append(select).append(" FROM [").append(from).append(']');
+            table.where(object.getClass(), buffer);
+            buffer.append(where);
             if (isFloat) {
                 buffer.append(">=? AND ").append(where).append("<=?");
             } else {
