@@ -29,12 +29,27 @@ import org.apache.sis.internal.metadata.WKTKeywords;
  * Information about a specific table. The MS-Access dialect of SQL is assumed;
  * it will be translated into ANSI SQL later by {@link SQLTranslator#apply(String)} if needed.
  *
- * @author  Martin Desruisseaux (IRD)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class TableInfo {
+    /**
+     * The {@link EPSG} item used for coordinate reference systems.
+     */
+    static final TableInfo CRS;
+
+    /**
+     * The {@link EPSG} item used for datums.
+     */
+    static final TableInfo DATUM;
+
+    /**
+     * The {@link EPSG} item used for ellipsoids.
+     */
+    static final TableInfo ELLIPSOID;
+
     /**
      * List of tables and columns to test for codes values.
      * Those tables are used by the {@link EPSGDataAccess#createObject(String)} method
@@ -49,23 +64,23 @@ final class TableInfo {
      * The order is significant: it is the key for a {@code switch} statement.
      */
     static final TableInfo[] EPSG = {
-        new TableInfo(CoordinateReferenceSystem.class,
+        CRS = new TableInfo(CoordinateReferenceSystem.class,
                 "[Coordinate Reference System]",
                 "COORD_REF_SYS_CODE",
                 "COORD_REF_SYS_NAME",
                 "COORD_REF_SYS_KIND",
                 new Class<?>[] { ProjectedCRS.class,   GeographicCRS.class,   GeocentricCRS.class,
-                                 VerticalCRS.class,    CompoundCRS.class,     EngineeringCRS.class},
-                              // TemporalCRS.class,    ParametricCRS.class    (See comment below)
+                                 VerticalCRS.class,    CompoundCRS.class,     EngineeringCRS.class,
+                                 DerivedCRS.class,     TemporalCRS.class,     ParametricCRS.class},     // See comment below
                 new String[]   {"projected",          "geographic",          "geocentric",
-                                "vertical",           "compound",            "engineering"},
-                             // "temporal",           "parametric"
+                                "vertical",           "compound",            "engineering",
+                                "derived",            "temporal",            "parametric"},             // See comment below
                 "SHOW_CRS"),
                 /*
-                 * Above declaration omitted Temporal and Parametric cases because they are not defined
-                 * by the EPSG registry (at least as of version 8.9). In particular, we are not sure if
-                 * EPSG would chose to use "time" or "temporal".  Omitting those types for now does not
-                 * prevent SIS to find CRS of those types; the operation will only be more costly.
+                 * Above declaration could omit Derived, Temporal and Parametric cases since they are not defined
+                 * by the EPSG registry (at least as of version 8.9). In particular we are not sure if EPSG would
+                 * chose to use "time" or "temporal". However omitting those types slow down a lot the search for
+                 * CRS matching an existing one (even if it still work).
                  */
 
         new TableInfo(CoordinateSystem.class,
@@ -74,11 +89,11 @@ final class TableInfo {
                 "COORD_SYS_NAME",
                 "COORD_SYS_TYPE",
                 new Class<?>[] {CartesianCS.class,      EllipsoidalCS.class,      VerticalCS.class,      LinearCS.class,
-                                SphericalCS.class,      PolarCS.class,            CylindricalCS.class},
-                             // TimeCS.class,           ParametricCS.class,       AffineCS.class         (see above comment)
+                                SphericalCS.class,      PolarCS.class,            CylindricalCS.class,
+                                TimeCS.class,           ParametricCS.class,       AffineCS.class},
                 new String[]   {WKTKeywords.Cartesian,  WKTKeywords.ellipsoidal,  WKTKeywords.vertical,  WKTKeywords.linear,
-                                WKTKeywords.spherical,  WKTKeywords.polar,        WKTKeywords.cylindrical},
-                             // WKTKeywords.temporal,   WKTKeywords.parametric,   WKTKeywords.affine
+                                WKTKeywords.spherical,  WKTKeywords.polar,        WKTKeywords.cylindrical,
+                                WKTKeywords.temporal,   WKTKeywords.parametric,   WKTKeywords.affine},      // Same comment than in the CRS case above.
                 null),
 
         new TableInfo(CoordinateSystemAxis.class,
@@ -88,18 +103,18 @@ final class TableInfo {
                 "COORD_AXIS_NAME",
                 null, null, null, null),
 
-        new TableInfo(Datum.class,
+        DATUM = new TableInfo(Datum.class,
                 "[Datum]",
                 "DATUM_CODE",
                 "DATUM_NAME",
                 "DATUM_TYPE",
-                new Class<?>[] { GeodeticDatum.class,  VerticalDatum.class,   EngineeringDatum.class},
-                              // TemporalDatum.class,  ParametricDatum.class  (see above comment),
-                new String[]   {"geodetic",           "vertical",            "engineering"},
-                             // "temporal",           "parametric",
+                new Class<?>[] { GeodeticDatum.class,  VerticalDatum.class,   EngineeringDatum.class,
+                                 TemporalDatum.class,  ParametricDatum.class},
+                new String[]   {"geodetic",           "vertical",            "engineering",
+                                "temporal",           "parametric"},         // Same comment than in the CRS case above.
                 null),
 
-        new TableInfo(Ellipsoid.class,
+        ELLIPSOID = new TableInfo(Ellipsoid.class,
                 "[Ellipsoid]",
                 "ELLIPSOID_CODE",
                 "ELLIPSOID_NAME",
@@ -165,7 +180,7 @@ final class TableInfo {
      * {@link EPSGDataAccess} and {@link AuthorityCodes} assumes that values in this column
      * have the maximal length described in the {@value #ENUM_REPLACEMENT} statement.
      */
-    final String typeColumn;
+    private final String typeColumn;
 
     /**
      * The SQL type to use as a replacement for enumerated values on databases that do not support enumerations.
@@ -175,12 +190,12 @@ final class TableInfo {
     /**
      * Sub-interfaces of {@link #type} to handle, or {@code null} if none.
      */
-    final Class<?>[] subTypes;
+    private final Class<?>[] subTypes;
 
     /**
      * Names of {@link #subTypes} in the database, or {@code null} if none.
      */
-    final String[] typeNames;
+    private final String[] typeNames;
 
     /**
      * The column that specify if the object should be shown, or {@code null} if none.
@@ -203,5 +218,39 @@ final class TableInfo {
         this.subTypes   = subTypes;
         this.typeNames  = typeNames;
         this.showColumn = showColumn;
+    }
+
+    /**
+     * Appends a {@code WHERE} clause together with a condition for searching the most specific subtype,
+     * if such condition can be added. The clause appended by this method looks like the following example
+     * (details may vary because of enumeration values):
+     *
+     * {@preformat sql
+     *   WHERE COORD_REF_SYS_KIND LIKE 'geographic%' AND
+     * }
+     *
+     * In any case, the caller shall add at least one condition after this method call.
+     *
+     * @param  userType  the type specified by the user.
+     * @param  buffer    where to append the {@code WHERE} clause.
+     * @return the       subtype, or {@link #type} if no subtype was found.
+     */
+    final Class<?> where(final Class<?> userType, final StringBuilder buffer) {
+        buffer.append(" WHERE ");
+        if (typeColumn != null) {
+            for (int i=0; i<subTypes.length; i++) {
+                final Class<?> candidate = subTypes[i];
+                if (candidate.isAssignableFrom(userType)) {
+                    if (ENUM_REPLACEMENT != null) {
+                        buffer.append("CAST(").append(typeColumn).append(" AS ").append(ENUM_REPLACEMENT).append(')');
+                    } else {
+                        buffer.append(typeColumn);
+                    }
+                    buffer.append(" LIKE '").append(typeNames[i]).append("%' AND ");
+                    return candidate;
+                }
+            }
+        }
+        return type;
     }
 }
