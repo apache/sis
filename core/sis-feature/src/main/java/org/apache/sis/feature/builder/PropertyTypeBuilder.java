@@ -176,33 +176,6 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Sets the minimum and maximum number of property values. Those numbers must be equal or greater than zero.
-     *
-     * <p>If this method is not invoked, then the default values are the cardinality specified by the last call
-     * to {@link FeatureTypeBuilder#setDefaultCardinality(int, int)} at the time this instance has been created.
-     * If the later method has not been invoked, then the default cardinality is [1 … 1].</p>
-     *
-     * @param  minimumOccurs  new minimum number of property values.
-     * @param  maximumOccurs  new maximum number of property values.
-     * @return {@code this} for allowing method calls chaining.
-     *
-     * @deprecated Replaced by {@link #setMinimumOccurs(int)} and {@link #setMaximumOccurs(int)}.
-     */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public PropertyTypeBuilder setCardinality(final int minimumOccurs, final int maximumOccurs) {
-        if (this.minimumOccurs != minimumOccurs || this.maximumOccurs != maximumOccurs) {
-            if (minimumOccurs < 0 || maximumOccurs < minimumOccurs) {
-                throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalRange_2, minimumOccurs, maximumOccurs));
-            }
-            this.minimumOccurs = minimumOccurs;
-            this.maximumOccurs = maximumOccurs;
-            clearCache();
-        }
-        return this;
-    }
-
-    /**
      * Returns {@code true} if {@link AttributeRole#IDENTIFIER_COMPONENT} has been associated to this property.
      */
     boolean isIdentifier() {

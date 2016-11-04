@@ -62,7 +62,7 @@ public class SimpleCharacterIterator implements CharacterIterator, CharSequence,
     /**
      * Creates a new character iterator for the given character sequence.
      *
-     * @param text The character sequence to wrap.
+     * @param  text  the character sequence to wrap.
      */
     public SimpleCharacterIterator(final CharSequence text) {
         ArgumentChecks.ensureNonNull("text", text);

@@ -53,21 +53,21 @@ public final strictfp class ParameterBuilderTest extends TestCase {
         assertEquals("defaultValue", 0.0, p.getDefaultValue(), 0);
         assertNull  ("minimumValue",      p.getMinimumValue());
         assertNull  ("maximumValue",      p.getMaximumValue());
-        assertEquals("unit", Units.METRE,    p.getUnit());
+        assertEquals("unit", Units.METRE, p.getUnit());
 
         p = builder.addName("Test 2").create(Double.NaN, Units.METRE);
         assertEquals("name", "Test 2",    p.getName().getCode());
         assertNull  ("defaultValue",      p.getDefaultValue());
         assertNull  ("minimumValue",      p.getMinimumValue());
         assertNull  ("maximumValue",      p.getMaximumValue());
-        assertEquals("unit", Units.METRE,    p.getUnit());
+        assertEquals("unit", Units.METRE, p.getUnit());
 
         p = builder.addName("Test 3").createBounded(1, 4, 3, Units.METRE);
         assertEquals("name", "Test 3",    p.getName().getCode());
         assertEquals("defaultValue", 3.0, p.getDefaultValue(), 0);
         assertEquals("minimumValue", 1.0, p.getMinimumValue());
         assertEquals("maximumValue", 4.0, p.getMaximumValue());
-        assertEquals("unit", Units.METRE,    p.getUnit());
+        assertEquals("unit", Units.METRE, p.getUnit());
     }
 
     /**
@@ -94,7 +94,7 @@ public final strictfp class ParameterBuilderTest extends TestCase {
         assertEquals("False easting",    parameters[3].getName().getCode());
         assertEquals("Some remarks.",    parameters[0].getRemarks().toString());
         assertEquals(Double.valueOf(84), parameters[1].getMaximumValue());
-        assertEquals(Units.METRE,           parameters[4].getUnit());
+        assertEquals(Units.METRE,        parameters[4].getUnit());
         assertTrue  (                    parameters[1].getAlias().isEmpty());
 
         final GenericName alias = parameters[0].getAlias().iterator().next();

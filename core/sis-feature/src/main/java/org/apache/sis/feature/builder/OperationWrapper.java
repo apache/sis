@@ -62,13 +62,6 @@ final class OperationWrapper extends PropertyTypeBuilder {
      */
     @Override public PropertyTypeBuilder setMinimumOccurs(int occurs) {if (occurs == 1) return this; throw readOnly();}
     @Override public PropertyTypeBuilder setMaximumOccurs(int occurs) {if (occurs == 1) return this; throw readOnly();}
-    @Override @Deprecated
-    public PropertyTypeBuilder setCardinality(final int minimumOccurs, final int maximumOccurs) {
-        if (minimumOccurs != 1 || maximumOccurs != 1) {
-            throw readOnly();
-        }
-        return this;
-    }
 
     /**
      * Do not allow modifications.

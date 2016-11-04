@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Collection;
 import java.util.Collections;
 import javax.xml.bind.Unmarshaller;
@@ -65,9 +66,6 @@ import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
 
 import static org.apache.sis.util.Utilities.deepEquals;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -318,12 +316,12 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * The math transform shall let the interpolation coordinates {@linkplain DefaultPassThroughOperation pass through
      * the operation}.
      *
-     * @param properties The properties to be given to the identified object.
-     * @param sourceCRS  The source CRS, or {@code null} if unspecified.
-     * @param targetCRS  The target CRS, or {@code null} if unspecified.
-     * @param interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
-     * @param transform  Transform from positions in the source CRS to positions in the target CRS,
-     *                   or {@code null} if unspecified.
+     * @param  properties        the properties to be given to the identified object.
+     * @param  sourceCRS         the source CRS, or {@code null} if unspecified.
+     * @param  targetCRS         the target CRS, or {@code null} if unspecified.
+     * @param  interpolationCRS  the CRS of additional coordinates needed for the operation, or {@code null} if none.
+     * @param  transform         transform from positions in the source CRS to positions in the target CRS,
+     *                           or {@code null} if unspecified.
      */
     public AbstractCoordinateOperation(final Map<String,?>             properties,
                                        final CoordinateReferenceSystem sourceCRS,
@@ -344,7 +342,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * are consistent with {@link #transform} input and output dimensions.
      */
     final void checkDimensions(final Map<String,?> properties) {
-        final MathTransform transform = this.transform;   // Protect from changes.
+        final MathTransform transform = this.transform;                     // Protect from changes.
         if (transform != null) {
             final int interpDim = ReferencingUtilities.getDimension(interpolationCRS);
 check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 == target check.
@@ -380,7 +378,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param operation The coordinate operation to copy.
+     * @param  operation  the coordinate operation to copy.
      *
      * @see #castOrCopy(CoordinateOperation)
      */
@@ -422,8 +420,8 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractCoordinateOperation castOrCopy(final CoordinateOperation object) {
@@ -435,7 +433,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * The default implementation returns {@code CoordinateOperation.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The coordinate operation interface implemented by this class.
+     * @return the coordinate operation interface implemented by this class.
      */
     @Override
     public Class<? extends CoordinateOperation> getInterface() {
@@ -478,7 +476,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * This information is optional for {@linkplain DefaultConversion conversions} according
      * the ISO 19111 standard, but Apache SIS tries to provide that CRS in most cases anyway.
      *
-     * @return The source CRS, or {@code null} if not available.
+     * @return the source CRS, or {@code null} if not available.
      */
     @Override
     public CoordinateReferenceSystem getSourceCRS() {
@@ -491,7 +489,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * This information is optional for {@linkplain DefaultConversion conversions} according
      * the ISO 19111 standard, but Apache SIS tries to provide that CRS in most cases anyway.
      *
-     * @return The target CRS, or {@code null} if not available.
+     * @return the target CRS, or {@code null} if not available.
      */
     @Override
     public CoordinateReferenceSystem getTargetCRS() {
@@ -507,7 +505,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * in order to interpolate in a grid. This method returns the CRS of the grid where such interpolations
      * are performed.</div>
      *
-     * @return The CRS (neither source or target CRS) required for interpolating the values, or {@code null} if none.
+     * @return the CRS (neither source or target CRS) required for interpolating the values, or {@code null} if none.
      */
     public CoordinateReferenceSystem getInterpolationCRS() {
         return interpolationCRS;
@@ -527,7 +525,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * nature of the parameters. In principle this property is irrelevant to coordinate
      * {@linkplain DefaultConversion conversions}, but Apache SIS accepts it anyway.
      *
-     * @return The coordinate operation version, or {@code null} in none.
+     * @return the coordinate operation version, or {@code null} in none.
      */
     @Override
     @XmlElement(name = "operationVersion")
@@ -540,7 +538,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * The positional accuracy gives position error estimates for target coordinates
      * of this coordinate operation, assuming no errors in source coordinates.
      *
-     * @return The position error estimations, or an empty collection if not available.
+     * @return the position error estimations, or an empty collection if not available.
      *
      * @see #getLinearAccuracy()
      */
@@ -584,7 +582,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      *       if the math transforms are highly non-linear.</div></li>
      * </ul>
      *
-     * @return The accuracy estimation (always in meters), or NaN if unknown.
+     * @return the accuracy estimation (always in meters), or NaN if unknown.
      *
      * @see org.apache.sis.referencing.CRS#getLinearAccuracy(CoordinateOperation)
      */
@@ -595,7 +593,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Returns the area or region or timeframe in which this coordinate operation is valid.
      *
-     * @return The coordinate operation valid domain, or {@code null} if not available.
+     * @return the coordinate operation valid domain, or {@code null} if not available.
      */
     @Override
     @XmlElement(name = "domainOfValidity")
@@ -606,7 +604,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Returns a description of domain of usage, or limitations of usage, for which this operation is valid.
      *
-     * @return A description of domain of usage, or {@code null} if none.
+     * @return a description of domain of usage, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "scope", required = true)
@@ -633,7 +631,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * The interpolation coordinates will {@linkplain DefaultPassThroughOperation pass through the operation}
      * and appear in the math transform outputs, in the same order than inputs.
      *
-     * @return The transform from source to target CRS, or {@code null} if not applicable.
+     * @return the transform from source to target CRS, or {@code null} if not applicable.
      */
     @Override
     public MathTransform getMathTransform() {
@@ -644,7 +642,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Returns the operation method. This apply only to {@link AbstractSingleOperation} subclasses,
      * which will make this method public.
      *
-     * @return The operation method, or {@code null} if none.
+     * @return the operation method, or {@code null} if none.
      */
     OperationMethod getMethod() {
         return null;
@@ -698,7 +696,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Returns the parameter values. The default implementation infers the
      * parameter values from the {@linkplain #transform}, if possible.
      *
-     * @return The parameter values (never {@code null}).
+     * @return the parameter values (never {@code null}).
      * @throws UnsupportedOperationException if the parameter values can not
      *         be determined for the current math transform implementation.
      */
@@ -734,10 +732,10 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * properties are compared including the {@linkplain #getDomainOfValidity() domain of validity} and the
      * {@linkplain #getScope() scope}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for ignoring properties
-     *         that do not make a difference in the numerical results of coordinate operations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for ignoring properties
+     *                 that do not make a difference in the numerical results of coordinate operations.
      * @return {@code true} if both objects are equal for the given comparison mode.
      */
     @Override
@@ -837,7 +835,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Invoked by {@code hashCode()} for computing the hash code when first needed.
      * See {@link AbstractIdentifiedObject#computeHashCode()} for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -852,7 +850,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Formats this coordinate operation in Well Known Text (WKT) version 2 format.
      *
-     * @param  formatter The formatter to use.
+     * @param  formatter  the formatter to use.
      * @return {@code "CoordinateOperation"}.
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#113">WKT 2 specification §17</a>
@@ -921,9 +919,9 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Appends the given CRS (if non-null) wrapped in an element of the given name.
      *
-     * @param formatter The formatter where to append the object name.
-     * @param crs       The object to append, or {@code null} if none.
-     * @param type      The keyword to write before the object.
+     * @param formatter  the formatter where to append the object name.
+     * @param crs        the object to append, or {@code null} if none.
+     * @param type       the keyword to write before the object.
      */
     private static void append(final Formatter formatter, final CoordinateReferenceSystem crs, final String type) {
         if (crs != null) {

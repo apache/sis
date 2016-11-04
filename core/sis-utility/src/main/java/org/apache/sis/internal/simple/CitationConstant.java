@@ -55,7 +55,7 @@ public class CitationConstant extends SimpleCitation {
      * The most typical example is the "EPSG" authority which manage the codes identifying Coordinate Reference
      * System (CRS) objects in the EPSG namespace.
      *
-     * @param <T> The type of object used as identifier values.
+     * @param  <T>  the type of object used as identifier values.
      */
     public static class Authority<T> extends CitationConstant implements IdentifierSpace<T> {
         /**
@@ -66,7 +66,7 @@ public class CitationConstant extends SimpleCitation {
         /**
          * Creates a new citation for an authority managing codes in the given namespace.
          *
-         * @param namespace The namespace of codes managed by this authority (e.g. "EPSG").
+         * @param  namespace  the namespace of codes managed by this authority (e.g. "EPSG").
          */
         public Authority(final String namespace) {
             super(namespace);
@@ -103,7 +103,7 @@ public class CitationConstant extends SimpleCitation {
      * Creates a new proxy for the given primary key.
      * The key should be readable enough for being usable as a fallback if the database is not available.
      *
-     * @param name A human-understandable primary key for fetching more information.
+     * @param  name  a human-understandable primary key for fetching more information.
      */
     public CitationConstant(final String name) {
         super(name);
@@ -148,7 +148,7 @@ public class CitationConstant extends SimpleCitation {
     /**
      * Redirects the call to the delegate citation (the instance which actually contain the data).
      *
-     * @return The value returned by the delegate.
+     * @return the value returned by the delegate.
      */
     @Override public InternationalString                        getTitle()                   {return delegate().getTitle();}
     @Override public Collection<? extends InternationalString>  getAlternateTitles()         {return delegate().getAlternateTitles();}
@@ -167,7 +167,7 @@ public class CitationConstant extends SimpleCitation {
      * Invoked at deserialization time in order to replace the deserialized instance by the existing
      * instance defined in the {@link org.apache.sis.metadata.iso.citation.Citations} class.
      *
-     * @return The instance to use, as an unique instance if possible.
+     * @return the instance to use, as an unique instance if possible.
      */
     protected Object readResolve() {
         CitationConstant c = MetadataServices.getInstance().getCitationConstant(title);

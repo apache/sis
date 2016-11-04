@@ -119,14 +119,14 @@ public final class Envelopes extends Static {
      * A buckle method for calculating derivative and coordinate transformation in a single step,
      * if the given {@code derivative} argument is {@code true}.
      *
-     * @param transform The transform to use.
-     * @param srcPts    The array containing the source coordinate at offset 0.
-     * @param dstPts    the array into which the transformed coordinate is returned.
-     * @param dstOff    The offset to the location of the transformed point that is stored in the destination array.
-     * @param derivate  {@code true} for computing the derivative, or {@code false} if not needed.
-     * @return The matrix of the transform derivative at the given source position,
+     * @param  transform  the transform to use.
+     * @param  srcPts     the array containing the source coordinate at offset 0.
+     * @param  dstPts     the array into which the transformed coordinate is returned.
+     * @param  dstOff     the offset to the location of the transformed point that is stored in the destination array.
+     * @param  derivate   {@code true} for computing the derivative, or {@code false} if not needed.
+     * @return the matrix of the transform derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws TransformException If the point can not be transformed
+     * @throws TransformException if the point can not be transformed
      *         or if a problem occurred while calculating the derivative.
      */
     static Matrix derivativeAndTransform(final MathTransform transform, final double[] srcPts,
@@ -152,10 +152,10 @@ public final class Envelopes extends Static {
      * to get the {@link CoordinateOperation} or {@link MathTransform} instance once and invoke one of the
      * others {@code transform(…)} methods.
      *
-     * @param  envelope The envelope to transform (may be {@code null}).
-     * @param  targetCRS The target CRS (may be {@code null}).
-     * @return A new transformed envelope, or directly {@code envelope} if no change was required.
-     * @throws TransformException If a transformation was required and failed.
+     * @param  envelope   the envelope to transform (may be {@code null}).
+     * @param  targetCRS  the target CRS (may be {@code null}).
+     * @return a new transformed envelope, or directly {@code envelope} if no change was required.
+     * @throws TransformException if a transformation was required and failed.
      *
      * @since 0.5
      */
@@ -194,9 +194,9 @@ public final class Envelopes extends Static {
      * or when it crosses the ±180° longitude, because {@link MathTransform} does not carry sufficient information.
      * For a more robust envelope transformation, use {@link #transform(CoordinateOperation, Envelope)} instead.
      *
-     * @param  transform The transform to use.
-     * @param  envelope Envelope to transform, or {@code null}. This envelope will not be modified.
-     * @return The transformed envelope, or {@code null} if {@code envelope} was null.
+     * @param  transform  the transform to use.
+     * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
+     * @return the transformed envelope, or {@code null} if {@code envelope} was null.
      * @throws TransformException if a transform failed.
      *
      * @see #transform(CoordinateOperation, Envelope)
@@ -214,9 +214,9 @@ public final class Envelopes extends Static {
      * Implementation of {@link #transform(MathTransform, Envelope)} with the opportunity to
      * save the projected center coordinate.
      *
-     * @param targetPt After this method call, the center of the source envelope projected to
-     *        the target CRS. The length of this array must be the number of target dimensions.
-     *        May be {@code null} if this information is not needed.
+     * @param  targetPt  after this method call, the center of the source envelope projected to the target CRS.
+     *                   The length of this array must be the number of target dimensions.
+     *                   May be {@code null} if this information is not needed.
      */
     @SuppressWarnings("null")
     private static GeneralEnvelope transform(final MathTransform transform,
@@ -426,9 +426,9 @@ public final class Envelopes extends Static {
      * of accuracy. In order to prevent this method from performing such pre-transformation (if not desired),
      * callers can ensure that the envelope CRS is {@code null} before to call this method.</div>
      *
-     * @param  operation The operation to use.
-     * @param  envelope Envelope to transform, or {@code null}. This envelope will not be modified.
-     * @return The transformed envelope, or {@code null} if {@code envelope} was null.
+     * @param  operation  the operation to use.
+     * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
+     * @return the transformed envelope, or {@code null} if {@code envelope} was null.
      * @throws TransformException if a transform failed.
      *
      * @see #transform(MathTransform, Envelope)
@@ -742,9 +742,9 @@ public final class Envelopes extends Static {
      * See {@link GeneralEnvelope#GeneralEnvelope(CharSequence)} for more information about the
      * parsing rules.
      *
-     * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
-     * @return The envelope of the given geometry.
-     * @throws FactoryException If the given WKT can not be parsed.
+     * @param  wkt  the {@code BOX}, {@code POLYGON} or other kind of element to parse.
+     * @return the envelope of the given geometry.
+     * @throws FactoryException if the given WKT can not be parsed.
      *
      * @see #toString(Envelope)
      * @see CRS#fromWKT(String)
@@ -775,8 +775,8 @@ public final class Envelopes extends Static {
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence)
      * parsed} by the {@code GeneralEnvelope} constructor.
      *
-     * @param  envelope The envelope to format.
-     * @return This envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
+     * @param  envelope  the envelope to format.
+     * @return this envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      *
      * @see #fromWKT(CharSequence)
      * @see org.apache.sis.io.wkt
@@ -793,8 +793,8 @@ public final class Envelopes extends Static {
      * <p>The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence)
      * parsed} by the {@code GeneralEnvelope} constructor.</p>
      *
-     * @param  envelope The envelope to format.
-     * @return The envelope as a {@code POLYGON} in WKT format.
+     * @param  envelope  the envelope to format.
+     * @return the envelope as a {@code POLYGON} in WKT format.
      * @throws IllegalArgumentException if the given envelope can not be formatted.
      *
      * @see org.apache.sis.io.wkt
