@@ -48,7 +48,12 @@ public final strictfp class DefaultEllipsoidTest extends XMLTestCase {
     /**
      * An XML file in this package containing an ellipsoid definition.
      */
-    private static final String XML_FILE = "Ellipsoid.xml";
+    private static final String ELLIPSOID_FILE = "Ellipsoid.xml";
+
+    /**
+     * An XML file in this package containing a sphere definition.
+     */
+    private static final String SPHERE_FILE = "Sphere.xml";
 
     /**
      * Half of a minute of angle, in degrees.
@@ -209,23 +214,50 @@ public final strictfp class DefaultEllipsoidTest extends XMLTestCase {
     }
 
     /**
-     * Tests unmarshalling and marshalling.
+     * Tests unmarshalling and marshalling of an ellipsoid.
      *
-     * @throws JAXBException If an error occurred during (un)marshalling.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
-    public void testXML() throws JAXBException {
-        final DefaultEllipsoid ellipsoid = unmarshalFile(DefaultEllipsoid.class, XML_FILE);
+    public void testEllipsoidXML() throws JAXBException {
+        final DefaultEllipsoid ellipsoid = unmarshalFile(DefaultEllipsoid.class, ELLIPSOID_FILE);
         assertEquals("name", "Clarke 1880 (international foot)", ellipsoid.getName().getCode());
         assertEquals("remarks", "Definition in feet assumed to be international foot.", ellipsoid.getRemarks().toString());
+        assertFalse ("isSphere",                              ellipsoid.isSphere());
         assertFalse ("isIvfDefinitive",                       ellipsoid.isIvfDefinitive());
-        assertEquals("semiMajorAxis",     20926202,           ellipsoid.getSemiMajorAxis(), 0);
-        assertEquals("semiMinorAxis",     20854895,           ellipsoid.getSemiMinorAxis(), 0);
+        assertEquals("semiMajorAxis",     20926202,           ellipsoid.getSemiMajorAxis(), STRICT);
+        assertEquals("semiMinorAxis",     20854895,           ellipsoid.getSemiMinorAxis(), STRICT);
         assertEquals("inverseFlattening", 293.46630765562986, ellipsoid.getInverseFlattening(), 1E-12);
         assertEquals("axisUnit",          Units.FOOT,         ellipsoid.getAxisUnit());
         /*
          * Marshall and compare to the original file.
          */
-        assertMarshalEqualsFile(XML_FILE, ellipsoid, "xlmns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(ELLIPSOID_FILE, ellipsoid, "xlmns:*", "xsi:schemaLocation");
+    }
+
+    /**
+     * Tests unmarshalling and marshalling of a sphere.
+     *
+     * @throws JAXBException if an error occurred during (un)marshalling.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-333">SIS-333</a>
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testSphereXML() throws JAXBException {
+        final DefaultEllipsoid ellipsoid = unmarshalFile(DefaultEllipsoid.class, SPHERE_FILE);
+        assertEquals("name", "GRS 1980 Authalic Sphere", ellipsoid.getName().getCode());
+        assertEquals("remarks", "Authalic sphere derived from GRS 1980 ellipsoid (code 7019).", ellipsoid.getRemarks().toString());
+        assertTrue  ("isSphere",                                    ellipsoid.isSphere());
+        assertFalse ("isIvfDefinitive",                             ellipsoid.isIvfDefinitive());
+        assertEquals("semiMajorAxis",     6371007,                  ellipsoid.getSemiMajorAxis(), STRICT);
+        assertEquals("semiMinorAxis",     6371007,                  ellipsoid.getSemiMinorAxis(), STRICT);
+        assertEquals("inverseFlattening", Double.POSITIVE_INFINITY, ellipsoid.getInverseFlattening(), STRICT);
+        assertEquals("axisUnit",          Units.METRE,              ellipsoid.getAxisUnit());
+        /*
+         * Marshall and compare to the original file.
+         */
+        assertMarshalEqualsFile(SPHERE_FILE, ellipsoid, "xlmns:*", "xsi:schemaLocation");
     }
 }

@@ -36,41 +36,74 @@ import static org.apache.sis.test.Assert.*;
  */
 public final strictfp class SecondDefiningParameterTest extends XMLTestCase {
     /**
-     * The XML to be used for testing purpose.
+     * XML of an ellipsoid defined by semi-major and semi-minor axes.
+     * The numerical values used for this test is the ones of Clarke 1866 (EPSG:7008).
      */
-    private static final String XML =
+    private static final String ELLIPSOID =
             "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
             "<gml:SecondDefiningParameter xmlns:gml=\"http://www.opengis.net/gml/3.2\">\n" +
-            "  <gml:semiMinorAxis uom=\"urn:ogc:def:uom:EPSG::9001\">6371000.0</gml:semiMinorAxis>\n" +
+            "  <gml:semiMinorAxis uom=\"urn:ogc:def:uom:EPSG::9001\">6356583.8</gml:semiMinorAxis>\n" +
             "</gml:SecondDefiningParameter>";
 
     /**
-     * Generates a XML tree using the annotations on the {@link SecondDefiningParameter} class.
+     * XML of a sphere.
      *
-     * @throws JAXBException If an error occurred during the marshalling process.
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-333">SIS-333</a>
+     */
+    private static final String SPHERE =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
+            "<gml:SecondDefiningParameter xmlns:gml=\"http://www.opengis.net/gml/3.2\">\n" +
+            "  <gml:isSphere>true</gml:isSphere>\n" +
+            "</gml:SecondDefiningParameter>";
+
+    /**
+     * Tests marshalling of an ellipsoid.
+     *
+     * @throws JAXBException if an error occurred during the marshalling process.
      */
     @Test
     public void testMarshalling() throws JAXBException {
         final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createEllipsoid(Collections.singletonMap(
-                DefaultEllipsoid.NAME_KEY, "Sphere"), 6371000, 6371000, Units.METRE);
+                DefaultEllipsoid.NAME_KEY, "Clarke 1866"), 6378206.4, 6356583.8, Units.METRE);
         final SecondDefiningParameter sdp = new SecondDefiningParameter(ellipsoid, false);
-        assertXmlEquals(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
-                "<gml:SecondDefiningParameter xmlns:gml=\"http://www.opengis.net/gml/3.2\">\n" +
-                "  <gml:semiMinorAxis uom=\"urn:ogc:def:uom:EPSG::9001\">6371000.0</gml:semiMinorAxis>\n" +
-                "</gml:SecondDefiningParameter>",
-                marshal(sdp), "xmlns:*", "xsi:schemaLocation");
+        assertXmlEquals(ELLIPSOID, marshal(sdp), "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
-     * Creates a {@link SecondDefiningParameter} from a XML tree.
+     * Tests unmarshalling of an ellipsoid.
      *
-     * @throws JAXBException If an error occurred during the unmarshalling process.
+     * @throws JAXBException if an error occurred during the unmarshalling process.
      */
     @Test
     public void testUnmarshalling() throws JAXBException {
-        final SecondDefiningParameter sdp = unmarshal(SecondDefiningParameter.class, XML);
-        assertEquals(6371000.0, sdp.measure.value, 0);
-        assertEquals(Units.METRE,  sdp.measure.unit);
+        final SecondDefiningParameter sdp = unmarshal(SecondDefiningParameter.class, ELLIPSOID);
+        assertNull("isSphere", sdp.isSphere);
+        assertEquals("measure", 6356583.8, sdp.measure.value, STRICT);
+        assertEquals("measure", Units.METRE,  sdp.measure.unit);
+    }
+
+    /**
+     * Tests marshalling of a sphere.
+     *
+     * @throws JAXBException if an error occurred during the marshalling process.
+     */
+    @Test
+    public void testMarshallingSphere() throws JAXBException {
+        final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createEllipsoid(Collections.singletonMap(
+                DefaultEllipsoid.NAME_KEY, "Sphere"), 6371000, 6371000, Units.METRE);
+        final SecondDefiningParameter sdp = new SecondDefiningParameter(ellipsoid, false);
+        assertXmlEquals(SPHERE, marshal(sdp), "xmlns:*", "xsi:schemaLocation");
+    }
+
+    /**
+     * Tests unmarshalling of a sphere.
+     *
+     * @throws JAXBException if an error occurred during the unmarshalling process.
+     */
+    @Test
+    public void testUnmarshallingSphere() throws JAXBException {
+        final SecondDefiningParameter sdp = unmarshal(SecondDefiningParameter.class, SPHERE);
+        assertEquals("isSphere", Boolean.TRUE, sdp.isSphere);
+        assertNull("measure", sdp.measure);
     }
 }
