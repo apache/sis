@@ -58,12 +58,12 @@ public class GPXWriter110 extends GPXWriter100{
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
     @Override
-    public void write(final MetaData metadata) throws XMLStreamException {
+    public void write(final Metadata metadata) throws XMLStreamException {
         writer.writeStartElement(namespace, TAG_METADATA);
         writeSimpleTag(namespace, TAG_NAME, metadata.name);
         writeSimpleTag(namespace, TAG_DESC, metadata.description);
-        writePerson(metadata.person);
-        writeCopyright(metadata.copyRight);
+        writePerson(metadata.author);
+        writeCopyright(metadata.copyright);
         for (URI uri : metadata.links) {
             writeLink(uri);
         }

@@ -51,9 +51,9 @@ import org.opengis.util.InternationalString;
  * This element provides 3 properties:
  *
  * <ul>
- *   <li>The {@linkplaon #author}, which is the only mandatory property.</li>
+ *   <li>The {@linkplain #author}, which is the only mandatory property.</li>
  *   <li>The copyright {@linkplain #year} (optional).</li>
- *   <li>An URI to the license (optional).</li>
+ *   <li>An URI to the {@linkplain #license} (optional).</li>
  * </ul>
  *
  * Those properties can be read or modified directly. All methods defined in this class are bridges to
@@ -487,13 +487,10 @@ public final class Copyright implements LegalConstraints, Responsibility, Party,
      * Compares this {@code Copyright} with the given object for equality.
      *
      * @param  obj  the object to compare with this {@code Copyright}.
-     * @return {@code true} if both object are equal.
+     * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
         if (obj instanceof Copyright) {
             final Copyright that = (Copyright) obj;
             return Objects.equals(this.author,  that.author) &&
@@ -515,6 +512,13 @@ public final class Copyright implements LegalConstraints, Responsibility, Party,
 
     /**
      * Returns a string representation of the copyright statement.
+     * The statement is formatted in a way similar to the copyright statements found in file header.
+     * Example:
+     *
+     * <blockquote>
+     * Copyright 2016 John Smith
+     * http://john.smith.com
+     * </blockquote>
      *
      * @return a string representation of the copyright statement.
      */

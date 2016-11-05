@@ -22,7 +22,7 @@
  * Example (from Wikipedia):
  *
  * {@preformat xml
- *   <gpx>
+ *   <gpx version="1.1" creator="Oregon 400t">
  *     <metadata>
  *       <link href="http://www.garmin.com">
  *         <text>Garmin International</text>
@@ -49,6 +49,12 @@
  *   </gpx>
  * }
  *
+ * The GPX 1.1 specification enforces the following conventions:
+ * <ul>
+ *   <li>All coordinates are relative to the WGS84 datum.</li>
+ *   <li>All measurements are in metric units.</li>
+ * </ul>
+ *
  * @see <a href="https://en.wikipedia.org/wiki/GPS_Exchange_Format">GPS Exchange Format on Wikipedia</a>
  * @see <a href="http://www.topografix.com/GPX/1/1/">GPX 1.1 Schema Documentation</a>
  *
@@ -57,4 +63,11 @@
  * @version 0.8
  * @module
  */
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = GPXConstants.GPX_NAMESPACE_V11, xmlns = {
+    @XmlNs(prefix = "gpx", namespaceURI = GPXConstants.GPX_NAMESPACE_V11)
+})
 package org.apache.sis.internal.gpx;
+
+import javax.xml.bind.annotation.XmlNs;
+import javax.xml.bind.annotation.XmlNsForm;
+import javax.xml.bind.annotation.XmlSchema;

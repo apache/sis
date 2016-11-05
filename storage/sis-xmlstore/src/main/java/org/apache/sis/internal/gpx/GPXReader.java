@@ -71,7 +71,7 @@ import static org.apache.sis.internal.gpx.GPXConstants.*;
  */
 public class GPXReader extends StaxStreamReader {
 
-    private MetaData metadata;
+    private Metadata metadata;
     private Feature current;
     private int wayPointInc = 0;
     private int routeInc = 0;
@@ -116,14 +116,14 @@ public class GPXReader extends StaxStreamReader {
                         if(version == GPXVersion.v1_0_0){
                             baseNamespace = GPX_NAMESPACE_V10;
                             //we wont found a metadata tag, must read the tags here.
-                            metadata = parseMetaData100();
+                            metadata = parseMetadata100();
                             break searchLoop;
                         }else{
                             baseNamespace = GPX_NAMESPACE_V11;
                         }
 
                     }else if(TAG_METADATA.equalsIgnoreCase(typeName)){
-                        metadata = parseMetaData110();
+                        metadata = parseMetadata110();
                         break searchLoop;
                     }else if(  TAG_WPT.equalsIgnoreCase(typeName)
                             || TAG_TRK.equalsIgnoreCase(typeName)
@@ -152,7 +152,7 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return Metadata or null if input is not set.
      */
-    public MetaData getMetadata() {
+    public Metadata getMetadata() {
         return metadata;
     }
 
@@ -234,12 +234,12 @@ public class GPXReader extends StaxStreamReader {
      * Parse current metadata element.
      * The stax reader must be placed to the start element of the metadata.
      *
-     * @return MetaData
+     * @return Metadata
      */
-    private MetaData parseMetaData100() throws IOException, XMLStreamException {
+    private Metadata parseMetadata100() throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
 
-        final MetaData metadata = new MetaData();
+        final Metadata metadata = new Metadata();
 
         searchLoop:
         while (reader.hasNext()) {
@@ -253,11 +253,11 @@ public class GPXReader extends StaxStreamReader {
                     }else if(TAG_DESC.equalsIgnoreCase(localName)) {
                         metadata.description = reader.getElementText();
                     }else if(TAG_AUTHOR.equalsIgnoreCase(localName)) {
-                        if(metadata.person == null) metadata.person = new Person();
-                        metadata.person.name = reader.getElementText();
+                        if(metadata.author == null) metadata.author = new Person();
+                        metadata.author.name = reader.getElementText();
                     }else if(TAG_AUTHOR_EMAIL.equalsIgnoreCase(localName)) {
-                        if(metadata.person == null) metadata.person = new Person();
-                        metadata.person.email = reader.getElementText();
+                        if(metadata.author == null) metadata.author = new Person();
+                        metadata.author.email = reader.getElementText();
                     }else if(TAG_URL.equalsIgnoreCase(localName)){
                         try {
                             metadata.links.add(new URI(reader.getElementText()));
@@ -289,11 +289,11 @@ public class GPXReader extends StaxStreamReader {
      * Parse current metadata element.
      * The stax reader must be placed to the start element of the metadata.
      *
-     * @return MetaData
+     * @return Metadata
      */
-    private MetaData parseMetaData110() throws IOException, XMLStreamException {
+    private Metadata parseMetadata110() throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
-        final MetaData metadata = new MetaData();
+        final Metadata metadata = new Metadata();
 
         while (reader.hasNext()) {
             final int type = reader.next();
@@ -306,9 +306,9 @@ public class GPXReader extends StaxStreamReader {
                     }else if(TAG_DESC.equalsIgnoreCase(localName)){
                         metadata.description = reader.getElementText();
                     }else if(TAG_AUTHOR.equalsIgnoreCase(localName)){
-                        metadata.person = parsePerson();
+                        metadata.author = parsePerson();
                     }else if(TAG_COPYRIGHT.equalsIgnoreCase(localName)){
-                        metadata.copyRight = parseCopyright();
+                        metadata.copyright = parseCopyright();
                     }else if(TAG_LINK.equalsIgnoreCase(localName)){
                         metadata.links.add(parseLink());
                     }else if(TAG_METADATA_TIME.equalsIgnoreCase(localName)){
