@@ -85,11 +85,11 @@ public final strictfp class GPXWriterTest extends TestCase{
         bounds.setRange(0, -10, 20);
         bounds.setRange(1, -30, 40);
 
-        final MetaData metaData = new MetaData();
+        final Metadata metaData = new Metadata();
         metaData.name = "name";
         metaData.description = "description";
-        metaData.person = person;
-        metaData.copyRight = copyright;
+        metaData.author = person;
+        metaData.copyright = copyright;
         metaData.links.addAll(Arrays.asList(new URI("http://adress1.org"),new URI("http://adress2.org")));
         metaData.time = Instant.now();
         metaData.keywords = "test,sample";

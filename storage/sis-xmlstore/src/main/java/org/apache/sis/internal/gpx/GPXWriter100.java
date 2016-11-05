@@ -125,7 +125,7 @@ public class GPXWriter100 extends StaxStreamWriter {
      * @param tracks can be null
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
-    public void write(final MetaData metadata, final Collection<? extends Feature> wayPoints,
+    public void write(final Metadata metadata, final Collection<? extends Feature> wayPoints,
             final Collection<? extends Feature> routes, final Collection<? extends Feature> tracks) throws XMLStreamException {
 
         writeGPXTag();
@@ -203,13 +203,13 @@ public class GPXWriter100 extends StaxStreamWriter {
      * @param metadata no null
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
-    public void write(final MetaData metadata) throws XMLStreamException {
+    public void write(final Metadata metadata) throws XMLStreamException {
         writeSimpleTag(namespace, TAG_NAME, metadata.name);
         writeSimpleTag(namespace, TAG_DESC, metadata.description);
 
-        if (metadata.person != null) {
-            writeSimpleTag(namespace, TAG_AUTHOR, metadata.person.name);
-            writeSimpleTag(namespace, TAG_AUTHOR_EMAIL, metadata.person.email);
+        if (metadata.author != null) {
+            writeSimpleTag(namespace, TAG_AUTHOR, metadata.author.name);
+            writeSimpleTag(namespace, TAG_AUTHOR_EMAIL, metadata.author.email);
         }
 
         //model is based on 1.1 so not all attributs can be written

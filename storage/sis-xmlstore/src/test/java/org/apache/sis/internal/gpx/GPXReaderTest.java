@@ -68,7 +68,7 @@ public class GPXReaderTest extends TestCase{
     @Test
     public void testMetadataRead100() throws Exception {
         try (final GPXReader reader = create("/org/apache/sis/gpx/sample_metadata100.xml")) {
-            final MetaData data = reader.getMetadata();
+            final Metadata data = reader.getMetadata();
 
             assertEquals("sample", data.name);
             assertEquals("sample gpx test file", data.description);
@@ -76,11 +76,11 @@ public class GPXReaderTest extends TestCase{
             assertEquals("sample,metadata", data.keywords);
             assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
 
-            assertEquals("Jean-Pierre", data.person.name);
-            assertEquals("jean.pierre@test.com", data.person.email);
-            assertNull(data.person.link);
+            assertEquals("Jean-Pierre", data.author.name);
+            assertEquals("jean.pierre@test.com", data.author.email);
+            assertNull(data.author.link);
 
-            assertNull(data.copyRight);
+            assertNull(data.copyright);
 
             assertEquals(1, data.links.size());
             assertEquals("http://first-adress.org", data.links.get(0).toString());
@@ -95,7 +95,7 @@ public class GPXReaderTest extends TestCase{
     @Test
     public void testMetadataRead110() throws Exception {
         try (final GPXReader reader = create("/org/apache/sis/gpx/sample_metadata110.xml")) {
-            final MetaData data = reader.getMetadata();
+            final Metadata data = reader.getMetadata();
 
             assertEquals("sample", data.name);
             assertEquals("sample gpx test file", data.description);
@@ -103,13 +103,13 @@ public class GPXReaderTest extends TestCase{
             assertEquals("sample,metadata", data.keywords);
             assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
 
-            assertEquals("Jean-Pierre", data.person.name);
-            assertEquals("jean.pierre@test.com", data.person.email);
-            assertEquals("http://someone-site.org", data.person.link.toString());
+            assertEquals("Jean-Pierre", data.author.name);
+            assertEquals("jean.pierre@test.com", data.author.email);
+            assertEquals("http://someone-site.org", data.author.link.toString());
 
-            assertEquals("gnu", data.copyRight.author);
-            assertEquals(2010, data.copyRight.year.intValue());
-            assertEquals("http://www.gnu.org/licenses/lgpl-3.0-standalone.html", data.copyRight.license.toString());
+            assertEquals("gnu", data.copyright.author);
+            assertEquals(2010, data.copyright.year.intValue());
+            assertEquals("http://www.gnu.org/licenses/lgpl-3.0-standalone.html", data.copyright.license.toString());
 
             assertEquals(3, data.links.size());
             assertEquals("http://first-adress.org", data.links.get(0).toString());
@@ -127,15 +127,15 @@ public class GPXReaderTest extends TestCase{
     @Test
     public void testWayPointRead100() throws Exception {
         try (final GPXReader reader = create("/org/apache/sis/gpx/sample_waypoint100.xml")) {
-            final MetaData data = reader.getMetadata();
+            final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
             assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
-            assertNull(data.person);
-            assertNull(data.copyRight);
+            assertNull(data.author);
+            assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
             Feature f = reader.next();
@@ -156,15 +156,15 @@ public class GPXReaderTest extends TestCase{
     @Test
     public void testWayPointRead110() throws Exception {
         try (final GPXReader reader = create("/org/apache/sis/gpx/sample_waypoint110.xml")) {
-            final MetaData data = reader.getMetadata();
+            final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
             assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
-            assertNull(data.person);
-            assertNull(data.copyRight);
+            assertNull(data.author);
+            assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
             Feature f = reader.next();
@@ -186,15 +186,15 @@ public class GPXReaderTest extends TestCase{
     @Test
     public void testRouteRead100() throws Exception {
         try (final GPXReader reader = create("/org/apache/sis/gpx/sample_route100.xml")) {
-            final MetaData data = reader.getMetadata();
+            final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
             assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
-            assertNull(data.person);
-            assertNull(data.copyRight);
+            assertNull(data.author);
+            assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
             Feature f = reader.next();
@@ -251,15 +251,15 @@ public class GPXReaderTest extends TestCase{
     @Test
     public void testRouteRead110() throws Exception {
         try (final GPXReader reader = create("/org/apache/sis/gpx/sample_route110.xml")) {
-            final MetaData data = reader.getMetadata();
+            final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
             assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
-            assertNull(data.person);
-            assertNull(data.copyRight);
+            assertNull(data.author);
+            assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
             Feature f = reader.next();
@@ -318,15 +318,15 @@ public class GPXReaderTest extends TestCase{
     @Test
     public void testTrackRead100() throws Exception {
         try (final GPXReader reader = create("/org/apache/sis/gpx/sample_track100.xml")) {
-            final MetaData data = reader.getMetadata();
+            final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
             assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
-            assertNull(data.person);
-            assertNull(data.copyRight);
+            assertNull(data.author);
+            assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
             Feature f = reader.next();
@@ -388,15 +388,15 @@ public class GPXReaderTest extends TestCase{
     @Test
     public void testTrackRead110() throws Exception {
         try (final GPXReader reader = create("/org/apache/sis/gpx/sample_track110.xml")) {
-            final MetaData data = reader.getMetadata();
+            final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
             assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
-            assertNull(data.person);
-            assertNull(data.copyRight);
+            assertNull(data.author);
+            assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
             Feature f = reader.next();
