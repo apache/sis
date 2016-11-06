@@ -24,11 +24,10 @@ import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
 import com.esri.core.geometry.Point;
 import org.opengis.geometry.Envelope;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -38,7 +37,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
-import org.apache.sis.test.TestCase;
 import org.opengis.feature.Feature;
 
 
@@ -74,7 +72,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals("sample gpx test file", data.description);
             assertEquals(parseTime("2010-03-01"), data.time);
             assertEquals("sample,metadata", data.keywords);
-            assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
+            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
 
             assertEquals("Jean-Pierre", data.author.name);
             assertEquals("jean.pierre@test.com", data.author.email);
@@ -101,7 +99,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals("sample gpx test file", data.description);
             assertEquals(parseTime("2010-03-01"), data.time);
             assertEquals("sample,metadata", data.keywords);
-            assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
+            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
 
             assertEquals("Jean-Pierre", data.author.name);
             assertEquals("jean.pierre@test.com", data.author.email);
@@ -133,7 +131,7 @@ public class GPXReaderTest extends TestCase{
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
-            assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
+            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
             assertNull(data.author);
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
@@ -162,7 +160,7 @@ public class GPXReaderTest extends TestCase{
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
-            assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
+            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
             assertNull(data.author);
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
@@ -192,7 +190,7 @@ public class GPXReaderTest extends TestCase{
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
-            assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
+            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
             assertNull(data.author);
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
@@ -257,7 +255,7 @@ public class GPXReaderTest extends TestCase{
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
-            assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
+            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
             assertNull(data.author);
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
@@ -324,7 +322,7 @@ public class GPXReaderTest extends TestCase{
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
-            assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
+            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
             assertNull(data.author);
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
@@ -394,7 +392,7 @@ public class GPXReaderTest extends TestCase{
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
-            assertEquals(createEnvelope(-20, 30, 10, 40), data.bounds);
+            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
             assertNull(data.author);
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
@@ -455,7 +453,7 @@ public class GPXReaderTest extends TestCase{
 
     private void checkPoint(final Feature f, final int num, final boolean v11) throws Exception {
         if (num == 0) {
-            assertEquals(0,                     f.getPropertyValue("index"));
+            assertEquals(0,                     f.getPropertyValue("@identifier"));
             assertEquals(15.0,                  ((Point)f.getPropertyValue("@geometry")).getX(), DELTA);
             assertEquals(10.0,                  ((Point)f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(140.0,                 f.getPropertyValue("ele"));
@@ -494,7 +492,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals(bbox.getMaximum(1), 10.0d, DELTA);
 
         } else if (num == 1) {
-            assertEquals(1,                     f.getPropertyValue("index"));
+            assertEquals(1,                     f.getPropertyValue("@identifier"));
             assertEquals(25.0,                  ((Point)f.getPropertyValue("@geometry")).getX(), DELTA);
             assertEquals(20.0,                  ((Point)f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(null,                  f.getPropertyValue("ele"));
@@ -525,7 +523,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals(bbox.getMaximum(1), 20.0d, DELTA);
 
         } else if (num == 2) {
-            assertEquals(2,                     f.getPropertyValue("index"));
+            assertEquals(2,                     f.getPropertyValue("@identifier"));
             assertEquals(35.0,                  ((Point) f.getPropertyValue("@geometry")).getX(), DELTA);
             assertEquals(30.0,                  ((Point) f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(150.0,                 f.getPropertyValue("ele"));
@@ -572,12 +570,5 @@ public class GPXReaderTest extends TestCase{
         final TemporalAccessor accessor = format.parse(str);
         final LocalDate localDate = LocalDate.from(accessor);
         return localDate;
-    }
-
-    private static Envelope createEnvelope(double d0, double d1, double d2, double d3) {
-        final GeneralEnvelope envelope = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
-        envelope.setRange(0, d0, d1);
-        envelope.setRange(1, d2, d3);
-        return new ImmutableEnvelope(envelope);
     }
 }

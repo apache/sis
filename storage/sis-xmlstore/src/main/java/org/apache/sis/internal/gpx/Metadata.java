@@ -25,30 +25,25 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Level;
 import javax.xml.bind.annotation.XmlElement;
 
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Keywords;
-import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.InternationalString;
 
 import org.apache.sis.internal.simple.SimpleMetadata;
 import org.apache.sis.io.TableAppender;
-import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -125,9 +120,10 @@ public final class Metadata extends SimpleMetadata {
 
     /**
      * Minimum and maximum coordinates which describe the extent of the coordinates in the file.
+     * The GPX 1.1 specification restricts the coordinate reference system to WGS84.
      */
     @XmlElement
-    public Envelope bounds;
+    public GeographicBoundingBox bounds;
 
     /**
      * Creates an initially empty metadata object.
@@ -135,72 +131,82 @@ public final class Metadata extends SimpleMetadata {
     public Metadata() {
     }
 
+    /**
+     * ISO 19115 metadata property determined by the {@link #name} field.
+     * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return the cited resource name.
+     */
     @Override
-    public Collection<Identifier> getIdentifiers() {
-        if (name != null) {
-            return Collections.singleton(new DefaultIdentifier(name));
-        }
-        return super.getIdentifiers();
+    public InternationalString getTitle() {
+        return (name != null) ? new SimpleInternationalString(name) : super.getTitle();
     }
 
+    /**
+     * ISO 19115 metadata property determined by the {@link #description} field.
+     * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return brief narrative summary of the resource.
+     */
     @Override
     public InternationalString getAbstract() {
-        if (description != null) {
-            return new SimpleInternationalString(description);
-        }
-        return super.getAbstract();
+        return (description != null) ? new SimpleInternationalString(description) : super.getAbstract();
     }
 
+    /**
+     * ISO 19115 metadata property determined by the {@link #keywords} field.
+     * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return category keywords, their type, and reference source.
+     */
     @Override
     public Collection<Keywords> getDescriptiveKeywords() {
-        if (keywords != null) {
-            return Collections.singleton(new DefaultKeywords(keywords));
-        }
-        return null;
+        return (keywords != null) ? Collections.singleton(new DefaultKeywords(keywords)) : super.getDescriptiveKeywords();
     }
 
+    /**
+     * ISO 19115 metadata property determined by the {@link #author} field.
+     * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return means of communication with person(s) and organisations(s) associated with the resource.
+     */
     @Override
     public Collection<Responsibility> getPointOfContacts() {
-        if (author != null) {
-            return Collections.singletonList(author);
-        }
-        return super.getPointOfContacts();
+        return (author != null) ? Collections.singletonList(author) : super.getPointOfContacts();
     }
 
+    /**
+     * ISO 19115 metadata property determined by the {@link #copyright} field.
+     * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return constraints which apply to the resource(s).
+     */
     @Override
     public Collection<Constraints> getResourceConstraints() {
-        if (copyright != null) {
-            return Collections.singleton(copyright);
-        }
-        return super.getResourceConstraints();
+        return (copyright != null) ? Collections.singleton(copyright) : super.getResourceConstraints();
     }
 
+    /**
+     * ISO 19115 metadata property determined by the {@link #bounds} field.
+     * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return spatial and temporal extent of the resource.
+     */
     @Override
     public Collection<Extent> getExtents() {
         if (bounds != null) {
-            final DefaultExtent ext = new DefaultExtent();
-            try {
-                ext.addElements(bounds);
-            } catch (TransformException ex) {
-                Logging.getLogger("oeg.apache.storage").log(Level.WARNING, ex.getMessage(),ex);
-            }
-            return Collections.singleton(ext);
+            return Collections.singleton(new DefaultExtent(null, bounds, null, null));
+        } else {
+            return super.getExtents();
         }
-        return super.getExtents();
     }
 
-    @Override
-    public Collection<OnlineResource> getOnlineResources() {
-        if (!links.isEmpty()) {
-            final List<OnlineResource> resources = new ArrayList<>();
-            for (URI uri : links) {
-                resources.add(new DefaultOnlineResource(uri));
-            }
-            return resources;
-        }
-        return super.getOnlineResources();
-    }
-
+    /**
+     * ISO 19115 metadata property determined by the {@link #time} field.
+     * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return reference dates for the cited resource.
+     */
     @Override
     public Collection<CitationDate> getDates() {
         if (time != null) {
@@ -208,6 +214,25 @@ public final class Metadata extends SimpleMetadata {
             return Collections.singleton(date);
         }
         return super.getDates();
+    }
+
+    /**
+     * ISO 19115 metadata property determined by the {@link #bounds} field.
+     * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return online references to the cited resource.
+     */
+    @Override
+    public Collection<OnlineResource> getOnlineResources() {
+        final int size = links.size();
+        if (size != 0) {
+            final List<OnlineResource> resources = new ArrayList<>(size);
+            for (URI uri : links) {
+                resources.add(new DefaultOnlineResource(uri));
+            }
+            return resources;
+        }
+        return super.getOnlineResources();
     }
 
     /**

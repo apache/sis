@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.sis.internal.gpx;
 
 import java.io.File;
@@ -25,18 +24,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import com.esri.core.geometry.Point;
 import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.referencing.CommonCRS;
-import org.junit.Test;
-
-import static org.apache.sis.internal.gpx.GPXConstants.*;
+import com.esri.core.geometry.Point;
+import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 // Branch-dependent imports
@@ -81,9 +78,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         copyright.year = 2010;
         copyright.license = new URI("http://gnu.org");
 
-        final GeneralEnvelope bounds = new GeneralEnvelope(CommonCRS.defaultGeographic());
-        bounds.setRange(0, -10, 20);
-        bounds.setRange(1, -30, 40);
+        final GeographicBoundingBox bounds = new DefaultGeographicBoundingBox(-10, 20, -30, 40);
 
         final Metadata metaData = new Metadata();
         metaData.name = "name";
@@ -93,7 +88,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         metaData.links.addAll(Arrays.asList(new URI("http://adress1.org"),new URI("http://adress2.org")));
         metaData.time = Instant.now();
         metaData.keywords = "test,sample";
-        metaData.bounds = new ImmutableEnvelope(bounds);
+        metaData.bounds = bounds;
 
         writer.writeStartDocument();
         writer.write(metaData, null, null, null);
@@ -114,6 +109,7 @@ public final strictfp class GPXWriterTest extends TestCase{
      */
     @Test
     public void testWritingFeatures() throws Exception {
+        final Types types = Types.DEFAULT;
 
         final File f = new File("output.xml");
         f.deleteOnExit();
@@ -121,8 +117,8 @@ public final strictfp class GPXWriterTest extends TestCase{
         final GPXWriter110 writer = new GPXWriter110("Apache SIS", f);
 
         //way points -----------------------------------------------------------
-        Feature point1 = TYPE_WAYPOINT.newInstance();
-        point1.setPropertyValue("index", 0);
+        Feature point1 = types.wayPoint.newInstance();
+        point1.setPropertyValue("@identifier", 0);
         point1.setPropertyValue("@geometry", new Point(-10, 10));
         point1.setPropertyValue("ele", 15.6);
         point1.setPropertyValue("time", LocalDate.now());
@@ -142,8 +138,8 @@ public final strictfp class GPXWriterTest extends TestCase{
         point1.setPropertyValue("pdop", 14.3);
         point1.setPropertyValue("ageofdgpsdata", 78.9);
         point1.setPropertyValue("dgpsid", 6);
-        Feature point2 = TYPE_WAYPOINT.newInstance();
-        point2.setPropertyValue("index", 1);
+        Feature point2 = types.wayPoint.newInstance();
+        point2.setPropertyValue("@identifier", 1);
         point2.setPropertyValue("@geometry", new Point(-15, 15));
         point2.setPropertyValue("ele", 15.6);
         point2.setPropertyValue("time", LocalDate.now());
@@ -163,8 +159,8 @@ public final strictfp class GPXWriterTest extends TestCase{
         point2.setPropertyValue("pdop", 14.3);
         point2.setPropertyValue("ageofdgpsdata", 78.9);
         point2.setPropertyValue("dgpsid", 6);
-        Feature point3 = TYPE_WAYPOINT.newInstance();
-        point3.setPropertyValue("index", 2);
+        Feature point3 = types.wayPoint.newInstance();
+        point3.setPropertyValue("@identifier", 2);
         point3.setPropertyValue("@geometry", new Point(-20, 20));
         point3.setPropertyValue("ele", 15.6);
         point3.setPropertyValue("time", LocalDate.now());
@@ -191,8 +187,8 @@ public final strictfp class GPXWriterTest extends TestCase{
         wayPoints.add(point3);
 
         //routes ---------------------------------------------------------------
-        final Feature route1 = TYPE_ROUTE.newInstance();
-        route1.setPropertyValue("index", 0);
+        final Feature route1 = types.route.newInstance();
+        route1.setPropertyValue("@identifier", 0);
         route1.setPropertyValue("name", "tt");
         route1.setPropertyValue("cmt", "cc");
         route1.setPropertyValue("desc", "des");
@@ -201,8 +197,8 @@ public final strictfp class GPXWriterTest extends TestCase{
         route1.setPropertyValue("number", 15);
         route1.setPropertyValue("type", "test");
         route1.setPropertyValue("rtept", wayPoints);
-        final Feature route2 = TYPE_ROUTE.newInstance();
-        route2.setPropertyValue("index", 1);
+        final Feature route2 = types.route.newInstance();
+        route2.setPropertyValue("@identifier", 1);
         route2.setPropertyValue("name", "tt2");
         route2.setPropertyValue("cmt", "cc2");
         route2.setPropertyValue("desc", "des2");
@@ -218,18 +214,18 @@ public final strictfp class GPXWriterTest extends TestCase{
 
         //tracks ---------------------------------------------------------------
         final List<Feature> segments = new ArrayList<>();
-        final Feature seg1 = TYPE_TRACK_SEGMENT.newInstance();
-        seg1.setPropertyValue("index", 0);
+        final Feature seg1 = types.trackSegment.newInstance();
+        seg1.setPropertyValue("@identifier", 0);
         seg1.setPropertyValue("trkpt", wayPoints);
-        final Feature seg2 = TYPE_TRACK_SEGMENT.newInstance();
-        seg2.setPropertyValue("index", 1);
+        final Feature seg2 = types.trackSegment.newInstance();
+        seg2.setPropertyValue("@identifier", 1);
         seg2.setPropertyValue("trkpt", wayPoints);
-        final Feature seg3 = TYPE_TRACK_SEGMENT.newInstance();
-        seg3.setPropertyValue("index", 2);
+        final Feature seg3 = types.trackSegment.newInstance();
+        seg3.setPropertyValue("@identifier", 2);
         seg3.setPropertyValue("trkpt", wayPoints);
 
-        final Feature track1 = TYPE_TRACK.newInstance();
-        track1.setPropertyValue("index", 0);
+        final Feature track1 = types.track.newInstance();
+        track1.setPropertyValue("@identifier", 0);
         track1.setPropertyValue("name", "tc");
         track1.setPropertyValue("cmt", "cc");
         track1.setPropertyValue("desc", "des");
@@ -238,8 +234,8 @@ public final strictfp class GPXWriterTest extends TestCase{
         track1.setPropertyValue("number", 15);
         track1.setPropertyValue("type", "test");
         track1.setPropertyValue("trkseg", segments);
-        final Feature track2 = TYPE_TRACK.newInstance();
-        track2.setPropertyValue("index", 1);
+        final Feature track2 = types.track.newInstance();
+        track2.setPropertyValue("@identifier", 1);
         track2.setPropertyValue("name", "tc2");
         track2.setPropertyValue("cmt", "cc2");
         track2.setPropertyValue("desc", "des2");
