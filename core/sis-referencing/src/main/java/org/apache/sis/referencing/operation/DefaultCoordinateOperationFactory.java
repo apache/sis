@@ -78,8 +78,8 @@ import org.apache.sis.util.Utilities;
  * The second approach is the most frequently used.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 0.8
  * @since   0.6
- * @version 0.7
  * @module
  */
 public class DefaultCoordinateOperationFactory extends AbstractFactory implements CoordinateOperationFactory {
@@ -686,16 +686,21 @@ next:   for (int i=components.size(); --i >= 0;) {
      * widest intersection between its {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of
      * validity} and the {@linkplain CoordinateOperationContext#getAreaOfInterest() area of interest} is returned.
      *
-     * <p>The default implementation is equivalent to the following code
-     * (omitting the {@code registry} type check and cast for brevity):</p>
+     * <p>The default implementation performs the following steps:</p>
+     * <ul>
+     *   <li>If a coordinate operation has been previously cached for the given CRS and context, return it.</li>
+     *   <li>Otherwise:
+     *     <ol>
+     *       <li>Invoke {@link #createOperationFinder(CoordinateOperationAuthorityFactory, CoordinateOperationContext)}.</li>
+     *       <li>Invoke {@link CoordinateOperationFinder#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)}
+     *           on the object returned by the previous step.</li>
+     *       <li>Cache the result, then return it.</li>
+     *     </ol>
+     *   </li>
+     * </ul>
      *
-     * {@preformat java
-     *   CoordinateOperationAuthorityFactory registry = CRS.getAuthorityFactory("EPSG");    // Actually needs cast
-     *   return new CoordinateOperationFinder(registry, this, context).createOperation(sourceCRS, targetCRS);
-     * }
-     *
-     * Subclasses can override this method if they need, for example, to use a custom
-     * {@link CoordinateOperationFinder} implementation.
+     * Subclasses can override {@link #createOperationFinder createOperationFinder(…)} if they need more control on
+     * the way coordinate operations are inferred.
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
@@ -730,8 +735,8 @@ next:   for (int i=components.size(); --i >= 0;) {
         try {
             if (handler == null || (op = handler.peek()) == null) {
                 final AuthorityFactory registry = USE_EPSG_FACTORY ? CRS.getAuthorityFactory(Constants.EPSG) : null;
-                op = new CoordinateOperationFinder((registry instanceof CoordinateOperationAuthorityFactory) ?
-                        (CoordinateOperationAuthorityFactory) registry : null, this, context).createOperation(sourceCRS, targetCRS);
+                op = createOperationFinder((registry instanceof CoordinateOperationAuthorityFactory) ?
+                        (CoordinateOperationAuthorityFactory) registry : null, context).createOperation(sourceCRS, targetCRS);
             }
         } finally {
             if (handler != null) {
@@ -739,6 +744,32 @@ next:   for (int i=components.size(); --i >= 0;) {
             }
         }
         return op;
+    }
+
+    /**
+     * Creates the object which will perform the actual task of finding a coordinate operation path between two CRS.
+     * This method is invoked by {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem,
+     * CoordinateOperationContext) createOperation(…)} when no operation was found in the cache.
+     * The default implementation is straightforward:
+     *
+     * {@preformat java
+     *   return new CoordinateOperationFinder(registry, this, context);
+     * }
+     *
+     * Subclasses can override this method is they want to modify the way coordinate operations are inferred.
+     *
+     * @param  registry  the factory to use for creating operations as defined by authority, or {@code null} if none.
+     * @param  context   the area of interest and desired accuracy, or {@code null} if none.
+     * @return a finder of conversion or transformation path from a source CRS to a target CRS.
+     * @throws FactoryException if an error occurred while initializing the {@code CoordinateOperationFinder}.
+     *
+     * @since 0.8
+     */
+    protected CoordinateOperationFinder createOperationFinder(
+            final CoordinateOperationAuthorityFactory registry,
+            final CoordinateOperationContext context) throws FactoryException
+    {
+        return new CoordinateOperationFinder(registry, this, context);
     }
 
     /**
