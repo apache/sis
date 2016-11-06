@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Set;
 import java.util.Objects;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -65,7 +64,7 @@ import org.opengis.util.InternationalString;
  * @version 0.8
  * @module
  */
-public final class Copyright implements LegalConstraints, Responsibility, Party, Citation, CitationDate {
+public final class Copyright extends Element implements LegalConstraints, Responsibility, Party, Citation, CitationDate {
     /**
      * The copyright holder.
      * This field is mandatory in principle, but {@code Copyright} implementation is robust to null value.
@@ -471,16 +470,6 @@ public final class Copyright implements LegalConstraints, Responsibility, Party,
             return Collections.singleton(new DefaultOnlineResource(license));
         }
         return Collections.emptySet();
-    }
-
-    /**
-     * Returns the given object as a singleton if the given condition is {@code true},
-     * or an empty set if the given condition is {@code false}.
-     *
-     * @param  obj  the object (usually {@code this}) to return in a singleton if the condition is true.
-     */
-    private static <T> Set<T> thisOrEmpty(final T obj, final boolean condition) {
-        return condition ? Collections.singleton(obj) : Collections.emptySet();
     }
 
     /**

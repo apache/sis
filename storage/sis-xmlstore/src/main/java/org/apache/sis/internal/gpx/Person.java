@@ -20,7 +20,6 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.Set;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.opengis.metadata.citation.Address;
@@ -58,7 +57,7 @@ import org.opengis.util.InternationalString;
  * @version 0.8
  * @module
  */
-public final class Person implements Responsibility, Party, Contact, Address {
+public final class Person extends Element implements Responsibility, Party, Contact, Address {
     /**
      * Name of person or organization.
      *
@@ -319,16 +318,6 @@ public final class Person implements Responsibility, Party, Contact, Address {
             return Collections.singleton(email);
         }
         return Collections.emptySet();
-    }
-
-    /**
-     * Returns the given object as a singleton if the given condition is {@code true},
-     * or an empty set if the given condition is {@code false}.
-     *
-     * @param  obj  the object (usually {@code this}) to return in a singleton if the condition is true.
-     */
-    private static <T> Set<T> thisOrEmpty(final T obj, final boolean condition) {
-        return condition ? Collections.singleton(obj) : Collections.emptySet();
     }
 
     /**

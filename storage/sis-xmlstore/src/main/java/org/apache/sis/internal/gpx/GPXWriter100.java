@@ -32,12 +32,12 @@ import javax.xml.stream.XMLStreamException;
 import static org.apache.sis.internal.gpx.GPXConstants.*;
 import org.apache.sis.internal.xml.StaxStreamWriter;
 
-import org.opengis.geometry.Envelope;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 
 
 /**
@@ -364,15 +364,15 @@ public class GPXWriter100 extends StaxStreamWriter {
      * @param env if null nothing will be written
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
-    protected void writeBounds(final Envelope env) throws XMLStreamException {
+    protected void writeBounds(final GeographicBoundingBox env) throws XMLStreamException {
         if (env == null) return;
 
         writer.writeStartElement(namespace, TAG_BOUNDS);
 
-        writer.writeAttribute(ATT_BOUNDS_MINLAT, Double.toString(env.getMinimum(1)));
-        writer.writeAttribute(ATT_BOUNDS_MINLON, Double.toString(env.getMinimum(0)));
-        writer.writeAttribute(ATT_BOUNDS_MAXLAT, Double.toString(env.getMaximum(1)));
-        writer.writeAttribute(ATT_BOUNDS_MAXLON, Double.toString(env.getMaximum(0)));
+        writer.writeAttribute(ATT_BOUNDS_MINLAT, Double.toString(env.getSouthBoundLatitude()));
+        writer.writeAttribute(ATT_BOUNDS_MINLON, Double.toString(env.getWestBoundLongitude()));
+        writer.writeAttribute(ATT_BOUNDS_MAXLAT, Double.toString(env.getNorthBoundLatitude()));
+        writer.writeAttribute(ATT_BOUNDS_MAXLON, Double.toString(env.getEastBoundLongitude()));
 
         writer.writeEndElement();
     }
