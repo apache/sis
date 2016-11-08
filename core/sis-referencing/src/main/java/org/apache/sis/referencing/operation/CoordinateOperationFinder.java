@@ -157,6 +157,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  factory   the factory to use for creating operations not found in the registry.
      * @param  context   the area of interest and desired accuracy, or {@code null} if none.
      * @throws FactoryException if an error occurred while initializing this {@code CoordinateOperationFinder}.
+     *
+     * @see DefaultCoordinateOperationFactory#createOperationFinder(CoordinateOperationAuthorityFactory, CoordinateOperationContext)
      */
     public CoordinateOperationFinder(final CoordinateOperationAuthorityFactory registry,
                                      final CoordinateOperationFactory          factory,

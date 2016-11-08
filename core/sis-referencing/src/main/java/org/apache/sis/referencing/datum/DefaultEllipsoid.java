@@ -219,12 +219,12 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      *   </tr>
      * </table>
      *
-     * @param properties        The properties to be given to the identified object.
-     * @param semiMajorAxis     The equatorial radius.
-     * @param semiMinorAxis     The polar radius.
-     * @param inverseFlattening The inverse of the flattening value.
-     * @param ivfDefinitive     {@code true} if the inverse flattening is definitive.
-     * @param unit              The units of the semi-major and semi-minor axis values.
+     * @param  properties         the properties to be given to the identified object.
+     * @param  semiMajorAxis      the equatorial radius.
+     * @param  semiMinorAxis      the polar radius.
+     * @param  inverseFlattening  the inverse of the flattening value.
+     * @param  ivfDefinitive      {@code true} if the inverse flattening is definitive.
+     * @param  unit               the units of the semi-major and semi-minor axis values.
      *
      * @see #createEllipsoid(Map, double, double, Unit)
      * @see #createFlattenedSphere(Map, double, double, Unit)
@@ -255,7 +255,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param ellipsoid The ellipsoid to copy.
+     * @param  ellipsoid  the ellipsoid to copy.
      *
      * @see #castOrCopy(Ellipsoid)
      */
@@ -273,11 +273,11 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
-     * @param properties    The properties to be given to the identified object.
-     * @param semiMajorAxis The equatorial radius in the given unit.
-     * @param semiMinorAxis The polar radius in the given unit.
-     * @param unit          The units of the semi-major and semi-minor axis values.
-     * @return An ellipsoid with the given axis length.
+     * @param  properties     the properties to be given to the identified object.
+     * @param  semiMajorAxis  the equatorial radius in the given unit.
+     * @param  semiMinorAxis  the polar radius in the given unit.
+     * @param  unit           the units of the semi-major and semi-minor axis values.
+     * @return an ellipsoid with the given axis length.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEllipsoid(Map, double, double, Unit)
      */
@@ -299,11 +299,11 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      *
-     * @param  properties       The properties to be given to the identified object.
-     * @param semiMajorAxis     The equatorial radius in the given unit.
-     * @param inverseFlattening The inverse flattening value.
-     * @param unit              The units of the semi-major and semi-minor axis values.
-     * @return An ellipsoid with the given axis length.
+     * @param  properties         the properties to be given to the identified object.
+     * @param  semiMajorAxis      the equatorial radius in the given unit.
+     * @param  inverseFlattening  the inverse flattening value.
+     * @param  unit               the units of the semi-major and semi-minor axis values.
+     * @return an ellipsoid with the given axis length.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createFlattenedSphere(Map, double, double, Unit)
      */
@@ -327,8 +327,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultEllipsoid castOrCopy(final Ellipsoid object) {
@@ -363,7 +363,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Returns the linear unit of the {@linkplain #getSemiMajorAxis() semi-major}
      * and {@linkplain #getSemiMinorAxis() semi-minor} axis values.
      *
-     * @return The axis linear unit.
+     * @return the axis linear unit.
      */
     @Override
     public Unit<Length> getAxisUnit() {
@@ -374,7 +374,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Length of the semi-major axis of the ellipsoid.
      * This is the equatorial radius in {@linkplain #getAxisUnit() axis linear unit}.
      *
-     * @return Length of semi-major axis.
+     * @return length of semi-major axis.
      */
     @Override
     public double getSemiMajorAxis() {
@@ -385,7 +385,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Length of the semi-minor axis of the ellipsoid. This is the
      * polar radius in {@linkplain #getAxisUnit() axis linear unit}.
      *
-     * @return Length of semi-minor axis.
+     * @return length of semi-minor axis.
      */
     @Override
     public double getSemiMinorAxis() {
@@ -396,7 +396,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Returns the radius of a hypothetical sphere having the same surface than this ellipsoid.
      * The radius is expressed in {@linkplain #getAxisUnit() axis linear unit}.
      *
-     * @return The radius of a sphere having the same surface than this ellipsoid.
+     * @return the radius of a sphere having the same surface than this ellipsoid.
      *
      * @see org.apache.sis.referencing.CommonCRS#SPHERE
      */
@@ -489,7 +489,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * For perfect spheres (i.e. if {@link #isSphere()} returns {@code true}),
      * the {@link Double#POSITIVE_INFINITY} value is used.
      *
-     * @return The inverse flattening value.
+     * @return the inverse flattening value.
      */
     @Override
     public double getInverseFlattening() {
@@ -531,11 +531,11 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Orthodromic distances are different than the <cite>loxodromic distance</cite>.
      * The later is a longer distance on a path with a constant direction on the compass.</div>
      *
-     * @param  λ1 Longitude of first  point (in decimal degrees).
-     * @param  φ1 Latitude  of first  point (in decimal degrees).
-     * @param  λ2 Longitude of second point (in decimal degrees).
-     * @param  φ2 Latitude  of second point (in decimal degrees).
-     * @return The orthodromic distance (in the units of this ellipsoid's axis).
+     * @param  λ1  longitude of first  point (in decimal degrees).
+     * @param  φ1  latitude  of first  point (in decimal degrees).
+     * @param  λ2  longitude of second point (in decimal degrees).
+     * @param  φ2  latitude  of second point (in decimal degrees).
+     * @return the orthodromic distance (in the units of this ellipsoid's axis).
      */
     public double orthodromicDistance(double λ1, double φ1, double λ2, double φ2) {
         λ1 = toRadians(λ1);
@@ -628,14 +628,14 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * {@code WGS84.semiMajorAxisDifference(ED50)} returns 251 metres. This information is a parameter of
      * {@linkplain org.apache.sis.referencing.operation.transform.MolodenskyTransform Molodensky transformations}.</div>
      *
-     * @param  other The other ellipsoid from which to get semi-major axis length difference.
+     * @param  other  the other ellipsoid from which to get semi-major axis length difference.
      * @return (<var>other</var> ellipsoid semi-major axis) - (<var>this</var> ellipsoid semi-major axis).
      *
      * @since 0.7
      */
     public double semiMajorAxisDifference(final Ellipsoid other) {
         double semiMajor = other.getSemiMajorAxis();
-        semiMajor = other.getAxisUnit().getConverterTo(getAxisUnit()).convert(semiMajor);   // Often a no-op.
+        semiMajor = other.getAxisUnit().getConverterTo(getAxisUnit()).convert(semiMajor);            // Often a no-op.
         final DoubleDouble a = new DoubleDouble(semiMajor);     // Presumed accurate in base 10 if no unit conversion.
         a.subtract(getSemiMajorAxis());                         // Presumed accurate in base 10 (not 2) by definition.
         return a.value;
@@ -649,7 +649,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * {@code WGS84.flatteningDifference(ED50)} returns approximatively 1.41927E-05. This information is a parameter of
      * {@linkplain org.apache.sis.referencing.operation.transform.MolodenskyTransform Molodensky transformations}.</div>
      *
-     * @param  other The other ellipsoid from which to get flattening difference.
+     * @param  other  the other ellipsoid from which to get flattening difference.
      * @return (<var>other</var> ellipsoid flattening) - (<var>this</var> ellipsoid flattening).
      *
      * @since 0.7
@@ -663,10 +663,10 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     /**
      * Compares this ellipsoid with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -748,7 +748,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -831,6 +831,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         } else {
             if (inverseFlattening == 0) {
                 inverseFlattening = Formulas.getInverseFlattening(semiMajorAxis, semiMinorAxis);
+            } else if (inverseFlattening == Double.POSITIVE_INFINITY && semiMinorAxis == 0) {
+                semiMinorAxis = semiMajorAxis;
             }
         }
         if (unit == null) {
@@ -885,28 +887,42 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @see #afterUnmarshal(Unmarshaller, Object)
      */
     private void setSecondDefiningParameter(SecondDefiningParameter second) {
-        while (second.secondDefiningParameter != null) {
+        if (second.secondDefiningParameter != null) {
             second = second.secondDefiningParameter;
+        }
+        boolean duplicate = false;
+        if (Boolean.TRUE.equals(second.isSphere)) {
+            duplicate = (inverseFlattening != 0);
+            if (!duplicate) {
+                inverseFlattening = Double.POSITIVE_INFINITY;
+            }
         }
         final Measure measure = second.measure;
         if (measure != null) {
             final boolean isIvfDefinitive = second.isIvfDefinitive();
-            if ((isIvfDefinitive ? inverseFlattening : semiMinorAxis) == 0) {
+            duplicate |= (isIvfDefinitive ? inverseFlattening : semiMinorAxis) != 0;
+            if (!duplicate) {
                 ivfDefinitive = isIvfDefinitive;
                 double value = measure.value;
                 if (isIvfDefinitive) {
+                    /*
+                     * Interpreting an inverse flattening factor of 0 as synonymous of infinity
+                     * is a Well-Known Text (WKT) convention, not part of GML standard. However
+                     * in practice some software do that.
+                     */
                     if (value == 0) {
                         value = Double.POSITIVE_INFINITY;
                     }
                     ensureStrictlyPositive("inverseFlattening", inverseFlattening = value);
-                } else if (semiMinorAxis == 0) {
+                } else {
                     ensureStrictlyPositive("semiMinorAxis", semiMinorAxis = value);
                     harmonizeAxisUnits(measure.getUnit(Length.class));
                 }
-            } else {
-                MetadataUtilities.propertyAlreadySet(DefaultEllipsoid.class,
-                        "setSecondDefiningParameter", "secondDefiningParameter");
             }
+        }
+        if (duplicate) {
+            MetadataUtilities.propertyAlreadySet(DefaultEllipsoid.class,
+                    "setSecondDefiningParameter", "secondDefiningParameter");
         }
     }
 
@@ -914,7 +930,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Ensures that the semi-minor axis uses the same unit than the semi-major one.
      * The {@link #unit} field shall be set to the semi-major axis unit before this method call.
      *
-     * @param uom The semi-minor axis unit.
+     * @param  uom  the semi-minor axis unit.
      */
     private void harmonizeAxisUnits(final Unit<Length> uom) {
         if (unit == null) {
