@@ -296,7 +296,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     /**
      * Creates a new format for the given locale.
      *
-     * @param   locale  the locale to use for parsing and formatting units.
+     * @param  locale  the locale to use for parsing and formatting units.
      */
     public UnitFormat(final Locale locale) {
         ArgumentChecks.ensureNonNull("locale", locale);
