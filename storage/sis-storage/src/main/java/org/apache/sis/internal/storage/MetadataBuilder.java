@@ -79,6 +79,10 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
 
 // Branch-dependent imports
 import java.time.LocalDate;
+import org.apache.sis.metadata.iso.lineage.DefaultLineage;
+import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
+import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
+import org.apache.sis.util.iso.DefaultInternationalString;
 import org.opengis.feature.FeatureType;
 
 
@@ -193,6 +197,12 @@ public class MetadataBuilder {
      * Information about distribution (including the {@linkplain #format}), or {@code null} if none.
      */
     private DefaultDistribution distribution;
+
+    private DefaultLineage lineage;
+
+    private DefaultProcessStep processStep;
+
+    private DefaultProcessing processing;
 
     /**
      * Whether the next party to create should be an instance of {@link DefaultIndividual} or {@link DefaultOrganisation}.
@@ -375,6 +385,67 @@ public class MetadataBuilder {
             metadata().getDistributionInfo().add(distribution);
             distribution = null;
         }
+    }
+
+    /**
+     * Commits all pending information under the metadata "lineage" node (format, <i>etc</i>).
+     * If there is no pending lineage information, then invoking this method has no effect.
+     * If new lineage information are added after this method call, they will be stored in a new element.
+     *
+     * <p>This method does not need to be invoked unless a new "distribution info" node,
+     * separated from the previous one, is desired.</p>
+     */
+    public final void newLineage() {
+        if (processing != null) {
+            processStep().setProcessingInformation(processing());
+            processing = null;
+        }
+
+        if (processStep != null) {
+            lineage().getProcessSteps().add(processStep());
+            processStep = null;
+        }
+
+        if (lineage != null) {
+            metadata().getResourceLineages().add(lineage());
+            lineage = null;
+        }
+    }
+
+    /**
+     * Creates the lineage object if it does not already exists, then returns it.
+     *
+     * @return the lineage (never {@code null}).
+     */
+    private DefaultLineage lineage() {
+        if (lineage == null) {
+            lineage = new DefaultLineage();
+        }
+        return lineage;
+    }
+
+    /**
+     * Creates the processStep object if it does not already exists, then returns it.
+     *
+     * @return the processStep (never {@code null}).
+     */
+    private DefaultProcessStep processStep() {
+        if (processStep == null) {
+            processStep = new DefaultProcessStep();
+        }
+        return processStep;
+    }
+
+    /**
+     * Creates the processing object if it does not already exists, then returns it.
+     *
+     * @return the processing (never {@code null}).
+     */
+    private DefaultProcessing processing() {
+        if (processing == null) {
+            processing = new DefaultProcessing();
+        }
+        return processing;
     }
 
     /**
@@ -1120,7 +1191,7 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Returns the identifier of the requirement to be satisfied by data acquisition.
+     * Add a requirement into acquisition.
      *
      * @param  identifier  requirement identifier, or {@code null}.
      */
@@ -1130,6 +1201,56 @@ parse:      for (int i = 0; i < length;) {
             r.setIdentifier(new DefaultIdentifier(identifier));
             acquisition().getAcquisitionRequirements().add(r);
         }
+    }
+
+    /**
+     * Add a Processing metadata object which describe data processing.
+     *
+     * @param  identifier  requirement identifier, or {@code null}.
+     */
+    public final void addProcessing(String identifier) {
+        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+            if (processing != null) {
+                final Identifier current = processing.getIdentifier();
+                if (current != null) {
+                    if (identifier.equals(current.getCode())) {
+                        return;
+                    }
+                    processStep().setProcessingInformation(processing);
+                    lineage().getProcessSteps().add(processStep());
+                    processing  = null;
+                    processStep = null;
+                }
+            }
+            processing().setIdentifier(new DefaultIdentifier(identifier));
+        }
+    }
+
+    /**
+     * Sets the reference to document describing processing software.
+     *
+     * @param softwareReference software describing, or {@code null}.
+     */
+    public final void setSoftwareReferences(String softwareReference) {
+        processing().getSoftwareReferences().add(new DefaultCitation(softwareReference));
+    }
+
+    /**
+     * Sets the additional details about the processing procedures.
+     *
+     * @param procedureDescription additional details about the processing procedures, or {@code null}.
+     */
+    public final void setProcedureDescription(String procedureDescription) {
+        processing().setProcedureDescription(new DefaultInternationalString(procedureDescription));
+    }
+
+    /**
+     * Sets the reference to documentation describing the processing.
+     *
+     * @param processingDocumentation documentation describing the processing, or {@code null}.
+     */
+    public final void setProcessingDocumentation(String processingDocumentation) {
+        processing().getDocumentations().add(new DefaultCitation(processingDocumentation));
     }
 
     /**

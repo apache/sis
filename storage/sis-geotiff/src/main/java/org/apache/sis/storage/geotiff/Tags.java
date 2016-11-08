@@ -123,6 +123,35 @@ final class Tags {
     public static final int GDAL_METADATA = 42112;  // http://www.awaresystems.be/imaging/tiff/tifftags/gdal_metadata.html
     public static final int GDAL_NODATA   = 42113;  // http://www.awaresystems.be/imaging/tiff/tifftags/gdal_nodata.html
 
+
+    /////////////////////////////////////////////////////////
+    //                 GEOTIFF EXTENSION TAGS              //
+    /////////////////////////////////////////////////////////
+
+    //------------------------------- CRS ------------------------------------//
+    /**
+     * References the needed "GeoKeys" to build CRS.
+     */
+    public static final int GeoKeyDirectoryTag = 0x87AF; //-- 34735
+
+    /**
+     * This tag is used to store all of the DOUBLE valued GeoKeys, referenced by the GeoKeyDirectoryTag.
+     */
+    public static final int GeoDoubleParamsTag = 0x87B0; //-- 34736
+
+    /**
+     * This tag is used to store all of the ASCII valued GeoKeys, referenced by the GeoKeyDirectoryTag.
+     */
+    public static final int GeoAsciiParamsTag = 0x87B1; //-- 34737
+
+    static final class CRSKeys {
+
+    }
+
+
+
+
+
     /**
      * Do not allow instantiation of this class.
      */

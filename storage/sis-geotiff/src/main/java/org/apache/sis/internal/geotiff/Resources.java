@@ -59,10 +59,80 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Apache SIS implementation stipulate that the height of the dithering or halftoning matrix
+         * used to create a dithered or halftoned bilevel file is: CellHeight =  “{0}” .
+         */
+        public static final short CellHeight_1 = 7;
+
+        /**
+         * Apache SIS implementation stipulate that the width of the dithering or halftoning matrix
+         * used to create a dithered or halftoned bilevel file is: CellWidth =  “{0}” .
+         */
+        public static final short CellWidth_1 = 8;
+
+        /**
          * Apache SIS implementation requires that all “{0}” elements have the same value, but the
          * element found in “{1}” are {2}.
          */
         public static final short ConstantValueRequired_3 = 0;
+
+        /**
+         * Apache SIS implementation stipulate that following tiff tag, named: “{0}”, has not been
+         * define corectly. The tag is initialized to the following default value “{1}”.
+         */
+        public static final short DefaultAttribut_2 = 4;
+
+        /**
+         * Apache SIS implementation stipulate that following tag “{0}” , is ignored.
+         */
+        public static final short IgnoredTag_1 = 6;
+
+        /**
+         * Apache SIS implementation stipulate that the Key named  “{0}” , has not been define
+         * corectly. Expected value:  “{1}” , found:  “{2}” .
+         */
+        public static final short KeyValue_3 = 12;
+
+        /**
+         * Apache SIS implementation stipulate that length of tiff tag attribut value “{0}” mismatch
+         * from other following  “{1}” tiff tag(s) values, expected: “{2}” , found: “{3}”.
+         */
+        public static final short MismatchLength_4 = 5;
+
+        /**
+         * Apache SIS implementation can't read image from  “{0}” because tile and strip tags are
+         * missing.
+         */
+        public static final short MissingTileStrip_1 = 2;
+
+        /**
+         * Apache SIS implementation can't read image from  “{1}” because  “{0}” tag is missing.
+         */
+        public static final short MissingValueRequired_2 = 1;
+
+        /**
+         * Apache SIS implementation try to re-build missing “{0}” tiff tag, from other “{1}” tags
+         * values.
+         */
+        public static final short ReBuildAttribut_2 = 3;
+
+        /**
+         * Apache SIS implementation stipulate that Threshholding = 1(default value). No dithering or
+         * halftoning has been applied to the image data.
+         */
+        public static final short Threshholding1_0 = 9;
+
+        /**
+         * Apache SIS implementation stipulate that Threshholding = 2. An ordered dither or halftone
+         * technique has been applied to the image data.
+         */
+        public static final short Threshholding2_0 = 10;
+
+        /**
+         * Apache SIS implementation stipulate that Threshholding = 3. A randomized process such as
+         * error diffusion has been applied to the image data.
+         */
+        public static final short Threshholding3_0 = 11;
     }
 
     /**

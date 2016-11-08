@@ -19,6 +19,7 @@ package org.apache.sis.storage.geotiff;
 import java.util.Locale;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.logging.LogRecord;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
@@ -26,9 +27,11 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -69,7 +72,8 @@ public class GeoTiffStore extends DataStore {
      */
     public GeoTiffStore(final StorageConnector storage) throws DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
-        encoding = storage.getOption(OptionKey.ENCODING);
+        final Charset option         = storage.getOption(OptionKey.ENCODING);
+        encoding                     = (option != null) ? option : Charset.defaultCharset(); //-- TODO : ce n'est pas la bonne solution (maybe)
         final ChannelDataInput input = storage.getStorageAs(ChannelDataInput.class);
         if (input == null) {
             throw new DataStoreException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2,
@@ -100,11 +104,16 @@ public class GeoTiffStore extends DataStore {
             while ((dir = reader.getImageFileDirectory(n++)) != null) {
                 dir.completeMetadata(reader.metadata, locale);
             }
+
+            //-- add geotiff CRS
+            reader.metadata.add(reader.crsBuilder.build());
             metadata = reader.metadata.build(true);
         } catch (IOException e) {
             throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
         } catch (ArithmeticException e) {
             throw new DataStoreContentException(reader.canNotDecode(), e);
+        } catch (FactoryException e) {
+            throw new DataStoreContentException(e);
         }
         return metadata;
     }
@@ -134,5 +143,21 @@ public class GeoTiffStore extends DataStore {
      */
     final void warning(final String message, final Exception exception) {
         listeners.warning(message, exception);
+    }
+
+    /**
+     * Reports a warning represented by the given {@link LogRecord}.
+     *
+     * <p>Moreover, {@linkplain LogRecord#setSourceClassName(java.lang.String) Class name}
+     * and {@linkplain LogRecord#setSourceMethodName(java.lang.String) method name}
+     * are added into the given LogRecord.</p>
+     *
+     * @param logRecord the warning as a logrecord.
+     */
+    final void warning(final LogRecord logRecord) {
+        ArgumentChecks.ensureNonNull("logRecord", logRecord);
+        logRecord.setSourceClassName(GeoTiffStore.class.getName());
+        logRecord.setSourceMethodName("read");
+        listeners.warning(logRecord);
     }
 }
