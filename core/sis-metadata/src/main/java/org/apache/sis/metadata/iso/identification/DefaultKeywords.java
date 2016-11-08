@@ -95,8 +95,8 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     /**
      * Creates keywords initialized to the given key word.
      *
-     * @param keywords Commonly used words or formalised words or phrases used to describe
-     *                 the subject, or {@code null} if none.
+     * @param keywords  commonly used words or formalised words or phrases used to describe the subject,
+     *                  or {@code null} if none.
      */
     public DefaultKeywords(final CharSequence... keywords) {
         if (keywords != null) {
@@ -116,7 +116,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Keywords)
      */
@@ -143,8 +143,8 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultKeywords castOrCopy(final Keywords object) {
@@ -157,7 +157,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     /**
      * Returns commonly used word(s) or formalised word(s) or phrase(s) used to describe the subject.
      *
-     * @return Word(s) or phrase(s) used to describe the subject.
+     * @return word(s) or phrase(s) used to describe the subject.
      */
     @Override
     @XmlElement(name = "keyword", required = true)
@@ -168,7 +168,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     /**
      * Sets commonly used word(s) or formalised word(s) or phrase(s) used to describe the subject.
      *
-     * @param newValues The new keywords.
+     * @param newValues  the new keywords.
      */
     public void setKeywords(final Collection<? extends InternationalString> newValues) {
         keywords = writeCollection(newValues, keywords, InternationalString.class);
@@ -177,7 +177,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     /**
      * Returns the subject matter used to group similar keywords.
      *
-     * @return Subject matter used to group similar keywords, or {@code null}.
+     * @return subject matter used to group similar keywords, or {@code null}.
      */
     @Override
     @XmlElement(name = "type")
@@ -188,7 +188,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     /**
      * Sets the subject matter used to group similar keywords.
      *
-     * @param newValue The new keyword type.
+     * @param newValue  the new keyword type.
      */
     public void setType(final KeywordType newValue) {
         checkWritePermission();
@@ -198,7 +198,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     /**
      * Returns the name of the formally registered thesaurus or a similar authoritative source of keywords.
      *
-     * @return Name of registered thesaurus or similar authoritative source of keywords, or {@code null}.
+     * @return name of registered thesaurus or similar authoritative source of keywords, or {@code null}.
      */
     @Override
     @XmlElement(name = "thesaurusName")
@@ -209,7 +209,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     /**
      * Sets the name of the formally registered thesaurus or a similar authoritative source of keywords.
      *
-     * @param newValue The new thesaurus name.
+     * @param newValue  the new thesaurus name.
      */
     public void setThesaurusName(final Citation newValue) {
         checkWritePermission();
@@ -225,7 +225,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return User-defined categorization of groups of keywords, or {@code null} if none.
+     * @return user-defined categorization of groups of keywords, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -266,7 +266,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * }
      * </div>
      *
-     * @param newValue New user-defined categorization of groups of keywords.
+     * @param newValue  new user-defined categorization of groups of keywords.
      *
      * @since 0.5
      */
