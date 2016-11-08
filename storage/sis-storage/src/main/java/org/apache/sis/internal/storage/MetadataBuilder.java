@@ -1249,7 +1249,7 @@ parse:      for (int i = 0; i < length;) {
      *
      * @param processingDocumentation documentation describing the processing, or {@code null}.
      */
-    public final void setProcessingDocumentation(String processingDocumentation) {
+    public final void setProcessingDocumentation(CharSequence processingDocumentation) {
         processing().getDocumentations().add(new DefaultCitation(processingDocumentation));
     }
 

@@ -970,15 +970,30 @@ final class ImageFileDirectory {
         if (tiffResolution != -1 && resolutionUnit != null) {
             metadata.addResolution(resolutionUnit.getConverterTo(Units.METRE).convert(tiffResolution));
         }
+        /*
+         * Cell size is relevant only if the Threshholding TIFF tag value is 2. By convention in
+         * this implementation class, other Threshholding values are stored as negative cell sizes:
+         *
+         *   -1 means that Threshholding is 1 or unspecified.
+         *   -2 means that Threshholding is 2 but the matrix size has not yet been specified.
+         *   -3 means that Threshholding is 3 (randomized process such as error diffusion).
+         */
         switch (Math.min(cellWidth, cellHeight)) {
-            case -3: {
-
+            case -1: {
+                // Nothing to report.
+                break;
             }
-        }
-        if (cellWidth >= 0 && cellHeight >= 0) {
-            final Resources resources = Resources.forLocale(locale);
-            metadata.setProcessingDocumentation(resources.getString(
-                    Resources.Keys.DitheringOrHalftoningMatrixSize_2, cellWidth, cellHeight));
+            case -3: {
+                metadata.setProcessingDocumentation(Resources.formatInternational(Resources.Keys.RandomizedProcessApplied));
+                break;
+            }
+            default: {
+                metadata.setProcessingDocumentation(Resources.formatInternational(
+                            Resources.Keys.DitheringOrHalftoningApplied_2,
+                            (cellWidth  >= 0) ? cellWidth  : '?',
+                            (cellHeight >= 0) ? cellHeight : '?'));
+                break;
+            }
         }
     }
 
