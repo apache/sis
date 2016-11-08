@@ -59,80 +59,61 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
-         * Apache SIS implementation stipulate that the height of the dithering or halftoning matrix
-         * used to create a dithered or halftoned bilevel file is: CellHeight =  “{0}” .
+         * No value specified for the “{0}” TIFF tag. Computed the {1} value from other tags.
          */
-        public static final short CellHeight_1 = 7;
-
-        /**
-         * Apache SIS implementation stipulate that the width of the dithering or halftoning matrix
-         * used to create a dithered or halftoned bilevel file is: CellWidth =  “{0}” .
-         */
-        public static final short CellWidth_1 = 8;
+        public static final short ComputedValueForAttribute_2 = 0;
 
         /**
          * Apache SIS implementation requires that all “{0}” elements have the same value, but the
          * element found in “{1}” are {2}.
          */
-        public static final short ConstantValueRequired_3 = 0;
+        public static final short ConstantValueRequired_3 = 1;
 
         /**
-         * Apache SIS implementation stipulate that following tiff tag, named: “{0}”, has not been
-         * define corectly. The tag is initialized to the following default value “{1}”.
+         * No value specified for the “{0}” TIFF tag. The {1} default value will be used.
          */
-        public static final short DefaultAttribut_2 = 4;
+        public static final short DefaultValueForAttribute_2 = 2;
 
         /**
-         * Apache SIS implementation stipulate that following tag “{0}” , is ignored.
+         * The dithering or halftoning matrix size is {0}×{1}.
          */
-        public static final short IgnoredTag_1 = 6;
+        public static final short DitheringOrHalftoningMatrixSize_2 = 3;
 
         /**
-         * Apache SIS implementation stipulate that the Key named  “{0}” , has not been define
-         * corectly. Expected value:  “{1}” , found:  “{2}” .
+         * The “{0}” TIFF tag has been ignored.
          */
-        public static final short KeyValue_3 = 12;
+        public static final short IgnoredTag_1 = 4;
 
         /**
-         * Apache SIS implementation stipulate that length of tiff tag attribut value “{0}” mismatch
-         * from other following  “{1}” tiff tag(s) values, expected: “{2}” , found: “{3}”.
+         * TIFF image “{0}” shall be either tiled or organized into strips.
          */
-        public static final short MismatchLength_4 = 5;
+        public static final short InconsistentTileStrip_1 = 5;
 
         /**
-         * Apache SIS implementation can't read image from  “{0}” because tile and strip tags are
-         * missing.
+         * TIFF tags “{0}” and “{1}” have values of different lengths. Found “{2}” and “{3}” elements
+         * respectively.
          */
-        public static final short MissingTileStrip_1 = 2;
+        public static final short MismatchedLength_4 = 6;
 
         /**
-         * Apache SIS implementation can't read image from  “{1}” because  “{0}” tag is missing.
+         * Can not read TIFF image from “{0}” because the “{1}” tag is missing.
          */
-        public static final short MissingValueRequired_2 = 1;
+        public static final short MissingValue_2 = 7;
 
         /**
-         * Apache SIS implementation try to re-build missing “{0}” tiff tag, from other “{1}” tags
-         * values.
+         * An ordered dither or halftone technique has been applied to the image data.
          */
-        public static final short ReBuildAttribut_2 = 3;
+        public static final short Threshholding2 = 8;
 
         /**
-         * Apache SIS implementation stipulate that Threshholding = 1(default value). No dithering or
-         * halftoning has been applied to the image data.
+         * A randomized process such as error diffusion has been applied to the image data.
          */
-        public static final short Threshholding1_0 = 9;
+        public static final short Threshholding3 = 9;
 
         /**
-         * Apache SIS implementation stipulate that Threshholding = 2. An ordered dither or halftone
-         * technique has been applied to the image data.
+         * Unexpected value for the “{0}” GeoTIFF key. Expected value {1} but found {2}.
          */
-        public static final short Threshholding2_0 = 10;
-
-        /**
-         * Apache SIS implementation stipulate that Threshholding = 3. A randomized process such as
-         * error diffusion has been applied to the image data.
-         */
-        public static final short Threshholding3_0 = 11;
+        public static final short UnexpectedKeyValue_3 = 10;
     }
 
     /**

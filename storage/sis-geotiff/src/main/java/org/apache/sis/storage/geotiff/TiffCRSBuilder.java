@@ -1,11 +1,12 @@
 /*
- * Copyright 2016 rmarechal.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +35,6 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
-import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -44,11 +44,9 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
-import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSFactory;
@@ -59,7 +57,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
-import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -430,7 +427,7 @@ public class TiffCRSBuilder {
 
             //-- missing needed key
             if (unitSize == null)
-                throw new DataStoreContentException(reader.resources().getString(Resources.Keys.KeyValue_3,
+                throw new DataStoreContentException(reader.resources().getString(Resources.Keys.UnexpectedKeyValue_3,
                         GeoKeys.CRS.getName(key)+" ("+key+")", "non null value", "null"));
 
             final double sz = Double.parseDouble(unitSize);
@@ -918,12 +915,12 @@ public class TiffCRSBuilder {
         final int gDTS = geoKeyDirectoryTag.size();
         if (gDTS < 4)
             throw new DataStoreContentException(reader.resources().getString(
-                    Resources.Keys.MismatchLength_4, "GeoKeyDirectoryTag size","GeoKeyDirectoryTag",
-                    "more than 4",geoKeyDirectoryTag.size()));
+                    Resources.Keys.MismatchedLength_4, "GeoKeyDirectoryTag size", "GeoKeyDirectoryTag",
+                    "> 4", geoKeyDirectoryTag.size()));
 
         final short kDV = geoKeyDirectoryTag.shortValue(0);
         if (kDV!= 1)
-            warning(reader, Level.FINE, Resources.Keys.KeyValue_3, "KeyDirectoryVersion", 1, kDV);
+            warning(reader, Level.FINE, Resources.Keys.UnexpectedKeyValue_3, "KeyDirectoryVersion", 1, kDV);
         keyDirectoryVersion     = kDV;
         keyRevision             = geoKeyDirectoryTag.shortValue(1);
         minorRevision           = geoKeyDirectoryTag.shortValue(2);
@@ -931,14 +928,14 @@ public class TiffCRSBuilder {
 
         final int expectedGeoKeyDirectorySize = ((numberOfKey + 1) << 2);//-- (number of key + head) * 4 --- 1 key = 4 informations
         if (gDTS != expectedGeoKeyDirectorySize)
-            warning(reader, Level.WARNING,Resources.Keys.MismatchLength_4,
+            warning(reader, Level.WARNING,Resources.Keys.MismatchedLength_4,
                     "GeoKeyDirectoryTag size", "GeoKeyDirectoryTag", expectedGeoKeyDirectorySize, gDTS);
         this.geoKeyDirectoryTag  = geoKeyDirectoryTag;
         this.geoKeyDirectorySize = gDTS;
     }
 
     /**
-     * Set contents of precedently read Tiff Tag {@link Tags#GeoDoubleParamsTag}.
+     * Set contents of previously read {@link Tags#GeoDoubleParamsTag}.
      * Contents is about Geographic keys needed to build appropriate {@link CoordinateReferenceSystem}.
      *
      * @param geoDoubleParamsTag Vector of double value coefficients.
@@ -987,11 +984,11 @@ public class TiffCRSBuilder {
         /**
          * Returns expected {@link GeoKeys} value as a {@link String}.
          *
-	 * @param key Tiff Extension keys.
-	 * @return A string representing the value, or {@code null} if the key was not
-	 *         found or failed to parse.
-	 */
-	final String getAsString(final int key) {
+     * @param key Tiff Extension keys.
+     * @return A string representing the value, or {@code null} if the key was not
+     *         found or failed to parse.
+     */
+    final String getAsString(final int key) {
 
             final Object value = get(key);
 
@@ -1005,8 +1002,8 @@ public class TiffCRSBuilder {
          * Returns expected {@link GeoKeys} value as a {@link Integer}.
          *
          * @param key Tiff extension key (not a tag)
-	 * @return A integer representing the value, or {@code Integer.minValue} if the key was not
-	 *         found or failed to parse.
+         * @return A integer representing the value, or {@code Integer.minValue} if the key was not
+         *         found or failed to parse.
          */
         final int getAsInteger(final int key) {
             final Object value = get(key);
@@ -1018,7 +1015,7 @@ public class TiffCRSBuilder {
                 final String geoKey = value.toString();
                 return Integer.parseInt(geoKey);
             }  catch (Exception e) {
-                warning(reader, Level.WARNING, Resources.Keys.KeyValue_3, GeoKeys.CRS.getName(key)+" ("+key+")",
+                warning(reader, Level.WARNING, Resources.Keys.UnexpectedKeyValue_3, GeoKeys.CRS.getName(key)+" ("+key+")",
                         "Integer value", value.getClass().getName()+" --> "+value);
                 return Integer.MIN_VALUE;
             }
@@ -1028,8 +1025,8 @@ public class TiffCRSBuilder {
          * Returns expected {@link GeoKeys} value as a {@link Double}.
          *
          * @param key Tiff extension key (not a tag)
-	 * @return A double representing the value, or {@code Double.NAN} if the key was not
-	 *         found or failed to parse.
+         * @return A double representing the value, or {@code Double.NAN} if the key was not
+         *         found or failed to parse.
          */
         final double getAsDouble(final int key) {
             final Object value = get(key);
@@ -1041,7 +1038,7 @@ public class TiffCRSBuilder {
                 final String geoKey = value.toString();
                 return Double.parseDouble(geoKey);
             } catch (Exception e) {
-                warning(reader, Level.WARNING, Resources.Keys.KeyValue_3, GeoKeys.CRS.getName(key)+" ("+key+")",
+                warning(reader, Level.WARNING, Resources.Keys.UnexpectedKeyValue_3, GeoKeys.CRS.getName(key)+" ("+key+")",
                         "Double value", value.getClass().getName()+" --> "+value);
                 return Double.NaN;
             }
