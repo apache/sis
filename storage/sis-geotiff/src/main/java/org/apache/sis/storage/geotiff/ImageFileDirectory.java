@@ -18,12 +18,12 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.measure.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.storage.DataStoreException;
@@ -47,11 +47,6 @@ import org.apache.sis.measure.Units;
  * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a>
  */
 final class ImageFileDirectory {
-
-    /**
-     * Default {@link Unit} adapted to ISO 19115 metadata.
-     */
-    private static final Unit METER = Units.METRE;
     /**
      * {@code true} if this {@code ImageFileDirectory} has not yet read all deferred entries.
      * When this flag is {@code true}, the {@code ImageFileDirectory} is not yet ready for use.
@@ -183,7 +178,7 @@ final class ImageFileDirectory {
      * and 3 for RGB images. If this value is higher, then the {@code ExtraSamples} TIFF tag should
      * give an indication of the meaning of the additional channels.
      */
-    private short samplesPerPixel = 0;
+    private short samplesPerPixel;
 
     /**
      * Number of bits per component.
@@ -191,7 +186,7 @@ final class ImageFileDirectory {
      * For example, RGB color data could use a different number of bits per component for each of the three color planes.
      * However, current Apache SIS implementation requires that all components have the same {@code BitsPerSample} value.
      */
-    private short bitsPerSample = 0;
+    private short bitsPerSample;
 
     /**
      * If {@code true}, the components are stored in separate “component planes”.
@@ -215,6 +210,19 @@ final class ImageFileDirectory {
      * 4 = Transparency Mask the defines an irregularly shaped region of another image in the same TIFF file.
      */
     private short photometricInterpretation;
+
+    /**
+     * The size of the dithering or halftoning matrix used to create a dithered or halftoned bilevel file.
+     * This field should be present only if {@code Threshholding} tag is 2 (an ordered dither or halftone
+     * technique has been applied to the image data). Special values:
+     *
+     * <ul>
+     *   <li>-1 means that {@code Threshholding} is 1 or unspecified.</li>
+     *   <li>-2 means that {@code Threshholding} is 2 but the matrix size has not yet been specified.</li>
+     *   <li>-3 means that {@code Threshholding} is 3 (randomized process such as error diffusion).</li>
+     * </ul>
+     */
+    private short cellWidth = -1, cellHeight = -1;
 
     /**
      * The logical order of bits within a byte.
@@ -307,7 +315,7 @@ final class ImageFileDirectory {
      * 2 = Inch.
      * 3 = Centimeter.
      */
-    private Unit resolutionUnit = Units.INCH;
+    private Unit<Length> resolutionUnit = Units.INCH;
 
     /**
      * Creates a new image file directory.
@@ -316,26 +324,12 @@ final class ImageFileDirectory {
     }
 
     /**
-     * Reports a warning represented by the given message and exception.
-     * At least one of message and exception shall be non-null.
-     *
-     * @param reader reader which manage exception and message.
-     * @param message - the message to log, or null if none.
-     * @param exception - the exception to log, or null if none.
-     */
-    private void warning(final Reader reader, final Level level, final short key, final Object ...message) {
-        final LogRecord r = reader.resources().getLogRecord(level, key, message);
-        reader.owner.warning(r);
-    }
-
-    /**
      * Returns {@code true} if this image contain some internaly TIFF TAGS adapted for tiled reading, else return {@code false}.
      *
      * @return {@code true} for tiled tags attributs existance, else return {@code false}.
      */
     private boolean isTiled() {
-        return (tileWidth != -1        || tileHeight != -1
-             || tileByteCounts != null || tileOffsets != null);
+        return tileWidth >= 0 || tileHeight >= 0 || tileByteCounts != null || tileOffsets != null;
     }
 
     /**
@@ -344,7 +338,7 @@ final class ImageFileDirectory {
      * @return {@code true} for strip tags attributs existance, else return {@code false}.
      */
     private boolean isStripped() {
-        return (stripByteCounts !=  null || stripOffsets != null);
+        return stripByteCounts != null || stripOffsets != null;
     }
 
     /**
@@ -768,65 +762,44 @@ final class ImageFileDirectory {
              * 1 = None, 2 = Inch, 3 = Centimeter.
              */
             case Tags.ResolutionUnit: {
-                final short res = type.readShort(reader.input, count);
-                switch(res) {
-                    case 2 : {
-                        resolutionUnit = Units.INCH;
-                        break;
-                    }
-                    case 3 : {
-                        resolutionUnit = Units.CENTIMETRE;
-                        break;
-                    }
-                    default : {
-                        resolutionUnit = null;
-                        break;
-                    }
+                final short unit = type.readShort(reader.input, count);
+                switch (unit) {
+                    case 1:  resolutionUnit = null;             break;
+                    case 2:  resolutionUnit = Units.INCH;       break;
+                    case 3:  resolutionUnit = Units.CENTIMETRE; break;
+                    default: return unit;                           // Cause a warning about unknown value.
                 }
                 break;
             }
             /*
-             * The technique used to convert from gray to black and white pixels (if applicable):
-             * 1 = No dithering or halftoning has been applied to the image data.
-             * 2 = An ordered dither or halftone technique has been applied to the image data.
-             * 3 = A randomized process such as error diffusion has been applied to the image data.
+             * For black and white TIFF files that represent shades of gray, the technique used to convert
+             * from gray to black and white pixels. The default value is 1 (nothing done on the image).
+             *
+             *   1 = No dithering or halftoning has been applied to the image data.
+             *   2 = An ordered dither or halftone technique has been applied to the image data.
+             *   3 = A randomized process such as error diffusion has been applied to the image data.
              */
             case Tags.Threshholding: {
                 final short value = type.readShort(reader.input, count);
-                final String s;
-                switch(value) {
-                    case 2 : {
-                        s = reader.resources().getString(Resources.Keys.Threshholding2_0);
-                        break;
-                    }
-                    case 3 : {
-                        s = reader.resources().getString(Resources.Keys.Threshholding3_0);
-                        break;
-                    }
-                    default : {
-                        s = reader.resources().getString(Resources.Keys.Threshholding1_0);
-                        break;
-                    }
+                switch (value) {
+                    case 1:  break;
+                    case 2:  if (cellWidth >= 0 || cellHeight >= 0) return null; else break;
+                    case 3:  break;
+                    default: return value;           // Cause a warning about unknown value.
                 }
-                reader.metadata.setProcedureDescription(s);
+                cellWidth = cellHeight = (short) -value;
                 break;
             }
             /*
-             * The width of the dithering or halftoning matrix used to create a dithered or halftoned
-             * bilevel file. Meaningful only if Threshholding = 2.
+             * The width and height of the dithering or halftoning matrix used to create
+             * a dithered or halftoned bilevel file. Meaningful only if Threshholding = 2.
              */
             case Tags.CellWidth: {
-                final String s = reader.resources().getString(Resources.Keys.CellWidth_1, type.readShort(reader.input, count));
-                reader.metadata.setProcessingDocumentation(s);
+                cellWidth = type.readShort(reader.input, count);
                 break;
             }
-            /*
-             * The height of the dithering or halftoning matrix used to create a dithered or halftoned
-             * bilevel file. Meaningful only if Threshholding = 2.
-             */
             case Tags.CellLength: {
-                final String s = reader.resources().getString(Resources.Keys.CellHeight_1, type.readShort(reader.input, count));
-                reader.metadata.setProcessingDocumentation(s);
+                cellHeight = type.readShort(reader.input, count);
                 break;
             }
 
@@ -856,165 +829,133 @@ final class ImageFileDirectory {
     }
 
     /**
-     * Validate method which re-build missing attributs from others as if possible or
-     * throw exception if mandatory attributs are missing or also if it is impossible
-     * to resolve ambiguity between some attributs.
-     *
-     * @throws DataStoreContentException
+     * Validate method which re-build missing attributes from others as if possible or
+     * throw exception if mandatory attributes are missing or also if it is impossible
+     * to resolve ambiguity between some attributes.
      */
-    final void checkTiffTags(final Reader reader)
-            throws DataStoreContentException {
-
-        if (imageWidth == -1)
+    final void checkTiffTags(final Reader reader) throws DataStoreContentException {
+        if (imageWidth  < 0) throw missingTag(reader, Tags.ImageWidth);
+        if (imageHeight < 0) throw missingTag(reader, Tags.ImageLength);
+        if (isTiled() == isStripped()) {
             throw new DataStoreContentException(reader.resources().getString(
-                                Resources.Keys.MissingValueRequired_2, "ImageWidth", reader.input.filename));
-
-        if (imageHeight == -1)
-            throw new DataStoreContentException(reader.resources().getString(
-                                Resources.Keys.MissingValueRequired_2, "ImageLength", reader.input.filename));
-
-        if ((!isTiled() && !isStripped())
-          || (isTiled() &&  isStripped()))
-            throw new DataStoreContentException(reader.resources().getString(
-                                Resources.Keys.MissingTileStrip_1, reader.input.filename));
-
+                    Resources.Keys.InconsistentTileStrip_1, reader.input.filename));
+        }
         if (samplesPerPixel == 0) {
             samplesPerPixel = 1;
-            warning(reader, Level.FINE, Resources.Keys.DefaultAttribut_2, "SamplesPerPixel", 1);
+            missingTag(reader, Tags.SamplesPerPixel, 1, false);
         }
-
         if (bitsPerSample == 0) {
             bitsPerSample = 1;
-            warning(reader, Level.FINE, Resources.Keys.DefaultAttribut_2, "BitsPerSample", 1);
+            missingTag(reader, Tags.BitsPerSample, 1, false);
         }
-
         if (colorMap != null) {
-            final int expectedSize = 3 * (1 << bitsPerSample);
-            if (colorMap.size() != expectedSize)
-                warning(reader, Level.WARNING, Resources.Keys.MismatchLength_4, "ColorMap array",
-                        "BitsPerSample",
-                        "3* 2^bitsPerSample : "+expectedSize, colorMap.size());
+            ensureSameLength(reader, Tags.ColorMap, Tags.BitsPerSample, colorMap.size(),  3 * (1 << bitsPerSample));
         }
-
-
         final boolean canReBuilt = (!isPlanar && compression.equals(Compression.NONE));
-
         if (isTiled()) {
             //-- it is not efficient and dangerous to try to re-build tileOffsets.
-            if (tileOffsets == null)
-                throw new DataStoreContentException(reader.resources().getString(
-                                    Resources.Keys.MissingValueRequired_2, "TileOffsets", reader.input.filename));
-
+            if (tileOffsets == null) {
+                throw missingTag(reader, Tags.TileOffsets);
+            }
             if (canReBuilt) {
-                int twThTbc = 0;
-                if (tileWidth      >= 0)    twThTbc |= 4;
-                if (tileHeight     >= 0)    twThTbc |= 2;
-                if (tileByteCounts != null) twThTbc |= 1;
-
-                switch(twThTbc) {
-                    case 3 : {
-                        //-- missing tile width twThTbc = 011
-                        warning(reader, Level.WARNING, Resources.Keys.ReBuildAttribut_2, "TileWidth","TileByteCounts, TileHeight, SamplesPerPixel, BitsPerSamples");
-                        tileWidth = tileByteCounts.get(0).intValue() / (tileHeight * samplesPerPixel * (bitsPerSample / Byte.SIZE));
+                int missing = 0;
+                if (tileWidth      < 0)     missing |= 0b100;
+                if (tileHeight     < 0)     missing |= 0b010;
+                if (tileByteCounts == null) missing |= 0b001;
+                switch (missing) {
+                    case 0b100: {           // Compute missing tile width.
+                        tileWidth = tileByteCounts.intValue(0) / (tileHeight * samplesPerPixel * (bitsPerSample / Byte.SIZE));
+                        missingTag(reader, Tags.TileWidth, tileWidth, true);
                         break;
                     }
-                    case 5 : {
-                        //-- missing tileHeight twThTbc = 101
-                        warning(reader, Level.WARNING, Resources.Keys.ReBuildAttribut_2, "TileHeight","TileByteCounts, TileWidth, SamplesPerPixel, BitsPerSamples");
-                        tileHeight = tileByteCounts.get(0).intValue() / (tileWidth * samplesPerPixel * (bitsPerSample / Byte.SIZE));
+                    case 0b010: {           // Compute missing tile height.
+                        tileHeight = tileByteCounts.intValue(0) / (tileWidth * samplesPerPixel * (bitsPerSample / Byte.SIZE));
+                        missingTag(reader, Tags.TileLength, tileHeight, true);
                         break;
                     }
-                    case 6 : {
-                        //-- missing tileByteCount twThTbc = 110
-                        warning(reader, Level.WARNING, Resources.Keys.ReBuildAttribut_2, "TileByteCounts","TileOffsets, TileHeight, TileWidth, SamplesPerPixel, BitsPerSamples");
+                    case 0b001: {           // Compute missing tile byte count.
                         final long tileByteCount        = tileHeight * tileWidth * samplesPerPixel * bitsPerSample;
                         final long[] tileByteCountArray = new long[tileOffsets.size()];
                         Arrays.fill(tileByteCountArray, tileByteCount);
                         tileByteCounts = Vector.create(tileByteCountArray, true);
+                        missingTag(reader, Tags.TileByteCounts, tileByteCount, true);
                         break;
                     }
-                    case 7 : {
-                        //-- every thing is ok
+                    case 0: {
+                        // Every thing is ok.
                         break;
                     }
-                    default : {
-                        throw new DataStoreContentException(reader.resources().getString(
-                                            Resources.Keys.MissingValueRequired_2, "TileWidth, TileHeight, TileByteCount", reader.input.filename));
+                    default: {
+                        final int tag;
+                        switch (Integer.highestOneBit(missing)) {
+                            case 0b100: tag = Tags.TileWidth;      break;
+                            case 0b010: tag = Tags.TileLength;     break;
+                            default:    tag = Tags.TileByteCounts; break;
+                        }
+                        throw missingTag(reader, tag);
                     }
                 }
             }
-
-            if (tileByteCounts == null)
-                throw new DataStoreContentException(reader.resources().getString(
-                                    Resources.Keys.MissingValueRequired_2, "TileByteCount", reader.input.filename));
-
-            if (tileWidth == -1)
-                throw new DataStoreContentException(reader.resources().getString(
-                                Resources.Keys.MissingValueRequired_2, "TileWidth", reader.input.filename));
-            if (tileHeight == -1)
-                throw new DataStoreContentException(reader.resources().getString(
-                                    Resources.Keys.MissingValueRequired_2, "TileLength", reader.input.filename));
+            if (tileWidth      <     0) throw missingTag(reader, Tags.TileWidth);
+            if (tileHeight     <     0) throw missingTag(reader, Tags.TileLength);
+            if (tileByteCounts == null) throw missingTag(reader, Tags.TileByteCounts);
 
             //-- Check size of ByteCounts and Offsets
             //-- important reading attributs, Level WARNING
-            int expectedSize = (int) (Math.floorDiv(imageWidth, tileWidth) * Math.floorDiv(imageHeight, tileHeight));
+            long expectedSize = Math.floorDiv(imageWidth, tileWidth) * Math.floorDiv(imageHeight, tileHeight);
             if (isPlanar) expectedSize *= samplesPerPixel;
-            if (tileOffsets.size() != expectedSize)
-                warning(reader, Level.WARNING, Resources.Keys.MismatchLength_4, "TileOffsets",
+            if (tileOffsets.size() != expectedSize) {
+                warning(reader, Level.WARNING, Resources.Keys.MismatchedLength_4, "TileOffsets",
                         "ImageWidth, ImageHeight, TileWidth, TileHeight, SamplePerPixel and PlanarConfiguration",
                         expectedSize, tileOffsets.size());
-            if (tileByteCounts.size() != expectedSize)
-                warning(reader, Level.WARNING, Resources.Keys.MismatchLength_4, "TileByteCounts",
+            }
+            if (tileByteCounts.size() != expectedSize) {
+                warning(reader, Level.WARNING, Resources.Keys.MismatchedLength_4, "TileByteCounts",
                         "ImageWidth, ImageHeight, TileWidth, TileHeight, SamplePerPixel and PlanarConfiguration",
                         expectedSize, tileByteCounts.size());
-            if (tileByteCounts.size() != tileOffsets.size())
-                warning(reader, Level.WARNING, Resources.Keys.MismatchLength_4, "TileByteCounts",
-                        "TileOffsets", tileOffsets.size(), tileByteCounts.size());
+            }
+            if (tileByteCounts.size() != tileOffsets.size()) {
+                warning(reader, Level.WARNING, Resources.Keys.MismatchedLength_4, "TileByteCounts", "TileOffsets",
+                        tileOffsets.size(), tileByteCounts.size());
+            }
         }
-
         if (isStripped()) {
-
-            if (stripOffsets == null)
-                throw new DataStoreContentException(reader.resources().getString(
-                                    Resources.Keys.MissingValueRequired_2, "StripOffsets", reader.input.filename));
-
+            if (stripOffsets == null) {
+                throw missingTag(reader, Tags.StripOffsets);
+            }
             if (rowsPerStrip == 0xFFFFFFFF) {
                 rowsPerStrip = imageHeight;
-                warning(reader, Level.FINE, Resources.Keys.DefaultAttribut_2, "RowsPerStrip", imageHeight+"(= imageLength)");
+                warning(reader, Level.FINE, Resources.Keys.DefaultValueForAttribute_2, "RowsPerStrip", imageHeight+"(= imageLength)");
             }
-
             if (canReBuilt) {
                 if (stripByteCounts == null) {
-                    warning(reader, Level.WARNING, Resources.Keys.ReBuildAttribut_2, "StripByteCounts","StripOffset, RowsPerStrip, ImageWidth, SamplesPerPixel, BitsPerSamples");
                     final long stripByteCount = rowsPerStrip * imageWidth * samplesPerPixel * bitsPerSample;
                     final long[] stripByteCountsArray = new long[stripOffsets.size()];
                     Arrays.fill(stripByteCountsArray, stripByteCount);
                     stripByteCounts = Vector.create(stripByteCountsArray, true);
+                    missingTag(reader, Tags.StripByteCounts, stripByteCount, true);
                 }
             }
-
-            if (stripByteCounts == null)
-                throw new DataStoreContentException(reader.resources().getString(
-                                    Resources.Keys.MissingValueRequired_2, "StripByteCount", reader.input.filename));
-
+            if (stripByteCounts == null) {
+                throw missingTag(reader, Tags.StripByteCounts);
+            }
             //-- Check size of ByteCounts and Offsets
             //-- important reading attributs, Level WARNING
             int expectedSize = (int) Math.floorDiv(imageHeight, rowsPerStrip);
             if (isPlanar) expectedSize *= samplesPerPixel;
-            if (stripOffsets.size() != expectedSize)
-                warning(reader, Level.WARNING, Resources.Keys.MismatchLength_4, "StripOffsets",
+            if (stripOffsets.size() != expectedSize) {
+                warning(reader, Level.WARNING, Resources.Keys.MismatchedLength_4, "StripOffsets",
                         "RowsPerStrip, ImageHeight, SamplePerPixel and PlanarConfiguration",
                         expectedSize, stripOffsets.size());
-            if (stripByteCounts.size() != expectedSize)
-                warning(reader, Level.WARNING, Resources.Keys.MismatchLength_4, "StripByteCounts",
+            }
+            if (stripByteCounts.size() != expectedSize) {
+                warning(reader, Level.WARNING, Resources.Keys.MismatchedLength_4, "StripByteCounts",
                         "RowsPerStrip, ImageHeight, SamplePerPixel and PlanarConfiguration",
                         expectedSize, stripByteCounts.size());
-            if (stripByteCounts.size() != stripOffsets.size())
-                warning(reader, Level.WARNING, Resources.Keys.MismatchLength_4, "StripByteCounts",
-                        "StripOffsets", stripOffsets.size(), stripByteCounts.size());
+            }
+            ensureSameLength(reader, Tags.StripByteCounts, Tags.StripOffsets, stripOffsets.size(), stripByteCounts.size());
         }
     }
-
 
     /**
      * Completes the metadata with the information stored in the field of this IFD.
@@ -1027,8 +968,64 @@ final class ImageFileDirectory {
         //-- add Resolution into metadata
         //-- convert into meters
         if (tiffResolution != -1 && resolutionUnit != null) {
-            metadata.addResolution(resolutionUnit.getConverterTo(METER).convert(tiffResolution));
+            metadata.addResolution(resolutionUnit.getConverterTo(Units.METRE).convert(tiffResolution));
+        }
+        switch (Math.min(cellWidth, cellHeight)) {
+            case -3: {
+
+            }
+        }
+        if (cellWidth >= 0 && cellHeight >= 0) {
+            final Resources resources = Resources.forLocale(locale);
+            metadata.setProcessingDocumentation(resources.getString(
+                    Resources.Keys.DitheringOrHalftoningMatrixSize_2, cellWidth, cellHeight));
         }
     }
 
+    /**
+     * Reports a warning with a message created from the given resource keys and parameters.
+     *
+     * @param reader      the reader where to send the warning message.
+     * @param level       the logging level for the message to log.
+     * @param key         the {@code Resources} key of the message to format.
+     * @param parameters  the parameters to put in the message.
+     */
+    private void warning(final Reader reader, final Level level, final short key, final Object... parameters) {
+        final LogRecord r = reader.resources().getLogRecord(level, key, parameters);
+        reader.owner.warning(r);
+    }
+
+    /**
+     * Verifies that the given tags have the same length and reports a warning if they do not.
+     */
+    private void ensureSameLength(final Reader reader, final int tag1, final int tag2, final int length1, final int length2) {
+        if (length1 != length2) {
+            warning(reader, Level.WARNING, Resources.Keys.MismatchedLength_4, Tags.name(tag1), Tags.name(tag2), length1, length2);
+        }
+    }
+
+    /**
+     * Reports a warning for a missing TIFF tag for which a default value can be computed.
+     *
+     * @param  reader    the TIFF reader, used for fetching resources and file name.
+     * @param  missing   the numerical value of the missing tag.
+     * @param  value     the default value or the computed value.
+     * @param  computed  whether the default value has been computed.
+     */
+    private void missingTag(final Reader reader, final int missing, final long value, final boolean computed) {
+        warning(reader, computed ? Level.WARNING : Level.FINE,
+                computed ? Resources.Keys.ComputedValueForAttribute_2 : Resources.Keys.DefaultValueForAttribute_2,
+                Tags.name(missing), value);
+    }
+
+    /**
+     * Builds an exception for a missing TIFF tag for which no default value can be computed.
+     *
+     * @param  reader   the TIFF reader, used for fetching resources and file name.
+     * @param  missing  the numerical value of the missing tag.
+     */
+    private DataStoreContentException missingTag(final Reader reader, final int missing) {
+        return new DataStoreContentException(reader.resources().getString(
+                Resources.Keys.MissingValue_2, reader.input.filename, Tags.name(missing)));
+    }
 }

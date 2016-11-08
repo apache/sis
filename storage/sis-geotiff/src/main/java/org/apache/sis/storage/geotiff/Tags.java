@@ -115,7 +115,6 @@ final class Tags {
     public static final int Copyright                   = 0x8298;
 
 
-
     /////////////////////////////////////////////////////////
     //                 GDAL EXTENSION TAGS                 //
     /////////////////////////////////////////////////////////
@@ -128,7 +127,6 @@ final class Tags {
     //                 GEOTIFF EXTENSION TAGS              //
     /////////////////////////////////////////////////////////
 
-    //------------------------------- CRS ------------------------------------//
     /**
      * References the needed "GeoKeys" to build CRS.
      */
@@ -143,14 +141,6 @@ final class Tags {
      * This tag is used to store all of the ASCII valued GeoKeys, referenced by the GeoKeyDirectoryTag.
      */
     public static final int GeoAsciiParamsTag = 0x87B1; //-- 34737
-
-    static final class CRSKeys {
-
-    }
-
-
-
-
 
     /**
      * Do not allow instantiation of this class.
