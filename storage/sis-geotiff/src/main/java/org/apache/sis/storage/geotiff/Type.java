@@ -459,6 +459,27 @@ enum Type {
     }
 
     /**
+     * Reads a single value and returns it as a signed {@code int} type, performing conversion if needed.
+     * This method should be invoked when the caller expects a single value.
+     *
+     * @param  input  the input from where to read the value.
+     * @param  count  the amount of values (normally exactly 1).
+     * @return the value as an {@code int}.
+     * @throws IOException if an error occurred while reading the stream.
+     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
+     * @throws ArithmeticException if the value can not be represented in the Java signed {@code int} type.
+     * @throws IllegalArgumentException if the value is not a singleton.
+     * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
+     */
+    final int readInt(final ChannelDataInput input, final long count) throws IOException {
+        final long value = readLong(input, count);
+        if (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE) {
+            return (int) value;
+        }
+        throw new ArithmeticException(canNotConvert(Long.toString(value)));
+    }
+
+    /**
      * Reads a single value which is expected to be positive. A negative value may be an encoding error in the
      * big TIFF file, or if it was really the intended value then something greater than what we can support.
      *
