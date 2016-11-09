@@ -219,9 +219,9 @@ public class SQLTranslator implements Function<String,String> {
      * An empty string ({@code ""}) means to search for tables without catalog or schema.
      * A {@code null} value means that the catalog or schema should not be used to narrow the search.</p>
      *
-     * @param  md      Information about the database.
-     * @param  catalog The catalog where to look for EPSG schema, or {@code null} if any.
-     * @param  schema  The schema where to look for EPSG tables, or {@code null} if any.
+     * @param  md       information about the database.
+     * @param  catalog  the catalog where to look for EPSG schema, or {@code null} if any.
+     * @param  schema   the schema where to look for EPSG tables, or {@code null} if any.
      * @throws SQLException if an error occurred while querying the database metadata.
      */
     public SQLTranslator(final DatabaseMetaData md, final String catalog, final String schema) throws SQLException {
@@ -313,7 +313,7 @@ public class SQLTranslator implements Function<String,String> {
      * Note that this method may still return {@code null} if the EPSG tables were not found or if the database
      * does not {@linkplain DatabaseMetaData#supportsCatalogsInDataManipulation() supports catalogs}.
      *
-     * @return The catalog that contains the EPSG schema, or {@code null}.
+     * @return the catalog that contains the EPSG schema, or {@code null}.
      */
     public String getCatalog() {
         return catalog;
@@ -325,7 +325,7 @@ public class SQLTranslator implements Function<String,String> {
      * Note that this method may still return {@code null} if the EPSG tables were not found or if the database
      * does not {@linkplain DatabaseMetaData#supportsSchemasInDataManipulation() supports schemas}.
      *
-     * @return The schema that contains the EPSG tables, or {@code null}.
+     * @return the schema that contains the EPSG tables, or {@code null}.
      */
     public String getSchema() {
         return schema;
@@ -365,8 +365,8 @@ public class SQLTranslator implements Function<String,String> {
      * Adapts the given SQL statement from the original MS-Access dialect to the dialect of the target database.
      * Table and column names may also be replaced.
      *
-     * @param  sql The statement in MS-Access dialect.
-     * @return The SQL statement adapted to the dialect of the target database.
+     * @param  sql  the statement in MS-Access dialect.
+     * @return the SQL statement adapted to the dialect of the target database.
      */
     @Override
     public String apply(final String sql) {

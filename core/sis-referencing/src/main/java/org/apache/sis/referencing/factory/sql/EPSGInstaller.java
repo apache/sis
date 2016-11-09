@@ -82,7 +82,7 @@ final class EPSGInstaller extends ScriptRunner {
      * Creates a new runner which will execute the statements using the given connection.
      * The encoding is {@code "ISO-8859-1"}, which is the encoding used for the files provided by EPSG.
      *
-     * @param connection The connection to the database.
+     * @param  connection  the connection to the database.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     public EPSGInstaller(final Connection connection) throws SQLException {
@@ -111,7 +111,7 @@ final class EPSGInstaller extends ScriptRunner {
      *
      * <p>This method should be invoked only once. It does nothing if the database does not supports schema.</p>
      *
-     * @param schema The schema (usually {@code "epsg"}).
+     * @param  schema  the schema (usually {@code "epsg"}).
      * @throws SQLException if the schema can not be created.
      * @throws IOException if an I/O operation was required and failed.
      */
@@ -180,9 +180,9 @@ final class EPSGInstaller extends ScriptRunner {
      * same than "information is an empty string". This replacement is okay in this particular case
      * since there is no field in the EPSG database for which we really want an empty string.
      *
-     * @param sql   The whole SQL statement.
-     * @param lower Index of the first character of the text in {@code sql}.
-     * @param upper Index after the last character of the text in {@code sql}.
+     * @param sql    the whole SQL statement.
+     * @param lower  index of the first character of the text in {@code sql}.
+     * @param upper  index after the last character of the text in {@code sql}.
      */
     @Override
     protected void editText(final StringBuilder sql, final int lower, final int upper) {
@@ -206,7 +206,7 @@ final class EPSGInstaller extends ScriptRunner {
      * Modifies the SQL statement before to execute it, or omit unsupported statements.
      *
      * @throws SQLException if an error occurred while executing the SQL statement.
-     * @throws IOException if an I/O operation was required and failed.
+     * @throws IOException  if an I/O operation was required and failed.
      */
     @Override
     protected int execute(final StringBuilder sql) throws SQLException, IOException {
@@ -239,8 +239,8 @@ final class EPSGInstaller extends ScriptRunner {
     /**
      * Processes to the creation of the EPSG database using the SQL scripts from the given provider.
      *
-     * @param  scriptProvider User-provided scripts, or {@code null} for automatic lookup.
-     * @throws IOException if an error occurred while reading an input.
+     * @param  scriptProvider  user-provided scripts, or {@code null} for automatic lookup.
+     * @throws IOException  if an error occurred while reading an input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     public void run(InstallationResources scriptProvider, final Locale locale) throws SQLException, IOException {

@@ -97,8 +97,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * To create a concatenated transform, use the {@link #create(MathTransform, MathTransform)}
      * factory method instead.
      *
-     * @param transform1 The first math transform.
-     * @param transform2 The second math transform.
+     * @param  transform1  the first math transform.
+     * @param  transform2  the second math transform.
      */
     @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
     protected ConcatenatedTransform(final MathTransform transform1,
@@ -146,10 +146,10 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * The "non-direct" versions use an intermediate buffer when performing transformations; they are slower
      * and consume more memory. They are used only as a fallback when a "direct" version can not be created.</div>
      *
-     * @param tr1 The first math transform.
-     * @param tr2 The second math transform.
-     * @param factory The factory which is (indirectly) invoking this method, or {@code null} if none.
-     * @return The concatenated transform.
+     * @param  tr1      the first math transform.
+     * @param  tr2      the second math transform.
+     * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
+     * @return the concatenated transform.
      *
      * @see MathTransforms#concatenate(MathTransform, MathTransform)
      */
@@ -185,7 +185,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          *       already computed. The map would be local to a "create" method execution.
          */
         int stepCount = getStepCount(tr1) + getStepCount(tr2);
-        boolean tryAgain = true; // Really 'true' because we want at least 2 iterations.
+        boolean tryAgain = true;                                // Really 'true' because we want at least 2 iterations.
         for (int k=0; ; k++) {
             MathTransform c1 = tr1;
             MathTransform c2 = tr2;
@@ -259,7 +259,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * into a single one. If no optimized cases has been found, returns {@code null}. In the later
      * case, the caller will need to create a more heavy {@link ConcatenatedTransform} instance.
      *
-     * @param factory The factory which is (indirectly) invoking this method, or {@code null} if none.
+     * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
      */
     private static MathTransform createOptimized(final MathTransform tr1, final MathTransform tr2,
             final MathTransformFactory factory) throws FactoryException
@@ -397,7 +397,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Nested concatenated transforms (if any) are explored recursively in order to
      * get the count of single (non-nested) transforms.
      *
-     * @return The number of single transform steps.
+     * @return the number of single transform steps.
      */
     private int getStepCount() {
         return getStepCount(transform1) + getStepCount(transform2);
@@ -422,7 +422,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Returns all concatenated transforms. The returned list contains only <cite>single</cite> transforms,
      * i.e. all nested concatenated transforms (if any) have been flattened.
      *
-     * @return All single math transforms performed by this concatenated transform.
+     * @return all single math transforms performed by this concatenated transform.
      *
      * @see MathTransforms#getSteps(MathTransform)
      */
@@ -491,7 +491,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * Adds all concatenated transforms in the given list.
      *
-     * @param transforms The list where to add concatenated transforms.
+     * @param  transforms  the list where to add concatenated transforms.
      */
     private void getSteps(final List<? super MathTransform> transforms) {
         if (transform1 instanceof ConcatenatedTransform) {
@@ -525,7 +525,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * {@code GeneralDerivedCRS} specify the axis swapping and unit conversions.
      * This special case is internal to SIS implementation and should be unknown to users.</p>
      *
-     * @return The parameterizable transform step, or {@code null} if none.
+     * @return the parameterizable transform step, or {@code null} if none.
      */
     private Parameterized getParameterised() {
         Parameterized param = null;
@@ -582,7 +582,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * Transforms the specified {@code ptSrc} and stores the result in {@code ptDst}.
      *
-     * @throws TransformException If {@link #transform1} or {@link #transform2} failed.
+     * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
      */
     @Override
     public DirectPosition transform(final DirectPosition ptSrc, final DirectPosition ptDst)
@@ -599,7 +599,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Transforms a single coordinate in a list of ordinal values,
      * and optionally returns the derivative at that location.
      *
-     * @throws TransformException If {@link #transform1} or {@link #transform2} failed.
+     * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -635,7 +635,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * {@link #transform2}. The transformations are performed without intermediate buffer
      * if it can be avoided.
      *
-     * @throws TransformException If {@link #transform1} or {@link #transform2} failed.
+     * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -718,7 +718,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * {@link #transform2}. An intermediate buffer of type {@code double[]} for intermediate
      * results is used for reducing rounding errors.
      *
-     * @throws TransformException If {@link #transform1} or {@link #transform2} failed.
+     * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff,
@@ -780,7 +780,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * {@link #transform2}. An intermediate buffer of type {@code double[]} for intermediate
      * results is used for reducing rounding errors.
      *
-     * @throws TransformException If {@link #transform1} or {@link #transform2} failed.
+     * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -822,7 +822,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * {@link #transform2}. The transformations are performed without intermediate buffer
      * if it can be avoided.
      *
-     * @throws TransformException If {@link #transform1} or {@link #transform2} failed.
+     * @throws TransformException if {@link #transform1} or {@link #transform2} failed.
      */
     @Override
     public void transform(final float [] srcPts, int srcOff,
@@ -882,8 +882,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * Gets the derivative of this transform at a point.
      *
-     * @param  point The coordinate point where to evaluate the derivative.
-     * @return The derivative at the specified point (never {@code null}).
+     * @param  point  the coordinate point where to evaluate the derivative.
+     * @return the derivative at the specified point (never {@code null}).
      * @throws TransformException if the derivative can't be evaluated at the specified point.
      */
     @Override
@@ -964,7 +964,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         for (final Object step : transforms) {
             formatter.newLine();
             if (step instanceof FormattableObject) {
-                formatter.append((FormattableObject) step); // May not implement MathTransform.
+                formatter.append((FormattableObject) step);         // May not implement MathTransform.
             } else if (step instanceof MathTransform) {
                 formatter.append((MathTransform) step);
             } else {
