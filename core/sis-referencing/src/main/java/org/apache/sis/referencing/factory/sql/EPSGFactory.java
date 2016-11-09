@@ -43,6 +43,7 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
@@ -74,7 +75,7 @@ import org.apache.sis.util.Localized;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see EPSGDataAccess
@@ -239,8 +240,8 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *       {@linkplain Locale#getDefault(Locale.Category) display locale}.</li>
      * </ul>
      *
-     * @param  properties The data source, authority factories and other configuration properties,
-     *                    or {@code null} for the default values.
+     * @param  properties  the data source, authority factories and other configuration properties,
+     *                     or {@code null} for the default values.
      * @throws ClassCastException if a property value is not of the expected class.
      * @throws IllegalArgumentException if a property value is invalid.
      * @throws FactoryException if an error occurred while creating the EPSG factory.
@@ -426,6 +427,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
+            Logging.log(EPSGFactory.class, "newDataAccess", Initializer.connected(connection.getMetaData()));
             SQLTranslator tr = translator;
             if (tr == null) {
                 synchronized (this) {

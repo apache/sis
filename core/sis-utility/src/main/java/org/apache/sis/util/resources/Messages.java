@@ -81,6 +81,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short ConfigurationOf_3 = 4;
 
         /**
+         * Connected to geospatial database on “{0}”.
+         */
+        public static final short ConnectedToGeospatialDatabase_1 = 30;
+
+        /**
          * Created an instance of ‘{0}’ from the “{1}” identifier in {2} seconds.
          */
         public static final short CreateDurationFromIdentifier_3 = 5;

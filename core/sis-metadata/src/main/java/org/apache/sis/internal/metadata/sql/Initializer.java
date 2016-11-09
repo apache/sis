@@ -19,6 +19,9 @@ package org.apache.sis.internal.metadata.sql;
 import java.util.Locale;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -27,6 +30,7 @@ import java.security.PrivilegedAction;
 import java.lang.reflect.Method;
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -43,11 +47,6 @@ import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
-
-// Branch-dependent imports
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 
 /**
@@ -99,6 +98,12 @@ public abstract class Initializer {
     private static DataSource source;
 
     /**
+     * {@code true} if {@link #connected(DatabaseMetaData)} has been invoked at least once.
+     * This is reset to {@code false} if the {@link #source} is changed.
+     */
+    private static boolean connected;
+
+    /**
      * For subclasses only.
      */
     protected Initializer() {
@@ -107,7 +112,7 @@ public abstract class Initializer {
     /**
      * Invoked for populating an initially empty database.
      *
-     * @param connection Connection to the empty database.
+     * @param  connection  connection to the empty database.
      * @throws SQLException if an error occurred while populating the database.
      */
     protected abstract void createSchema(Connection connection) throws SQLException;
@@ -163,13 +168,14 @@ public abstract class Initializer {
          * This method clears the {@link Initializer#source}, unregisters this listener
          * and notifies other SIS modules.
          *
-         * @param event Ignored. May be null.
+         * @param  event  ignored. Can be null.
          */
         @Override
         public void objectChanged(NamingEvent event) {
             try {
                 synchronized (Initializer.class) {
                     source = null;
+                    connected = false;
                     Shutdown.unregister(this);
                     context.removeNamingListener(this);
                 }
@@ -213,7 +219,7 @@ public abstract class Initializer {
      *   <li>Otherwise (no JNDI, no environment variable, no Derby property set), {@code null}.</li>
      * </ol>
      *
-     * @return The data source for the {@code $SIS_DATA/Databases/SpatialMetadata} or equivalent database, or {@code null} if none.
+     * @return the data source for the {@code $SIS_DATA/Databases/SpatialMetadata} or equivalent database, or {@code null} if none.
      * @throws javax.naming.NamingException     if an error occurred while fetching the data source from a JNDI context.
      * @throws java.net.MalformedURLException   if an error occurred while converting the {@code derby.jar} file to URL.
      * @throws java.lang.ClassNotFoundException if {@code derby.jar} has not been found on the JDK installation directory.
@@ -315,11 +321,34 @@ public abstract class Initializer {
     }
 
     /**
+     * Prepares a log record saying that a connection to the spatial metadata database has been created.
+     * This method can be invoked after {@link DataSource#getConnection()}. When invoked for the first time,
+     * the record level is set to {@link Level#CONFIG}. On next calls, the level become {@link Level#FINE}.
+     *
+     * @param  metadata  the value of {@code DataSource.getConnection().getMetaData()} or equivalent.
+     * @return the record to log. Caller should set the source class name and source method name.
+     * @throws SQLException if an error occurred while fetching the database URL.
+     *
+     * @since 0.8
+     */
+    public static LogRecord connected(final DatabaseMetaData metadata) throws SQLException {
+        final Level level;
+        synchronized (Initializer.class) {
+            level = connected ? Level.FINE : Level.CONFIG;
+            connected = true;
+        }
+        final LogRecord record = Messages.getResources(null).getLogRecord(level,
+                Messages.Keys.ConnectedToGeospatialDatabase_1, SQLUtilities.getSimplifiedURL(metadata));
+        record.setLoggerName(Loggers.SYSTEM);
+        return record;
+    }
+
+    /**
      * Returns a message for unspecified data source. The message will depend on whether a JNDI context exists or not.
      * This message can be used for constructing an exception when {@link #getDataSource()} returned {@code null}.
      *
-     * @param locale The locale for the message to produce, or {@code null} for the default one.
-     * @return Message for unspecified data source.
+     * @param  locale  the locale for the message to produce, or {@code null} for the default one.
+     * @return message for unspecified data source.
      */
     public static String unspecified(final Locale locale) {
         final short key;
@@ -344,8 +373,8 @@ public abstract class Initializer {
      *
      * <p>It is caller's responsibility to shutdown the Derby database after usage.</p>
      *
-     * @param  path  Relative or absolute path to the database.
-     * @return The data source.
+     * @param  path  relative or absolute path to the database.
+     * @return the data source.
      * @throws Exception if the data source can not be created.
      */
     static DataSource forJavaDB(final String path) throws Exception {
@@ -398,6 +427,7 @@ public abstract class Initializer {
         final DataSource ds = source;
         if (ds != null) {                       // Should never be null, but let be safe.
             source = null;                      // Clear now in case of failure in remaining code.
+            connected = false;
             ds.getClass().getMethod("setShutdownDatabase", String.class).invoke(ds, "shutdown");
             try {
                 ds.getConnection().close();     // Does the actual shutdown.
@@ -416,7 +446,7 @@ public abstract class Initializer {
     /**
      * Returns {@code true} if the given exception is the one that we expect in successful shutdown of a Derby database.
      *
-     * @param e The exception thrown by Derby.
+     * @param  e  the exception thrown by Derby.
      * @return {@code true} if the exception indicates a successful shutdown.
      */
     static boolean isSuccessfulShutdown(final SQLException e) {
