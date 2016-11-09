@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.logging.LogRecord;
+import java.nio.charset.StandardCharsets;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
@@ -66,13 +67,13 @@ public class GeoTiffStore extends DataStore {
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
      *
-     * @param  storage information about the storage (URL, stream, <i>etc</i>).
+     * @param  storage  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
      */
     public GeoTiffStore(final StorageConnector storage) throws DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
-        final Charset option         = storage.getOption(OptionKey.ENCODING);
-        encoding                     = (option != null) ? option : Charset.defaultCharset(); //-- TODO : ce n'est pas la bonne solution (maybe)
+        final Charset encoding = storage.getOption(OptionKey.ENCODING);
+        this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
         final ChannelDataInput input = storage.getStorageAs(ChannelDataInput.class);
         if (input == null) {
             throw new DataStoreException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2,
@@ -103,16 +104,13 @@ public class GeoTiffStore extends DataStore {
             while ((dir = reader.getImageFileDirectory(n++)) != null) {
                 dir.completeMetadata(reader.metadata, locale);
             }
-
-            //-- add geotiff CRS
+            // Add Coordinate Reference System built from GeoTIFF tags.
             reader.metadata.add(reader.crsBuilder.build());
             metadata = reader.metadata.build(true);
         } catch (IOException e) {
             throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
-        } catch (ArithmeticException e) {
+        } catch (FactoryException | ArithmeticException e) {
             throw new DataStoreContentException(reader.canNotDecode(), e);
-        } catch (FactoryException e) {
-            throw new DataStoreContentException(e);
         }
         return metadata;
     }
@@ -145,18 +143,21 @@ public class GeoTiffStore extends DataStore {
     }
 
     /**
-     * Reports a warning represented by the given {@link LogRecord}.
+     * Reports a warning contained in the given {@link LogRecord}.
+     * Note that the given record will not necessarily be sent to the logging framework;
+     * if the user as registered at least one listener, then the record will be sent to the listeners instead.
      *
-     * <p>Moreover, {@linkplain LogRecord#setSourceClassName(java.lang.String) Class name}
-     * and {@linkplain LogRecord#setSourceMethodName(java.lang.String) method name}
-     * are added into the given LogRecord.</p>
+     * <p>This method sets the {@linkplain LogRecord#setSourceClassName(String) source class name} and
+     * {@linkplain LogRecord#setSourceMethodName(String) source method name} to hard-coded values.
+     * Those values assume that the warnings occurred indirectly from a call to {@link #getMetadata()}
+     * in this class. We do not report private classes or methods as the source of warnings.</p>
      *
-     * @param logRecord the warning as a logrecord.
+     * @param  record  the warning to report.
      */
-    final void warning(final LogRecord logRecord) {
-        ArgumentChecks.ensureNonNull("logRecord", logRecord);
-        logRecord.setSourceClassName(GeoTiffStore.class.getName());
-        logRecord.setSourceMethodName("read");
-        listeners.warning(logRecord);
+    final void warning(final LogRecord record) {
+        // Logger name will be set by listeners.warning(record).
+        record.setSourceClassName(GeoTiffStore.class.getName());
+        record.setSourceMethodName("getMetadata");
+        listeners.warning(record);
     }
 }

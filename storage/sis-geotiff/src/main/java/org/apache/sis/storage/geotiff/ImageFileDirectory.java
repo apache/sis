@@ -63,59 +63,38 @@ final class ImageFileDirectory {
     private long imageWidth = -1, imageHeight = -1;
 
     /**
-     * The width of each tile, or -1 if the information has not be found.
-     * This is the number of columns in each tile.
-     * Tiles should be small enough for fitting in memory.
-     *
-     * Assuming integer arithmetic, three computed values that are useful in the following field descriptions are:
-     * {@preformat math
-     * TilesAcross = (ImageWidth + TileWidth - 1) / TileWidth
-     * TilesDown = (ImageLength + TileLength - 1) / TileLength
-     * TilesPerImage = TilesAcross * TilesDown
-     * }
-     * These computed values are not TIFF fields; they are simply values determined by
-     * the ImageWidth, TileWidth, ImageLength, and TileLength fields.
-     * TileWidth must be a multiple of 16. This restriction improves performance
-     * in some graphics environments and enhances compatibility with compression schemes such as JPEG.
-     * Tiles need not be square.
-     * Note that ImageWidth can be less than TileWidth, although this means that the tiles
-     * are too large or that you are using tiling on really small images, neither of which is recommended.
-     * The same observation holds for ImageLength and TileLength.
-     */
-    private long tileWidth = -1;
-
-    /**
      * The size of each tile, or -1 if the information has not be found.
-     * This is the number of rows in each tile.
-     * Tiles should be small enough for fitting in memory.
+     * Tiles shall be small enough for fitting in memory, typically in a {@link java.awt.image.Raster} object.
+     * The TIFF specification requires that tile width and height must be a multiple of 16, but the SIS reader
+     * implementation works for any size. Tiles need not be square.
      *
-     * Assuming integer arithmetic, three computed values that are useful in the following field descriptions are:
+     * <p>Assuming integer arithmetic, the number of tiles in an image can be computed as below
+     * (these computed values are not TIFF fields):</p>
+     *
      * {@preformat math
-     *   TilesAcross = (ImageWidth + TileWidth - 1) / TileWidth
-     *     TilesDown = (ImageLength + TileLength - 1) / TileLength
-     * TilesPerImage = TilesAcross * TilesDown
+     *   tilesAcross   = (imageWidth  + tileWidth  - 1) / tileWidth
+     *   tilesDown     = (imageHeight + tileHeight - 1) / tileHeight
+     *   tilesPerImage = tilesAcross * tilesDown
      * }
-     * These computed values are not TIFF fields; they are simply values determined by
-     * the ImageWidth, TileWidth, ImageLength, and TileLength fields.
-     * TileLength must be a multiple of 16. This restriction improves performance
-     * in some graphics environments and enhances compatibility with compression schemes such as JPEG.
-     * Tiles need not be square
+     *
+     * Note that {@link #imageWidth} can be less than {@code tileWidth} and/or {@link #imageHeight} can be less
+     * than {@code tileHeight}. Such case means that the tiles are too large or that the tiled image is too small,
+     * neither of which is recommended.
      *
      * <p><b>Note:</b>
      * the {@link #tileHeight} attribute is named {@code TileLength} in TIFF specification.</p>
      */
-    private long tileHeight = -1;
+    private int tileWidth = -1, tileHeight = -1;
 
     /**
      * For each tile, the byte offset of that tile, as compressed and stored on disk.
-     *
      * The offset is specified with respect to the beginning of the TIFF file.
+     * Each tile has a location independent of the locations of other tiles
      *
-     * <p><b>Note</b> that this implies that each tile has a location independent of the locations of other tiles.</p>
-     *
-     * Offsets are ordered left-to-right and top-to-bottom. For PlanarConfiguration = 2,
-     * the offsets for the first component plane are stored first,
-     * followed by all the offsets for the second component plane, and so on.
+     * <p>Offsets are ordered left-to-right and top-to-bottom. if {@link #isPlanar} is {@code true}
+     * (i.e. components are stored in separate “component planes”), then the offsets for the first
+     * component plane are stored first, followed by all the offsets for the second component plane,
+     * and so on.</p>
      */
     private Vector tileOffsets;
 
@@ -436,18 +415,16 @@ final class ImageFileDirectory {
              * The tile width in pixels. This is the number of columns in each tile.
              */
             case Tags.TileWidth: {
-                tileWidth = type.readUnsignedLong(reader.input, count);
+                tileWidth = type.readInt(reader.input, count);
                 break;
             }
-
             /*
              * The tile length (height) in pixels. This is the number of rows in each tile.
              */
             case Tags.TileLength: {
-                tileHeight = type.readUnsignedLong(reader.input, count);
+                tileHeight = type.readInt(reader.input, count);
                 break;
             }
-
             /*
              * The tile length (height) in pixels. This is the number of rows in each tile.
              */
@@ -455,7 +432,6 @@ final class ImageFileDirectory {
                 tileOffsets = type.readVector(reader.input, count);
                 break;
             }
-
             /*
              * The tile width in pixels. This is the number of columns in each tile.
              */
