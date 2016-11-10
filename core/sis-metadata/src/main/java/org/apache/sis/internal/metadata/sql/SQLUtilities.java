@@ -17,11 +17,13 @@
 package org.apache.sis.internal.metadata.sql;
 
 import java.sql.SQLException;
+import java.sql.SQLDataException;
 import java.sql.DatabaseMetaData;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -33,7 +35,7 @@ import org.apache.sis.util.Workaround;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class SQLUtilities extends Static {
@@ -47,8 +49,8 @@ public final class SQLUtilities extends Static {
      * Returns a simplified form of the URL (truncated before the first {@code ?} or {@code ;} character),
      * for logging or informative purpose only.
      *
-     * @param  metadata The metadata of the database.
-     * @return A simplified version of database URL.
+     * @param  metadata  the metadata of the database.
+     * @return a simplified version of database URL.
      * @throws SQLException if an error occurred while fetching the URL.
      */
     public static String getSimplifiedURL(final DatabaseMetaData metadata) throws SQLException {
@@ -59,14 +61,46 @@ public final class SQLUtilities extends Static {
     }
 
     /**
+     * Converts the given string to a boolean value, or returns {@code null} if the value is unrecognized.
+     * This method recognizes "true", "false", "yes", "no", "t", "f", 0 and 1 (case insensitive).
+     *
+     * @param  text  the characters to convert to a boolean value, or {@code null}.
+     * @return the given characters as a boolean value, or {@code null} if the given text was null or empty.
+     * @throws SQLDataException if the given text is non-null and non-empty but not recognized.
+     *
+     * @since 0.8
+     */
+    public static Boolean toBoolean(final String text) throws SQLException {
+        if (text == null) {
+            return null;
+        }
+        switch (text.length()) {
+            case 0: return null;
+            case 1: {
+                switch (text.charAt(0)) {
+                    case '0': case 'n': case 'N': case 'f': case 'F': return Boolean.FALSE;
+                    case '1': case 'y': case 'Y': case 't': case 'T': return Boolean.TRUE;
+                }
+                break;
+            }
+            default: {
+                if (text.equalsIgnoreCase("true")  || text.equalsIgnoreCase("yes")) return Boolean.TRUE;
+                if (text.equalsIgnoreCase("false") || text.equalsIgnoreCase("no"))  return Boolean.FALSE;
+                break;
+            }
+        }
+        throw new SQLDataException(Errors.format(Errors.Keys.CanNotConvertValue_2, text, Boolean.class));
+    }
+
+    /**
      * Returns a string like the given string but with all characters that are not letter or digit
      * replaced by the wildcard % character.
      *
      * <p>This method avoid to put a % symbol as the first character, since it prevent some databases
      * to use their index.</p>
      *
-     * @param identifier The identifier to get as a SQL LIKE pattern.
-     * @return The given identifier as a SQL LIKE pattern.
+     * @param  identifier the identifier to get as a SQL LIKE pattern.
+     * @return the given identifier as a SQL LIKE pattern.
      */
     public static String toLikePattern(final String identifier) {
         boolean isLetterOrDigit = false;
@@ -100,8 +134,8 @@ public final class SQLUtilities extends Static {
      *
      * which returns "NTF (Paris) / Lambert zone I" as expected but also zones II and III.
      *
-     * @param  expected The string to search.
-     * @param  actual The string found in the database.
+     * @param  expected  the string to search.
+     * @param  actual    the string found in the database.
      * @return {@code true} if the given string can be accepted.
      */
     @Workaround(library = "Derby", version = "10.11")

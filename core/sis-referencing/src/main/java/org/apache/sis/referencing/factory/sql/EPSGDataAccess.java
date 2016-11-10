@@ -462,7 +462,7 @@ addURIs:    for (int i=0; ; i++) {
                     case 0: url = "http://epsg-registry.org/"; function = OnLineFunction.SEARCH; break;
                     case 1: url = "http://www.epsg.org/"; function = OnLineFunction.DOWNLOAD; break;
                     case 2: {
-                        url = metadata.getURL();
+                        url = SQLUtilities.getSimplifiedURL(metadata);
                         function = OnLineFunction.valueOf(CONNECTION);
                         description = Resources.formatInternational(Resources.Keys.GeodeticDataBase_4,
                                 Constants.EPSG, version, metadata.getDatabaseProductName(),
@@ -474,7 +474,7 @@ addURIs:    for (int i=0; ; i++) {
                 }
                 final DefaultOnlineResource r = new DefaultOnlineResource();
                 try {
-                    r.setLinkage(new URI(SQLUtilities.getSimplifiedURL(metadata)));
+                    r.setLinkage(new URI(url));
                 } catch (URISyntaxException exception) {
                     unexpectedException("getAuthority", exception);
                 }
@@ -2521,13 +2521,15 @@ next:               while (r.next()) {
                         " WHERE (PARAMETER_CODE = ?)", epsg))
                 {
                     if (r.next()) {
-                        final String v = r.getString(1);
-                        if (v != null && !r.next()) {
-                            if (v.equalsIgnoreCase("true") || v.equalsIgnoreCase("yes") || v.equals("1")) {
-                                isReversible = SignReversalComment.OPPOSITE;
-                            } else if (v.equalsIgnoreCase("false") || v.equalsIgnoreCase("no") || v.equals("0")) {
-                                isReversible = SignReversalComment.SAME;
-                            }
+                        Boolean b;
+                        if (translator.useBoolean()) {
+                            b = r.getBoolean(1);
+                            if (r.wasNull()) b = null;
+                        } else {
+                            b = SQLUtilities.toBoolean(r.getString(1));
+                        }
+                        if (b != null) {
+                            isReversible = b ? SignReversalComment.OPPOSITE : SignReversalComment.SAME;
                         }
                     }
                 }
