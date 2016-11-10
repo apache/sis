@@ -426,9 +426,9 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * <p>All arguments given to this method are for logging purpose only.</p>
      *
-     * @param caller The caller method, or {@code null} for {@code "create" + type.getSimpleName()}.
-     * @param type   The type of the created object, or {@code null} for performing no logging.
-     * @param code   The code of the created object, or {@code null} if none.
+     * @param  caller  the caller method, or {@code null} for {@code "create" + type.getSimpleName()}.
+     * @param  type    the type of the created object, or {@code null} for performing no logging.
+     * @param  code    the code of the created object, or {@code null} if none.
      */
     private void release(String caller, final Class<?> type, final String code) {
         final DataAccessRef<DAO> usage = currentDAO.get();  // A null value here would be an error in our algorithm.
@@ -623,8 +623,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * logging the problem. {@code ConcurrentAuthorityFactory} should be able to continue its work normally since the
      * factory that we failed to close will not be used anymore.
      *
-     * @param method     The name of the method to report as the source of the problem.
-     * @param exception  The exception that occurred while closing a Data Access Object.
+     * @param  method     the name of the method to report as the source of the problem.
+     * @param  exception  the exception that occurred while closing a Data Access Object.
      */
     static void unexpectedException(final String method, final Exception exception) {
         Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY),
@@ -651,7 +651,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * This delay is measured from the last time the Data Access Object has been used by a {@code createFoo(String)} method.
      *
      * @param unit The desired unit of measurement for the timeout.
-     * @return The current timeout in the given unit of measurement.
+     * @return the current timeout in the given unit of measurement.
      */
     public long getTimeout(final TimeUnit unit) {
         synchronized (availableDAOs) {
@@ -664,8 +664,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * If a new Data Access Object is needed after the disposal of the last one, then the {@link #newDataAccess()}
      * method will be invoked again.
      *
-     * @param delay The delay of inactivity before to close a Data Access Object.
-     * @param unit  The unit of measurement of the given delay.
+     * @param  delay  the delay of inactivity before to close a Data Access Object.
+     * @param  unit   the unit of measurement of the given delay.
      */
     public void setTimeout(long delay, final TimeUnit unit) {
         ArgumentChecks.ensureStrictlyPositive("delay", delay);
@@ -693,7 +693,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * If this method can not get a Data Access Object (for example because no database connection is available),
      * then this method returns {@code null}.
      *
-     * @return The organization responsible for definition of the database, or {@code null} if unavailable.
+     * @return the organization responsible for definition of the database, or {@code null} if unavailable.
      */
     @Override
     public Citation getAuthority() {
@@ -723,8 +723,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *   <li>release the Data Access Object.</li>
      * </ol>
      *
-     * @param  type The spatial reference objects type (e.g. {@code ProjectedCRS.class}).
-     * @return The set of authority codes for spatial reference objects of the given type.
+     * @param  type  the spatial reference objects type (e.g. {@code ProjectedCRS.class}).
+     * @return the set of authority codes for spatial reference objects of the given type.
      *         If this factory does not contains any object of the given type, then this method returns an empty set.
      * @throws FactoryException if access to the underlying database failed.
      */
@@ -752,8 +752,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *   <li>release the Data Access Object.</li>
      * </ol>
      *
-     * @param  code Value allocated by authority.
-     * @return A description of the object, or {@code null} if the object
+     * @param  code  value allocated by authority.
+     * @return a description of the object, or {@code null} if the object
      *         corresponding to the specified {@code code} has no description.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the query failed for some other reason.
@@ -797,8 +797,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * It is okay to return internal codes completely different than the given codes,
      * provided that the Data Access Objects will understand those internal codes.
      *
-     * @param  code The code to normalize.
-     * @return The normalized code.
+     * @param  code  the code to normalize.
+     * @return the normalized code.
      * @throws FactoryException if an error occurred while normalizing the given code.
      */
     protected String normalizeCode(String code) throws FactoryException {
@@ -820,7 +820,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *   </li>
      * </ul>
      *
-     * @return The object for the given code.
+     * @return the object for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -840,7 +840,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -863,7 +863,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -886,7 +886,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -909,7 +909,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -932,7 +932,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -955,7 +955,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -978,7 +978,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1001,7 +1001,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1024,7 +1024,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1047,7 +1047,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1070,7 +1070,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The datum for the given code.
+     * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1093,7 +1093,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createDatum(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The datum for the given code.
+     * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1116,7 +1116,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createDatum(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The datum for the given code.
+     * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1139,7 +1139,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createDatum(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The datum for the given code.
+     * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1162,7 +1162,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createDatum(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The datum for the given code.
+     * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1185,7 +1185,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createDatum(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The datum for the given code.
+     * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1208,7 +1208,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The ellipsoid for the given code.
+     * @return the ellipsoid for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1231,7 +1231,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The prime meridian for the given code.
+     * @return the prime meridian for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1253,7 +1253,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       method in the parent class.</li>
      * </ul>
      *
-     * @return The extent for the given code.
+     * @return the extent for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1276,7 +1276,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1299,7 +1299,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1322,7 +1322,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1345,7 +1345,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1368,7 +1368,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1391,7 +1391,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1415,7 +1415,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1439,7 +1439,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1462,7 +1462,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The axis for the given code.
+     * @return the axis for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1484,7 +1484,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       method in the parent class.</li>
      * </ul>
      *
-     * @return The unit of measurement for the given code.
+     * @return the unit of measurement for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1507,7 +1507,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The parameter descriptor for the given code.
+     * @return the parameter descriptor for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1530,7 +1530,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The operation method for the given code.
+     * @return the operation method for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1553,7 +1553,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
-     * @return The operation for the given code.
+     * @return the operation for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1634,7 +1634,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @param  <T>   The type of the object to be returned.
      * @param  proxy The proxy to use for creating the object.
      * @param  code  The code of the object to create.
-     * @return The object extracted from the cache or created.
+     * @return the object extracted from the cache or created.
      * @throws FactoryException If an error occurred while creating the object.
      */
     private <T> T create(final AuthorityFactoryProxy<T> proxy, final String code) throws FactoryException {
@@ -1680,7 +1680,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *   </li>
      * </ul>
      *
-     * @return The operations from {@code sourceCRS} to {@code targetCRS}.
+     * @return the operations from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1715,7 +1715,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * Returns a finder which can be used for looking up unidentified objects.
      * The default implementation delegates lookup to the underlying Data Access Object and caches the result.
      *
-     * @return A finder to use for looking up unidentified objects.
+     * @return a finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder can not be created.
      */
     @Override
@@ -2080,7 +2080,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * Returns a string representation of this factory for debugging purpose only.
      * The string returned by this method may change in any future SIS version.
      *
-     * @return A string representation for debugging purpose.
+     * @return a string representation for debugging purpose.
      */
     @Debug
     @Override
