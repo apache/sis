@@ -28,8 +28,8 @@ import java.util.SortedSet;
 
 /**
  * An immutable, serializable empty sorted set.
- * This class exists only on the JDK6 and JDK7 branches;
- * it will be removed on the JDK8 branch.
+ * This class exists only on the JDK7 branch, not on the JDK8 branch,
+ * since an equivalent method has been added to the JDK.</div>
  *
  * @param  <E> Type of elements in the collection.
  *
