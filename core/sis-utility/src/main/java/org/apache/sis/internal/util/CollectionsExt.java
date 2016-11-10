@@ -131,8 +131,8 @@ public final class CollectionsExt extends Static {
      * Returns a {@linkplain SortedSet sorted set} which is always empty and accepts no element.
      *
      * <div class="note"><b>Note:</b>
-     * This method exists only on the JDK6 and JDK7 branches. This method will
-     * be removed from the JDK8 branch, since it has been added to the JDK.</div>
+     * This method exists only on the JDK7 branch, not on the JDK8 branch,
+     * since an equivalent method has been added to the JDK.</div>
      *
      * @param <E> The type of elements in the empty collection.
      * @return An empty collection.
