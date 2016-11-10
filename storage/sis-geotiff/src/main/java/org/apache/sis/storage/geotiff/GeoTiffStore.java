@@ -31,6 +31,7 @@ import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
 
 
@@ -104,8 +105,15 @@ public class GeoTiffStore extends DataStore {
             while ((dir = reader.getImageFileDirectory(n++)) != null) {
                 dir.completeMetadata(reader.metadata, locale);
             }
-            // Add Coordinate Reference System built from GeoTIFF tags.
-            reader.metadata.add(reader.crsBuilder.build());
+
+            //-- add geotiff CRS if exist
+            //-- tiff image may not contain any CRS.
+            {
+                final CoordinateReferenceSystem crs = reader.crsBuilder.build();
+                //-- add if exist
+                if (crs != null) reader.metadata.add(crs);
+            }
+
             metadata = reader.metadata.build(true);
         } catch (IOException e) {
             throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
