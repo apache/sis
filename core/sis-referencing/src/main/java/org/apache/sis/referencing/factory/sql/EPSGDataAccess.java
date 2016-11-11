@@ -2512,7 +2512,12 @@ next:               while (r.next()) {
                 /*
                  * Determines if the inverse operation can be performed by reversing the parameter sign.
                  * The EPSG dataset uses "Yes" or "No" value, but SIS scripts use boolean type. We have
-                 * to accept both.
+                 * to accept both. Note that if we do not recognize the string as a boolean value, then
+                 * we need a SQLException, not a null value.  If the value is wrongly null, this method
+                 * will succeed anyway and EPSGDataAccess will finish its work without apparent problem,
+                 * but Apache SIS will fail later when it will try to compute the inverse operation, for
+                 * example in a call to CRS.findOperation(…). The exception thrown at such later time is
+                 * much more difficult to relate to the root cause than if we throw the exception here.
                  */
                 InternationalString isReversible = null;
                 try (ResultSet r = executeQuery("ParameterSign",
@@ -2525,7 +2530,7 @@ next:               while (r.next()) {
                             b = r.getBoolean(1);
                             if (r.wasNull()) b = null;
                         } else {
-                            b = SQLUtilities.toBoolean(r.getString(1));
+                            b = SQLUtilities.toBoolean(r.getString(1));     // May throw SQLException - see above comment.
                         }
                         if (b != null) {
                             isReversible = b ? SignReversalComment.OPPOSITE : SignReversalComment.SAME;
