@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.logging.LogRecord;
 import java.nio.charset.StandardCharsets;
+import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
@@ -31,8 +32,6 @@ import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.FactoryException;
 
 
 /**
@@ -105,15 +104,12 @@ public class GeoTiffStore extends DataStore {
             while ((dir = reader.getImageFileDirectory(n++)) != null) {
                 dir.completeMetadata(reader.metadata, locale);
             }
-
-            //-- add geotiff CRS if exist
-            //-- tiff image may not contain any CRS.
-            {
-                final CoordinateReferenceSystem crs = reader.crsBuilder.build();
-                //-- add if exist
-                if (crs != null) reader.metadata.add(crs);
-            }
-
+            /*
+             * Add Coordinate Reference System built from GeoTIFF tags.  Note that the CRS may not exist,
+             * in which case the CRS builder returns null. This is safe since all MetadataBuilder methods
+             * ignore null values (a design choice because this pattern come very often).
+             */
+            reader.metadata.add(reader.crsBuilder.build());
             metadata = reader.metadata.build(true);
         } catch (IOException e) {
             throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
