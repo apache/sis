@@ -112,6 +112,11 @@ public final class Resources extends IndexedResourceBundle {
          * Unexpected value for the “{0}” GeoTIFF key. Expected value {1} but found {2}.
          */
         public static final short UnexpectedKeyValue_3 = 9;
+
+        /**
+         * Found {2} tiles or strips in the “{0}” file while {1} were expected.
+         */
+        public static final short UnexpectedTileCount_3 = 10;
     }
 
     /**

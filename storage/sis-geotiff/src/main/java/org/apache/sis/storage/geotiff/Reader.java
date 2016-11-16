@@ -296,7 +296,7 @@ final class Reader extends GeoTIFF {
             resolveDeferredEntries(dir, Long.MAX_VALUE);
             dir.hasDeferredEntries = false;
         }
-        dir.checkTiffTags(this);
+        dir.validateMandatoryTags(this);
         return dir;
     }
 
