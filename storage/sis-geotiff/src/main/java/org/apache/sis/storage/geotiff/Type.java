@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
@@ -222,7 +223,7 @@ enum Type {
 
         @Override double readDouble(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
-            return input.readFloat();
+            return DecimalFunctions.floatToDouble(input.readFloat());
         }
 
         @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {

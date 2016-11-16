@@ -48,6 +48,12 @@ import org.apache.sis.measure.Units;
  */
 final class ImageFileDirectory {
     /**
+     * Possible value for the {@link #tileTagFamily} field. That field tells whether image tiling
+     * was specified using the {@code Tile*} family of TIFF tags or the {@code Strip*} family.
+     */
+    private static final byte TILE = 1, STRIP = 2;
+
+    /**
      * {@code true} if this {@code ImageFileDirectory} has not yet read all deferred entries.
      * When this flag is {@code true}, the {@code ImageFileDirectory} is not yet ready for use.
      */
@@ -83,6 +89,12 @@ final class ImageFileDirectory {
      *
      * <p><b>Note:</b>
      * the {@link #tileHeight} attribute is named {@code TileLength} in TIFF specification.</p>
+     *
+     * <div class="section">Strips considered as tiles</div>
+     * The TIFF specification also defines a {@code RowsPerStrip} tag, which is equivalent to the
+     * height of tiles having the same width than the image. While the TIFF specification handles
+     * "tiles" and "strips" separately, Apache SIS handles strips as a special kind of tiles where
+     * only {@code tileHeight} is specified and {@code tileWidth} defaults to {@link #imageWidth}.
      */
     private int tileWidth = -1, tileHeight = -1;
 
@@ -95,69 +107,52 @@ final class ImageFileDirectory {
      * (i.e. components are stored in separate “component planes”), then the offsets for the first
      * component plane are stored first, followed by all the offsets for the second component plane,
      * and so on.</p>
+     *
+     * <div class="section">Strips considered as tiles</div>
+     * The TIFF specification also defines a {@code StripOffsets} tag, which contains the byte offset
+     * of each strip. In Apache SIS implementation, strips are considered as a special kind of tiles
+     * having a width equals to {@link #imageWidth}.
      */
     private Vector tileOffsets;
 
     /**
      * For each tile, the number of (compressed) bytes in that tile.
      * See {@link #tileOffsets} for a description of how the byte counts are ordered.
+     *
+     * <div class="section">Strips considered as tiles</div>
+     * The TIFF specification also defines a {@code RowsPerStrip} tag, which is the number
+     * of bytes in the strip after compression. In Apache SIS implementation, strips are
+     * considered as a special kind of tiles having a width equals to {@link #imageWidth}.
      */
     private Vector tileByteCounts;
 
     /**
-     * The number of rows per strip.
-     * TIFF image data can be organized into strips for faster random access and efficient I/O buffering.
-     * The {@code rowsPerStrip} and {@link #imageHeight} fields together tell us the number of strips in the entire image.
-     * The equation is:
-     *
-     * {@preformat math
-     *     StripsPerImage = floor ((ImageLength + RowsPerStrip - 1) / RowsPerStrip)
-     * }
-     *
-     * {@code StripsPerImage} is not a field. It is merely a value that a TIFF reader will want to compute
-     * because it specifies the number of {@code StripOffsets} and {@code StripByteCounts} for the image.
-     *
-     * <p>This field should be interpreted as an unsigned value.
-     * The default is 2^32 - 1, which is effectively infinity (i.e. the entire image is one strip).</p>
+     * Whether the tiling was specified using the {@code Tile*} family of TIFF tags or the {@code Strip*}
+     * family of tags. Value can be {@link #TILE}, {@link #STRIP} or 0 if unspecified. This field is used
+     * for error detection since Each TIFF file shall use exactly one family of tags.
      */
-    private long rowsPerStrip = 0xFFFFFFFF;
+    private byte tileTagFamily;
 
     /**
-     * For each strip, the number of bytes in the strip after compression.
-     * <p>N = StripsPerImage for PlanarConfiguration equal to 1.
-     * N = SamplesPerPixel * StripsPerImage for PlanarConfiguration equal to 2.</p>
+     * If {@code true}, the components are stored in separate “component planes”.
+     * The default is {@code false}, which stands for the "chunky" format
+     * (for example RGB data stored as RGBRGBRGB).
      */
-    private Vector stripByteCounts;
+    private boolean isPlanar;
 
     /**
-     *  For each strip, the byte offset of that strip.
+     * Whether the bit order should be reversed. This boolean value is determined from the {@code FillOrder} TIFF tag.
      *
-     * The offset is specified with respect to the beginning of the TIFF file.
+     * <ul>
+     *   <li>Value 1 (mapped to {@code false}) means that pixels with lower column values are stored in the
+     *       higher-order bits of the byte. This is the default value.</li>
+     *   <li>Value 2 (mapped to {@code true}) means that pixels with lower column values are stored in the
+     *       lower-order bits of the byte. In practice, this order is very uncommon and is not recommended.</li>
+     * </ul>
      *
-     * Note that this implies that each strip has a location independent of the locations of other strips.
-     * This feature may be useful for editing applications.
-     * This required field is the only way for a reader to find the image data.
-     * (Unless TileOffsets is used; see {@link #tileOffsets}.
-     *
-     * Note that either SHORT or LONG values may be used to specify the strip offsets.
-     * SHORT values may be used for small TIFF files. It should be noted, however,
-     * that earlier TIFF specifications required LONG strip offsets and that some
-     * software may not accept SHORT values.
-     *
-     * For maximum compatibility with operating systems such as MS-DOS and Windows,
-     * the StripOffsets array should be less than or equal to 64K bytes in length,
-     * and the strips themselves, in both compressed and uncompressed forms,
-     * should not be larger than 64K bytes.
+     * Value 1 is mapped to {@code false} and 2 is mapped to {@code true}.
      */
-    private Vector stripOffsets;
-
-    /**
-     * The number of components per pixel.
-     * The {@code samplesPerPixel} value is usually 1 for bilevel, grayscale and palette-color images,
-     * and 3 for RGB images. If this value is higher, then the {@code ExtraSamples} TIFF tag should
-     * give an indication of the meaning of the additional channels.
-     */
-    private short samplesPerPixel;
+    private boolean reverseBitsOrder;
 
     /**
      * Number of bits per component.
@@ -168,27 +163,78 @@ final class ImageFileDirectory {
     private short bitsPerSample;
 
     /**
-     * If {@code true}, the components are stored in separate “component planes”.
-     * The default is {@code false}, which stands for the "chunky" format
-     * (for example RGB data stored as RGBRGBRGB).
+     * The number of components per pixel.
+     * The {@code samplesPerPixel} value is usually 1 for bilevel, grayscale and palette-color images,
+     * and 3 for RGB images. If this value is higher, then the {@code ExtraSamples} TIFF tag should
+     * give an indication of the meaning of the additional channels.
      */
-    private boolean isPlanar;
+    private short samplesPerPixel;
 
     /**
-     * The compression method, or {@code null} if unknown. If the compression method is unknown
-     * or unsupported we can not read the image, but we still can read the metadata.
+     * Specifies that each pixel has {@code extraSamples.size()} extra components whose interpretation is defined
+     * by one of the values listed below. When this field is used, the {@link #samplesPerPixel} field has a value
+     * greater than what the {@link #photometricInterpretation} field suggests. For example, full-color RGB data
+     * normally has {@link #samplesPerPixel} = 3. If {@code samplesPerPixel} is greater than 3, then this
+     * {@code extraSamples} field describes the meaning of the extra samples. If {@code samplesPerPixel} is,
+     * say, 5 then this {@code extraSamples} field will contain 2 values, one for each extra sample.
+     *
+     * <p>Extra components that are present must be stored as the last components in each pixel.
+     * For example, if {@code samplesPerPixel} is 4 and there is 1 extra component, then it is
+     * located in the last component location in each pixel.</p>
+     *
+     * <p>ExtraSamples is typically used to include non-color information, such as opacity, in an image.
+     * The possible values for each item are:</p>
+     *
+     * <ul>
+     *   <li>0 = Unspecified data.</li>
+     *   <li>1 = Associated alpha data (with pre-multiplied color).</li>
+     *   <li>2 = Unassociated alpha data.</li>
+     * </ul>
+     *
+     * Associated alpha is generally interpreted as true transparency information. Indeed, the original color
+     * values are lost in the case of complete transparency, and rounded in the case of partial transparency.
+     * Also, associated alpha is only logically possible as the single extra channel.
+     * Unassociated alpha channels, on the other hand, can be used to encode a number of independent masks.
+     * The original color data is preserved without rounding. Any number of unassociated alpha channels can
+     * accompany an image.
+     *
+     * <p>If an extra sample is used to encode information that has little or nothing to do with alpha,
+     * then {@code extraSample} = 0 ({@code EXTRASAMPLE_UNSPECIFIED}) is recommended.</p>
      */
-    private Compression compression;
+    private Vector extraSamples;
 
     /**
-     * The color space of the image data.
-     * 0 = WhiteIsZero. For bilevel and grayscale images: 0 is imaged as white.
-     * 1 = BlackIsZero. For bilevel and grayscale images: 0 is imaged as black.
-     * 2 = RGB. RGB value of (0,0,0) represents black, and (255,255,255) represents white.
-     * 3 = Palette color. The value of the component is used as an index into the RGB valuesthe ColorMap.
-     * 4 = Transparency Mask the defines an irregularly shaped region of another image in the same TIFF file.
+     * The color space of the image data, or -1 if unspecified.
+     *
+     * <table>
+     *   <caption>Color space codes</caption>
+     *   <tr><th>Value</th> <th>Label</th>        <th>Description</th></tr>
+     *   <tr><td>0</td> <td>WhiteIsZero</td>      <td>For bilevel and grayscale images. 0 is imaged as white.</td></tr>
+     *   <tr><td>1</td> <td>BlackIsZero</td>      <td>For bilevel and grayscale images. 0 is imaged as black.</td></tr>
+     *   <tr><td>2</td> <td>RGB</td>              <td>RGB value of (0,0,0) represents black, and (255,255,255) represents white.</td></tr>
+     *   <tr><td>3</td> <td>PaletteColor</td>     <td>The value of the component is used as an index into the RGB values of the {@link #colorMap}.</td></tr>
+     *   <tr><td>4</td> <td>TransparencyMask</td> <td>Defines an irregularly shaped region of another image in the same TIFF file.</td></tr>
+     * </table>
      */
-    private short photometricInterpretation;
+    private byte photometricInterpretation = -1;
+
+    /**
+     * A color map for palette color images ({@link #photometricInterpretation} = 3).
+     * This vector defines a Red-Green-Blue color map (often called a lookup table) for palette-color images.
+     * In a palette-color image, a pixel value is used to index into an RGB lookup table. For example, a
+     * palette-color pixel having a value of 0 would be displayed according to the 0th Red, Green, Blue triplet.
+     *
+     * <p>In a TIFF ColorMap, all the Red values come first, followed by all Green values, then all Blue values.
+     * The number of values for each color is 1 {@literal <<} {@link #bitsPerSample}. Therefore, the {@code ColorMap}
+     * vector for an 8-bit palette-color image would have 3 * 256 values. 0 represents the minimum intensity and 65535
+     * represents the maximum intensity. Black is represented by 0,0,0 and white by 65535, 65535, 65535.</p>
+     *
+     * <p>{@code ColorMap} must be included in all palette-color images.
+     * In Specification Supplement 1, support was added for color maps containing other then RGB values.
+     * This scheme includes the {@code Indexed} tag, with value 1, and a {@link #photometricInterpretation}
+     * different from {@code PaletteColor}.</p>
+     */
+    private Vector colorMap;
 
     /**
      * The size of the dithering or halftoning matrix used to create a dithered or halftoned bilevel file.
@@ -204,120 +250,29 @@ final class ImageFileDirectory {
     private short cellWidth = -1, cellHeight = -1;
 
     /**
-     * The logical order of bits within a byte.
-     *
-     * The specification defines these values:
-     *
-     * 1 = pixels with lower column values are stored in the higher-order bits of the byte.
-     * 2 = pixels with lower column values are stored in the lower-order bits of the byte.
-     *
-     * The specification goes on to warn that FillOrder=2 should not be used in some cases to avoid ambigouty,
-     * and that support for FillOrder=2.
-     *
-     * In practice, the use of FillOrder=2 is very uncommon, and is not recommended.
+     * The number of pixels per {@link #resolutionUnit} in the {@link #imageWidth} and the {@link #imageHeight}
+     * directions, or {@link Double#NaN} is unspecified. Since ISO 19115 does not have separated resolution fields
+     * for image width and height, Apache SIS stores only the maximal value.
      */
-    private short fillOrder = 1;
+    private double resolution = Double.NaN;
 
     /**
-     * Specifies that each pixel has N extra components whose interpretation is defined by one of the values listed below.
-     * When this field is used, the SamplesPerPixel field has a value greater than the PhotometricInterpretation field suggests.
-     * For example, full-color RGB data normally has SamplesPerPixel=3.
-     * If SamplesPerPixel is greater than 3, then the ExtraSamples field describes the meaning of the extra samples.
-     * If SamplesPerPixel is, say, 5 then ExtraSamples will contain 2 values, one for each extra sample.
-     * ExtraSamples is typically used to include non-color information, such as opacity, in an image.
-     *
-     * The possible values for each item in the field's value are:
-     * 0 = Unspecified data
-     * 1 = Associated alpha data (with pre-multiplied color)
-     * 2 = Unassociated alpha data
-
-     * The difference between associated alpha and unassociated alpha is not just a matter of taste or a matter of maths.
-
-     * Associated alpha is generally interpreted as true transparancy information.
-     * Indeed, the original color values are lost in the case of complete transparency,
-     * and rounded in the case of partial transparency. Also, associated alpha is only
-     * logically possible as the single extra channel.
-
-     * Unassociated alpha channels, on the other hand, can be used to encode a number of independent masks, for example.
-     * The original color data is preserved without rounding. Any number of unassociated alpha channels can accompany an image.
-
-     * If an extra sample is used to encode information that has little or nothing to do with alpha,
-     * ExtraSample=0 (EXTRASAMPLE_UNSPECIFIED) is recommended.
-
-     * <strong>Note also that extra components that are present must be stored as the last components in each pixel.
-     * For example, if SamplesPerPixel is 4 and there is 1 extra component,
-     * then it is located in the last component location (SamplesPerPixel-1) in each pixel.</strong>
-
-     * This field must be present if there are extra samples.
-     */
-    private Vector extraSamples;
-
-    /**
-     * A color map for palette color images.
-
-     * This field defines a Red-Green-Blue color map (often called a lookup table) for palette-color images.
-     * In a palette-color image, a pixel value is used to index into an RGB lookup table.
-     * For example, a palette-color pixel having a value of 0 would be displayed according to the 0th Red, Green, Blue triplet.
-
-     * In a TIFF ColorMap, all the Red values come first, followed by the Green values,
-     * then the Blue values. The number of values for each color is 2**BitsPerSample.
-     * Therefore, the ColorMap field for an 8-bit palette-color image would have 3 * 256 values.
-     * The width of each value is 16 bits, as implied by the type of SHORT. 0 represents the minimum intensity,
-     * and 65535 represents the maximum intensity. Black is represented by 0,0,0, and white by 65535, 65535, 65535.
-
-     * ColorMap must be included in all palette-color images.
-
-     * In Specification Supplement 1, support was added for ColorMaps containing other then RGB values.
-     * This scheme includes the Indexed tag, with value 1, and a PhotometricInterpretation different
-     * from PaletteColor then next denotes the colorspace of the ColorMap entries.
-     */
-    private Vector colorMap;
-
-    /**
-     * The number of pixels per ResolutionUnit in the ImageWidth and the ImageHeight direction.
-     *
-     * In SIS use case, ISO 19115 Metadatas allow only one kind of resolution exprimate in meters.
-     * This attribut is the maximum value from tiff XRESOLUTION and YRESOLUTION.
-     * {@preformat
-     * tiffResolution = Math.max(XRESOLUTION, YRESOLUTION);
-     * }
-     */
-    private double tiffResolution = -1;
-
-    /**
-     * The unit of measurement for {@linkplain #tiffResolution XResolution and YResolution}.
-     * Default value assume 2 (Inch).
-     *
-     * The specification defines these values:
-     *
-     * 1 = No absolute unit of measurement. Used for images that may have a non-square aspect ratio, but no meaningful absolute dimensions.
-     * 2 = Inch.
-     * 3 = Centimeter.
+     * The unit of measurement for the {@linkplain #resolution} value, or {@code null} if none.
+     * A null value is used for images that may have a non-square aspect ratio, but no meaningful
+     * absolute dimensions. Default value for TIFF files is inch.
      */
     private Unit<Length> resolutionUnit = Units.INCH;
+
+    /**
+     * The compression method, or {@code null} if unknown. If the compression method is unknown
+     * or unsupported we can not read the image, but we still can read the metadata.
+     */
+    private Compression compression;
 
     /**
      * Creates a new image file directory.
      */
     ImageFileDirectory() {
-    }
-
-    /**
-     * Returns {@code true} if this image contain some internaly TIFF TAGS adapted for tiled reading, else return {@code false}.
-     *
-     * @return {@code true} for tiled tags attributs existance, else return {@code false}.
-     */
-    private boolean isTiled() {
-        return tileWidth >= 0 || tileHeight >= 0 || tileByteCounts != null || tileOffsets != null;
-    }
-
-    /**
-     * Returns {@code true} if this image contain some internaly TIFF TAGS adapted for strip reading, else return {@code false}.
-     *
-     * @return {@code true} for strip tags attributs existance, else return {@code false}.
-     */
-    private boolean isStripped() {
-        return stripByteCounts != null || stripOffsets != null;
     }
 
     /**
@@ -355,11 +310,12 @@ final class ImageFileDirectory {
              * 2 = Planar format. For example one plane of Red components, one plane of Green and one plane if Blue.
              */
             case Tags.PlanarConfiguration: {
-                final long value = type.readLong(reader.input, count);
-                if (value < 1 || value > 2) {
-                    return value;
+                final int value = type.readInt(reader.input, count);
+                switch (value) {
+                    case 1:  isPlanar = false; break;
+                    case 2:  isPlanar = true;  break;
+                    default: return value;                  // Cause a warning to be reported by the caller.
                 }
-                isPlanar = (value == 2);
                 break;
             }
             /*
@@ -376,45 +332,11 @@ final class ImageFileDirectory {
                 imageHeight = type.readUnsignedLong(reader.input, count);
                 break;
             }
-
-            ////////////////////////////////////////////////////////////////////
-            ////                                                            ////
-            ////            Internaly stored into strips hierarchy          ////
-            ////                                                            ////
-            ////////////////////////////////////////////////////////////////////
-            /*
-             * The number of rows per strip. RowsPerStrip and ImageLength together tell us the number of strips
-             * in the entire image: StripsPerImage = floor((ImageLength + RowsPerStrip - 1) / RowsPerStrip).
-             */
-            case Tags.RowsPerStrip: {
-                rowsPerStrip = type.readUnsignedLong(reader.input, count);
-                break;
-            }
-            /*
-             * For each strip, the number of bytes in the strip after compression.
-             */
-            case Tags.StripByteCounts: {
-                stripByteCounts = type.readVector(reader.input, count);
-                break;
-            }
-            /*
-             * For each strip, the byte offset of that strip relative to the beginning of the TIFF file.
-             */
-            case Tags.StripOffsets: {
-                stripOffsets = type.readVector(reader.input, count);
-                break;
-            }
-
-            ////////////////////////////////////////////////////////////////////
-            ////                                                            ////
-            ////            Internaly stored into Tiles hierarchy           ////
-            ////                                                            ////
-            ////////////////////////////////////////////////////////////////////
-
             /*
              * The tile width in pixels. This is the number of columns in each tile.
              */
             case Tags.TileWidth: {
+                setTileTagFamily(reader, TILE);
                 tileWidth = type.readInt(reader.input, count);
                 break;
             }
@@ -422,6 +344,16 @@ final class ImageFileDirectory {
              * The tile length (height) in pixels. This is the number of rows in each tile.
              */
             case Tags.TileLength: {
+                setTileTagFamily(reader, TILE);
+                tileHeight = type.readInt(reader.input, count);
+                break;
+            }
+            /*
+             * The number of rows per strip. This is considered by SIS as a special kind of tiles.
+             * From this point of view, TileLength = RowPerStrip and TileWidth = ImageWidth.
+             */
+            case Tags.RowsPerStrip: {
+                setTileTagFamily(reader, STRIP);
                 tileHeight = type.readInt(reader.input, count);
                 break;
             }
@@ -429,6 +361,16 @@ final class ImageFileDirectory {
              * The tile length (height) in pixels. This is the number of rows in each tile.
              */
             case Tags.TileOffsets: {
+                setTileTagFamily(reader, TILE);
+                tileOffsets = type.readVector(reader.input, count);
+                break;
+            }
+            /*
+             * For each strip, the byte offset of that strip relative to the beginning of the TIFF file.
+             * In Apache SIS implementation, strips are considered as a special kind of tiles.
+             */
+            case Tags.StripOffsets: {
+                setTileTagFamily(reader, STRIP);
                 tileOffsets = type.readVector(reader.input, count);
                 break;
             }
@@ -436,15 +378,26 @@ final class ImageFileDirectory {
              * The tile width in pixels. This is the number of columns in each tile.
              */
             case Tags.TileByteCounts: {
+                setTileTagFamily(reader, TILE);
+                tileByteCounts = type.readVector(reader.input, count);
+                break;
+            }
+            /*
+             * For each strip, the number of bytes in the strip after compression.
+             * In Apache SIS implementation, strips are considered as a special kind of tiles.
+             */
+            case Tags.StripByteCounts: {
+                setTileTagFamily(reader, STRIP);
                 tileByteCounts = type.readVector(reader.input, count);
                 break;
             }
 
-            ////////////////////////////////////////////////////////////////////
-            ////                                                            ////
-            ////                  Samples encoding made                     ////
-            ////                                                            ////
-            ////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            ////                                                                                        ////
+            ////    Information that defines how the sample values are organized (their layout).        ////
+            ////    In Java2D, following information are needed for building the SampleModel.           ////
+            ////                                                                                        ////
+            ////////////////////////////////////////////////////////////////////////////////////////////////
 
             /*
              * Compression scheme used on the image data.
@@ -453,16 +406,21 @@ final class ImageFileDirectory {
                 final long value = type.readLong(reader.input, count);
                 compression = Compression.valueOf(value);
                 if (compression == null) {
-                    return value;
+                    return value;                           // Cause a warning to be reported by the caller.
                 }
                 break;
             }
             /*
-             * The logical order of bits within a byte. If this value is 2, then bits order shall be reversed in every
-             * bytes before decompression.
+             * The logical order of bits within a byte. If this value is 2, then
+             * bits order shall be reversed in every bytes before decompression.
              */
             case Tags.FillOrder: {
-                fillOrder = type.readShort(reader.input, count);
+                final int value = type.readInt(reader.input, count);
+                switch (value) {
+                    case 1: reverseBitsOrder = false; break;
+                    case 2: reverseBitsOrder = true;  break;
+                    default: return value;                  // Cause a warning to be reported by the caller.
+                }
                 break;
             }
             /*
@@ -517,21 +475,22 @@ final class ImageFileDirectory {
              * The color space of the image data.
              * 0 = WhiteIsZero. For bilevel and grayscale images: 0 is imaged as white.
              * 1 = BlackIsZero. For bilevel and grayscale images: 0 is imaged as black.
-             * 2 = RGB. RGB value of (0,0,0) represents black, and (255,255,255) represents white.
-             * 3 = Palette color. The value of the component is used as an index into the RGB valuesthe ColorMap.
+             * 2 = RGB. RGB value of (0,0,0) represents black, and (65535,65535,65535) represents white.
+             * 3 = Palette color. The value of the component is used as an index into the RGB values of the ColorMap.
              * 4 = Transparency Mask the defines an irregularly shaped region of another image in the same TIFF file.
              */
             case Tags.PhotometricInterpretation: {
-                photometricInterpretation = type.readShort(reader.input, count);
+                final short value = type.readShort(reader.input, count);
+                if (value < 0 || value > Byte.MAX_VALUE) return value;
+                photometricInterpretation = (byte) value;
                 break;
             }
             /*
-             * The Red-Green-Blue lookup table map for palette-color images (IndexColorModel in Java2D).
-             * All the Red values come first, followed by the Green values, then the Blue values.
-             * The number of values for each color is (1 << BitsPerSample) and the type of each value is USHORT.
-             * 0 represents the minimum intensity (black is 0,0,0) and 65535 represents the maximum intensity.
-             * If the Indexed tag has value 1 and PhotometricInterpretation is different from PaletteColor,
-             * then the color space may be different than RGB.
+             * The lookup table for palette-color images. This is represented by IndexColorModel in Java2D.
+             * Color space is RGB if PhotometricInterpretation is "PaletteColor", or another color space otherwise.
+             * In the RGB case, all the Red values come first, followed by all Green values, then all Blue values.
+             * The number of values for each color is (1 << BitsPerSample) where 0 represents the minimum intensity
+             * (black is 0,0,0) and 65535 represents the maximum intensity.
              */
             case Tags.ColorMap: {
                 colorMap = type.readVector(reader.input, count);
@@ -586,45 +545,34 @@ final class ImageFileDirectory {
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
             ////                                                                                        ////
-            ////    Information related to the Coordinate Reference System referencement.        ////
-            ////                                                                                        ////
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-
-           /*
-            * References the needed "GeoKeys" to build CRS.
-            * An array of unsigned SHORT values, which are primarily grouped into blocks of 4.
-            * The first 4 values are special, and contain GeoKey directory header information.
-            */
-            case Tags.GeoKeyDirectoryTag : {
-                reader.crsBuilder.setGeoKeyDirectoryTag(type.readVector(reader.input, count));
-                break;
-            }
-
-           /*
-            * This tag is used to store all of the DOUBLE valued GeoKeys, referenced by the GeoKeyDirectoryTag.
-            */
-            case Tags.GeoDoubleParamsTag : {
-                reader.crsBuilder.setGeoDoubleParamsTag(type.readVector(reader.input, count));
-                break;
-            }
-
-           /*
-            * This tag is used to store all of the ASCII valued GeoKeys, referenced by the GeoKeyDirectoryTag.
-            */
-            case Tags.GeoAsciiParamsTag : {
-                final String[] readString = type.readString(reader.input, count, reader.owner.encoding);
-                if (readString != null && readString.length > 0)
-                    reader.crsBuilder.setGeoAsciiParamsTag(readString[0]);
-                break;
-            }
-
-
-            ////////////////////////////////////////////////////////////////////////////////////////////////
-            ////                                                                                        ////
             ////    Information related to the Coordinate Reference System and the bounding box.        ////
             ////                                                                                        ////
             ////////////////////////////////////////////////////////////////////////////////////////////////
 
+            /*
+             * References the "GeoKeys" needed for building the Coordinate Reference System.
+             * An array of unsigned SHORT values, which are primarily grouped into blocks of 4.
+             * The first 4 values are special, and contain GeoKey directory header information.
+             */
+            case Tags.GeoKeyDirectoryTag : {
+                reader.crsBuilder.setGeoKeyDirectoryTag(type.readVector(reader.input, count));
+                break;
+            }
+            /*
+             * This tag is used to store all of the DOUBLE valued GeoKeys, referenced by the GeoKeyDirectoryTag.
+             */
+            case Tags.GeoDoubleParamsTag : {
+                reader.crsBuilder.setGeoDoubleParamsTag(type.readVector(reader.input, count));
+                break;
+            }
+            /*
+             * This tag is used to store all of the ASCII valued GeoKeys, referenced by the GeoKeyDirectoryTag.
+             */
+            case Tags.GeoAsciiParamsTag : {
+                final String[] values = type.readString(reader.input, count, reader.owner.encoding);
+                reader.crsBuilder.setGeoAsciiParamsTag(values[0]);      // TODO: should pass the full array.
+                break;
+            }
             /*
              * The orientation of the image with respect to the rows and columns.
              * This is an integer numeroted from 1 to 7 inclusive (see TIFF specification for meaning).
@@ -633,7 +581,6 @@ final class ImageFileDirectory {
                 // TODO
                 break;
             }
-
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
             ////                                                                                        ////
@@ -686,7 +633,7 @@ final class ImageFileDirectory {
              */
             case Tags.HostComputer: {
                 for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
-                    reader.metadata.addProcessing(value);
+                    reader.metadata.addProcessingPlatform(value);
                 }
                 break;
             }
@@ -695,7 +642,7 @@ final class ImageFileDirectory {
              */
             case Tags.Software: {
                 for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
-                    reader.metadata.setSoftwareReferences(value);
+                    reader.metadata.addSoftwareReferences(value);
                 }
                 break;
             }
@@ -704,9 +651,8 @@ final class ImageFileDirectory {
              * Synthetic images should not include this field.
              */
             case Tags.Make: {
-                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
-                    reader.metadata.addInstrument(value);
-                }
+                // TODO: is Instrument.citation.citedResponsibleParty.party.name an appropriate place?
+                // what would be the citation title? A copy of Tags.Model?
                 break;
             }
             /*
@@ -720,22 +666,22 @@ final class ImageFileDirectory {
                 break;
             }
             /*
-             * The number of pixels per ResolutionUnit in the ImageWidth direction.
+             * The number of pixels per ResolutionUnit in the ImageWidth or ImageHeight direction.
              */
-            case Tags.XResolution: {
-                tiffResolution = Math.max(type.readDouble(reader.input, count), tiffResolution);
-                break;
-            }
-            /*
-             * The number of pixels per ResolutionUnit in the ImageLength direction.
-             */
+            case Tags.XResolution:
             case Tags.YResolution: {
-                tiffResolution = Math.max(type.readDouble(reader.input, count), tiffResolution);
+                final double r = type.readDouble(reader.input, count);
+                if (Double.isNaN(resolution) || r > resolution) {
+                    resolution = r;
+                }
                 break;
             }
             /*
              * The unit of measurement for XResolution and YResolution.
-             * 1 = None, 2 = Inch, 3 = Centimeter.
+             *
+             *   1 = None. Used for images that may have a non-square aspect ratio.
+             *   2 = Inch (default).
+             *   3 = Centimeter.
              */
             case Tags.ResolutionUnit: {
                 final short unit = type.readShort(reader.input, count);
@@ -743,7 +689,7 @@ final class ImageFileDirectory {
                     case 1:  resolutionUnit = null;             break;
                     case 2:  resolutionUnit = Units.INCH;       break;
                     case 3:  resolutionUnit = Units.CENTIMETRE; break;
-                    default: return unit;                           // Cause a warning about unknown value.
+                    default: return unit;                   // Cause a warning to be reported by the caller.
                 }
                 break;
             }
@@ -761,7 +707,7 @@ final class ImageFileDirectory {
                     case 1:  break;
                     case 2:  if (cellWidth >= 0 || cellHeight >= 0) return null; else break;
                     case 3:  break;
-                    default: return value;           // Cause a warning about unknown value.
+                    default: return value;                  // Cause a warning to be reported by the caller.
                 }
                 cellWidth = cellHeight = (short) -value;
                 break;
@@ -805,16 +751,90 @@ final class ImageFileDirectory {
     }
 
     /**
-     * Validate method which re-build missing attributes from others as if possible or
-     * throw exception if mandatory attributes are missing or also if it is impossible
-     * to resolve ambiguity between some attributes.
+     * Sets the {@link #tileTagFamily} field to the given value if it does not conflict with previous value.
+     *
+     * @param  reader   the input stream to read.
+     * @param  family   either {@link #TILE} or {@link #STRIP}.
+     * @throws DataStoreContentException if {@link #tileTagFamily} is already set to another value.
      */
-    final void checkTiffTags(final Reader reader) throws DataStoreContentException {
-        if (imageWidth  < 0) throw missingTag(reader, Tags.ImageWidth);
-        if (imageHeight < 0) throw missingTag(reader, Tags.ImageLength);
-        if (isTiled() == isStripped()) {
+    private void setTileTagFamily(final Reader reader, final byte family) throws DataStoreContentException {
+        if (tileTagFamily != family && tileTagFamily != 0) {
             throw new DataStoreContentException(reader.resources().getString(
                     Resources.Keys.InconsistentTileStrip_1, reader.input.filename));
+        }
+        tileTagFamily = family;
+    }
+
+    /**
+     * Multiplies the given value by the number of bytes in one pixel,
+     * or return -1 if the result is not an integer.
+     *
+     * @throws ArithmeticException if the result overflows.
+     */
+    private long pixelToByteCount(long value) {
+        value = Math.multiplyExact(value, samplesPerPixel * (int) bitsPerSample);
+        return (value % Byte.SIZE == 0) ? value / Byte.SIZE : -1;
+    }
+
+    /**
+     * Computes the tile width or height from the other size,
+     * or returns a negative number if the size can not be computed.
+     *
+     * @param  knownSize the tile width or height.
+     * @return the tile width if the known size was height, or the tile height if the known size was width,
+     *         or a negative number if the width or height can not be computed.
+     * @throws ArithmeticException if the result overflows.
+     */
+    private int computeTileSize(final int knownSize) {
+        final int n = tileByteCounts.size();
+        if (n != 0) {
+            final long count = tileByteCounts.longValue(0);
+            int i = 0;
+            do if (++i == n) {
+                // At this point, we verified that all vector values are equal.
+                final long length = pixelToByteCount(knownSize);
+                if (count % length != 0) break;
+                return Math.toIntExact(count / length);
+            } while (tileByteCounts.longValue(i) == n);
+        }
+        return -1;
+    }
+
+    /**
+     * Verifies that the mandatory tags are present and consistent with each others.
+     * If a mandatory tag is absent, then there is a choice:
+     *
+     * <ul>
+     *   <li>If the tag can be inferred from other tag values, performs that computation and logs a warning.</li>
+     *   <li>Otherwise throws an exception.</li>
+     * </ul>
+     *
+     * @throws DataStoreContentException if a mandatory tag is missing and can not be inferred.
+     */
+    final void validateMandatoryTags(final Reader reader) throws DataStoreContentException {
+        if (imageWidth  < 0) throw missingTag(reader, Tags.ImageWidth);
+        if (imageHeight < 0) throw missingTag(reader, Tags.ImageLength);
+        final int offsetsTag, byteCountsTag;
+        switch (tileTagFamily) {
+            case STRIP: {
+                if (tileWidth  < 0) tileWidth  = Math.toIntExact(imageWidth);
+                if (tileHeight < 0) tileHeight = Math.toIntExact(imageHeight);
+                offsetsTag    = Tags.StripOffsets;
+                byteCountsTag = Tags.StripByteCounts;
+                break;
+            }
+            case TILE:  {
+                offsetsTag    = Tags.TileOffsets;
+                byteCountsTag = Tags.TileByteCounts;
+                break;
+            }
+            default: {
+                throw new DataStoreContentException(reader.resources().getString(
+                                Resources.Keys.InconsistentTileStrip_1, reader.input.filename));
+            }
+        }
+        if (tileOffsets == null) {
+            throw missingTag(reader, offsetsTag);
         }
         if (samplesPerPixel == 0) {
             samplesPerPixel = 1;
@@ -827,109 +847,65 @@ final class ImageFileDirectory {
         if (colorMap != null) {
             ensureSameLength(reader, Tags.ColorMap, Tags.BitsPerSample, colorMap.size(),  3 * (1 << bitsPerSample));
         }
-        final boolean canReBuilt = (!isPlanar && compression.equals(Compression.NONE));
-        if (isTiled()) {
-            //-- it is not efficient and dangerous to try to re-build tileOffsets.
-            if (tileOffsets == null) {
-                throw missingTag(reader, Tags.TileOffsets);
+        /*
+         * All of tile width, height and length information should be provided. But if only one of them is missing,
+         * we can compute it provided that the file does not use any compression method. If there is a compression,
+         * then we set a bit for preventing the 'switch' block to perform a calculation but we let the code performs
+         * the other checks in order to get an exception to be thrown with a good message.
+         */
+        int missing = !isPlanar && compression.equals(Compression.NONE) ? 0 : 0b1000;
+        if (tileWidth      < 0)     missing |= 0b0001;
+        if (tileHeight     < 0)     missing |= 0b0010;
+        if (tileByteCounts == null) missing |= 0b0100;
+        switch (missing) {
+            case 0:
+            case 0b1000: {          // Every thing is ok.
+                break;
             }
-            if (canReBuilt) {
-                int missing = 0;
-                if (tileWidth      < 0)     missing |= 0b100;
-                if (tileHeight     < 0)     missing |= 0b010;
-                if (tileByteCounts == null) missing |= 0b001;
-                switch (missing) {
-                    case 0b100: {           // Compute missing tile width.
-                        tileWidth = tileByteCounts.intValue(0) / (tileHeight * samplesPerPixel * (bitsPerSample / Byte.SIZE));
-                        missingTag(reader, Tags.TileWidth, tileWidth, true);
-                        break;
-                    }
-                    case 0b010: {           // Compute missing tile height.
-                        tileHeight = tileByteCounts.intValue(0) / (tileWidth * samplesPerPixel * (bitsPerSample / Byte.SIZE));
-                        missingTag(reader, Tags.TileLength, tileHeight, true);
-                        break;
-                    }
-                    case 0b001: {           // Compute missing tile byte count.
-                        final long tileByteCount        = tileHeight * tileWidth * samplesPerPixel * bitsPerSample;
-                        final long[] tileByteCountArray = new long[tileOffsets.size()];
-                        Arrays.fill(tileByteCountArray, tileByteCount);
-                        tileByteCounts = Vector.create(tileByteCountArray, true);
-                        missingTag(reader, Tags.TileByteCounts, tileByteCount, true);
-                        break;
-                    }
-                    case 0: {
-                        // Every thing is ok.
-                        break;
-                    }
-                    default: {
-                        final int tag;
-                        switch (Integer.highestOneBit(missing)) {
-                            case 0b100: tag = Tags.TileWidth;      break;
-                            case 0b010: tag = Tags.TileLength;     break;
-                            default:    tag = Tags.TileByteCounts; break;
-                        }
-                        throw missingTag(reader, tag);
-                    }
+            case 0b0001: {          // Compute missing tile width.
+                tileWidth = computeTileSize(tileHeight);
+                missingTag(reader, Tags.TileWidth, tileWidth, true);
+                break;
+            }
+            case 0b0010: {          // Compute missing tile height.
+                tileHeight = computeTileSize(tileWidth);
+                missingTag(reader, Tags.TileLength, tileHeight, true);
+                break;
+            }
+            case 0b0100: {          // Compute missing tile byte count.
+                final long tileByteCount = pixelToByteCount(Math.multiplyExact(tileWidth, tileHeight));
+                final long[] tileByteCountArray = new long[tileOffsets.size()];
+                Arrays.fill(tileByteCountArray, tileByteCount);
+                tileByteCounts = Vector.create(tileByteCountArray, true);
+                missingTag(reader, byteCountsTag, tileByteCount, true);
+                break;
+            }
+            default: {
+                final int tag;
+                switch (Integer.lowestOneBit(missing)) {
+                    case 0b0001: tag = Tags.TileWidth;  break;
+                    case 0b0010: tag = Tags.TileLength; break;
+                    default:     tag = byteCountsTag;   break;
                 }
-            }
-            if (tileWidth      <     0) throw missingTag(reader, Tags.TileWidth);
-            if (tileHeight     <     0) throw missingTag(reader, Tags.TileLength);
-            if (tileByteCounts == null) throw missingTag(reader, Tags.TileByteCounts);
-
-            //-- Check size of ByteCounts and Offsets
-            //-- important reading attributs, Level WARNING
-            long expectedSize = Math.floorDiv(imageWidth, tileWidth) * Math.floorDiv(imageHeight, tileHeight);
-            if (isPlanar) expectedSize *= samplesPerPixel;
-            if (tileOffsets.size() != expectedSize) {
-                warning(reader, Level.WARNING, Resources.Keys.MismatchedLength_4, "TileOffsets",
-                        "ImageWidth, ImageHeight, TileWidth, TileHeight, SamplePerPixel and PlanarConfiguration",
-                        expectedSize, tileOffsets.size());
-            }
-            if (tileByteCounts.size() != expectedSize) {
-                warning(reader, Level.WARNING, Resources.Keys.MismatchedLength_4, "TileByteCounts",
-                        "ImageWidth, ImageHeight, TileWidth, TileHeight, SamplePerPixel and PlanarConfiguration",
-                        expectedSize, tileByteCounts.size());
-            }
-            if (tileByteCounts.size() != tileOffsets.size()) {
-                warning(reader, Level.WARNING, Resources.Keys.MismatchedLength_4, "TileByteCounts", "TileOffsets",
-                        tileOffsets.size(), tileByteCounts.size());
+                throw missingTag(reader, tag);
             }
         }
-        if (isStripped()) {
-            if (stripOffsets == null) {
-                throw missingTag(reader, Tags.StripOffsets);
-            }
-            if (rowsPerStrip == 0xFFFFFFFF) {
-                rowsPerStrip = imageHeight;
-                warning(reader, Level.FINE, Resources.Keys.DefaultValueForAttribute_2, "RowsPerStrip", imageHeight+"(= imageLength)");
-            }
-            if (canReBuilt) {
-                if (stripByteCounts == null) {
-                    final long stripByteCount = rowsPerStrip * imageWidth * samplesPerPixel * bitsPerSample;
-                    final long[] stripByteCountsArray = new long[stripOffsets.size()];
-                    Arrays.fill(stripByteCountsArray, stripByteCount);
-                    stripByteCounts = Vector.create(stripByteCountsArray, true);
-                    missingTag(reader, Tags.StripByteCounts, stripByteCount, true);
-                }
-            }
-            if (stripByteCounts == null) {
-                throw missingTag(reader, Tags.StripByteCounts);
-            }
-            //-- Check size of ByteCounts and Offsets
-            //-- important reading attributs, Level WARNING
-            int expectedSize = (int) Math.floorDiv(imageHeight, rowsPerStrip);
-            if (isPlanar) expectedSize *= samplesPerPixel;
-            if (stripOffsets.size() != expectedSize) {
-                warning(reader, Level.WARNING, Resources.Keys.MismatchedLength_4, "StripOffsets",
-                        "RowsPerStrip, ImageHeight, SamplePerPixel and PlanarConfiguration",
-                        expectedSize, stripOffsets.size());
-            }
-            if (stripByteCounts.size() != expectedSize) {
-                warning(reader, Level.WARNING, Resources.Keys.MismatchedLength_4, "StripByteCounts",
-                        "RowsPerStrip, ImageHeight, SamplePerPixel and PlanarConfiguration",
-                        expectedSize, stripByteCounts.size());
-            }
-            ensureSameLength(reader, Tags.StripByteCounts, Tags.StripOffsets, stripOffsets.size(), stripByteCounts.size());
+        /*
+         * Log a warning if the tile offset and tile byte count vectors do not have the same length. Then
+         * ensure that the number of tiles is equal to the expected number.  The formula below is the one
+         * documented in the TIFF specification and reproduced in tileWidth & tileHeight fields javadoc.
+         */
+        ensureSameLength(reader, offsetsTag, byteCountsTag, tileOffsets.size(), tileByteCounts.size());
+        long expectedCount = Math.multiplyExact(
+                Math.addExact(imageWidth,  tileWidth  - 1) / tileWidth,
+                Math.addExact(imageHeight, tileHeight - 1) / tileHeight);
+        if (isPlanar) {
+            expectedCount = Math.multiplyExact(expectedCount, samplesPerPixel);
+        }
+        final int actualCount = Math.min(tileOffsets.size(), tileByteCounts.size());
+        if (actualCount != expectedCount) {
+            throw new DataStoreContentException(reader.resources().getString(Resources.Keys.UnexpectedTileCount_3,
+                    reader.input.filename, expectedCount, actualCount));
         }
     }
 
@@ -941,10 +917,12 @@ final class ImageFileDirectory {
         if (compression != null) {
             metadata.addCompression(compression.name().toLowerCase(locale));
         }
-        //-- add Resolution into metadata
-        //-- convert into meters
-        if (tiffResolution != -1 && resolutionUnit != null) {
-            metadata.addResolution(resolutionUnit.getConverterTo(Units.METRE).convert(tiffResolution));
+        /*
+         * Add the resolution into the metadata. Our current ISO 19115 implementation restricts
+         * the resolution unit to metres, but it may be relaxed in a future SIS version.
+         */
+        if (!Double.isNaN(resolution) && resolutionUnit != null) {
+            metadata.addResolution(resolutionUnit.getConverterTo(Units.METRE).convert(resolution));
         }
         /*
          * Cell size is relevant only if the Threshholding TIFF tag value is 2. By convention in

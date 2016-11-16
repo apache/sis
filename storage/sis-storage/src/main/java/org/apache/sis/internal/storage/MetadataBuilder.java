@@ -1227,12 +1227,21 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Sets the reference to document describing processing software.
-     *
-     * @param softwareReference software describing, or {@code null}.
+     * The computer and/or operating system in use at the processing time.
      */
-    public final void setSoftwareReferences(String softwareReference) {
-        processing().getSoftwareReferences().add(new DefaultCitation(softwareReference));
+    public final void addProcessingPlatform(String identifier) {
+        // TODO
+    }
+
+    /**
+     * Adds a reference to document describing processing software.
+     *
+     * @param title  title of the document that describe the software, or {@code null} if none.
+     */
+    public final void addSoftwareReferences(String title) {
+        if (title != null && !(title = title.trim()).isEmpty()) {
+            processing().getSoftwareReferences().add(new DefaultCitation(title));
+        }
     }
 
     /**
