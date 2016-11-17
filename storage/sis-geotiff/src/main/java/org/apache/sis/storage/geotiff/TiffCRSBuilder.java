@@ -26,10 +26,9 @@ import java.util.logging.LogRecord;
 
 import javax.measure.Unit;
 
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.opengis.parameter.ParameterValueGroup;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.GeodeticCRS;
@@ -37,7 +36,6 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -63,18 +61,13 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.crs.AbstractCRS;
-import org.apache.sis.referencing.crs.DefaultGeographicCRS;
-import org.apache.sis.referencing.crs.DefaultProjectedCRS;
-import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.cs.DefaultCartesianCS;
-import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
+
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Vocabulary;
+
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 
 /**
  * Build a {@link CoordinateReferenceSystem} from Tiff tags informations.<br>
@@ -159,16 +152,31 @@ import org.apache.sis.util.resources.Vocabulary;
  */
 public class TiffCRSBuilder {
 
-    /** EPSG Factory for creating {@link GeodeticDatum}objects. */
+    /**
+     * Factory to build needed Datum from other precedently objects.
+     */
     private DatumFactory datumObjFactory;
 
-    /** EPSG factories for various purposes. */
+    /**
+     * EPSG factory to build needed CRS object from EPSG String code.
+     */
     private GeodeticAuthorityFactory epsgFactory;
 
+    /**
+     * Factory to build CRS object from other precedently CRS object built.
+     */
     private GeodeticObjectFactory objFactory;
 
+    /**
+     * Factory to build appropriate projected method.
+     *
+     * @see #createUserDefinedProjectedCRS(javax.measure.Unit)
+     */
     private CoordinateOperationFactory operationFactory;
 
+    /**
+     * Owner of this CRS builder, use to log appropriate warning.
+     */
     private final Reader reader;
 
     /**
@@ -188,6 +196,9 @@ public class TiffCRSBuilder {
 
     final ValueMap geoKeys = new ValueMap();
 
+    /**
+     * Some of geoKeys properties.
+     */
     private short keyDirectoryVersion;
     private short keyRevision;
     private short minorRevision;
@@ -280,7 +291,7 @@ public class TiffCRSBuilder {
      *
      * @param key the missing key.
      */
-    private void missingKeyException(final int key)//-- TODO : is it pertinency ??
+    private void missingKeyException(final int key)
             throws DataStoreContentException {
         throw new DataStoreContentException(reader.resources().getString(Resources.Keys.UnexpectedKeyValue_3,
                         GeoKeys.CRS.getName(key)+" ("+key+")", "non null value", "null"));
@@ -380,7 +391,7 @@ public class TiffCRSBuilder {
     }
 
     /**
-     * Creating a Geodetic Datum for the {@link #createUserDefinedGCS(javax.measure.Unit, javax.measure.Unit) } method
+     * Creating a Geodetic Datum for the {@link #createUserDefinedGCRS(javax.measure.Unit, javax.measure.Unit) } method
      * we are creating at an higher level.<br>
      * As usual this method tries to follow the geotiff specification<br>
      * Needed tags are :
@@ -507,7 +518,8 @@ public class TiffCRSBuilder {
      * @throws FactoryException if problem during factory Prime Meridian creation.
      * @throws DataStoreContentException if missing needed geokeys.
      */
-    private Ellipsoid createEllipsoid(final Unit unit) throws FactoryException, DataStoreContentException { //-- TODO refactor this method
+    private Ellipsoid createEllipsoid(final Unit unit)
+            throws FactoryException, DataStoreContentException {
 
         //-- ellipsoid key
         final String ellipsoidKey = geoKeys.getAsString(GeoKeys.CRS.GeogEllipsoidGeoKey);
@@ -553,29 +565,189 @@ public class TiffCRSBuilder {
         }
     }
 
-
-    //-- TODO : maybe this method is equals to epsgFactory().createCartesianCS("EPSG:4400");
     /**
-     * Creates a {@link CartesianCS} for a {@link ProjectedCRS} given the
-     * provided {@link Unit}.
+     * Returns a Cartesian CS which is a combination of given base CS and tiff unit key if exist.<br>
+     * The returned CS is search and retrieved from epsg base if exist.<br>
+     * If don't exist we call {@link CoordinateSystems#replaceLinearUnit(org.opengis.referencing.cs.CoordinateSystem, javax.measure.Unit) }
+     * to build expected CS.<br>
+     * The retrieved Cartesian CS are :<br>
      *
-     * @todo consider caching this items
-     * @param linearUnit to be used for building this {@link CartesianCS}.
-     * @return an instance of {@link CartesianCS} using the provided {@link Unit},
+     * <ul>
+     * <li> epsg : 4400 [Cartesian 2D CS. Axes: easting, northing (E,N). Orientations: east, north. UoM: m.] </li>
+     * <li> epsg : 4491 [Cartesian 2D CS. Axes: westing, northing (W,N). Orientations: west, north. UoM: m.] </li>
+     * <li> epsg : 6503 [Cartesian 2D CS. Axes: westing, southing (Y,X). Orientations: west, south. UoM: m.] </li>
+     * <li> epsg : 4500 [Cartesian 2D CS. Axes: northing, easting (N,E). Orientations: north, east. UoM: m.] </li>
+     * <li> epsg : 4501 [Cartesian 2D CS. Axes: northing, westing (N,E). Orientations: north, west. UoM: m.] </li>
+     * <li> epsg : 6501 [Cartesian 2D CS. Axes: southing, westing (X,Y). Orientations: south, west. UoM: m.] </li>
+     * <li> epsg : 1039 [Cartesian 2D CS. Axes: easting, northing (E,N). Orientations: east, north. UoM: ft.]</li>
+     * <li> epsg : 1029 [Cartesian 2D CS. Axes: northing, easting (N,E). Orientations: north, east. UoM: ft.] </li>
+     * <li> epsg : 4497 [Cartesian 2D CS. Axes: easting, northing (X,Y). Orientations: east, north. UoM: ftUS.]</li>
+     * <li> epsg : 4403 [Cartesian 2D CS. Axes: easting, northing (E,N). Orientations: east, north. UoM: ftCla.]</li>
+     * <li> epsg : 4502 [Cartesian 2D CS. Axes: northing, easting (N,E). Orientations: north, east. UoM: ftCla.]</li>
+     * </ul>
+     *
+     * @param baseCS
+     * @param fallBackUnit
+     * @return
      */
-    private DefaultCartesianCS createProjectedCS(final Unit linearUnit) {
-        ArgumentChecks.ensureNonNull("ProjectedCS: LinearUnit", linearUnit);
-        if (!linearUnit.isCompatible(Units.METRE)) {
-            throw new IllegalArgumentException(
-                    "Error when trying to create a PCS using this linear UoM "
-                    + linearUnit.toString());
+    private CartesianCS retrieveCartesianCS(final int unitKey, final CartesianCS baseCS, final Unit fallBackUnit) throws FactoryException {
+        assert baseCS.getDimension() == 2;
+        CoordinateSystemAxis axis0 = baseCS.getAxis(0);
+        CoordinateSystemAxis axis1 = baseCS.getAxis(1);
+
+        //-------- Axis Number ----------------------
+        // axisnumber integer reference couple axis direction on 3 bits.
+        // higher's of the 3 bits, define axis combinaisons 1 for [E,N] or [W,S]
+        // and 0 for [N,E] or [S,W].
+        // secondly higher bit position define sens for first axis
+        // third and last bit position define sens for second axis.
+        // examples :
+        // [E,N] : axisNumber = 111
+        // [E,S] : axisNumber = 110
+        // [N,W] : axisNumber = 010
+        // [S,W] : axisNumber = 000 etc
+        //
+        //-------------------------------------------
+        int axisNumber = 0;
+        if (axis0.getDirection().equals(AxisDirection.EAST)
+         || axis0.getDirection().equals(AxisDirection.WEST)) {
+            axisNumber = 4;
+            if (axis0.getDirection().equals(AxisDirection.EAST))  axisNumber |= 2;
+            if (axis1.getDirection().equals(AxisDirection.NORTH)) axisNumber |= 1;
+        } else if (axis0.getDirection().equals(AxisDirection.NORTH)
+                || axis0.getDirection().equals(AxisDirection.SOUTH)) {
+            if (axis0.getDirection().equals(AxisDirection.EAST))  axisNumber |= 2;
+            if (axis1.getDirection().equals(AxisDirection.NORTH)) axisNumber |= 1;
+        } else {
+            return (CartesianCS) CoordinateSystems.replaceLinearUnit(baseCS, fallBackUnit);
         }
-        //-- TODO Vocabulary.Keys.Projected Easting Northing
-        return new DefaultCartesianCS(name(Vocabulary.formatInternational(/*Vocabulary.Keys.Projected*/(short)208).toString()),
-                new DefaultCoordinateSystemAxis(name(Vocabulary.formatInternational(/*Vocabulary.Keys.Easting*/(short)74).toString()), "E",
-                AxisDirection.EAST, linearUnit),
-                new DefaultCoordinateSystemAxis(name(Vocabulary.formatInternational(/*Vocabulary.Keys.Northing*/(short)178).toString()), "N",
-                AxisDirection.NORTH, linearUnit));
+
+        //-- get the Unit epsg code if exist
+        String unitCode = geoKeys.getAsString(unitKey).trim();
+        if (unitCode == null
+         || unitCode.equalsIgnoreCase(GeoKeys.Configuration.GTUserDefinedGeoKey_String))
+            return (CartesianCS) CoordinateSystems.replaceLinearUnit(baseCS, fallBackUnit);
+
+        if (unitCode.startsWith("epsg:") || unitCode.startsWith("EPSG:"))
+            unitCode = unitCode.substring(5, unitCode.length());
+
+        int intCode = Integer.parseInt(unitCode);
+        String epsgCSCode = null;
+        switch (intCode) {
+            // Linear_Meter = 9001
+            case 9001 : {
+                switch (axisNumber) {
+                    case 7 : { //-- 111 [E,N]
+                        epsgCSCode = "4400";
+                        break;
+                    }
+                    case 6 : { //-- 110 [E,S]
+                        //-- no found into epsg base
+                        break;
+                    }
+                    case 5 : { //-- 101 [W,N]
+                        epsgCSCode = "4491";
+                        break;
+                    }
+                    case 4 : { //-- 100 [W,S]
+                        epsgCSCode = "6503";
+                        break;
+                    }
+                    case 3 : { //-- 011 [N,E]
+                        epsgCSCode = "4500";
+                        break;
+                    }
+                    case 2 : { //-- 010 [N,W]
+                        epsgCSCode = "4501";//-- or 6507
+                        break;
+                    }
+                    case 1 : { //-- 001 [S,E]
+                        //-- not found into epsg base
+                        break;
+                    }
+                    case 0 : { //-- 000 [S,W]
+                        epsgCSCode = "6501";
+                        break;
+                    }
+                }
+                break;
+            }
+            // Linear_Foot = 9002
+            case 9002 : {
+                switch (axisNumber) {
+                    case 6 : { //-- 111 [E,N]
+                        epsgCSCode = "1039";
+                        break;
+                    }
+                    case 3 : { //-- 011 [N,E]
+                        epsgCSCode = "1029";
+                        break;
+                    }
+                    default :
+                }
+                break;
+            }
+            // Linear_Foot_US_Survey = 9003
+            case 9003 : {
+                switch (axisNumber) {
+                    case 6 : { //-- 111 [E,N]
+                        epsgCSCode = "4497";
+                        break;
+                    }
+                    default :
+                }
+                break;
+            }
+            // Linear_Foot_Modified_American = 9004
+            case 9004 : {
+                break;
+            }
+            // Linear_Foot_Clarke = 9005
+            case 9005 : {
+                switch (axisNumber) {
+                    case 6 : { //-- 111 [E,N]
+                        epsgCSCode = "4403";
+                        break;
+                    }
+                    case 3 : { //-- 011 [N,E]
+                        epsgCSCode = "4502";
+                        break;
+                    }
+                    default :
+                }
+                break;
+            }
+            //-- no related CS found from following unit code into epsg base
+            // Linear_Foot_Indian = 9006
+            case 9006 :
+            // Linear_Link = 9007
+            case 9007 :
+            // Linear_Link_Benoit = 9008
+            case 9008 :
+            // Linear_Link_Sears = 9009
+            case 9009 :
+            // Linear_Chain_Benoit = 9010
+            case 9010 :
+            // Linear_Chain_Sears = 9011
+            case 9011 :
+            // Linear_Yard_Sears = 9012
+            case 9012 :
+            // Linear_Yard_Indian = 9013
+            case 9013 :
+            // Linear_Fathom = 9014
+            case 9014 :
+            // Linear_Mile_International_Nautical = 9015
+            case 9015 :
+            default :
+        }
+
+        if (epsgCSCode == null)
+            //-- epsg CS + Unit not found
+            return (CartesianCS) CoordinateSystems.replaceLinearUnit(baseCS, fallBackUnit);
+
+        epsgCSCode = "EPSG:".concat(epsgCSCode);
+
+        return epsgFactory().createCartesianCS(epsgCSCode);
     }
 
 
@@ -589,13 +761,10 @@ public class TiffCRSBuilder {
      * Needed tags are :
      * <ul>
      * <li> a code definition given by {@link GeoKeys.CRS.ProjectedCSTypeGeoKey} tag </li>
-     * <li> a name given by {@link GeoKeys.CRS.GeogCitationGeoKey} </li>
-     * <li> a semi major axis value given by {@link GeoKeys.CRS.GeogSemiMajorAxisGeoKey} </li>
-     * <li> a semi major axis value given by {@link GeoKeys.CRS.GeogInvFlatteningGeoKey} </li>
-     * <li> a semi major axis value given by {@link GeoKeys.CRS.GeogSemiMinorAxisGeoKey} </li>
+     * <li> a unit value given by {@link GeoKeys.CRS.ProjLinearUnitsGeoKey} </li>
+     * <li> a unit key property given by {@link GeoKeys.CRS.ProjLinearUnitSizeGeoKey} </li>
      * </ul>
      *
-     * @param unit use for building this {@link CoordinateReferenceSystem}.
      * @return a {@link CoordinateReferenceSystem} built using the provided {@link Unit}.
      * @throws FactoryException if problem during factory Projected CRS creation.
      * @throws DataStoreContentException if missing needed geokeys.
@@ -621,21 +790,18 @@ public class TiffCRSBuilder {
         //---------------------- EPSG CODE PERTINENCY -------------------------//
         //-- do a decode
         final StringBuffer epsgProjCode = new StringBuffer(projCode.trim().intern());
-        if (!projCode.startsWith("EPSG")
-         && !projCode.startsWith("epsg")) epsgProjCode.insert(0, "EPSG:");
+        if (!projCode.startsWith("EPSG") && !projCode.startsWith("epsg"))
+            epsgProjCode.insert(0, "EPSG:");
 
-        //TODO : jsorel : are we sure of this ? always long/lat order ?
-        //-- TODO rmarechal : I think just a decode is enought
-        ProjectedCRS pcrs = (ProjectedCRS) AbstractCRS.castOrCopy(CRS.forCode(epsgProjCode.toString())).forConvention(AxesConvention.RIGHT_HANDED);
+        ProjectedCRS pcrs = epsgFactory().createProjectedCRS(epsgProjCode.toString());
 
         //-- if 'tiff defined unit' does not match with decoded Projected CRS, build another converted projected CRS.
         if (linearUnit != null && !linearUnit.equals(pcrs.getCoordinateSystem().getAxis(0).getUnit())) {
-            //-- Creating anew projected CRS
-            pcrs = new DefaultProjectedCRS(
-                    name(IdentifiedObjects.getName(pcrs, new DefaultCitation("EPSG"))),
-                    (GeographicCRS) pcrs.getBaseCRS(),
-                    pcrs.getConversionFromBase(),
-                    createProjectedCS(linearUnit));
+            //-- Creating a new projected CRS
+            pcrs = objectFactory().createProjectedCRS(name(IdentifiedObjects.getName(pcrs, new DefaultCitation("EPSG"))),
+                                                      (GeographicCRS) pcrs.getBaseCRS(),
+                                                      pcrs.getConversionFromBase(),
+                                                      retrieveCartesianCS(GeoKeys.CRS.ProjLinearUnitsGeoKey, pcrs.getCoordinateSystem(), linearUnit));
         }
         return pcrs;
     }
@@ -666,9 +832,7 @@ public class TiffCRSBuilder {
         //--------------------------------------------------------------------//
         //                   get the GEOGRAPHIC BASE CRS                      //
         //--------------------------------------------------------------------//
-        final GeographicCRS gcs = createGeographicBaseCRS();
-
-        CartesianCS predefineCartesianCS = epsgFactory().createCartesianCS("EPSG:4400");
+        final GeographicCRS gcs = createGeographicCRS();
 
         //-- get the projection code if exist
         final String projCode = geoKeys.getAsString(GeoKeys.CRS.ProjectionGeoKey).trim().intern();
@@ -688,9 +852,10 @@ public class TiffCRSBuilder {
             projection = (Conversion) epsgFactory().createCoordinateOperation(String.valueOf(projCode));
         }
 
+        CartesianCS predefineCartesianCS = epsgFactory().createCartesianCS("EPSG:4400");
         //-- manage unit if necessary
         if (linearUnit != null && !linearUnit.equals(Units.METRE))
-            predefineCartesianCS = (CartesianCS) CoordinateSystems.replaceLinearUnit(predefineCartesianCS, linearUnit);//-- TODO : retrouver un code epsg corespondant a l'ensemble (cs + unité)
+            predefineCartesianCS = retrieveCartesianCS(GeoKeys.CRS.ProjLinearUnitsGeoKey, predefineCartesianCS, linearUnit);
 
         return objectFactory().createProjectedCRS(name(projectedCrsName), gcs, projection, predefineCartesianCS);
     }
@@ -700,203 +865,111 @@ public class TiffCRSBuilder {
     //-------------------------- GEOGRAPHIC CRS ------------------------------//
     ////////////////////////////////////////////////////////////////////////////
     /**
+     * Creating a {@linkplain CoordinateReferenceSystem Geographic CRS} following the GeoTiff spec.<br>
+     * As usual this method tries to follow the geotiff specification<br>
+     * Needed tags are :
+     * <ul>
+     * <li> a code definition given by {@link GeoKeys.CRS.GeographicTypeGeoKey} tag </li>
+     * <li> a unit value given by {@link GeoKeys.CRS.GeogAngularUnitsGeoKey} </li>
+     * <li> a unit key property given by {@link GeoKeys.CRS.GeogAngularUnitSizeGeoKey} </li>
+     * </ul>
+     * <br>
+     * and for User Define Geographic CRS :
+     * <ul>
+     * <li> a citation given by {@link GeoKeys.CRS.GeogCitationGeoKey}</li>
+     * <li> a datum definition geokeys </li>
+     * </ul>
      *
-     * @return
+     *
+     * @param unit use for building this {@link CoordinateReferenceSystem}.
+     * @return a {@link CoordinateReferenceSystem} built using the provided {@link Unit}.
+     * @throws FactoryException if problem during factory Geographic CRS creation.
+     * @throws DataStoreContentException if missing needed geokeys.
+     * @return built Geographic CRS.
      */
-    private CoordinateReferenceSystem createGeographicCRS()
+    private GeographicCRS createGeographicCRS()
             throws FactoryException, DataStoreContentException {
-        GeographicCRS gcs = null;
 
         //-- Get the crs code
         final String tempCode = geoKeys.getAsString(GeoKeys.CRS.GeographicTypeGeoKey);
-        // lookup the angular units used in this geotiff image
+        //-- Angular units used in this geotiff image
         Unit angularUnit = createUnit(GeoKeys.CRS.GeogAngularUnitsGeoKey,
                     GeoKeys.CRS.GeogAngularUnitSizeGeoKey, Units.RADIAN,
                     Units.DEGREE);
-        // linear unit
-        Unit linearUnit = createUnit(GeoKeys.CRS.GeogLinearUnitsGeoKey,
-                    GeoKeys.CRS.GeogLinearUnitSizeGeoKey, Units.METRE,
-                    Units.METRE);
-        // if it's user defined, there's a lot of work to do
+        //-- Geographic CRS is "UserDefine", we have to parse many informations from other geokeys.
         if (tempCode == null
          || tempCode.equals(GeoKeys.Configuration.GTUserDefinedGeoKey_String)) {
-            // ////////////////////////////////////////////////////////////////////
-            // it is user-defined we have to parse a lot of information in order
-            // to built it.
-            // ////////////////////////////////////////////////////////////////////
-            return createUserDefinedGCS(linearUnit, angularUnit);
+
+            //-- linear unit
+            final Unit linearUnit = createUnit(GeoKeys.CRS.GeogLinearUnitsGeoKey,
+                                    GeoKeys.CRS.GeogLinearUnitSizeGeoKey, Units.METRE,
+                                    Units.METRE);
+
+            ///-- Geographic CRS given name from tiff tag (GeogCitationGeoKey)
+            String name = geoKeys.getAsString(GeoKeys.CRS.GeogCitationGeoKey);
+            if (name == null) name = "User Define Geographic CRS";
+
+            final GeodeticDatum datum = createGeodeticDatum(linearUnit);
+            //-- make the user defined GCS from all the components...
+            return objectFactory().createGeographicCRS(name(name),
+                                                       datum,
+                                       (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(),
+                                                                                                       angularUnit));
         }
 
-        // ////////////////////////////////////////////////////////////////////
+        //---------------------------------------------------------------------//
         // If it's not user defined, just use the EPSG factory to create
         // the coordinate system but check if the user specified a
         // different angular unit. In this case we need to create a
         // user-defined GCRS.
-        // ////////////////////////////////////////////////////////////////////
-        final StringBuffer geogCode = new StringBuffer(tempCode);
-        if (!tempCode.startsWith("EPSG")
-                && !tempCode.startsWith("epsg")) {
+        //---------------------------------------------------------------------//
+        final StringBuffer geogCode = new StringBuffer(tempCode.trim().intern());
+        if (!tempCode.startsWith("EPSG") && !tempCode.startsWith("epsg"))
             geogCode.insert(0, "EPSG:");
-        }
 
-        final CoordinateReferenceSystem decCRS = AbstractCRS.castOrCopy(CRS.forCode(geogCode.toString())).forConvention(AxesConvention.RIGHT_HANDED);
+        CoordinateReferenceSystem geoCRS = CRS.forCode(geogCode.toString());
         //-- all CRS must be Geodetic
-        if (!(decCRS instanceof GeodeticCRS))
-            throw new IllegalArgumentException("Impossible to define CRS from none Geodetic base. found : "+decCRS.toWKT());
+        if (!(geoCRS instanceof GeodeticCRS))
+            throw new IllegalArgumentException("Impossible to define CRS from none Geodetic base. found : "+geoCRS.toWKT());
 
-        if (decCRS instanceof GeographicCRS) {
-            gcs = (GeographicCRS) AbstractCRS.castOrCopy(CRS.forCode(geogCode.toString())).forConvention(AxesConvention.RIGHT_HANDED);
-        } else {
-            //-- Try to build it from datum and re-create Geographic CRS. //-- TODO : Log warning
-//                    LOGGER.log(Level.WARNING, "Impossible to build Projected CRS from none Geographic base CRS, replaced by Geographic CRS.");
-            final GeodeticCRS geodeticCrs = (GeodeticCRS) decCRS;
-            final GeodeticDatum datum = geodeticCrs.getDatum();
-            final HashMap<String, Object> properties = new HashMap<String, Object>();
-            properties.put(GeographicCRS.NAME_KEY, decCRS.getName());
-            gcs = new DefaultGeographicCRS(properties, datum, org.apache.sis.referencing.CommonCRS.defaultGeographic().getCoordinateSystem());
+        if (!(geoCRS instanceof GeographicCRS)) {
+            //-- TODO log warning : is not instance of Geodetic try to re-build it
+            warning(reader, Level.WARNING, Resources.Keys.UnexpectedGeoCRS_1, reader.input.filename);
+            geoCRS = objectFactory().createGeographicCRS(name(IdentifiedObjects.getName(geoCRS, new DefaultCitation("EPSG"))),
+                                                        ((GeodeticCRS)geoCRS).getDatum(),
+                                                        CommonCRS.defaultGeographic().getCoordinateSystem());
         }
-
+        //-- in case where tiff define unit does not match
         if (angularUnit != null
-        && !angularUnit.equals(gcs.getCoordinateSystem().getAxis(0).getUnit())) {
-            // //
-            // Create a user-defined GCRS using the provided angular
-            // unit.
-            // //
-            gcs = objectFactory().createGeographicCRS(name(IdentifiedObjects.getName(gcs, new DefaultCitation("EPSG"))),
-                    (GeodeticDatum) gcs.getDatum(),
+        && !angularUnit.equals(geoCRS.getCoordinateSystem().getAxis(0).getUnit())) {
+            geoCRS = objectFactory().createGeographicCRS(name(IdentifiedObjects.getName(geoCRS, new DefaultCitation("EPSG"))),
+                    (GeodeticDatum) ((GeographicCRS)geoCRS).getDatum(),
                     (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(), angularUnit));
         }
-
-        return gcs;
-    }
-
-
-
-    /**
-     * Creation of a geographic coordinate reference system as specified in the
-     * GeoTiff specification. User defined values are supported for all the
-     * possible levels of the above mentioned specification.
-     *
-     * @param metadata
-     *            to use for building a {@link GeographicCRS}.
-     *
-     * @return
-     * @throws IOException
-     */
-    private GeographicCRS createGeographicBaseCRS()
-            throws FactoryException, DataStoreContentException {
-        GeographicCRS gcs = null;
-
-        // ////////////////////////////////////////////////////////////////////
-        // Get the crs code
-        // ////////////////////////////////////////////////////////////////////
-        final String tempCode = geoKeys.getAsString(GeoKeys.CRS.GeographicTypeGeoKey);
-        // lookup the angular units used in this geotiff image
-        Unit angularUnit = createUnit(GeoKeys.CRS.GeogAngularUnitsGeoKey,
-                    GeoKeys.CRS.GeogAngularUnitSizeGeoKey, Units.RADIAN,
-                    Units.DEGREE);
-
-        // linear unit
-        Unit linearUnit = createUnit(GeoKeys.CRS.GeogLinearUnitsGeoKey,
-                    GeoKeys.CRS.GeogLinearUnitSizeGeoKey, Units.METRE,
-                    Units.METRE);
-        // if it's user defined, there's a lot of work to do
-        if (tempCode == null
-                || tempCode.equals(GeoKeys.Configuration.GTUserDefinedGeoKey_String)) {
-            // ////////////////////////////////////////////////////////////////////
-            // it is user-defined we have to parse a lot of information in order
-            // to built it.
-            // ////////////////////////////////////////////////////////////////////
-            return createUserDefinedGCS(linearUnit, angularUnit);
-        }
-
-        // ////////////////////////////////////////////////////////////////////
-        // If it's not user defined, just use the EPSG factory to create
-        // the coordinate system but check if the user specified a
-        // different angular unit. In this case we need to create a
-        // user-defined GCRS.
-        // ////////////////////////////////////////////////////////////////////
-        final StringBuffer geogCode = new StringBuffer(tempCode);
-        if (!tempCode.startsWith("EPSG")
-                && !tempCode.startsWith("epsg")) {
-            geogCode.insert(0, "EPSG:");
-        }
-
-        final CoordinateReferenceSystem decCRS = AbstractCRS.castOrCopy(CRS.forCode(geogCode.toString())).forConvention(AxesConvention.RIGHT_HANDED);
-        //-- all CRS must be Geodetic
-        if (!(decCRS instanceof GeodeticCRS))
-            throw new IllegalArgumentException("Impossible to define CRS from none Geodetic base. found : "+decCRS.toWKT());
-
-        if (decCRS instanceof GeographicCRS) {
-            gcs = (GeographicCRS) AbstractCRS.castOrCopy(CRS.forCode(geogCode.toString())).forConvention(AxesConvention.RIGHT_HANDED);
-        } else {
-            //-- Try to build it from datum and re-create Geographic CRS.
-//            LOGGER.log(Level.WARNING, "Impossible to build Projected CRS from none Geographic base CRS, replaced by Geographic CRS."); //-- TODO log rning
-            final GeodeticCRS geodeticCrs = (GeodeticCRS) decCRS;
-            final GeodeticDatum datum = geodeticCrs.getDatum();
-            final HashMap<String, Object> properties = new HashMap<String, Object>();
-            properties.put(GeographicCRS.NAME_KEY, decCRS.getName());
-
-            gcs = objectFactory().createGeographicCRS(properties, datum, org.apache.sis.referencing.CommonCRS.defaultGeographic().getCoordinateSystem());
-        }
-
-        if (angularUnit != null && !angularUnit.equals(gcs.getCoordinateSystem().getAxis(0).getUnit())) {
-            //-- Create a user-defined GCRS using the provided angular unit.
-            gcs = objectFactory().createGeographicCRS(name(IdentifiedObjects.getName(gcs, new DefaultCitation("EPSG"))),
-                    (GeodeticDatum) gcs.getDatum(),
-                    (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(), angularUnit));
-        }
-
-        return gcs;
-    }
-
-    /**
-     * The GeoTIFFWritingUtilities spec requires that a user defined GCS be
-     * comprised of the following:
-     *
-     * <ul>
-     * <li> a citation </li>
-     * <li> a datum definition </li>
-     * <li> a prime meridian definition (if not Greenwich) </li>
-     * <li> an angular unit definition (if not degrees) </li>
-     * </ul>
-     *
-     * @param geoKeys to use for building this {@link GeographicCRS}.
-     * @param linearUnit
-     * @param angularUnit
-     * @return a {@link GeographicCRS}.
-     *
-     * @throws IOException
-     */
-    private GeographicCRS createUserDefinedGCS(final Unit linearUnit, final Unit angularUnit)
-            throws FactoryException, DataStoreContentException {
-        ///-- Geographic CRS given name from tiff tag (GeogCitationGeoKey)
-        String name = geoKeys.getAsString(GeoKeys.CRS.GeogCitationGeoKey);
-        if (name == null) name = "unnamed";
-
-        final GeodeticDatum datum = createGeodeticDatum(linearUnit); //-- TODO ?? is it conform ??
-        CoordinateSystem replaceAngularUnit = CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(),
-                angularUnit);//-- debug
-
-        // make the user defined GCS from all the components...
-        return objectFactory().createGeographicCRS(name(name),
-                                              datum,
-                                              (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(),
-                                                                                                   angularUnit));
+        return (GeographicCRS) geoCRS;
     }
 
     //------------------------------- GEOCENTRIQUE -----------------------------
     /**
-     *
-     * @return
+     * Not implemented yet.
+     * @return nothing
+     * @throws IllegalStateException not implemented.
      */
     private CoordinateReferenceSystem createGeocentricCRS() {
-        throw new IllegalStateException("Not implemented yet.");
+        throw new IllegalStateException("GeocentricCRS : Not implemented yet.");
     }
 
 
     //------------------------------- API --------------------------------------
 
+    /**
+     * Contain "brut" needed keys to build appropriate {@link CoordinateReferenceSystem}.<br>
+     * To know how to parse this key see {@link #TiffCRSBuilder(org.apache.sis.storage.geotiff.Reader) } header class.<br>
+     * Some of short values which define CRS appropriate behavior to build it.
+     *
+     * @param geoKeyDirectoryTag
+     * @throws DataStoreContentException if key length is not modulo 4.
+     */
     final void setGeoKeyDirectoryTag(final Vector geoKeyDirectoryTag)
             throws DataStoreContentException {
         final int gDTS = geoKeyDirectoryTag.size();
@@ -923,7 +996,8 @@ public class TiffCRSBuilder {
 
     /**
      * Set contents of previously read {@link Tags#GeoDoubleParamsTag}.
-     * Contents is about Geographic keys needed to build appropriate {@link CoordinateReferenceSystem}.
+     * Contents is about Geographic keys, more precisely double value, scale, offset etc,
+     * needed to build appropriate {@link CoordinateReferenceSystem}.
      *
      * @param geoDoubleParamsTag Vector of double value coefficients.
      */
@@ -932,17 +1006,34 @@ public class TiffCRSBuilder {
     }
 
     /**
+     * Set contents of previously read {@link Tags#GeoAsciiParamsTag}.
+     * Contents is about Geographic keys, more precisely name, identifier etc,
+     * needed to build appropriate {@link CoordinateReferenceSystem}.
      *
-     * @param geoAsciiParamsTag
+     * @param geoAsciiParamsTag Vector of ascii char.
      */
     final void setGeoAsciiParamsTag(final String geoAsciiParamsTag) {
         this.geoAsciiParamsTag = geoAsciiParamsTag;
     }
 
+    /**
+     * Build CRS from precedently setted Tiff "GeoKeys".<br>
+     * Before call this method, please call respectively :
+     * <ul>
+     * <li> {@link #setGeoKeyDirectoryTag(org.apache.sis.math.Vector) } </li>
+     * <li> {@link #setGeoDoubleParamsTag(org.apache.sis.math.Vector) } </li>
+     * <li> {@link #setGeoAsciiParamsTag(java.lang.String) } if exist </li>
+     * </ul>
+     *
+     * @return built CRS.
+     * @throws FactoryException if problem during factory CRS creation.
+     * @throws DataStoreContentException if problem during geokey parsing or CRS creation.(missing needed geokeys for example).
+     */
     final CoordinateReferenceSystem build()
-            throws IOException, FactoryException, NoSuchIdentifierException, DataStoreContentException {
+            throws FactoryException, DataStoreContentException
+            {
         if (geoKeyDirectoryTag == null)
-            return null; //-- TODO image CRS2D ??
+            return null;
 
         //-- build Coordinate Reference System keys
         parseGeoKeyDirectory();
@@ -954,52 +1045,107 @@ public class TiffCRSBuilder {
             case GeoKeys.Configuration.ModelTypeGeographic : return createGeographicCRS();//return null;
             case GeoKeys.Configuration.ModelTypeGeocentric : throw new DataStoreContentException("not implemented yet : Geocentric CRS");//return null;
             default : {
-                return null; //-- TODO image CRS2D ??
+                return null;
             }
         }
     }
 
 //------------------------------------------------------------------------------
-//                      TODO SEE LATER PARTICULARITY CASE CRS WITH
-//                      MERCATOR1SP AND MERCATOR2SP
-//                      POLAR STEREOGRAPHIC VARIANT A B AND C
-//------------------------------------------------------------------------------
     /**
-     * @todo we should somehow try to to support user defined coordinate
-     *       transformation even if for the moment is not so clear to me how we
-     *       could achieve that since if we have no clue about the coordinate
-     *       transform what we are supposed to do in order to build a
-     *       conversion, guess it? How could we pick up the parameters, should
-     *       look for all and then guess the right transformation?
-     *
-     * @param name indicates the name for the projection.
-     * @param metadata to use for building this {@link ParameterValueGroup}.
-     * @return a {@link ParameterValueGroup} that can be used to trigger this
-     *         projection.
-     * @throws IOException
-     * @throws FactoryException
+     * Map to store all keys from GeoKeyDirectory needed to build CRS.
      */
-    private ParameterValueGroup createUserDefinedProjectionParameter(
-            final String name)
-            throws FactoryException, NoSuchIdentifierException, DataStoreContentException {
-        // //
-        //
-        // Trying to get the name for the coordinate transformation involved.
-        //
-        // ///
-        final String coordTrans = geoKeys.getAsString(GeoKeys.CRS.ProjCoordTransGeoKey);
+    private class ValueMap extends HashMap<Integer, Object> {
 
-        // throw descriptive exception if ProjCoordTransGeoKey not defined
-        if ((coordTrans == null)
-                || coordTrans.equalsIgnoreCase(GeoKeys.Configuration.GTUserDefinedGeoKey_String)) {
-            throw new DataStoreContentException("User defined projections must specify"
-                    + " coordinate transformation code in ProjCoordTransGeoKey");
+        /**
+         * Returns expected {@link GeoKeys} value as a {@link String}.
+         *
+     * @param key Tiff Extension keys.
+     * @return A string representing the value, or {@code null} if the key was not
+     *         found or failed to parse.
+     */
+    final String getAsString(final int key) {
+
+            final Object value = get(key);
+
+            if (value instanceof String) return (String) value;
+            if (value instanceof Number) return ((Number)value).toString();
+
+            return null;
         }
 
-        // getting math transform factory
-        return setParametersForProjection(name, coordTrans);
+        /**
+         * Returns expected {@link GeoKeys} value as a {@link Integer}.
+         *
+         * @param key Tiff extension key (not a tag)
+         * @return A integer representing the value, or {@code Integer.minValue} if the key was not
+         *         found or failed to parse.
+         */
+        final int getAsInteger(final int key) {
+            final Object value = get(key);
+
+            if (value == null)           return Integer.MIN_VALUE;
+            if (value instanceof Number) return ((Number)value).intValue();
+
+            try {
+                final String geoKey = value.toString();
+                return Integer.parseInt(geoKey);
+            }  catch (Exception e) {
+                warning(reader, Level.WARNING, Resources.Keys.UnexpectedKeyValue_3, GeoKeys.CRS.getName(key)+" ("+key+")",
+                        "Integer value", value.getClass().getName()+" --> "+value);
+                return Integer.MIN_VALUE;
+            }
+        }
+
+        /**
+         * Returns expected {@link GeoKeys} value as a {@link Double}.
+         *
+         * @param key Tiff extension key (not a tag)
+         * @return A double representing the value, or {@code Double.NAN} if the key was not
+         *         found or failed to parse.
+         */
+        final double getAsDouble(final int key) {
+            final Object value = get(key);
+
+            if (value == null)           return Double.NaN;
+            if (value instanceof Number) return ((Number)value).doubleValue();
+
+            try {
+                final String geoKey = value.toString();
+                return Double.parseDouble(geoKey);
+            } catch (Exception e) {
+                warning(reader, Level.WARNING, Resources.Keys.UnexpectedKeyValue_3, GeoKeys.CRS.getName(key)+" ("+key+")",
+                        "Double value", value.getClass().getName()+" --> "+value);
+                return Double.NaN;
+            }
+        }
+
+        @Override
+        public final String toString() {
+            final StringBuilder strBuild = new StringBuilder("/************************ GeoKeys for CoordinateReferenceSystem *************************/");
+            strBuild.append("\n");
+            strBuild.append("geo keys version : "+keyDirectoryVersion);
+            strBuild.append("\n");
+            strBuild.append("geo keys revision : "+keyRevision);
+            strBuild.append("\n");
+            strBuild.append("minor revision : "+minorRevision);
+            strBuild.append("\n");
+            strBuild.append("number of geokey : "+numberOfKey);
+            strBuild.append("\n");
+
+            for (int key : keySet()) {
+                strBuild.append(GeoKeys.CRS.getName(key)+" ("+key+") = "+getAsString(key));
+                strBuild.append("\n");
+            }
+            strBuild.append("/*****************************************************************************************/");
+            return strBuild.toString();
+        }
     }
 
+    //------------------------------------------------------------------------------
+    //                      TODO SEE LATER PARTICULARITY CASE CRS WITH
+    //                      MERCATOR1SP AND MERCATOR2SP
+    //                      POLAR STEREOGRAPHIC VARIANT A B AND C
+    //------------------------------------------------------------------------------
     /**
      * Set the projection parameters basing its decision on the projection name.
      * I found a complete list of projections on the geotiff website at address
@@ -1028,7 +1174,7 @@ public class TiffCRSBuilder {
             throws NoSuchIdentifierException, DataStoreContentException {
 
         if (name == null && coordTransCode == null)
-            throw new DataStoreContentException("bla bla bla");//-- TODO : do better
+            throw new DataStoreContentException("bla bla bla");
 
         final String projName = (name == null)
                                 ? GeoKeys.CRS.getName(Integer.parseInt(coordTransCode))
@@ -1147,87 +1293,5 @@ public class TiffCRSBuilder {
 //            }
 
         return parameters;
-    }
-
-//------------------------------------------------------------------------------
-    /**
-     * Map to store all keys from GeoKeyDirectory needed to build CRS.
-     */
-    private class ValueMap extends HashMap<Integer, Object> {
-
-        /**
-         * Returns expected {@link GeoKeys} value as a {@link String}.
-         *
-     * @param key Tiff Extension keys.
-     * @return A string representing the value, or {@code null} if the key was not
-     *         found or failed to parse.
-     */
-    final String getAsString(final int key) {
-
-            final Object value = get(key);
-
-            if (value instanceof String) return (String) value;
-            if (value instanceof Number) return ((Number)value).toString();
-
-            return null;
-        }
-
-        /**
-         * Returns expected {@link GeoKeys} value as a {@link Integer}.
-         *
-         * @param key Tiff extension key (not a tag)
-         * @return A integer representing the value, or {@code Integer.minValue} if the key was not
-         *         found or failed to parse.
-         */
-        final int getAsInteger(final int key) {
-            final Object value = get(key);
-
-            if (value == null)           return Integer.MIN_VALUE;
-            if (value instanceof Number) return ((Number)value).intValue();
-
-            try {
-                final String geoKey = value.toString();
-                return Integer.parseInt(geoKey);
-            }  catch (Exception e) {
-                warning(reader, Level.WARNING, Resources.Keys.UnexpectedKeyValue_3, GeoKeys.CRS.getName(key)+" ("+key+")",
-                        "Integer value", value.getClass().getName()+" --> "+value);
-                return Integer.MIN_VALUE;
-            }
-        }
-
-        /**
-         * Returns expected {@link GeoKeys} value as a {@link Double}.
-         *
-         * @param key Tiff extension key (not a tag)
-         * @return A double representing the value, or {@code Double.NAN} if the key was not
-         *         found or failed to parse.
-         */
-        final double getAsDouble(final int key) {
-            final Object value = get(key);
-
-            if (value == null)           return Double.NaN;
-            if (value instanceof Number) return ((Number)value).doubleValue();
-
-            try {
-                final String geoKey = value.toString();
-                return Double.parseDouble(geoKey);
-            } catch (Exception e) {
-                warning(reader, Level.WARNING, Resources.Keys.UnexpectedKeyValue_3, GeoKeys.CRS.getName(key)+" ("+key+")",
-                        "Double value", value.getClass().getName()+" --> "+value);
-                return Double.NaN;
-            }
-        }
-
-        @Override
-        public final String toString() {
-            final StringBuilder strBuild = new StringBuilder("/************************ GeoKeys for CoordinateReferenceSystem *************************/");
-            strBuild.append(Character.LINE_SEPARATOR);
-            for (int key : keySet()) {
-                strBuild.append(GeoKeys.CRS.getName(key)+" ("+key+") = "+getAsString(key));
-                strBuild.append(Character.LINE_SEPARATOR);
-            }
-            strBuild.append("/*****************************************************************************************/");
-            return strBuild.toString();
-        }
     }
 }
