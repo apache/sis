@@ -670,6 +670,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short RecordAlreadyDefined_2 = 116;
 
         /**
+         * No record found in “{0}” table for “{1}” key.
+         */
+        public static final short RecordNotFound_2 = 164;
+
+        /**
          * Recursive call while creating an object for the “{0}” key.
          */
         public static final short RecursiveCreateCallForKey_1 = 117;

@@ -23,12 +23,15 @@ import java.util.logging.LogRecord;
 import java.nio.charset.StandardCharsets;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
@@ -97,24 +100,34 @@ public class GeoTiffStore extends DataStore {
      */
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
-        if (metadata == null) try {
-            int n = 0;
-            ImageFileDirectory dir;
-            final Locale locale = getLocale();
-            while ((dir = reader.getImageFileDirectory(n++)) != null) {
-                dir.completeMetadata(reader.metadata, locale);
+        if (metadata == null) {
+            final MetadataBuilder builder = reader.metadata;
+            try {
+                builder.setFormat("GeoTIFF");
+            } catch (MetadataStoreException e) {
+                warning(null, e);
             }
-            /*
-             * Add Coordinate Reference System built from GeoTIFF tags.  Note that the CRS may not exist,
-             * in which case the CRS builder returns null. This is safe since all MetadataBuilder methods
-             * ignore null values (a design choice because this pattern come very often).
-             */
-            reader.metadata.add(reader.crsBuilder.build());
-            metadata = reader.metadata.build(true);
-        } catch (IOException e) {
-            throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
-        } catch (FactoryException | ArithmeticException e) {
-            throw new DataStoreContentException(reader.canNotDecode(), e);
+            builder.add(encoding);
+            builder.add(ScopeCode.COVERAGE);
+            final Locale locale = getLocale();
+            int n = 0;
+            try {
+                ImageFileDirectory dir;
+                while ((dir = reader.getImageFileDirectory(n++)) != null) {
+                    dir.completeMetadata(builder, locale);
+                }
+                /*
+                 * Add Coordinate Reference System built from GeoTIFF tags.  Note that the CRS may not exist,
+                 * in which case the CRS builder returns null. This is safe since all MetadataBuilder methods
+                 * ignore null values (a design choice because this pattern come very often).
+                 */
+                builder.add(reader.crsBuilder.build());
+                metadata = builder.build(true);
+            } catch (IOException e) {
+                throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
+            } catch (FactoryException | ArithmeticException e) {
+                throw new DataStoreContentException(reader.canNotDecode(), e);
+            }
         }
         return metadata;
     }

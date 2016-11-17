@@ -111,6 +111,9 @@ final class Reader extends GeoTIFF {
 
     /**
      * Builder for the Coordinate Reference System.
+     *
+     * @todo should not be here since we can have a CRS for each image and we don't want to merge them
+     *       like we do for metadata.
      */
     final TiffCRSBuilder crsBuilder;
 
@@ -129,7 +132,7 @@ final class Reader extends GeoTIFF {
         this.crsBuilder = new TiffCRSBuilder(this);
         /*
          * A TIFF file begins with either "II" (0x4949) or "MM" (0x4D4D) characters.
-         * Those characters identify the byte order. Note we we do not need to care
+         * Those characters identify the byte order. Note that we do not need to care
          * about the byte order for this flag since the two bytes shall have the same value.
          */
         final short order = input.readShort();
@@ -141,7 +144,7 @@ final class Reader extends GeoTIFF {
              * The pointer type is implicitely the Java Integer type (4 bytes).
              *
              * Magic number of BigTIFF file is 43, followed by the pointer size.
-             * Currently, that pointer type canonly be the Java Long type (8 bytes),
+             * Currently, that pointer type can only be the Java Long type (8 bytes),
              * but a future BigTIFF version may allow 16 bytes wide pointers.
              */
             switch (input.readShort()) {
@@ -238,7 +241,7 @@ final class Reader extends GeoTIFF {
              * to get the pointer to the next IFD.
              */
             final int offsetSize = Integer.BYTES << intSizeExpansion;
-            final ImageFileDirectory dir = new ImageFileDirectory();
+            final ImageFileDirectory dir = new ImageFileDirectory(this);
             for (long remaining = readUnsignedShort(); --remaining >= 0;) {
                 /*
                  * Each entry in the Image File Directory has the following format:
@@ -265,7 +268,7 @@ final class Reader extends GeoTIFF {
                              * recommends to ignore it (for allowing them to add new types in the future), or an entry
                              * without value (count = 0) - in principle illegal but we make this reader tolerant.
                              */
-                            error = dir.addEntry(this, tag, type, count);
+                            error = dir.addEntry(tag, type, count);
                         } catch (ParseException | RuntimeException e) {
                             error = e;
                         }
@@ -296,7 +299,7 @@ final class Reader extends GeoTIFF {
             resolveDeferredEntries(dir, Long.MAX_VALUE);
             dir.hasDeferredEntries = false;
         }
-        dir.validateMandatoryTags(this);
+        dir.validateMandatoryTags();
         return dir;
     }
 
@@ -332,7 +335,7 @@ final class Reader extends GeoTIFF {
                 input.seek(Math.addExact(origin, entry.offset));
                 Object error;
                 try {
-                    error = entry.owner.addEntry(this, entry.tag, entry.type, entry.count);
+                    error = entry.owner.addEntry(entry.tag, entry.type, entry.count);
                 } catch (ParseException | RuntimeException e) {
                     error = e;
                 }

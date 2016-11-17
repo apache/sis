@@ -109,8 +109,8 @@ public final class Resources extends IndexedResourceBundle {
         public static final short RandomizedProcessApplied = 8;
 
         /**
-         * The Geodetic CRS define into TIFF image from “{0}” is not Geographic.Try to rebuild a
-         * Geographic CRS from others defined components.
+         * The coordinate reference system defined in the “{0}” TIFF image is not geographic. A
+         * geographic system will be created from others components.
          */
         public static final short UnexpectedGeoCRS_1 = 11;
 

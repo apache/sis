@@ -128,19 +128,25 @@ final class Tags {
     /////////////////////////////////////////////////////////
 
     /**
-     * References the needed "GeoKeys" to build CRS.
+     * References all "GeoKeys" needed for building the Coordinate Reference System.
+     * GeoTIFF keys are stored in a kind of directory inside the TIFF directory, with
+     * the keys enumerated in the {@link GeoTIFF} class.
+     *
+     * @todo omit the "Tag" suffix since this class is all about tags.
      */
-    public static final int GeoKeyDirectoryTag = 0x87AF; //-- 34735
+    public static final int GeoKeyDirectoryTag = 0x87AF;        // 34735
 
     /**
-     * This tag is used to store all of the DOUBLE valued GeoKeys, referenced by the GeoKeyDirectoryTag.
+     * References all {@code double} values referenced by the {@link GeoKeys}.
+     * The keys are stored in the entry referenced by {@link #GeoKeyDirectoryTag}.
      */
-    public static final int GeoDoubleParamsTag = 0x87B0; //-- 34736
+    public static final int GeoDoubleParamsTag = 0x87B0;        // 34736
 
     /**
-     * This tag is used to store all of the ASCII valued GeoKeys, referenced by the GeoKeyDirectoryTag.
+     * References all {@link String} values referenced by the {@link GeoKeys}.
+     * The keys are stored in the entry referenced by {@link #GeoKeyDirectoryTag}.
      */
-    public static final int GeoAsciiParamsTag = 0x87B1; //-- 34737
+    public static final int GeoAsciiParamsTag = 0x87B1;         // 34737
 
     /**
      * Do not allow instantiation of this class.
