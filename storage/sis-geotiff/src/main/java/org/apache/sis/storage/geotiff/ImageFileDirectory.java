@@ -16,16 +16,18 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.util.Locale;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -52,6 +54,12 @@ final class ImageFileDirectory {
      * was specified using the {@code Tile*} family of TIFF tags or the {@code Strip*} family.
      */
     private static final byte TILE = 1, STRIP = 2;
+
+    /**
+     * The GeoTIFF reader which contain this {@code ImageFileDirectory}.
+     * Used for fetching information like the input channel and where to report warnings.
+     */
+    private final Reader reader;
 
     /**
      * {@code true} if this {@code ImageFileDirectory} has not yet read all deferred entries.
@@ -250,6 +258,11 @@ final class ImageFileDirectory {
     private short cellWidth = -1, cellHeight = -1;
 
     /**
+     * The minimum or maximum sample value found in the image, or {@code NaN} if unspecified.
+     */
+    private double minValue = Double.NaN, maxValue = Double.NaN;
+
+    /**
      * The number of pixels per {@link #resolutionUnit} in the {@link #imageWidth} and the {@link #imageHeight}
      * directions, or {@link Double#NaN} is unspecified. Since ISO 19115 does not have separated resolution fields
      * for image width and height, Apache SIS stores only the maximal value.
@@ -271,18 +284,36 @@ final class ImageFileDirectory {
 
     /**
      * Creates a new image file directory.
+     *
+     * @param reader  information about the input stream to read, the metadata and the character encoding.
      */
-    ImageFileDirectory() {
+    ImageFileDirectory(final Reader reader) {
+        this.reader = reader;
     }
 
     /**
-     * Adds the value read from the current position in the given stream
-     * for the entry identified by the given GeoTIFF tag.
+     * Shortcut for a frequently requested information.
+     */
+    private ChannelDataInput input() {
+        return reader.input;
+    }
+
+    /**
+     * Shortcut for a frequently requested information.
+     */
+    private Charset encoding() {
+        return reader.owner.encoding;
+    }
+
+    /**
+     * Adds the value read from the current position in the given stream for the entry identified
+     * by the given GeoTIFF tag. This method may store the value either in a field of this class,
+     * or directly in the {@link MetadataBuilder}. However in the later case, this method should
+     * not write anything under the {@code "metadata/contentInfo"} node.
      *
-     * @param  reader   the input stream to read, the metadata and the character encoding.
-     * @param  tag      the GeoTIFF tag to decode.
-     * @param  type     the GeoTIFF type of the value to read.
-     * @param  count    the number of values to read.
+     * @param  tag    the GeoTIFF tag to decode.
+     * @param  type   the GeoTIFF type of the value to read.
+     * @param  count  the number of values to read.
      * @return {@code null} on success, or the unrecognized value otherwise.
      * @throws IOException if an error occurred while reading the stream.
      * @throws ParseException if the value need to be parsed as date and the parsing failed.
@@ -292,7 +323,7 @@ final class ImageFileDirectory {
      * @throws UnsupportedOperationException if the given type is {@link Type#UNDEFINED}.
      * @throws DataStoreException if a logical error is found or an unsupported TIFF feature is used.
      */
-    Object addEntry(final Reader reader, final int tag, final Type type, final long count)
+    Object addEntry(final int tag, final Type type, final long count)
             throws IOException, ParseException, DataStoreException
     {
         switch (tag) {
@@ -310,7 +341,7 @@ final class ImageFileDirectory {
              * 2 = Planar format. For example one plane of Red components, one plane of Green and one plane if Blue.
              */
             case Tags.PlanarConfiguration: {
-                final int value = type.readInt(reader.input, count);
+                final int value = type.readInt(input(), count);
                 switch (value) {
                     case 1:  isPlanar = false; break;
                     case 2:  isPlanar = true;  break;
@@ -322,30 +353,30 @@ final class ImageFileDirectory {
              * The number of columns in the image, i.e., the number of pixels per row.
              */
             case Tags.ImageWidth: {
-                imageWidth = type.readUnsignedLong(reader.input, count);
+                imageWidth = type.readUnsignedLong(input(), count);
                 break;
             }
             /*
              * The number of rows of pixels in the image.
              */
             case Tags.ImageLength: {
-                imageHeight = type.readUnsignedLong(reader.input, count);
+                imageHeight = type.readUnsignedLong(input(), count);
                 break;
             }
             /*
              * The tile width in pixels. This is the number of columns in each tile.
              */
             case Tags.TileWidth: {
-                setTileTagFamily(reader, TILE);
-                tileWidth = type.readInt(reader.input, count);
+                setTileTagFamily(TILE);
+                tileWidth = type.readInt(input(), count);
                 break;
             }
             /*
              * The tile length (height) in pixels. This is the number of rows in each tile.
              */
             case Tags.TileLength: {
-                setTileTagFamily(reader, TILE);
-                tileHeight = type.readInt(reader.input, count);
+                setTileTagFamily(TILE);
+                tileHeight = type.readInt(input(), count);
                 break;
             }
             /*
@@ -353,16 +384,16 @@ final class ImageFileDirectory {
              * From this point of view, TileLength = RowPerStrip and TileWidth = ImageWidth.
              */
             case Tags.RowsPerStrip: {
-                setTileTagFamily(reader, STRIP);
-                tileHeight = type.readInt(reader.input, count);
+                setTileTagFamily(STRIP);
+                tileHeight = type.readInt(input(), count);
                 break;
             }
             /*
              * The tile length (height) in pixels. This is the number of rows in each tile.
              */
             case Tags.TileOffsets: {
-                setTileTagFamily(reader, TILE);
-                tileOffsets = type.readVector(reader.input, count);
+                setTileTagFamily(TILE);
+                tileOffsets = type.readVector(input(), count);
                 break;
             }
             /*
@@ -370,16 +401,16 @@ final class ImageFileDirectory {
              * In Apache SIS implementation, strips are considered as a special kind of tiles.
              */
             case Tags.StripOffsets: {
-                setTileTagFamily(reader, STRIP);
-                tileOffsets = type.readVector(reader.input, count);
+                setTileTagFamily(STRIP);
+                tileOffsets = type.readVector(input(), count);
                 break;
             }
             /*
              * The tile width in pixels. This is the number of columns in each tile.
              */
             case Tags.TileByteCounts: {
-                setTileTagFamily(reader, TILE);
-                tileByteCounts = type.readVector(reader.input, count);
+                setTileTagFamily(TILE);
+                tileByteCounts = type.readVector(input(), count);
                 break;
             }
             /*
@@ -387,8 +418,8 @@ final class ImageFileDirectory {
              * In Apache SIS implementation, strips are considered as a special kind of tiles.
              */
             case Tags.StripByteCounts: {
-                setTileTagFamily(reader, STRIP);
-                tileByteCounts = type.readVector(reader.input, count);
+                setTileTagFamily(STRIP);
+                tileByteCounts = type.readVector(input(), count);
                 break;
             }
 
@@ -403,7 +434,7 @@ final class ImageFileDirectory {
              * Compression scheme used on the image data.
              */
             case Tags.Compression: {
-                final long value = type.readLong(reader.input, count);
+                final long value = type.readLong(input(), count);
                 compression = Compression.valueOf(value);
                 if (compression == null) {
                     return value;                           // Cause a warning to be reported by the caller.
@@ -415,7 +446,7 @@ final class ImageFileDirectory {
              * bits order shall be reversed in every bytes before decompression.
              */
             case Tags.FillOrder: {
-                final int value = type.readInt(reader.input, count);
+                final int value = type.readInt(input(), count);
                 switch (value) {
                     case 1: reverseBitsOrder = false; break;
                     case 2: reverseBitsOrder = true;  break;
@@ -429,7 +460,7 @@ final class ImageFileDirectory {
              * But the TIFF specification allows different values.
              */
             case Tags.BitsPerSample: {
-                final Vector values = type.readVector(reader.input, count);
+                final Vector values = type.readVector(input(), count);
                 /*
                  * The current implementation requires that all 'bitsPerSample' elements have the same value.
                  * This restriction may be revisited in future Apache SIS versions.
@@ -440,7 +471,7 @@ final class ImageFileDirectory {
                 for (int i = 1; i < length; i++) {
                     if (values.shortValue(i) != bitsPerSample) {
                         throw new DataStoreContentException(reader.resources().getString(
-                                Resources.Keys.ConstantValueRequired_3, "BitsPerSample", reader.input.filename, values));
+                                Resources.Keys.ConstantValueRequired_3, "BitsPerSample", input().filename, values));
                     }
                 }
                 break;
@@ -450,7 +481,7 @@ final class ImageFileDirectory {
              * and 3 for RGB images. Default value is 1.
              */
             case Tags.SamplesPerPixel: {
-                samplesPerPixel = type.readShort(reader.input, count);
+                samplesPerPixel = type.readShort(input(), count);
                 break;
             }
             /*
@@ -460,7 +491,7 @@ final class ImageFileDirectory {
              * describes the meaning of the extra samples. It may be an alpha channel, but not necessarily.
              */
             case Tags.ExtraSamples: {
-                extraSamples = type.readVector(reader.input, count);
+                extraSamples = type.readVector(input(), count);
                 break;
             }
 
@@ -480,7 +511,7 @@ final class ImageFileDirectory {
              * 4 = Transparency Mask the defines an irregularly shaped region of another image in the same TIFF file.
              */
             case Tags.PhotometricInterpretation: {
-                final short value = type.readShort(reader.input, count);
+                final short value = type.readShort(input(), count);
                 if (value < 0 || value > Byte.MAX_VALUE) return value;
                 photometricInterpretation = (byte) value;
                 break;
@@ -493,14 +524,15 @@ final class ImageFileDirectory {
              * (black is 0,0,0) and 65535 represents the maximum intensity.
              */
             case Tags.ColorMap: {
-                colorMap = type.readVector(reader.input, count);
+                colorMap = type.readVector(input(), count);
                 break;
             }
             /*
              * The minimum component value used. Default is 0.
              */
             case Tags.MinSampleValue: {
-                reader.metadata.addMinimumSampleValue(type.readDouble(reader.input, count));
+                final double v = type.readDouble(input(), count);
+                if (Double.isNaN(minValue) || v < minValue) minValue = v;
                 break;
             }
             /*
@@ -509,7 +541,8 @@ final class ImageFileDirectory {
              * visual appearance of an image, unless a map styling is applied.
              */
             case Tags.MaxSampleValue: {
-                reader.metadata.addMaximumSampleValue(type.readDouble(reader.input, count));
+                final double v = type.readDouble(input(), count);
+                if (Double.isNaN(maxValue) || v > maxValue) maxValue = v;
                 break;
             }
 
@@ -555,21 +588,21 @@ final class ImageFileDirectory {
              * The first 4 values are special, and contain GeoKey directory header information.
              */
             case Tags.GeoKeyDirectoryTag : {
-                reader.crsBuilder.setGeoKeyDirectoryTag(type.readVector(reader.input, count));
+                reader.crsBuilder.setGeoKeyDirectoryTag(type.readVector(input(), count));
                 break;
             }
             /*
              * This tag is used to store all of the DOUBLE valued GeoKeys, referenced by the GeoKeyDirectoryTag.
              */
             case Tags.GeoDoubleParamsTag : {
-                reader.crsBuilder.setGeoDoubleParamsTag(type.readVector(reader.input, count));
+                reader.crsBuilder.setGeoDoubleParamsTag(type.readVector(input(), count));
                 break;
             }
             /*
              * This tag is used to store all of the ASCII valued GeoKeys, referenced by the GeoKeyDirectoryTag.
              */
             case Tags.GeoAsciiParamsTag : {
-                final String[] values = type.readString(reader.input, count, reader.owner.encoding);
+                final String[] values = type.readString(input(), count, encoding());
                 reader.crsBuilder.setGeoAsciiParamsTag(values[0]);      // TODO: should pass the full array.
                 break;
             }
@@ -586,6 +619,7 @@ final class ImageFileDirectory {
             ////                                                                                        ////
             ////    Metadata for discovery purposes, conditions of use, etc.                            ////
             ////    Those metadata are not "critical" information for reading the image.                ////
+            ////    Should not write anything under 'metadata/contentInfo' node.                        ////
             ////                                                                                        ////
             ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -594,7 +628,7 @@ final class ImageFileDirectory {
              * For example, a user may wish to attach a comment such as "1988 company picnic" to an image.
              */
             case Tags.ImageDescription: {
-                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
+                for (final String value : type.readString(input(), count, encoding())) {
                     reader.metadata.addTitle(value);
                 }
                 break;
@@ -604,7 +638,7 @@ final class ImageFileDirectory {
              * Copyright information, but Apache SIS does not support this legacy practice.
              */
             case Tags.Artist: {
-                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
+                for (final String value : type.readString(input(), count, encoding())) {
                     reader.metadata.addAuthor(value);
                 }
                 break;
@@ -614,7 +648,7 @@ final class ImageFileDirectory {
              * Example: “Copyright, John Smith, 1992. All rights reserved.”
              */
             case Tags.Copyright: {
-                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
+                for (final String value : type.readString(input(), count, encoding())) {
                     reader.metadata.parseLegalNotice(value);
                 }
                 break;
@@ -623,7 +657,7 @@ final class ImageFileDirectory {
              * Date and time of image creation. The format is: "YYYY:MM:DD HH:MM:SS" with 24-hour clock.
              */
             case Tags.DateTime: {
-                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
+                for (final String value : type.readString(input(), count, encoding())) {
                     reader.metadata.add(reader.getDateFormat().parse(value), DateType.CREATION);
                 }
                 break;
@@ -632,8 +666,8 @@ final class ImageFileDirectory {
              * The computer and/or operating system in use at the time of image creation.
              */
             case Tags.HostComputer: {
-                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
-                    reader.metadata.addProcessingPlatform(value);
+                for (final String value : type.readString(input(), count, encoding())) {
+                    reader.metadata.addHostComputer(value);
                 }
                 break;
             }
@@ -641,8 +675,8 @@ final class ImageFileDirectory {
              * Name and version number of the software package(s) used to create the image.
              */
             case Tags.Software: {
-                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
-                    reader.metadata.addSoftwareReferences(value);
+                for (final String value : type.readString(input(), count, encoding())) {
+                    reader.metadata.addSoftwareReference(value);
                 }
                 break;
             }
@@ -660,7 +694,7 @@ final class ImageFileDirectory {
              * generate the image.
              */
             case Tags.Model: {
-                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
+                for (final String value : type.readString(input(), count, encoding())) {
                     reader.metadata.addInstrument(value);
                 }
                 break;
@@ -670,7 +704,7 @@ final class ImageFileDirectory {
              */
             case Tags.XResolution:
             case Tags.YResolution: {
-                final double r = type.readDouble(reader.input, count);
+                final double r = type.readDouble(input(), count);
                 if (Double.isNaN(resolution) || r > resolution) {
                     resolution = r;
                 }
@@ -684,7 +718,7 @@ final class ImageFileDirectory {
              *   3 = Centimeter.
              */
             case Tags.ResolutionUnit: {
-                final short unit = type.readShort(reader.input, count);
+                final short unit = type.readShort(input(), count);
                 switch (unit) {
                     case 1:  resolutionUnit = null;             break;
                     case 2:  resolutionUnit = Units.INCH;       break;
@@ -702,7 +736,7 @@ final class ImageFileDirectory {
              *   3 = A randomized process such as error diffusion has been applied to the image data.
              */
             case Tags.Threshholding: {
-                final short value = type.readShort(reader.input, count);
+                final short value = type.readShort(input(), count);
                 switch (value) {
                     case 1:  break;
                     case 2:  if (cellWidth >= 0 || cellHeight >= 0) return null; else break;
@@ -717,11 +751,11 @@ final class ImageFileDirectory {
              * a dithered or halftoned bilevel file. Meaningful only if Threshholding = 2.
              */
             case Tags.CellWidth: {
-                cellWidth = type.readShort(reader.input, count);
+                cellWidth = type.readShort(input(), count);
                 break;
             }
             case Tags.CellLength: {
-                cellHeight = type.readShort(reader.input, count);
+                cellHeight = type.readShort(input(), count);
                 break;
             }
 
@@ -743,7 +777,7 @@ final class ImageFileDirectory {
              */
             case Tags.GrayResponseCurve:
             case Tags.GrayResponseUnit: {
-                warning(reader, Level.FINE, Resources.Keys.IgnoredTag_1, Tags.name(tag));
+                warning(Level.FINE, Resources.Keys.IgnoredTag_1, Tags.name(tag));
                 break;
             }
         }
@@ -753,14 +787,13 @@ final class ImageFileDirectory {
     /**
      * Sets the {@link #tileTagFamily} field to the given value if it does not conflict with previous value.
      *
-     * @param  reader   the input stream to read.
-     * @param  family   either {@link #TILE} or {@link #STRIP}.
+     * @param  family  either {@link #TILE} or {@link #STRIP}.
      * @throws DataStoreContentException if {@link #tileTagFamily} is already set to another value.
      */
-    private void setTileTagFamily(final Reader reader, final byte family) throws DataStoreContentException {
+    private void setTileTagFamily(final byte family) throws DataStoreContentException {
         if (tileTagFamily != family && tileTagFamily != 0) {
             throw new DataStoreContentException(reader.resources().getString(
-                    Resources.Keys.InconsistentTileStrip_1, reader.input.filename));
+                    Resources.Keys.InconsistentTileStrip_1, input().filename));
         }
         tileTagFamily = family;
     }
@@ -811,9 +844,9 @@ final class ImageFileDirectory {
      *
      * @throws DataStoreContentException if a mandatory tag is missing and can not be inferred.
      */
-    final void validateMandatoryTags(final Reader reader) throws DataStoreContentException {
-        if (imageWidth  < 0) throw missingTag(reader, Tags.ImageWidth);
-        if (imageHeight < 0) throw missingTag(reader, Tags.ImageLength);
+    final void validateMandatoryTags() throws DataStoreContentException {
+        if (imageWidth  < 0) throw missingTag(Tags.ImageWidth);
+        if (imageHeight < 0) throw missingTag(Tags.ImageLength);
         final int offsetsTag, byteCountsTag;
         switch (tileTagFamily) {
             case STRIP: {
@@ -830,22 +863,22 @@ final class ImageFileDirectory {
             }
             default: {
                 throw new DataStoreContentException(reader.resources().getString(
-                                Resources.Keys.InconsistentTileStrip_1, reader.input.filename));
+                        Resources.Keys.InconsistentTileStrip_1, input().filename));
             }
         }
         if (tileOffsets == null) {
-            throw missingTag(reader, offsetsTag);
+            throw missingTag(offsetsTag);
         }
         if (samplesPerPixel == 0) {
             samplesPerPixel = 1;
-            missingTag(reader, Tags.SamplesPerPixel, 1, false);
+            missingTag(Tags.SamplesPerPixel, 1, false);
         }
         if (bitsPerSample == 0) {
             bitsPerSample = 1;
-            missingTag(reader, Tags.BitsPerSample, 1, false);
+            missingTag(Tags.BitsPerSample, 1, false);
         }
         if (colorMap != null) {
-            ensureSameLength(reader, Tags.ColorMap, Tags.BitsPerSample, colorMap.size(),  3 * (1 << bitsPerSample));
+            ensureSameLength(Tags.ColorMap, Tags.BitsPerSample, colorMap.size(),  3 * (1 << bitsPerSample));
         }
         /*
          * All of tile width, height and length information should be provided. But if only one of them is missing,
@@ -864,12 +897,12 @@ final class ImageFileDirectory {
             }
             case 0b0001: {          // Compute missing tile width.
                 tileWidth = computeTileSize(tileHeight);
-                missingTag(reader, Tags.TileWidth, tileWidth, true);
+                missingTag(Tags.TileWidth, tileWidth, true);
                 break;
             }
             case 0b0010: {          // Compute missing tile height.
                 tileHeight = computeTileSize(tileWidth);
-                missingTag(reader, Tags.TileLength, tileHeight, true);
+                missingTag(Tags.TileLength, tileHeight, true);
                 break;
             }
             case 0b0100: {          // Compute missing tile byte count.
@@ -877,7 +910,7 @@ final class ImageFileDirectory {
                 final long[] tileByteCountArray = new long[tileOffsets.size()];
                 Arrays.fill(tileByteCountArray, tileByteCount);
                 tileByteCounts = Vector.create(tileByteCountArray, true);
-                missingTag(reader, byteCountsTag, tileByteCount, true);
+                missingTag(byteCountsTag, tileByteCount, true);
                 break;
             }
             default: {
@@ -887,7 +920,7 @@ final class ImageFileDirectory {
                     case 0b0010: tag = Tags.TileLength; break;
                     default:     tag = byteCountsTag;   break;
                 }
-                throw missingTag(reader, tag);
+                throw missingTag(tag);
             }
         }
         /*
@@ -895,7 +928,7 @@ final class ImageFileDirectory {
          * ensure that the number of tiles is equal to the expected number.  The formula below is the one
          * documented in the TIFF specification and reproduced in tileWidth & tileHeight fields javadoc.
          */
-        ensureSameLength(reader, offsetsTag, byteCountsTag, tileOffsets.size(), tileByteCounts.size());
+        ensureSameLength(offsetsTag, byteCountsTag, tileOffsets.size(), tileByteCounts.size());
         long expectedCount = Math.multiplyExact(
                 Math.addExact(imageWidth,  tileWidth  - 1) / tileWidth,
                 Math.addExact(imageHeight, tileHeight - 1) / tileHeight);
@@ -905,18 +938,27 @@ final class ImageFileDirectory {
         final int actualCount = Math.min(tileOffsets.size(), tileByteCounts.size());
         if (actualCount != expectedCount) {
             throw new DataStoreContentException(reader.resources().getString(Resources.Keys.UnexpectedTileCount_3,
-                    reader.input.filename, expectedCount, actualCount));
+                    input().filename, expectedCount, actualCount));
         }
     }
 
     /**
      * Completes the metadata with the information stored in the field of this IFD.
      * This method is invoked only if the user requested the ISO 19115 metadata.
+     * This method creates a new {@code "metadata/contentInfo"} node for this image.
+     * Information not under the {@code "metadata/contentInfo"} node will be merged
+     * with the current content of the given {@code MetadataBuilder}.
+     *
+     * @param metadata  where to write metadata information. Caller should have already invoked
+     *        {@link MetadataBuilder#setFormat(String)} before {@code completeMetadata(…)} calls.
      */
     final void completeMetadata(final MetadataBuilder metadata, final Locale locale) {
+        metadata.newCoverage(false);
         if (compression != null) {
             metadata.addCompression(compression.name().toLowerCase(locale));
         }
+        metadata.addMinimumSampleValue(minValue);
+        metadata.addMaximumSampleValue(maxValue);
         /*
          * Add the resolution into the metadata. Our current ISO 19115 implementation restricts
          * the resolution unit to metres, but it may be relaxed in a future SIS version.
@@ -938,11 +980,11 @@ final class ImageFileDirectory {
                 break;
             }
             case -3: {
-                metadata.setProcessingDocumentation(Resources.formatInternational(Resources.Keys.RandomizedProcessApplied));
+                metadata.addProcessDescription(Resources.formatInternational(Resources.Keys.RandomizedProcessApplied));
                 break;
             }
             default: {
-                metadata.setProcessingDocumentation(Resources.formatInternational(
+                metadata.addProcessDescription(Resources.formatInternational(
                             Resources.Keys.DitheringOrHalftoningApplied_2,
                             (cellWidth  >= 0) ? cellWidth  : '?',
                             (cellHeight >= 0) ? cellHeight : '?'));
@@ -954,12 +996,11 @@ final class ImageFileDirectory {
     /**
      * Reports a warning with a message created from the given resource keys and parameters.
      *
-     * @param reader      the reader where to send the warning message.
      * @param level       the logging level for the message to log.
      * @param key         the {@code Resources} key of the message to format.
      * @param parameters  the parameters to put in the message.
      */
-    private void warning(final Reader reader, final Level level, final short key, final Object... parameters) {
+    private void warning(final Level level, final short key, final Object... parameters) {
         final LogRecord r = reader.resources().getLogRecord(level, key, parameters);
         reader.owner.warning(r);
     }
@@ -967,22 +1008,21 @@ final class ImageFileDirectory {
     /**
      * Verifies that the given tags have the same length and reports a warning if they do not.
      */
-    private void ensureSameLength(final Reader reader, final int tag1, final int tag2, final int length1, final int length2) {
+    private void ensureSameLength(final int tag1, final int tag2, final int length1, final int length2) {
         if (length1 != length2) {
-            warning(reader, Level.WARNING, Resources.Keys.MismatchedLength_4, Tags.name(tag1), Tags.name(tag2), length1, length2);
+            warning(Level.WARNING, Resources.Keys.MismatchedLength_4, Tags.name(tag1), Tags.name(tag2), length1, length2);
         }
     }
 
     /**
      * Reports a warning for a missing TIFF tag for which a default value can be computed.
      *
-     * @param  reader    the TIFF reader, used for fetching resources and file name.
      * @param  missing   the numerical value of the missing tag.
      * @param  value     the default value or the computed value.
      * @param  computed  whether the default value has been computed.
      */
-    private void missingTag(final Reader reader, final int missing, final long value, final boolean computed) {
-        warning(reader, computed ? Level.WARNING : Level.FINE,
+    private void missingTag(final int missing, final long value, final boolean computed) {
+        warning(computed ? Level.WARNING : Level.FINE,
                 computed ? Resources.Keys.ComputedValueForAttribute_2 : Resources.Keys.DefaultValueForAttribute_2,
                 Tags.name(missing), value);
     }
@@ -990,11 +1030,10 @@ final class ImageFileDirectory {
     /**
      * Builds an exception for a missing TIFF tag for which no default value can be computed.
      *
-     * @param  reader   the TIFF reader, used for fetching resources and file name.
      * @param  missing  the numerical value of the missing tag.
      */
-    private DataStoreContentException missingTag(final Reader reader, final int missing) {
+    private DataStoreContentException missingTag(final int missing) {
         return new DataStoreContentException(reader.resources().getString(
-                Resources.Keys.MissingValue_2, reader.input.filename, Tags.name(missing)));
+                Resources.Keys.MissingValue_2, input().filename, Tags.name(missing)));
     }
 }

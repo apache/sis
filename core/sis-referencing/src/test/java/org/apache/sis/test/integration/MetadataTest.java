@@ -347,12 +347,17 @@ public strictfp class MetadataTest extends XMLTestCase {
             final DefaultDistribution distributionInfo = new DefaultDistribution();
             distributor.setRole(Role.DISTRIBUTOR);
             distributionInfo.setDistributors(singleton(new DefaultDistributor(distributor)));
-            distributionInfo.setDistributionFormats(singleton(new DefaultFormat(
-                    new Anchor(URI.create("SDN:L241:1:MEDATLAS"), "MEDATLAS ASCII"), "1.0")));
+
+            final DefaultFormat format = new DefaultFormat();
+            final DefaultCitation specification = new DefaultCitation();
+            specification.setAlternateTitles(singleton(new Anchor(URI.create("SDN:L241:1:MEDATLAS"), "MEDATLAS ASCII")));
+            specification.setEdition(new SimpleInternationalString("1.0"));
+            format.setFormatSpecificationCitation(specification);
+            distributionInfo.setDistributionFormats(singleton(format));
+
             final DefaultDigitalTransferOptions transfer = new DefaultDigitalTransferOptions();
             transfer.setTransferSize(2.431640625);
-            final DefaultOnlineResource onlines = new DefaultOnlineResource(URI.create(
-                    "http://www.ifremer.fr/data/something"));
+            final DefaultOnlineResource onlines = new DefaultOnlineResource(URI.create("http://www.ifremer.fr/data/something"));
             onlines.setDescription(new SimpleInternationalString("CTDF02"));
             onlines.setFunction(OnLineFunction.DOWNLOAD);
             onlines.setProtocol("http");

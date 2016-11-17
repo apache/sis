@@ -46,6 +46,7 @@ import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -485,8 +486,12 @@ public final class Store extends DataStore {
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
             final MetadataBuilder builder = new MetadataBuilder();
+            try {
+                builder.setFormat(timeEncoding != null && hasTrajectories ? "CSV/MF" : "CSV");
+            } catch (MetadataStoreException e) {
+                listeners.warning(null, e);
+            }
             builder.add(encoding);
-            builder.addFormat(timeEncoding != null && hasTrajectories ? "CSV/MF" : "CSV");
             builder.add(ScopeCode.DATASET);
             try {
                 builder.addExtent(envelope);

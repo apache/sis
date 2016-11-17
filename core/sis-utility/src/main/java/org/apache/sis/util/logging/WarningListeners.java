@@ -46,7 +46,7 @@ import org.apache.sis.util.resources.Errors;
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
  * from multiple threads.
  *
- * @param <S> The type of the source of warnings.
+ * @param  <S>  the type of the source of warnings.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
