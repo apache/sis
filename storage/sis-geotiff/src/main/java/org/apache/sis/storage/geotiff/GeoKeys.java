@@ -74,16 +74,17 @@ final class GeoKeys {
         static final String GTUserDefinedGeoKey_String = "32767";
 
         /**
-         * Return tag Name from {@link GeoTiffConstants} class.
+         * Returns key Name from {@link Configuration} class if exist.
+         * If key name doesn't exist return {@code null}.
          *
-         * @param tag
-         * @return tag Name from {@link GeoTiffConstants} class.
+         * @param key
+         * @return tag Name from {@link Configuration} class.
          */
-        static String getName(final int tag) {
+        static String getName(final int key) {
             try {
-                for (final Field field : CRS.class.getDeclaredFields()) {
+                for (final Field field : Configuration.class.getDeclaredFields()) {
                     if (field.getType() == Integer.TYPE) {
-                        if (field.getInt(null) == tag) {
+                        if (field.getInt(null) == key) {
                             return field.getName();
                         }
                     }
@@ -91,12 +92,19 @@ final class GeoKeys {
             } catch (ReflectiveOperationException ex) {
                 throw new AssertionError(ex); // Should never happen.
             }
-            return Integer.toHexString(tag);
+            return Integer.toHexString(key);
         }
 
+        /**
+         * Returns {@code true} if {@link Configuration} class contain given key
+         * else return {@code false}.
+         *
+         * @param key
+         * @return {@code true} if {@link configuration} contain key else {@code false}.
+         */
         static boolean contain(int key) {
             try {
-                for (final Field field : CRS.class.getDeclaredFields()) {
+                for (final Field field : Configuration.class.getDeclaredFields()) {
                     if (field.getType() == Integer.TYPE) {
                         if (field.getInt(null) == key) {
                             return true;
@@ -159,14 +167,15 @@ final class GeoKeys {
         static final int CT_SouthOrientedGaussConformal =    CT_TransvMercator_SouthOriented;
 
         /**
-         * Return tag Name from {@link GeoTiffConstants} class.
+         * Returns key Name from {@link Operation_Method} class if exist.
+         * If key name doesn't exist return {@code null}.
          *
-         * @param tag
-         * @return tag Name from {@link GeoTiffConstants} class.
+         * @param key
+         * @return tag Name from {@link Operation_Method} class.
          */
         static String getName(final int tag) {
             try {
-                for (final Field field : CRS.class.getDeclaredFields()) {
+                for (final Field field : Operation_Method.class.getDeclaredFields()) {
                     if (field.getType() == Integer.TYPE) {
                         if (field.getInt(null) == tag) {
                             return field.getName();
@@ -179,9 +188,16 @@ final class GeoKeys {
             return Integer.toHexString(tag);
         }
 
+        /**
+         * Returns {@code true} if {@link Configuration} class contain given key
+         * else return {@code false}.
+         *
+         * @param key
+         * @return {@code true} if {@link configuration} contain key else {@code false}.
+         */
         static boolean contain(int key) {
             try {
-                for (final Field field : CRS.class.getDeclaredFields()) {
+                for (final Field field : Operation_Method.class.getDeclaredFields()) {
                     if (field.getType() == Integer.TYPE) {
                         if (field.getInt(null) == key) {
                             return true;
@@ -240,14 +256,15 @@ final class GeoKeys {
         static final int Angular_DMS_Hemisphere = 9108;
 
         /**
-         * Return tag Name from {@link GeoTiffConstants} class.
+         * Returns key Name from {@link Units} class if exist.
+         * If key name doesn't exist return {@code null}.
          *
-         * @param tag
-         * @return tag Name from {@link GeoTiffConstants} class.
+         * @param key
+         * @return tag Name from {@link Units} class.
          */
         static String getName(final int tag) {
             try {
-                for (final Field field : CRS.class.getDeclaredFields()) {
+                for (final Field field : Units.class.getDeclaredFields()) {
                     if (field.getType() == Integer.TYPE) {
                         if (field.getInt(null) == tag) {
                             return field.getName();
@@ -260,9 +277,16 @@ final class GeoKeys {
             return Integer.toHexString(tag);
         }
 
+        /**
+         * Returns {@code true} if {@link Units} class contain given key
+         * else return {@code false}.
+         *
+         * @param key
+         * @return {@code true} if {@link Units} contain key else {@code false}.
+         */
         static boolean contain(int key) {
             try {
-                for (final Field field : CRS.class.getDeclaredFields()) {
+                for (final Field field : Units.class.getDeclaredFields()) {
                     if (field.getType() == Integer.TYPE) {
                         if (field.getInt(null) == key) {
                             return true;
@@ -333,10 +357,11 @@ final class GeoKeys {
         static final int VerticalUnitsGeoKey     = 4099;   /* Section 6.3.1.3 codes */
 
         /**
-         * Return tag Name from {@link GeoTiffConstants} class.
+         * Returns key Name from {@link CRS} class if exist.
+         * If key name doesn't exist return {@code null}.
          *
-         * @param tag
-         * @return tag Name from {@link GeoTiffConstants} class.
+         * @param key
+         * @return tag Name from {@link CRS} class.
          */
         static String getName(final int tag) {
             try {
@@ -353,6 +378,13 @@ final class GeoKeys {
             return Integer.toHexString(tag);
         }
 
+        /**
+         * Returns {@code true} if {@link CRS} class contain given key
+         * else return {@code false}.
+         *
+         * @param key
+         * @return {@code true} if {@link CRS} contain key else {@code false}.
+         */
         static boolean contain(int key) {
             try {
                 for (final Field field : CRS.class.getDeclaredFields()) {
@@ -373,4 +405,43 @@ final class GeoKeys {
 
     }
 
+
+    //--------------------------- To String ------------------------------------
+    /**
+     * Returns key Name from one of {@link Configuration}, {@link Operation_Method},
+     * {@link Units} or {@link CRS} class if exist. If key name doesn't
+     * exist return {@code null}.
+     *
+     * @param key
+     * @return tag Name from one of internal sub-class if exist.
+     */
+    static String getName(final int tag) {
+        if (Configuration.contain(tag))
+            return Configuration.getName(tag);
+
+        if (Operation_Method.contain(tag))
+            return Operation_Method.getName(tag);
+
+        if (Units.contain(tag))
+            return Units.getName(tag);
+
+        if (CRS.contain(tag))
+            return CRS.getName(tag);
+
+        return null;
+    }
+
+    /**
+     * Returns {@code true} if given key is within one of {@link Configuration}, {@link Operation_Method},
+     * {@link Units} or {@link CRS} internal sub class else return {@code false}.
+     *
+     * @param key
+     * @return {@code true} if one of internal sub class contain key else {@code false}.
+     */
+    static boolean contain(int key) {
+        return Configuration.contain(key)
+            || Operation_Method.contain(key)
+            || Units.contain(key)
+            || CRS.contain(key);
+    }
 }
