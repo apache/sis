@@ -102,7 +102,12 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     }
 
     /**
-     * Returns the EPSG factory.
+     * Returns the factory connected to the EPSG geodetic dataset if possible, or the EPSG fallback otherwise.
+     * If an EPSG data source has been found, then this method returns an instance of {@link EPSGFactory} but
+     * there is no guarantee that attempts to use that factory will succeed; for example maybe the EPSG schema
+     * does not exist. Callers should be prepared to either receive an {@link EPSGFactoryFallback} directly if
+     * the EPSG data source does not exist, or replace the {@code EPSGFactory} by a {@code EPSGFactoryFallback}
+     * later if attempt to use the returned factory fails.
      */
     static AuthorityFactory EPSG() {
         synchronized (EPSG) {

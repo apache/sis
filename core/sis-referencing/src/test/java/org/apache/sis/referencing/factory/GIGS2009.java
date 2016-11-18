@@ -52,7 +52,7 @@ public final strictfp class GIGS2009 extends org.opengis.test.referencing.gigs.G
      * Creates a new test using the default authority factory.
      */
     public GIGS2009() {
-        super(GIGS2001.INSTANCE);
+        super(GIGS2001.factory);
     }
 
     /**
@@ -73,6 +73,5 @@ public final strictfp class GIGS2009 extends org.opengis.test.referencing.gigs.G
     @AfterClass
     public static void close() throws FactoryException {
         GIGS2001.close();
-        GIGS2001.INSTANCE = null;       // Since this is the last test of the 2000 series, we can let GC do its work.
     }
 }
