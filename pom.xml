@@ -490,12 +490,15 @@ Apache SIS is a free software, Java language library for developing geospatial a
     <profile>
       <id>apache-release</id>
       <properties>
-        <maven.compiler.debug>false</maven.compiler.debug> <!-- For smaller JAR files size. -->
+        <maven.compiler.debug>false</maven.compiler.debug>              <!-- For smaller JAR files size. -->
         <maven.compiler.optimize>true</maven.compiler.optimize>
         <org.apache.sis.test.extensive>true</org.apache.sis.test.extensive>
       </properties>
     </profile>
+
+    <!-- Cross-version compilation (to be removed with JDK9). -->
     <profile>
+      <id>bootclasspath</id>
       <activation>
         <property>
           <name>bootclasspath</name>
@@ -516,6 +519,31 @@ Apache SIS is a free software, Java language library for developing geospatial a
             <artifactId>maven-javadoc-plugin</artifactId>
             <configuration>
               <bootclasspath>${bootclasspath}</bootclasspath>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- ===================================================================
+           If the user has not set the SIS_DATA environment variable, set a
+           default value where we can create a minimalist database.
+         =================================================================== -->
+    <profile>
+      <id>sis-data</id>
+      <activation>
+        <property>
+          <name>!env.SIS_DATA</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <environmentVariables>
+                <SIS_DATA>${session.executionRootDirectory}/target</SIS_DATA>
+              </environmentVariables>
             </configuration>
           </plugin>
         </plugins>

@@ -56,7 +56,7 @@ public class UnavailableFactoryException extends MissingFactoryResourceException
     /**
      * Construct an exception with the specified detail message.
      *
-     * @param  message The detail message. The detail message is saved
+     * @param  message  the detail message. The detail message is saved
      *         for later retrieval by the {@link #getMessage()} method.
      */
     public UnavailableFactoryException(String message) {
@@ -68,9 +68,9 @@ public class UnavailableFactoryException extends MissingFactoryResourceException
      * The cause is the exception thrown in the underlying database
      * (e.g. {@link java.io.IOException} or {@link java.sql.SQLException}).
      *
-     * @param  message The detail message. The detail message is saved
+     * @param  message  the detail message. The detail message is saved
      *         for later retrieval by the {@link #getMessage()} method.
-     * @param  cause The cause for this exception. The cause is saved
+     * @param  cause  the cause for this exception. The cause is saved
      *         for later retrieval by the {@link #getCause()} method.
      */
     public UnavailableFactoryException(String message, Throwable cause) {
@@ -90,7 +90,7 @@ public class UnavailableFactoryException extends MissingFactoryResourceException
      * unavailable. User may want to be informed about which factory is unavailable, for example in order
      * to remove it from the list of factory managed by {@link MultiAuthoritiesFactory}.</div>
      *
-     * @param factory The factory which is unavailable.
+     * @param  factory  the factory which is unavailable.
      */
     public void setUnavailableFactory(final AuthorityFactory factory) {
         this.factory = factory;
@@ -100,7 +100,7 @@ public class UnavailableFactoryException extends MissingFactoryResourceException
      * Returns the factory which has been found unavailable, or {@code null} if unspecified.
      * See {@link #setUnavailableFactory(AuthorityFactory)} for more details.
      *
-     * @return The factory that should be considered as unavailable.
+     * @return the factory that should be considered as unavailable.
      */
     public AuthorityFactory getUnavailableFactory() {
         return factory;

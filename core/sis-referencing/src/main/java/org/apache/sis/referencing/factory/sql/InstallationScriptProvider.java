@@ -224,6 +224,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
         } else {
             in = openStream(name);
             charset = StandardCharsets.ISO_8859_1;
+            name = name.concat(".sql");
         }
         if (in == null) {
             throw new FileNotFoundException(Errors.format(Errors.Keys.FileNotFound_1, name));
