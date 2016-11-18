@@ -611,22 +611,23 @@ public class TiffCRSBuilder {
         int axisNumber = 0;
         if (axis0.getDirection().equals(AxisDirection.EAST)
          || axis0.getDirection().equals(AxisDirection.WEST)) {
-            axisNumber = 4;
-            if (axis0.getDirection().equals(AxisDirection.EAST))  axisNumber |= 2;
-            if (axis1.getDirection().equals(AxisDirection.NORTH)) axisNumber |= 1;
+            axisNumber = 0b0100;
+            if (axis0.getDirection().equals(AxisDirection.EAST))  axisNumber |= 0b0010;
+            if (axis1.getDirection().equals(AxisDirection.NORTH)) axisNumber |= 0b0001;
         } else if (axis0.getDirection().equals(AxisDirection.NORTH)
                 || axis0.getDirection().equals(AxisDirection.SOUTH)) {
-            if (axis0.getDirection().equals(AxisDirection.EAST))  axisNumber |= 2;
-            if (axis1.getDirection().equals(AxisDirection.NORTH)) axisNumber |= 1;
+            if (axis0.getDirection().equals(AxisDirection.EAST))  axisNumber |= 0b0010;
+            if (axis1.getDirection().equals(AxisDirection.NORTH)) axisNumber |= 0b0001;
         } else {
             return (CartesianCS) CoordinateSystems.replaceLinearUnit(baseCS, fallBackUnit);
         }
 
         //-- get the Unit epsg code if exist
-        String unitCode = geoKeys.getAsString(unitKey).trim();
+        String unitCode = geoKeys.getAsString(unitKey);
         if (unitCode == null
          || unitCode.equalsIgnoreCase(GeoKeys.Configuration.GTUserDefinedGeoKey_String))
             return (CartesianCS) CoordinateSystems.replaceLinearUnit(baseCS, fallBackUnit);
+        unitCode = unitCode.trim();
 
         if (unitCode.startsWith("epsg:") || unitCode.startsWith("EPSG:"))
             unitCode = unitCode.substring(5, unitCode.length());
@@ -637,35 +638,35 @@ public class TiffCRSBuilder {
             // Linear_Meter = 9001
             case 9001 : {
                 switch (axisNumber) {
-                    case 7 : { //-- 111 [E,N]
+                    case 0b0111 : { //-- [E,N]
                         epsgCSCode = "4400";
                         break;
                     }
-                    case 6 : { //-- 110 [E,S]
-                        //-- no found into epsg base
+                    case 0b0110 : { //-- [E,S]
+                        //-- no relative CS found into epsg base
                         break;
                     }
-                    case 5 : { //-- 101 [W,N]
+                    case 0b0101 : { //-- [W,N]
                         epsgCSCode = "4491";
                         break;
                     }
-                    case 4 : { //-- 100 [W,S]
+                    case 0b0100 : { //-- [W,S]
                         epsgCSCode = "6503";
                         break;
                     }
-                    case 3 : { //-- 011 [N,E]
+                    case 0b0011 : { //-- [N,E]
                         epsgCSCode = "4500";
                         break;
                     }
-                    case 2 : { //-- 010 [N,W]
+                    case 0b0010 : { //-- [N,W]
                         epsgCSCode = "4501";//-- or 6507
                         break;
                     }
-                    case 1 : { //-- 001 [S,E]
-                        //-- not found into epsg base
+                    case 0b0001 : { //-- [S,E]
+                        //-- no relative CS found into epsg base
                         break;
                     }
-                    case 0 : { //-- 000 [S,W]
+                    case 0b0000 : { //-- [S,W]
                         epsgCSCode = "6501";
                         break;
                     }
@@ -675,11 +676,11 @@ public class TiffCRSBuilder {
             // Linear_Foot = 9002
             case 9002 : {
                 switch (axisNumber) {
-                    case 6 : { //-- 111 [E,N]
+                    case 0b0111 : { //-- [E,N]
                         epsgCSCode = "1039";
                         break;
                     }
-                    case 3 : { //-- 011 [N,E]
+                    case 0b0011 : { //-- [N,E]
                         epsgCSCode = "1029";
                         break;
                     }
@@ -690,7 +691,7 @@ public class TiffCRSBuilder {
             // Linear_Foot_US_Survey = 9003
             case 9003 : {
                 switch (axisNumber) {
-                    case 6 : { //-- 111 [E,N]
+                    case 0b0111 : { //-- [E,N]
                         epsgCSCode = "4497";
                         break;
                     }
@@ -705,11 +706,11 @@ public class TiffCRSBuilder {
             // Linear_Foot_Clarke = 9005
             case 9005 : {
                 switch (axisNumber) {
-                    case 6 : { //-- 111 [E,N]
+                    case 0b0111 : { //-- [E,N]
                         epsgCSCode = "4403";
                         break;
                     }
-                    case 3 : { //-- 011 [N,E]
+                    case 0b0011 : { //-- [N,E]
                         epsgCSCode = "4502";
                         break;
                     }
@@ -748,6 +749,143 @@ public class TiffCRSBuilder {
         epsgCSCode = "EPSG:".concat(epsgCSCode);
 
         return epsgFactory().createCartesianCS(epsgCSCode);
+    }
+
+    /**
+     * Returns a {@link EllipsoidalCS} which is a combination of given base CS and tiff unit key if exist.<br>
+     * The returned CS is searched and retrieved from epsg base if exist.<br>
+     * If don't exist, we call {@link CoordinateSystems#replaceAngularUnit(org.opengis.referencing.cs.CoordinateSystem, javax.measure.Unit) }
+     * to build expected CS.<br>
+     * The retrieved Angular CS are :<br>
+     *
+     * <ul>
+     * <li> epsg : 6428 [Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: rad] </li>
+     * <li> epsg : 6429 [Ellipsoidal 2D CS. Axes: longitude, latitude. Orientations: east, north. UoM: rad] </li>
+     * <li> epsg : 6422 [Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree] </li>
+     * <li> epsg : 6424 [Ellipsoidal 2D CS. Axes: longitude, latitude. Orientations: east, north. UoM: degree] </li>
+     * <li> epsg : 6403 [Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: grads.] </li>
+     * <li> epsg : 6425 [Ellipsoidal 2D CS. Axes: longitude, latitude. Orientations: east, north. UoM: grads.] </li>
+     * </ul>
+     *
+     * @param baseCS
+     * @param fallBackUnit
+     * @return
+     */
+    private EllipsoidalCS retrieveEllipsoidalCS(final int unitKey, final EllipsoidalCS baseCS, final Unit fallBackUnit)
+            throws FactoryException {
+        assert baseCS.getDimension() == 2;
+        CoordinateSystemAxis axis0 = baseCS.getAxis(0);
+        CoordinateSystemAxis axis1 = baseCS.getAxis(1);
+
+        //-------- Axis Number ----------------------
+        // axisnumber integer reference couple axis direction on 3 bits.
+        // higher's of the 3 bits, define axis combinaisons 1 for [E,N] or [W,S]
+        // and 0 for [N,E] or [S,W].
+        // secondly higher bit position define sens for first axis
+        // third and last bit position define sens for second axis.
+        // examples :
+        // [E,N] : axisNumber = 111
+        // [E,S] : axisNumber = 110
+        // [N,W] : axisNumber = 010
+        // [S,W] : axisNumber = 000 etc
+        //
+        //-------------------------------------------
+        int axisNumber = 0;
+        if (axis0.getDirection().equals(AxisDirection.EAST)
+         || axis0.getDirection().equals(AxisDirection.WEST)) {
+            axisNumber = 0b0100;
+            if (axis0.getDirection().equals(AxisDirection.EAST))  axisNumber |= 0b0010;
+            if (axis1.getDirection().equals(AxisDirection.NORTH)) axisNumber |= 0b0001;
+        } else if (axis0.getDirection().equals(AxisDirection.NORTH)
+                || axis0.getDirection().equals(AxisDirection.SOUTH)) {
+            if (axis0.getDirection().equals(AxisDirection.EAST))  axisNumber |= 0b0010;
+            if (axis1.getDirection().equals(AxisDirection.NORTH)) axisNumber |= 0b0001;
+        } else {
+            return (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(baseCS, fallBackUnit);
+        }
+
+        //-- get the Unit epsg code if exist
+        String unitCode = geoKeys.getAsString(unitKey);
+        if (unitCode == null
+         || unitCode.equalsIgnoreCase(GeoKeys.Configuration.GTUserDefinedGeoKey_String))
+            return (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(baseCS, fallBackUnit);
+        unitCode = unitCode.trim();
+
+        if (unitCode.startsWith("epsg:") || unitCode.startsWith("EPSG:"))
+            unitCode = unitCode.substring(5, unitCode.length());
+
+        int intCode = Integer.parseInt(unitCode);
+        String epsgCSCode = null;
+        switch (intCode) {
+            // Angular_Radian = 9101
+            case 9101 : {
+                switch (axisNumber) {
+                    case 0b0111 : { //-- [E,N]
+                        epsgCSCode = "6429";
+                        break;
+                    }
+                    case 0b0011 : { //-- [N,E]
+                        epsgCSCode = "6428";
+                        break;
+                    }
+                    default :
+                }
+                break;
+            }
+            //-- Angular_Degree = 9102
+            //-- into epsg base, 9102 angular degree was replaced by 9122
+            //-- following returned CS will be built with internal 9122 CS.
+            case 9102 : {
+                switch (axisNumber) {
+                    case 0b0111 : { //-- [E,N]
+                        epsgCSCode = "6424";
+                        break;
+                    }
+                    case 0b0011 : { //-- [N,E]
+                        epsgCSCode = "6422";
+                        break;
+                    }
+                    default :
+                }
+                break;
+            }
+            // Angular_Arc_Minute = 9103
+            case 9103 :
+            // Angular_Arc_Second = 9104
+            case 9104 : {
+                break;
+            }
+            // Angular_Grad = 9105
+            case 9105 : {
+                switch (axisNumber) {
+                    case 0b0111 : { //-- [E,N]
+                        epsgCSCode = "6425";
+                        break;
+                    }
+                    case 0b0011 : { //-- [N,E]
+                        epsgCSCode = "6403";
+                        break;
+                    }
+                    default :
+                }
+                break;
+            }
+            // Angular_Gon = 9106
+            case 9106 :
+            // Angular_DMS = 9107
+            case 9107 :
+            //-- Angular_DMS_Hemisphere = 9108
+            case 9108 :
+            default :
+        }
+
+        if (epsgCSCode == null)
+            //-- epsg CS + Unit not found
+            return (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(baseCS, fallBackUnit);
+
+        epsgCSCode = "EPSG:".concat(epsgCSCode);
+
+        return epsgFactory().createEllipsoidalCS(epsgCSCode);
     }
 
 
@@ -913,8 +1051,11 @@ public class TiffCRSBuilder {
             //-- make the user defined GCS from all the components...
             return objectFactory().createGeographicCRS(name(name),
                                                        datum,
-                                       (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(),
-                                                                                                       angularUnit));
+                                                       retrieveEllipsoidalCS(GeoKeys.CRS.GeogAngularUnitsGeoKey,
+                                                               CommonCRS.defaultGeographic().getCoordinateSystem(),
+                                                               angularUnit));
+//                                       (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(),
+//                                                                                                       angularUnit));
         }
 
         //---------------------------------------------------------------------//
@@ -933,7 +1074,6 @@ public class TiffCRSBuilder {
             throw new IllegalArgumentException("Impossible to define CRS from none Geodetic base. found : "+geoCRS.toWKT());
 
         if (!(geoCRS instanceof GeographicCRS)) {
-            //-- TODO log warning : is not instance of Geodetic try to re-build it
             warning(reader, Level.WARNING, Resources.Keys.UnexpectedGeoCRS_1, reader.input.filename);
             geoCRS = objectFactory().createGeographicCRS(name(IdentifiedObjects.getName(geoCRS, new DefaultCitation("EPSG"))),
                                                         ((GeodeticCRS)geoCRS).getDatum(),
@@ -943,8 +1083,11 @@ public class TiffCRSBuilder {
         if (angularUnit != null
         && !angularUnit.equals(geoCRS.getCoordinateSystem().getAxis(0).getUnit())) {
             geoCRS = objectFactory().createGeographicCRS(name(IdentifiedObjects.getName(geoCRS, new DefaultCitation("EPSG"))),
-                    (GeodeticDatum) ((GeographicCRS)geoCRS).getDatum(),
-                    (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(), angularUnit));
+                                                        (GeodeticDatum) ((GeographicCRS)geoCRS).getDatum(),
+                                                        retrieveEllipsoidalCS(GeoKeys.CRS.GeogAngularUnitsGeoKey,
+                                                                CommonCRS.defaultGeographic().getCoordinateSystem(),
+                                                                angularUnit));
+//                    (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(), angularUnit));
         }
         return (GeographicCRS) geoCRS;
     }
@@ -1133,7 +1276,11 @@ public class TiffCRSBuilder {
             strBuild.append("\n");
 
             for (int key : keySet()) {
-                strBuild.append(GeoKeys.CRS.getName(key)+" ("+key+") = "+getAsString(key));
+                if (GeoKeys.contain(key)) {
+                    strBuild.append(GeoKeys.getName(key)+" ("+key+") = "+getAsString(key));
+                } else {
+                    strBuild.append("key : "+key+", is not recognized.");
+                }
                 strBuild.append("\n");
             }
             strBuild.append("/*****************************************************************************************/");
