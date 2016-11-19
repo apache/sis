@@ -20,17 +20,24 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.Iterator;
+import java.lang.reflect.Method;
 import java.sql.SQLException;
 import javax.sql.DataSource;
+import org.opengis.annotation.UML;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.MetadataStandard;
+import org.apache.sis.metadata.KeyNamePolicy;
+import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.metadata.sql.Initializer;
+import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.iso.Types;
 
 
@@ -85,6 +92,30 @@ public class MetadataSource {
      * Keys are table names and values are the columns defined for that table.
      */
     private final Map<String, Set<String>> tables;
+
+    /**
+     * The prepared statements created in previous calls to {@link #getValue(Class, Method, String)} method.
+     * Those statements are encapsulated into {@link MetadataResult} objects.
+     * This object is also the lock on which every SQL query must be guarded.
+     * We use this object because SQL queries will typically involve usage of this map.
+     */
+    private final ResultPool statements;
+
+    /**
+     * The previously created objects.
+     * Used in order to share existing instances for the same interface and primary key.
+     */
+    private final WeakValueHashMap<CacheKey,Object> cache;
+
+    /**
+     * The last converter used.
+     */
+    private transient volatile ObjectConverter<?,?> lastConverter;
+
+    /**
+     * The class loader to use for proxy creation.
+     */
+    private final ClassLoader loader;
 
     /**
      * The default instance, created when first needed and cleared when the classpath change.
@@ -145,7 +176,84 @@ public class MetadataSource {
         this.standard = standard;
         this.schema   = schema;
         this.tables   = new HashMap<>();
-        // TODO
+        statements    = new ResultPool(dataSource, this);
+        cache         = new WeakValueHashMap<>(CacheKey.class);
+        loader        = getClass().getClassLoader();
+    }
+
+    /**
+     * Creates a new metadata source with the same configuration than the given source.
+     * The two sources will share the same data source but will use their own {@linkplain Connection connection}.
+     * This constructor is useful when concurrency is desired.
+     *
+     * @param  source  the source from which to copy the configuration.
+     */
+    public MetadataSource(final MetadataSource source) {
+        ArgumentChecks.ensureNonNull("source", source);
+        standard   = source.standard;
+        schema     = source.schema;
+        loader     = source.loader;
+        tables     = new HashMap<>();
+        statements = new ResultPool(source.statements);
+        cache      = new WeakValueHashMap<>(CacheKey.class);
+    }
+
+    /**
+     * If the given value is a collection, returns the first element in that collection
+     * or {@code null} if empty.
+     *
+     * @param  value  the value to inspect (can be {@code null}).
+     * @return the given value, or its first element if the value is a collection,
+     *         or {@code null} if the given value is null or an empty collection.
+     */
+    private static Object extractFromCollection(Object value) {
+        while (value instanceof Iterable<?>) {
+            final Iterator<?> it = ((Iterable<?>) value).iterator();
+            if (!it.hasNext()) {
+                return null;
+            }
+            if (value == (value = it.next())) break;
+        }
+        return value;
+    }
+
+    /**
+     * Returns the table name for the specified class.
+     * This is usually the ISO 19115 name.
+     */
+    private static String getTableName(final Class<?> type) {
+        final UML annotation = type.getAnnotation(UML.class);
+        if (annotation == null) {
+            return type.getSimpleName();
+        }
+        final String name = annotation.identifier();
+        return name.substring(name.lastIndexOf('.') + 1);
+    }
+
+    /**
+     * Returns the column name for the specified method.
+     */
+    private static String getColumnName(final Method method) {
+        final UML annotation = method.getAnnotation(UML.class);
+        if (annotation == null) {
+            return method.getName();
+        }
+        final String name = annotation.identifier();
+        return name.substring(name.lastIndexOf('.') + 1);
+    }
+
+    /**
+     * Returns a view of the given metadata as a map. This method returns always a map using UML identifier
+     * and containing all entries including the null ones because the {@code MetadataSource} implementation
+     * assumes so.
+     *
+     * @param  metadata  the metadata object to view as a map.
+     * @return a map view over the metadata object.
+     * @throws ClassCastException if the metadata object does not implement a metadata interface
+     *         of the expected package.
+     */
+    final Map<String,Object> asMap(final Object metadata) throws ClassCastException {
+        return standard.asValueMap(metadata, KeyNamePolicy.UML_IDENTIFIER, ValueExistencePolicy.ALL);
     }
 
     /**
