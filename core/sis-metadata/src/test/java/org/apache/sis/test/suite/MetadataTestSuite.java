@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @Suite.SuiteClasses({
@@ -101,7 +101,8 @@ import org.junit.BeforeClass;
     org.apache.sis.io.wkt.FormatterTest.class,
     org.apache.sis.io.wkt.ElementTest.class,
 
-    org.apache.sis.internal.metadata.sql.SQLUtilitiesTest.class
+    org.apache.sis.internal.metadata.sql.SQLUtilitiesTest.class,
+    org.apache.sis.internal.metadata.sql.TypeMapperTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
     /**

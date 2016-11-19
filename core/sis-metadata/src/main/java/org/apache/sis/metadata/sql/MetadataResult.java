@@ -36,34 +36,23 @@ import org.apache.sis.internal.system.Loggers;
  * <div class="section"><b>Synchronization</b>:
  * This class is <strong>not</strong> thread-safe. Callers must perform their own synchronization in such a way
  * that only one query is executed on the same connection (JDBC connections can not be assumed thread-safe).
- * The synchronization block shall be the {@link Tables} which contain this entry.</div>
+ * The synchronization block shall be the {@link ResultPool} which contain this entry.</div>
  *
  * <div class="section"><b>Closing</b>:
- * This class does not implement {@link java.lang.AutoCloseable} because it is typically closed by a different
- * thread than the one that created the {@code MetadataResult} instance. This object is closed by a background
- * thread of {@link Tables}.</div>
+ * While this class implements {@link java.lang.AutoCloseable}, it should not be used in a try-finally block.
+ * This is because {@code MetadataResult} is typically closed by a different thread than the one that created
+ * the {@code MetadataResult} instance. This object is closed by a background thread of {@link Tables}.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-final class MetadataResult {
+final class MetadataResult implements AutoCloseable {
     /**
-     * The implemented interface, used for formatting error messages.
+     * The interface for which the prepared statement has been created.
      */
-    private final Class<?> type;
-
-    /**
-     * The statement associated with this entry.
-     * This is the statement given to the constructor.
-     */
-    private final PreparedStatement statement;
-
-    /**
-     * The results, or {@code null} if not yet determined.
-     */
-    private ResultSet results;
+    final Class<?> type;
 
     /**
      * The identifier (usually the primary key) for current results. If the record to fetch does not
@@ -72,7 +61,21 @@ final class MetadataResult {
     private String identifier;
 
     /**
-     * The expiration time of this result. This is read and updated by {@link Tables} only.
+     * The statement associated with this entry. The SQL query depends on the {@link #type},
+     * which can not be changed, and the {@link #identifier}, which can be changed at any time.
+     * The first parameter of the statement shall be the identifier.
+     */
+    private final PreparedStatement statement;
+
+    /**
+     * The results of last call to {@link PreparedStatement#executeQuery()},
+     * or {@code null} if not yet determined.
+     */
+    private ResultSet results;
+
+    /**
+     * The expiration time of this result, in nanoseconds as given by {@link System#nanoTime()}.
+     * This is read and updated by {@link ResultPool} only.
      */
     long expireTime;
 
@@ -105,7 +108,7 @@ final class MetadataResult {
      * @throws SQLException if an SQL operation failed.
      * @throws MetadataStoreException if no record has been found for the given key.
      */
-    Object getValue(final String id, final String attribute) throws SQLException, MetadataStoreException {
+    final Object getValue(final String id, final String attribute) throws SQLException, MetadataStoreException {
         if (!id.equals(identifier)) {
             closeResultSet();
         }
@@ -147,34 +150,15 @@ final class MetadataResult {
      * Closes the statement and free all resources.
      * After this method has been invoked, this object can not be used anymore.
      *
-     * <p>This method is usually not invoked by the method or thread that created the
-     * {@code StatementEntry} instance. It is invoked by {@link Tables#close()} instead.</p>
+     * <p>This method is not invoked by the method or thread that created this {@code MetadataResult} instance.
+     * This method is invoked by {@link ResultPool#close()} instead.</p>
      *
      * @throws SQLException if an error occurred while closing the statement.
      */
-    void close() throws SQLException {
+    @Override
+    public void close() throws SQLException {
         closeResultSet();
         statement.close();
-    }
-
-    /**
-     * Closes the statement and free all resources. In case of failure while closing JDBC objects,
-     * the message is logged but the process continue since we are not supposed to use the statement anymore.
-     * This method is invoked from other methods that can not throws an SQL exception.
-     */
-    void closeQuietly() {
-        try {
-            close();
-        } catch (Exception e) {
-            /*
-             * Catch Exception rather than SQLException because this method is invoked from semi-critical code
-             * which need to never fail, otherwise some memory leak could occur. Pretend that the message come
-             * from PreparedStatement.close(), which is the closest we can get to a public API.
-             */
-            final LogRecord record = new LogRecord(Level.WARNING, e.toString());
-            record.setThrown(e);
-            warning(PreparedStatement.class, "close", record);
-        }
     }
 
     /**
