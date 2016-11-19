@@ -334,7 +334,7 @@ public final class CRS extends Static {
         try {
             return factory.createOperation(sourceCRS, targetCRS, context);
         } catch (UnavailableFactoryException e) {
-            if (!AuthorityFactories.failure(e)) {
+            if (AuthorityFactories.failure(e)) {
                 throw e;
             } try {
                 // Above method call replaced the EPSG factory by a fallback. Try again.

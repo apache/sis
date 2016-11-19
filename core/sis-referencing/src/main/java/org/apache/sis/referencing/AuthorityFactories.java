@@ -31,6 +31,7 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
+import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.apache.sis.util.logging.Logging;
@@ -44,15 +45,16 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     /**
      * An array containing only the EPSG factory. Content of this array is initially null.
      * The EPSG factory will be created when first needed by {@link #initialValues()}.
+     * This array is returned directly (not cloned) by {@link #initialValues()}.
      */
-    private static final AuthorityFactory[] EPSG = new AuthorityFactory[1];
+    private static final GeodeticAuthorityFactory[] EPSG = new GeodeticAuthorityFactory[1];
 
     /**
      * The unique system-wide authority factory instance that contains all factories found on the classpath,
@@ -95,7 +97,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     /**
      * Sets the EPSG factory to the given value.
      */
-    static void EPSG(final AuthorityFactory factory) {
+    static void EPSG(final GeodeticAuthorityFactory factory) {
         synchronized (EPSG) {
             EPSG[0] = factory;
         }
@@ -109,16 +111,18 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      * the EPSG data source does not exist, or replace the {@code EPSGFactory} by a {@code EPSGFactoryFallback}
      * later if attempt to use the returned factory fails.
      */
-    static AuthorityFactory EPSG() {
+    static GeodeticAuthorityFactory EPSG() {
         synchronized (EPSG) {
-            AuthorityFactory factory = EPSG[0];
-            if (factory == null) try {
-                factory = new EPSGFactory(null);
-            } catch (FactoryException e) {
-                log(e, false);
-                factory = EPSGFactoryFallback.INSTANCE;
+            GeodeticAuthorityFactory factory = EPSG[0];
+            if (factory == null) {
+                try {
+                    factory = new EPSGFactory(null);
+                } catch (FactoryException e) {
+                    log(e, false);
+                    factory = EPSGFactoryFallback.INSTANCE;
+                }
+                EPSG[0] = factory;
             }
-            EPSG[0] = factory;
             return factory;
         }
     }
@@ -128,42 +132,53 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      * this method replaces the {@link EPSGFactory} instance by {@link EPSGFactoryFallback} in order to prevent
      * the same exception to be thrown and logged on every calls to {@link CRS#forCode(String)}.
      */
-    static CRSAuthorityFactory fallback(final UnavailableFactoryException e) throws UnavailableFactoryException {
+    static GeodeticAuthorityFactory fallback(final UnavailableFactoryException e) throws UnavailableFactoryException {
         final boolean isTransient = (e.getCause() instanceof SQLTransientException);
         final AuthorityFactory unavailable = e.getUnavailableFactory();
-        final CRSAuthorityFactory factory;
+        GeodeticAuthorityFactory factory;
+        final boolean alreadyDone;
         synchronized (EPSG) {
-            if (unavailable != EPSG[0]) {
-                throw e;                                // Exception did not come from a factory that we control.
-            }
-            factory = EPSGFactoryFallback.INSTANCE;
-            if (!isTransient) {
-                ALL.reload();
-                EPSG[0] = factory;
+            factory = EPSG[0];
+            alreadyDone = (factory == EPSGFactoryFallback.INSTANCE);
+            if (!alreadyDone) {                             // May have been set in another thread (race condition).
+                if (unavailable != factory) {
+                    throw e;                                // Exception did not come from a factory that we control.
+                }
+                factory = EPSGFactoryFallback.INSTANCE;
+                if (!isTransient) {
+                    ALL.reload();
+                    EPSG[0] = factory;
+                }
             }
         }
-        log(e, true);
+        if (!alreadyDone) {
+            log(e, true);
+        }
         return factory;
     }
 
     /**
      * Notifies that a factory is unavailable, but without giving a fallback and without logging.
-     * The caller is responsible for logging a warning and to provide its own fallback.
+     * The caller is responsible for throwing an exception, or for logging a warning and provide its own fallback.
      *
-     * @return {@code true} on success, or {@code false} if this method did nothing.
+     * @return {@code false} if the caller can try again, or {@code true} if the failure can be considered final.
      */
     static boolean failure(final UnavailableFactoryException e) {
         if (!(e.getCause() instanceof SQLTransientException)) {
             final AuthorityFactory unavailable = e.getUnavailableFactory();
             synchronized (EPSG) {
-                if (unavailable == EPSG[0]) {
+                final GeodeticAuthorityFactory factory = EPSG[0];
+                if (factory == EPSGFactoryFallback.INSTANCE) {      // May have been set in another thread.
+                    return false;
+                }
+                if (unavailable == factory) {
                     ALL.reload();
                     EPSG[0] = EPSGFactoryFallback.INSTANCE;
-                    return true;
+                    return false;
                 }
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -187,6 +202,8 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      *
      * <p>This method tries to instantiate an {@link EPSGFactory} if possible,
      * or an {@link EPSGFactoryFallback} otherwise.</p>
+     *
+     * @return the EPSG factory in an array. Callers shall not modify the returned array.
      */
     @Override
     @SuppressWarnings("unchecked")
