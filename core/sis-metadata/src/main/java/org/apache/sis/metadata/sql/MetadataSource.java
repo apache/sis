@@ -16,21 +16,29 @@
  */
 package org.apache.sis.metadata.sql;
 
-import java.util.Set;
 import java.util.Map;
-import java.util.HashSet;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.TreeSet;
+import java.util.SortedSet;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.sql.ResultSet;
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.Statement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLNonTransientException;
-import javax.sql.DataSource;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.metadata.distribution.Format;
@@ -44,10 +52,14 @@ import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
+import org.apache.sis.util.ObjectConverters;
+import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
 
 
@@ -472,6 +484,189 @@ public class MetadataSource implements AutoCloseable {
             return (T) format;
         }
         return null;
+    }
+
+    /**
+     * Returns an attribute from a table.
+     *
+     * @param  type            the interface class. This is mapped to the table name in the database.
+     * @param  method          the method invoked. This is mapped to the column name in the database.
+     * @param  identifier      the primary key of the record to search for.
+     * @param  preferredIndex  index in the cache array where to search first. This is only a hint for increasing
+     *         the chances to find quickly a {@code MetadataResult} instance for the right type and identifier.
+     * @return the value of the requested attribute.
+     * @throws SQLException if the SQL query failed.
+     * @throws MetadataStoreException if a value can not be converted to the expected type.
+     */
+    final Object getValue(final Class<?> type, final Method method, final String identifier, int preferredIndex)
+            throws SQLException, MetadataStoreException
+    {
+        final Class<?> returnType     = method.getReturnType();
+        final boolean  wantCollection = Collection.class.isAssignableFrom(returnType);
+        final Class<?> elementType    = wantCollection ? Classes.boundOfParameterizedProperty(method) : returnType;
+        final boolean  isMetadata     = standard.isMetadata(elementType);
+        final String   tableName      = getTableName(type);
+        final String   columnName     = getColumnName(method);
+        final boolean  isArray;
+        Object value;
+        synchronized (statements) {
+            final Connection connection = statements.connection();
+            final boolean columnExists;
+            try (ResultSet rs = connection.getMetaData().getColumns(CATALOG, schema, tableName, columnName)) {
+                columnExists = rs.next();
+            }
+            if (!columnExists) {
+                value   = null;
+                isArray = false;
+            } else {
+                /*
+                 * Prepares the statement and executes the SQL query in this synchronized block.
+                 * Note that the usage of 'result' must stay inside this synchronized block
+                 * because we can not assume that JDBC connections are thread-safe.
+                 */
+                MetadataResult result = statements.take(type, preferredIndex);
+                if (result == null) {
+                    final SQLBuilder helper = statements.helper();
+                    final String query = helper.clear().append("SELECT * FROM ")
+                            .appendIdentifier(schema, tableName).append(" WHERE ")
+                            .append(ID_COLUMN).append("=?").toString();
+                    result = new MetadataResult(type, connection.prepareStatement(query), statements.listeners);
+                }
+                value = result.getValue(identifier, columnName);
+                isArray = (value instanceof java.sql.Array);
+                if (isArray) {
+                    final java.sql.Array array = (java.sql.Array) value;
+                    value = array.getArray();
+                    array.free();
+                }
+                preferredIndex = statements.recycle(result, preferredIndex);
+            }
+        }
+        /*
+         * If the value is an array and the return type is anything except an array of primitive type, ensure
+         * that the value is converted in an array of type Object[]. In this process, resolve foreigner keys.
+         */
+        if (isArray && (wantCollection || !elementType.isPrimitive())) {
+            final Object[] values = new Object[Array.getLength(value)];
+            for (int i=0; i<values.length; i++) {
+                Object element = Array.get(value, i);
+                if (element != null) {
+                    if (isMetadata) {
+                        element = lookup(elementType, element.toString());
+                    } else try {
+                        element = convert(elementType, element);
+                    } catch (UnconvertibleObjectException e) {
+                        throw new MetadataStoreException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
+                                columnName + '[' + i + ']', elementType, element.getClass()), e);
+                    }
+                }
+                values[i] = element;
+            }
+            value = values;             // Now a Java array.
+            if (wantCollection) {
+                value = specialize(Arrays.asList(values), returnType, elementType);
+            }
+        }
+        /*
+         * Now converts the value to its final type, including conversion of null
+         * value to empty collections if the return value should be a collection.
+         */
+        if (value == null) {
+            if (wantCollection) {
+                if (Set.class.isAssignableFrom(returnType)) {
+                    return Collections.EMPTY_SET;
+                } else {
+                    return Collections.EMPTY_LIST;
+                }
+            }
+        } else {
+            if (isMetadata) {
+                value = lookup(elementType, value.toString());
+            } else try {
+                value = convert(elementType, value);
+            } catch (UnconvertibleObjectException e) {
+                throw new MetadataStoreException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
+                        columnName, elementType, value.getClass()), e);
+            }
+            if (wantCollection) {
+                if (Set.class.isAssignableFrom(returnType)) {
+                    return Collections.singleton(value);
+                } else {
+                    return Collections.singletonList(value);
+                }
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Converts the specified non-metadata value into an object of the expected type.
+     * The expected value is an instance of a class outside the metadata package, for
+     * example {@link String}, {@link InternationalString}, {@link URI}, <i>etc.</i>
+     *
+     * @throws UnconvertibleObjectException if the value can not be converter.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private Object convert(final Class<?> targetType, Object value) throws UnconvertibleObjectException {
+        final Class<?> sourceType = value.getClass();
+        if (!targetType.isAssignableFrom(sourceType)) {
+            ObjectConverter converter = lastConverter;
+            if (converter == null || !converter.getSourceClass().isAssignableFrom(sourceType) ||
+                                     !targetType.isAssignableFrom(converter.getTargetClass()))
+            {
+                lastConverter = converter = ObjectConverters.find(sourceType, targetType);
+            }
+            value = converter.apply(value);
+        }
+        return value;
+    }
+
+    /**
+     * Returns the code of the given type and name. This method is defined for avoiding the warning message
+     * when the actual class is unknown (it must have been checked dynamically by the caller however).
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private static CodeList<?> getCodeList(final Class<?> type, final String name) {
+        return Types.forCodeName((Class) type, name, true);
+    }
+
+    /**
+     * Copies the given collection into the best {@code Set} implementation if possible,
+     * or returns the given collection unchanged otherwise.
+     *
+     * @param  collection   the collection to copy.
+     * @param  returnType   the desired collection type.
+     * @param  elementType  the type of elements in the collection.
+     * @return the collection of a specialized type if relevant.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private static <E> Collection<?> specialize(Collection<?> collection, final Class<?> returnType, final Class<E> elementType) {
+        if (!returnType.isAssignableFrom(Set.class)) {
+            return collection;
+        }
+        final Set<E> s;
+        if (CodeList.class.isAssignableFrom(elementType)) {
+            s = new CodeListSet<>((Class) elementType);
+        } else if (Enum.class.isAssignableFrom(elementType)) {
+            s = EnumSet.noneOf((Class) elementType);
+        } else {
+            /*
+             * If 'returnType' is Collection.class, do not copy into a Set since a List
+             * is probably good enough. Copy only if a Set is explicitely requested.
+             */
+            if (Set.class.isAssignableFrom(returnType)) {
+                if (SortedSet.class.isAssignableFrom(returnType)) {
+                    collection = new TreeSet<>(collection);
+                } else {
+                    collection = new LinkedHashSet<>(collection);
+                }
+            }
+            return collection;
+        }
+        for (final Object e : collection) {
+            s.add(elementType.cast(e));
+        }
+        return s;
     }
 
     /**
