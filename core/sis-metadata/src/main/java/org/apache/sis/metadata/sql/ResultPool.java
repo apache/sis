@@ -115,7 +115,7 @@ final class ResultPool {
     /**
      * Where to report the warnings. This is not necessarily a logger, since users can register listeners.
      */
-    private final WarningListeners<MetadataSource> listeners;
+    final WarningListeners<MetadataSource> listeners;
 
     /**
      * A helper class used for constructing SQL statements.
