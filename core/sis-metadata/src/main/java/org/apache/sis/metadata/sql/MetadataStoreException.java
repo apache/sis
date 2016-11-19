@@ -45,6 +45,15 @@ public class MetadataStoreException extends FactoryException {
     }
 
     /**
+     * Creates an instance of {@code MetadataException} with the specified cause.
+     *
+     * @param cause  the cause of this exception.
+     */
+    public MetadataStoreException(final Exception cause) {
+        super(cause);
+    }
+
+    /**
      * Creates an instance of {@code MetadataException} with the specified message and cause.
      *
      * @param message  the detail message.
