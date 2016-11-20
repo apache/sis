@@ -21,10 +21,10 @@ import java.sql.SQLException;
 
 
 /**
- * Thrown to indicate that an operation could not complete because of a failure in the backing
- * store (a file or a database). This exception is thrown by collection implementations that are
- * not allowed to throw checked exceptions. This exception usually has an {@link IOException} or
- * a {@link SQLException} as its {@linkplain #getCause() cause}.
+ * Thrown to indicate that an operation could not complete because of a failure in the backing store
+ * (a file or a database). This exception is thrown by implementations of API (collection, streams,
+ * <i>etc.</i> that are not allowed to throw checked exceptions.
+ * This exception usually has an {@link IOException} or a {@link SQLException} as its {@linkplain #getCause() cause}.
  *
  * <p>This method provides a {@link #unwrapOrRethrow(Class)} convenience method which can be used
  * for re-throwing the cause as in the example below. This allows client code to behave as if a
