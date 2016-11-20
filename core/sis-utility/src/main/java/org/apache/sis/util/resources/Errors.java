@@ -166,7 +166,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ClosedReader_1 = 19;
 
         /**
-         * Database error while creating a ‘{0}’ object for code “{1}”.
+         * Database error while creating a ‘{0}’ object for the “{1}” identifier.
          */
         public static final short DatabaseError_2 = 20;
 

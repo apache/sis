@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.TreeSet;
 import java.util.SortedSet;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -33,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Statement;
@@ -52,6 +52,8 @@ import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
@@ -127,7 +129,7 @@ public class MetadataSource implements AutoCloseable {
      * The previously created objects.
      * Used in order to share existing instances for the same interface and primary key.
      */
-    private final WeakValueHashMap<CacheKey,Object> cache;
+    private final WeakValueHashMap<CacheKey,Object> pool;
 
     /**
      * The last converter used.
@@ -197,7 +199,7 @@ public class MetadataSource implements AutoCloseable {
         this.schema   = schema;
         this.tables   = new HashMap<>();
         statements    = new ResultPool(dataSource, this);
-        cache         = new WeakValueHashMap<>(CacheKey.class);
+        pool          = new WeakValueHashMap<>(CacheKey.class);
         loader        = getClass().getClassLoader();
     }
 
@@ -215,7 +217,7 @@ public class MetadataSource implements AutoCloseable {
         loader     = source.loader;
         tables     = new HashMap<>();
         statements = new ResultPool(source.statements);
-        cache      = new WeakValueHashMap<>(CacheKey.class);
+        pool       = new WeakValueHashMap<>(CacheKey.class);
     }
 
     /**
@@ -458,15 +460,25 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
-     * Temporary place-holder for a method to be developed later.
+     * Returns an implementation of the specified metadata interface filled with the data referenced
+     * by the specified identifier. Alternatively, this method can also returns a {@link CodeList} element.
+     *
+     * @param  <T>         the parameterized type of the {@code type} argument.
+     * @param  type        the interface to implement (e.g. {@link org.opengis.metadata.citation.Citation}),
+     *                     or the {@link CodeList} value.
+     * @param  identifier  the identifier of the record for the metadata entity to be created.
+     *                     This is usually the primary key of the record to search for.
+     * @return an implementation of the required interface, or the code list element.
+     * @throws MetadataStoreException if a SQL query failed.
      */
     public <T> T lookup(final Class<T> type, String identifier) throws MetadataStoreException {
+        ArgumentChecks.ensureNonNull("type", type);
+        ArgumentChecks.ensureNonNull("identifier", identifier);
+        /*
+         * TODO: temporary hack until we ported the following information to the database.
+         */
         if (type == Format.class) {
             final DefaultCitation spec = new DefaultCitation();
-            /*
-             * TODO: move the following hard-coded values in a database
-             * after we ported the org.apache.sis.metadata.sql package.
-             */
             String title = null;
             switch (identifier) {
                 case "GeoTIFF": title = "GeoTIFF Coverage Encoding Profile"; break;
@@ -483,22 +495,38 @@ public class MetadataSource implements AutoCloseable {
             format.setFormatSpecificationCitation(spec);
             return (T) format;
         }
-        return null;
+        /*
+         * IMPLEMENTATION NOTE: This method must not invoke any method which may access 'statements'.
+         * It is not allowed to acquire the lock on 'statements' neither.
+         */
+        Object value;
+        if (CodeList.class.isAssignableFrom(type)) {
+            value = getCodeList(type, identifier);
+        } else {
+            final CacheKey key = new CacheKey(type, identifier);
+            synchronized (pool) {
+                value = pool.get(key);
+                if (value == null) {
+                    value = Proxy.newProxyInstance(loader,
+                            new Class<?>[] {type, MetadataProxy.class}, new Dispatcher(identifier, this));
+                    pool.put(key, value);
+                }
+            }
+        }
+        return type.cast(value);
     }
 
     /**
      * Returns an attribute from a table.
      *
-     * @param  type            the interface class. This is mapped to the table name in the database.
-     * @param  method          the method invoked. This is mapped to the column name in the database.
-     * @param  identifier      the primary key of the record to search for.
-     * @param  preferredIndex  index in the cache array where to search first. This is only a hint for increasing
-     *         the chances to find quickly a {@code MetadataResult} instance for the right type and identifier.
+     * @param  type      the interface class. This is mapped to the table name in the database.
+     * @param  method    the method invoked. This is mapped to the column name in the database.
+     * @param  toSearch  contains the identifier and preferred index of the record to search.
      * @return the value of the requested attribute.
      * @throws SQLException if the SQL query failed.
      * @throws MetadataStoreException if a value can not be converted to the expected type.
      */
-    final Object getValue(final Class<?> type, final Method method, final String identifier, int preferredIndex)
+    final Object getValue(final Class<?> type, final Method method, final Dispatcher toSearch)
             throws SQLException, MetadataStoreException
     {
         final Class<?> returnType     = method.getReturnType();
@@ -524,7 +552,7 @@ public class MetadataSource implements AutoCloseable {
                  * Note that the usage of 'result' must stay inside this synchronized block
                  * because we can not assume that JDBC connections are thread-safe.
                  */
-                MetadataResult result = statements.take(type, preferredIndex);
+                MetadataResult result = statements.take(type, toSearch.preferredIndex);
                 if (result == null) {
                     final SQLBuilder helper = statements.helper();
                     final String query = helper.clear().append("SELECT * FROM ")
@@ -532,14 +560,14 @@ public class MetadataSource implements AutoCloseable {
                             .append(ID_COLUMN).append("=?").toString();
                     result = new MetadataResult(type, connection.prepareStatement(query), statements.listeners);
                 }
-                value = result.getValue(identifier, columnName);
+                value = result.getValue(toSearch.identifier, columnName);
                 isArray = (value instanceof java.sql.Array);
                 if (isArray) {
                     final java.sql.Array array = (java.sql.Array) value;
                     value = array.getArray();
                     array.free();
                 }
-                preferredIndex = statements.recycle(result, preferredIndex);
+                toSearch.preferredIndex = statements.recycle(result, toSearch.preferredIndex);
             }
         }
         /*
@@ -564,7 +592,7 @@ public class MetadataSource implements AutoCloseable {
             }
             value = values;             // Now a Java array.
             if (wantCollection) {
-                value = specialize(Arrays.asList(values), returnType, elementType);
+                value = specialize(UnmodifiableArrayList.wrap(values), returnType, elementType);
             }
         }
         /*
@@ -574,7 +602,11 @@ public class MetadataSource implements AutoCloseable {
         if (value == null) {
             if (wantCollection) {
                 if (Set.class.isAssignableFrom(returnType)) {
-                    return Collections.EMPTY_SET;
+                    if (SortedSet.class.isAssignableFrom(returnType)) {
+                        return Collections.emptySortedSet();
+                    } else {
+                        return Collections.EMPTY_SET;
+                    }
                 } else {
                     return Collections.EMPTY_LIST;
                 }
@@ -644,11 +676,11 @@ public class MetadataSource implements AutoCloseable {
         if (!returnType.isAssignableFrom(Set.class)) {
             return collection;
         }
-        final Set<E> s;
+        final Set<E> enumeration;
         if (CodeList.class.isAssignableFrom(elementType)) {
-            s = new CodeListSet<>((Class) elementType);
+            enumeration = new CodeListSet<>((Class) elementType);
         } else if (Enum.class.isAssignableFrom(elementType)) {
-            s = EnumSet.noneOf((Class) elementType);
+            enumeration = EnumSet.noneOf((Class) elementType);
         } else {
             /*
              * If 'returnType' is Collection.class, do not copy into a Set since a List
@@ -656,17 +688,25 @@ public class MetadataSource implements AutoCloseable {
              */
             if (Set.class.isAssignableFrom(returnType)) {
                 if (SortedSet.class.isAssignableFrom(returnType)) {
-                    collection = new TreeSet<>(collection);
+                    if (collection.isEmpty()) {
+                        collection = Collections.emptySortedSet();
+                    } else {
+                        collection = Collections.unmodifiableSortedSet(new TreeSet<>(collection));
+                    }
                 } else {
-                    collection = new LinkedHashSet<>(collection);
+                    switch (collection.size()) {
+                        case 0:  collection = Collections.emptySet(); break;
+                        case 1:  collection = Collections.singleton(CollectionsExt.first(collection)); break;
+                        default: collection = Collections.unmodifiableSet(new LinkedHashSet<>(collection)); break;
+                    }
                 }
             }
             return collection;
         }
         for (final Object e : collection) {
-            s.add(elementType.cast(e));
+            enumeration.add(elementType.cast(e));
         }
-        return s;
+        return Collections.unmodifiableSet(enumeration);
     }
 
     /**
