@@ -153,6 +153,9 @@ final class ResultPool {
      * to ensure that the connection is used by only one thread at time. This is also necessary
      * for preventing the background thread to close the connection too early.
      *
+     * <p>Callers shall not close the connection returned by this method.
+     * The connection will be closed by {@link #closeExpired()} after an arbitrary timeout.</p>
+     *
      * @return the connection to the database.
      * @throws SQLException if an error occurred while fetching the connection.
      */
@@ -161,7 +164,8 @@ final class ResultPool {
         Connection c = connection;
         if (c == null) {
             connection = c = dataSource.getConnection();
-            Logging.log(MetadataSource.class, "lookup", Initializer.connected(connection.getMetaData()));
+            Logging.log(MetadataSource.class, "lookup", Initializer.connected(c.getMetaData()));
+            scheduleCloseTask();
         }
         return c;
     }
@@ -222,11 +226,18 @@ final class ResultPool {
         }
         cache[preferredIndex] = statement;
         statement.expireTime = System.nanoTime() + TIMEOUT;
+        scheduleCloseTask();
+        return preferredIndex;
+    }
+
+    /**
+     * Schedules a task for closing the statements and the connection, if no such task is scheduled.
+     */
+    private void scheduleCloseTask() {
         if (!isCloseScheduled) {
             DelayedExecutor.schedule(new CloseTask(System.nanoTime() + (TIMEOUT + EXTRA_DELAY)));
             isCloseScheduled = true;
         }
-        return preferredIndex;
     }
 
     /**
