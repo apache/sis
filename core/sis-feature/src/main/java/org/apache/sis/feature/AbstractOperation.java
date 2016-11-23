@@ -85,6 +85,41 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
     /**
      * Constructs an operation from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
+     * The following table is a reminder of main (not all) recognized map entries:
+     *
+     * <table class="sis">
+     *   <caption>Recognized map entries (non exhaustive list)</caption>
+     *   <tr>
+     *     <th>Map key</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
+     *     <td>{@link GenericName} or {@link String}</td>
+     *     <td>{@link #getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link #getDefinition()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link #getDesignation()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
+     *     <td>{@link InternationalString} or {@link String}</td>
+     *     <td>{@link #getDescription()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEPRECATED_KEY}</td>
+     *     <td>{@link Boolean}</td>
+     *     <td>{@link #isDeprecated()}</td>
+     *   </tr>
+     * </table>
      *
      * @param  identification  the name and other information to be given to this operation.
      */

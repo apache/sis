@@ -60,9 +60,8 @@ public interface Deprecable {
      *
      * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
      *
-     * @return Comments about this instance, or {@code null} if none. Shall be the
-     *         reason for deprecation or the alternative to use if this instance
-     *         {@linkplain #isDeprecated() is deprecated}.
+     * @return comments about this instance, or {@code null} if none. Shall be the reason for deprecation
+     *         or the alternative to use if this instance {@linkplain #isDeprecated() is deprecated}.
      */
     InternationalString getRemarks();
 }

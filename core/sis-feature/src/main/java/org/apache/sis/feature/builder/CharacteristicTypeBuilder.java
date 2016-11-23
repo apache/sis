@@ -282,6 +282,15 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CharacteristicTypeBuilder<V> setDeprecated(final boolean deprecated) {
+        super.setDeprecated(deprecated);
+        return this;
+    }
+
+    /**
      * Builds the characteristic type from the information specified to this builder.
      * If a type has already been built and this builder state has not changed since the type creation,
      * then the previously created {@code AttributeType} instance is returned.

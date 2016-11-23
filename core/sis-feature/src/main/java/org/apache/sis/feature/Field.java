@@ -23,8 +23,10 @@ import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import org.opengis.feature.Property;
+import org.opengis.feature.PropertyType;
 import org.opengis.feature.MultiValuedPropertyException;
 import org.opengis.feature.InvalidPropertyValueException;
+import org.apache.sis.util.Deprecable;
 
 
 /**
@@ -33,7 +35,7 @@ import org.opengis.feature.InvalidPropertyValueException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
 abstract class Field<V> implements Property {
@@ -105,5 +107,12 @@ abstract class Field<V> implements Property {
             }
         }
         setValue(value);
+    }
+
+    /**
+     * Returns whether the given property is deprecated.
+     */
+    static boolean isDeprecated(final PropertyType type) {
+        return (type instanceof Deprecable) && ((Deprecable) type).isDeprecated();
     }
 }

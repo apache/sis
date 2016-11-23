@@ -314,7 +314,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * while information provided in explicit arguments to the sub-class constructors have an impact on coordinate
      * transformation results. See {@link #equals(Object, ComparisonMode)} for more information.
      *
-     * @param  properties The properties to be given to this identified object.
+     * @param  properties  the properties to be given to this identified object.
      * @throws IllegalArgumentException if a property has an invalid value.
      */
     public AbstractIdentifiedObject(final Map<String,?> properties) throws IllegalArgumentException {
@@ -403,7 +403,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param object The object to shallow copy.
+     * @param object  the object to shallow copy.
      */
     protected AbstractIdentifiedObject(final IdentifiedObject object) {
         ensureNonNull("object", object);
@@ -442,8 +442,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractIdentifiedObject castOrCopy(final IdentifiedObject object) {
@@ -467,7 +467,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       Note that the converse does not need to hold.</li>
      * </ul>
      *
-     * @return The GeoAPI interface implemented by this class.
+     * @return the GeoAPI interface implemented by this class.
      */
     public Class<? extends IdentifiedObject> getInterface() {
         return IdentifiedObject.class;
@@ -476,7 +476,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     /**
      * Returns the primary name by which this object is identified.
      *
-     * @return The primary name.
+     * @return the primary name.
      *
      * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
      */
@@ -488,7 +488,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     /**
      * Returns alternative names by which this object is identified.
      *
-     * @return The aliases, or an empty collection if there is none.
+     * @return the aliases, or an empty collection if there is none.
      *
      * @see #getName()
      */
@@ -501,7 +501,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Returns identifiers which references elsewhere the object's defining information.
      * Alternatively identifiers by which this object can be referenced.
      *
-     * @return This object identifiers, or an empty set if there is none.
+     * @return this object identifiers, or an empty set if there is none.
      *
      * @see IdentifiedObjects#getIdentifier(IdentifiedObject, Citation)
      */
@@ -518,7 +518,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getDescription() description}
      * provided by this object's {@linkplain #getName() name}.
      *
-     * @return A narrative explanation of the role of this object, or {@code null} if none.
+     * @return a narrative explanation of the role of this object, or {@code null} if none.
      *
      * @see org.apache.sis.metadata.iso.ImmutableIdentifier#getDescription()
      *
@@ -534,7 +534,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * If this object {@linkplain #isDeprecated() is deprecated}, then the remarks should give
      * indication about the replacement (e.g. <cite>"superceded by …"</cite>).
      *
-     * @return The remarks, or {@code null} if none.
+     * @return the remarks, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "remarks")
@@ -614,7 +614,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.
      *
-     * @param  name The name to compare with the object name or aliases.
+     * @param  name  the name to compare with the object name or aliases.
      * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      *
      * @see IdentifiedObjects#isHeuristicMatchForName(IdentifiedObject, String)
@@ -674,8 +674,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <cite>transitive</cite>. See {@link LenientComparable#equals(Object, ComparisonMode) LenientComparable}
      * for more information.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode The strictness level of the comparison.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal according the given comparison mode.
      *
      * @see #computeHashCode()
@@ -764,7 +764,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead than this method.
      *
-     * @param  object The other object (may be {@code null}).
+     * @param  object  the other object (may be {@code null}).
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -786,10 +786,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * This method invokes {@link #computeHashCode()} when first needed, then caches the result.
      * Subclasses shall override {@link #computeHashCode()} instead than this method.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
-    public final int hashCode() { // No need to synchronize; ok if invoked twice.
+    public final int hashCode() {                       // No need to synchronize; ok if invoked twice.
         int hash = hashCode;
         if (hash == 0) {
             hash = Numerics.hashCode(computeHashCode());
@@ -821,7 +821,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     }
      * }
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     protected long computeHashCode() {
         return Objects.hash(name, nonNull(alias), nonNull(identifiers), remarks) ^ getInterface().hashCode();
@@ -866,8 +866,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <p>Alternatively, the implementation may also have no WKT keyword for this object.
      * In such case, this method shall return {@code null}.</p>
      *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return The {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
+     * @return the {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
      *         for the WKT element, or {@code null} if unknown.
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#21">WKT 2 specification §7</a>
