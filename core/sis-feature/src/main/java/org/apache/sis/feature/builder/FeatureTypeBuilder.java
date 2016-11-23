@@ -659,6 +659,15 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public FeatureTypeBuilder setDeprecated(final boolean deprecated) {
+        super.setDeprecated(deprecated);
+        return this;
+    }
+
+    /**
      * Builds the feature type from the information and properties specified to this builder.
      * One of the {@code setName(…)} methods must have been invoked before this {@code build()} method (mandatory).
      * All other methods are optional, but some calls to a {@code add} method are usually needed.

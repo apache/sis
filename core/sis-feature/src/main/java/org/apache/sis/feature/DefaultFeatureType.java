@@ -237,6 +237,11 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEPRECATED_KEY}</td>
+     *     <td>{@link Boolean}</td>
+     *     <td>{@link #isDeprecated()}</td>
+     *   </tr>
      * </table>
      *
      * @param identification  the name and other information to be given to this feature type.

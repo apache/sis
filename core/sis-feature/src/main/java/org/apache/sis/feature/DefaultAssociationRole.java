@@ -114,6 +114,11 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEPRECATED_KEY}</td>
+     *     <td>{@link Boolean}</td>
+     *     <td>{@link #isDeprecated()}</td>
+     *   </tr>
      * </table>
      *
      * @param identification  the name and other information to be given to this association role.
@@ -481,6 +486,6 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     @Debug
     @Override
     public String toString() {
-        return toString("FeatureAssociationRole", getName(), valueType.getName()).toString();
+        return toString(deprecated, "FeatureAssociationRole", getName(), valueType.getName()).toString();
     }
 }

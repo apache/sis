@@ -130,12 +130,17 @@ abstract class FieldType extends AbstractIdentifiedType implements PropertyType 
      *     PropertyType[“name” : ValueClass]
      * }
      *
-     * @param className  the interface name of the object on which {@code toString()} is invoked.
-     * @param name       the property type name, sometime {@link #getName()} or sometime the name of another object.
-     * @param valueType  the name of value class (attribute), or the feature type name (association).
+     * @param deprecated  whether the type to format is deprecated.
+     * @param className   the interface name of the object on which {@code toString()} is invoked.
+     * @param name        the property type name, sometime {@link #getName()} or sometime the name of another object.
+     * @param valueType   the name of value class (attribute), or the feature type name (association).
      */
-    static StringBuilder toString(final String className, final GenericName name, final Object valueType) {
-        final StringBuilder buffer = new StringBuilder(40).append(className).append('[');
+    static StringBuilder toString(final boolean deprecated, final String className, final GenericName name, final Object valueType) {
+        final StringBuilder buffer = new StringBuilder(40);
+        if (deprecated) {
+            buffer.append("Deprecated");
+        }
+        buffer.append(className).append('[');
         if (name != null) {
             buffer.append('“');
         }
@@ -154,13 +159,16 @@ abstract class FieldType extends AbstractIdentifiedType implements PropertyType 
      *     Property[“name” : ValueClass] = {value1, value2, ...}
      * }
      *
-     * @param className  the interface name of the object on which {@code toString()} is invoked.
-     * @param name       the property type name, sometime {@link #getName()} or sometime the name of another object.
-     * @param valueType  the name of value class (attribute), or the feature type name (association).
-     * @param values     the actual values.
+     * @param deprecated  whether the type to format is deprecated.
+     * @param className   the interface name of the object on which {@code toString()} is invoked.
+     * @param name        the property type name, sometime {@link #getName()} or sometime the name of another object.
+     * @param valueType   the name of value class (attribute), or the feature type name (association).
+     * @param values      the actual values.
      */
-    static StringBuilder toString(final String className, final GenericName name, final Object valueType, final Iterator<?> values) {
-        final StringBuilder buffer = toString(className, name, valueType);
+    static StringBuilder toString(final boolean deprecated, final String className, final GenericName name,
+            final Object valueType, final Iterator<?> values)
+    {
+        final StringBuilder buffer = toString(deprecated, className, name, valueType);
         if (values.hasNext()) {
             final Object value = values.next();
             final boolean isMultiValued = values.hasNext();

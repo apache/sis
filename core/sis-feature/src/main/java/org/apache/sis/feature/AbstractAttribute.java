@@ -69,7 +69,7 @@ import org.opengis.feature.MultiValuedPropertyException;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  *
  * @see AbstractFeature
@@ -464,7 +464,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     @Debug
     @Override
     public String toString() {
-        final StringBuilder buffer = FieldType.toString("Attribute", type.getName(),
+        final StringBuilder buffer = FieldType.toString(isDeprecated(type), "Attribute", type.getName(),
                 Classes.getShortName(type.getValueClass()), getValues().iterator());
         if (characteristics != null && !characteristics.isEmpty()) {
             buffer.append(System.lineSeparator());

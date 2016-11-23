@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Random;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -98,6 +99,32 @@ public final strictfp class FeatureFormatTest extends TestCase {
      */
     private static Map<String,?> name(final String name) {
         return Collections.singletonMap(DefaultFeatureType.NAME_KEY, name);
+    }
+
+    /**
+     * Tests the formatting of a {@link DefaultFeatureType} that contains deprecated properties.
+     */
+    @Test
+    @SuppressWarnings("serial")
+    public void testFeatureTypeWithDeprecatedProperties() {
+        DefaultFeatureType feature = DefaultFeatureTypeTest.city();
+        final Map<String,Object> properties = new HashMap<>(name("highway"));
+        properties.put(DefaultAttributeType.DEPRECATED_KEY, Boolean.TRUE);
+        properties.put(DefaultAttributeType.DESCRIPTION_KEY, "Replaced by pedestrian areas.");
+        feature = new DefaultFeatureType(name("City for human"), false, new DefaultFeatureType[] {feature},
+                new DefaultAttributeType<>(properties, String.class, 0, 2, null));
+
+        final FeatureFormat format = new FeatureFormat(Locale.US, null);
+        final String text = format.format(feature);
+        assertMultilinesEquals("City for human ⇾ City\n" +
+                "┌────────────┬─────────┬─────────────┬───────────────┬─────────────┐\n" +
+                "│ Name       │ Type    │ Cardinality │ Default value │ Remarks     │\n" +
+                "├────────────┼─────────┼─────────────┼───────────────┼─────────────┤\n" +
+                "│ city       │ String  │ [1 … 1]     │ Utopia        │             │\n" +
+                "│ population │ Integer │ [1 … 1]     │               │             │\n" +
+                "│ highway    │ String  │ [0 … 2]     │               │ Deprecated¹ │\n" +
+                "└────────────┴─────────┴─────────────┴───────────────┴─────────────┘\n" +
+                "¹ Replaced by pedestrian areas.\n", text);
     }
 
     /**
