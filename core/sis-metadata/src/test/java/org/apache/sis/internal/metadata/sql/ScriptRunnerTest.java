@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  */
 public final strictfp class ScriptRunnerTest extends TestCase {
     /**
-     * Tests {@link ScriptRunner} on an in-memory Derby database.
+     * Tests {@link ScriptRunner} with an in-memory Derby database.
      * This method delegates its work to all other methods in this class that expect a {@link ScriptRunner} argument.
      *
      * @throws Exception if an error occurred while executing the script runner.

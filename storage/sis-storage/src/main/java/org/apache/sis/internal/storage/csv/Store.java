@@ -487,7 +487,7 @@ public final class Store extends DataStore {
         if (metadata == null) {
             final MetadataBuilder builder = new MetadataBuilder();
             try {
-                builder.setFormat(timeEncoding != null && hasTrajectories ? "CSV/MF" : "CSV");
+                builder.setFormat(timeEncoding != null && hasTrajectories ? "CSV-MF" : "CSV");
             } catch (MetadataStoreException e) {
                 listeners.warning(null, e);
             }

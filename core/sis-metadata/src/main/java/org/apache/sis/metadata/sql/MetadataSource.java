@@ -28,27 +28,30 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import javax.sql.DataSource;
+import java.sql.DatabaseMetaData;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLNonTransientException;
+import java.io.IOException;
+import java.sql.PreparedStatement;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
-import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.system.DelayedExecutor;
+import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.system.Loggers;
@@ -56,6 +59,9 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.util.logging.WarningListener;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
@@ -90,10 +96,32 @@ import org.apache.sis.util.iso.Types;
  */
 public class MetadataSource implements AutoCloseable {
     /**
+     * The catalog, set to {@code null} for now. This is defined as a constant in order to make easier
+     * to spot the places where catalog would be used, if we want to use it in a future version.
+     */
+    private static final String CATALOG = null;
+
+    /**
      * The column name used for the identifiers. We do not quote this identifier;
      * we will let the database uses its own lower-case / upper-case convention.
      */
-    static final String ID_COLUMN = "ID";
+    private static final String ID_COLUMN = "ID";
+
+    /**
+     * The timeout before to close a prepared statement, in nanoseconds. This is set to 2 seconds,
+     * which is a bit short but should be okay if the {@link DataSource} creates pooled connections.
+     * In case there is no connection pool, then the mechanism defined in this package will hopefully
+     * keeps the performance at a reasonable level.
+     *
+     * @see #closeExpired()
+     */
+    private static final long TIMEOUT = 2000_000000;
+
+    /**
+     * An extra delay to add to the {@link #TIMEOUT} in order to increase the chances to
+     * close many statements at once.
+     */
+    private static final int EXTRA_DELAY = 500_000000;
 
     /**
      * The metadata standard to be used for constructing the database schema.
@@ -101,48 +129,133 @@ public class MetadataSource implements AutoCloseable {
     protected final MetadataStandard standard;
 
     /**
-     * The catalog, set to {@code null} for now. This is defined as a constant in order to make easier
-     * to spot the places where catalog would be used, if we want to use it in a future version.
+     * The data source object for fetching the connection to the database.
+     * This is specified at construction time.
      */
-    static final String CATALOG = null;
+    private final DataSource dataSource;
 
     /**
-     * The schema where metadata are stored, or {@code null} if none.
+     * The connection to the database, or {@code null} if not yet created or if closed.
+     * This field is set to a non-null value when {@link #connection()} is invoked, then
+     * closed and set to {@code null} after all {@linkplain #statements cached statements}
+     * have been closed.
+     *
+     * @see #connection()
      */
-    final String schema;
+    private Connection connection;
 
     /**
-     * The tables which have been queried or created up to date.
+     * A pool of prepared statements with a maximal capacity equals to the array length.
+     * The array length should be reasonably small. The array may contain null element anywhere.
+     * Inactive statements are closed after some timeout.
+     *
+     * <div class="note"><b>Note:</b>
+     * this array duplicates the work done by statement pools in modern JDBC drivers. Nevertheless
+     * it still useful in our case since we retain some additional JDBC resources together with the
+     * {@link PreparedStatement}, for example the {@link ResultSet} created from that statement.</div>
+     *
+     * Every access to this array <strong>must</strong> be synchronized on {@code MetadataSource.this}.
+     * Execution of a prepared statement may also need to be done inside the synchronized block,
+     * because a single JDBC connection can not be assumed thread-safe.
+     *
+     * <p>Usage example:</p>
+     * {@preformat java
+     *     Class<?> type = …;
+     *     synchronized (this) {
+     *         // Get an entry, or create a new one if no entry is available.
+     *         CachedStatement statement = take(type, preferredIndex);
+     *         if (statement == null) {
+     *             statement = new CachedStatement(someStatement);
+     *         }
+     *         // Use the statement and give it back to the pool once we are done.
+     *         // We do not put it back in case of SQLException.
+     *         Object value = statement.getValue(…);
+     *         preferredIndex = recycle(statement, preferredIndex);
+     *     }
+     * }
+     *
+     * @see #take(Class, int)
+     * @see #recycle(CachedStatement, int)
+     */
+    private final CachedStatement[] statements;
+
+    /**
+     * The database schema where metadata are stored, or {@code null} if none. In the metadata source
+     * {@linkplain #getProvided() provided by SIS}, this is {@code "metadata"} or {@code "METADATA"},
+     * depending on the database convention regarding lower case / upper case identifiers.
+     *
+     * <p>Consider this field as final. This field is modified only by {@link #install()} for taking
+     * in account the lower case or upper case convention of the database engine.</p>
+     */
+    private String schema;
+
+    /**
+     * Whether the {@link #helper} should quote schemas in SQL statements. A value of {@code false} let the database
+     * engine chooses its own lower case / upper case policy. This flag is {@code true} if the schema was specified
+     * by the user, or {@code false} if using the metadata {@linkplain #getProvided() provided by SIS}.
+     *
+     * <p>Consider this field as final. This field is modified only by {@link #install()}.</p>
+     *
+     * @see #helper()
+     */
+    private boolean quoteSchema;
+
+    /**
+     * A helper class used for constructing SQL statements. This helper is created when first needed,
+     * then kept until the connection is closed.
+     *
+     * @see #helper()
+     */
+    private transient SQLBuilder helper;
+
+    /**
+     * All columns found in tables that have been queried or created up to date.
      * Keys are table names and values are the columns defined for that table.
+     *
+     * @see #getExistingColumns(String)
      */
-    private final Map<String, Set<String>> tables;
+    private final Map<String, Set<String>> tableColumns;
 
     /**
-     * The prepared statements created in previous calls to {@link #getValue(Class, Method, String)} method.
-     * Those statements are encapsulated into {@link MetadataResult} objects.
-     * This object is also the lock on which every SQL query must be guarded.
-     * We use this object because SQL queries will typically involve usage of this map.
+     * The class loader to use for creating {@link Proxy} instances.
+     *
+     * @see #lookup(Class, String)
      */
-    private final ResultPool statements;
+    private final ClassLoader classloader;
 
     /**
-     * The previously created objects.
+     * The objects which have been created by a previous call to {@link #lookup(Class, String)}.
      * Used in order to share existing instances for the same interface and primary key.
+     *
+     * @see #lookup(Class, String)
      */
     private final WeakValueHashMap<CacheKey,Object> pool;
 
     /**
-     * The last converter used.
+     * The last converter used. This field exists only for performance purposes, on
+     * the assumption that the last used converter has good chances to be used again.
+     *
+     * @see #getValue(Class, Method, Dispatcher)
      */
     private transient volatile ObjectConverter<?,?> lastConverter;
 
     /**
-     * The class loader to use for proxy creation.
+     * Where to report the warnings. This is not necessarily a logger, since users can register listeners.
+     *
+     * @see #getValue(Class, Method, Dispatcher)
      */
-    private final ClassLoader loader;
+    private final WarningListeners<MetadataSource> listeners;
 
     /**
-     * The default instance, created when first needed and cleared when the classpath change.
+     * Whether at least one {@link CloseTask} is scheduled for execution.
+     *
+     * @see #scheduleCloseTask()
+     */
+    private boolean isCloseScheduled;
+
+    /**
+     * The instance connected to the {@code "jdbc/SpatialMetadata"} database,
+     * created when first needed and cleared when the classpath change.
      */
     private static volatile MetadataSource instance;
     static {
@@ -163,7 +276,7 @@ public class MetadataSource implements AutoCloseable {
      * @return source of pre-defined metadata records from the {@code "jdbc/SpatialMetadata"} database.
      * @throws MetadataStoreException if this method can not connect to the database.
      */
-    public static MetadataSource getDefault() throws MetadataStoreException {
+    public static MetadataSource getProvided() throws MetadataStoreException {
         MetadataSource ms = instance;
         if (ms == null) {
             final DataSource dataSource;
@@ -178,7 +291,9 @@ public class MetadataSource implements AutoCloseable {
             synchronized (MetadataSource.class) {
                 ms = instance;
                 if (ms == null) {
-                    instance = ms = new MetadataSource(MetadataStandard.ISO_19115, dataSource, "metadata");
+                    ms = new MetadataSource(MetadataStandard.ISO_19115, dataSource, "metadata", null, null);
+                    ms.install();
+                    instance = ms;
                 }
             }
         }
@@ -186,57 +301,195 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
-     * Creates a new metadata source.
+     * Creates a new metadata source. The metadata standard to implement (typically
+     * {@linkplain MetadataStandard#ISO_19115 ISO 19115}, but not necessarily) and
+     * the database source are mandatory information. All other information are optional.
      *
-     * @param  standard    the metadata standard to implement.
-     * @param  dataSource  the source for getting a connection to the database.
-     * @param  schema      the schema were metadata are expected to be found, or {@code null} if none.
+     * @param  standard       the metadata standard to implement.
+     * @param  dataSource     the source for getting a connection to the database.
+     * @param  schema         the database schema were metadata tables are stored, or {@code null} if none.
+     * @param  classloader    the class loader to use for creating {@link Proxy} instances, or {@code null} for the default.
+     * @param  maxStatements  maximal number of {@link PreparedStatement}s that can be kept simultaneously open,
+     *                        or {@code null} for a default value.
      */
-    public MetadataSource(final MetadataStandard standard, final DataSource dataSource, final String schema) {
+    public MetadataSource(final MetadataStandard standard, final DataSource dataSource,
+            final String schema, ClassLoader classloader, Integer maxStatements)
+    {
         ArgumentChecks.ensureNonNull("standard",   standard);
         ArgumentChecks.ensureNonNull("dataSource", dataSource);
-        this.standard = standard;
-        this.schema   = schema;
-        this.tables   = new HashMap<>();
-        statements    = new ResultPool(dataSource, this);
-        pool          = new WeakValueHashMap<>(CacheKey.class);
-        loader        = getClass().getClassLoader();
+        if (classloader == null) {
+            classloader = getClass().getClassLoader();
+        }
+        if (maxStatements == null) {
+            maxStatements = 10;               // Default value, may change in any future Apache SIS version.
+        } else {
+            ArgumentChecks.ensureBetween("maxStatements", 2, 100, maxStatements);       // Arbitrary limits.
+        }
+        this.standard     = standard;
+        this.dataSource   = dataSource;
+        this.schema       = schema;
+        this.quoteSchema  = true;
+        this.classloader  = classloader;
+        this.statements   = new CachedStatement[maxStatements - 1];
+        this.tableColumns = new HashMap<>();
+        this.pool         = new WeakValueHashMap<>(CacheKey.class);
+        this.listeners    = new WarningListeners<>(this);
     }
 
     /**
      * Creates a new metadata source with the same configuration than the given source.
-     * The two sources will share the same data source but will use their own {@linkplain Connection connection}.
+     * The two {@code MetadataSource} instances will share the same {@code DataSource}
+     * but will use their own {@link Connection}.
      * This constructor is useful when concurrency is desired.
+     *
+     * <p>The new {@code MetadataSource} initially contains all {@linkplain #addWarningListener warning listeners}
+     * declared in the given {@code source}. But listeners added or removed in a {@code MetadataSource} after the
+     * construction will not impact the other {@code MetadataSource} instance.</p>
      *
      * @param  source  the source from which to copy the configuration.
      */
     public MetadataSource(final MetadataSource source) {
         ArgumentChecks.ensureNonNull("source", source);
-        standard   = source.standard;
-        schema     = source.schema;
-        loader     = source.loader;
-        tables     = new HashMap<>();
-        statements = new ResultPool(source.statements);
-        pool       = new WeakValueHashMap<>(CacheKey.class);
+        standard     = source.standard;
+        dataSource   = source.dataSource;
+        schema       = source.schema;
+        quoteSchema  = source.quoteSchema;
+        statements   = new CachedStatement[source.statements.length];
+        tableColumns = new HashMap<>();
+        classloader  = source.classloader;
+        pool         = source.pool;
+        listeners    = new WarningListeners<>(this, source.listeners);
     }
 
     /**
-     * If the given value is a collection, returns the first element in that collection
-     * or {@code null} if empty.
+     * If the metadata schema does not exist in the database, creates it and inserts the pre-defined metadata values.
+     * The current implementation has the following restrictions:
      *
-     * @param  value  the value to inspect (can be {@code null}).
-     * @return the given value, or its first element if the value is a collection,
-     *         or {@code null} if the given value is null or an empty collection.
+     * <ul>
+     *   <li>Metadata standard must be {@link MetadataStandard#ISO_19115} or compatible.</li>
+     *   <li>The schema name must be {@code "metadata"}, as this is the name used unquoted in SQL scripts.</li>
+     * </ul>
+     *
+     * @throws MetadataStoreException if an error occurred while inserting the metadata.
      */
-    private static Object extractFromCollection(Object value) {
-        while (value instanceof Iterable<?>) {
-            final Iterator<?> it = ((Iterable<?>) value).iterator();
-            if (!it.hasNext()) {
-                return null;
+    final synchronized void install() throws MetadataStoreException {
+        try {
+            final Connection connection = connection();
+            final DatabaseMetaData md = connection.getMetaData();
+            if (md.storesUpperCaseIdentifiers()) {
+                schema = schema.toUpperCase(Locale.US);
+            } else if (md.storesLowerCaseIdentifiers()) {
+                schema = schema.toLowerCase(Locale.US);
             }
-            if (value == (value = it.next())) break;
+            quoteSchema = false;
+            try (ResultSet result = md.getTables(CATALOG, schema, "CI_Citation", null)) {
+                if (result.next()) {
+                    return;
+                }
+            }
+            final Installer installer = new Installer(connection);
+            installer.run();
+        } catch (IOException | SQLException e) {
+            throw new MetadataStoreException(e);
         }
-        return value;
+    }
+
+    /**
+     * Returns the connection to the database, creating a new one if needed. This method shall
+     * be invoked inside a synchronized block wider than just the scope of this method in order
+     * to ensure that the connection is used by only one thread at time. This is also necessary
+     * for preventing the background thread to close the connection too early.
+     *
+     * <p>Callers shall not close the connection returned by this method.
+     * The connection will be closed by {@link #closeExpired()} after an arbitrary timeout.</p>
+     *
+     * @return the connection to the database.
+     * @throws SQLException if an error occurred while fetching the connection.
+     */
+    private Connection connection() throws SQLException {
+        assert Thread.holdsLock(this);
+        Connection c = connection;
+        if (c == null) {
+            connection = c = dataSource.getConnection();
+            Logging.log(MetadataSource.class, "lookup", Initializer.connected(c.getMetaData()));
+            scheduleCloseTask();
+        }
+        return c;
+    }
+
+    /**
+     * Returns a helper class for building SQL statements.
+     */
+    private SQLBuilder helper() throws SQLException {
+        assert Thread.holdsLock(this);
+        if (helper == null) {
+            helper = new SQLBuilder(connection().getMetaData(), quoteSchema);
+        }
+        return helper;
+    }
+
+    /**
+     * Returns a statement that can be reused for the given interface, or {@code null} if none.
+     *
+     * @param  type            the interface for which to reuse a prepared statement.
+     * @param  preferredIndex  index in the cache array where to search first. This is only a hint for increasing
+     *         the chances to find quickly a {@code CachedStatement} instance for the right type and identifier.
+     */
+    private CachedStatement take(final Class<?> type, final int preferredIndex) {
+        assert Thread.holdsLock(this);
+        if (preferredIndex >= 0 && preferredIndex < statements.length) {
+            final CachedStatement statement = statements[preferredIndex];
+            if (statement != null && statement.type == type) {
+                statements[preferredIndex] = null;
+                return statement;
+            }
+        }
+        for (int i=0; i < statements.length; i++) {
+            final CachedStatement statement = statements[i];
+            if (statement != null && statement.type == type) {
+                statements[i] = null;
+                return statement;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Flags the given {@code CachedStatement} as available for reuse.
+     *
+     * @param  statement       the prepared statement to cache.
+     * @param  preferredIndex  index in the cache array to use if the corresponding slot is available.
+     * @return index in the cache array where the result has been actually stored.
+     */
+    private int recycle(final CachedStatement statement, int preferredIndex) throws SQLException {
+        assert Thread.holdsLock(this);
+        final long currentTime = System.nanoTime();
+        if (preferredIndex < 0 || preferredIndex >= statements.length || statements[preferredIndex] != null) {
+            preferredIndex = 0;
+            while (statements[preferredIndex] != null) {
+                if (++preferredIndex >= statements.length) {
+                    /*
+                     * If we reach this point, this means that the 'statements' pool has reached its maximal capacity.
+                     * Loop again on all statements in order to find the oldest one. We will close that old statement
+                     * and cache the given one instead.
+                     */
+                    long oldest = Long.MIN_VALUE;
+                    for (int i=0; i < statements.length; i++) {
+                        final long age = currentTime - statements[i].expireTime;
+                        if (age >= oldest) {
+                            oldest = age;
+                            preferredIndex = i;
+                        }
+                    }
+                    statements[preferredIndex].close();
+                    break;
+                }
+            }
+        }
+        statements[preferredIndex] = statement;
+        statement.expireTime = currentTime + TIMEOUT;
+        scheduleCloseTask();
+        return preferredIndex;
     }
 
     /**
@@ -265,6 +518,17 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
+     * If the given metadata is a proxy generated by this {@code MetadataSource}, returns the
+     * identifier of that proxy. Such metadata do not need to be inserted again in the database.
+     *
+     * @param  metadata  the metadata to test.
+     * @return the identifier (primary key), or {@code null} if the given metadata is not a proxy.
+     */
+    private String proxy(final Object metadata) {
+        return (metadata instanceof MetadataProxy) ? ((MetadataProxy) metadata).identifier(this) : null;
+    }
+
+    /**
      * Returns a view of the given metadata as a map. This method returns always a map using UML identifier
      * and containing all entries including the null ones because the {@code MetadataSource} implementation
      * assumes so.
@@ -274,19 +538,27 @@ public class MetadataSource implements AutoCloseable {
      * @throws ClassCastException if the metadata object does not implement a metadata interface
      *         of the expected package.
      */
-    final Map<String,Object> asMap(final Object metadata) throws ClassCastException {
+    private Map<String,Object> asMap(final Object metadata) throws ClassCastException {
         return standard.asValueMap(metadata, KeyNamePolicy.UML_IDENTIFIER, ValueExistencePolicy.ALL);
     }
 
     /**
-     * If the given metadata is a proxy generated by this {@code MetadataSource}, returns the
-     * identifier of that proxy. Such metadata do not need to be inserted again in the database.
+     * If the given value is a collection, returns the first element in that collection
+     * or {@code null} if empty.
      *
-     * @param  metadata  the metadata to test.
-     * @return the identifier (primary key), or {@code null} if the given metadata is not a proxy.
+     * @param  value  the value to inspect (can be {@code null}).
+     * @return the given value, or its first element if the value is a collection,
+     *         or {@code null} if the given value is null or an empty collection.
      */
-    final String proxy(final Object metadata) {
-        return (metadata instanceof MetadataProxy) ? ((MetadataProxy) metadata).identifier(this) : null;
+    private static Object extractFromCollection(Object value) {
+        while (value instanceof Iterable<?>) {
+            final Iterator<?> it = ((Iterable<?>) value).iterator();
+            if (!it.hasNext()) {
+                return null;
+            }
+            if (value == (value = it.next())) break;
+        }
+        return value;
     }
 
     /**
@@ -319,9 +591,9 @@ public class MetadataSource implements AutoCloseable {
                     throw new MetadataStoreException(Errors.format(
                             Errors.Keys.IllegalArgumentClass_2, "metadata", metadata.getClass()));
                 }
-                synchronized (statements) {
-                    try (Statement stmt = statements.connection().createStatement()) {
-                        identifier = search(table, null, asMap, stmt, statements.helper());
+                synchronized (this) {
+                    try (Statement stmt = connection().createStatement()) {
+                        identifier = search(table, null, asMap, stmt, helper());
                     } catch (SQLException e) {
                         throw new MetadataStoreException(e);
                     }
@@ -343,10 +615,10 @@ public class MetadataSource implements AutoCloseable {
      * @return the identifier of the given metadata, or {@code null} if none.
      * @throws SQLException if an error occurred while searching in the database.
      */
-    final String search(final String table, Set<String> columns, final Map<String,Object> metadata,
+    private String search(final String table, Set<String> columns, final Map<String,Object> metadata,
             final Statement stmt, final SQLBuilder helper) throws SQLException
     {
-        assert Thread.holdsLock(statements);
+        assert Thread.holdsLock(this);
         helper.clear();
         for (final Map.Entry<String,Object> entry : metadata.entrySet()) {
             /*
@@ -413,7 +685,7 @@ public class MetadataSource implements AutoCloseable {
                     if (identifier == null) {
                         identifier = candidate;
                     } else if (!identifier.equals(candidate)) {
-                        warning(MetadataSource.class, "search", resources().getLogRecord(
+                        warning("search", resources().getLogRecord(
                                 Level.WARNING, Errors.Keys.DuplicatedElement_1, candidate));
                         break;
                     }
@@ -435,9 +707,9 @@ public class MetadataSource implements AutoCloseable {
      * @return the set of columns, or an empty set if the table has not yet been created.
      * @throws SQLException if an error occurred while querying the database.
      */
-    final Set<String> getExistingColumns(final String table) throws SQLException {
-        assert Thread.holdsLock(statements);
-        Set<String> columns = tables.get(table);
+    private Set<String> getExistingColumns(final String table) throws SQLException {
+        assert Thread.holdsLock(this);
+        Set<String> columns = tableColumns.get(table);
         if (columns == null) {
             columns = new HashSet<>();
             /*
@@ -446,7 +718,8 @@ public class MetadataSource implements AutoCloseable {
              * want because if we do not specify a schema in a SELECT statement, then the actual schema used depends
              * on the search path specified in the database environment variables.
              */
-            try (ResultSet rs = statements.connection().getMetaData().getColumns(CATALOG, schema, table, null)) {
+            final DatabaseMetaData md = connection().getMetaData();
+            try (ResultSet rs = md.getColumns(CATALOG, schema, table, null)) {
                 while (rs.next()) {
                     if (!columns.add(rs.getString("COLUMN_NAME"))) {
                         // Paranoiac check, but should never happen.
@@ -454,7 +727,7 @@ public class MetadataSource implements AutoCloseable {
                     }
                 }
             }
-            tables.put(table, columns);
+            tableColumns.put(table, columns);
         }
         return columns;
     }
@@ -475,27 +748,6 @@ public class MetadataSource implements AutoCloseable {
         ArgumentChecks.ensureNonNull("type", type);
         ArgumentChecks.ensureNonNull("identifier", identifier);
         /*
-         * TODO: temporary hack until we ported the following information to the database.
-         */
-        if (type == Format.class) {
-            final DefaultCitation spec = new DefaultCitation();
-            String title = null;
-            switch (identifier) {
-                case "GeoTIFF": title = "GeoTIFF Coverage Encoding Profile"; break;
-                case "NetCDF":  title = "NetCDF Classic and 64-bit Offset Format"; break;
-                case "PNG":     title = "PNG (Portable Network Graphics) Specification"; break;
-                case "CSV":     title = "Common Format and MIME Type for Comma-Separated Values (CSV) Files"; break;
-                case "CSV/MF":  title = "OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)";
-                                identifier  = "CSV";      // "CSV/MF" is not yet a documented format.
-                                break;
-            }
-            spec.setTitle(Types.toInternationalString(title));
-            spec.setAlternateTitles(Collections.singleton(Types.toInternationalString(identifier)));
-            final DefaultFormat format = new DefaultFormat();
-            format.setFormatSpecificationCitation(spec);
-            return (T) format;
-        }
-        /*
          * IMPLEMENTATION NOTE: This method must not invoke any method which may access 'statements'.
          * It is not allowed to acquire the lock on 'statements' neither.
          */
@@ -507,7 +759,7 @@ public class MetadataSource implements AutoCloseable {
             synchronized (pool) {
                 value = pool.get(key);
                 if (value == null) {
-                    value = Proxy.newProxyInstance(loader,
+                    value = Proxy.newProxyInstance(classloader,
                             new Class<?>[] {type, MetadataProxy.class}, new Dispatcher(identifier, this));
                     pool.put(key, value);
                 }
@@ -517,7 +769,7 @@ public class MetadataSource implements AutoCloseable {
     }
 
     /**
-     * Returns an attribute from a table.
+     * Invoked by {@link MetadataProxy} for fetching an attribute value from a table.
      *
      * @param  type      the interface class. This is mapped to the table name in the database.
      * @param  method    the method invoked. This is mapped to the column name in the database.
@@ -537,13 +789,8 @@ public class MetadataSource implements AutoCloseable {
         final String   columnName     = getColumnName(method);
         final boolean  isArray;
         Object value;
-        synchronized (statements) {
-            final Connection connection = statements.connection();
-            final boolean columnExists;
-            try (ResultSet rs = connection.getMetaData().getColumns(CATALOG, schema, tableName, columnName)) {
-                columnExists = rs.next();
-            }
-            if (!columnExists) {
+        synchronized (this) {
+            if (!getExistingColumns(tableName).contains(columnName)) {
                 value   = null;
                 isArray = false;
             } else {
@@ -552,13 +799,13 @@ public class MetadataSource implements AutoCloseable {
                  * Note that the usage of 'result' must stay inside this synchronized block
                  * because we can not assume that JDBC connections are thread-safe.
                  */
-                MetadataResult result = statements.take(type, toSearch.preferredIndex);
+                CachedStatement result = take(type, toSearch.preferredIndex);
                 if (result == null) {
-                    final SQLBuilder helper = statements.helper();
+                    final SQLBuilder helper = helper();
                     final String query = helper.clear().append("SELECT * FROM ")
                             .appendIdentifier(schema, tableName).append(" WHERE ")
                             .append(ID_COLUMN).append("=?").toString();
-                    result = new MetadataResult(type, connection.prepareStatement(query), statements.listeners);
+                    result = new CachedStatement(type, connection().prepareStatement(query), listeners);
                 }
                 value = result.getValue(toSearch.identifier, columnName);
                 isArray = (value instanceof java.sql.Array);
@@ -567,7 +814,7 @@ public class MetadataSource implements AutoCloseable {
                     value = array.getArray();
                     array.free();
                 }
-                toSearch.preferredIndex = statements.recycle(result, toSearch.preferredIndex);
+                toSearch.preferredIndex = recycle(result, toSearch.preferredIndex);
             }
         }
         /*
@@ -719,15 +966,147 @@ public class MetadataSource implements AutoCloseable {
     /**
      * Reports a warning.
      *
-     * @param source  the class to report as the warning emitter.
      * @param method  the method to report as the warning emitter.
      * @param record  the warning to report.
      */
-    private void warning(final Class<?> source, final String method, final LogRecord record) {
-        record.setSourceClassName(source.getCanonicalName());
+    private void warning(final String method, final LogRecord record) {
+        record.setSourceClassName(MetadataSource.class.getCanonicalName());
         record.setSourceMethodName(method);
         record.setLoggerName(Loggers.SQL);
-        statements.listeners.warning(record);
+        listeners.warning(record);
+    }
+
+    /**
+     * Adds a listener to be notified when a warning occurred while reading from or writing metadata.
+     * When a warning occurs, there is a choice:
+     *
+     * <ul>
+     *   <li>If this metadata source has no warning listener, then the warning is logged at {@link Level#WARNING}.</li>
+     *   <li>If this metadata source has at least one warning listener, then all listeners are notified
+     *       and the warning is <strong>not</strong> logged by this metadata source instance.</li>
+     * </ul>
+     *
+     * Consider invoking this method in a {@code try} … {@code finally} block if the {@code MetadataSource}
+     * lifetime is longer than the listener lifetime, as below:
+     *
+     * {@preformat java
+     *     source.addWarningListener(listener);
+     *     try {
+     *         // Do some work...
+     *     } finally {
+     *         source.removeWarningListener(listener);
+     *     }
+     * }
+     *
+     * @param  listener  the listener to add.
+     * @throws IllegalArgumentException if the given listener is already registered in this metadata source.
+     */
+    public void addWarningListener(final WarningListener<? super MetadataSource> listener)
+            throws IllegalArgumentException
+    {
+        listeners.addWarningListener(listener);
+    }
+
+    /**
+     * Removes a previously registered listener.
+     *
+     * @param  listener  the listener to remove.
+     * @throws NoSuchElementException if the given listener is not registered in this metadata source.
+     */
+    public void removeWarningListener(final WarningListener<? super MetadataSource> listener)
+            throws NoSuchElementException
+    {
+        listeners.removeWarningListener(listener);
+    }
+
+    /**
+     * Schedules a task for closing the statements and the connection, if no such task is scheduled.
+     */
+    private void scheduleCloseTask() {
+        if (!isCloseScheduled) {
+            DelayedExecutor.schedule(new CloseTask(System.nanoTime() + (TIMEOUT + EXTRA_DELAY)));
+            isCloseScheduled = true;
+        }
+    }
+
+    /**
+     * A task to be executed later for closing all expired {@link CachedStatement}.
+     * A result is expired if {@link CachedStatement#expireTime} is later than {@link System#nanoTime()}.
+     */
+    private final class CloseTask extends DelayedRunnable {
+        /**
+         * Creates a new task to be executed later.
+         *
+         * @param timestamp  time of execution of this task, in nanoseconds relative to {@link System#nanoTime()}.
+         */
+        CloseTask(final long timestamp) {
+            super(timestamp);
+        }
+
+        /**
+         * Invoked in a background thread for closing all expired {@link CachedStatement} instances.
+         */
+        @Override public void run() {
+            closeExpired();
+        }
+    }
+
+    /**
+     * Executed in a background thread for closing statements after their expiration time.
+     * This task will be given to the executor every time the first statement is recycled.
+     */
+    final synchronized void closeExpired() {
+        isCloseScheduled = false;
+        long delay = 0;
+        final long currentTime = System.nanoTime();
+        for (int i=0; i < statements.length; i++) {
+            final CachedStatement statement = statements[i];
+            if (statement != null) {
+                /*
+                 * Note: we really need to compute t1 - t0 and compare the delays.
+                 * Do not simplify the equations in a way that result in comparisons
+                 * like t1 > t0. See System.nanoTime() javadoc for more information.
+                 */
+                final long wait = statement.expireTime - currentTime;
+                if (wait > delay) {
+                    delay = wait;
+                } else {
+                    statements[i] = null;
+                    closeQuietly(statement);
+                }
+            }
+        }
+        if (delay > 0) {
+            // Some statements can not be disposed yet.
+            DelayedExecutor.schedule(new CloseTask(currentTime + delay + EXTRA_DELAY));
+            isCloseScheduled = true;
+        } else {
+            // No more prepared statements.
+            final Connection c = this.connection;
+            connection = null;
+            helper = null;
+            closeQuietly(c);
+        }
+    }
+
+    /**
+     * Closes the given resource without throwing exception. In case of failure while closing the resource,
+     * the message is logged but the process continue since we are not supposed to use the resource anymore.
+     * This method is invoked from methods that can not throw a SQL exception.
+     */
+    private void closeQuietly(final AutoCloseable resource) {
+        if (resource != null) try {
+            resource.close();
+        } catch (Exception e) {
+            /*
+             * Catch Exception rather than SQLException because this method is invoked from semi-critical code
+             * which need to never fail, otherwise some memory leak could occur. Pretend that the message come
+             * from closeExpired(), which is the closest we can get to a public API.
+             */
+            final LogRecord record = new LogRecord(Level.WARNING, e.toString());
+            record.setThrown(e);
+            warning("closeExpired", record);
+        }
     }
 
     /**
@@ -736,9 +1115,20 @@ public class MetadataSource implements AutoCloseable {
      * @throws MetadataStoreException if an error occurred while closing the connection.
      */
     @Override
-    public void close() throws MetadataStoreException {
+    public synchronized void close() throws MetadataStoreException {
         try {
-            statements.close();
+            for (int i=0; i < statements.length; i++) {
+                final CachedStatement statement = statements[i];
+                if (statement != null) {
+                    statement.close();
+                    statements[i] = null;
+                }
+            }
+            if (connection != null) {
+                connection.close();
+                connection = null;
+            }
+            helper = null;
         } catch (SQLException e) {
             throw new MetadataStoreException(e);
         }
