@@ -29,26 +29,26 @@ import org.apache.sis.internal.system.Loggers;
 
 /**
  * The result of a query for metadata attributes. This object {@linkplain PreparedStatement prepares a statement}
- * once for ever for a given table. When a particular record in this table is fetched, the {@link ResultSet} is
- * automatically constructed. If many attributes are fetched consecutively for the same record, then the same
- * {@link ResultSet} is reused.
+ * only once for a given table, until a certain period of inactivity is elapsed. When a particular record in the
+ * table is fetched, the {@link ResultSet} is automatically constructed. If many attributes are fetched consecutively
+ * for the same record, then the same {@link ResultSet} is reused.
  *
  * <div class="section"><b>Synchronization</b>:
  * This class is <strong>not</strong> thread-safe. Callers must perform their own synchronization in such a way
  * that only one query is executed on the same connection (JDBC connections can not be assumed thread-safe).
- * The synchronization block shall be the {@link ResultPool} which contain this entry.</div>
+ * The synchronization lock shall be the {@link MetadataSource} which contain this entry.</div>
  *
  * <div class="section"><b>Closing</b>:
  * While this class implements {@link java.lang.AutoCloseable}, it should not be used in a try-finally block.
- * This is because {@code MetadataResult} is typically closed by a different thread than the one that created
- * the {@code MetadataResult} instance. This object is closed by a background thread of {@link Tables}.</div>
+ * This is because {@code CachedStatement} is typically closed by a different thread than the one that created
+ * the {@code CachedStatement} instance. This object is closed by a background thread of {@link Tables}.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-final class MetadataResult implements AutoCloseable {
+final class CachedStatement implements AutoCloseable {
     /**
      * The interface for which the prepared statement has been created.
      */
@@ -75,7 +75,7 @@ final class MetadataResult implements AutoCloseable {
 
     /**
      * The expiration time of this result, in nanoseconds as given by {@link System#nanoTime()}.
-     * This is read and updated by {@link ResultPool} only.
+     * This is read and updated by {@link MetadataSource} only.
      */
     long expireTime;
 
@@ -91,7 +91,7 @@ final class MetadataResult implements AutoCloseable {
      * @param statement  the prepared statement.
      * @param listeners  where to report the warnings.
      */
-    MetadataResult(final Class<?> type, final PreparedStatement statement,
+    CachedStatement(final Class<?> type, final PreparedStatement statement,
             final WarningListeners<MetadataSource> listeners)
     {
         this.type      = type;
@@ -150,8 +150,8 @@ final class MetadataResult implements AutoCloseable {
      * Closes the statement and free all resources.
      * After this method has been invoked, this object can not be used anymore.
      *
-     * <p>This method is not invoked by the method or thread that created this {@code MetadataResult} instance.
-     * This method is invoked by {@link ResultPool#close()} instead.</p>
+     * <p>This method is not invoked by the method or thread that created this {@code CachedStatement} instance.
+     * This method is invoked by {@link MetadataSource#close()} instead.</p>
      *
      * @throws SQLException if an error occurred while closing the statement.
      */

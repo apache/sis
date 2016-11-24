@@ -16,12 +16,18 @@
  */
 package org.apache.sis.metadata.sql;
 
-import java.sql.Connection;
 import javax.sql.DataSource;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.distribution.Format;
+import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.internal.metadata.sql.TestDatabase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestStep;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -35,18 +41,49 @@ import org.junit.Test;
 @DependsOn(org.apache.sis.internal.metadata.sql.ScriptRunnerTest.class)
 public final strictfp class MetadataSourceTest extends TestCase {
     /**
-     * Tests installation.
+     * Tests {@link MetadataSource} with an in-memory Derby database.
+     * This method delegates its work to all other methods in this class that expect a {@link MetadataSource} argument.
      *
-     * @throws Exception if an error occurred while executing the installation script.
+     * @throws Exception if an error occurred while executing the script runner.
      */
     @Test
-    public void testInstall() throws Exception {
-        final DataSource ds = TestDatabase.create("metadata");
-        try (final Connection c = ds.getConnection()) {
-            final Installer install = new Installer(c);
-            install.run();
+    public void testOnDerby() throws Exception {
+        final DataSource ds = TestDatabase.create("temporary");
+        try (final MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, ds, "metadata", null, null)) {
+            source.install();
+            verifyFormats(source);
         } finally {
             TestDatabase.drop(ds);
         }
+    }
+
+    /**
+     * Tests {@link MetadataSource#lookup(Class, String)} be fetching some {@link Format} instances from
+     * the given source. The first call to the {@code lookup(…)} method will trig the database installation.
+     *
+     * @param  source  the instance to test.
+     * @throws MetadataStoreException if an error occurred while querying the database.
+     */
+    @TestStep
+    public static void verifyFormats(final MetadataSource source) throws MetadataStoreException {
+        verify(source.lookup(Format.class, "PNG"),     "PNG",     "PNG (Portable Network Graphics) Specification");
+        verify(source.lookup(Format.class, "NetCDF"),  "NetCDF",  "NetCDF Classic and 64-bit Offset Format");
+        verify(source.lookup(Format.class, "GeoTIFF"), "GeoTIFF", "GeoTIFF Coverage Encoding Profile");
+        verify(source.lookup(Format.class, "CSV"),     "CSV",     "Common Format and MIME Type for Comma-Separated Values (CSV) Files");
+        verify(source.lookup(Format.class, "CSV-MF"),  "CSV",     "OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)");
+    }
+
+    /**
+     * Verifies properties of the given format.
+     *
+     * @param format        the instance to verify.
+     * @param abbreviation  the expected format alternate title.
+     * @param title         the expected format title.
+     */
+    private static void verify(final Format format, final String abbreviation, final String title) {
+        final Citation spec = format.getFormatSpecificationCitation();
+        assertNotNull("formatSpecificationCitation", spec);
+        assertEquals("abbreviation", abbreviation, String.valueOf(getSingleton(spec.getAlternateTitles())));
+        assertEquals("title", title, String.valueOf(spec.getTitle()));
     }
 }

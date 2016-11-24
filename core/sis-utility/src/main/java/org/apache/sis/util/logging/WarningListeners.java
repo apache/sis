@@ -50,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  *
  * @see WarningListener
@@ -79,7 +79,7 @@ public class WarningListeners<S> implements Localized {
 
     /**
      * Creates a new instance with initially no listener.
-     * Warnings will be logger to the given logger, unless at least one listener is registered.
+     * Warnings will be logger to the logger, unless at least one listener is registered.
      *
      * @param source  the declared source of warnings. This is not necessarily the real source,
      *                but this is the source that the implementor wants to declare as public API.
@@ -87,6 +87,22 @@ public class WarningListeners<S> implements Localized {
     public WarningListeners(final S source) {
         ArgumentChecks.ensureNonNull("source", source);
         this.source = source;
+    }
+
+    /**
+     * Creates a new instance initialized with the same listeners than the given instance.
+     *
+     * @param source  the declared source of warnings. This is not necessarily the real source,
+     *                but this is the source that the implementor wants to declare as public API.
+     * @param other   the existing instance from which to copy the listeners, or {@code null} if none.
+     *
+     * @since 0.8
+     */
+    public WarningListeners(final S source, final WarningListeners<? super S> other) {
+        this(source);
+        if (other != null) {
+            listeners = other.listeners;
+        }
     }
 
     /**

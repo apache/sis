@@ -55,8 +55,8 @@ final class Dispatcher implements InvocationHandler {
     private final MetadataSource source;
 
     /**
-     * Index in the {@code MetadataResult} cache array where to search first. This is only a hint for increasing
-     * the chances to find quickly a {@code MetadataResult} instance for the right type and identifier.
+     * Index in the {@code CachedStatement} cache array where to search first. This is only a hint for increasing
+     * the chances to find quickly a {@code CachedStatement} instance for the right type and identifier.
      */
     int preferredIndex;
 
@@ -85,7 +85,7 @@ final class Dispatcher implements InvocationHandler {
     public Object invoke(final Object proxy, final Method method, final Object[] args) {
         final Class<?> type = method.getDeclaringClass();
         final String   name = method.getName();
-        final int      n    = args.length;
+        final int      n    = (args != null) ? args.length : 0;
         switch (name) {
             case "toString": {
                 if (n != 0) break;

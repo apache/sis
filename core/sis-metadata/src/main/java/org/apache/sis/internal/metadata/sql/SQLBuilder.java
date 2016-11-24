@@ -38,6 +38,7 @@ public class SQLBuilder {
 
     /**
      * The characters used for quoting identifiers, or an empty string if none.
+     * This is the value returned by {@link DatabaseMetaData#getIdentifierQuoteString()}.
      */
     private final String quote;
 
@@ -53,26 +54,36 @@ public class SQLBuilder {
     private final StringBuilder buffer = new StringBuilder();
 
     /**
+     * Whether the schema name should be written between quotes. If {@code false},
+     * we will let the database engine uses its default lower case / upper case policy.
+     *
+     * @see #appendIdentifier(String, String)
+     */
+    private final boolean quoteSchema;
+
+    /**
      * Creates a new {@code SQLBuilder} initialized from the given database metadata.
      *
      * @param  metadata  the database metadata.
      * @throws SQLException if an error occurred while fetching the database metadata.
      */
-    public SQLBuilder(final DatabaseMetaData metadata) throws SQLException {
+    public SQLBuilder(final DatabaseMetaData metadata, final boolean quoteSchema) throws SQLException {
         dialect = Dialect.guess(metadata);
         quote   = metadata.getIdentifierQuoteString();
         escape  = metadata.getSearchStringEscape();
+        this.quoteSchema = quoteSchema;
     }
 
     /**
      * Creates a new {@code SQLBuilder} initialized to the same metadata than the given builder.
      *
-     * @param metadata  the builder from which to copy metadata.
+     * @param other  the builder from which to copy metadata.
      */
-    public SQLBuilder(final SQLBuilder metadata) {
-        dialect = metadata.dialect;
-        quote   = metadata.quote;
-        escape  = metadata.escape;
+    public SQLBuilder(final SQLBuilder other) {
+        dialect     = other.dialect;
+        escape      = other.escape;
+        quote       = other.quote;
+        quoteSchema = other.quoteSchema;
     }
 
     /**
@@ -141,8 +152,11 @@ public class SQLBuilder {
 
     /**
      * Appends an identifier for an element in the given schema.
-     * The identifier will be written between the quote characters.
-     * The schema will be written only if non-null.
+     * <ul>
+     *   <li>The given schema will be written only if non-null</li>
+     *   <li>The given schema will be quoted only if {@code quoteSchema} is {@code true}.</li>
+     *   <li>The given identifier is always quoted.</li>
+     * </ul>
      *
      * @param  schema      the schema, or {@code null} if none.
      * @param  identifier  the identifier to append.
@@ -150,7 +164,12 @@ public class SQLBuilder {
      */
     public final SQLBuilder appendIdentifier(final String schema, final String identifier) {
         if (schema != null) {
-            appendIdentifier(schema).append('.');
+            if (quoteSchema) {
+                appendIdentifier(schema);
+            } else {
+                buffer.append(schema);
+            }
+            buffer.append('.');
         }
         return appendIdentifier(identifier);
     }

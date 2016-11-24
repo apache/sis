@@ -1414,7 +1414,7 @@ parse:      for (int i = 0; i < length;) {
     public final void setFormat(final String abbreviation) throws MetadataStoreException {
         if (abbreviation != null && abbreviation.length() != 0) {
             if (format == null) {
-                format = MetadataSource.getDefault().lookup(Format.class, abbreviation);
+                format = MetadataSource.getProvided().lookup(Format.class, abbreviation);
             }
         }
     }
