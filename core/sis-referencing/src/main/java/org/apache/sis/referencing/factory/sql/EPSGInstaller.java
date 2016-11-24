@@ -118,9 +118,10 @@ final class EPSGInstaller extends ScriptRunner {
              * Creates the schema on the database. We do that before to setup the 'toSchema' map, while the map still null.
              * Note that we do not quote the schema name, which is a somewhat arbitrary choice.
              */
-            execute(new StringBuilder("CREATE SCHEMA ").append(schema));
+            execute(new StringBuilder("CREATE SCHEMA ").append(identifierQuote).append(schema).append(identifierQuote));
             if (isGrantOnSchemaSupported) {
-                execute(new StringBuilder("GRANT USAGE ON SCHEMA ").append(schema).append(" TO ").append(PUBLIC));
+                execute(new StringBuilder("GRANT USAGE ON SCHEMA ")
+                        .append(identifierQuote).append(schema).append(identifierQuote).append(" TO ").append(PUBLIC));
             }
             /*
              * Mapping from the table names used in the SQL scripts to the original names used in the MS-Access database.
@@ -167,8 +168,18 @@ final class EPSGInstaller extends ScriptRunner {
      * Prepends the given schema or catalog to all table names.
      */
     final void prependNamespace(final String schema) {
-        modifyReplacements((key, value) -> key.startsWith(SQLTranslator.TABLE_PREFIX)
-                ? schema + '.' + identifierQuote + value + identifierQuote : value);
+        modifyReplacements((key, value) -> {
+            if (key.startsWith(SQLTranslator.TABLE_PREFIX)) {
+                final StringBuilder buffer = new StringBuilder(value.length() + schema.length() + 5);
+                buffer.append(identifierQuote).append(schema).append(identifierQuote).append('.');
+                final boolean isQuoted = value.endsWith(identifierQuote);
+                if (!isQuoted) buffer.append(identifierQuote);
+                buffer.append(value);
+                if (!isQuoted) buffer.append(identifierQuote);
+                value = buffer.toString();
+            }
+            return value;
+        });
     }
 
     /**
