@@ -432,6 +432,20 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <version>1.12</version>
       </dependency>
 
+      <!-- Databases -->
+      <dependency>
+        <groupId>org.hsqldb</groupId>
+        <artifactId>hsqldb</artifactId>
+        <version>2.3.4</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>9.4.1212.jre7</version>
+        <scope>test</scope>
+      </dependency>
+
       <!-- Optional dependencies -->
       <dependency>
         <groupId>org.osgi</groupId>
