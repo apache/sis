@@ -183,7 +183,7 @@ public class SQLBuilder {
      */
     public final SQLBuilder appendCondition(final Object value) {
         if (value == null) {
-            buffer.append("IS NULL");
+            buffer.append(" IS NULL");
             return this;
         }
         buffer.append('=');

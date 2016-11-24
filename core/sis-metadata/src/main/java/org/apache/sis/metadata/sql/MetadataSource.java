@@ -303,7 +303,8 @@ public class MetadataSource implements AutoCloseable {
     /**
      * Creates a new metadata source. The metadata standard to implement (typically
      * {@linkplain MetadataStandard#ISO_19115 ISO 19115}, but not necessarily) and
-     * the database source are mandatory information. All other information are optional.
+     * the database source are mandatory information.
+     * All other information are optional and can be {@code null}.
      *
      * @param  standard       the metadata standard to implement.
      * @param  dataSource     the source for getting a connection to the database.

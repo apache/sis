@@ -16,11 +16,15 @@
  */
 package org.apache.sis.metadata.sql;
 
+import java.util.Collections;
 import javax.sql.DataSource;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.internal.metadata.sql.TestDatabase;
+import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
@@ -52,6 +56,7 @@ public final strictfp class MetadataSourceTest extends TestCase {
         try (final MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, ds, "metadata", null, null)) {
             source.install();
             verifyFormats(source);
+            testSearch(source);
         } finally {
             TestDatabase.drop(ds);
         }
@@ -85,5 +90,23 @@ public final strictfp class MetadataSourceTest extends TestCase {
         assertNotNull("formatSpecificationCitation", spec);
         assertEquals("abbreviation", abbreviation, String.valueOf(getSingleton(spec.getAlternateTitles())));
         assertEquals("title", title, String.valueOf(spec.getTitle()));
+    }
+
+    /**
+     * Tests {@link MetadataSource#search(Object)}
+     *
+     * @param  source  the instance to test.
+     * @throws MetadataStoreException if an error occurred while querying the database.
+     */
+    @TestStep
+    public static void testSearch(final MetadataSource source) throws MetadataStoreException {
+        final DefaultCitation specification = new DefaultCitation("PNG (Portable Network Graphics) Specification");
+        specification.setAlternateTitles(Collections.singleton(new SimpleInternationalString("PNG")));
+        final DefaultFormat format = new DefaultFormat();
+        format.setFormatSpecificationCitation(specification);
+
+        assertEquals("PNG", source.search(format));
+        specification.setTitle(null);
+        assertNull(source.search(format));
     }
 }
