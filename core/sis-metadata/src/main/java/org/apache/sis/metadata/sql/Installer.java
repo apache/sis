@@ -60,9 +60,9 @@ final class Installer extends ScriptRunner {
     @Override
     protected int execute(final StringBuilder sql) throws SQLException, IOException {
         if (!isEnumTypeSupported && CharSequences.startsWith(sql, "CREATE TABLE", true)) {
-            StringBuilders.replace(sql, "metadata.\"CI_RoleCode\"", "VARCHAR(20)");
-            StringBuilders.replace(sql, "metadata.\"CI_DateTypeCode\"", "VARCHAR(20)");
-            StringBuilders.replace(sql, "metadata.\"CI_PresentationFormCode\"", "VARCHAR(20)");
+            StringBuilders.replace(sql, "metadata.\"CI_RoleCode\"", "VARCHAR(25)");
+            StringBuilders.replace(sql, "metadata.\"CI_DateTypeCode\"", "VARCHAR(25)");
+            StringBuilders.replace(sql, "metadata.\"CI_PresentationFormCode\"", "VARCHAR(25)");
         }
         return super.execute(sql);
     }
