@@ -116,12 +116,6 @@ public class GeoTiffStore extends DataStore {
                 while ((dir = reader.getImageFileDirectory(n++)) != null) {
                     dir.completeMetadata(builder, locale);
                 }
-                /*
-                 * Add Coordinate Reference System built from GeoTIFF tags.  Note that the CRS may not exist,
-                 * in which case the CRS builder returns null. This is safe since all MetadataBuilder methods
-                 * ignore null values (a design choice because this pattern come very often).
-                 */
-                builder.add(reader.crsBuilder.build());
                 metadata = builder.build(true);
             } catch (IOException e) {
                 throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
