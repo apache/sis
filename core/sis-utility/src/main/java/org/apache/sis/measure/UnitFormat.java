@@ -857,6 +857,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 case '⋅': // Fallthrough
                 case '×': next = MULTIPLY; break;
                 case '÷':
+                case '⁄': // Fraction slash
                 case '/':
                 case '∕': next = DIVIDE; break;
                 default:  continue;

@@ -150,8 +150,8 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         assertEquals ("Inverse 0 m",      0,     inverseTransform(0),                  tolerance);
         assertEquals ("Inverse +∞",       +PI/2, inverseTransform(POSITIVE_INFINITY),  tolerance);
         assertEquals ("Inverse +∞ appr.", +PI/2, inverseTransform(LN_INFINITY + 1),    tolerance);
-        assertEquals ("Inverse -∞",       -PI/2, inverseTransform(NEGATIVE_INFINITY),  tolerance);
-        assertEquals ("Inverse -∞ appr.", -PI/2, inverseTransform(-(LN_INFINITY + 1)), tolerance);
+        assertEquals ("Inverse −∞",       -PI/2, inverseTransform(NEGATIVE_INFINITY),  tolerance);
+        assertEquals ("Inverse −∞ appr.", -PI/2, inverseTransform(-(LN_INFINITY + 1)), tolerance);
     }
 
     /**

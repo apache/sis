@@ -72,16 +72,17 @@ import org.apache.sis.util.iso.Types;
 
 
 /**
- * A connection to a metadata database in read-only mode. The database must have a schema of the given name
- * ({@code "metadata"} in the example below). Existing entries can be obtained as in the example below:
+ * A connection to a metadata database in read-only mode. It can be either the database
+ * {@linkplain #getProvided() provided by Apache SIS} with pre-defined ISO 19115 metadata,
+ * or another database specified at construction time.
+ * Metadata instances can be obtained as in the example below:
  *
  * {@preformat java
- *   DataSource     source     = ... // This is database-specific.
- *   MetadataSource source     = new MetadataSource(MetadataStandard.ISO_19115, source, "metadata");
- *   Telephone      telephone  = source.lookup(Telephone.class, id);
+ *   MetadataSource metadata = MetadataSource.getProvided();
+ *   Format format = source.lookup(Format.class, "PNG");
  * }
  *
- * where {@code id} is the primary key value for the desired record in the {@code CI_Telephone} table.
+ * where {@code id} is the primary key value for the desired record in the {@code MD_Format} table.
  *
  * <div class="section">Concurrency</div>
  * {@code MetadataSource} is thread-safe but is not concurrent. If concurrency is desired,
