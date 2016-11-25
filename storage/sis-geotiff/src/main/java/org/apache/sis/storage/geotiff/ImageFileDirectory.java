@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.metadata.citation.DateType;
+import org.opengis.util.FactoryException;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
@@ -281,6 +282,27 @@ final class ImageFileDirectory {
      * or unsupported we can not read the image, but we still can read the metadata.
      */
     private Compression compression;
+
+    /**
+     * References the {@link GeoKeys} needed for building the Coordinate Reference System.
+     * This is a GeoTIFF extension to the TIFF specification.
+     * Content will be parsed by {@link CRSBuilder}.
+     */
+    private Vector geoKeyDirectory;
+
+    /**
+     * The numeric values referenced by the {@link #geoKeyDirectory}.
+     * This is a GeoTIFF extension to the TIFF specification.
+     * Content will be parsed by {@link CRSBuilder}.
+     */
+    private Vector numericGeoParameters;
+
+    /**
+     * The characters referenced by the {@link #geoKeyDirectory}.
+     * This is a GeoTIFF extension to the TIFF specification.
+     * Content will be parsed by {@link CRSBuilder}.
+     */
+    private String asciiGeoParameters;
 
     /**
      * Creates a new image file directory.
@@ -587,23 +609,29 @@ final class ImageFileDirectory {
              * An array of unsigned SHORT values, which are primarily grouped into blocks of 4.
              * The first 4 values are special, and contain GeoKey directory header information.
              */
-            case Tags.GeoKeyDirectory : {
-                reader.crsBuilder.setGeoKeyDirectoryTag(type.readVector(input(), count));
+            case Tags.GeoKeyDirectory: {
+                geoKeyDirectory = type.readVector(input(), count);
                 break;
             }
             /*
-             * This tag is used to store all of the DOUBLE valued GeoKeys, referenced by the GeoKeyDirectory.
+             * Stores all of the 'double' valued GeoKeys, referenced by the GeoKeyDirectory.
              */
-            case Tags.GeoDoubleParams : {
-                reader.crsBuilder.setGeoDoubleParamsTag(type.readVector(input(), count));
+            case Tags.GeoDoubleParams: {
+                numericGeoParameters = type.readVector(input(), count);
                 break;
             }
             /*
-             * This tag is used to store all of the ASCII valued GeoKeys, referenced by the GeoKeyDirectory.
+             * Stores all the characters referenced by the GeoKeyDirectory. Should contains exactly one string
+             * which will be splitted by CRSBuilder, but we allow an arbitrary amount as a paranoiac check.
+             * Note that TIFF files use 0 as the end delimiter in strings (C/C++ convention).
              */
-            case Tags.GeoAsciiParams : {
+            case Tags.GeoAsciiParams: {
                 final String[] values = type.readString(input(), count, encoding());
-                reader.crsBuilder.setGeoAsciiParamsTag(values[0]);      // TODO: should pass the full array.
+                switch (values.length) {
+                    case 0:  break;
+                    case 1:  asciiGeoParameters = values[0]; break;
+                    default: asciiGeoParameters = String.join("\u0000", values).concat("\u0000"); break;
+                }
                 break;
             }
             /*
@@ -952,7 +980,9 @@ final class ImageFileDirectory {
      * @param metadata  where to write metadata information. Caller should have already invoked
      *        {@link MetadataBuilder#setFormat(String)} before {@code completeMetadata(…)} calls.
      */
-    final void completeMetadata(final MetadataBuilder metadata, final Locale locale) {
+    final void completeMetadata(final MetadataBuilder metadata, final Locale locale)
+            throws DataStoreContentException, FactoryException
+    {
         metadata.newCoverage(false);
         if (compression != null) {
             metadata.addCompression(compression.name().toLowerCase(locale));
@@ -990,6 +1020,14 @@ final class ImageFileDirectory {
                             (cellHeight >= 0) ? cellHeight : '?'));
                 break;
             }
+        }
+        /*
+         * Add Coordinate Reference System built from GeoTIFF tags.  Note that the CRS may not exist,
+         * in which case the CRS builder returns null. This is safe since all MetadataBuilder methods
+         * ignore null values (a design choice because this pattern come very often).
+         */
+        if (geoKeyDirectory != null) {
+            metadata.add(new CRSBuilder(reader).build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters));
         }
     }
 

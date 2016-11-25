@@ -142,7 +142,7 @@ final class Tags {
     /**
      * References all "GeoKeys" needed for building the Coordinate Reference System.
      * GeoTIFF keys are stored in a kind of directory inside the TIFF directory, with
-     * the keys enumerated in the {@link GeoTIFF} class.
+     * the keys enumerated in the {@link CRSBuilder} class.
      *
      * @see GeoKeys
      */
@@ -173,7 +173,7 @@ final class Tags {
     static String name(final short tag) {
         try {
             for (final Field field : Tags.class.getFields()) {
-                if (field.getType() == Integer.TYPE) {
+                if (field.getType() == Short.TYPE) {
                     if (field.getShort(null) == tag) {
                         return field.getName();
                     }
