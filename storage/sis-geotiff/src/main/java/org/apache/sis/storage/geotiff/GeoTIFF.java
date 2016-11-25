@@ -81,7 +81,7 @@ abstract class GeoTIFF implements Closeable {
      */
     final DateFormat getDateFormat() {
         if (dateFormat == null) {
-            dateFormat = new SimpleDateFormat("yyy:MM:dd HH:mm:ss", Locale.US);
+            dateFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.US);
             if (TIMEZONE != null) {
                 dateFormat.setTimeZone(TIMEZONE);
             }

@@ -250,7 +250,7 @@ final class Reader extends GeoTIFF {
                  *   - The number of values of the indicated type.
                  *   - The value, or the file offset to the value elswhere in the file.
                  */
-                final int  tag   = input.readUnsignedShort();
+                final short tag  = (short) input.readUnsignedShort();
                 final Type type  = Type.valueOf(input.readShort());        // May be null.
                 final long count = readUnsignedInt();
                 final long size  = (type != null) ? Math.multiplyExact(type.size, count) : 0;
@@ -354,7 +354,7 @@ final class Reader extends GeoTIFF {
      * @param tag    the tag than can not be read.
      * @param error  the value than can not be understand, or the exception that we got while trying to parse it.
      */
-    private void warning(final int tag, final Object error) {
+    private void warning(final short tag, final Object error) {
         final short key;
         final Object[] args;
         final Exception exception;

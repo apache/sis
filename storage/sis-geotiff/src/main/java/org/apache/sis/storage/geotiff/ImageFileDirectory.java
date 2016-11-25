@@ -323,7 +323,7 @@ final class ImageFileDirectory {
      * @throws UnsupportedOperationException if the given type is {@link Type#UNDEFINED}.
      * @throws DataStoreException if a logical error is found or an unsupported TIFF feature is used.
      */
-    Object addEntry(final int tag, final Type type, final long count)
+    Object addEntry(final short tag, final Type type, final long count)
             throws IOException, ParseException, DataStoreException
     {
         switch (tag) {
@@ -847,7 +847,7 @@ final class ImageFileDirectory {
     final void validateMandatoryTags() throws DataStoreContentException {
         if (imageWidth  < 0) throw missingTag(Tags.ImageWidth);
         if (imageHeight < 0) throw missingTag(Tags.ImageLength);
-        final int offsetsTag, byteCountsTag;
+        final short offsetsTag, byteCountsTag;
         switch (tileTagFamily) {
             case STRIP: {
                 if (tileWidth  < 0) tileWidth  = Math.toIntExact(imageWidth);
@@ -914,7 +914,7 @@ final class ImageFileDirectory {
                 break;
             }
             default: {
-                final int tag;
+                final short tag;
                 switch (Integer.lowestOneBit(missing)) {
                     case 0b0001: tag = Tags.TileWidth;  break;
                     case 0b0010: tag = Tags.TileLength; break;
@@ -1008,7 +1008,7 @@ final class ImageFileDirectory {
     /**
      * Verifies that the given tags have the same length and reports a warning if they do not.
      */
-    private void ensureSameLength(final int tag1, final int tag2, final int length1, final int length2) {
+    private void ensureSameLength(final short tag1, final short tag2, final int length1, final int length2) {
         if (length1 != length2) {
             warning(Level.WARNING, Resources.Keys.MismatchedLength_4, Tags.name(tag1), Tags.name(tag2), length1, length2);
         }
@@ -1021,7 +1021,7 @@ final class ImageFileDirectory {
      * @param  value     the default value or the computed value.
      * @param  computed  whether the default value has been computed.
      */
-    private void missingTag(final int missing, final long value, final boolean computed) {
+    private void missingTag(final short missing, final long value, final boolean computed) {
         warning(computed ? Level.WARNING : Level.FINE,
                 computed ? Resources.Keys.ComputedValueForAttribute_2 : Resources.Keys.DefaultValueForAttribute_2,
                 Tags.name(missing), value);
@@ -1032,7 +1032,7 @@ final class ImageFileDirectory {
      *
      * @param  missing  the numerical value of the missing tag.
      */
-    private DataStoreContentException missingTag(final int missing) {
+    private DataStoreContentException missingTag(final short missing) {
         return new DataStoreContentException(reader.resources().getString(
                 Resources.Keys.MissingValue_2, input().filename, Tags.name(missing)));
     }
