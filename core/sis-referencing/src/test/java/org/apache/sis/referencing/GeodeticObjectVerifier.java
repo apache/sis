@@ -293,8 +293,8 @@ public final strictfp class GeodeticObjectVerifier {
      *     <td>{@link Units#METRE}</td>
      *     <td>{@link Units#METRE}</td></tr>
      * <tr><td>Axes range</td>
-     *     <td>[-∞ … ∞]</td>
-     *     <td>[-∞ … ∞]</td></tr>
+     *     <td>[−∞ … ∞]</td>
+     *     <td>[−∞ … ∞]</td></tr>
      * <tr><td>Axes range meaning</td>
      *     <td>{@code null}</td>
      *     <td>{@code null}</td>
