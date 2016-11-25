@@ -20,7 +20,8 @@ import java.lang.reflect.Field;
 
 
 /**
- * Numerical values of GeoTIFF tags. In this class, field names are identical to TIFF tag names.
+ * Numerical values of GeoTIFF tags, as <strong>unsigned</strong> short integers.
+ * In this class, field names are identical to TIFF tag names.
  * For that reason, many of those field names do not follow usual Java convention for constants.
  *
  * <p>A useful (but unofficial) reference is the
@@ -143,21 +144,21 @@ final class Tags {
      * GeoTIFF keys are stored in a kind of directory inside the TIFF directory, with
      * the keys enumerated in the {@link GeoTIFF} class.
      *
-     * @todo omit the "Tag" suffix since this class is all about tags.
+     * @see GeoKeys
      */
-    public static final short GeoKeyDirectoryTag = (short) 0x87AF;        // 34735
+    public static final short GeoKeyDirectory = (short) 0x87AF;           // 34735
 
     /**
      * References all {@code double} values referenced by the {@link GeoKeys}.
-     * The keys are stored in the entry referenced by {@link #GeoKeyDirectoryTag}.
+     * The keys are stored in the entry referenced by {@link #GeoKeyDirectory}.
      */
-    public static final short GeoDoubleParamsTag = (short) 0x87B0;        // 34736
+    public static final short GeoDoubleParams = (short) 0x87B0;           // 34736
 
     /**
      * References all {@link String} values referenced by the {@link GeoKeys}.
-     * The keys are stored in the entry referenced by {@link #GeoKeyDirectoryTag}.
+     * The keys are stored in the entry referenced by {@link #GeoKeyDirectory}.
      */
-    public static final short GeoAsciiParamsTag = (short) 0x87B1;         // 34737
+    public static final short GeoAsciiParams = (short) 0x87B1;            // 34737
 
     /**
      * Do not allow instantiation of this class.

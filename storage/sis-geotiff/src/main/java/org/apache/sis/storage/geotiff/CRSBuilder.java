@@ -72,16 +72,16 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 /**
  * Build a {@link CoordinateReferenceSystem} from Tiff tags informations.<br>
  * More precisely we have to parse 3 Tiff tags which are<br>
- * GeoKeyDirectoryTag(34735),<br>
- * GeoDoubleParamsTag(34736),<br>
- * GeoAsciiParamsTag(34737).<br><br>
+ * GeoKeyDirectory(34735),<br>
+ * GeoDoubleParams(34736),<br>
+ * GeoAsciiParams(34737).<br><br>
  *
  * Forexample, for each tag data content are organize as follow :<br><br>
  *
  * Example:<br>
  * <table summary="GeoKeys">
  *    <tr>
- *       <td>GeoKeyDirectoryTag=( </td>
+ *       <td>GeoKeyDirectory=( </td>
  *       <td> 1,</td>
  *       <td> 1,</td>
  *       <td> 2,</td>
@@ -130,18 +130,18 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
  *       <td> 0)</td>
  *    </tr>
  * </table>
- * GeoDoubleParamsTag(34736)=(1.5)<br>
- * GeoAsciiParamsTag(34737)=("Custom File|My Geographic|")<br><br>
+ * GeoDoubleParams(34736)=(1.5)<br>
+ * GeoAsciiParams(34737)=("Custom File|My Geographic|")<br><br>
  *
  * The first line indicates that this is a Version 1 GeoTIFF GeoKey directory,
  * the keys are Rev. 1.2, and there are 6 Keys defined in this tag.<br>
  *
  * The next line indicates that the first Key (ID=1024 = GTModelTypeGeoKey) has the value 2 (Geographic),
  * explicitly placed in the entry list (since TIFFTagLocation=0).<br><br>
- * The next line indicates that the Key 1026 (the GTCitationGeoKey) is listed in the GeoAsciiParamsTag (34737) array,
+ * The next line indicates that the Key 1026 (the GTCitationGeoKey) is listed in the GeoAsciiParams (34737) array,
  * starting at offset 0 (the first in array), and running for 12 bytes and so has the value
  * "Custom File" (the "|" is converted to a null delimiter at the end). <br><br>
- * Going further down the list, the Key 2051 (GeogLinearUnitSizeGeoKey) is located in the GeoDoubleParamsTag (34736),
+ * Going further down the list, the Key 2051 (GeogLinearUnitSizeGeoKey) is located in the GeoDoubleParams (34736),
  * at offset 0 and has the value 1.5; the value of key 2049 (GeogCitationGeoKey) is "My Geographic".
  *
  * @author Remi Marechal (Geomatys).
@@ -150,7 +150,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
  * @module
  * @see GeoKeys
  */
-public class TiffCRSBuilder {
+final class CRSBuilder {
 
     /**
      * Factory to build needed Datum from other precedently objects.
@@ -185,12 +185,12 @@ public class TiffCRSBuilder {
     private Vector geoKeyDirectoryTag = null;
 
     /**
-     * This tag is used to store all of the DOUBLE valued GeoKeys, referenced by the GeoKeyDirectoryTag.
+     * This tag is used to store all of the DOUBLE valued GeoKeys, referenced by the GeoKeyDirectory.
      */
     private Vector geoDoubleParamsTag = null;
 
     /**
-     * This tag is used to store all of the ASCII valued GeoKeys, referenced by the GeoKeyDirectoryTag.
+     * This tag is used to store all of the ASCII valued GeoKeys, referenced by the GeoKeyDirectory.
      */
     private String geoAsciiParamsTag = null;
 
@@ -205,7 +205,7 @@ public class TiffCRSBuilder {
     private short numberOfKey;
     private int geoKeyDirectorySize;
 
-    TiffCRSBuilder(final Reader reader) {
+    CRSBuilder(final Reader reader) {
         this.reader = reader;
     }
 
@@ -318,10 +318,10 @@ public class TiffCRSBuilder {
      * Parse and store "geoKey" and its content into internal {@link #geoKeys}.
      *
      * @param KeyID geokey Id
-     * @param tiffTagLocation 0 if offset is the data, or one of GeoDoubleParamsTag or GeoAsciiParamsTag.
+     * @param tiffTagLocation 0 if offset is the data, or one of GeoDoubleParams or GeoAsciiParams.
      * @param count 1 if offset is data or n if data store into another geokey.
      * @param value_Offset data or offset if into another geokey.
-     * @see TiffCRSBuilder
+     * @see CRSBuilder
      */
     private void setKey(final int KeyID, final int tiffTagLocation, final int count, final int value_Offset) {
         if (tiffTagLocation == 0) {
@@ -331,12 +331,12 @@ public class TiffCRSBuilder {
             geoKeys.put(KeyID, value_Offset);
         } else {
             switch (tiffTagLocation) {
-                case Tags.GeoDoubleParamsTag : {
+                case Tags.GeoDoubleParams : {
                     assert count == 1;
                     geoKeys.put(KeyID, geoDoubleParamsTag.doubleValue(value_Offset));
                     break;
                 }
-                case Tags.GeoAsciiParamsTag : {
+                case Tags.GeoAsciiParams : {
                     geoKeys.put(KeyID, geoAsciiParamsTag.substring(value_Offset, value_Offset + count));
                     break;
                 }
@@ -1138,7 +1138,7 @@ public class TiffCRSBuilder {
     }
 
     /**
-     * Set contents of previously read {@link Tags#GeoDoubleParamsTag}.
+     * Set contents of previously read {@link Tags#GeoDoubleParams}.
      * Contents is about Geographic keys, more precisely double value, scale, offset etc,
      * needed to build appropriate {@link CoordinateReferenceSystem}.
      *
@@ -1149,7 +1149,7 @@ public class TiffCRSBuilder {
     }
 
     /**
-     * Set contents of previously read {@link Tags#GeoAsciiParamsTag}.
+     * Set contents of previously read {@link Tags#GeoAsciiParams}.
      * Contents is about Geographic keys, more precisely name, identifier etc,
      * needed to build appropriate {@link CoordinateReferenceSystem}.
      *
