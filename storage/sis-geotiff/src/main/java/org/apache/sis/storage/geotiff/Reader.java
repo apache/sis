@@ -115,7 +115,7 @@ final class Reader extends GeoTIFF {
      * @todo should not be here since we can have a CRS for each image and we don't want to merge them
      *       like we do for metadata.
      */
-    final TiffCRSBuilder crsBuilder;
+    final CRSBuilder crsBuilder;
 
     /**
      * Creates a new GeoTIFF reader which will read data from the given input.
@@ -129,7 +129,7 @@ final class Reader extends GeoTIFF {
         this.input      = input;
         this.origin     = input.getStreamPosition();
         this.metadata   = new MetadataBuilder();
-        this.crsBuilder = new TiffCRSBuilder(this);
+        this.crsBuilder = new CRSBuilder(this);
         /*
          * A TIFF file begins with either "II" (0x4949) or "MM" (0x4D4D) characters.
          * Those characters identify the byte order. Note that we do not need to care

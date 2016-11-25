@@ -587,21 +587,21 @@ final class ImageFileDirectory {
              * An array of unsigned SHORT values, which are primarily grouped into blocks of 4.
              * The first 4 values are special, and contain GeoKey directory header information.
              */
-            case Tags.GeoKeyDirectoryTag : {
+            case Tags.GeoKeyDirectory : {
                 reader.crsBuilder.setGeoKeyDirectoryTag(type.readVector(input(), count));
                 break;
             }
             /*
-             * This tag is used to store all of the DOUBLE valued GeoKeys, referenced by the GeoKeyDirectoryTag.
+             * This tag is used to store all of the DOUBLE valued GeoKeys, referenced by the GeoKeyDirectory.
              */
-            case Tags.GeoDoubleParamsTag : {
+            case Tags.GeoDoubleParams : {
                 reader.crsBuilder.setGeoDoubleParamsTag(type.readVector(input(), count));
                 break;
             }
             /*
-             * This tag is used to store all of the ASCII valued GeoKeys, referenced by the GeoKeyDirectoryTag.
+             * This tag is used to store all of the ASCII valued GeoKeys, referenced by the GeoKeyDirectory.
              */
-            case Tags.GeoAsciiParamsTag : {
+            case Tags.GeoAsciiParams : {
                 final String[] values = type.readString(input(), count, encoding());
                 reader.crsBuilder.setGeoAsciiParamsTag(values[0]);      // TODO: should pass the full array.
                 break;
