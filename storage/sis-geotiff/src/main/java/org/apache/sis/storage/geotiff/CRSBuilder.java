@@ -111,6 +111,11 @@ import org.apache.sis.storage.DataStoreContentException;
  */
 final class CRSBuilder {
     /**
+     * Number of {@code short} values in each GeoKey entry.
+     */
+    private static final int ENTRY_LENGTH = 4;
+
+    /**
      * The reader for which we will create coordinate reference systems.
      * This is used for reporting warnings.
      */
@@ -240,38 +245,33 @@ final class CRSBuilder {
     private String getAsString(final short key, final boolean mandatory) throws DataStoreContentException {
         final Object value = geoKeys.get(key);
         if (value != null) {
-            final String s = value.toString().trim();
-            if (!s.isEmpty()) {
-                return s;
-            }
+            return value.toString();
         }
         if (!mandatory) {
             return null;
         }
-        throw new DataStoreContentException(missingKey(key));
+        throw new DataStoreContentException(missingValueMessage(key));
     }
 
     /**
-     * Returns a {@link GeoKeys} value as a character string.
+     * Returns a {@link GeoKeys} value as an integer.
      *
-     * @param  key        the GeoTIFF key for which to get a value.
-     * @return A integer representing the value, or {@code Integer.minValue} if the key was not
-     *         found or failed to parse.
+     * @param  key the GeoTIFF key for which to get a value.
+     * @return the integer value for the given key, or {@link Integer#MAX_VALUE} if the key was not found
+     *         or can not be parsed.
      */
     private int getAsInteger(final short key) {
         final Object value = geoKeys.get(key);
-
-        if (value == null)           return Integer.MIN_VALUE;
-        if (value instanceof Number) return ((Number)value).intValue();
-
-        try {
-            final String geoKey = value.toString();
-            return Integer.parseInt(geoKey);
-        }  catch (Exception e) {
-            warning(Resources.Keys.UnexpectedKeyValue_3, GeoKeys.getName(key)+" ("+key+")",
-                    "Integer value", value.getClass().getName()+" --> "+value);
-            return Integer.MIN_VALUE;
+        if (value != null) {
+            if (value instanceof Number) {
+                return ((Number) value).intValue();
+            } else try {
+                return Integer.parseInt(value.toString());
+            } catch (NumberFormatException e) {
+                warning(Resources.Keys.InvalidGeoValue_2, value, GeoKeys.name(key));
+            }
         }
+        return Integer.MIN_VALUE;
     }
 
     /**
@@ -290,91 +290,190 @@ final class CRSBuilder {
             } else try {
                 return Double.parseDouble(value.toString());
             } catch (NumberFormatException e) {
-                warning(Resources.Keys.UnexpectedKeyValue_3, GeoKeys.getName(key)+" ("+key+")",
-                        "Double value", value.getClass().getName()+" --> "+value);
+                warning(Resources.Keys.InvalidGeoValue_2, value, GeoKeys.name(key));
             }
         }
         if (!mandatory) {
             return Double.NaN;
         }
-        throw new DataStoreContentException(missingKey(key));
+        throw new DataStoreContentException(missingValueMessage(key));
     }
 
     /**
      * Returns the error message to put in {@link DataStoreContentException} for missing keys.
      */
-    private String missingKey(final short key) {
-        return reader.resources().getString(Resources.Keys.MissingValue_2, reader.input.filename, GeoKeys.getName(key));
+    private String missingValueMessage(final short key) {
+        return reader.resources().getString(Resources.Keys.MissingGeoValue_1, GeoKeys.name(key));
     }
 
-    //---------------------------- geokeys parsing -----------------------------
     /**
-     * Contain "brut" needed keys to build appropriate {@link CoordinateReferenceSystem}.<br>
-     * To know how to parse this key see {@link #TiffCRSBuilder(org.apache.sis.storage.geotiff.Reader) } header class.<br>
-     * Some of short values which define CRS appropriate behavior to build it.
-     *
-     * @return built CRS.
-     * @throws FactoryException if problem during factory CRS creation.
-     * @throws DataStoreContentException if problem during geokey parsing or CRS creation.(missing needed geokeys for example).
+     * Reports a warning about missing value for the given key.
      */
+    private void missingValue(final short key) {
+        warning(Resources.Keys.MissingGeoValue_1, GeoKeys.name(key));
+    }
+
+
+    //---------------------------- geokeys parsing -----------------------------
+
+
+    /**
+     * Decodes all the given GeoTIFF keys, then creates a coordinate reference system.
+     * An overview of the key directory structure is given in {@linkplain CRSBuilder class javadoc}.
+     *
+     * @param  keyDirectory       the GeoTIFF keys to be associated to values. Can not be null.
+     * @param  numericParameters  a vector of {@code double} parameters, or {@code null} if none.
+     * @param  asciiParameters    the sequence of characters from which to build strings, or {@code null} if none.
+     * @return the coordinate reference system created from the given GeoTIFF keys.
+     * @throws FactoryException if an error occurred during objects creation with the factories.
+     * @throws DataStoreContentException if an error occurred while parsing the GeoKeys,
+     *         for example because a mandatory value is missing.
+     */
+    @SuppressWarnings("null")
     final CoordinateReferenceSystem build(final Vector keyDirectory, final Vector numericParameters, final String asciiParameters)
             throws DataStoreContentException, FactoryException
     {
-        final int geoKeyDirectorySize = keyDirectory.size();
-        if (geoKeyDirectorySize < 4)
-            throw new DataStoreContentException(reader.resources().getString(
-                    Resources.Keys.MismatchedLength_4, "GeoKeyDirectoryTag size", "GeoKeyDirectoryTag",
-                    "> 4", keyDirectory.size()));
-
-        final short kDV = keyDirectory.shortValue(0);
-        if (kDV != 1) {
-            throw new DataStoreContentException(reader.resources().getString(Resources.Keys.UnexpectedKeyValue_3, "KeyDirectoryVersion", 1, kDV));
+        final int numberOfKeys;
+        final int directoryLength = keyDirectory.size();
+        if (directoryLength >= ENTRY_LENGTH) {
+            final int version = keyDirectory.intValue(0);
+            if (version != 1) {
+                warning(Resources.Keys.UnsupportedGeoKeyDirectory_1, version);
+                return null;
+            }
+            majorRevision = keyDirectory.shortValue(1);
+            minorRevision = keyDirectory.shortValue(2);
+            numberOfKeys  = keyDirectory.intValue(3);
+        } else {
+            numberOfKeys = 0;
         }
-        majorRevision = keyDirectory.shortValue(1);
-        minorRevision = keyDirectory.shortValue(2);
-        final int numberOfKeys  = keyDirectory.intValue(3);
-
-        final int expectedGeoKeyDirectorySize = ((numberOfKeys + 1) << 2);//-- (number of key + head) * 4 --- 1 key = 4 informations
-        if (geoKeyDirectorySize != expectedGeoKeyDirectorySize) {
-            warning(Resources.Keys.MismatchedLength_4,
-                    "GeoKeyDirectoryTag size", "GeoKeyDirectoryTag", expectedGeoKeyDirectorySize, geoKeyDirectorySize);
+        /*
+         * The key directory may be longer than needed for the amount of keys, but not shorter.
+         * If shorter, report a warning and stop the parsing since we have no way to know if the
+         * missing information were essentiel or not.
+         *
+         *     (number of key + head) * 4    ---    1 entry = 4 short values.
+         */
+        final int expectedLength = (numberOfKeys + 1) * ENTRY_LENGTH;
+        if (directoryLength < expectedLength) {
+            warning(Resources.Keys.ListTooShort_3, "GeoKeyDirectory", expectedLength, directoryLength);
+            return null;
         }
-
-        //-- build Coordinate Reference System keys
-        int p   = 4;
-        int key = 0;
-        while (p < geoKeyDirectorySize && key++ < numberOfKeys) {
-            final short keyID     = keyDirectory.shortValue(p++);
-            final int tagLocation = keyDirectory.intValue(p++);
-            final int count       = keyDirectory.intValue(p++);
-            final int valueOffset = keyDirectory.intValue(p++);
-            if (tagLocation == 0) {
-                //-- tiff taglocation = 0 mean offset is the stored value
-                //-- and count normaly equal to 1
-                assert count == 1;//-- maybe warning
-                geoKeys.put(keyID, valueOffset);
-            } else {
-                switch (tagLocation) {
-                    case Tags.GeoDoubleParams: {
-                        assert count == 1;
-                        geoKeys.put(keyID, numericParameters.doubleValue(valueOffset));
-                        break;
+        final int numberOfDoubles = (numericParameters != null) ? numericParameters.size() : 0;
+        final int numberOfChars   =   (asciiParameters != null) ? asciiParameters.length() : 0;
+        /*
+         * Now iterate over all GeoKey values. The values are copied in a HashMap for convenience,
+         * because the CRS creation may use them out of order.
+         */
+        for (int i=1; i <= numberOfKeys; i++) {
+            final int p = i * ENTRY_LENGTH;
+            final short key       = keyDirectory.shortValue(p);
+            final int tagLocation = keyDirectory.intValue(p+1);
+            final int count       = keyDirectory.intValue(p+2);
+            final int valueOffset = keyDirectory.intValue(p+3);
+            if (valueOffset < 0 || count < 0) {
+                missingValue(key);
+                continue;
+            }
+            final Object value;
+            switch (tagLocation) {
+                /*
+                 * tagLocation == 0 means that 'valueOffset' actually contains the value,
+                 * thus avoiding the need to allocate a separated storage location for it.
+                 * The count should be 1.
+                 */
+                case 0: {
+                    switch (count) {
+                        case 0:  continue;
+                        case 1:  break;          // Expected value.
+                        default: warning(Resources.Keys.UnexpectedListOfValues_2, GeoKeys.name(key), count); break;
                     }
-                    case Tags.GeoAsciiParams: {
-                        geoKeys.put(keyID, asciiParameters.substring(valueOffset, valueOffset + count));
-                        break;
+                    value = valueOffset;
+                    break;
+                }
+                /*
+                 * Values of type 'short' are stored in the same vector than the key directory;
+                 * the specification does not allocate a separated vector for them. We use the
+                 * 'int' type if needed for allowing storage of unsigned short values.
+                 */
+                case Tags.GeoKeyDirectory & 0xFFFF: {
+                    if (valueOffset + count > keyDirectory.size()) {
+                        missingValue(key);
+                        continue;
                     }
+                    switch (count) {
+                        case 0:  continue;
+                        case 1:  value = keyDirectory.get(valueOffset); break;
+                        default: final int[] array = new int[count];
+                                 for (int j=0; j<count; j++) {
+                                     array[j] = keyDirectory.intValue(valueOffset + j);
+                                 }
+                                 value = array;
+                                 break;
+                    }
+                    break;
+                }
+                /*
+                 * Values of type 'double' are read from a separated vector, 'numericParameters'.
+                 * Result is stored in a Double wrapper or in an array of type 'double[]'.
+                 */
+                case Tags.GeoDoubleParams & 0xFFFF: {
+                    if (valueOffset + count > numberOfDoubles) {
+                        missingValue(key);
+                        continue;
+                    }
+                    switch (count) {
+                        case 0:  continue;
+                        case 1:  value = numericParameters.get(valueOffset); break;
+                        default: final double[] array = new double[count];
+                                 for (int j=0; j<count; j++) {
+                                     array[j] = numericParameters.doubleValue(valueOffset + j);
+                                 }
+                                 value = array;
+                                 break;
+                    }
+                    break;
+                }
+                /*
+                 * ASCII encoding use the pipe ('|') character as a replacement for the NUL character
+                 * used in C/C++ programming languages. We need to omit those trailing characters.
+                 */
+                case Tags.GeoAsciiParams & 0xFFFF: {
+                    int upper = valueOffset + count;
+                    if (upper > numberOfChars) {
+                        missingValue(key);
+                        continue;
+                    }
+                    if (count != 0 && asciiParameters.charAt(upper - 1) == '|') {
+                        upper--;    // Skip trailing pipe, interpreted as C/C++ NUL character.
+                    }
+                    final String s = asciiParameters.substring(valueOffset, upper).trim();
+                    if (s.isEmpty()) continue;
+                    value = s;
+                    break;
+                }
+                /*
+                 * GeoKeys are not expected to use other storage mechanism. If this happen anyway, report a warning
+                 * and continue on the assumption that if the value that we are ignoring was critical information,
+                 * it would have be stored in one of the standard GeoTIFF tags.
+                 */
+                default: {
+                    warning(Resources.Keys.IgnoredGeoKey_1, GeoKeys.name(key));
+                    continue;
                 }
             }
+            geoKeys.put(key, value);
         }
-
-        final int crsType = getAsInteger(GeoKeys.GTModelTypeGeoKey);
-
+        /*
+         * At this point we finished copying all GeoTIFF keys in CRSBuilder.geoKeys map.
+         */
+        final int crsType = getAsInteger(GeoKeys.GTModelType);
         switch (crsType) {
-            case GeoKeys.ModelTypeProjected  : return createProjectedCRS();
-            case GeoKeys.ModelTypeGeographic : return createGeographicCRS();
-            case GeoKeys.ModelTypeGeocentric : throw new DataStoreContentException("not implemented yet: Geocentric CRS");
+            case GeoCodes.ModelTypeProjected:  return createProjectedCRS();
+            case GeoCodes.ModelTypeGeographic: return createGeographicCRS();
+            case GeoCodes.ModelTypeGeocentric: // TODO
             default: {
+                warning(Resources.Keys.UnsupportedCoordinateSystemKind_1, crsType);
                 return null;
             }
         }
@@ -412,12 +511,12 @@ final class CRSBuilder {
          * First case is when the unit of measure has an EPSG code, second case is when it can be
          * instantiated as a conversion from meter.
          */
-        if (unitCode.equals(GeoKeys.GTUserDefinedGeoKey_String)) {
+        if (unitCode.equals(GeoKeys.GTUserDefined_String)) {
             return base.multiply(getAsDouble(userDefinedKey, true));
         }
 
         //-- using epsg code for this unit
-        return epsgFactory().createUnit(String.valueOf(unitCode));
+        return epsgFactory().createUnit(unitCode);
     }
 
     /**
@@ -443,17 +542,17 @@ final class CRSBuilder {
             throws DataStoreContentException, FactoryException {
 
         // lookup the datum (w/o PrimeMeridian).
-        String datumCode = getAsString(GeoKeys.GeogGeodeticDatumGeoKey, true);
+        String datumCode = getAsString(GeoKeys.GeogGeodeticDatum, true);
 
         //-- Geodetic Datum define as an EPSG code.
-        if (!datumCode.equals(GeoKeys.GTUserDefinedGeoKey_String))
+        if (!datumCode.equals(GeoKeys.GTUserDefined_String))
             return epsgFactory().createGeodeticDatum(String.valueOf(datumCode));
 
         //-- USER DEFINE Geodetic Datum creation
         {
             //-- Datum name
-            assert datumCode.equals(GeoKeys.GTUserDefinedGeoKey_String);
-            String datumName = getAsString(GeoKeys.GeogCitationGeoKey, false);
+            assert datumCode.equals(GeoKeys.GTUserDefined_String);
+            String datumName = getAsString(GeoKeys.GeogCitation, false);
             if (datumName == null) {
                 datumName = "Unamed User Defined Geodetic Datum";
             }
@@ -493,29 +592,29 @@ final class CRSBuilder {
         //-- could be an EPSG code
         //-- or could be user defined
         //-- or not defined = greenwich
-        String pmCode = getAsString(GeoKeys.GeogPrimeMeridianGeoKey, false);
+        String pmCode = getAsString(GeoKeys.GeogPrimeMeridian, false);
 
         //-- if Prime Meridian code not define, assume WGS84
         if (pmCode == null) return CommonCRS.WGS84.primeMeridian();
 
         //-- if Prime Meridian define as an EPSG code.
-        if (!pmCode.equals(GeoKeys.GTUserDefinedGeoKey_String)) {
+        if (!pmCode.equals(GeoKeys.GTUserDefined_String)) {
             return epsgFactory().createPrimeMeridian(String.valueOf(pmCode));
         }
         //-- user define Prime Meridian creation
         {
-            assert pmCode.equals(GeoKeys.GTUserDefinedGeoKey_String);
+            assert pmCode.equals(GeoKeys.GTUserDefined_String);
 
-            double pmValue = getAsDouble(GeoKeys.GeogPrimeMeridianLongGeoKey, false);
+            double pmValue = getAsDouble(GeoKeys.GeogPrimeMeridianLong, false);
             if (Double.isNaN(pmValue)) {
-                warning(Resources.Keys.UnexpectedKeyValue_3, "GeogPrimeMeridianLongGeoKey (2061)","non null","null");
+                missingValue(GeoKeys.GeogPrimeMeridianLong);
                 pmValue = 0;
             }
 
             //-- if user define prime meridian is not define, assume WGS84
             if (pmValue == 0) return CommonCRS.WGS84.primeMeridian();
 
-            final String name = getAsString(GeoKeys.GeogCitationGeoKey, false);
+            final String name = getAsString(GeoKeys.GeogCitation, false);
             return objectFactory().createPrimeMeridian(
                     name((name == null) ? "User Defined GEOTIFF Prime Meridian" : name), pmValue, linearUnit);
         }
@@ -545,15 +644,15 @@ final class CRSBuilder {
             throws FactoryException, DataStoreContentException {
 
         //-- ellipsoid key
-        final String ellipsoidKey = getAsString(GeoKeys.GeogEllipsoidGeoKey, false);
+        final String ellipsoidKey = getAsString(GeoKeys.GeogEllipsoid, false);
 
         //-- if ellipsoid key NOT "user define" decode EPSG code.
-        if (ellipsoidKey != null && !ellipsoidKey.equalsIgnoreCase(GeoKeys.GTUserDefinedGeoKey_String))
+        if (ellipsoidKey != null && !ellipsoidKey.equalsIgnoreCase(GeoKeys.GTUserDefined_String))
             return epsgFactory().createEllipsoid(ellipsoidKey);
 
         //-- User define Ellipsoid creation
         {
-            String nameEllipsoid = getAsString(GeoKeys.GeogCitationGeoKey, false);
+            String nameEllipsoid = getAsString(GeoKeys.GeogCitation, false);
             if (nameEllipsoid == null) {
                 nameEllipsoid = "User define unamed Ellipsoid";
             }
@@ -565,13 +664,13 @@ final class CRSBuilder {
             //-- get semi Major axis and, semi minor or invertflattening
 
             //-- semi Major
-            final double semiMajorAxis = getAsDouble(GeoKeys.GeogSemiMajorAxisGeoKey, true);
+            final double semiMajorAxis = getAsDouble(GeoKeys.GeogSemiMajorAxis, true);
 
             //-- try to get inverseFlattening
-            double inverseFlattening = getAsDouble(GeoKeys.GeogInvFlatteningGeoKey, false);
+            double inverseFlattening = getAsDouble(GeoKeys.GeogInvFlattening, false);
             if (Double.isNaN(inverseFlattening)) {
                 //-- get semi minor axis to build missing inverseFlattening
-                final double semiMinSTR = getAsDouble(GeoKeys.GeogSemiMinorAxisGeoKey, true);
+                final double semiMinSTR = getAsDouble(GeoKeys.GeogSemiMinorAxis, true);
                 inverseFlattening = semiMajorAxis / (semiMajorAxis - semiMinSTR);
             }
 
@@ -641,7 +740,7 @@ final class CRSBuilder {
 
         //-- get the Unit epsg code if exist
         String unitCode = getAsString(unitKey, false);
-        if (unitCode == null || unitCode.equalsIgnoreCase(GeoKeys.GTUserDefinedGeoKey_String)) {
+        if (unitCode == null || unitCode.equalsIgnoreCase(GeoKeys.GTUserDefined_String)) {
             return (CartesianCS) CoordinateSystems.replaceLinearUnit(baseCS, fallBackUnit);
         }
 
@@ -823,7 +922,7 @@ final class CRSBuilder {
 
         //-- get the Unit epsg code if exist
         String unitCode = getAsString(unitKey, false);
-        if (unitCode == null || unitCode.equalsIgnoreCase(GeoKeys.GTUserDefinedGeoKey_String)) {
+        if (unitCode == null || unitCode.equalsIgnoreCase(GeoKeys.GTUserDefined_String)) {
             return (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(baseCS, fallBackUnit);
         }
 
@@ -926,18 +1025,18 @@ final class CRSBuilder {
     private CoordinateReferenceSystem createProjectedCRS()
             throws FactoryException, DataStoreContentException {
 
-        final String projCode = getAsString(GeoKeys.ProjectedCSTypeGeoKey, false);
+        final String projCode = getAsString(GeoKeys.ProjectedCSType, false);
 
         //-- getting the linear unit used by this coordinate reference system.
-        final Unit linearUnit = createUnit(GeoKeys.ProjLinearUnitsGeoKey,
-                                GeoKeys.ProjLinearUnitSizeGeoKey, Units.METRE, Units.METRE);
+        final Unit linearUnit = createUnit(GeoKeys.ProjLinearUnits,
+                                GeoKeys.ProjLinearUnitSize, Units.METRE, Units.METRE);
 
         //--------------------------- USER DEFINE -----------------------------//
         //-- if it's user defined, we have to parse many informations and
         //-- try to build appropriate projected CRS from theses parsed informations.
         //-- like base gcrs, datum, unit ...
         if (projCode == null
-         || projCode.equals(GeoKeys.GTUserDefinedGeoKey_String))
+         || projCode.equals(GeoKeys.GTUserDefined_String))
             return createUserDefinedProjectedCRS(linearUnit);
         //---------------------------------------------------------------------//
 
@@ -955,7 +1054,7 @@ final class CRSBuilder {
             pcrs = objectFactory().createProjectedCRS(name(IdentifiedObjects.getName(pcrs, new DefaultCitation("EPSG"))),
                                                       (GeographicCRS) pcrs.getBaseCRS(),
                                                       pcrs.getConversionFromBase(),
-                                                      retrieveCartesianCS(GeoKeys.ProjLinearUnitsGeoKey, pcrs.getCoordinateSystem(), linearUnit));
+                                                      retrieveCartesianCS(GeoKeys.ProjLinearUnits, pcrs.getCoordinateSystem(), linearUnit));
         }
         return pcrs;
     }
@@ -979,7 +1078,7 @@ final class CRSBuilder {
     private ProjectedCRS createUserDefinedProjectedCRS(final Unit linearUnit)
             throws FactoryException, DataStoreContentException {
         //-- get projected CRS Name
-        String projectedCrsName = getAsString(GeoKeys.PCSCitationGeoKey, false);
+        String projectedCrsName = getAsString(GeoKeys.PCSCitation, false);
         if (projectedCrsName == null) {
             projectedCrsName = "User Defined unnamed ProjectedCRS";
         }
@@ -989,14 +1088,14 @@ final class CRSBuilder {
         final GeographicCRS gcs = createGeographicCRS();
 
         //-- get the projection code if exist
-        final String projCode = getAsString(GeoKeys.ProjectionGeoKey, false);
+        final String projCode = getAsString(GeoKeys.Projection, false);
 
         //-- is it user defined?
         final Conversion projection;
-        if (projCode == null || projCode.equals(GeoKeys.GTUserDefinedGeoKey_String)) {
+        if (projCode == null || projCode.equals(GeoKeys.GTUserDefined_String)) {
 
             //-- get Operation Method from proj key
-            final String coordTrans               = getAsString(GeoKeys.ProjCoordTransGeoKey, true);
+            final String coordTrans               = getAsString(GeoKeys.ProjCoordTrans, true);
             final OperationMethod operationMethod = operationFactory().getOperationMethod(coordTrans);
             final ParameterValueGroup parameters  = operationMethod.getParameters().createValue();
             projection                            = operationFactory().createDefiningConversion(name(projectedCrsName), operationMethod, parameters);
@@ -1007,7 +1106,7 @@ final class CRSBuilder {
         CartesianCS predefineCartesianCS = epsgFactory().createCartesianCS("EPSG:4400");
         //-- manage unit if necessary
         if (linearUnit != null && !linearUnit.equals(Units.METRE))
-            predefineCartesianCS = retrieveCartesianCS(GeoKeys.ProjLinearUnitsGeoKey, predefineCartesianCS, linearUnit);
+            predefineCartesianCS = retrieveCartesianCS(GeoKeys.ProjLinearUnits, predefineCartesianCS, linearUnit);
 
         return objectFactory().createProjectedCRS(name(projectedCrsName), gcs, projection, predefineCartesianCS);
     }
@@ -1043,28 +1142,28 @@ final class CRSBuilder {
             throws FactoryException, DataStoreContentException {
 
         //-- Get the crs code
-        final String tempCode = getAsString(GeoKeys.GeographicTypeGeoKey, false);
+        final String tempCode = getAsString(GeoKeys.GeographicType, false);
         //-- Angular units used in this geotiff image
-        Unit angularUnit = createUnit(GeoKeys.GeogAngularUnitsGeoKey,
-                    GeoKeys.GeogAngularUnitSizeGeoKey, Units.RADIAN,
+        Unit angularUnit = createUnit(GeoKeys.GeogAngularUnits,
+                    GeoKeys.GeogAngularUnitSize, Units.RADIAN,
                     Units.DEGREE);
         //-- Geographic CRS is "UserDefine", we have to parse many informations from other geokeys.
-        if (tempCode == null || tempCode.equals(GeoKeys.GTUserDefinedGeoKey_String)) {
+        if (tempCode == null || tempCode.equals(GeoKeys.GTUserDefined_String)) {
 
             //-- linear unit
-            final Unit linearUnit = createUnit(GeoKeys.GeogLinearUnitsGeoKey,
-                                    GeoKeys.GeogLinearUnitSizeGeoKey, Units.METRE,
+            final Unit linearUnit = createUnit(GeoKeys.GeogLinearUnits,
+                                    GeoKeys.GeogLinearUnitSize, Units.METRE,
                                     Units.METRE);
 
-            ///-- Geographic CRS given name from tiff tag (GeogCitationGeoKey)
-            String name = getAsString(GeoKeys.GeogCitationGeoKey, false);
+            ///-- Geographic CRS given name from tiff tag (GeogCitation)
+            String name = getAsString(GeoKeys.GeogCitation, false);
             if (name == null) name = "User Define Geographic CRS";
 
             final GeodeticDatum datum = createGeodeticDatum(linearUnit);
             //-- make the user defined GCS from all the components...
             return objectFactory().createGeographicCRS(name(name),
                                                        datum,
-                                                       retrieveEllipsoidalCS(GeoKeys.GeogAngularUnitsGeoKey,
+                                                       retrieveEllipsoidalCS(GeoKeys.GeogAngularUnits,
                                                                CommonCRS.defaultGeographic().getCoordinateSystem(),
                                                                angularUnit));
 //                                       (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(),
@@ -1097,7 +1196,7 @@ final class CRSBuilder {
         && !angularUnit.equals(geoCRS.getCoordinateSystem().getAxis(0).getUnit())) {
             geoCRS = objectFactory().createGeographicCRS(name(IdentifiedObjects.getName(geoCRS, new DefaultCitation("EPSG"))),
                                                         (GeodeticDatum) ((GeographicCRS)geoCRS).getDatum(),
-                                                        retrieveEllipsoidalCS(GeoKeys.GeogAngularUnitsGeoKey,
+                                                        retrieveEllipsoidalCS(GeoKeys.GeogAngularUnits,
                                                                 CommonCRS.defaultGeographic().getCoordinateSystem(),
                                                                 angularUnit));
 //                    (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(), angularUnit));
@@ -1151,7 +1250,7 @@ final class CRSBuilder {
             throw new DataStoreContentException("bla bla bla");
 
         final String projName = (name == null)
-                                ? GeoKeys.getName(Short.parseShort(coordTransCode))
+                                ? GeoKeys.name(Short.parseShort(coordTransCode))
                                 : name;
 
         final ParameterValueGroup parameters = null;//mtFactory.getDefaultParameters(projName);
@@ -1174,7 +1273,7 @@ final class CRSBuilder {
 //                    || name.equalsIgnoreCase("Mercator_2SP")
 //                    || code == CT_Mercator) {
 //
-//                final double standard_parallel_1 = metadata.getAsDouble(ProjStdParallel1GeoKey);
+//                final double standard_parallel_1 = metadata.getAsDouble(ProjStdParallel1);
 //                boolean isMercator2SP = false;
 //                if (!Double.isNaN(standard_parallel_1)) {
 //                    parameters = mtFactory.getDefaultParameters("Mercator_2SP");
@@ -1206,7 +1305,7 @@ final class CRSBuilder {
 //                 */
 //                //-- set the mutual projection attributs
 //                //-- all polar stereographic formulas share LONGITUDE_OF_ORIGIN
-//                final double longitudeOfOrigin = metadata.getAsDouble(ProjStraightVertPoleLongGeoKey);
+//                final double longitudeOfOrigin = metadata.getAsDouble(ProjStraightVertPoleLong);
 //
 //                /*
 //                * For polar Stereographic variant A only latitudeOfNaturalOrigin expected values are {-90; +90}.
@@ -1214,8 +1313,8 @@ final class CRSBuilder {
 //                * To avoid CRS problem creation, try to anticipe this comportement by switch latitudeOfNaturalOrigin into standard parallele.
 //                * HACK FOR USGS LANDSAT 8 difference between geotiff tag and Landsat 8 metadata MTL.txt file.
 //                */
-//                double standardParallel                 = metadata.getAsDouble(ProjStdParallel1GeoKey);
-//                final double latitudeOfNaturalOrigin    = metadata.getAsDouble(ProjNatOriginLatGeoKey);
+//                double standardParallel                 = metadata.getAsDouble(ProjStdParallel1);
+//                final double latitudeOfNaturalOrigin    = metadata.getAsDouble(ProjNatOriginLat);
 //                final boolean isVariantALatitudeConform = (Math.abs(Latitude.MAX_VALUE - Math.abs(latitudeOfNaturalOrigin)) <  Formulas.ANGULAR_TOLERANCE);
 //
 //                if (!isVariantALatitudeConform && Double.isNaN(standardParallel)) {
@@ -1233,15 +1332,15 @@ final class CRSBuilder {
 //                    parameters = method.getParameters().createValue();
 //                    parameters.parameter(code(PolarStereographicA.LONGITUDE_OF_ORIGIN)).setValue(longitudeOfOrigin);
 //                    parameters.parameter(code(PolarStereographicA.LATITUDE_OF_ORIGIN)).setValue(latitudeOfNaturalOrigin);
-//                    parameters.parameter(code(PolarStereographicA.SCALE_FACTOR)).setValue(metadata.getAsDouble(ProjScaleAtNatOriginGeoKey));
-//                    parameters.parameter(code(PolarStereographicA.FALSE_EASTING)).setValue(metadata.getAsDouble(ProjFalseEastingGeoKey));
-//                    parameters.parameter(code(PolarStereographicA.FALSE_NORTHING)).setValue(metadata.getAsDouble(ProjFalseNorthingGeoKey));
+//                    parameters.parameter(code(PolarStereographicA.SCALE_FACTOR)).setValue(metadata.getAsDouble(ProjScaleAtNatOrigin));
+//                    parameters.parameter(code(PolarStereographicA.FALSE_EASTING)).setValue(metadata.getAsDouble(ProjFalseEasting));
+//                    parameters.parameter(code(PolarStereographicA.FALSE_NORTHING)).setValue(metadata.getAsDouble(ProjFalseNorthing));
 //
 //                } else {
 //
 //                    //-- Variant B and C share STANDARD_PARALLEL
 //
-//                    final double falseOriginEasting = metadata.getAsDouble(ProjFalseOriginEastingGeoKey);
+//                    final double falseOriginEasting = metadata.getAsDouble(ProjFalseOriginEasting);
 //                    if (Double.isNaN(falseOriginEasting)) {
 //                        //-- no false Origin Easting : PolarStereoGraphic VARIANT B
 //                        final OperationMethod method = DefaultFactories.forBuildin(CoordinateOperationFactory.class)
@@ -1250,8 +1349,8 @@ final class CRSBuilder {
 //                        parameters = method.getParameters().createValue();
 //                        parameters.parameter(code(PolarStereographicB.STANDARD_PARALLEL)).setValue(standardParallel);
 //                        parameters.parameter(code(PolarStereographicB.LONGITUDE_OF_ORIGIN)).setValue(longitudeOfOrigin);
-//                        parameters.parameter(code(PolarStereographicB.FALSE_EASTING)).setValue(metadata.getAsDouble(ProjFalseEastingGeoKey));
-//                        parameters.parameter(code(PolarStereographicB.FALSE_NORTHING)).setValue(metadata.getAsDouble(ProjFalseNorthingGeoKey));
+//                        parameters.parameter(code(PolarStereographicB.FALSE_EASTING)).setValue(metadata.getAsDouble(ProjFalseEasting));
+//                        parameters.parameter(code(PolarStereographicB.FALSE_NORTHING)).setValue(metadata.getAsDouble(ProjFalseNorthing));
 //                    } else {
 //                        //-- PolarStereoGraphic VARIANT C
 //                        final OperationMethod method = DefaultFactories.forBuildin(CoordinateOperationFactory.class)
@@ -1260,8 +1359,8 @@ final class CRSBuilder {
 //                        parameters = method.getParameters().createValue();
 //                        parameters.parameter(code(PolarStereographicB.STANDARD_PARALLEL)).setValue(standardParallel);
 //                        parameters.parameter(code(PolarStereographicB.LONGITUDE_OF_ORIGIN)).setValue(longitudeOfOrigin);
-//                        parameters.parameter(code(PolarStereographicC.EASTING_AT_FALSE_ORIGIN)).setValue(metadata.getAsDouble(ProjFalseOriginEastingGeoKey));
-//                        parameters.parameter(code(PolarStereographicC.NORTHING_AT_FALSE_ORIGIN)).setValue(metadata.getAsDouble(ProjFalseNorthingGeoKey));
+//                        parameters.parameter(code(PolarStereographicC.EASTING_AT_FALSE_ORIGIN)).setValue(metadata.getAsDouble(ProjFalseOriginEasting));
+//                        parameters.parameter(code(PolarStereographicC.NORTHING_AT_FALSE_ORIGIN)).setValue(metadata.getAsDouble(ProjFalseNorthing));
 //                    }
 //                }
 //            }
@@ -1282,7 +1381,7 @@ final class CRSBuilder {
 
         for (Map.Entry<Short,Object> entry : geoKeys.entrySet()) {
             final short key = entry.getKey();
-            strBuild.append(GeoKeys.getName(key)).append(" (").append(key).append(") = ").append(entry.getValue());
+            strBuild.append(GeoKeys.name(key)).append(" (").append(key).append(") = ").append(entry.getValue());
             strBuild.append('\n');
         }
         return strBuild.toString();
