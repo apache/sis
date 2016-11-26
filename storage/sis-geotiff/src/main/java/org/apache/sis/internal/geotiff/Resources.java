@@ -83,6 +83,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DitheringOrHalftoningApplied_2 = 3;
 
         /**
+         * The “{0}” GeoTIFF key has been ignored.
+         */
+        public static final short IgnoredGeoKey_1 = 16;
+
+        /**
          * The “{0}” TIFF tag has been ignored.
          */
         public static final short IgnoredTag_1 = 4;
@@ -93,10 +98,25 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InconsistentTileStrip_1 = 5;
 
         /**
+         * “{1}” is not a valid value for the “{0}” GeoTIFF key.
+         */
+        public static final short InvalidGeoValue_2 = 12;
+
+        /**
+         * TIFF tag “{0}” shall contain at least {1} values but found only {2}.
+         */
+        public static final short ListTooShort_3 = 14;
+
+        /**
          * TIFF tags “{0}” and “{1}” have values of different lengths. Found “{2}” and “{3}” elements
          * respectively.
          */
         public static final short MismatchedLength_4 = 6;
+
+        /**
+         * No value has been found for the “{0}” GeoTIFF key.
+         */
+        public static final short MissingGeoValue_1 = 9;
 
         /**
          * Can not read TIFF image from “{0}” because the “{1}” tag is missing.
@@ -115,14 +135,24 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnexpectedGeoCRS_1 = 11;
 
         /**
-         * Unexpected value for the “{0}” GeoTIFF key. Expected value {1} but found {2}.
+         * A single value was expected for the “{0}” key but {1} values have been found.
          */
-        public static final short UnexpectedKeyValue_3 = 9;
+        public static final short UnexpectedListOfValues_2 = 15;
 
         /**
          * Found {2} tiles or strips in the “{0}” file while {1} were expected.
          */
         public static final short UnexpectedTileCount_3 = 10;
+
+        /**
+         * Coordinate system kind {0} is unsupported.
+         */
+        public static final short UnsupportedCoordinateSystemKind_1 = 17;
+
+        /**
+         * Version {0} of GeoTIFF key directory is not supported.
+         */
+        public static final short UnsupportedGeoKeyDirectory_1 = 13;
     }
 
     /**
