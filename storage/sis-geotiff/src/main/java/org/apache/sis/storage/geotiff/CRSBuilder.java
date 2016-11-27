@@ -24,6 +24,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.measure.Unit;
 
+import org.opengis.metadata.spatial.CellGeometry;
+import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSFactory;
@@ -46,6 +48,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 
 import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.math.Vector;
@@ -254,11 +257,12 @@ final class CRSBuilder {
     }
 
     /**
-     * Returns a {@link GeoKeys} value as an integer.
+     * Returns a {@link GeoKeys} value as an integer. This is used for fetching enumeration values.
+     * The value returned by this method is typically one of the {@link GeoCodes} values.
      *
      * @param  key the GeoTIFF key for which to get a value.
-     * @return the integer value for the given key, or {@link Integer#MAX_VALUE} if the key was not found
-     *         or can not be parsed.
+     * @return the integer value for the given key, or {@link GeoCodes#undefined}
+     *         if the key was not found or can not be parsed.
      */
     private int getAsInteger(final short key) {
         final Object value = geoKeys.get(key);
@@ -268,10 +272,10 @@ final class CRSBuilder {
             } else try {
                 return Integer.parseInt(value.toString());
             } catch (NumberFormatException e) {
-                warning(Resources.Keys.InvalidGeoValue_2, value, GeoKeys.name(key));
+                invalidValue(key, value);
             }
         }
-        return Integer.MIN_VALUE;
+        return GeoCodes.undefined;
     }
 
     /**
@@ -290,7 +294,7 @@ final class CRSBuilder {
             } else try {
                 return Double.parseDouble(value.toString());
             } catch (NumberFormatException e) {
-                warning(Resources.Keys.InvalidGeoValue_2, value, GeoKeys.name(key));
+                invalidValue(key, value);
             }
         }
         if (!mandatory) {
@@ -311,6 +315,13 @@ final class CRSBuilder {
      */
     private void missingValue(final short key) {
         warning(Resources.Keys.MissingGeoValue_1, GeoKeys.name(key));
+    }
+
+    /**
+     * Reports a warning about an invalid value for the given key.
+     */
+    private void invalidValue(final short key, final Object value) {
+        warning(Resources.Keys.InvalidGeoValue_2, GeoKeys.name(key), value);
     }
 
 
@@ -467,8 +478,9 @@ final class CRSBuilder {
         /*
          * At this point we finished copying all GeoTIFF keys in CRSBuilder.geoKeys map.
          */
-        final int crsType = getAsInteger(GeoKeys.GTModelType);
+        final int crsType = getAsInteger(GeoKeys.ModelType);
         switch (crsType) {
+            case GeoCodes.undefined:           return null;
             case GeoCodes.ModelTypeProjected:  return createProjectedCRS();
             case GeoCodes.ModelTypeGeographic: return createGeographicCRS();
             case GeoCodes.ModelTypeGeocentric: // TODO
@@ -479,11 +491,39 @@ final class CRSBuilder {
         }
     }
 
-    //----------------------------- GEO UTILS ----------------------------------
     /**
-     * This code creates an <code>javax.Units.Unit</code> object out of the
-     * <code>ProjLinearUnitsGeoKey</code> and the
-     * <code>ProjLinearUnitSizeGeoKey</code>. The unit may either be
+     * Completes ISO 19115 metadata with some GeoTIFF values that are for documentation purposes.
+     * Those values do not participate directly to the construction of the Coordinate Reference System objects.
+     *
+     * @param  metadata  the helper class where to write metadata values.
+     */
+    final void complete(final MetadataBuilder metadata) {
+        /*
+         * Whether the pixel value is thought of as filling the cell area or is considered as point measurements at
+         * the vertices of the grid (not in the interior of a cell).  This is determined by the value associated to
+         * GeoKeys.RasterType, which can be GeoCodes.RasterPixelIsArea or RasterPixelIsPoint.
+         */
+        CellGeometry     cg = null;
+        PixelOrientation po = null;
+        int code = getAsInteger(GeoKeys.RasterType);
+        switch (code) {
+            case GeoCodes.undefined: break;
+            case GeoCodes.RasterPixelIsArea:  cg = CellGeometry.AREA;  po = PixelOrientation.CENTER;     break;
+            case GeoCodes.RasterPixelIsPoint: cg = CellGeometry.POINT; po = PixelOrientation.UPPER_LEFT; break;
+            default: invalidValue(GeoKeys.RasterType, code); break;
+        }
+        metadata.setCellGeometry(cg);
+        metadata.setPointInPixel(po);
+    }
+
+
+    //-------------------------- geodetic components ---------------------------
+
+
+    /**
+     * Creates units of measurement from the
+     * <code>ProjLinearUnits</code> and the
+     * <code>ProjLinearUnitSize</code>. The unit may either be
      * specified as a standard EPSG recognized unit, or may be user defined.
      *
      * @param key
@@ -492,9 +532,9 @@ final class CRSBuilder {
      * @param def
      * @return <code>Unit</code> object representative of the tags in the file.
      * @throws IOException
-     *             if the<code>ProjLinearUnitsGeoKey</code> is not specified
+     *             if the<code>ProjLinearUnits</code> is not specified
      *             or if unit is user defined and
-     *             <code>ProjLinearUnitSizeGeoKey</code> is either not defined
+     *             <code>ProjLinearUnitSize</code> is either not defined
      *             or does not contain a number.
      */
     private Unit<?> createUnit(final short key, final short userDefinedKey, final Unit<?> base, final Unit<?> def)

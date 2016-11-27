@@ -18,9 +18,11 @@ package org.apache.sis.storage.geotiff;
 
 
 /**
- * Enumeration values associated to {@link GeoKeys}.
+ * Enumeration values associated to some {@link GeoKeys}. In this class, field names are close to GeoTIFF code values.
+ * For that reason, many of those field names do not follow usual Java convention for constants.
  *
  * @author  Rémi Maréchal (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
@@ -31,6 +33,11 @@ final class GeoCodes {
      */
     private GeoCodes() {
     }
+
+    /**
+     * The code value for undefined property.
+     */
+    public static final short undefined = 0;
 
     /*
      * 6.3.1.1 Model Type Codes
@@ -49,4 +56,19 @@ final class GeoCodes {
     /** Projection Coordinate System         */ public static final short ModelTypeProjected  = 1;
     /** Geographic latitude-longitude System */ public static final short ModelTypeGeographic = 2;
     /** Geocentric (X,Y,Z) Coordinate System */ public static final short ModelTypeGeocentric = 3;
+
+    /*
+     * 6.3.1.2 Raster Type Codes
+     *
+     * Ranges:
+     *   [            0]  =  undefined
+     *   [    1 …  1023]  =  Raster Type Codes (GeoTIFF Defined)
+     *   [ 1024 … 32766]  =  Reserved
+     *   [        32767]  =  user-defined
+     *   [32768 … 65535]  =  Private User Implementations
+     *
+     * Note: Use of "user-defined" or "undefined" raster codes is not recommended.
+     */
+    public static final short RasterPixelIsArea  = 1;
+    public static final short RasterPixelIsPoint = 2;
 }

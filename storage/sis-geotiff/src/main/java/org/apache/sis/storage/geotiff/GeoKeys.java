@@ -22,8 +22,10 @@ import org.opengis.referencing.operation.MathTransform;
 
 
 /**
- * All Geographic Keys needed for building {@link CoordinateReferenceSystem} instances
- * and {@link MathTransform} "grid to CRS" from TIFF tags values.
+ * GeoTIFF keys associated to values needed for building {@link CoordinateReferenceSystem} instances
+ * and {@link MathTransform} "grid to CRS". In this class, field names are close to GeoTIFF key names
+ * with the {@code "GeoKey"} suffix omitted. For that reason, many of those field names do not follow
+ * usual Java convention for constants.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @since   0.8
@@ -38,11 +40,11 @@ final class GeoKeys {
     }
 
     // 6.2.1 GeoTIFF Configuration Keys
-    public static final short GTModelType           = 1024; /* Section 6.3.1.1 Codes */
-    public static final short GTRasterType          = 1025; /* Section 6.3.1.2 Codes */
-    public static final short GTCitation            = 1026; /* documentation */
+    /** Section 6.3.1.1 Codes */ public static final short ModelType  = 1024;
+    /** Section 6.3.1.2 Codes */ public static final short RasterType = 1025;
+    /** Documentation         */ public static final short Citation   = 1026;
 
-    public static final short GTUserDefined         = 32767;
+    public static final short UserDefined           = 32767;
     static final String GTUserDefined_String = "32767";
 
     // 6.2.2 Geographic CS Parameter Keys

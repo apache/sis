@@ -1027,7 +1027,12 @@ final class ImageFileDirectory {
          * ignore null values (a design choice because this pattern come very often).
          */
         if (geoKeyDirectory != null) {
-            metadata.add(new CRSBuilder(reader).build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters));
+            final CRSBuilder helper = new CRSBuilder(reader);
+            metadata.add(helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters));
+            helper.complete(metadata);
+            geoKeyDirectory      = null;            // Not needed anymore, so let GC do its work.
+            numericGeoParameters = null;
+            asciiGeoParameters   = null;
         }
     }
 
