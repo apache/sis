@@ -30,6 +30,8 @@ import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.metadata.spatial.CellGeometry;
+import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.acquisition.Context;
@@ -46,7 +48,7 @@ import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.spatial.DefaultDimension;
-import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
+import org.apache.sis.metadata.iso.spatial.DefaultGeorectified;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
@@ -164,7 +166,7 @@ public class MetadataBuilder {
     /**
      * Information about the grid shape, or {@code null} if none.
      */
-    private DefaultGridSpatialRepresentation gridRepresentation;
+    private DefaultGeorectified gridRepresentation;
 
     /**
      * Information about the content of a grid data cell, or {@code null} if none.
@@ -543,9 +545,9 @@ public class MetadataBuilder {
      *
      * @return the grid representation object (never {@code null}).
      */
-    private DefaultGridSpatialRepresentation gridRepresentation() {
+    private DefaultGeorectified gridRepresentation() {
         if (gridRepresentation == null) {
-            gridRepresentation = new DefaultGridSpatialRepresentation();
+            gridRepresentation = new DefaultGeorectified();
         }
         return gridRepresentation;
     }
@@ -1416,6 +1418,34 @@ parse:      for (int i = 0; i < length;) {
             if (format == null) {
                 format = MetadataSource.getProvided().lookup(Format.class, abbreviation);
             }
+        }
+    }
+
+    /**
+     * Sets identification of grid data as point or cell.
+     * Storage location is:
+     *
+     * <pre>metadata/spatialRepresentationInfo/cellGeometry</pre>
+     *
+     * @param  value   whether the data represent point or area, or {@code null} if unknown.
+     */
+    public final void setCellGeometry(final CellGeometry value) {
+        if (value != null) {
+            gridRepresentation().setCellGeometry(value);
+        }
+    }
+
+    /**
+     * Sets the point in a pixel corresponding to the Earth location of the pixel.
+     * Storage location is:
+     *
+     * <pre>metadata/spatialRepresentationInfo/pointInPixel</pre>
+     *
+     * @param  value   whether the data represent point or area, or {@code null} if unknown.
+     */
+    public final void setPointInPixel(final PixelOrientation value) {
+        if (value != null) {
+            gridRepresentation().setPointInPixel(value);
         }
     }
 
