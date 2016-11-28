@@ -855,6 +855,19 @@ public class MetadataBuilder {
     }
 
     /**
+     * Returns {@code true} if a title has been specified for the current identification information.
+     * This method is provided because titles are mandatory in ISO 19115 metadata, so data stores may
+     * want to provide a fallback if no title has been found. Titles are specified by calls to
+     * {@link #addTitle(CharSequence)} and needs to be specified again if {@link #newIdentification()}
+     * has been invoked.
+     *
+     * @return whether a title exists for the current identification information.
+     */
+    public final boolean hasTitle() {
+        return (citation != null) && citation.getTitle() != null;
+    }
+
+    /**
      * Adds a title or alternate title of the resource.
      * Storage location is:
      *
@@ -1446,6 +1459,21 @@ parse:      for (int i = 0; i < length;) {
     public final void setPointInPixel(final PixelOrientation value) {
         if (value != null) {
             gridRepresentation().setPointInPixel(value);
+        }
+    }
+
+    /**
+     * Sets a general description of the transformation form grid coordinates to "real world" coordinates.
+     * Storage location is:
+     *
+     * <pre>metadata/spatialRepresentationInfo/transformationDimensionDescription</pre>
+     *
+     * @param  value  a general description of the "grid to CRS" transformation, or {@code null} if unknown.
+     */
+    public final void setGridToCRS(final CharSequence value) {
+        final InternationalString i18n = trim(value);
+        if (i18n != null) {
+            gridRepresentation().setTransformationDimensionDescription(i18n);
         }
     }
 
