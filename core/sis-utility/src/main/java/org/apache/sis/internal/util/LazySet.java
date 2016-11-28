@@ -18,14 +18,12 @@ package org.apache.sis.internal.util;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.NoSuchElementException;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.internal.system.DefaultFactories;
-
-// Branch-specific imports
-import java.util.Objects;
 
 
 /**
@@ -58,9 +56,8 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
     private final Class<E> service;
 
     /**
-     * The iterator to use for filling this set, or {@code null} if the iteration did not started yet
-     * or is finished. Those two cases can be distinguished by looking whether the {@link #cachedElements}
-     * array is null or not.
+     * The iterator to use for filling this set, or {@code null} if the iteration did not started yet or is finished.
+     * Those two cases can be distinguished by looking whether the {@link #cachedElements} array is null or not.
      *
      * @see #sourceIterator()
      */
@@ -82,11 +79,10 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
     private int numCached;
 
     /**
-     * Constructs a set to be filled by the elements from the specified source. Iteration will starts
-     * only when first needed, and at most one iteration will be performed (unless {@link #reload()}
-     * is invoked).
+     * Constructs a set to be filled by the elements from the specified source. Iteration will start only when
+     * first needed, and at most one iteration will be performed (unless {@link #reload()} is invoked).
      *
-     * @param  service  the type of service to request with {@link ServiceLoader}, or {@code null} if unknown.
+     * @param  service  the type of service to request with {@link ServiceLoader}.
      */
     public LazySet(final Class<E> service) {
         Objects.requireNonNull(service);
@@ -139,7 +135,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      */
     @SuppressWarnings("unchecked")
     private boolean createCache() {
-        cachedElements = initialValues();   // No need to clone.
+        cachedElements = initialValues();                   // No need to clone.
         if (cachedElements != null) {
             numCached = cachedElements.length;
             if (numCached != 0) {
@@ -229,6 +225,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * negative index and for skipped elements.</p>
      */
     final boolean exists(final int index) {
+        assert index <= numCached : index;
         return (index < numCached) || canPullMore();
     }
 
@@ -239,6 +236,8 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * @return the element at the requested index.
      */
     final E get(final int index) {
+        assert numCached <= cachedElements.length : numCached;
+        assert index <= numCached : index;
         if (index >= numCached) {
             if (canPullMore()) {
                 cache(sourceIterator.next());
