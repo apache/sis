@@ -43,7 +43,7 @@ public final class Providers extends LazySet<OperationMethod> {
     /**
      * Caches a new element, possibly substituting the created instance by a previously created instance.
      *
-     * @param element The element to add to the cache.
+     * @param  element  the element to add to the cache.
      */
     @Override
     protected void cache(OperationMethod element) {

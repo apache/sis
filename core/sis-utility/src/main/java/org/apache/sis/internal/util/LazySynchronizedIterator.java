@@ -58,7 +58,7 @@ public final class LazySynchronizedIterator<E> extends AbstractIterator<E> {
      * Creates a new iterator over all elements returned by the given providers.
      * Null elements in the given array will be ignored.
      *
-     * @param providers The providers of iterators. This array is <strong>not</strong> cloned.
+     * @param  providers  the providers of iterators. This array is <strong>not</strong> cloned.
      */
     public LazySynchronizedIterator(final Iterable<? extends E>[] providers) {
         this.providers = providers;

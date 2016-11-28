@@ -67,9 +67,9 @@ public final class DefaultFactories extends SystemListener {
     /**
      * Returns {@code true} if the default factory of the given type is the given instance.
      *
-     * @param  <T>  The interface type.
-     * @param  type The interface type.
-     * @param  factory The factory implementation to test.
+     * @param  <T>      the interface type.
+     * @param  type     the interface type.
+     * @param  factory  the factory implementation to test.
      * @return {@code true} if the given factory implementation is the default instance.
      */
     public static synchronized <T> boolean isDefaultInstance(final Class<T> type, final T factory) {
@@ -81,9 +81,9 @@ public final class DefaultFactories extends SystemListener {
      * This method gives preference to Apache SIS implementation of factories if present.
      * This is a temporary mechanism while we are waiting for a real dependency injection mechanism.
      *
-     * @param  <T>  The interface type.
-     * @param  type The interface type.
-     * @return A factory implementing the given interface, or {@code null} if none.
+     * @param  <T>   the interface type.
+     * @param  type  the interface type.
+     * @return a factory implementing the given interface, or {@code null} if none.
      */
     public static synchronized <T> T forClass(final Class<T> type) {
         T factory = type.cast(FACTORIES.get(type));
@@ -124,9 +124,9 @@ public final class DefaultFactories extends SystemListener {
      * Returns a factory which is guaranteed to be present. If the factory is not found,
      * this will be considered a configuration error (corrupted JAR files of incorrect classpath).
      *
-     * @param  <T>  The interface type.
-     * @param  type The interface type.
-     * @return A factory implementing the given interface.
+     * @param  <T>   the interface type.
+     * @param  type  the interface type.
+     * @return a factory implementing the given interface.
      *
      * @since 0.6
      */
@@ -143,11 +143,11 @@ public final class DefaultFactories extends SystemListener {
      * Returns a factory of the given type, making sure that it is an implementation of the given class.
      * Use this method only when we know that Apache SIS registers only one implementation of a given service.
      *
-     * @param  <T>  The interface type.
-     * @param  <I>  The requested implementation class.
-     * @param  type The interface type.
-     * @param  impl The requested implementation class.
-     * @return A factory implementing the given interface.
+     * @param  <T>   the interface type.
+     * @param  <I>   the requested implementation class.
+     * @param  type  the interface type.
+     * @param  impl  the requested implementation class.
+     * @return a factory implementing the given interface.
      *
      * @since 0.6
      */
@@ -165,9 +165,9 @@ public final class DefaultFactories extends SystemListener {
      * The default is the current thread {@linkplain Thread#getContextClassLoader() context class loader},
      * provided that it can access at least the Apache SIS stores.
      *
-     * @param  <T> The compile-time value of {@code service} argument.
-     * @param  service The interface or abstract class representing the service.
-     * @return A new service loader for the given service type.
+     * @param  <T>      the compile-time value of {@code service} argument.
+     * @param  service  the interface or abstract class representing the service.
+     * @return a new service loader for the given service type.
      *
      * @since 0.8
      */
@@ -196,7 +196,7 @@ public final class DefaultFactories extends SystemListener {
      * <p>The intend of this method is to ensure that {@link ServiceLoader#load(Class)} will find the
      * Apache SIS services even in an environment that defined an unsuitable context class loader.</p>
      *
-     * @return The context class loader if suitable, or another class loader otherwise.
+     * @return the context class loader if suitable, or another class loader otherwise.
      * @throws SecurityException if this method is not allowed to get the current thread
      *         context class loader or one of its parent.
      *
