@@ -39,6 +39,11 @@ final class GeoCodes {
      */
     public static final short undefined = 0;
 
+    /**
+     * The code value for a property defined by the user instead than by an EPSG code.
+     */
+    public static final short userDefined = 32767;
+
     /*
      * 6.3.1.1 Model Type Codes
      *
