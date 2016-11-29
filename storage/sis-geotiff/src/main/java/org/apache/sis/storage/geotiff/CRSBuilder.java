@@ -39,9 +39,7 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -50,6 +48,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 
@@ -654,10 +653,12 @@ final class CRSBuilder {
      * The GeoTIFF values used by this method are:
      *
      * <ul>
-     *   <li>a code given by {@link GeoKeys#GeogGeodeticDatum}</li>
-     *   <li>a name given by {@link GeoKeys#GeogCitation}</li>
-     *   <li>all values required by {@link #createPrimeMeridian(Unit)}</li>
-     *   <li>all values required by {@link #createEllipsoid(Unit)}</li>
+     *   <li>A code given by {@link GeoKeys#GeogGeodeticDatum}.</li>
+     *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
+     *     <li>a name given by {@link GeoKeys#GeogCitation},</li>
+     *     <li>all values required by {@link #createPrimeMeridian(Unit)} (optional),</li>
+     *     <li>all values required by {@link #createEllipsoid(Unit)}.</li>
+     *   </ul></li>
      * </ul>
      *
      * @param  name         the name to use if the geodetic datum is user-defined, or {@code null} if unnamed.
@@ -719,8 +720,10 @@ final class CRSBuilder {
      * The GeoTIFF values used by this method are:
      *
      * <ul>
-     *   <li>a code given by {@link GeoKeys#GeogPrimeMeridian}</li>
-     *   <li>a prime meridian value given by {@link GeoKeys#GeogPrimeMeridianLong}</li>
+     *   <li>A code given by {@link GeoKeys#GeogPrimeMeridian}.</li>
+     *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
+     *     <li>a prime meridian value given by {@link GeoKeys#GeogPrimeMeridianLong}.</li>
+     *   </ul></li>
      * </ul>
      *
      * If no prime-meridian is defined, then the default is Greenwich as per GeoTIFF specification.
@@ -761,11 +764,15 @@ final class CRSBuilder {
      * The GeoTIFF values used by this method are:
      *
      * <ul>
-     *   <li>a code given by {@link GeoKeys#GeogEllipsoid} tag</li>
-     *   <li>a name given by {@link GeoKeys#GeogCitation}</li>
-     *   <li>a semi major axis value given by {@link GeoKeys#GeogSemiMajorAxis}</li>
-     *   <li>a semi major axis value given by {@link GeoKeys#GeogInvFlattening}</li>
-     *   <li>a semi major axis value given by {@link GeoKeys#GeogSemiMinorAxis}</li>
+     *   <li>A code given by {@link GeoKeys#GeogEllipsoid} tag.</li>
+     *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
+     *     <li>a name given by {@link GeoKeys#GeogCitation},</li>
+     *     <li>a semi major axis value given by {@link GeoKeys#GeogSemiMajorAxis},</li>
+     *     <li>one of:<ul>
+     *       <li>an inverse flattening factor given by {@link GeoKeys#GeogInvFlattening},</li>
+     *       <li>or a semi major axis value given by {@link GeoKeys#GeogSemiMinorAxis}.</li>
+     *     </ul></li>
+     *   </ul></li>
      * </ul>
      *
      * @param  name  the name to use if the ellipsoid is user-defined, or {@code null} if unnamed.
@@ -793,341 +800,57 @@ final class CRSBuilder {
                 final Map<String,?> properties = properties(name);
                 final double semiMajor = getMandatoryDouble(GeoKeys.GeogSemiMajorAxis);
                 double inverseFlattening = getAsDouble(GeoKeys.GeogInvFlattening);
+                final Ellipsoid ellipsoid;
                 if (!Double.isNaN(inverseFlattening)) {
-                    return objectFactory().createFlattenedSphere(properties, semiMajor, inverseFlattening, unit);
+                    ellipsoid = objectFactory().createFlattenedSphere(properties, semiMajor, inverseFlattening, unit);
+                } else {
+                    /*
+                     * If the inverse flattening factory was not defined, fallback on semi-major axis length.
+                     * This is a less common way to define ellipsoid (the most common way uses flattening).
+                     */
+                    final double semiMinor = getMandatoryDouble(GeoKeys.GeogSemiMinorAxis);
+                    ellipsoid = objectFactory().createEllipsoid(properties, semiMajor, semiMinor, unit);
                 }
-                /*
-                 * If the inverse flattening factory was not defined, fallback on semi-major axis length.
-                 * This is a less common way to define ellipsoid (the most common way uses flattening).
-                 */
-                final double semiMinor = getMandatoryDouble(GeoKeys.GeogSemiMinorAxis);
-                return objectFactory().createEllipsoid(properties, semiMajor, semiMinor, unit);
+                lastName = ellipsoid.getName();
+                return ellipsoid;
             }
         }
     }
 
     /**
-     * Returns a Cartesian CS which is a combination of given base CS and tiff unit key if exist.<br>
-     * The returned CS is search and retrieved from epsg base if exist.<br>
-     * If don't exist we call {@link CoordinateSystems#replaceLinearUnit(org.opengis.referencing.cs.CoordinateSystem, javax.measure.Unit) }
-     * to build expected CS.<br>
-     * The retrieved Cartesian CS are :<br>
+     * Returns a coordinate system (CS) with the same axis directions than the given CS but potentially different units.
+     * If a coordinate system exists in the EPSG database with the requested characteristics, that CS will be returned
+     * in order to have a richer set of metadata (name, minimal and maximal values, <i>etc</i>). Otherwise an CS with
+     * an arbitrary name will be returned.
      *
-     * <ul>
-     * <li> epsg : 4400 [Cartesian 2D CS. Axes: easting, northing (E,N). Orientations: east, north. UoM: m.] </li>
-     * <li> epsg : 4491 [Cartesian 2D CS. Axes: westing, northing (W,N). Orientations: west, north. UoM: m.] </li>
-     * <li> epsg : 6503 [Cartesian 2D CS. Axes: westing, southing (Y,X). Orientations: west, south. UoM: m.] </li>
-     * <li> epsg : 4500 [Cartesian 2D CS. Axes: northing, easting (N,E). Orientations: north, east. UoM: m.] </li>
-     * <li> epsg : 4501 [Cartesian 2D CS. Axes: northing, westing (N,E). Orientations: north, west. UoM: m.] </li>
-     * <li> epsg : 6501 [Cartesian 2D CS. Axes: southing, westing (X,Y). Orientations: south, west. UoM: m.] </li>
-     * <li> epsg : 1039 [Cartesian 2D CS. Axes: easting, northing (E,N). Orientations: east, north. UoM: ft.]</li>
-     * <li> epsg : 1029 [Cartesian 2D CS. Axes: northing, easting (N,E). Orientations: north, east. UoM: ft.] </li>
-     * <li> epsg : 4497 [Cartesian 2D CS. Axes: easting, northing (X,Y). Orientations: east, north. UoM: ftUS.]</li>
-     * <li> epsg : 4403 [Cartesian 2D CS. Axes: easting, northing (E,N). Orientations: east, north. UoM: ftCla.]</li>
-     * <li> epsg : 4502 [Cartesian 2D CS. Axes: northing, easting (N,E). Orientations: north, east. UoM: ftCla.]</li>
-     * </ul>
-     *
-     * @param baseCS
-     * @param fallBackUnit
-     * @return
+     * @see CoordinateSystems#replaceLinearUnit(CoordinateSystem, Unit)
      */
-    private CartesianCS retrieveCartesianCS(final short unitKey, final CartesianCS baseCS, final Unit<Length> fallBackUnit)
-            throws DataStoreContentException, FactoryException
-    {
-        assert baseCS.getDimension() == 2;
-        CoordinateSystemAxis axis0 = baseCS.getAxis(0);
-        CoordinateSystemAxis axis1 = baseCS.getAxis(1);
-
-        //-------- Axis Number ----------------------
-        // axisnumber integer reference couple axis direction on 3 bits.
-        // higher's of the 3 bits, define axis combinaisons 1 for [E,N] or [W,S]
-        // and 0 for [N,E] or [S,W].
-        // secondly higher bit position define sens for first axis
-        // third and last bit position define sens for second axis.
-        // examples :
-        // [E,N] : axisNumber = 111
-        // [E,S] : axisNumber = 110
-        // [N,W] : axisNumber = 010
-        // [S,W] : axisNumber = 000 etc
-        //
-        //-------------------------------------------
-        int axisNumber = 0;
-        if (axis0.getDirection().equals(AxisDirection.EAST)
-         || axis0.getDirection().equals(AxisDirection.WEST)) {
-            axisNumber = 0b0100;
-            if (axis0.getDirection().equals(AxisDirection.EAST))  axisNumber |= 0b0010;
-            if (axis1.getDirection().equals(AxisDirection.NORTH)) axisNumber |= 0b0001;
-        } else if (axis0.getDirection().equals(AxisDirection.NORTH)
-                || axis0.getDirection().equals(AxisDirection.SOUTH)) {
-            if (axis0.getDirection().equals(AxisDirection.EAST))  axisNumber |= 0b0010;
-            if (axis1.getDirection().equals(AxisDirection.NORTH)) axisNumber |= 0b0001;
-        } else {
-            return (CartesianCS) CoordinateSystems.replaceLinearUnit(baseCS, fallBackUnit);
+    private CartesianCS replaceLinearUnit(final CartesianCS cs, final Unit<Length> unit) throws FactoryException {
+        final Integer epsg = CoordinateSystems.getEpsgCode(unit, CoordinateSystems.getAxisDirections(cs));
+        if (epsg != null) try {
+            return epsgFactory().createCartesianCS(epsg.toString());
+        } catch (NoSuchAuthorityCodeException e) {
+            reader.owner.warning(null, e);
         }
-
-        //-- get the Unit epsg code if exist
-        String unitCode = getAsString(unitKey);
-        if (unitCode == null || unitCode.equalsIgnoreCase(GeoKeys.GTUserDefined_String)) {
-            return (CartesianCS) CoordinateSystems.replaceLinearUnit(baseCS, fallBackUnit);
-        }
-
-        if (unitCode.startsWith("epsg:") || unitCode.startsWith("EPSG:"))
-            unitCode = unitCode.substring(5, unitCode.length());
-
-        int intCode = Integer.parseInt(unitCode);
-        String epsgCSCode = null;
-        switch (intCode) {
-            // Linear_Meter = 9001
-            case 9001 : {
-                switch (axisNumber) {
-                    case 0b0111 : { //-- [E,N]
-                        epsgCSCode = "4400";
-                        break;
-                    }
-                    case 0b0110 : { //-- [E,S]
-                        //-- no relative CS found into epsg base
-                        break;
-                    }
-                    case 0b0101 : { //-- [W,N]
-                        epsgCSCode = "4491";
-                        break;
-                    }
-                    case 0b0100 : { //-- [W,S]
-                        epsgCSCode = "6503";
-                        break;
-                    }
-                    case 0b0011 : { //-- [N,E]
-                        epsgCSCode = "4500";
-                        break;
-                    }
-                    case 0b0010 : { //-- [N,W]
-                        epsgCSCode = "4501";//-- or 6507
-                        break;
-                    }
-                    case 0b0001 : { //-- [S,E]
-                        //-- no relative CS found into epsg base
-                        break;
-                    }
-                    case 0b0000 : { //-- [S,W]
-                        epsgCSCode = "6501";
-                        break;
-                    }
-                }
-                break;
-            }
-            // Linear_Foot = 9002
-            case 9002 : {
-                switch (axisNumber) {
-                    case 0b0111 : { //-- [E,N]
-                        epsgCSCode = "1039";
-                        break;
-                    }
-                    case 0b0011 : { //-- [N,E]
-                        epsgCSCode = "1029";
-                        break;
-                    }
-                    default :
-                }
-                break;
-            }
-            // Linear_Foot_US_Survey = 9003
-            case 9003 : {
-                switch (axisNumber) {
-                    case 0b0111 : { //-- [E,N]
-                        epsgCSCode = "4497";
-                        break;
-                    }
-                    default :
-                }
-                break;
-            }
-            // Linear_Foot_Modified_American = 9004
-            case 9004 : {
-                break;
-            }
-            // Linear_Foot_Clarke = 9005
-            case 9005 : {
-                switch (axisNumber) {
-                    case 0b0111 : { //-- [E,N]
-                        epsgCSCode = "4403";
-                        break;
-                    }
-                    case 0b0011 : { //-- [N,E]
-                        epsgCSCode = "4502";
-                        break;
-                    }
-                    default :
-                }
-                break;
-            }
-            //-- no related CS found from following unit code into epsg base
-            // Linear_Foot_Indian = 9006
-            case 9006 :
-            // Linear_Link = 9007
-            case 9007 :
-            // Linear_Link_Benoit = 9008
-            case 9008 :
-            // Linear_Link_Sears = 9009
-            case 9009 :
-            // Linear_Chain_Benoit = 9010
-            case 9010 :
-            // Linear_Chain_Sears = 9011
-            case 9011 :
-            // Linear_Yard_Sears = 9012
-            case 9012 :
-            // Linear_Yard_Indian = 9013
-            case 9013 :
-            // Linear_Fathom = 9014
-            case 9014 :
-            // Linear_Mile_International_Nautical = 9015
-            case 9015 :
-            default :
-        }
-
-        if (epsgCSCode == null)
-            //-- epsg CS + Unit not found
-            return (CartesianCS) CoordinateSystems.replaceLinearUnit(baseCS, fallBackUnit);
-
-        epsgCSCode = "EPSG:".concat(epsgCSCode);
-
-        return epsgFactory().createCartesianCS(epsgCSCode);
+        return (CartesianCS) CoordinateSystems.replaceLinearUnit(cs, unit);
     }
 
     /**
-     * Returns a {@link EllipsoidalCS} which is a combination of given base CS and tiff unit key if exist.<br>
-     * The returned CS is searched and retrieved from epsg base if exist.<br>
-     * If don't exist, we call {@link CoordinateSystems#replaceAngularUnit(org.opengis.referencing.cs.CoordinateSystem, javax.measure.Unit) }
-     * to build expected CS.<br>
-     * The retrieved Angular CS are :<br>
+     * Returns a coordinate system (CS) with the same axis directions than the given CS but potentially different units.
+     * If a coordinate system exists in the EPSG database with the requested characteristics, that CS will be returned
+     * in order to have a richer set of metadata (name, minimal and maximal values, <i>etc</i>). Otherwise an CS with
+     * an arbitrary name will be returned.
      *
-     * <ul>
-     * <li> epsg : 6428 [Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: rad] </li>
-     * <li> epsg : 6429 [Ellipsoidal 2D CS. Axes: longitude, latitude. Orientations: east, north. UoM: rad] </li>
-     * <li> epsg : 6422 [Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree] </li>
-     * <li> epsg : 6424 [Ellipsoidal 2D CS. Axes: longitude, latitude. Orientations: east, north. UoM: degree] </li>
-     * <li> epsg : 6403 [Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: grads.] </li>
-     * <li> epsg : 6425 [Ellipsoidal 2D CS. Axes: longitude, latitude. Orientations: east, north. UoM: grads.] </li>
-     * </ul>
-     *
-     * @param baseCS
-     * @param fallBackUnit
-     * @return
+     * @see CoordinateSystems#replaceAngularUnit(CoordinateSystem, Unit)
      */
-    private EllipsoidalCS retrieveEllipsoidalCS(final short unitKey, final EllipsoidalCS baseCS, final Unit<Angle> fallBackUnit)
-            throws DataStoreContentException, FactoryException
-    {
-        assert baseCS.getDimension() == 2;
-        CoordinateSystemAxis axis0 = baseCS.getAxis(0);
-        CoordinateSystemAxis axis1 = baseCS.getAxis(1);
-
-        //-------- Axis Number ----------------------
-        // axisnumber integer reference couple axis direction on 3 bits.
-        // higher's of the 3 bits, define axis combinaisons 1 for [E,N] or [W,S]
-        // and 0 for [N,E] or [S,W].
-        // secondly higher bit position define sens for first axis
-        // third and last bit position define sens for second axis.
-        // examples :
-        // [E,N] : axisNumber = 111
-        // [E,S] : axisNumber = 110
-        // [N,W] : axisNumber = 010
-        // [S,W] : axisNumber = 000 etc
-        //
-        //-------------------------------------------
-        int axisNumber = 0;
-        if (axis0.getDirection().equals(AxisDirection.EAST)
-         || axis0.getDirection().equals(AxisDirection.WEST)) {
-            axisNumber = 0b0100;
-            if (axis0.getDirection().equals(AxisDirection.EAST))  axisNumber |= 0b0010;
-            if (axis1.getDirection().equals(AxisDirection.NORTH)) axisNumber |= 0b0001;
-        } else if (axis0.getDirection().equals(AxisDirection.NORTH)
-                || axis0.getDirection().equals(AxisDirection.SOUTH)) {
-            if (axis0.getDirection().equals(AxisDirection.EAST))  axisNumber |= 0b0010;
-            if (axis1.getDirection().equals(AxisDirection.NORTH)) axisNumber |= 0b0001;
-        } else {
-            return (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(baseCS, fallBackUnit);
+    private EllipsoidalCS replaceAngularUnit(final EllipsoidalCS cs, final Unit<Angle> unit) throws FactoryException {
+        final Integer epsg = CoordinateSystems.getEpsgCode(unit, CoordinateSystems.getAxisDirections(cs));
+        if (epsg != null) try {
+            return epsgFactory().createEllipsoidalCS(epsg.toString());
+        } catch (NoSuchAuthorityCodeException e) {
+            reader.owner.warning(null, e);
         }
-
-        //-- get the Unit epsg code if exist
-        String unitCode = getAsString(unitKey);
-        if (unitCode == null || unitCode.equalsIgnoreCase(GeoKeys.GTUserDefined_String)) {
-            return (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(baseCS, fallBackUnit);
-        }
-
-        if (unitCode.startsWith("epsg:") || unitCode.startsWith("EPSG:"))
-            unitCode = unitCode.substring(5, unitCode.length());
-
-        int intCode = Integer.parseInt(unitCode);
-        String epsgCSCode = null;
-        switch (intCode) {
-            // Angular_Radian = 9101
-            case 9101 : {
-                switch (axisNumber) {
-                    case 0b0111 : { //-- [E,N]
-                        epsgCSCode = "6429";
-                        break;
-                    }
-                    case 0b0011 : { //-- [N,E]
-                        epsgCSCode = "6428";
-                        break;
-                    }
-                    default :
-                }
-                break;
-            }
-            //-- Angular_Degree = 9102
-            //-- into epsg base, 9102 angular degree was replaced by 9122
-            //-- following returned CS will be built with internal 9122 CS.
-            case 9102 : {
-                switch (axisNumber) {
-                    case 0b0111 : { //-- [E,N]
-                        epsgCSCode = "6424";
-                        break;
-                    }
-                    case 0b0011 : { //-- [N,E]
-                        epsgCSCode = "6422";
-                        break;
-                    }
-                    default :
-                }
-                break;
-            }
-            // Angular_Arc_Minute = 9103
-            case 9103 :
-            // Angular_Arc_Second = 9104
-            case 9104 : {
-                break;
-            }
-            // Angular_Grad = 9105
-            case 9105 : {
-                switch (axisNumber) {
-                    case 0b0111 : { //-- [E,N]
-                        epsgCSCode = "6425";
-                        break;
-                    }
-                    case 0b0011 : { //-- [N,E]
-                        epsgCSCode = "6403";
-                        break;
-                    }
-                    default :
-                }
-                break;
-            }
-            // Angular_Gon = 9106
-            case 9106 :
-            // Angular_DMS = 9107
-            case 9107 :
-            //-- Angular_DMS_Hemisphere = 9108
-            case 9108 :
-            default :
-        }
-
-        if (epsgCSCode == null)
-            //-- epsg CS + Unit not found
-            return (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(baseCS, fallBackUnit);
-
-        epsgCSCode = "EPSG:".concat(epsgCSCode);
-
-        return epsgFactory().createEllipsoidalCS(epsgCSCode);
+        return (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(cs, unit);
     }
 
 
@@ -1180,7 +903,7 @@ final class CRSBuilder {
             pcrs = objectFactory().createProjectedCRS(properties(IdentifiedObjects.getName(pcrs, new DefaultCitation("EPSG"))),
                     pcrs.getBaseCRS(),
                     pcrs.getConversionFromBase(),
-                    retrieveCartesianCS(GeoKeys.ProjLinearUnits, pcrs.getCoordinateSystem(), linearUnit));
+                    replaceLinearUnit(pcrs.getCoordinateSystem(), linearUnit));
             lastName = pcrs.getName();
         }
         return pcrs;
@@ -1233,9 +956,9 @@ final class CRSBuilder {
 
         CartesianCS predefineCartesianCS = epsgFactory().createCartesianCS("EPSG:4400");
         //-- manage unit if necessary
-        if (linearUnit != null && !linearUnit.equals(Units.METRE))
-            predefineCartesianCS = retrieveCartesianCS(GeoKeys.ProjLinearUnits, predefineCartesianCS, linearUnit);
-
+        if (linearUnit != null) {
+            predefineCartesianCS = replaceLinearUnit(predefineCartesianCS, linearUnit);
+        }
         return objectFactory().createProjectedCRS(properties(projectedCrsName), gcs, projection, predefineCartesianCS);
     }
 
@@ -1285,11 +1008,7 @@ final class CRSBuilder {
             final GeodeticDatum datum = createGeodeticDatum(name, angularUnit, linearUnit);
             //-- make the user defined GCS from all the components...
             return objectFactory().createGeographicCRS(properties(name), datum,
-                    retrieveEllipsoidalCS(GeoKeys.GeogAngularUnits,
-                                          CommonCRS.defaultGeographic().getCoordinateSystem(),
-                                          angularUnit));
-//                                       (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(),
-//                                                                                                       angularUnit));
+                    replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(), angularUnit));
         }
 
         //---------------------------------------------------------------------//
@@ -1318,11 +1037,7 @@ final class CRSBuilder {
         if (angularUnit != null
         && !angularUnit.equals(geoCRS.getCoordinateSystem().getAxis(0).getUnit())) {
             geoCRS = objectFactory().createGeographicCRS(properties(IdentifiedObjects.getName(geoCRS, new DefaultCitation("EPSG"))),
-                                                        ((GeographicCRS)geoCRS).getDatum(),
-                                                        retrieveEllipsoidalCS(GeoKeys.GeogAngularUnits,
-                                                                CommonCRS.defaultGeographic().getCoordinateSystem(),
-                                                                angularUnit));
-//                    (EllipsoidalCS) CoordinateSystems.replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(), angularUnit));
+                    ((GeographicCRS)geoCRS).getDatum(), replaceAngularUnit(CommonCRS.defaultGeographic().getCoordinateSystem(), angularUnit));
             lastName = geoCRS.getName();
         }
         return (GeographicCRS) geoCRS;

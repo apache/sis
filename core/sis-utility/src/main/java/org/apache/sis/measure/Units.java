@@ -22,8 +22,9 @@ import javax.measure.UnitConverter;
 import javax.measure.format.ParserException;
 import javax.measure.Quantity;
 import javax.measure.quantity.*;
-import javax.measure.quantity.Angle;            // Because of name collision with Angle in this SIS package.
-import org.opengis.geometry.DirectPosition;     // For javadoc
+import javax.measure.quantity.Angle;                // Because of name collision with Angle in this SIS package.
+import org.opengis.geometry.DirectPosition;         // For javadoc
+import org.opengis.referencing.cs.AxisDirection;    // For javadoc
 
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
@@ -86,7 +87,7 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI units:</td>         <td style="word-spacing:1em"><u>{@code NANOMETRE}</u>, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table></div>
      *
@@ -104,7 +105,7 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, <u>{@code MILLIMETRE}</u>, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table></div>
      *
@@ -120,7 +121,7 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, <u>{@code CENTIMETRE}</u>, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table></div>
      *
@@ -136,7 +137,7 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <u><b>{@code METRE}</b></u>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table></div>
      *
@@ -152,7 +153,7 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, <u>{@code KILOMETRE}</u>.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #KILOMETRES_PER_HOUR}.</td></tr>
      * </table></div>
      *
@@ -174,7 +175,7 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, <u>{@code NAUTICAL_MILE}</u>.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, <u>{@code NAUTICAL_MILE}</u>.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #KILOMETRES_PER_HOUR}.</td></tr>
      * </table></div>
      *
@@ -194,7 +195,7 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #US_SURVEY_FOOT}, <u>{@code STATUTE_MILE}</u>, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, <u>{@code STATUTE_MILE}</u>, {@link #NAUTICAL_MILE}.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #KILOMETRES_PER_HOUR}.</td></tr>
      * </table></div>
      *
@@ -211,13 +212,29 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, <u>{@code US_SURVEY_FOOT}</u>, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, <u>{@code US_SURVEY_FOOT}</u>, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table></div>
      *
      * @since 0.8
      */
     public static final Unit<Length> US_SURVEY_FOOT;
+
+    /**
+     * Unit of measurement defined as 0.3047972654 metres.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRE},
+     * the unlocalized name is “Clarke’s foot” and the identifier is EPSG:9005.
+     *
+     * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
+     * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
+     *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, {@link #FOOT}, <u>{@code CLARKE_FOOT}</u>, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
+     * </table></div>
+     *
+     * @since 0.8
+     */
+    public static final Unit<Length> CLARKE_FOOT;
 
     /**
      * Unit of measurement defined as exactly 0.3048 metres (1 ft).
@@ -227,7 +244,7 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, <u>{@code FOOT}</u>, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, {@link #INCH}, <u>{@code FOOT}</u>, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table></div>
      *
@@ -243,7 +260,7 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, <u>{@code INCH}</u>, {@link #FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em">{@link #POINT}, <u>{@code INCH}</u>, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table></div>
      *
@@ -260,7 +277,7 @@ public final class Units extends Static {
      * <div class="note"><p class="simpleTagLabel" style="margin-bottom:0">Related units:</p>
      * <table class="compact" summary="Related units" style="margin-left:30px; line-height:1.25">
      *   <tr><td>SI length units:</td>  <td style="word-spacing:1em">{@link #NANOMETRE}, {@link #MILLIMETRE}, {@link #CENTIMETRE}, <b>{@link #METRE}</b>, {@link #KILOMETRE}.</td></tr>
-     *   <tr><td>In other systems:</td> <td style="word-spacing:1em"><u>{@code POINT}</u>, {@link #INCH}, {@link #FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
+     *   <tr><td>In other systems:</td> <td style="word-spacing:1em"><u>{@code POINT}</u>, {@link #INCH}, {@link #FOOT}, {@link #CLARKE_FOOT}, {@link #US_SURVEY_FOOT}, {@link #STATUTE_MILE}, {@link #NAUTICAL_MILE}.</td></tr>
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #SQUARE_METRE}, {@link #CUBIC_METRE}, {@link #METRES_PER_SECOND}.</td></tr>
      * </table></div>
      *
@@ -1078,7 +1095,7 @@ public final class Units extends Static {
         /*
          * All Unit<Length>.
          */
-        m.related(6);
+        m.related(7);
         METRE          = m;
         NANOMETRE      = add(m, nano,                                     "nm",    UnitRegistry.SI,       (short) 0);
         MILLIMETRE     = add(m, milli,                                    "mm",    UnitRegistry.SI,       (short) 1025);
@@ -1086,7 +1103,8 @@ public final class Units extends Static {
         KILOMETRE      = add(m, kilo,                                     "km",    UnitRegistry.SI,       (short) 9036);
         NAUTICAL_MILE  = add(m, LinearConverter.scale(   1852,        1), "M",     UnitRegistry.OTHER,    (short) 9030);
         STATUTE_MILE   = add(m, LinearConverter.scale(1609344,      100), "mi",    UnitRegistry.IMPERIAL, (short) 9093);
-        US_SURVEY_FOOT = add(m, LinearConverter.scale(   1200,     3937), "ft_US", UnitRegistry.OTHER,    (short) 9003);
+        US_SURVEY_FOOT = add(m, LinearConverter.scale(   1200,     3937), "ftUS",  UnitRegistry.OTHER,    (short) 9003);
+        CLARKE_FOOT    = add(m, LinearConverter.scale(3047972654d, 1E10), "ftCla", UnitRegistry.OTHER,    (short) 9005);
         FOOT           = add(m, LinearConverter.scale(   3048,    10000), "ft",    UnitRegistry.IMPERIAL, (short) 9002);
         INCH           = add(m, LinearConverter.scale(    254,    10000), "in",    UnitRegistry.IMPERIAL, (short) 0);
         POINT          = add(m, LinearConverter.scale( 996264, 72000000), "pt",    UnitRegistry.OTHER,    (short) 0);
@@ -1681,6 +1699,8 @@ public final class Units extends Static {
      * @return the EPSG code of the given units, or {@code null} if unknown.
      *
      * @since 0.4
+     *
+     * @see org.apache.sis.referencing.cs.CoordinateSystems#getEpsgCode(Unit, AxisDirection...)
      */
     public static Integer getEpsgCode(Unit<?> unit, final boolean inAxis) {
         if (unit != null) {
