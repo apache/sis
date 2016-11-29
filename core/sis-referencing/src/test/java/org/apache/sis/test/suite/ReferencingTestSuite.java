@@ -216,6 +216,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.factory.sql.EPSGDataFormatterTest.class,
     org.apache.sis.referencing.EPSGFactoryFallbackTest.class,
     org.apache.sis.referencing.AuthorityFactoriesTest.class,
+    org.apache.sis.referencing.cs.CodesTest.class,
     org.apache.sis.referencing.CRSTest.class,
 
     // Coordinate operation finders are last, since they need everything else.
