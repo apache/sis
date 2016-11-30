@@ -124,15 +124,15 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MissingValue_2 = 7;
 
         /**
+         * The file defines “{2}” with a value of {3}{4}, but that value should be {1}{4} for
+         * consistency with {0}.
+         */
+        public static final short NotTheEpsgValue_5 = 17;
+
+        /**
          * A randomized process such as error diffusion has been applied to the image data.
          */
         public static final short RandomizedProcessApplied = 8;
-
-        /**
-         * The coordinate reference system defined in the “{0}” TIFF image is not geographic. A
-         * geographic system will be created from others components.
-         */
-        public static final short UnexpectedGeoCRS_1 = 11;
 
         /**
          * A single value was expected for the “{0}” key but {1} values have been found.
@@ -147,7 +147,7 @@ public final class Resources extends IndexedResourceBundle {
         /**
          * Coordinate system kind {0} is unsupported.
          */
-        public static final short UnsupportedCoordinateSystemKind_1 = 17;
+        public static final short UnsupportedCoordinateSystemKind_1 = 11;
 
         /**
          * Version {0} of GeoTIFF key directory is not supported.

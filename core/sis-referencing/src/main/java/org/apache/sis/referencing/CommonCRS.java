@@ -963,7 +963,7 @@ public enum CommonCRS {
                 if (this != DEFAULT) {
                     cs = DEFAULT.UTM(latitude, longitude).getCoordinateSystem();
                 } else {
-                    cs = (CartesianCS) StandardDefinitions.createCoordinateSystem((short) 4400);
+                    cs = (CartesianCS) StandardDefinitions.createCoordinateSystem(Constants.EPSG_PROJECTED_CS);
                 }
             }
             crs = StandardDefinitions.createUTM(code, geographic(), latitude, longitude, cs);
