@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.NoSuchElementException;
 import java.lang.reflect.Array;
+import java.io.IOException;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.UnitConverter;
@@ -70,8 +71,9 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
-import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
@@ -488,7 +490,7 @@ final class CRSBuilder {
      */
     @SuppressWarnings("null")
     final CoordinateReferenceSystem build(final Vector keyDirectory, final Vector numericParameters, final String asciiParameters)
-            throws DataStoreContentException, FactoryException
+            throws FactoryException
     {
         final int numberOfKeys;
         final int directoryLength = keyDirectory.size();
@@ -1109,6 +1111,7 @@ final class CRSBuilder {
      * @throws FactoryException if an error occurred during objects creation with the factories.
      *
      * @see #createGeographicCRS(boolean)
+     * @see #createConversion(String)
      */
     private CoordinateReferenceSystem createProjectedCRS() throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.ProjectedCSType);
@@ -1122,8 +1125,8 @@ final class CRSBuilder {
                  * and build the projected CRS from them.
                  */
                 final String name = getAsString(GeoKeys.PCSCitation);
-                final GeographicCRS baseCRS = createGeographicCRS(false);
                 final Conversion projection = createConversion(name);
+                final GeographicCRS baseCRS = createGeographicCRS(false);
                 CartesianCS cs = epsgFactory().createCartesianCS(String.valueOf(Constants.EPSG_PROJECTED_CS));
                 final Unit<Length> unit = createUnit(GeoKeys.ProjLinearUnits, GeoKeys.ProjLinearUnitSize, Length.class, Units.METRE);
                 if (!Units.METRE.equals(unit)) {
@@ -1159,6 +1162,14 @@ final class CRSBuilder {
         verify(baseCRS);
     }
 
+    /**
+     * Creates a defining conversion from an EPSG code or from user-defined parameters.
+     *
+     * @throws NoSuchElementException if a mandatory value is missing.
+     * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
+     * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
+     * @throws FactoryException if an error occurred during objects creation with the factories.
+     */
     private Conversion createConversion(final String name) throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.Projection);
         switch (epsg) {
@@ -1166,10 +1177,10 @@ final class CRSBuilder {
                 throw new NoSuchElementException(missingValue(GeoKeys.Projection));
             }
             case GeoCodes.userDefined: {
-                final String coordTrans               = getMandatoryString(GeoKeys.ProjCoordTrans);
-                final OperationMethod operationMethod = operationFactory().getOperationMethod(coordTrans);
-                final ParameterValueGroup parameters  = operationMethod.getParameters().createValue();
-                final Conversion c = operationFactory().createDefiningConversion(properties(name), operationMethod, parameters);
+                final String              type        = getMandatoryString(GeoKeys.ProjCoordTrans);
+                final OperationMethod     method      = operationFactory().getOperationMethod(type);
+                final ParameterValueGroup parameters  = method.getParameters().createValue();
+                final Conversion c = operationFactory().createDefiningConversion(properties(name), method, parameters);
                 lastName = c.getName();
                 return c;
             }
@@ -1179,22 +1190,26 @@ final class CRSBuilder {
         }
     }
 
+    /**
+     * Returns a string representation of the keys and associated values in this {@code CRSBuilder}.
+     */
+    @Debug
     @Override
     public final String toString() {
-        final StringBuilder strBuild = new StringBuilder("GeoKeys for CoordinateReferenceSystem")
-                .append('\n')
-                .append('\n')
-                .append("geo keys revision: ").append(majorRevision)
-                .append('\n')
-                .append("minor revision: ").append(minorRevision)
-                .append('\n')
-                .append('\n');
-
+        final StringBuilder buffer = new StringBuilder("GeoTIFF keys ").append(majorRevision).append('.')
+                .append(minorRevision).append(" in ").append(reader.input.filename).append(System.lineSeparator());
+        final TableAppender table = new TableAppender(buffer, " ");
         for (Map.Entry<Short,Object> entry : geoKeys.entrySet()) {
             final short key = entry.getKey();
-            strBuild.append(GeoKeys.name(key)).append(" (").append(key).append(") = ").append(entry.getValue());
-            strBuild.append('\n');
+            table.append(String.valueOf(key)).nextColumn();
+            table.append(GeoKeys.name(key)).nextColumn();
+            table.append(" = ").append(String.valueOf(entry.getValue())).nextLine();
         }
-        return strBuild.toString();
+        try {
+            table.flush();
+        } catch (IOException e) {
+            throw new AssertionError(e);        // Should never happen since we wrote to a StringBuffer.
+        }
+        return buffer.toString();
     }
 }
