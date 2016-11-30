@@ -44,9 +44,6 @@ final class GeoKeys {
     /** Section 6.3.1.2 Codes */ public static final short RasterType = 1025;
     /** Documentation         */ public static final short Citation   = 1026;
 
-    @Deprecated public static final short UserDefined           = 32767;
-    @Deprecated static final String GTUserDefined_String = "32767";
-
     // 6.2.2 Geographic CS Parameter Keys
     public static final short GeographicType        = 2048; /* Section 6.3.2.1 Codes */
     public static final short GeogCitation          = 2049; /* documentation */
