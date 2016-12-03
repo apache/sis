@@ -53,6 +53,7 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.util.FactoryException;
 
 import org.apache.sis.internal.geotiff.Resources;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -72,6 +73,7 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Debug;
 
@@ -132,6 +134,42 @@ final class CRSBuilder {
      * Number of {@code short} values in each GeoKey entry.
      */
     private static final int ENTRY_LENGTH = 4;
+
+    /**
+     * Index where to store the name of the geodetic CRS, the datum, the ellipsoid and the prime meridian.
+     * The GeoTIFF specification has only one key, {@link GeoKeys#GeogCitation}, for the geographic CRS and
+     * its components. But some GeoTIFF files encode the names of all components in the value associated to
+     * that key, as in the following example:
+     *
+     * {@preformat text
+     *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|
+     * }
+     *
+     * In such case, we will split the name into the components names to be stored in an array at indices
+     * given by {@code GCRS}, {@code DATUM}, {@code ELLIPSOID} and {@code PRIMEM}.
+     */
+    static final int PRIMEM = 0, ELLIPSOID = 1, DATUM = 2, GCRS = 3;
+    // PRIMEM must be first and GCRS must be last.
+
+    /**
+     * Keys that may be used in the value associated to {@link GeoKeys#GeogCitation}.
+     * For each element in this array at index {@code i}, the {@code i/2} value is equal to the
+     * {@code DATUM}, {@code ELLIPSOID} or {@code PRIMEM} constant for the corresponding type.
+     */
+    private static final String[] NAME_KEYS = {
+        // WKT 1               WKT 2
+        WKTKeywords.PrimeM,    WKTKeywords.PrimeMeridian,
+        WKTKeywords.Spheroid,  WKTKeywords.Ellipsoid,
+        WKTKeywords.Datum,     WKTKeywords.GeodeticDatum
+    };
+
+    /**
+     * Minimal length that a key in a name must have before we compare them to the {@link #NAME_KEYS}.
+     * For example a value of 5 means that {@link #parseName(String)} will accept {@code "Ellip"},
+     * {@code "Ellips"}, {@code "Ellipso"} and {@code "Ellipsoi"} as if they were {@code "Ellipsoid"}.
+     * This length shall not be greater than the length of the shortest string in {@link #NAME_KEYS}.
+     */
+    private static final int MIN_KEY_LENGTH = 5;
 
     /**
      * The reader for which we will create coordinate reference systems.
@@ -400,7 +438,8 @@ final class CRSBuilder {
     }
 
     /**
-     * Reports a warning about missing value for the given key.
+     * Reports a warning about missing value for the given key. The key name is opportunistically returned for
+     * building the {@link NoSuchElementException} message, but it is not the main purpose of this method.
      */
     private String missingValue(final short key) {
         final String name = GeoKeys.name(key);
@@ -421,10 +460,10 @@ final class CRSBuilder {
      * in which case we expect the given value to be equal to the value fetched from the EPSG database.
      * If the values do not match, a warning is reported and the caller should use the EPSG value.
      *
-     * @param epsg      the EPSG object, to be used for formatting the warning in case of mismatched values.
-     * @param expected  the expected value for an object identified by the {@code epsg} code.
-     * @param key       the GeoTIFF key of the user-defined value to compare with the expected one.
-     * @param unit      the unit of measurement for {@code expected} and {@code actual}, or {@code null} if none.
+     * @param  epsg      the EPSG object, to be used for formatting the warning in case of mismatched values.
+     * @param  expected  the expected value for an object identified by the {@code epsg} code.
+     * @param  key       the GeoTIFF key of the user-defined value to compare with the expected one.
+     * @param  unit      the unit of measurement for {@code expected} and {@code actual}, or {@code null} if none.
      */
     private void verify(final IdentifiedObject epsg, final double expected, final short key, final Unit<?> unit) {
         final double actual = getAsDouble(key);         // May be NaN.
@@ -447,8 +486,8 @@ final class CRSBuilder {
      * there is no need to specify the EPSG codes of the components, but the file still supply
      * those EPSG codes. If the values do not match, a warning is reported.
      *
-     * @param epsg  the EPSG object.
-     * @param key   the GeoTIFF key for the EPSG code of the given {@code epsg} object.
+     * @param  epsg  the EPSG object.
+     * @param  key   the GeoTIFF key for the EPSG code of the given {@code epsg} object.
      */
     private void verifyIdentifier(final IdentifiedObject epsg, final short key) {
         final int code = getAsInteger(key);
@@ -654,6 +693,19 @@ final class CRSBuilder {
      */
     final void complete(final MetadataBuilder metadata) {
         /*
+         * ASCII reference to published documentation on the overall configuration of the GeoTIFF file.
+         * Checked first because this code is unlikely to throw an exception, while other parsings may
+         * interrupt this method with an exception.
+         */
+        final String title = getAsString(GeoKeys.Citation);
+        if (title != null) {
+            if (!metadata.hasTitle()) {
+                metadata.addTitle(title);
+            } else {
+                metadata.setGridToCRS(title);
+            }
+        }
+        /*
          * Whether the pixel value is thought of as filling the cell area or is considered as point measurements at
          * the vertices of the grid (not in the interior of a cell).  This is determined by the value associated to
          * GeoKeys.RasterType, which can be GeoCodes.RasterPixelIsArea or GeoCodes.RasterPixelIsPoint.
@@ -669,17 +721,6 @@ final class CRSBuilder {
         }
         metadata.setCellGeometry(cg);
         metadata.setPointInPixel(po);
-        /*
-         * ASCII reference to published documentation on the overall configuration of the GeoTIFF file.
-         */
-        final String title = getAsString(GeoKeys.Citation);
-        if (title != null) {
-            if (!metadata.hasTitle()) {
-                metadata.addTitle(title);
-            } else {
-                metadata.setGridToCRS(title);
-            }
-        }
     }
 
 
@@ -774,35 +815,36 @@ final class CRSBuilder {
      * The GeoTIFF values used by this method are:
      *
      * <ul>
-     *   <li>A code given by {@link GeoKeys#GeogPrimeMeridian}.</li>
+     *   <li>A code given by {@link GeoKeys#PrimeMeridian}.</li>
      *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
-     *     <li>a prime meridian value given by {@link GeoKeys#GeogPrimeMeridianLong}.</li>
+     *     <li>a prime meridian value given by {@link GeoKeys#PrimeMeridianLong}.</li>
      *   </ul></li>
      * </ul>
      *
      * If no prime-meridian is defined, then the default is Greenwich as per GeoTIFF specification.
      *
+     * @param  names the component names to use if the prime meridian is user-defined.
      * @param  unit  the angular unit of the longitude value relative to Greenwich.
      * @return a prime meridian created from the given {@link Unit} and the above-cited GeoTIFF keys.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
-    private PrimeMeridian createPrimeMeridian(final Unit<Angle> unit) throws FactoryException {
-        final int epsg = getAsInteger(GeoKeys.GeogPrimeMeridian);
+    private PrimeMeridian createPrimeMeridian(final String[] names, final Unit<Angle> unit) throws FactoryException {
+        final int epsg = getAsInteger(GeoKeys.PrimeMeridian);
         switch (epsg) {
             case GeoCodes.undefined: break;         // If not specified, default to Greenwich.
             case GeoCodes.userDefined: {
-                final double longitude = getAsDouble(GeoKeys.GeogPrimeMeridianLong);
+                final double longitude = getAsDouble(GeoKeys.PrimeMeridianLong);
                 if (Double.isNaN(longitude)) {
-                    missingValue(GeoKeys.GeogPrimeMeridianLong);
+                    missingValue(GeoKeys.PrimeMeridianLong);
                 } else if (longitude != 0) {
                     /*
-                     * If the prime meridian is not Greenwich, create that meridian without name.
-                     * We do not use the name given by GeoKeys.GeogCitation because that name is
-                     * for the CRS (e.g. "WGS84") while the prime meridian names are very different
-                     * (e.g. "Paris", "Madrid", etc).
+                     * If the prime meridian is not Greenwich, create that meridian but do not use the
+                     * GeoKeys.GeogCitation value (unless it had a sub-element for the prime meridian).
+                     * This is because the citation value is for the CRS (e.g. "WGS84") while the prime
+                     * meridian names are very different (e.g. "Paris", "Madrid", etc).
                      */
-                    return objectFactory().createPrimeMeridian(properties(null), longitude, unit);
+                    return objectFactory().createPrimeMeridian(properties(names[PRIMEM]), longitude, unit);
                 }
                 break;              // Default to Greenwich.
             }
@@ -829,7 +871,7 @@ final class CRSBuilder {
      * @param  unit  the unit of measurement declared in the GeoTIFF file.
      */
     private void verify(final PrimeMeridian pm, final Unit<Angle> unit) {
-        verify(pm, ReferencingUtilities.getGreenwichLongitude(pm, unit), GeoKeys.GeogPrimeMeridianLong, unit);
+        verify(pm, ReferencingUtilities.getGreenwichLongitude(pm, unit), GeoKeys.PrimeMeridianLong, unit);
     }
 
     /**
@@ -837,38 +879,38 @@ final class CRSBuilder {
      * The GeoTIFF values used by this method are:
      *
      * <ul>
-     *   <li>A code given by {@link GeoKeys#GeogEllipsoid} tag.</li>
+     *   <li>A code given by {@link GeoKeys#Ellipsoid} tag.</li>
      *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
      *     <li>a name given by {@link GeoKeys#GeogCitation},</li>
-     *     <li>a semi major axis value given by {@link GeoKeys#GeogSemiMajorAxis},</li>
+     *     <li>a semi major axis value given by {@link GeoKeys#SemiMajorAxis},</li>
      *     <li>one of:<ul>
-     *       <li>an inverse flattening factor given by {@link GeoKeys#GeogInvFlattening},</li>
-     *       <li>or a semi major axis value given by {@link GeoKeys#GeogSemiMinorAxis}.</li>
+     *       <li>an inverse flattening factor given by {@link GeoKeys#InvFlattening},</li>
+     *       <li>or a semi major axis value given by {@link GeoKeys#SemiMinorAxis}.</li>
      *     </ul></li>
      *   </ul></li>
      * </ul>
      *
-     * @param  name  the name to use if the ellipsoid is user-defined, or {@code null} if unnamed.
+     * @param  names the component names to use if the ellipsoid is user-defined.
      * @param  unit  the linear unit of the semi-axis lengths.
      * @return an ellipsoid created from the given {@link Unit} and the above-cited GeoTIFF keys.
      * @throws NoSuchElementException if a mandatory value is missing.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
-    private Ellipsoid createEllipsoid(final String name, final Unit<Length> unit) throws FactoryException {
-        final int epsg = getAsInteger(GeoKeys.GeogEllipsoid);
+    private Ellipsoid createEllipsoid(final String[] names, final Unit<Length> unit) throws FactoryException {
+        final int epsg = getAsInteger(GeoKeys.Ellipsoid);
         switch (epsg) {
             case GeoCodes.undefined: {
-                throw new NoSuchElementException(missingValue(GeoKeys.GeogGeodeticDatum));
+                throw new NoSuchElementException(missingValue(GeoKeys.GeodeticDatum));
             }
             case GeoCodes.userDefined: {
                 /*
                  * Try to build ellipsoid from others parameters. Those parameters are the
                  * semi-major axis and either semi-minor axis or inverse flattening factor.
                  */
-                final Map<String,?> properties = properties(name);
-                final double semiMajor = getMandatoryDouble(GeoKeys.GeogSemiMajorAxis);
-                double inverseFlattening = getAsDouble(GeoKeys.GeogInvFlattening);
+                final Map<String,?> properties = properties(getOrDefault(names, ELLIPSOID));
+                final double semiMajor = getMandatoryDouble(GeoKeys.SemiMajorAxis);
+                double inverseFlattening = getAsDouble(GeoKeys.InvFlattening);
                 final Ellipsoid ellipsoid;
                 if (!Double.isNaN(inverseFlattening)) {
                     ellipsoid = objectFactory().createFlattenedSphere(properties, semiMajor, inverseFlattening, unit);
@@ -877,7 +919,7 @@ final class CRSBuilder {
                      * If the inverse flattening factory was not defined, fallback on semi-major axis length.
                      * This is a less common way to define ellipsoid (the most common way uses flattening).
                      */
-                    final double semiMinor = getMandatoryDouble(GeoKeys.GeogSemiMinorAxis);
+                    final double semiMinor = getMandatoryDouble(GeoKeys.SemiMinorAxis);
                     ellipsoid = objectFactory().createEllipsoid(properties, semiMajor, semiMinor, unit);
                 }
                 lastName = ellipsoid.getName();
@@ -906,9 +948,9 @@ final class CRSBuilder {
      */
     private void verify(final Ellipsoid ellipsoid, final Unit<Length> unit) {
         final UnitConverter uc = ellipsoid.getAxisUnit().getConverterTo(unit);
-        verify(ellipsoid, uc.convert(ellipsoid.getSemiMajorAxis()), GeoKeys.GeogSemiMajorAxis, unit);
-        verify(ellipsoid, uc.convert(ellipsoid.getSemiMinorAxis()), GeoKeys.GeogSemiMinorAxis, unit);
-        verify(ellipsoid, ellipsoid.getInverseFlattening(),         GeoKeys.GeogInvFlattening, null);
+        verify(ellipsoid, uc.convert(ellipsoid.getSemiMajorAxis()), GeoKeys.SemiMajorAxis, unit);
+        verify(ellipsoid, uc.convert(ellipsoid.getSemiMinorAxis()), GeoKeys.SemiMinorAxis, unit);
+        verify(ellipsoid, ellipsoid.getInverseFlattening(),         GeoKeys.InvFlattening, null);
     }
 
     /**
@@ -916,7 +958,7 @@ final class CRSBuilder {
      * The GeoTIFF values used by this method are:
      *
      * <ul>
-     *   <li>A code given by {@link GeoKeys#GeogGeodeticDatum}.</li>
+     *   <li>A code given by {@link GeoKeys#GeodeticDatum}.</li>
      *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
      *     <li>a name given by {@link GeoKeys#GeogCitation},</li>
      *     <li>all values required by {@link #createPrimeMeridian(Unit)} (optional),</li>
@@ -924,7 +966,7 @@ final class CRSBuilder {
      *   </ul></li>
      * </ul>
      *
-     * @param  name         the name to use if the geodetic datum is user-defined, or {@code null} if unnamed.
+     * @param  names        the component names to use if the geodetic datum is user-defined.
      * @param  angularUnit  the angular unit of the longitude value relative to Greenwich.
      * @param  linearUnit   the linear unit of the ellipsoid semi-axis lengths.
      * @throws NoSuchElementException if a mandatory value is missing.
@@ -935,13 +977,13 @@ final class CRSBuilder {
      * @see #createPrimeMeridian(Unit)
      * @see #createEllipsoid(Unit)
      */
-    private GeodeticDatum createGeodeticDatum(String name, final Unit<Angle> angularUnit, final Unit<Length> linearUnit)
+    private GeodeticDatum createGeodeticDatum(final String[] names, final Unit<Angle> angularUnit, final Unit<Length> linearUnit)
             throws FactoryException
     {
-        final int epsg = getAsInteger(GeoKeys.GeogGeodeticDatum);
+        final int epsg = getAsInteger(GeoKeys.GeodeticDatum);
         switch (epsg) {
             case GeoCodes.undefined: {
-                throw new NoSuchElementException(missingValue(GeoKeys.GeogGeodeticDatum));
+                throw new NoSuchElementException(missingValue(GeoKeys.GeodeticDatum));
             }
             case GeoCodes.userDefined: {
                 /*
@@ -953,8 +995,9 @@ final class CRSBuilder {
                  * CommonCRS. We use the CRS name given in the GeoTIFF file for that purpose, exploiting the
                  * fact that it is often a name that can be mapped to a CommonCRS name like "WGS84".
                  */
-                final Ellipsoid     ellipsoid = createEllipsoid(name, linearUnit);
-                final PrimeMeridian meridian  = createPrimeMeridian(angularUnit);
+                String              name      = getOrDefault(names, DATUM);
+                final Ellipsoid     ellipsoid = createEllipsoid(names, linearUnit);
+                final PrimeMeridian meridian  = createPrimeMeridian(names, angularUnit);
                 final GeodeticDatum datum     = objectFactory().createGeodeticDatum(properties(name), ellipsoid, meridian);
                 name = Utilities.toUpperCase(name, Characters.Filter.LETTERS_AND_DIGITS);
                 lastName = datum.getName();
@@ -994,10 +1037,10 @@ final class CRSBuilder {
      */
     private void verify(final GeodeticDatum datum, final Unit<Angle> angularUnit, final Unit<Length> linearUnit) {
         final PrimeMeridian pm = datum.getPrimeMeridian();
-        verifyIdentifier(pm, GeoKeys.GeogPrimeMeridian);
+        verifyIdentifier(pm, GeoKeys.PrimeMeridian);
         verify(pm, angularUnit);
         final Ellipsoid ellipsoid = datum.getEllipsoid();
-        verifyIdentifier(ellipsoid, GeoKeys.GeogEllipsoid);
+        verifyIdentifier(ellipsoid, GeoKeys.Ellipsoid);
         verify(ellipsoid, linearUnit);
     }
 
@@ -1006,18 +1049,86 @@ final class CRSBuilder {
 
 
     /**
+     * Splits the {@link GeoKeys#GeogCitation} value into its prime meridian, ellipsoid, datum and CRS name components.
+     * This method is intended to parse geographic CRS names written like below:
+     *
+     * {@preformat text
+     *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|
+     * }
+     *
+     * The keywords of both Well Known Text (WKT) version 1 and 2 are accepted as keys for the datum, ellipsoid and
+     * prime meridian names. All other keys are presumed to be for the geographic CRS name. If the given string does
+     * not contain the pipe ({@code '|'}) separator, then the whole string is presumed to be the geographic CRS name.
+     *
+     * <p>This method returns an array where component names are stored at index {@link #PRIMEM}, {@link #ELLIPSOID},
+     * {@link #DATUM} and {@link #GCRS}. Any array element can be null if no name were found for that component.</p>
+     */
+    static String[] splitName(final String name) {
+        final String[] names = new String[GCRS + 1];
+        final String[] components = (String[]) CharSequences.split(name, '|');
+        switch (components.length) {
+            case 0: break;
+            case 1: names[GCRS] = name; break;
+            default: {
+                for (String value : components) {
+                    final int s = value.indexOf('=');
+                    int type = GCRS;
+                    if (s >= 0) {
+                        final int length = CharSequences.skipTrailingWhitespaces(value, 0, s);
+                        if (length >= MIN_KEY_LENGTH) {
+                            for (int t=0; t < NAME_KEYS.length; t++) {
+                                if (value.regionMatches(true, 0, NAME_KEYS[t], 0, length)) {
+                                    type = t/2;
+                                    break;
+                                }
+                            }
+                        }
+                        value = value.substring(CharSequences.skipLeadingWhitespaces(value, s+1, value.length()));
+                    }
+                    if (!value.isEmpty()) {
+                        if (names[type] != null) {
+                            value = names[type] + ' ' + value;
+                        }
+                        names[type] = value;
+                    }
+                }
+                break;
+            }
+        }
+        return names;
+    }
+
+    /**
+     * Returns the name at the given index if non-null. If that name is null, search for a name is a sister element
+     * (e.g. the datum name or the geographic CRS name). If none is found, returns {@code null}.
+     */
+    private static String getOrDefault(final String[] names, int component) {
+        String c = names[component];
+        if (c == null) {
+            // Prime meridian must be excluded in the search below.
+            for (component = PRIMEM; ++component < names.length; component++) {
+                c = names[component];
+                if (c != null) {
+                    break;
+                }
+            }
+        }
+        return c;
+    }
+
+    /**
      * Creates a geographic CRS from an EPSG code or from user-defined parameters.
      * The GeoTIFF values used by this method are:
      *
      * <ul>
      *   <li>A code given by {@link GeoKeys#GeographicType}.</li>
      *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
-     *     <li>a prime meridian value given by {@link GeoKeys#GeogPrimeMeridianLong},</li>
+     *     <li>a prime meridian value given by {@link GeoKeys#PrimeMeridianLong},</li>
      *     <li>a CRS name given by {@link GeoKeys#GeogCitation},</li>
      *     <li>a datum definition.</li>
      *   </ul></li>
-     *   <li>A unit code given by {@link GeoKeys#GeogAngularUnits} (optional).</li>
-     *   <li>A unit scale factor given by {@link GeoKeys#GeogAngularUnitSize} (optional).</li>
+     *   <li>A unit code given by {@link GeoKeys#AngularUnits} (optional).</li>
+     *   <li>A unit scale factor given by {@link GeoKeys#AngularUnitSize} (optional).</li>
      * </ul>
      *
      * @param  rightHanded  whether to force longitude before latitude axis.
@@ -1039,15 +1150,15 @@ final class CRSBuilder {
                  * Creates the geodetic datum, then a geographic CRS assuming (longitude, latitude) axis order.
                  * We use the coordinate system of CRS:84 as a template and modify its unit of measurement if needed.
                  */
-                final String             name = getAsString(GeoKeys.GeogCitation);
-                final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits,  GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
-                final Unit<Angle> angularUnit = createUnit(GeoKeys.GeogAngularUnits, GeoKeys.GeogAngularUnitSize, Angle.class, Units.DEGREE);
-                final GeodeticDatum     datum = createGeodeticDatum(name, angularUnit, linearUnit);
+                final String[] names = splitName(getAsString(GeoKeys.GeogCitation));
+                final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits, GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
+                final Unit<Angle> angularUnit = createUnit(GeoKeys.AngularUnits,    GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
+                final GeodeticDatum     datum = createGeodeticDatum(names, angularUnit, linearUnit);
                 EllipsoidalCS cs = CommonCRS.defaultGeographic().getCoordinateSystem();
                 if (!Units.DEGREE.equals(angularUnit)) {
                     cs = replaceAngularUnit(cs, angularUnit);
                 }
-                final GeographicCRS crs = objectFactory().createGeographicCRS(properties(name), datum, cs);
+                final GeographicCRS crs = objectFactory().createGeographicCRS(properties(getOrDefault(names, GCRS)), datum, cs);
                 lastName = crs.getName();
                 return crs;
             }
@@ -1079,10 +1190,10 @@ final class CRSBuilder {
          * Note: current createUnit(…) implementation does not allow us to distinguish whether METRE ou DEGREE units
          * were specified in the GeoTIFF file or if we got the default values. We do not compare units of that reason.
          */
-        final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits,  GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
-        final Unit<Angle> angularUnit = createUnit(GeoKeys.GeogAngularUnits, GeoKeys.GeogAngularUnitSize, Angle.class, Units.DEGREE);
+        final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits, GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
+        final Unit<Angle> angularUnit = createUnit(GeoKeys.AngularUnits,    GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
         final GeodeticDatum datum = crs.getDatum();
-        verifyIdentifier(datum, GeoKeys.GeogGeodeticDatum);
+        verifyIdentifier(datum, GeoKeys.GeodeticDatum);
         verify(datum, angularUnit, linearUnit);
     }
 
@@ -1099,10 +1210,10 @@ final class CRSBuilder {
      *   <li>If above code is {@link GeoCodes#userDefined}, then:<ul>
      *     <li>a name given by {@link GeoKeys#PCSCitation},</li>
      *     <li>a {@link CoordinateOperation} given by {@link GeoKeys#Projection},</li>
-     *     <li>an {@link OperationMethod} given by {@link GeoKeys#ProjCoordTrans}.</li>
+     *     <li>an {@link OperationMethod} given by {@link GeoKeys#CoordTrans}.</li>
      *   </ul></li>
-     *   <li>A unit code given by {@link GeoKeys#ProjLinearUnits} (optional).</li>
-     *   <li>A unit scale factor given by {@link GeoKeys#ProjLinearUnitSize} (optional).</li>
+     *   <li>A unit code given by {@link GeoKeys#LinearUnits} (optional).</li>
+     *   <li>A unit scale factor given by {@link GeoKeys#LinearUnitSize} (optional).</li>
      * </ul>
      *
      * @throws NoSuchElementException if a mandatory value is missing.
@@ -1113,7 +1224,7 @@ final class CRSBuilder {
      * @see #createGeographicCRS(boolean)
      * @see #createConversion(String)
      */
-    private CoordinateReferenceSystem createProjectedCRS() throws FactoryException {
+    private ProjectedCRS createProjectedCRS() throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.ProjectedCSType);
         switch (epsg) {
             case GeoCodes.undefined: {
@@ -1122,13 +1233,18 @@ final class CRSBuilder {
             case GeoCodes.userDefined: {
                 /*
                  * If the CRS is user-defined, we have to parse many components (base CRS, datum, unit, etc.)
-                 * and build the projected CRS from them.
+                 * and build the projected CRS from them. Note that some GeoTIFF files put the projection name
+                 * in the Citation key instead of PCSCitation.
                  */
-                final String name = getAsString(GeoKeys.PCSCitation);
-                final Conversion projection = createConversion(name);
-                final GeographicCRS baseCRS = createGeographicCRS(false);
+                String name = getAsString(GeoKeys.PCSCitation);
+                if (name == null) {
+                    name = getAsString(GeoKeys.Citation);
+                    // Note that Citation has been removed from the map, so it will not be used by 'complete(MetadataBuilder).
+                }
+                final GeographicCRS baseCRS    = createGeographicCRS(false);
+                final Conversion    projection = createConversion(name);
+                final Unit<Length>  unit       = createUnit(GeoKeys.LinearUnits, GeoKeys.LinearUnitSize, Length.class, Units.METRE);
                 CartesianCS cs = epsgFactory().createCartesianCS(String.valueOf(Constants.EPSG_PROJECTED_CS));
-                final Unit<Length> unit = createUnit(GeoKeys.ProjLinearUnits, GeoKeys.ProjLinearUnitSize, Length.class, Units.METRE);
                 if (!Units.METRE.equals(unit)) {
                     cs = replaceLinearUnit(cs, unit);
                 }
@@ -1160,6 +1276,9 @@ final class CRSBuilder {
         final GeographicCRS baseCRS = crs.getBaseCRS();
         verifyIdentifier(baseCRS, GeoKeys.GeographicType);
         verify(baseCRS);
+        final Conversion projection = crs.getConversionFromBase();
+        verifyIdentifier(projection, GeoKeys.Projection);
+        verify(projection);
     }
 
     /**
@@ -1177,17 +1296,30 @@ final class CRSBuilder {
                 throw new NoSuchElementException(missingValue(GeoKeys.Projection));
             }
             case GeoCodes.userDefined: {
-                final String              type        = getMandatoryString(GeoKeys.ProjCoordTrans);
-                final OperationMethod     method      = operationFactory().getOperationMethod(type);
-                final ParameterValueGroup parameters  = method.getParameters().createValue();
+                final String              type       = getMandatoryString(GeoKeys.CoordTrans);
+                final OperationMethod     method     = operationFactory().getOperationMethod(type);
+                final ParameterValueGroup parameters = method.getParameters().createValue();
                 final Conversion c = operationFactory().createDefiningConversion(properties(name), method, parameters);
                 lastName = c.getName();
                 return c;
             }
             default: {
-                return (Conversion) epsgFactory().createCoordinateOperation(String.valueOf(epsg));
+                final Conversion projection = (Conversion) epsgFactory().createCoordinateOperation(String.valueOf(epsg));
+                verify(projection);
+                return projection;
             }
         }
+    }
+
+    /**
+     * Verifies if the user-defined conversion created from GeoTIFF values
+     * matches the given conversion created from the EPSG geodetic dataset.
+     * This method does not verify the EPSG code of the given conversion.
+     *
+     * @param  projection  the conversion created from the EPSG geodetic dataset.
+     */
+    private void verify(final Conversion projection) throws FactoryException {
+        // TODO
     }
 
     /**

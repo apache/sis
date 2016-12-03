@@ -40,57 +40,57 @@ final class GeoKeys {
     }
 
     // 6.2.1 GeoTIFF Configuration Keys
-    /** Section 6.3.1.1 Codes. */ public static final short ModelType                = 1024;
-    /** Section 6.3.1.2 Codes. */ public static final short RasterType               = 1025;
-    /** Documentation.         */ public static final short Citation                 = 1026;
+    /** Section 6.3.1.1 Codes. */ public static final short ModelType            = 1024;
+    /** Section 6.3.1.2 Codes. */ public static final short RasterType           = 1025;
+    /** Documentation.         */ public static final short Citation             = 1026;
 
     // 6.2.2 Geographic CS Parameter Keys
-    /** Section 6.3.2.1 Codes. */ public static final short GeographicType           = 2048;
-    /** Documentation.         */ public static final short GeogCitation             = 2049;
-    /** Section 6.3.2.2 Codes. */ public static final short GeogGeodeticDatum        = 2050;
-    /** Section 6.3.2.4 codes. */ public static final short GeogPrimeMeridian        = 2051;
-    /** Section 6.3.1.3 Codes. */ public static final short GeogLinearUnits          = 2052;
-    /** Relative to meters.    */ public static final short GeogLinearUnitSize       = 2053;
-    /** Section 6.3.1.4 Codes. */ public static final short GeogAngularUnits         = 2054;
-    /** Relative to radians.   */ public static final short GeogAngularUnitSize      = 2055;
-    /** Section 6.3.2.3 Codes. */ public static final short GeogEllipsoid            = 2056;
-    /** In GeogLinearUnits.    */ public static final short GeogSemiMajorAxis        = 2057;
-    /** In GeogLinearUnits.    */ public static final short GeogSemiMinorAxis        = 2058;
-    /** A ratio.               */ public static final short GeogInvFlattening        = 2059;
-    /** Section 6.3.1.4 Codes. */ public static final short GeogAzimuthUnits         = 2060;
-    /** In GeogAngularUnit.    */ public static final short GeogPrimeMeridianLong    = 2061;
+    /** Section 6.3.2.1 Codes. */ public static final short GeographicType       = 2048;
+    /** Documentation.         */ public static final short GeogCitation         = 2049;
+    /** Section 6.3.2.2 Codes. */ public static final short GeodeticDatum        = 2050;
+    /** Section 6.3.2.4 codes. */ public static final short PrimeMeridian        = 2051;
+    /** Section 6.3.1.3 Codes. */ public static final short GeogLinearUnits      = 2052;
+    /** Relative to meters.    */ public static final short GeogLinearUnitSize   = 2053;
+    /** Section 6.3.1.4 Codes. */ public static final short AngularUnits         = 2054;
+    /** Relative to radians.   */ public static final short AngularUnitSize      = 2055;
+    /** Section 6.3.2.3 Codes. */ public static final short Ellipsoid            = 2056;
+    /** In GeogLinearUnits.    */ public static final short SemiMajorAxis        = 2057;
+    /** In GeogLinearUnits.    */ public static final short SemiMinorAxis        = 2058;
+    /** A ratio.               */ public static final short InvFlattening        = 2059;
+    /** Section 6.3.1.4 Codes. */ public static final short AzimuthUnits         = 2060;
+    /** In AngularUnit.        */ public static final short PrimeMeridianLong    = 2061;
 
     // 6.2.3 Projected CS Parameter Keys
-    /** Section 6.3.3.1 codes. */ public static final short ProjectedCSType          = 3072;
-    /** Documentation.         */ public static final short PCSCitation              = 3073;
-    /** Section 6.3.3.2 codes. */ public static final short Projection               = 3074;
-    /** Section 6.3.3.3 codes. */ public static final short ProjCoordTrans           = 3075;
-    /** Section 6.3.1.3 codes. */ public static final short ProjLinearUnits          = 3076;
-    /** Relative to meters.    */ public static final short ProjLinearUnitSize       = 3077;
-    /** In GeogAngularUnit.    */ public static final short ProjStdParallel1         = 3078;
-    /** In GeogAngularUnit.    */ public static final short ProjStdParallel2         = 3079;
-    /** In GeogAngularUnit.    */ public static final short ProjNatOriginLong        = 3080;
-    /** In GeogAngularUnit.    */ public static final short ProjNatOriginLat         = 3081;
-    /** In ProjLinearUnits.    */ public static final short ProjFalseEasting         = 3082;
-    /** In ProjLinearUnits.    */ public static final short ProjFalseNorthing        = 3083;
-    /** In GeogAngularUnit.    */ public static final short ProjFalseOriginLong      = 3084;
-    /** In GeogAngularUnit.    */ public static final short ProjFalseOriginLat       = 3085;
-    /** In ProjLinearUnits.    */ public static final short ProjFalseOriginEasting   = 3086;
-    /** In ProjLinearUnits.    */ public static final short ProjFalseOriginNorthing  = 3087;
-    /** In GeogAngularUnit.    */ public static final short ProjCenterLong           = 3088;
-    /** In GeogAngularUnit.    */ public static final short ProjCenterLat            = 3089;
-    /** In ProjLinearUnits.    */ public static final short ProjCenterEasting        = 3090;
-    /** In ProjLinearUnits.    */ public static final short ProjCenterNorthing       = 3091;
-    /** A ratio.               */ public static final short ProjScaleAtNatOrigin     = 3092;
-    /** A ratio.               */ public static final short ProjScaleAtCenter        = 3093;
-    /** In GeogAzimuthUnit.    */ public static final short ProjAzimuthAngle         = 3094;
-    /** In GeogAngularUnit.    */ public static final short ProjStraightVertPoleLong = 3095;
+    /** Section 6.3.3.1 codes. */ public static final short ProjectedCSType      = 3072;
+    /** Documentation.         */ public static final short PCSCitation          = 3073;
+    /** Section 6.3.3.2 codes. */ public static final short Projection           = 3074;
+    /** Section 6.3.3.3 codes. */ public static final short CoordTrans           = 3075;
+    /** Section 6.3.1.3 codes. */ public static final short LinearUnits          = 3076;
+    /** Relative to meters.    */ public static final short LinearUnitSize       = 3077;
+    /** In AngularUnit.        */ public static final short StdParallel1         = 3078;
+    /** In AngularUnit.        */ public static final short StdParallel2         = 3079;
+    /** In AngularUnit.        */ public static final short NatOriginLong        = 3080;
+    /** In AngularUnit.        */ public static final short NatOriginLat         = 3081;
+    /** In LinearUnits.        */ public static final short FalseEasting         = 3082;
+    /** In LinearUnits.        */ public static final short FalseNorthing        = 3083;
+    /** In AngularUnit.        */ public static final short FalseOriginLong      = 3084;
+    /** In AngularUnit.        */ public static final short FalseOriginLat       = 3085;
+    /** In LinearUnits.        */ public static final short FalseOriginEasting   = 3086;
+    /** In LinearUnits.        */ public static final short FalseOriginNorthing  = 3087;
+    /** In AngularUnit.        */ public static final short CenterLong           = 3088;
+    /** In AngularUnit.        */ public static final short CenterLat            = 3089;
+    /** In LinearUnits.        */ public static final short CenterEasting        = 3090;
+    /** In LinearUnits.        */ public static final short CenterNorthing       = 3091;
+    /** A ratio.               */ public static final short ScaleAtNatOrigin     = 3092;
+    /** A ratio.               */ public static final short ScaleAtCenter        = 3093;
+    /** In AzimuthUnit.        */ public static final short AzimuthAngle         = 3094;
+    /** In AngularUnit.        */ public static final short StraightVertPoleLong = 3095;
 
     // 6.2.4 Vertical CS Keys
-    /** Section 6.3.4.1 codes. */ public static final short VerticalCSType           = 4096;
-    /** Documentation.         */ public static final short VerticalCitation         = 4097;
-    /** Section 6.3.4.2 codes. */ public static final short VerticalDatum            = 4098;
-    /** Section 6.3.1.3 codes. */ public static final short VerticalUnits            = 4099;
+    /** Section 6.3.4.1 codes. */ public static final short VerticalCSType       = 4096;
+    /** Documentation.         */ public static final short VerticalCitation     = 4097;
+    /** Section 6.3.4.2 codes. */ public static final short VerticalDatum        = 4098;
+    /** Section 6.3.1.3 codes. */ public static final short VerticalUnits        = 4099;
 
     /**
      * Returns the name of the given key. Implementation of this method is inefficient,

@@ -40,10 +40,16 @@ import org.apache.sis.internal.geotiff.Resources;
  */
 abstract class GeoTIFF implements Closeable {
     /**
-     * The timezone specified at construction time, or {@code null} for the default.
+     * The timezone for the date and time parsing, or {@code null} for the default.
      * This is not yet configurable, but may become in a future version.
      */
     private static final TimeZone TIMEZONE = null;
+
+    /**
+     * The locale to use for parsers or formatter. This is <strong>not</strong> the locale
+     * for warnings or other messages emitted to the users.
+     */
+    static final Locale LOCALE = Locale.US;
 
     /**
      * The store which created this reader or writer.
@@ -81,7 +87,7 @@ abstract class GeoTIFF implements Closeable {
      */
     final DateFormat getDateFormat() {
         if (dateFormat == null) {
-            dateFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.US);
+            dateFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", LOCALE);
             if (TIMEZONE != null) {
                 dateFormat.setTimeZone(TIMEZONE);
             }

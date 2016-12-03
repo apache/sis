@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.NoSuchElementException;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
@@ -1028,8 +1029,14 @@ final class ImageFileDirectory {
          */
         if (geoKeyDirectory != null) {
             final CRSBuilder helper = new CRSBuilder(reader);
-            metadata.add(helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters));
-            helper.complete(metadata);
+            try {
+                metadata.add(helper.build(geoKeyDirectory, numericGeoParameters, asciiGeoParameters));
+                helper.complete(metadata);
+            } catch (ClassCastException e) {
+                reader.owner.warning(null, e);
+            } catch (NumberFormatException | NoSuchElementException e) {
+                // Ignore - a warning with a better message has already been emitted.
+            }
             geoKeyDirectory      = null;            // Not needed anymore, so let GC do its work.
             numericGeoParameters = null;
             asciiGeoParameters   = null;
