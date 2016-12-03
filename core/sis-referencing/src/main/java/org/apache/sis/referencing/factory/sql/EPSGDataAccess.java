@@ -66,6 +66,7 @@ import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -3062,7 +3063,8 @@ next:               while (r.next()) {
         }
 
         /**
-         * Searches for the given object with warnings for deprecations temporarily disabled.
+         * Lookups objects which are approximatively equal to the specified object.
+         * This method temporarily disables warnings about deprecated objects.
          */
         @Override
         public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {

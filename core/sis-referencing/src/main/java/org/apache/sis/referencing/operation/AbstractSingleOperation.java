@@ -112,7 +112,9 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
 
     /**
      * Creates a coordinate operation from the given properties.
+     * This constructor would be public if {@code AbstractSingleOperation} was public.
      */
+    @SuppressWarnings("PublicConstructorInNonPublicClass")
     public AbstractSingleOperation(final Map<String,?>             properties,
                                    final CoordinateReferenceSystem sourceCRS,
                                    final CoordinateReferenceSystem targetCRS,
@@ -364,8 +366,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         /*
          * We consider the operation method as metadata. One could argue that OperationMethod's 'sourceDimension' and
          * 'targetDimension' are not metadata, but their values should be identical to the 'sourceCRS' and 'targetCRS'
-         * dimensions, already checked below. We could also argue that 'OperationMethod.parameters' are not metadata,
-         * but their values should have been taken in account for the MathTransform creation, compared below.
+         * dimensions, already checked above. We could also argue that 'OperationMethod.parameters' are not metadata,
+         * but their values should have been taken in account for the MathTransform creation, compared above.
          *
          * Comparing the MathTransforms instead of parameters avoid the problem of implicit parameters. For example in
          * a ProjectedCRS, the "semiMajor" and "semiMinor" axis lengths are sometime provided as explicit parameters,
