@@ -100,11 +100,12 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      *   </tr>
      * </table>
      *
-     * @param  properties The properties to be given to the identified object.
-     * @param  operations The sequence of operations. Shall contains at least two operations.
-     * @param  mtFactory  The math transform factory to use for math transforms concatenation.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  operations  the sequence of operations. Shall contains at least two operations.
+     * @param  mtFactory   the math transform factory to use for math transforms concatenation.
      * @throws FactoryException if the factory can not concatenate the math transforms.
      */
+    @SuppressWarnings("PublicConstructorInNonPublicClass")
     public DefaultConcatenatedOperation(final Map<String,?> properties, CoordinateOperation[] operations,
             final MathTransformFactory mtFactory) throws FactoryException
     {
@@ -155,10 +156,10 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * since we are adding accuracy informations to a concatenated operation. This departure should be considered
      * as a convenience feature only; accuracies are really relevant in transformations only.</div>
      *
-     * @param  properties  The properties specified at construction time, or {@code null} if unknown.
-     * @param  operations  The operations to concatenate.
-     * @param  flattened   The destination list in which to add the {@code SingleOperation} instances.
-     * @param  mtFactory   The math transform factory to use, or {@code null} for not performing concatenation.
+     * @param  properties  the properties specified at construction time, or {@code null} if unknown.
+     * @param  operations  the operations to concatenate.
+     * @param  flattened   the destination list in which to add the {@code SingleOperation} instances.
+     * @param  mtFactory   the math transform factory to use, or {@code null} for not performing concatenation.
      * @param  setAccuracy {@code true} for setting the {@link #coordinateOperationAccuracy} field.
      * @param  setDomain   {@code true} for setting the {@link #domainOfValidity} field.
      * @throws FactoryException if the factory can not concatenate the math transforms.
@@ -254,7 +255,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param operation The coordinate operation to copy.
+     * @param  operation  the coordinate operation to copy.
      *
      * @see #castOrCopy(ConcatenatedOperation)
      */
@@ -271,8 +272,8 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * Note that this is a <cite>shallow</cite> copy operation, since the other properties contained in the given
      * object are not recursively copied.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultConcatenatedOperation castOrCopy(final ConcatenatedOperation object) {
@@ -299,7 +300,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     /**
      * Returns the sequence of operations.
      *
-     * @return The sequence of operations.
+     * @return the sequence of operations.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -318,7 +319,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                            // Slight optimization.
         }
         if (super.equals(object, mode)) {
             if (mode == ComparisonMode.STRICT) {
@@ -344,7 +345,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * Formats this coordinate operation in pseudo-WKT. This is specific to Apache SIS since
      * there is no concatenated operation in the Well Known Text (WKT) version 2 format.
      *
-     * @param  formatter The formatter to use.
+     * @param  formatter  the formatter to use.
      * @return {@code "ConcatenatedOperation"}.
      */
     @Override

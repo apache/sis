@@ -1890,7 +1890,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * All access to this object must be done in a block synchronized on {@link #findPool}.
      */
     private static final class FindEntry {
-        /** Result of the search with our without ignoring axes. */
+        /** Result of the search with or without ignoring axes. */
         private Set<IdentifiedObject> strict, lenient;
 
         /** Whether the cache is the result of an explicit request instead than a dependency search. */
