@@ -31,7 +31,8 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.storage.geotiff.TypeTest.class,
-    org.apache.sis.storage.geotiff.CompressionTest.class
+    org.apache.sis.storage.geotiff.CompressionTest.class,
+    org.apache.sis.storage.geotiff.CRSBuilderTest.class
 })
 public final strictfp class GeoTiffTestSuite extends TestSuite {
     /**
