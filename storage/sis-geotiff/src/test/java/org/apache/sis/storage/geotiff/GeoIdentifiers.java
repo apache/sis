@@ -75,6 +75,7 @@ final class GeoIdentifiers {
     public static final short CT_VanDerGrinten                  = 25;
     public static final short CT_NewZealandMapGrid              = 26;
     public static final short CT_TransvMercator_SouthOriented   = 27;
+    public static final short CT_CylindricalEqualArea           = 28;
 
     // Aliases:
     public static final short CT_AlaskaConformal              =  CT_TransvMercator_Modified_Alaska;
@@ -152,5 +153,17 @@ final class GeoIdentifiers {
             throw new AssertionError(e);        // Should never happen because we asked only for public fields.
         }
         return Integer.toHexString(Short.toUnsignedInt(tag));
+    }
+
+    /**
+     * Returns the numerical value of the given GeoTIFF key name.
+     * This method is the converse of {@link #name(short)}.
+     */
+    static short code(final String name) {
+        try {
+            return GeoIdentifiers.class.getField(name).getShort(null);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }

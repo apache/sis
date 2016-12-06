@@ -172,7 +172,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public abstract class Builder<B extends Builder<B>> {
@@ -261,7 +261,7 @@ public abstract class Builder<B extends Builder<B>> {
      * The properties recognized by this constructor are documented
      * {@linkplain IdentifiedObjects#getProperties(IdentifiedObject, String...) here}.
      *
-     * @param object The identified object from which to inherit properties, or {@code null}.
+     * @param object  the identified object from which to inherit properties, or {@code null}.
      *
      * @since 0.6
      */
@@ -315,6 +315,37 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
+     * Creates an identifier for the given authority. If and only if the given authority is the default one,
+     * then the new identifier will also contain the user-supplied code space and version (if any).
+     * The new identifier will be marked as deprecated if {@link #isDeprecated()} returns {@code true}.
+     */
+    private Identifier createIdentifier(final Citation authority, final String identifier) {
+        final String codeSpace;
+        final String version;
+        if (authority == getAuthority()) {
+            codeSpace  = getCodeSpace();
+            version    = getVersion();
+        } else {
+            // Do not use the version information since it applies to the default authority rather than the given one.
+            codeSpace = Citations.getCodeSpace(authority);
+            version   = null;
+        }
+        return createIdentifier(authority, codeSpace, identifier, version);
+    }
+
+    /**
+     * Creates an identifier for the given authority, code space and version.
+     * The new identifier will be marked as deprecated if {@link #isDeprecated()} returns {@code true}.
+     */
+    private Identifier createIdentifier(final Citation authority, final String codeSpace, final String identifier, final String version) {
+        if (isDeprecated()) {
+            return new DeprecatedCode(authority, codeSpace, identifier, version, null, getRemarks());
+        } else {
+            return new ImmutableIdentifier(authority, codeSpace, identifier, version, getDescription());
+        }
+    }
+
+    /**
      * Converts the given name into an identifier. Note that {@link NamedIdentifier}
      * implements both {@link GenericName} and {@link Identifier} interfaces.
      */
@@ -327,8 +358,8 @@ public abstract class Builder<B extends Builder<B>> {
      * is needed for all keys defined in the {@link Identifier} interface. This check is not needed for other keys,
      * so callers do not need to invoke this method for other keys.
      *
-     * @param  key The key of the property to set.
-     * @param  value The value to set.
+     * @param  key    the key of the property to set.
+     * @param  value  the value to set.
      * @return {@code true} if the property changed as a result of this method call.
      * @throws IllegalStateException if a new value is specified in a phase where the value can not be changed.
      */
@@ -351,7 +382,7 @@ public abstract class Builder<B extends Builder<B>> {
      * Returns the value of the first argument given by the last call to {@link #setCodeSpace(Citation, String)},
      * or {@code null} if none. The default value is {@code null}.
      *
-     * @return The citation specified by the last call to {@code setCodeSpace(…)}, or {@code null} if none.
+     * @return the citation specified by the last call to {@code setCodeSpace(…)}, or {@code null} if none.
      *
      * @since 0.6
      */
@@ -363,7 +394,7 @@ public abstract class Builder<B extends Builder<B>> {
      * Returns the value of the last argument given by the last call to {@link #setCodeSpace(Citation, String)},
      * or {@code null} if none. The default value is {@code null}.
      *
-     * @return The string specified by the last call to {@code setCodeSpace(…)}, or {@code null} if none.
+     * @return the string specified by the last call to {@code setCodeSpace(…)}, or {@code null} if none.
      *
      * @since 0.6
      */
@@ -390,8 +421,8 @@ public abstract class Builder<B extends Builder<B>> {
      * <p><b>Lifetime:</b>
      * this property is kept unchanged until this {@code setCodeSpace(…)} method is invoked again.</p>
      *
-     * @param  authority Bibliographic reference to the authority defining the codes, or {@code null} if none.
-     * @param  codespace The {@code IdentifiedObject} codespace, or {@code null} for inferring it from the authority.
+     * @param  authority  bibliographic reference to the authority defining the codes, or {@code null} if none.
+     * @param  codespace  the {@code IdentifiedObject} codespace, or {@code null} for inferring it from the authority.
      * @return {@code this}, for method call chaining.
      * @throws IllegalStateException if {@code addName(…)} or {@code addIdentifier(…)} has been invoked at least
      *         once since builder construction or since the last call to a {@code createXXX(…)} method.
@@ -411,7 +442,7 @@ public abstract class Builder<B extends Builder<B>> {
      * Returns the value given by the last call to {@link #setVersion(String)}, or {@code null} if none.
      * The default value is {@code null}.
      *
-     * @return The value specified by the last call to {@code setVersion(…)}, or {@code null} if none.
+     * @return the value specified by the last call to {@code setVersion(…)}, or {@code null} if none.
      *
      * @since 0.6
      */
@@ -431,7 +462,7 @@ public abstract class Builder<B extends Builder<B>> {
      * <p><b>Lifetime:</b>
      * this property is kept unchanged until this {@code setVersion(…)} method is invoked again.</p>
      *
-     * @param  version The version of code definitions, or {@code null} if none.
+     * @param  version  the version of code definitions, or {@code null} if none.
      * @return {@code this}, for method call chaining.
      * @throws IllegalStateException if {@code addName(…)} or {@code addIdentifier(…)} has been invoked at least
      *         once since builder construction or since the last call to a {@code createXXX(…)} method.
@@ -464,7 +495,7 @@ public abstract class Builder<B extends Builder<B>> {
      * <p><b>Lifetime:</b>
      * the name and all aliases are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  name The {@code IdentifiedObject} name as a {@link String} or {@link InternationalString} instance.
+     * @param  name  the {@code IdentifiedObject} name as a {@link String} or {@link InternationalString} instance.
      * @return {@code this}, for method call chaining.
      */
     public B addName(final CharSequence name) {
@@ -500,8 +531,8 @@ public abstract class Builder<B extends Builder<B>> {
      * <p><b>Lifetime:</b>
      * the name and all aliases are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  authority Bibliographic reference to the authority defining the codes, or {@code null} if none.
-     * @param  name The {@code IdentifiedObject} alias as a name in the namespace of the given authority.
+     * @param  authority  bibliographic reference to the authority defining the codes, or {@code null} if none.
+     * @param  name       the {@code IdentifiedObject} alias as a name in the namespace of the given authority.
      * @return {@code this}, for method call chaining.
      *
      * @see #addIdentifier(Citation, String)
@@ -547,7 +578,7 @@ public abstract class Builder<B extends Builder<B>> {
      * <p><b>Lifetime:</b>
      * the name and all aliases are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  name The {@code IdentifiedObject} name as an identifier.
+     * @param  name  the {@code IdentifiedObject} name as an identifier.
      * @return {@code this}, for method call chaining.
      */
     public B addName(final Identifier name) {
@@ -573,7 +604,7 @@ public abstract class Builder<B extends Builder<B>> {
      * <p><b>Lifetime:</b>
      * the name and all aliases are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  name The {@code IdentifiedObject} name as an identifier.
+     * @param  name  the {@code IdentifiedObject} name as an identifier.
      * @return {@code this}, for method call chaining.
      */
     public B addName(final GenericName name) {
@@ -602,12 +633,12 @@ public abstract class Builder<B extends Builder<B>> {
      * <p><b>Lifetime:</b>
      * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  identifier The {@code IdentifiedObject} identifier.
+     * @param  identifier  the {@code IdentifiedObject} identifier.
      * @return {@code this}, for method call chaining.
      */
     public B addIdentifier(final String identifier) {
         ensureNonNull("identifier", identifier);
-        addIdentifier(getAuthority(), getCodeSpace(), identifier, getVersion());
+        identifiers.add(createIdentifier(getAuthority(), getCodeSpace(), identifier, getVersion()));
         return self();
     }
 
@@ -618,39 +649,16 @@ public abstract class Builder<B extends Builder<B>> {
      * <p><b>Lifetime:</b>
      * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  authority  Bibliographic reference to the authority defining the codes, or {@code null} if none.
-     * @param  identifier The {@code IdentifiedObject} identifier as a code in the namespace of the given authority.
+     * @param  authority   bibliographic reference to the authority defining the codes, or {@code null} if none.
+     * @param  identifier  the {@code IdentifiedObject} identifier as a code in the namespace of the given authority.
      * @return {@code this}, for method call chaining.
      *
      * @see #addName(Citation, CharSequence)
      */
     public B addIdentifier(final Citation authority, final String identifier) {
         ensureNonNull("identifier", identifier);
-        final String codeSpace;
-        final String version;
-        if (authority == getAuthority()) {
-            codeSpace  = getCodeSpace();
-            version    = getVersion();
-        } else {
-            // Do not use the version information since it applies to the default authority rather than the given one.
-            codeSpace = Citations.getCodeSpace(authority);
-            version   = null;
-        }
-        addIdentifier(authority, codeSpace, identifier, version);
+        identifiers.add(createIdentifier(authority, identifier));
         return self();
-    }
-
-    /**
-     * Implementation of {@link #addIdentifier(String)} and {@link #addIdentifier(Citation, String)}.
-     */
-    private void addIdentifier(final Citation authority, final String codeSpace, final String identifier, final String version) {
-        final Identifier id;
-        if (isDeprecated()) {
-            id = new DeprecatedCode(authority, codeSpace, identifier, version, null, getRemarks());
-        } else {
-            id = new ImmutableIdentifier(authority, codeSpace, identifier, version, getDescription());
-        }
-        identifiers.add(id);
     }
 
     /**
@@ -662,7 +670,7 @@ public abstract class Builder<B extends Builder<B>> {
      * <p><b>Lifetime:</b>
      * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  identifier The {@code IdentifiedObject} identifier.
+     * @param  identifier  the {@code IdentifiedObject} identifier.
      * @return {@code this}, for method call chaining.
      */
     public B addIdentifier(final Identifier identifier) {
@@ -688,7 +696,7 @@ public abstract class Builder<B extends Builder<B>> {
      * <p>This is a convenience method for using an existing object as a template, before to modify
      * some names by calls to {@link #rename(Citation, CharSequence[])}.</p>
      *
-     * @param  object The object from which to copy the references to names and identifiers.
+     * @param  object  the object from which to copy the references to names and identifiers.
      * @return {@code this}, for method call chaining.
      *
      * @since 0.6
@@ -731,9 +739,12 @@ public abstract class Builder<B extends Builder<B>> {
      *   </li>
      * </ul>
      *
-     * @param  authority The authority of the names to replaces.
-     * @param  replacements The new local parts for the names to replace,
-     *         or {@code null} for removing all identifiers associated to the given authority.
+     * This method could also be understood as a {@code setNames(Citation, ...)} method, except that it modifies
+     * only the names associated to the given authority and preserves the same order than previous names.
+     *
+     * @param  authority     the authority of the names to replaces.
+     * @param  replacements  the new local parts for the names to replace,
+     *         or {@code null} or an empty array for removing all names associated to the given authority.
      * @return {@code this}, for method call chaining.
      *
      * @since 0.6
@@ -809,6 +820,63 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
+     * Replaces the identifiers associated to the given authority by the given new identifiers.
+     * More specifically:
+     *
+     * <ul>
+     *   <li>The first occurrence of an identifier associated to {@code authority} will be replaced by
+     *       a new identifier with the same authority and the code defined by {@code replacements[0]}.</li>
+     *   <li>The second occurrence of an identifier associated to {@code authority} will be replaced by a
+     *       new identifier with the same authority and the local part defined by {@code replacements[1]}.</li>
+     *   <li><i>etc.</i> until one of the following conditions is meet:
+     *     <ul>
+     *       <li>There is no more identifier associated to the given authority in this {@code Builder}, in which case
+     *           new identifiers are inserted for all remaining elements in the {@code replacements} array.</li>
+     *       <li>There is no more elements in the {@code replacements} array, in which case all remaining
+     *           identifiers associated to the given authority in this {@code Builder} are removed.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * This method could also be understood as a {@code setIdentifiers(Citation, ...)} method, except that it modifies
+     * only the identifiers associated to the given authority and preserves the same order than previous identifiers.
+     *
+     * @param  authority     the authority of the names to replaces.
+     * @param  replacements  the new local parts for the names to replace,
+     *         or {@code null} or an empty array for removing all names associated to the given authority.
+     * @return {@code this}, for method call chaining.
+     *
+     * @since 0.8
+     */
+    public B replaceIdentifiers(final Citation authority, final String... replacements) {
+        ensureNonNull("authority", authority);
+        final int length = (replacements != null) ? replacements.length : 0;
+        int next = 0;
+        int insertAt = identifiers.size();
+        for (int i = 0; i < identifiers.size(); i++) {
+            final Identifier old = identifiers.get(i);
+            if (authority.equals(old.getAuthority())) {
+                if (next < length) {
+                    final String code;
+                    ensureNonNullElement("replacements", next, code = replacements[next++]);
+                    if (!code.equals(old.getCode())) {
+                        identifiers.set(i, createIdentifier(authority, code));
+                        insertAt = i + 1;
+                    }
+                } else {
+                    identifiers.remove(i--);
+                }
+            }
+        }
+        while (next < length) {
+            final String code;
+            ensureNonNullElement("replacements", next, code = replacements[next++]);
+            identifiers.add(insertAt++, createIdentifier(authority, code));
+        }
+        return self();
+    }
+
+    /**
      * Returns the parameter description specified by the last call to {@link #setDescription(CharSequence)},
      * or {@code null} if none.
      */
@@ -837,7 +905,7 @@ public abstract class Builder<B extends Builder<B>> {
      * previous descriptions are discarded by calls to {@code setDescription(…)}.
      * Descriptions are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  description The description as a {@link String} or {@link InternationalString} instance, or {@code null} if none.
+     * @param  description  the description as a {@link String} or {@link InternationalString} instance, or {@code null} if none.
      * @return {@code this}, for method call chaining.
      *
      * @see ImmutableIdentifier#getDescription()
@@ -867,7 +935,7 @@ public abstract class Builder<B extends Builder<B>> {
      * previous remarks are discarded by calls to {@code setRemarks(…)}.
      * Remarks are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  remarks The remarks as a {@link String} or {@link InternationalString} instance, or {@code null} if none.
+     * @param  remarks  the remarks as a {@link String} or {@link InternationalString} instance, or {@code null} if none.
      * @return {@code this}, for method call chaining.
      */
     public B setRemarks(final CharSequence remarks) {

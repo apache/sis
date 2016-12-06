@@ -60,6 +60,7 @@ public final strictfp class MetadataBuilderTest extends TestCase {
     public void testParseLegalNotice() {
         verifyCopyrightParsing("Copyright (C), John Smith, 1992. All rights reserved.");
         verifyCopyrightParsing("(C) 1992, John Smith. All rights reserved.");
+        verifyCopyrightParsing("(C) COPYRIGHT 1992 John Smith.");
     }
 
     /**

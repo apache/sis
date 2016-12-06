@@ -75,8 +75,10 @@ public final class PolarStereographicB extends AbstractStereographic {
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        LONGITUDE_OF_ORIGIN = createLongitude(
-                rename(PolarStereographicA.LONGITUDE_OF_ORIGIN, "8833", "Longitude of origin", builder));
+        LONGITUDE_OF_ORIGIN = createLongitude(builder
+                .addNamesAndIdentifiers(PolarStereographicA.LONGITUDE_OF_ORIGIN)
+                .rename(Citations.EPSG, "Longitude of origin")
+                .replaceIdentifiers(Citations.EPSG, "8833"));
 
         STANDARD_PARALLEL = createMandatoryLatitude(builder
                 .addIdentifier("8832").addName("Latitude of standard parallel")

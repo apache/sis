@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Collections;
 import java.util.StringJoiner;
 import java.util.logging.Level;
@@ -134,6 +135,11 @@ final class CRSBuilder {
      * Number of {@code short} values in each GeoKey entry.
      */
     private static final int ENTRY_LENGTH = 4;
+
+    /**
+     * The character used as a separator in {@link String} multi-values.
+     */
+    private static final char SEPARATOR = '|';
 
     /**
      * Index where to store the name of the geodetic CRS, the datum, the ellipsoid and the prime meridian.
@@ -642,9 +648,11 @@ final class CRSBuilder {
                         missingValue(key);
                         continue;
                     }
-                    if (count != 0 && asciiParameters.charAt(upper - 1) == '|') {
+                    upper = CharSequences.skipTrailingWhitespaces(asciiParameters, valueOffset, upper);
+                    while (upper > valueOffset && asciiParameters.charAt(upper - 1) == SEPARATOR) {
                         upper--;    // Skip trailing pipe, interpreted as C/C++ NUL character.
                     }
+                    // Use String.trim() for skipping C/C++ NUL character in addition of whitespaces.
                     final String s = asciiParameters.substring(valueOffset, upper).trim();
                     if (s.isEmpty()) continue;
                     value = s;
@@ -669,7 +677,10 @@ final class CRSBuilder {
         switch (crsType) {
             case GeoCodes.undefined:           return null;
             case GeoCodes.ModelTypeProjected:  return createProjectedCRS();
-            case GeoCodes.ModelTypeGeographic: return createGeographicCRS(true);
+            case GeoCodes.ModelTypeGeographic: {
+                return createGeographicCRS(true,
+                        createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE));
+            }
             case GeoCodes.ModelTypeGeocentric: // TODO
             default: {
                 warning(Resources.Keys.UnsupportedCoordinateSystemKind_1, crsType);
@@ -694,16 +705,13 @@ final class CRSBuilder {
     final void complete(final MetadataBuilder metadata) {
         /*
          * ASCII reference to published documentation on the overall configuration of the GeoTIFF file.
+         * Often the projected CRS name, despite GeoKeys.PCSCitation being already for that purpose.
          * Checked first because this code is unlikely to throw an exception, while other parsings may
          * interrupt this method with an exception.
          */
         final String title = getAsString(GeoKeys.Citation);
         if (title != null) {
-            if (!metadata.hasTitle()) {
-                metadata.addTitle(title);
-            } else {
-                metadata.setGridToCRS(title);
-            }
+            metadata.setGridToCRS(title);
         }
         /*
          * Whether the pixel value is thought of as filling the cell area or is considered as point measurements at
@@ -788,6 +796,7 @@ final class CRSBuilder {
                 return defaultValue;
             }
             case GeoCodes.userDefined: {
+                if (scaleKey == 0) return defaultValue;
                 return defaultValue.getSystemUnit().multiply(getMandatoryDouble(scaleKey));
             }
             default: {
@@ -797,12 +806,14 @@ final class CRSBuilder {
                  * is consistent with what we would expect for a unit of the given EPSG code.
                  */
                 final Unit<Q> unit = epsgFactory().createUnit(String.valueOf(epsg)).asType(quantity);
-                final double scale = getAsDouble(scaleKey);
-                if (!Double.isNaN(scale)) {
-                    final double expected = unit.getConverterTo(defaultValue.getSystemUnit()).convert(1d);
-                    if (Math.abs(expected - scale) > expected * Numerics.COMPARISON_THRESHOLD) {
-                        warning(Resources.Keys.NotTheEpsgValue_5, (Constants.EPSG + ':') + epsg,
-                                expected, GeoKeys.name(scaleKey), scale, "");
+                if (scaleKey != 0) {
+                    final double scale = getAsDouble(scaleKey);
+                    if (!Double.isNaN(scale)) {
+                        final double expected = unit.getConverterTo(defaultValue.getSystemUnit()).convert(1d);
+                        if (Math.abs(expected - scale) > expected * Numerics.COMPARISON_THRESHOLD) {
+                            warning(Resources.Keys.NotTheEpsgValue_5, (Constants.EPSG + ':') + epsg,
+                                    expected, GeoKeys.name(scaleKey), scale, "");
+                        }
                     }
                 }
                 return unit;
@@ -1065,7 +1076,7 @@ final class CRSBuilder {
      */
     static String[] splitName(final String name) {
         final String[] names = new String[GCRS + 1];
-        final String[] components = (String[]) CharSequences.split(name, '|');
+        final String[] components = (String[]) CharSequences.split(name, SEPARATOR);
         switch (components.length) {
             case 0: break;
             case 1: names[GCRS] = name; break;
@@ -1132,6 +1143,7 @@ final class CRSBuilder {
      * </ul>
      *
      * @param  rightHanded  whether to force longitude before latitude axis.
+     * @param  angularUnit  the angular unit of the latitude and longitude values.
      * @throws NoSuchElementException if a mandatory value is missing.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
@@ -1139,7 +1151,7 @@ final class CRSBuilder {
      *
      * @see #createGeodeticDatum(String, Unit, Unit)
      */
-    private GeographicCRS createGeographicCRS(final boolean rightHanded) throws FactoryException {
+    private GeographicCRS createGeographicCRS(final boolean rightHanded, final Unit<Angle> angularUnit) throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.GeographicType);
         switch (epsg) {
             case GeoCodes.undefined: {
@@ -1152,8 +1164,7 @@ final class CRSBuilder {
                  */
                 final String[] names = splitName(getAsString(GeoKeys.GeogCitation));
                 final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits, GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
-                final Unit<Angle> angularUnit = createUnit(GeoKeys.AngularUnits,    GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
-                final GeodeticDatum     datum = createGeodeticDatum(names, angularUnit, linearUnit);
+                final GeodeticDatum datum = createGeodeticDatum(names, angularUnit, linearUnit);
                 EllipsoidalCS cs = CommonCRS.defaultGeographic().getCoordinateSystem();
                 if (!Units.DEGREE.equals(angularUnit)) {
                     cs = replaceAngularUnit(cs, angularUnit);
@@ -1172,7 +1183,7 @@ final class CRSBuilder {
                 if (rightHanded) {
                     crs = DefaultGeographicCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
                 }
-                verify(crs);
+                verify(crs, angularUnit);
                 return crs;
             }
         }
@@ -1183,15 +1194,15 @@ final class CRSBuilder {
      * matches the given CRS created from the EPSG geodetic dataset.
      * This method does not verify the EPSG code of the given CRS.
      *
-     * @param  crs  the CRS created from the EPSG geodetic dataset.
+     * @param  crs          the CRS created from the EPSG geodetic dataset.
+     * @param  angularUnit  the angular unit of the latitude and longitude values.
      */
-    private void verify(final GeographicCRS crs) throws FactoryException {
+    private void verify(final GeographicCRS crs, final Unit<Angle> angularUnit) throws FactoryException {
         /*
          * Note: current createUnit(…) implementation does not allow us to distinguish whether METRE ou DEGREE units
          * were specified in the GeoTIFF file or if we got the default values. We do not compare units of that reason.
          */
         final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits, GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
-        final Unit<Angle> angularUnit = createUnit(GeoKeys.AngularUnits,    GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
         final GeodeticDatum datum = crs.getDatum();
         verifyIdentifier(datum, GeoKeys.GeodeticDatum);
         verify(datum, angularUnit, linearUnit);
@@ -1241,12 +1252,13 @@ final class CRSBuilder {
                     name = getAsString(GeoKeys.Citation);
                     // Note that Citation has been removed from the map, so it will not be used by 'complete(MetadataBuilder).
                 }
-                final GeographicCRS baseCRS    = createGeographicCRS(false);
-                final Conversion    projection = createConversion(name);
-                final Unit<Length>  unit       = createUnit(GeoKeys.LinearUnits, GeoKeys.LinearUnitSize, Length.class, Units.METRE);
+                final Unit<Length>  linearUnit  = createUnit(GeoKeys.LinearUnits,  GeoKeys.LinearUnitSize, Length.class, Units.METRE);
+                final Unit<Angle>   angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
+                final GeographicCRS baseCRS     = createGeographicCRS(false, angularUnit);
+                final Conversion    projection  = createConversion(name, angularUnit, linearUnit);
                 CartesianCS cs = epsgFactory().createCartesianCS(String.valueOf(Constants.EPSG_PROJECTED_CS));
-                if (!Units.METRE.equals(unit)) {
-                    cs = replaceLinearUnit(cs, unit);
+                if (!Units.METRE.equals(linearUnit)) {
+                    cs = replaceLinearUnit(cs, linearUnit);
                 }
                 final ProjectedCRS crs = objectFactory().createProjectedCRS(properties(name), baseCRS, projection, cs);
                 lastName = crs.getName();
@@ -1273,39 +1285,62 @@ final class CRSBuilder {
      * @param  crs  the CRS created from the EPSG geodetic dataset.
      */
     private void verify(final ProjectedCRS crs) throws FactoryException {
+        final Unit<Length> linearUnit  = createUnit(GeoKeys.LinearUnits,  GeoKeys.LinearUnitSize, Length.class, Units.METRE);
+        final Unit<Angle>  angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
         final GeographicCRS baseCRS = crs.getBaseCRS();
         verifyIdentifier(baseCRS, GeoKeys.GeographicType);
-        verify(baseCRS);
+        verify(baseCRS, angularUnit);
         final Conversion projection = crs.getConversionFromBase();
         verifyIdentifier(projection, GeoKeys.Projection);
-        verify(projection);
+        verify(projection, angularUnit, linearUnit);
     }
 
     /**
      * Creates a defining conversion from an EPSG code or from user-defined parameters.
      *
+     * @param  angularUnit  the angular unit of the latitude and longitude values.
+     * @param  linearUnit   the linear unit of easting and northing values.
      * @throws NoSuchElementException if a mandatory value is missing.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
-    private Conversion createConversion(final String name) throws FactoryException {
+    private Conversion createConversion(final String name, final Unit<Angle> angularUnit, final Unit<Length> linearUnit)
+            throws FactoryException
+    {
         final int epsg = getAsInteger(GeoKeys.Projection);
         switch (epsg) {
             case GeoCodes.undefined: {
                 throw new NoSuchElementException(missingValue(GeoKeys.Projection));
             }
             case GeoCodes.userDefined: {
-                final String              type       = getMandatoryString(GeoKeys.CoordTrans);
-                final OperationMethod     method     = operationFactory().getOperationMethod(type);
-                final ParameterValueGroup parameters = method.getParameters().createValue();
+                final Unit<Angle>         azimuthUnit = createUnit(GeoKeys.AzimuthUnits, (short) 0, Angle.class, Units.DEGREE);
+                final String              type        = getMandatoryString(GeoKeys.CoordTrans);
+                final OperationMethod     method      = operationFactory().getOperationMethod(type);
+                final ParameterValueGroup parameters  = method.getParameters().createValue();
+                final Iterator<Map.Entry<Short,Object>> it = geoKeys.entrySet().iterator();
+                while (it.hasNext()) {
+                    final Unit<?> unit;
+                    final Map.Entry<Short,?> entry = it.next();
+                    final short code = entry.getKey();
+                    switch (GeoKeys.unitOf(code)) {
+                        case GeoKeys.RATIO:     unit = Units.UNITY; break;
+                        case GeoKeys.LINEAR:    unit = linearUnit;  break;
+                        case GeoKeys.ANGULAR:   unit = angularUnit; break;
+                        case GeoKeys.AZIMUTH:   unit = azimuthUnit; break;
+                        default: continue;
+                    }
+                    final double value = ((Number) entry.getValue()).doubleValue();
+                    it.remove();
+                    parameters.parameter("GeoTIFF" + code).setValue(value, unit);
+                }
                 final Conversion c = operationFactory().createDefiningConversion(properties(name), method, parameters);
                 lastName = c.getName();
                 return c;
             }
             default: {
                 final Conversion projection = (Conversion) epsgFactory().createCoordinateOperation(String.valueOf(epsg));
-                verify(projection);
+                verify(projection, angularUnit, linearUnit);
                 return projection;
             }
         }
@@ -1318,7 +1353,9 @@ final class CRSBuilder {
      *
      * @param  projection  the conversion created from the EPSG geodetic dataset.
      */
-    private void verify(final Conversion projection) throws FactoryException {
+    private void verify(final Conversion projection, final Unit<Angle> angularUnit, final Unit<Length> linearUnit)
+            throws FactoryException
+    {
         // TODO
     }
 
