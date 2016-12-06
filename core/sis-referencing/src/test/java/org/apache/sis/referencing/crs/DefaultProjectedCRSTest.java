@@ -236,7 +236,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
 
     /**
      * Tests WKT formatting in "internal" mode.
-     * This mode is similar to WKT 2 but shall include the axes of the base CRS.
+     * This mode is similar to WKT 2 but shall include the axes of the base CRS and more parameter identifiers.
      *
      * @throws FactoryException if the CRS creation failed.
      */
@@ -258,11 +258,11 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "      Unit[“grad”, 0.015707963267948967, Id[“EPSG”, 9105]]],\n" +
                 "  Conversion[“Lambert zone II”,\n" +
                 "    Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801], Id[“GeoTIFF”, 9]],\n" +
-                "    Parameter[“Latitude of natural origin”, 52.0, Id[“EPSG”, 8801]],\n" +
-                "    Parameter[“Longitude of natural origin”, 0.0, Id[“EPSG”, 8802]],\n" +
-                "    Parameter[“Scale factor at natural origin”, 0.99987742, Id[“EPSG”, 8805]],\n" +
-                "    Parameter[“False easting”, 600000.0, Id[“EPSG”, 8806]],\n" +
-                "    Parameter[“False northing”, 2200000.0, Id[“EPSG”, 8807]]],\n" +
+                "    Parameter[“Latitude of natural origin”, 52.0, Id[“EPSG”, 8801], Id[“GeoTIFF”, 3081]],\n" +
+                "    Parameter[“Longitude of natural origin”, 0.0, Id[“EPSG”, 8802], Id[“GeoTIFF”, 3080]],\n" +
+                "    Parameter[“Scale factor at natural origin”, 0.99987742, Id[“EPSG”, 8805], Id[“GeoTIFF”, 3092]],\n" +
+                "    Parameter[“False easting”, 600000.0, Id[“EPSG”, 8806], Id[“GeoTIFF”, 3082]],\n" +
+                "    Parameter[“False northing”, 2200000.0, Id[“EPSG”, 8807], Id[“GeoTIFF”, 3083]]],\n" +
                 "  CS[Cartesian, 2],\n" +
                 "    Axis[“Easting (E)”, east],\n" +
                 "    Axis[“Northing (N)”, north],\n" +

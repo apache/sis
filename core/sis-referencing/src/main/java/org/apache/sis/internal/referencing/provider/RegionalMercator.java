@@ -34,7 +34,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -74,17 +74,26 @@ public class RegionalMercator extends AbstractMercator {
     static {
         final ParameterBuilder builder = builder();
 
-        LATITUDE_OF_FALSE_ORIGIN = createLatitude(
-                 rename(Mercator1SP.LATITUDE_OF_ORIGIN, "8821", "Latitude of false origin", builder)
-                .rename(Citations.GEOTIFF, "FalseOriginLat"), false);
+        LATITUDE_OF_FALSE_ORIGIN = createLatitude(builder
+                .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN)
+                .rename(Citations.EPSG, "Latitude of false origin")
+                .rename(Citations.GEOTIFF, "FalseOriginLat")
+                .replaceIdentifiers(Citations.EPSG, "8821")
+                .replaceIdentifiers(Citations.GEOTIFF, "3085"), false);
 
-        EASTING_AT_FALSE_ORIGIN = createShift(
-                 rename(FALSE_EASTING, "8826", "Easting at false origin", builder)
-                .rename(Citations.GEOTIFF, "FalseOriginEasting"));
+        EASTING_AT_FALSE_ORIGIN = createShift(builder
+                .addNamesAndIdentifiers(FALSE_EASTING)
+                .rename(Citations.EPSG, "Easting at false origin")
+                .rename(Citations.GEOTIFF, "FalseOriginEasting")
+                .replaceIdentifiers(Citations.EPSG, "8826")
+                .replaceIdentifiers(Citations.GEOTIFF, "3086"));
 
-        NORTHING_AT_FALSE_ORIGIN = createShift(
-                 rename(FALSE_NORTHING, "8827", "Northing at false origin", builder)
-                .rename(Citations.GEOTIFF, "FalseOriginNorthing"));
+        NORTHING_AT_FALSE_ORIGIN = createShift(builder
+                .addNamesAndIdentifiers(FALSE_NORTHING)
+                .rename(Citations.EPSG, "Northing at false origin")
+                .rename(Citations.GEOTIFF, "FalseOriginNorthing")
+                .replaceIdentifiers(Citations.EPSG, "8827")
+                .replaceIdentifiers(Citations.GEOTIFF, "3087"));
 
         PARAMETERS = builder
                 .addIdentifier(IDENTIFIER)

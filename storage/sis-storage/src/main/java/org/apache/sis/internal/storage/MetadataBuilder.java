@@ -855,19 +855,6 @@ public class MetadataBuilder {
     }
 
     /**
-     * Returns {@code true} if a title has been specified for the current identification information.
-     * This method is provided because titles are mandatory in ISO 19115 metadata, so data stores may
-     * want to provide a fallback if no title has been found. Titles are specified by calls to
-     * {@link #addTitle(CharSequence)} and needs to be specified again if {@link #newIdentification()}
-     * has been invoked.
-     *
-     * @return whether a title exists for the current identification information.
-     */
-    public final boolean hasTitle() {
-        return (citation != null) && citation.getTitle() != null;
-    }
-
-    /**
      * Adds a title or alternate title of the resource.
      * Storage location is:
      *
@@ -1082,8 +1069,9 @@ parse:      for (int i = 0; i < length;) {
                     }
                     /*
                      * If a copyright notice is followed by digits, assume that those digits are the copyright year.
-                     * We require the year to be surrounded by punctuations in order to reduce the risk of confusion
-                     * with postal addresses. So this block should accept "John, 1992." but not "1992 Nowhere road".
+                     * We require the year is followed by punctuations or non-breaking space in order to reduce the
+                     * risk of confusion with postal addresses. So this block should accept "John, 1992." but not
+                     * "1992-1 Nowhere road".
                      */
                     if (isCopyright && wasPunctuation && year == 0 && c >= '0' && c <= '9') {
                         int endOfDigits = i + n;            // After the last digit in sequence.
@@ -1094,7 +1082,7 @@ parse:      for (int i = 0; i < length;) {
                         }
                         // Verify if the digits are followed by a punctuation.
                         final int endOfToken = CharSequences.skipLeadingWhitespaces(notice, endOfDigits, length);
-                        if (endOfToken >= length || isSpaceOrPunctuation(notice.codePointAt(endOfToken))) try {
+                        if (endOfToken > endOfDigits || isSpaceOrPunctuation(notice.codePointAt(endOfToken))) try {
                             year = Integer.parseInt(notice.substring(i, endOfDigits));
                             if (year >= 1800 && year <= 9999) {                     // Those limits are arbitrary.
                                 skipNextChars = true;

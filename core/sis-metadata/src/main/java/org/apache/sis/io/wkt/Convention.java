@@ -294,7 +294,7 @@ public enum Convention {
      *   <tr><td>GEOTIFF</td>   <td>CT_Mercator</td></tr>
      * </table></div>
      *
-     * @return The organization, standard or project to look for when fetching Map Projection parameter names.
+     * @return the organization, standard or project to look for when fetching Map Projection parameter names.
      *
      * @see WKTFormat#getNameAuthority()
      * @see Citations#EPSG

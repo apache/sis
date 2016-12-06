@@ -67,7 +67,7 @@ final class GeoKeys {
     /** Section 6.3.3.3 codes. */ public static final short CoordTrans           = 3075;
     /** Section 6.3.1.3 codes. */ public static final short LinearUnits          = 3076;
     /** Relative to meters.    */ public static final short LinearUnitSize       = 3077;
-    /** In AngularUnit.        */ public static final short StdParallel1         = 3078;
+    /** In AngularUnit.        */ public static final short StdParallel1         = 3078;    // First projection parameter
     /** In AngularUnit.        */ public static final short StdParallel2         = 3079;
     /** In AngularUnit.        */ public static final short NatOriginLong        = 3080;
     /** In AngularUnit.        */ public static final short NatOriginLat         = 3081;
@@ -84,7 +84,7 @@ final class GeoKeys {
     /** A ratio.               */ public static final short ScaleAtNatOrigin     = 3092;
     /** A ratio.               */ public static final short ScaleAtCenter        = 3093;
     /** In AzimuthUnit.        */ public static final short AzimuthAngle         = 3094;
-    /** In AngularUnit.        */ public static final short StraightVertPoleLong = 3095;
+    /** In AngularUnit.        */ public static final short StraightVertPoleLong = 3095;    // Last projection parameter (for now)
 
     // 6.2.4 Vertical CS Keys
     /** Section 6.3.4.1 codes. */ public static final short VerticalCSType       = 4096;
@@ -93,14 +93,44 @@ final class GeoKeys {
     /** Section 6.3.1.3 codes. */ public static final short VerticalUnits        = 4099;
 
     /**
+     * Enumeration of return values for the {@link #unitOf(short)} method.
+     */
+    static final int RATIO = 0, LINEAR = 1, ANGULAR = 2, AZIMUTH = 3;
+
+    /**
+     * Returns the unit of measurement for the given map projection parameter.
+     *
+     * @param  key  GeoTIFF key for which to get the unit of associated map projection parameter value.
+     * @return one of {@link #RATIO}, {@link #LINEAR}, {@link #ANGULAR}, {@link #AZIMUTH} codes,
+     *         or -1 if the given key is not for a map projection parameter.
+     */
+    static int unitOf(final short key) {
+        if (key < StdParallel1 || key > StraightVertPoleLong) {
+            return -1;
+        }
+        switch (key) {
+            case FalseEasting:
+            case FalseNorthing:
+            case FalseOriginEasting:
+            case FalseOriginNorthing:
+            case CenterEasting:
+            case CenterNorthing:    return LINEAR;
+            case ScaleAtNatOrigin:
+            case ScaleAtCenter:     return RATIO;
+            case AzimuthAngle:      return AZIMUTH;
+            default:                return ANGULAR;
+        }
+    }
+
+    /**
      * Returns the name of the given key. Implementation of this method is inefficient,
      * but it should rarely be invoked (mostly for formatting error messages).
      */
-    static String name(final short tag) {
+    static String name(final short key) {
         try {
             for (final Field field : GeoKeys.class.getFields()) {
                 if (field.getType() == Short.TYPE) {
-                    if (field.getShort(null) == tag) {
+                    if (field.getShort(null) == key) {
                         return field.getName();
                     }
                 }
@@ -108,6 +138,6 @@ final class GeoKeys {
         } catch (IllegalAccessException e) {
             throw new AssertionError(e);        // Should never happen because we asked only for public fields.
         }
-        return Integer.toHexString(Short.toUnsignedInt(tag));
+        return Integer.toHexString(Short.toUnsignedInt(key));
     }
 }
