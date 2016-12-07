@@ -28,6 +28,7 @@ import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
+import org.apache.sis.util.iso.Names;
 
 
 /**
@@ -35,7 +36,7 @@ import org.opengis.feature.AttributeType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.8
  * @module
  */
 @DependsOn(DefaultAttributeTypeTest.class)
@@ -108,5 +109,25 @@ public final strictfp class CharacteristicTypeMapTest extends TestCase {
         final DefaultAttributeType<Float> unserialized = assertSerializedEquals(temperature);
         assertNotSame(temperature, unserialized);
         assertSame(temperature.characteristics(), unserialized.characteristics());
+    }
+
+    /**
+     * Tests usage of names in namespaces.
+     */
+    @Test
+    public void testQualifiedNames() {
+        final DefaultAttributeType<?> a1, a2, a3, tp;
+        a1 = new DefaultAttributeType<>(singletonMap(NAME_KEY, Names.parseGenericName(null, null, "ns1:accuracy")), Float.class, 1, 1, 0.1f);
+        a2 = new DefaultAttributeType<>(singletonMap(NAME_KEY, Names.parseGenericName(null, null, "ns2:accuracy")), Float.class, 1, 1, 0.1f);
+        a3 = new DefaultAttributeType<>(singletonMap(NAME_KEY, Names.parseGenericName(null, null, "ns2:s3:units")), String.class, 1, 1, "°C");
+        tp = new DefaultAttributeType<>(singletonMap(NAME_KEY, "temperature"), Float.class, 1, 1, null, a1, a2, a3);
+
+        final Map<String, AttributeType<?>> characteristics = tp.characteristics();
+        assertSame("ns1:accuracy", a1, characteristics.get("ns1:accuracy"));
+        assertSame("ns2:accuracy", a2, characteristics.get("ns2:accuracy"));
+        assertSame("ns2:s3:units", a3, characteristics.get("ns2:s3:units"));
+        assertSame(    "s3:units", a3, characteristics.get(    "s3:units"));
+        assertSame(       "units", a3, characteristics.get(       "units"));
+        assertNull("    accuracy",     characteristics.get("    accuracy"));        // Because ambiguous.
     }
 }

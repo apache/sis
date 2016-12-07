@@ -29,9 +29,9 @@ import java.util.SortedSet;
 /**
  * An immutable, serializable empty sorted set.
  * This class exists only on the JDK7 branch, not on the JDK8 branch,
- * since an equivalent method has been added to the JDK.</div>
+ * since an equivalent method has been added to the JDK.
  *
- * @param  <E> Type of elements in the collection.
+ * @param  <E>  type of elements in the collection.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3

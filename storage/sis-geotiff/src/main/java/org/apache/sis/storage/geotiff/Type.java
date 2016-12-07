@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
@@ -223,7 +224,7 @@ enum Type {
 
         @Override double readDouble(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
-            return input.readFloat();
+            return DecimalFunctions.floatToDouble(input.readFloat());
         }
 
         @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {
@@ -455,6 +456,27 @@ enum Type {
         final long value = readLong(input, count);
         if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
             return (short) value;
+        }
+        throw new ArithmeticException(canNotConvert(Long.toString(value)));
+    }
+
+    /**
+     * Reads a single value and returns it as a signed {@code int} type, performing conversion if needed.
+     * This method should be invoked when the caller expects a single value.
+     *
+     * @param  input  the input from where to read the value.
+     * @param  count  the amount of values (normally exactly 1).
+     * @return the value as an {@code int}.
+     * @throws IOException if an error occurred while reading the stream.
+     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
+     * @throws ArithmeticException if the value can not be represented in the Java signed {@code int} type.
+     * @throws IllegalArgumentException if the value is not a singleton.
+     * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
+     */
+    final int readInt(final ChannelDataInput input, final long count) throws IOException {
+        final long value = readLong(input, count);
+        if (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE) {
+            return (int) value;
         }
         throw new ArithmeticException(canNotConvert(Long.toString(value)));
     }

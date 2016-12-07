@@ -294,7 +294,7 @@ public final class ReferencingUtilities extends Static {
                         }
                         name = CharSequences.trimWhitespaces(name, 0, i).toString();
                         if (!name.isEmpty()) {
-                            final Map<String,Object> copy = new HashMap<>(properties);
+                            final Map<String,Object> copy = new HashMap<String,Object>(properties);
                             copy.put(IdentifiedObject.NAME_KEY, name);
                             return copy;
                         }

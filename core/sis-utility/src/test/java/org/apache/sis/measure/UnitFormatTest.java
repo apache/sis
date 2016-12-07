@@ -64,7 +64,8 @@ public final strictfp class UnitFormatTest extends TestCase {
         verify(declared, "KILOMETRE",           "L",            "km",    "kilometre",               Units.KILOMETRE);
         verify(declared, "NAUTICAL_MILE",       "L",            "M",     "nautical mile",           Units.NAUTICAL_MILE);
         verify(declared, "STATUTE_MILE",        "L",            "mi",    "statute mile",            Units.STATUTE_MILE);
-        verify(declared, "US_SURVEY_FOOT",      "L",            "ft_US", "US survey foot",          Units.US_SURVEY_FOOT);
+        verify(declared, "US_SURVEY_FOOT",      "L",            "ftUS",  "US survey foot",          Units.US_SURVEY_FOOT);
+        verify(declared, "CLARKE_FOOT",         "L",            "ftCla", "Clarke’s foot",           Units.CLARKE_FOOT);
         verify(declared, "FOOT",                "L",            "ft",    "foot",                    Units.FOOT);
         verify(declared, "INCH",                "L",            "in",    "inch",                    Units.INCH);
         verify(declared, "POINT",               "L",            "pt",    "point",                   Units.POINT);

@@ -782,7 +782,7 @@ public class Formatter implements Localized {
         }
         if (showIDs) {
             Collection<? extends Identifier> identifiers = object.getIdentifiers();
-            if (identifiers != null) {  // Paranoiac check
+            if (identifiers != null) {                                                  // Paranoiac check
                 if (filterID) {
                     for (final Identifier id : identifiers) {
                         if (Citations.identifierMatches(authority, id.getAuthority())) {

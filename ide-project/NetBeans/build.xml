@@ -48,6 +48,9 @@
       <fileset dir="${project.root}/storage/sis-netcdf/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
+      <fileset dir="${project.root}/storage/sis-geotiff/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
       <!-- Pending discussion about how to handle resources in the Shapefile module.
       <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources">
         <include name="**/*.utf"/>
@@ -57,6 +60,9 @@
       <!-- Other resources (properties files, SQL scripts). -->
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
         <include name="**/*.properties"/>
+      </fileset>
+      <fileset dir="${project.root}/core/sis-metadata/src/main/resources">
+        <include name="**/*.sql"/>
       </fileset>
       <fileset dir="${project.root}/core/sis-referencing/src/main/resources">
         <include name="**/*.sql"/>

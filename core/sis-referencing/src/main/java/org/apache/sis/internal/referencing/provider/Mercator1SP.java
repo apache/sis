@@ -69,14 +69,17 @@ public final class Mercator1SP extends AbstractMercator {
     static {
         final ParameterBuilder builder = builder();
         LATITUDE_OF_ORIGIN = createZeroConstant(builder.addNamesAndIdentifiers(Equirectangular.LATITUDE_OF_ORIGIN)
+                .reidentify(Citations.GEOTIFF, "3081")
                 .rename(Citations.GEOTIFF, "NatOriginLat")
                 .setRemarks(Equirectangular.LATITUDE_OF_ORIGIN.getRemarks()));
 
         LONGITUDE_OF_ORIGIN = createLongitude(builder.addNamesAndIdentifiers(Equirectangular.LONGITUDE_OF_ORIGIN)
+                .reidentify(Citations.GEOTIFF, "3080")
                 .rename(Citations.GEOTIFF, "NatOriginLong"));
 
         SCALE_FACTOR = createScale(builder
                 .addIdentifier("8805")
+                .addIdentifier(Citations.GEOTIFF, "3092")
                 .addName("Scale factor at natural origin")
                 .addName(Citations.OGC,     Constants.SCALE_FACTOR)
                 .addName(Citations.ESRI,    "Scale_Factor")

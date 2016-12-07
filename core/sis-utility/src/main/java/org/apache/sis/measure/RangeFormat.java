@@ -589,7 +589,7 @@ public class RangeFormat extends Format {
             int startPosition = toAppendTo.length();
             if (value == null) {
                 switch (field) {
-                    case MIN_VALUE_FIELD: toAppendTo.append(minusSign);             // Fall through
+                    case MIN_VALUE_FIELD: toAppendTo.append(minusSign != '-' ? minusSign : '−');    // Fall through
                     case MAX_VALUE_FIELD: toAppendTo.append(infinity); break;
                 }
             } else {
@@ -770,9 +770,8 @@ public class RangeFormat extends Format {
     {
         final int length = source.length();
         /*
-         * Skip leading whitespace and find the first non-blank character.  It is usually
-         * an opening bracket, except if minimal and maximal values are the same in which
-         * case the brackets may be omitted.
+         * Skip leading whitespace and find the first non-blank character. It is usually an opening bracket,
+         * except if minimal and maximal values are the same in which case the brackets may be omitted.
          */
         int index, c;
         for (index = pos.getIndex(); ; index += Character.charCount(c)) {
@@ -787,9 +786,8 @@ public class RangeFormat extends Format {
         final boolean isMinIncluded, isMaxIncluded;
         if (!isOpen(c)) {
             /*
-             * No bracket, or curly bracket. We have eigher an empty range (as in "{}")
-             * or a single value for the range. The braces are optional for single value.
-             * In other words, this block parses all of the following cases:
+             * No bracket, or curly bracket. We have eigher an empty range (as in "{}") or a single value for the range.
+             * The braces are optional for single value. In other words, this block parses all of the following cases:
              *
              *  - {}
              *  - {value}
@@ -838,13 +836,12 @@ public class RangeFormat extends Format {
             }
         } else {
             /*
-             * We found an opening bracket. Skip the whitespaces. If the next
-             * character is a closing bracket, then we have an empty range.
-             * The later case is an extension to the standard format, since
-             * empty ranges are usually represented by {} instead than [].
+             * We found an opening bracket. Skip the whitespaces. If the next character is a closing bracket,
+             * then we have an empty range. The later case is an extension to the standard format since empty
+             * ranges are usually represented by {} instead than [].
              */
             isMinIncluded = (c == openInclusive);
-            do { // Skip whitespaces.
+            do {                                            // Skip whitespaces.
                 index += Character.charCount(c);
                 if (index >= length) {
                     pos.setErrorIndex(length);
@@ -859,16 +856,16 @@ public class RangeFormat extends Format {
                 index += Character.charCount(c);
             } else {
                 /*
-                 * At this point, we have determined that the range is non-empty and there
-                 * is at least one value to parse. First, parse the minimal value. If we
-                 * fail to parse, check if it was the infinity value (note that infinity
-                 * should have been parsed successfully if the format is DecimalFormat).
+                 * At this point, we have determined that the range is non-empty and there is at least one value to parse.
+                 * First, parse the minimal value. If we fail to parse, check if it was the infinity value. Note that "-∞"
+                 * and "∞" should have been parsed successfully if the format is DecimalFormat, but not necessarily "−∞".
+                 * The difference is in the character used for the minus sign (ASCII hyphen versus Unicode minus sign).
                  */
                 pos.setIndex(index);
                 int savedIndex = index;
                 Object value = elementFormat.parseObject(source, pos);
                 if (value == null) {
-                    if (c == minusSign) {
+                    if (c == minusSign || c == '−') {
                         index += Character.charCount(c);
                     }
                     if (!source.regionMatches(index, infinity, 0, infinity.length())) {
@@ -879,11 +876,10 @@ public class RangeFormat extends Format {
                 pos.setErrorIndex(savedIndex);              // In case of failure during the conversion.
                 minValue = convert(value);
                 /*
-                 * Parsing of minimal value succeed and its type is valid. Now look for the
-                 * separator. If it is not present, then assume that we have a single value
-                 * for the range. The default RangeFormat implementation does not format
-                 * brackets in such case (see the "No bracket" case above), but we make the
-                 * parser tolerant to the case where the brackets are present.
+                 * Parsing of 'minValue' succeed and its type is valid. Now look for the separator. If it is not present,
+                 * then assume that we have a single value for the range. The default RangeFormat implementation does not
+                 * format brackets in such case (see the "No bracket" case above), but we make the parser tolerant to the
+                 * case where the brackets are present.
                  */
                 for (index = pos.getIndex(); ; index += Character.charCount(c)) {
                     if (index >= length) {
@@ -904,6 +900,10 @@ public class RangeFormat extends Format {
                         c = source.codePointAt(index);
                         if (!Character.isWhitespace(c)) break;
                     }
+                    /*
+                     * Now parse the maximum value. A special case is applied for infinity value
+                     * in a similar way than we did for the minimal value.
+                     */
                     pos.setIndex(index);
                     value = elementFormat.parseObject(source, pos);
                     if (value == null) {
@@ -915,9 +915,8 @@ public class RangeFormat extends Format {
                     pos.setErrorIndex(index);               // In case of failure during the conversion.
                     maxValue = convert(value);
                     /*
-                     * Skip one last time the whitespaces. The check for the closing bracket
-                     * (which is mandatory) is performed outside the "if" block since it is
-                     * common to the two "if ... else" cases.
+                     * Skip one last time the whitespaces. The check for the closing bracket (which is mandatory)
+                     * is performed outside the "if" block since it is common to the two "if ... else" cases.
                      */
                     for (index = pos.getIndex(); ; index += Character.charCount(c)) {
                         if (index >= length) {
@@ -972,8 +971,8 @@ public class RangeFormat extends Format {
                 min  = Numbers.cast(min, type);
                 max  = Numbers.cast(max, type);
             }
-            if (min.doubleValue() == Double.NEGATIVE_INFINITY) min = null;
-            if (max.doubleValue() == Double.POSITIVE_INFINITY) max = null;
+            if (min != null && min.doubleValue() == Double.NEGATIVE_INFINITY) min = null;
+            if (max != null && max.doubleValue() == Double.POSITIVE_INFINITY) max = null;
             if (unit != null) {
                 final MeasurementRange<?> range = new MeasurementRange(type, min, isMinIncluded, max, isMaxIncluded, unit);
                 return range;
