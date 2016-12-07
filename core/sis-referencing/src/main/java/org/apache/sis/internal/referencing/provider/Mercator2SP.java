@@ -90,8 +90,8 @@ public final class Mercator2SP extends AbstractMercator {
          */
         SCALE_FACTOR = createScale(builder
                 .addNamesAndIdentifiers(Mercator1SP.SCALE_FACTOR)
-                .replaceIdentifiers(Citations.EPSG,    (String[]) null)
-                .replaceIdentifiers(Citations.GEOTIFF, (String[]) null)
+                .reidentify(Citations.EPSG,    (String[]) null)
+                .reidentify(Citations.GEOTIFF, (String[]) null)
                 .rename(Citations.EPSG,    (String[]) null)
                 .rename(Citations.NETCDF,  (String[]) null)  // "scale_factor_at_projection_origin" is too specific.
                 .rename(Citations.GEOTIFF, (String[]) null)  // "ScaleAtNatOrigin" is too specific.

@@ -848,7 +848,7 @@ public abstract class Builder<B extends Builder<B>> {
      *
      * @since 0.8
      */
-    public B replaceIdentifiers(final Citation authority, final String... replacements) {
+    public B reidentify(final Citation authority, final String... replacements) {
         ensureNonNull("authority", authority);
         final int length = (replacements != null) ? replacements.length : 0;
         int next = 0;
