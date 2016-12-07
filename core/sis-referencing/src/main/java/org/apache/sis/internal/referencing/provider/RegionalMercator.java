@@ -78,22 +78,22 @@ public class RegionalMercator extends AbstractMercator {
                 .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN)
                 .rename(Citations.EPSG, "Latitude of false origin")
                 .rename(Citations.GEOTIFF, "FalseOriginLat")
-                .replaceIdentifiers(Citations.EPSG, "8821")
-                .replaceIdentifiers(Citations.GEOTIFF, "3085"), false);
+                .reidentify(Citations.EPSG, "8821")
+                .reidentify(Citations.GEOTIFF, "3085"), false);
 
         EASTING_AT_FALSE_ORIGIN = createShift(builder
                 .addNamesAndIdentifiers(FALSE_EASTING)
                 .rename(Citations.EPSG, "Easting at false origin")
                 .rename(Citations.GEOTIFF, "FalseOriginEasting")
-                .replaceIdentifiers(Citations.EPSG, "8826")
-                .replaceIdentifiers(Citations.GEOTIFF, "3086"));
+                .reidentify(Citations.EPSG, "8826")
+                .reidentify(Citations.GEOTIFF, "3086"));
 
         NORTHING_AT_FALSE_ORIGIN = createShift(builder
                 .addNamesAndIdentifiers(FALSE_NORTHING)
                 .rename(Citations.EPSG, "Northing at false origin")
                 .rename(Citations.GEOTIFF, "FalseOriginNorthing")
-                .replaceIdentifiers(Citations.EPSG, "8827")
-                .replaceIdentifiers(Citations.GEOTIFF, "3087"));
+                .reidentify(Citations.EPSG, "8827")
+                .reidentify(Citations.GEOTIFF, "3087"));
 
         PARAMETERS = builder
                 .addIdentifier(IDENTIFIER)

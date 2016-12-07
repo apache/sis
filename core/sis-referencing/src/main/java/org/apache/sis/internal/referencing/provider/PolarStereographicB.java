@@ -78,7 +78,7 @@ public final class PolarStereographicB extends AbstractStereographic {
         LONGITUDE_OF_ORIGIN = createLongitude(builder
                 .addNamesAndIdentifiers(PolarStereographicA.LONGITUDE_OF_ORIGIN)
                 .rename(Citations.EPSG, "Longitude of origin")
-                .replaceIdentifiers(Citations.EPSG, "8833"));
+                .reidentify(Citations.EPSG, "8833"));
 
         STANDARD_PARALLEL = createMandatoryLatitude(builder
                 .addIdentifier("8832").addName("Latitude of standard parallel")

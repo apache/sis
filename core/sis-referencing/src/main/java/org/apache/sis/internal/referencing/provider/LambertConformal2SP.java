@@ -112,8 +112,8 @@ public final class LambertConformal2SP extends AbstractLambert {
                 .rename(Citations.EPSG, "Longitude of false origin")
                 .rename(Citations.NETCDF, "longitude_of_central_meridian")
                 .rename(Citations.GEOTIFF, "FalseOriginLong")
-                .replaceIdentifiers(Citations.EPSG, "8822")
-                .replaceIdentifiers(Citations.GEOTIFF, "3084"));
+                .reidentify(Citations.EPSG, "8822")
+                .reidentify(Citations.GEOTIFF, "3084"));
         /*
          * EPSG:    Latitude of 1st standard parallel
          * OGC:     standard_parallel_1
