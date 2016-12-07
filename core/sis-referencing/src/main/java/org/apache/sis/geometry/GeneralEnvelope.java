@@ -576,7 +576,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * This method supports envelopes spanning the anti-meridian. If one or both envelopes span
      * the anti-meridian, then the result of the {@code add} operation may be an envelope expanding
-     * to infinities. In such case, the ordinate range will be either [-∞…∞] or [0…-0] depending on
+     * to infinities. In such case, the ordinate range will be either [−∞…∞] or [0…−0] depending on
      * whatever the original range span the anti-meridian or not.
      *
      * @param  envelope the {@code Envelope} to add to this envelope.

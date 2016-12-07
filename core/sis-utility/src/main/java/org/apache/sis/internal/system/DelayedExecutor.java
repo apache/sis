@@ -64,7 +64,7 @@ public final class DelayedExecutor extends DaemonThread {
      * The task must completes quickly, because we will typically use only one thread for all submitted tasks.
      * Completion of the task shall not be critical, since the JVM is allowed to shutdown before task completion.
      *
-     * @param task The task to schedule for later execution.
+     * @param  task  the task to schedule for later execution.
      */
     public static void schedule(final DelayedRunnable task) {
         QUEUE.add(task);

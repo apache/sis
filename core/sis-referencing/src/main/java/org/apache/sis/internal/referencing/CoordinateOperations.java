@@ -63,7 +63,7 @@ public final class CoordinateOperations extends SystemListener {
     /**
      * Returns the factory.
      *
-     * @return The system-wide factory.
+     * @return the system-wide factory.
      */
     public static DefaultCoordinateOperationFactory factory() {
         DefaultCoordinateOperationFactory c = factory;

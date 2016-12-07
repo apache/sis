@@ -19,19 +19,6 @@ UPDATE epsg_coordoperationparamvalue SET parameter_value = 45.27 WHERE parameter
 
 
 
----
---- Extensions to EPSG dataset 8.9 for helping Apache SIS to find some coordinate operation paths.
----
----     NTF Paris (EPSG:4807)  →  NTF (EPSG:4275)  →  RGF93 (EPSG:4171)
----
-INSERT INTO epsg_coordoperation VALUES (48094, 'NTF (Paris) to RGF93 (1)', 'concatenated operation',
- 4807, 4171, NULL, 1, 3694, '?', 1, NULL, NULL, NULL, NULL, NULL, 'Apache SIS', '2016-04-22', NULL, FALSE, FALSE);
-INSERT INTO epsg_coordoperationpath VALUES
- (48094, 1763, 1),
- (48094, 1053, 2);
-
-
-
 --
 -- Additional indexes for the EPSG database. Those indexes are not declared
 -- in the SQL scripts distributed by EPSG. They are not required for proper

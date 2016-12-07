@@ -144,7 +144,7 @@ public final strictfp class RangeFormatTest extends TestCase {
         assertEquals("maxPos.endIndex",   1, maxPos.getEndIndex());
 
         // Negative infinity
-        assertEquals("(-∞ … 30]", format(NumberRange.create(Double.NEGATIVE_INFINITY, true, 30, true)));
+        assertEquals("(−∞ … 30]", format(NumberRange.create(Double.NEGATIVE_INFINITY, true, 30, true)));
         assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
@@ -158,7 +158,7 @@ public final strictfp class RangeFormatTest extends TestCase {
         assertEquals("maxPos.endIndex",   7, maxPos.getEndIndex());
 
         // Positive infinities
-        assertEquals("(-∞ … ∞)", format(NumberRange.create(Double.NEGATIVE_INFINITY, true, Double.POSITIVE_INFINITY, true)));
+        assertEquals("(−∞ … ∞)", format(NumberRange.create(Double.NEGATIVE_INFINITY, true, Double.POSITIVE_INFINITY, true)));
         assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
@@ -172,7 +172,7 @@ public final strictfp class RangeFormatTest extends TestCase {
         assertEquals("maxPos.endIndex",   7, maxPos.getEndIndex());
 
         // Negative infinity with integers
-        assertEquals("(-∞ … 40]", format(new NumberRange<>(Integer.class, null, true, 40, true)));
+        assertEquals("(−∞ … 40]", format(new NumberRange<>(Integer.class, null, true, 40, true)));
         assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
@@ -247,6 +247,7 @@ public final strictfp class RangeFormatTest extends TestCase {
 
         assertEquals(NumberRange.create(-10.0, true,             20.0, true), parse("[-10 … 20]" ));
         assertEquals(NumberRange.create(NEGATIVE_INFINITY, true, 30.0, true), parse("[-∞ … 30]"));
+        assertEquals(NumberRange.create(NEGATIVE_INFINITY, true, 30.0, true), parse("[−∞ … 30]"));
         assertEquals(NumberRange.create(50.0, true, POSITIVE_INFINITY, true), parse("[50 … ∞]"));
     }
 
@@ -334,7 +335,7 @@ public final strictfp class RangeFormatTest extends TestCase {
         it    = format.formatToCharacterIterator(range);
         text  = it.toString();
         findYears(it, RangeFormat.Field.MAX_VALUE, maxPos);
-        assertEquals("(-∞ … 01/01/90 00:00]", text);
+        assertEquals("(−∞ … 01/01/90 00:00]", text);
         assertEquals(12, maxPos.getBeginIndex());
         assertEquals(14, maxPos.getEndIndex());
         assertEquals(range, parse(text));

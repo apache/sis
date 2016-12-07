@@ -776,7 +776,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                      deepEquals(getInterpolationCRS(),            getInterpolationCRS(that), mode))
                 {
                     /*
-                     * At this point all metdata match or can be ignored. First, compare the targetCRS.
+                     * At this point all metadata match or can be ignored. First, compare the targetCRS.
                      * We need to perform this comparison only if this 'equals(…)' method is not invoked
                      * from AbstractDerivedCRS, otherwise we would fall in an infinite recursive loop
                      * (because targetCRS is the DerivedCRS, which in turn wants to compare this operation).
@@ -786,7 +786,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                      * its "from base" conversion. The flag should never be set in any other circumstance,
                      * since this is an internal Apache SIS mechanism. If we know that we are comparing the
                      * AbstractDerivedCRS.fromBase conversion, then (in the way Apache SIS is implemented)
-                     * this.sourceCRS == AbstractDerivedCRS.baseCRS. Consequently we can relax the check
+                     * this.sourceCRS == AbstractDerivedCRS.baseCRS. Consequently we can relax the check of
                      * sourceCRS axis order if the mode is ComparisonMode.IGNORE_METADATA.
                      */
                     if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {

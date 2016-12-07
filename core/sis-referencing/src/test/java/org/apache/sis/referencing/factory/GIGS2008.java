@@ -52,7 +52,7 @@ public final strictfp class GIGS2008 extends org.opengis.test.referencing.gigs.G
      * Creates a new test using the default authority factory.
      */
     public GIGS2008() {
-        super(GIGS2001.INSTANCE, GIGS2001.INSTANCE);
+        super(GIGS2001.factory, GIGS2001.factory);
     }
 
     /**

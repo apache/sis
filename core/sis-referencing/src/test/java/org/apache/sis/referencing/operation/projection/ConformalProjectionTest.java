@@ -68,8 +68,8 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
         assertEquals("Inverse 0 m",      0, PI/2 - 2*atan(exp(0)),            TOLERANCE);
         assertEquals("Forward 90°S",     NEGATIVE_INFINITY, log(tan(0)),      TOLERANCE);
         assertEquals("Forward (90+ε)°S", NaN,  log(tan(-nextUp(0))),          TOLERANCE);
-        assertEquals("Inverse -∞",       PI/2, atan(exp(-NEGATIVE_INFINITY)), TOLERANCE);
-        assertEquals("Inverse -∞ appr.", PI/2, atan(exp(LN_INFINITY + 1)),    TOLERANCE);
+        assertEquals("Inverse −∞",       PI/2, atan(exp(-NEGATIVE_INFINITY)), TOLERANCE);
+        assertEquals("Inverse −∞ appr.", PI/2, atan(exp(LN_INFINITY + 1)),    TOLERANCE);
         /*
          * tan(PI/2) do not produces positive infinity as we would expect, because there is no
          * exact representation of PI in base 2.  Experiments show that we get some high value
@@ -261,8 +261,8 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
         assertEquals("φ( 0)  =  90°",  PI/2,   φ(0),                 tolerance);
         assertEquals("φ(-ε)  →  90°",  PI/2,   φ(-MIN_VALUE),        tolerance);
         assertEquals("φ(-1)  = 180°",  PI,     φ(-1),                tolerance);
-        assertEquals("φ(-∞)  = 270°",  PI*1.5, φ(-MAX_VALUE),        tolerance);
-        assertEquals("φ(-∞)  = 270°",  PI*1.5, φ(NEGATIVE_INFINITY), tolerance);
+        assertEquals("φ(−∞)  = 270°",  PI*1.5, φ(-MAX_VALUE),        tolerance);
+        assertEquals("φ(−∞)  = 270°",  PI*1.5, φ(NEGATIVE_INFINITY), tolerance);
         /*
          * Using t(φ) as a reference.
          */

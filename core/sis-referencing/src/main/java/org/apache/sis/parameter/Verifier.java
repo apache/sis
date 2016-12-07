@@ -101,10 +101,10 @@ final class Verifier {
      * @param  <T> The type of parameter value. The given {@code value} should typically be an instance of this class.
      *             This is not required by this method signature but is checked by this method implementation.
      *
-     * @param  descriptor The parameter descriptor to check against.
-     * @param  value      The value to check, or {@code null}.
-     * @param  unit       The unit of the value to check, or {@code null}.
-     * @return The given value converted to the descriptor unit if any,
+     * @param  descriptor  the parameter descriptor to check against.
+     * @param  value       the value to check, or {@code null}.
+     * @param  unit        the unit of the value to check, or {@code null}.
+     * @return the given value converted to the descriptor unit if any,
      *         then casted to the descriptor parameterized type.
      * @throws InvalidParameterValueException if the parameter value is invalid.
      */
@@ -232,7 +232,7 @@ final class Verifier {
      * Compares the given value against the given descriptor properties. If the value is valid, returns {@code null}.
      * Otherwise returns an object that can be used for formatting the error message.
      *
-     * @param convertedValue The value <em>converted to the units specified by the descriptor</em>.
+     * @param convertedValue  the value <em>converted to the units specified by the descriptor</em>.
      *        This is not necessarily the user-provided value.
      */
     @SuppressWarnings("unchecked")
@@ -279,7 +279,7 @@ final class Verifier {
      * because the type returned by {@link ParameterDescriptor#getMinimumValue()} and {@code getMaximumValue()}
      * methods (namely {@code Comparable<T>}) does not allow usage with arrays.</div>
      *
-     * @param convertedValue The value <em>converted to the units specified by the descriptor</em>.
+     * @param convertedValue  the value <em>converted to the units specified by the descriptor</em>.
      *        This is not necessarily the user-provided value.
      */
     @SuppressWarnings("unchecked")
@@ -305,15 +305,15 @@ final class Verifier {
      * Converts the information about an "value out of range" error. The range in the error message will be formatted
      * in the unit given by the user, which is not necessarily the same than the unit of the parameter descriptor.
      *
-     * @param converter The conversion from user unit to descriptor unit, or {@code null} if none. This method
-     *        uses the inverse of that conversion for converting the given minimum and maximum values.
+     * @param converter  the conversion from user unit to descriptor unit, or {@code null} if none.
+     *        This method uses the inverse of that conversion for converting the given minimum and maximum values.
      */
     private void convertRange(UnitConverter converter) {
         if (converter != null && !internal && errorKey == Errors.Keys.ValueOutOfRange_4) {
             converter = converter.inverse();
             Object minimumValue = arguments[1];
             Object maximumValue = arguments[2];
-            minimumValue = (minimumValue != null) ? converter.convert(((Number) minimumValue).doubleValue()) : "-∞";
+            minimumValue = (minimumValue != null) ? converter.convert(((Number) minimumValue).doubleValue()) : "−∞";
             maximumValue = (maximumValue != null) ? converter.convert(((Number) maximumValue).doubleValue()) :  "∞";
             arguments[1] = minimumValue;
             arguments[2] = maximumValue;
@@ -340,8 +340,8 @@ final class Verifier {
      * Returns an error message for the error detected by
      * {@link #ensureValidValue(Class, Set, Range, Object)}.
      *
-     * @param name  The parameter name.
-     * @param value The user-supplied value (not necessarily equals to the converted value).
+     * @param name   the parameter name.
+     * @param value  the user-supplied value (not necessarily equals to the converted value).
      */
     String message(final Map<?,?> properties, String name, Object value) {
         final Object index = arguments[0];

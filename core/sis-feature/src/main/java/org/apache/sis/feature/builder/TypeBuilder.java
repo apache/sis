@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.apache.sis.internal.feature.Resources;
@@ -27,12 +28,12 @@ import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
-import java.util.Objects;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.PropertyNotFoundException;
 
@@ -88,6 +89,9 @@ public abstract class TypeBuilder implements Localized {
             putIfNonNull(AbstractIdentifiedType.DEFINITION_KEY,  template.getDefinition());
             putIfNonNull(AbstractIdentifiedType.DESIGNATION_KEY, template.getDesignation());
             putIfNonNull(AbstractIdentifiedType.DESCRIPTION_KEY, template.getDescription());
+            if (template instanceof Deprecable && ((Deprecable) template).isDeprecated()) {
+                identification.put(AbstractIdentifiedType.DEPRECATED_KEY, Boolean.TRUE);
+            }
         }
     }
 
@@ -313,6 +317,8 @@ public abstract class TypeBuilder implements Localized {
     /**
      * Sets optional information beyond that required for concise definition of the element.
      * The description may assist in understanding the feature scope and application.
+     * If the type {@linkplain #isDeprecated() is deprecated}, then the description should
+     * give indication about the replacement (e.g. <cite>"superceded by …"</cite>).
      *
      * @param  description  information beyond that required for concise definition of the element, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
@@ -328,6 +334,42 @@ public abstract class TypeBuilder implements Localized {
     }
 
     /**
+     * Returns {@code true} if the type is deprecated.
+     * If this method returns {@code true}, then the {@linkplain #getDescription() description} should give
+     * indication about the replacement (e.g. <cite>"superceded by …"</cite>).
+     *
+     * @return whether this type is deprecated.
+     *
+     * @see AbstractIdentifiedType#isDeprecated()
+     */
+    public boolean isDeprecated() {
+        return Boolean.TRUE.equals(identification.get(AbstractIdentifiedType.DEPRECATED_KEY));
+    }
+
+    /**
+     * Sets whether the type is deprecated.
+     * If the type is deprecated, then the {@linkplain #setDescription(CharSequence) description}
+     * should be set to an indication about the replacement (e.g. <cite>"superceded by …"</cite>).
+     *
+     * @param  deprecated  whether this type is deprecated.
+     * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #isDeprecated()
+     * @see AbstractIdentifiedType#DEPRECATED_KEY
+     */
+    public TypeBuilder setDeprecated(final boolean deprecated) {
+        final Boolean wrapper = deprecated;
+        Object previous = identification.put(AbstractIdentifiedType.DEPRECATED_KEY, wrapper);
+        if (previous == null) {
+            previous = Boolean.FALSE;
+        }
+        if (!Objects.equals(wrapper, previous)) {
+            clearCache();
+        }
+        return this;
+    }
+
+    /**
      * Returns the element of the given name in the given list. The given name does not need to contains
      * all elements of a {@link ScopedName}; it can be only the tip (for example {@code "myName"} instead
      * of {@code "myScope:myName"}) provided that ignoring the name head does not create ambiguity.
@@ -337,6 +379,7 @@ public abstract class TypeBuilder implements Localized {
      * @return element of the given name, or {@code null} if none were found.
      * @throws IllegalArgumentException if the given name is ambiguous.
      */
+    @SuppressWarnings("null")
     final <E extends TypeBuilder> E forName(final List<E> types, final String name) {
         E best      = null;                     // Best type found so far.
         E ambiguity = null;                     // If two types are found at the same depth, the other type.

@@ -77,6 +77,7 @@ public final class PolarStereographicA extends AbstractStereographic {
         final ParameterBuilder builder = builder();
         LONGITUDE_OF_ORIGIN = createLongitude(builder
                 .addNamesAndIdentifiers(ObliqueStereographic.LONGITUDE_OF_ORIGIN)
+                .reidentify(Citations.GEOTIFF, "3095")
                 .rename(Citations.GEOTIFF, "StraightVertPoleLong"));
 
         PARAMETERS = builder

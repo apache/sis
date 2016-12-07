@@ -16,6 +16,8 @@
  */
 package org.apache.sis.feature;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -30,6 +32,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.util.GenericName;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
+import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -48,6 +51,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.Operation;
+import org.apache.sis.util.Characters;
 
 
 /**
@@ -195,12 +199,13 @@ public class FeatureFormat extends TabularFormat<Object> {
          * In none we will ommit the "characteristics" column, which is the last column.
          */
         boolean hasCharacteristics = false;
+        boolean hasDeprecatedTypes = false;
         for (final PropertyType propertyType : featureType.getProperties(true)) {
-            if (propertyType instanceof AttributeType<?>) {
-                if (!((AttributeType<?>) propertyType).characteristics().isEmpty()) {
-                    hasCharacteristics = true;
-                    break;
-                }
+            if (!hasCharacteristics && propertyType instanceof AttributeType<?>) {
+                hasCharacteristics = !((AttributeType<?>) propertyType).characteristics().isEmpty();
+            }
+            if (!hasDeprecatedTypes && propertyType instanceof Deprecable) {
+                hasDeprecatedTypes = ((Deprecable) propertyType).isDeprecated();
             }
         }
         /*
@@ -229,15 +234,10 @@ header: for (int i=0; ; i++) {
                 case 1:  nextColumn(table); key = Vocabulary.Keys.Type; break;
                 case 2:  nextColumn(table); key = Vocabulary.Keys.Cardinality; break;
                 case 3:  nextColumn(table); key = (feature != null) ? Vocabulary.Keys.Value : Vocabulary.Keys.DefaultValue; break;
-                case 4: {
-                    if (hasCharacteristics) {
-                        nextColumn(table);
-                        key = Vocabulary.Keys.Characteristics;
-                        break;
-                    } else {
-                        break header;
-                    }
-                }
+                case 4:  if (!hasCharacteristics) continue;
+                         nextColumn(table); key = Vocabulary.Keys.Characteristics; break;
+                case 5:  if (!hasDeprecatedTypes) continue;
+                         nextColumn(table); key = Vocabulary.Keys.Remarks; break;
                 default: break header;
             }
             table.append(resources.getString(key));
@@ -250,6 +250,7 @@ header: for (int i=0; ; i++) {
          */
         final StringBuffer  buffer  = new StringBuffer();
         final FieldPosition dummyFP = new FieldPosition(-1);
+        final List<String>  remarks = new ArrayList<>();
         for (final PropertyType propertyType : featureType.getProperties(true)) {
             Object value = null;
             if (feature != null) {
@@ -389,10 +390,32 @@ header: for (int i=0; ; i++) {
                     }
                 }
             }
+            /*
+             * Column 5 - Deprecation
+             */
+            if (hasDeprecatedTypes) {
+                nextColumn(table);
+                if (org.apache.sis.feature.Field.isDeprecated(propertyType)) {
+                    table.append(resources.getString(Vocabulary.Keys.Deprecated));
+                    final InternationalString r = ((Deprecable) propertyType).getRemarks();
+                    if (r != null) {
+                        remarks.add(r.toString(displayLocale));
+                        appendSuperscript(remarks.size(), table);
+                    }
+                }
+            }
             table.nextLine();
         }
         table.nextLine('─');
         table.flush();
+        /*
+         * If there is any remarks, write them below the table.
+         */
+        final int n = remarks.size();
+        for (int i=0; i<n; i++) {
+            appendSuperscript(i+1, toAppendTo);
+            toAppendTo.append(' ').append(remarks.get(i)).append(lineSeparator);
+        }
     }
 
     /**
@@ -441,6 +464,17 @@ header: for (int i=0; ; i++) {
         } else {
             table.append(text, 0, Math.max(0, remaining - 1)).append('…');
             return -1;
+        }
+    }
+
+    /**
+     * Appends the given number as an superscript if possible, or as an ordinary number otherwise.
+     */
+    private static void appendSuperscript(final int n, final Appendable toAppendTo) throws IOException {
+        if (n >= 0 && n < 10) {
+            toAppendTo.append(Characters.toSuperScript((char) ('0' + n)));
+        } else {
+            toAppendTo.append('(').append(String.valueOf(n)).append(')');
         }
     }
 

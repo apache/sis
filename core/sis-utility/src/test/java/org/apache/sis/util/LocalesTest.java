@@ -91,7 +91,6 @@ public final strictfp class LocalesTest extends TestCase {
 
     /**
      * Tests the {@link Locales#parse(String)} method with a IETF BCP 47 language tag string.
-     * This functionality is supported only on the JDK7 branch.
      */
     @Test
     public void testParseIETF() {

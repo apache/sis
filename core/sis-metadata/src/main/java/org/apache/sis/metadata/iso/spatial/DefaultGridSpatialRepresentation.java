@@ -32,7 +32,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
- * Basic information required to uniquely identify a resource or resources.
+ * Method used to represent geographic information in the dataset.
  *
  * <p><b>Limitations:</b></p>
  * <ul>

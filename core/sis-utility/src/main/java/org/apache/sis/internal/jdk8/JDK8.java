@@ -63,6 +63,27 @@ public final class JDK8 {
     }
 
     /**
+     * Formats the given elements as a list.
+     *
+     * @param  delimiter  the characters to insert between each elements.
+     * @param  elements   the elements to format.
+     * @return the given elements formatted as a list.
+     *
+     * @since 0.8
+     */
+    public static String join(final CharSequence delimiter, final CharSequence... elements) {
+        final StringBuffer buffer = new StringBuffer();
+        for (final CharSequence cs : elements) {
+            if (buffer.length() != 0) {
+                buffer.append(delimiter);
+            }
+            buffer.append(cs);
+        }
+        return buffer.toString();
+    }
+
+
+    /**
      * Compares two numbers as unsigned long.
      *
      * @param  x  first unsigned value.

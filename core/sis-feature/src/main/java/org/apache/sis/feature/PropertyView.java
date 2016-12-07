@@ -210,7 +210,7 @@ abstract class PropertyView<V> extends Field<V> implements Property, Serializabl
     @Debug
     @Override
     public final String toString() {
-        return FieldType.toString(getClass().getSimpleName(), getName(),
+        return FieldType.toString(false, getClass().getSimpleName(), getName(),
                 Classes.getShortName(getValueClass()), getValues().iterator()).toString();
     }
 }

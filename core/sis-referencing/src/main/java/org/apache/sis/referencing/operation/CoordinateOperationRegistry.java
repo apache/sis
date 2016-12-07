@@ -706,7 +706,7 @@ class CoordinateOperationRegistry {
         CoordinateReferenceSystem crs;
         if (Utilities.equalsApproximatively(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
         if (Utilities.equalsApproximatively(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
-        final Map<String,Object> properties = new HashMap<>(derivedFrom(operation));
+        final Map<String,Object> properties = new HashMap<String,Object>(derivedFrom(operation));
         /*
          * Determine whether the operation to create is a Conversion or a Transformation
          * (could also be a Conversion subtype like Projection, but this is less important).

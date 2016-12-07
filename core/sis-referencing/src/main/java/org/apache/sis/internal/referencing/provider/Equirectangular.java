@@ -66,7 +66,7 @@ import static java.lang.Math.*;
  * @author  John Grange
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/equirectangular.html">Equirectangular on RemoteSensing.org</a>
@@ -125,24 +125,27 @@ public final class Equirectangular extends AbstractProvider {
 
         STANDARD_PARALLEL = createLatitude(builder
                 .addIdentifier("8823")
+                .addIdentifier(Citations.GEOTIFF, "3078")
                 .addName("Latitude of 1st standard parallel")
                 .addName(Citations.OGC,     Constants.STANDARD_PARALLEL_1)
                 .addName(Citations.ESRI,    "Standard_Parallel_1")
                 .addName(Citations.NETCDF,  Constants.STANDARD_PARALLEL)
-                .addName(Citations.GEOTIFF, "ProjStdParallel1")
+                .addName(Citations.GEOTIFF, "StdParallel1")
                 .addName(Citations.PROJ4,   "lat_ts"), false);
 
         LONGITUDE_OF_ORIGIN = createLongitude(builder
                 .addIdentifier("8802")
+                .addIdentifier(Citations.GEOTIFF, "3088")
                 .addName("Longitude of natural origin")
                 .addName(Citations.OGC,     Constants.CENTRAL_MERIDIAN)
                 .addName(Citations.ESRI,    "Central_Meridian")
                 .addName(Citations.NETCDF,  "longitude_of_projection_origin")
-                .addName(Citations.GEOTIFF, "ProjCenterLong")
+                .addName(Citations.GEOTIFF, "CenterLong")
                 .addName(Citations.PROJ4,   "lon_0"));
 
         FALSE_EASTING = createShift(builder
                 .addIdentifier("8806")
+                .addIdentifier(Citations.GEOTIFF, "3082")
                 .addName("False easting")
                 .addName(Citations.OGC,     Constants.FALSE_EASTING)
                 .addName(Citations.ESRI,    "False_Easting")
@@ -152,6 +155,7 @@ public final class Equirectangular extends AbstractProvider {
 
         FALSE_NORTHING = createShift(builder
                 .addIdentifier("8807")
+                .addIdentifier(Citations.GEOTIFF, "3083")
                 .addName("False northing")
                 .addName(Citations.OGC,     Constants.FALSE_NORTHING)
                 .addName(Citations.ESRI,    "False_Northing")
@@ -167,11 +171,12 @@ public final class Equirectangular extends AbstractProvider {
          */
         LATITUDE_OF_ORIGIN = createZeroConstant(builder     // Was used by EPSG:9823 (also EPSG:9842).
                 .addIdentifier("8801")
+                .addIdentifier(Citations.GEOTIFF, "3089")
                 .addName("Latitude of natural origin")
                 .addName(Citations.OGC,     Constants.LATITUDE_OF_ORIGIN)
                 .addName(Citations.ESRI,    "Latitude_Of_Origin")
                 .addName(Citations.NETCDF,  "latitude_of_projection_origin")
-                .addName(Citations.GEOTIFF, "ProjCenterLat")
+                .addName(Citations.GEOTIFF, "CenterLat")
                 .addName(Citations.PROJ4,   "lat_0")
                 .setRemarks(Resources.formatInternational(Resources.Keys.ConstantProjParameterValue_1, 0))
                 .setRequired(false));

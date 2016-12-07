@@ -204,6 +204,12 @@ public final class Constants extends Static {
     public static final short EPSG_GREENWICH = 8901;
 
     /**
+     * The EPSG code for the two-dimensional Cartesian coordinate system with axes in metres.
+     * Cartesian 2D CS. Axes: easting, northing (E,N). Orientations: east, north. UoM: m.
+     */
+    public static final short EPSG_PROJECTED_CS = 4400;
+
+    /**
      * EPSG code of "WGS 84 / Arctic Polar Stereographic" projection.
      * Latitude of standard parallel is 71°N. All other parameters are zero.
      */

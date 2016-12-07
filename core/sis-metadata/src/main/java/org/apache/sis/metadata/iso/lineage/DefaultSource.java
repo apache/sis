@@ -393,7 +393,7 @@ public class DefaultSource extends ISOMetadata implements Source {
                 scope = new DefaultScope(scope);
                 this.scope = scope;
             } else {
-                return Collections.unmodifiableCollection(scope.getExtents());
+                return Collections.<Extent>unmodifiableCollection(scope.getExtents());
             }
         }
         return ((DefaultScope) scope).getExtents();

@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import java.lang.reflect.Array;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -39,7 +40,6 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 
 // Branch-dependent imports
-import java.util.Objects;
 import org.opengis.feature.AttributeType;
 
 
@@ -643,6 +643,15 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     @Override
     public AttributeTypeBuilder<V> setDescription(final CharSequence description) {
         super.setDescription(description);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AttributeTypeBuilder<V> setDeprecated(final boolean deprecated) {
+        super.setDeprecated(deprecated);
         return this;
     }
 
