@@ -53,7 +53,7 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * It is user's responsibility to add the {@link System#nanoTime()} value
      * to the delay he wants to wait.
      *
-     * @param timestamp Time of execution of this task, in nanoseconds relative to {@link System#nanoTime()}.
+     * @param timestamp  time of execution of this task, in nanoseconds relative to {@link System#nanoTime()}.
      */
     protected DelayedRunnable(final long timestamp) {
         this.timestamp = timestamp;
@@ -74,7 +74,7 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * This restriction should be okay since the {@link DelayedExecutor} queue
      * accepts only {@code DelayedRunnable} instances.
      *
-     * @param other The other delayed object to compare with this delayed task.
+     * @param  other  the other delayed object to compare with this delayed task.
      * @return -1 if the other task should happen before this one, +1 if it should happen after, or 0.
      */
     @Override
@@ -111,8 +111,8 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
         /**
          * Returns the delay, which is fixed to 0 in every cases.
          *
-         * @param  unit The unit of the value to return (ignored).
-         * @return The delay, which is fixed to 0.
+         * @param  unit  the unit of the value to return (ignored).
+         * @return the delay, which is fixed to 0.
          */
         @Override
         public final long getDelay(final TimeUnit unit) {

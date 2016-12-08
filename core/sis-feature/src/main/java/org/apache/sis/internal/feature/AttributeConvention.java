@@ -166,7 +166,7 @@ public final class AttributeConvention extends Static {
     static {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         NAMESPACE                     = factory.createGenericName(null, "Apache", Constants.SIS);
-        NameSpace ns                  = factory.createNameSpace(NAMESPACE, null);
+        final NameSpace ns            = factory.createNameSpace(NAMESPACE, null);
         IDENTIFIER_PROPERTY           = factory.createLocalName(ns, "@identifier");
         GEOMETRY_PROPERTY             = factory.createLocalName(ns, "@geometry");
         ENVELOPE_PROPERTY             = factory.createLocalName(ns, "@envelope");

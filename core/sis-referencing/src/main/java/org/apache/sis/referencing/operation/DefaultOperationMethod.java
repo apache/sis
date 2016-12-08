@@ -323,7 +323,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @return The identified object properties in a mutable map.
      */
     private static Map<String,Object> getProperties(final IdentifiedObject info, final Citation authority) {
-        final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(info));
+        final Map<String,Object> properties = new HashMap<String,Object>(IdentifiedObjects.getProperties(info));
         properties.put(NAME_KEY, new NamedIdentifier(authority, info.getName().getCode()));
         properties.remove(IDENTIFIERS_KEY);
         return properties;

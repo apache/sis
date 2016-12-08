@@ -144,13 +144,13 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * with different source and target datum, it does not accept to use such instances for
      * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived CRS} construction.
      *
-     * @param properties The properties to be given to the identified object.
-     * @param sourceCRS  The source CRS.
-     * @param targetCRS  The target CRS, which shall use a datum
-     *                   {@linkplain Utilities#equalsIgnoreMetadata equals (ignoring metadata)} to the source CRS datum.
-     * @param interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
-     * @param method     The coordinate operation method (mandatory in all cases).
-     * @param transform  Transform from positions in the source CRS to positions in the target CRS.
+     * @param properties  the properties to be given to the identified object.
+     * @param sourceCRS   the source CRS.
+     * @param targetCRS   the target CRS, which shall use a datum
+     *                    {@linkplain Utilities#equalsIgnoreMetadata equals (ignoring metadata)} to the source CRS datum.
+     * @param interpolationCRS  the CRS of additional coordinates needed for the operation, or {@code null} if none.
+     * @param method      the coordinate operation method (mandatory in all cases).
+     * @param transform   transform from positions in the source CRS to positions in the target CRS.
      */
     public DefaultConversion(final Map<String,?>             properties,
                              final CoordinateReferenceSystem sourceCRS,
@@ -193,10 +193,10 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * the parameters used for creating the transform. Those parameters will be stored for information purpose and can
      * be given back by the {@link #getParameterValues()} method.</p>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param method     The operation method.
-     * @param transform  Transform from positions in the source CRS to positions in the target CRS, or {@code null}.
-     * @param parameters The {@code transform} parameter values, or {@code null}.
+     * @param properties  the properties to be given to the identified object.
+     * @param method      the operation method.
+     * @param transform   transform from positions in the source CRS to positions in the target CRS, or {@code null}.
+     * @param parameters  the {@code transform} parameter values, or {@code null}.
      *
      * @see DefaultMathTransformFactory#swapAndScaleAxes(MathTransform, DefaultMathTransformFactory.Context)
      */
@@ -224,11 +224,11 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * specified source and target CRS. While the source conversion can be an arbitrary one, it is
      * typically a defining conversion.
      *
-     * @param definition The defining conversion.
-     * @param source     The new source CRS.
-     * @param target     The new target CRS.
-     * @param factory    The factory to use for creating a transform from the parameters or for performing axis changes.
-     * @param actual     An array of length 1 where to store the actual operation method used by the math transform factory.
+     * @param definition  the defining conversion.
+     * @param source      the new source CRS.
+     * @param target      the new target CRS.
+     * @param factory     the factory to use for creating a transform from the parameters or for performing axis changes.
+     * @param actual      an array of length 1 where to store the actual operation method used by the math transform factory.
      */
     DefaultConversion(final Conversion definition,
                       final CoordinateReferenceSystem source,
@@ -311,7 +311,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param operation The coordinate operation to copy.
+     * @param  operation  the coordinate operation to copy.
      *
      * @see #castOrCopy(Conversion)
      */
@@ -342,8 +342,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultConversion castOrCopy(final Conversion object) {
@@ -355,7 +355,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * The default implementation returns {@code Conversion.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The conversion interface implemented by this class.
+     * @return the conversion interface implemented by this class.
      */
     @Override
     public Class<? extends Conversion> getInterface() {
@@ -381,12 +381,12 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * interface, but may also implement a more specific GeoAPI interface if {@code specialize(…)} has been able
      * to infer the type from this operation {@linkplain #getMethod() method}.
      *
-     * @param  <T>        Compile-time type of the {@code baseType} argument.
-     * @param  baseType   The base GeoAPI interface to be implemented by the conversion to return.
-     * @param  sourceCRS  The source CRS.
-     * @param  targetCRS  The target CRS.
-     * @param  factory    The factory to use for creating a transform from the parameters or for performing axis changes.
-     * @return The conversion of the given type between the given CRS.
+     * @param  <T>        compile-time type of the {@code baseType} argument.
+     * @param  baseType   the base GeoAPI interface to be implemented by the conversion to return.
+     * @param  sourceCRS  the source CRS.
+     * @param  targetCRS  the target CRS.
+     * @param  factory    the factory to use for creating a transform from the parameters or for performing axis changes.
+     * @return the conversion of the given type between the given CRS.
      * @throws ClassCastException if a contradiction is found between the given {@code baseType},
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
      *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
@@ -435,9 +435,9 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * Ensures that the {@code actual} CRS uses a datum which is equals, ignoring metadata,
      * to the datum of the {@code expected} CRS.
      *
-     * @param param     The parameter name, used only in case of error.
-     * @param expected  The CRS containing the expected datum, or {@code null}.
-     * @param actual    The CRS for which to check the datum, or {@code null}.
+     * @param  param     the parameter name, used only in case of error.
+     * @param  expected  the CRS containing the expected datum, or {@code null}.
+     * @param  actual    the CRS for which to check the datum, or {@code null}.
      * @throws MismatchedDatumException if the two CRS use different datum.
      */
     private static void ensureCompatibleDatum(final String param,
@@ -459,12 +459,12 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * For example if {@code sourceCRS} uses a {@code CartesianCS}, then {@code targetCRS} must use
      * a {@code CartesianCS} too.
      *
-     * @param transform The transform to which to concatenate axis changes.
-     * @param sourceCRS The first CRS of the pair for which to check for axes changes.
-     * @param targetCRS The second CRS of the pair for which to check for axes changes.
-     * @param interpDim The number of dimensions of the interpolation CRS, or 0 if none.
-     * @param isSource  {@code true} for pre-concatenating the changes, or {@code false} for post-concatenating.
-     * @param factory   The factory to use for performing axis changes.
+     * @param  transform  the transform to which to concatenate axis changes.
+     * @param  sourceCRS  the first CRS of the pair for which to check for axes changes.
+     * @param  targetCRS  the second CRS of the pair for which to check for axes changes.
+     * @param  interpDim  the number of dimensions of the interpolation CRS, or 0 if none.
+     * @param  isSource   {@code true} for pre-concatenating the changes, or {@code false} for post-concatenating.
+     * @param  factory    the factory to use for performing axis changes.
      */
     private static MathTransform swapAndScaleAxes(MathTransform transform,
             final CoordinateReferenceSystem sourceCRS,

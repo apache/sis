@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Deprecable;
 
 
 /**
@@ -28,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
 abstract class Field<V> extends Property {
@@ -100,5 +101,12 @@ abstract class Field<V> extends Property {
             }
         }
         setValue(value);
+    }
+
+    /**
+     * Returns whether the given property is deprecated.
+     */
+    static boolean isDeprecated(final AbstractIdentifiedType type) {
+        return (type instanceof Deprecable) && ((Deprecable) type).isDeprecated();
     }
 }

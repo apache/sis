@@ -138,8 +138,8 @@ public final class Types extends Static {
      * annotations are not inherited). If no annotation is found, then this method does not fallback
      * on the Java name since, as the name implies, this method is about standard names.
      *
-     * @param  type The GeoAPI interface or code list from which to get the ISO name, or {@code null}.
-     * @return The ISO name for the given type, or {@code null} if none or if the given type is {@code null}.
+     * @param  type  the GeoAPI interface or code list from which to get the ISO name, or {@code null}.
+     * @return the ISO name for the given type, or {@code null} if none or if the given type is {@code null}.
      *
      * @see #forStandardName(String)
      */
@@ -695,7 +695,7 @@ public final class Types extends Static {
         boolean isSorted = false;
         if (properties instanceof SortedMap<?,?>) {
             final SortedMap<String,?> sorted = (SortedMap<String,?>) properties;
-            if (sorted.comparator() == null) { // We want natural ordering.
+            if (sorted.comparator() == null) {                                      // We want natural ordering.
                 properties = sorted.tailMap(prefix);
                 isSorted = true;
             }
@@ -711,10 +711,10 @@ public final class Types extends Static {
         for (final Map.Entry<String,?> entry : properties.entrySet()) {
             final String key = entry.getKey();
             if (key == null) {
-                continue; // Tolerance for Map that accept null keys.
+                continue;                       // Tolerance for Map that accept null keys.
             }
             if (!key.startsWith(prefix)) {
-                if (isSorted) break; // If the map is sorted, there is no need to check next entries.
+                if (isSorted) break;            // If the map is sorted, there is no need to check next entries.
                 continue;
             }
             final Locale locale;

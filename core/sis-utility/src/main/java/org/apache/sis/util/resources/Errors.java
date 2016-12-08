@@ -166,7 +166,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ClosedReader_1 = 19;
 
         /**
-         * Database error while creating a ‘{0}’ object for code “{1}”.
+         * Database error while creating a ‘{0}’ object for the “{1}” identifier.
          */
         public static final short DatabaseError_2 = 20;
 
@@ -668,6 +668,11 @@ public final class Errors extends IndexedResourceBundle {
          * Record “{1}” is already defined in schema “{0}”.
          */
         public static final short RecordAlreadyDefined_2 = 116;
+
+        /**
+         * No record found in “{0}” table for “{1}” key.
+         */
+        public static final short RecordNotFound_2 = 164;
 
         /**
          * Recursive call while creating an object for the “{0}” key.

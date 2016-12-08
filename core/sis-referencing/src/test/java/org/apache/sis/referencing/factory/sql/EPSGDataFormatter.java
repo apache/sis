@@ -115,7 +115,7 @@ import java.nio.charset.StandardCharsets;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class EPSGDataFormatter extends ScriptRunner {
@@ -190,7 +190,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
     /**
      * Creates a new instance.
      *
-     * @param  c A dummy connection. Will be used for fetching metadata.
+     * @param  c  a dummy connection. Will be used for fetching metadata.
      * @throws SQLException if an error occurred while fetching metadata.
      */
     private EPSGDataFormatter(final Connection c) throws SQLException {
@@ -223,7 +223,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
     /**
      * Returns {@code true} if the given line should be omitted from the script.
      *
-     * @param  line The line, without trailing {@code ';'}.
+     * @param  line  the line, without trailing {@code ';'}.
      * @return {@code true} if the line should be omitted.
      */
     private static boolean omit(final String line) {
@@ -234,9 +234,9 @@ public final class EPSGDataFormatter extends ScriptRunner {
     /**
      * Compacts the given file.
      *
-     * @param  inputFile    The input file where to read the SQL statements to compact.
-     * @param  outputFile   The output file where to write the compacted SQL statements.
-     * @param  encoding     The character encoding for both input and output files.
+     * @param  inputFile    the input file where to read the SQL statements to compact.
+     * @param  outputFile   the output file where to write the compacted SQL statements.
+     * @param  encoding     the character encoding for both input and output files.
      * @throws IOException  if an I/O operation failed.
      * @throws SQLException should never happen.
      */
@@ -276,11 +276,23 @@ public final class EPSGDataFormatter extends ScriptRunner {
     }
 
     /**
+     * Makes sure that {@link #execute(StringBuilder)} is invoked for every line. Whether the SQL statement
+     * is supported or not is irrelevant for this method since we do not know yet what will be the database
+     * engine; we just copy the SQL statements in a file without executing them.
+     *
+     * @return {@code true}.
+     */
+    @Override
+    protected boolean isSupported(final CharSequence sql) {
+        return true;
+    }
+
+    /**
      * "Executes" the given SQL statement. In the context of this {@code EPSGDataWriter} class,
      * executing a SQL statement means compacting it and writing it to the output file.
      *
-     * @param  sql The SQL statement to compact.
-     * @return The number of rows added.
+     * @param  sql  the SQL statement to compact.
+     * @return the number of rows added.
      * @throws IOException if an I/O operation failed.
      * @throws SQLException if a syntax error happens.
      */
@@ -536,7 +548,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
      * <p><b>Note:</b> current version does not use codepoint API
      * on the assumption that it is not needed for EPSG's SQL files.</p>
      *
-     * @param buffer The string in which to perform the removal.
+     * @param  buffer  the string in which to perform the removal.
      */
     static void removeLF(final StringBuilder buffer) {
         int i = buffer.length();

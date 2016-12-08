@@ -26,10 +26,11 @@ import java.util.IdentityHashMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import org.opengis.util.NameFactory;
-import org.opengis.util.LocalName;
+import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -41,7 +42,6 @@ import org.apache.sis.internal.feature.Resources;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
-import java.util.Objects;
 
 
 /**
@@ -234,6 +234,11 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEPRECATED_KEY}</td>
+     *     <td>{@link Boolean}</td>
+     *     <td>{@link #isDeprecated()}</td>
+     *   </tr>
      * </table>
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the type of array elements may be
@@ -385,19 +390,18 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         /*
          * If some properties use long name of the form "head:tip", creates short aliases containing only the "tip"
          * name for convenience, provided that it does not create ambiguity.  If a short alias could map to two or
-         * more properties, then this alias is not added.
+         * more properties, then that alias is not added.
          *
          * In the 'aliases' map below, null values will be assigned to ambiguous short names.
          */
         final Map<String, AbstractIdentifiedType> aliases = new LinkedHashMap<>();
         for (final AbstractIdentifiedType property : allProperties) {
-            final GenericName name = property.getName();
-            final LocalName tip = name.tip();
-            if (tip != name) {                                          // Slight optimization for a common case.
-                final String key = tip.toString();
-                if (key != null && !key.isEmpty() && !key.equals(name.toString())) {
-                    aliases.put(key, aliases.containsKey(key) ? null : property);
-                }
+            GenericName name = property.getName();
+            while (name instanceof ScopedName) {
+                if (name == (name = ((ScopedName) name).tail())) break;   // Safety against broken implementations.
+                String key = name.toString();
+                if (key == null || (key = key.trim()).isEmpty()) break;   // Safety against broken implementations.
+                aliases.put(key, aliases.containsKey(key) ? null : property);
             }
         }
         for (final Map.Entry<String,AbstractIdentifiedType> entry : aliases.entrySet()) {
@@ -409,7 +413,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                     // The 'indices' value may be null if the property is an operation.
                     final Integer value = indices.get(property.getName().toString());
                     if (value != null && indices.put(tip, value) != null) {
-                        throw new AssertionError(tip);  // Should never happen.
+                        throw new AssertionError(tip);                                  // Should never happen.
                     }
                 }
             }

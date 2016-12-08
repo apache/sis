@@ -130,8 +130,8 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "│ Latitude of natural origin¹    │ Double │ Mandatory  │  [-80 … 84]°  │        40.0°  │\n" +
                 "│ Longitude of natural origin    │ Double │ Mandatory  │ [-180 … 180]° │       -60.0°  │\n" +
                 "│ Scale factor at natural origin │ Double │ Mandatory  │    (0 … ∞)    │         1.0   │\n" +
-                "│ False easting                  │ Double │ Optional   │   (-∞ … ∞) m  │      5000.0 m │\n" +
-                "│ False northing                 │ Double │ Optional   │   (-∞ … ∞) m  │     10000.0 m │\n" +
+                "│ False easting                  │ Double │ Optional   │   (−∞ … ∞) m  │      5000.0 m │\n" +
+                "│ False northing                 │ Double │ Optional   │   (−∞ … ∞) m  │     10000.0 m │\n" +
                 "└────────────────────────────────┴────────┴────────────┴───────────────┴───────────────┘\n" +
                 "¹ This parameter is shown for completeness, but should never have a value different than 0 for this projection.\n", text);
     }
@@ -162,7 +162,7 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "│ Latitude of natural origin¹    │ Double │  [-80 … 84]°  │  20.0°   │\n" +
                 "│ Longitude of natural origin    │ Double │ [-180 … 180]° │ -60.0°   │\n" +
                 "│ Scale factor at natural origin │ Double │    (0 … ∞)    │ 0.997    │\n" +
-                "│ False northing                 │ Double │   (-∞ … ∞) m  │  20.0 km │\n" +
+                "│ False northing                 │ Double │   (−∞ … ∞) m  │  20.0 km │\n" +
                 "└────────────────────────────────┴────────┴───────────────┴──────────┘\n" +
                 "¹ This parameter is shown for completeness, but should never have a value different than 0 for this projection.\n", text);
     }
@@ -184,7 +184,7 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "│ Latitude of natural origin¹    │ Double │  [-80 … 84]°        │    20°   │\n" +
                 "│ Longitude of natural origin    │ Double │ [-180 … 180]°       │   -60°   │\n" +
                 "│ Scale factor at natural origin │ Double │    (0 … ∞)          │ 0,997    │\n" +
-                "│ False northing                 │ Double │   (-∞ … ∞) m        │    20 km │\n" +
+                "│ False northing                 │ Double │   (−∞ … ∞) m        │    20 km │\n" +
                 "└────────────────────────────────┴────────┴─────────────────────┴──────────┘\n" +
                 "¹ This parameter is shown for completeness, but should never have a value different than 0 for this projection.\n", text);
     }
@@ -217,10 +217,10 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "║ EPSG: Scale factor at natural origin (8805) │ Double │ Mandatory  │    (0 … ∞)    │         1.0   ║\n" +
                 "║ OGC:  scale_factor                          │        │            │               │               ║\n" +
                 "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
-                "║ EPSG: False easting (8806)                  │ Double │ Optional   │   (-∞ … ∞) m  │      5000.0 m ║\n" +
+                "║ EPSG: False easting (8806)                  │ Double │ Optional   │   (−∞ … ∞) m  │      5000.0 m ║\n" +
                 "║ OGC:  false_easting                         │        │            │               │               ║\n" +
                 "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
-                "║ EPSG: False northing (8807)                 │ Double │ Optional   │   (-∞ … ∞) m  │     10000.0 m ║\n" +
+                "║ EPSG: False northing (8807)                 │ Double │ Optional   │   (−∞ … ∞) m  │     10000.0 m ║\n" +
                 "║ OGC:  false_northing                        │        │            │               │               ║\n" +
                 "╚═════════════════════════════════════════════╧════════╧════════════╧═══════════════╧═══════════════╝\n" +
                 "¹ This parameter is shown for completeness, but should never have a value different than 0 for this projection.\n", text);
@@ -252,7 +252,7 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "║ EPSG: Scale factor at natural origin (8805) │ Double │ Mandatory  │    (0 … ∞)    │ 0.997    ║\n" +
                 "║ OGC:  scale_factor                          │        │            │               │          ║\n" +
                 "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼──────────╢\n" +
-                "║ EPSG: False northing (8807)                 │ Double │ Optional   │   (-∞ … ∞) m  │  20.0 km ║\n" +
+                "║ EPSG: False northing (8807)                 │ Double │ Optional   │   (−∞ … ∞) m  │  20.0 km ║\n" +
                 "║ OGC:  false_northing                        │        │            │               │          ║\n" +
                 "╚═════════════════════════════════════════════╧════════╧════════════╧═══════════════╧══════════╝\n" +
                 "¹ This parameter is shown for completeness, but should never have a value different than 0 for this projection.\n", text);
@@ -326,7 +326,7 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "│ latitude_of_origin¹ │ Double │  [-80 … 84]°  │  20.0°   │\n" +
                 "│ central_meridian    │ Double │ [-180 … 180]° │ -60.0°   │\n" +
                 "│ scale_factor        │ Double │    (0 … ∞)    │ 0.997    │\n" +
-                "│ false_northing      │ Double │   (-∞ … ∞) m  │  20.0 km │\n" +
+                "│ false_northing      │ Double │   (−∞ … ∞) m  │  20.0 km │\n" +
                 "└─────────────────────┴────────┴───────────────┴──────────┘\n" +
                 "¹ This parameter is shown for completeness, but should never have a value different than 0 for this projection.\n", text);
     }

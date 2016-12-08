@@ -155,7 +155,7 @@ final class PropertyView {
      */
     @Debug
     static String toString(final Class<?> classe, final Class<?> valueClass, final GenericName name, final Collection<?> values) {
-        return FieldType.toString(classe.getSimpleName(), name,
+        return FieldType.toString(false, classe.getSimpleName(), name,
                 Classes.getShortName(valueClass), values.iterator()).toString();
     }
 }

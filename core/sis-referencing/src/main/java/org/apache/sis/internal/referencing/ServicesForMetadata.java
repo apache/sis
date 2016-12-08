@@ -728,7 +728,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             }
             properties = Collections.emptyMap();
         }
-        final HashMap<String,Object> p = new HashMap<>(properties);
+        final HashMap<String,Object> p = new HashMap<String,Object>(properties);
         JDK8.putIfAbsent(p, CRS_FACTORY, crsFactory);
         JDK8.putIfAbsent(p, CS_FACTORY,  csFactory);
         properties = p;

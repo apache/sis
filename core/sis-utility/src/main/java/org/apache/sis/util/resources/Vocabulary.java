@@ -197,6 +197,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short DefaultValue = 71;
 
         /**
+         * Deprecated
+         */
+        public static final short Deprecated = 117;
+
+        /**
          * Derived from {0}
          */
         public static final short DerivedFrom_1 = 108;
@@ -485,6 +490,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * “{0}”
          */
         public static final short Quoted_1 = 86;
+
+        /**
+         * Remarks
+         */
+        public static final short Remarks = 116;
 
         /**
          * Remote configuration

@@ -71,11 +71,16 @@ public final strictfp class EquirectangularTest extends MapProjectionTestCase {
                 "PARAM_MT[“Equirectangular”,\n" +
                 "  PARAMETER[“semi_major”, 6371007.0],\n" +
                 "  PARAMETER[“semi_minor”, 6371007.0]]");
-
+        /*
+         * MathTransforms are not defined in WKT 2, so the following WKTs do not exist in standards.
+         * Since the semi-major and semi-minor parameters do not have EPSG codes, the ID[…] elements
+         * below show whatever identifier come first for each parameter (currently GeoTIFF identifiers,
+         * but the authority may change in any future SIS version).
+         */
         ReferencingAssert.assertWktEquals(Convention.WKT2,
                 "PARAM_MT[“Equidistant Cylindrical (Spherical)”,\n" +
-                "  PARAMETER[“semi_major”, 6371007.0, LENGTHUNIT[“metre”, 1]],\n" +
-                "  PARAMETER[“semi_minor”, 6371007.0, LENGTHUNIT[“metre”, 1]]]", transform);
+                "  PARAMETER[“semi_major”, 6371007.0, LENGTHUNIT[“metre”, 1], ID[“GeoTIFF”, 2057]],\n" +
+                "  PARAMETER[“semi_minor”, 6371007.0, LENGTHUNIT[“metre”, 1], ID[“GeoTIFF”, 2058]]]", transform);
 
         ReferencingAssert.assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "Param_MT[“Equidistant Cylindrical (Spherical)”,\n" +

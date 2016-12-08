@@ -432,6 +432,20 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <version>1.12</version>
       </dependency>
 
+      <!-- Databases -->
+      <dependency>
+        <groupId>org.hsqldb</groupId>
+        <artifactId>hsqldb</artifactId>
+        <version>2.3.4</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>9.4.1212.jre7</version>
+        <scope>test</scope>
+      </dependency>
+
       <!-- Optional dependencies -->
       <dependency>
         <groupId>org.osgi</groupId>
@@ -490,11 +504,13 @@ Apache SIS is a free software, Java language library for developing geospatial a
     <profile>
       <id>apache-release</id>
       <properties>
-        <maven.compiler.debug>false</maven.compiler.debug> <!-- For smaller JAR files size. -->
+        <maven.compiler.debug>false</maven.compiler.debug>              <!-- For smaller JAR files size. -->
         <maven.compiler.optimize>true</maven.compiler.optimize>
         <org.apache.sis.test.extensive>true</org.apache.sis.test.extensive>
       </properties>
     </profile>
+
+    <!-- Cross-version compilation (to be removed with JDK9). -->
     <profile>
       <id>jdk8</id>
       <activation>
@@ -534,6 +550,31 @@ Apache SIS is a free software, Java language library for developing geospatial a
             <artifactId>maven-javadoc-plugin</artifactId>
             <configuration>
               <bootclasspath>${bootclasspath}</bootclasspath>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- ===================================================================
+           If the user has not set the SIS_DATA environment variable, set a
+           default value where we can create a minimalist database.
+         =================================================================== -->
+    <profile>
+      <id>sis-data</id>
+      <activation>
+        <property>
+          <name>!env.SIS_DATA</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <environmentVariables>
+                <SIS_DATA>${session.executionRootDirectory}/target</SIS_DATA>
+              </environmentVariables>
             </configuration>
           </plugin>
         </plugins>

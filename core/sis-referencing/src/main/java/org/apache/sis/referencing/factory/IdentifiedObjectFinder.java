@@ -443,7 +443,7 @@ public class IdentifiedObjectFinder {
             candidate = create(code);
         } catch (FactoryException e) {
             /*
-             * The identifier was not recognized. We will continue later will aliases.
+             * The identifier was not recognized. We will continue later with aliases.
              * Note: we catch a more generic exception than NoSuchAuthorityCodeException because
              *       this attempt may fail for various reasons (character string not supported
              *       by the underlying database for primary key, duplicated name found, etc.).
@@ -509,12 +509,23 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Creates an object for the given code. This method is invoked by the default {@link #find(IdentifiedObject)}
-     * method implementation of for each code returned by the {@link #getCodeCandidates(IdentifiedObject)} method,
-     * in iteration order.
+     * Creates an object for the given identifier, name or alias. This method is invoked by the default
+     * {@link #find(IdentifiedObject)} method implementation with the following argument values, in order
+     * (from less expensive to most expensive search operation):
+     *
+     * <ol>
+     *   <li>All {@linkplain AbstractIdentifiedObject#getIdentifier() identifiers} of the object to search,
+     *       formatted in an {@linkplain IdentifiedObjects#toString(Identifier) "AUTHORITY:CODE"} pattern.</li>
+     *   <li>The {@linkplain AbstractIdentifiedObject#getName() name} of the object to search,
+     *       {@linkplain org.apache.sis.referencing.NamedIdentifier#getCode() without authority}.</li>
+     *   <li>All {@linkplain AbstractIdentifiedObject#getAlias() aliases} of the object to search.</li>
+     *   <li>Each code returned by the {@link #getCodeCandidates(IdentifiedObject)} method, in iteration order.</li>
+     * </ol>
      *
      * @param  code  the authority code for which to create an object.
      * @return the identified object for the given code, or {@code null} to stop attempts.
+     * @throws NoSuchAuthorityCodeException if no object is found for the given code. It may happen if {@code code}
+     *         was a name or alias instead than an identifier and the factory supports only search by identifier.
      * @throws FactoryException if an error occurred while creating the object.
      */
     private IdentifiedObject create(final String code) throws FactoryException {

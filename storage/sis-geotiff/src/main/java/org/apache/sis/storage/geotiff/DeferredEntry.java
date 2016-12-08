@@ -32,9 +32,9 @@ final class DeferredEntry implements Comparable<DeferredEntry> {
     final ImageFileDirectory owner;
 
     /**
-     * The GeoTIFF tag to decode.
+     * The GeoTIFF tag to decode, as an <strong>unsigned</strong> short.
      */
-    final int tag;
+    final short tag;
 
     /**
      * The GeoTIFF type of the value to read.
@@ -54,7 +54,7 @@ final class DeferredEntry implements Comparable<DeferredEntry> {
     /**
      * Creates a new deferred entry.
      */
-    DeferredEntry(final ImageFileDirectory owner, final int tag, final Type type, final long count, final long offset) {
+    DeferredEntry(final ImageFileDirectory owner, final short tag, final Type type, final long count, final long offset) {
         this.owner  = owner;
         this.tag    = tag;
         this.type   = type;

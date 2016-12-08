@@ -59,7 +59,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
     private static DefaultGeocentricCRS createCRS(final String name, final GeodeticDatum datum) {
         Map<String,?> properties = IdentifiedObjects.getProperties(datum, DefaultGeocentricCRS.IDENTIFIERS_KEY);
         if (name != null) {
-            final Map<String,Object> copy = new HashMap<>(properties);
+            final Map<String,Object> copy = new HashMap<String,Object>(properties);
             copy.put(DefaultGeocentricCRS.NAME_KEY, name);
             properties = copy;
         }

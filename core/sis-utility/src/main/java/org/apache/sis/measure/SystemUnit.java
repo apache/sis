@@ -399,7 +399,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      * Returns the quotient of this unit with the one specified.
      *
      * @param  divisor  the unit divisor.
-     * @return {@code this} ÷ {@code divisor}
+     * @return {@code this} ∕ {@code divisor}
      */
     @Override
     public Unit<?> divide(final Unit<?> divisor) {

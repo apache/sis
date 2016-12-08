@@ -27,28 +27,24 @@ import javax.measure.quantity.Time;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.datum.TemporalDatum;
-import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -59,6 +55,7 @@ import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
+import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
@@ -518,7 +515,7 @@ public enum CommonCRS {
             synchronized (this) {
                 object = geographic(cached);
                 if (object == null) {
-                    final CRSAuthorityFactory factory = crsFactory();
+                    final GeodeticAuthorityFactory factory = factory();
                     if (factory != null) try {
                         cached = object = factory.createGeographicCRS(String.valueOf(geographic));
                         return object;
@@ -574,7 +571,7 @@ public enum CommonCRS {
                 object = cachedGeo3D;
                 if (object == null) {
                     if (geo3D != 0) {
-                        final CRSAuthorityFactory factory = crsFactory();
+                        final GeodeticAuthorityFactory factory = factory();
                         if (factory != null) try {
                             cachedGeo3D = object = factory.createGeographicCRS(String.valueOf(geo3D));
                             return object;
@@ -632,7 +629,7 @@ public enum CommonCRS {
                 object = cachedGeocentric;
                 if (object == null) {
                     if (geocentric != 0) {
-                        final CRSAuthorityFactory factory = crsFactory();
+                        final GeodeticAuthorityFactory factory = factory();
                         if (factory != null) try {
                             cachedGeocentric = object = factory.createGeocentricCRS(String.valueOf(geocentric));
                             return object;
@@ -689,7 +686,7 @@ public enum CommonCRS {
                      */
                     SphericalCS cs = null;
                     if (this == DEFAULT) {
-                        final CSAuthorityFactory factory = csFactory();
+                        final GeodeticAuthorityFactory factory = factory();
                         if (factory != null) try {
                             cs = factory.createSphericalCS("6404");
                         } catch (FactoryException e) {
@@ -738,7 +735,7 @@ public enum CommonCRS {
             synchronized (this) {
                 object = datum(cached);
                 if (object == null) {
-                    final DatumAuthorityFactory factory = datumFactory();
+                    final GeodeticAuthorityFactory factory = factory();
                     if (factory != null) try {
                         cached = object = factory.createGeodeticDatum(String.valueOf(datum));
                         return object;
@@ -782,7 +779,7 @@ public enum CommonCRS {
                     if (this == NAD83) {
                         object = ETRS89.ellipsoid();            // Share the same instance for NAD83 and ETRS89.
                     } else {
-                        final DatumAuthorityFactory factory = datumFactory();
+                        final GeodeticAuthorityFactory factory = factory();
                         if (factory != null) try {
                             cached = object = factory.createEllipsoid(String.valueOf(ellipsoid));
                             return object;
@@ -822,7 +819,7 @@ public enum CommonCRS {
                     if (this != DEFAULT) {
                         object = DEFAULT.primeMeridian();           // Share the same instance for all constants.
                     } else {
-                        final DatumAuthorityFactory factory = datumFactory();
+                        final GeodeticAuthorityFactory factory = factory();
                         if (factory != null) try {
                             cached = object = factory.createPrimeMeridian(StandardDefinitions.GREENWICH);
                             return object;
@@ -945,7 +942,7 @@ public enum CommonCRS {
                 code = (isSouth ? southUTM : northUTM) & 0xFFFF;
                 if (code != 0) {
                     code += zone;
-                    final CRSAuthorityFactory factory = crsFactory();
+                    final GeodeticAuthorityFactory factory = factory();
                     if (factory != null) try {
                         return factory.createProjectedCRS(String.valueOf(code));
                     } catch (FactoryException e) {
@@ -969,7 +966,7 @@ public enum CommonCRS {
                 if (this != DEFAULT) {
                     cs = DEFAULT.UTM(latitude, longitude).getCoordinateSystem();
                 } else {
-                    cs = (CartesianCS) StandardDefinitions.createCoordinateSystem((short) 4400);
+                    cs = (CartesianCS) StandardDefinitions.createCoordinateSystem(Constants.EPSG_PROJECTED_CS);
                 }
             }
             crs = StandardDefinitions.createUTM(code, geographic(), latitude, longitude, cs);
@@ -1194,7 +1191,7 @@ public enum CommonCRS {
                     object = crs(cached);
                     if (object == null) {
                         if (isEPSG) {
-                            final CRSAuthorityFactory factory = crsFactory();
+                            final GeodeticAuthorityFactory factory = factory();
                             if (factory != null) try {
                                 cached = object = factory.createVerticalCRS(String.valueOf(crs));
                                 return object;
@@ -1259,7 +1256,7 @@ public enum CommonCRS {
                     object = datum(cached);
                     if (object == null) {
                         if (isEPSG) {
-                            final DatumAuthorityFactory factory = datumFactory();
+                            final GeodeticAuthorityFactory factory = factory();
                             if (factory != null) try {
                                 cached = object = factory.createVerticalDatum(String.valueOf(datum));
                                 return object;
@@ -1571,7 +1568,7 @@ public enum CommonCRS {
      * Returns the same properties than the given object, except for the identifier which is set to the given code.
      */
     private static Map<String,?> properties(final IdentifiedObject template, final short code) {
-        final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(template, EXCLUDE));
+        final Map<String,Object> properties = new HashMap<String,Object>(IdentifiedObjects.getProperties(template, EXCLUDE));
         properties.put(GeographicCRS.IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
         return properties;
     }
@@ -1580,39 +1577,11 @@ public enum CommonCRS {
      * Returns the EPSG factory to use for creating CRS, or {@code null} if none.
      * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
      */
-    static CRSAuthorityFactory crsFactory() {
+    static GeodeticAuthorityFactory factory() {
         if (!EPSGFactoryFallback.FORCE_HARDCODED) {
-            final AuthorityFactory factory = AuthorityFactories.EPSG();
+            final GeodeticAuthorityFactory factory = AuthorityFactories.EPSG();
             if (!(factory instanceof EPSGFactoryFallback)) {
-                return (CRSAuthorityFactory) factory;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the EPSG factory to use for creating coordinate systems, or {@code null} if none.
-     * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
-     */
-    static CSAuthorityFactory csFactory() {
-        if (!EPSGFactoryFallback.FORCE_HARDCODED) {
-            final AuthorityFactory factory = AuthorityFactories.EPSG();
-            if (!(factory instanceof EPSGFactoryFallback)) {
-                return (CSAuthorityFactory) factory;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the EPSG factory to use for creating datum, ellipsoids and prime meridians, or {@code null} if none.
-     * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
-     */
-    static DatumAuthorityFactory datumFactory() {
-        if (!EPSGFactoryFallback.FORCE_HARDCODED) {
-            final AuthorityFactory factory = AuthorityFactories.EPSG();
-            if (!(factory instanceof EPSGFactoryFallback)) {
-                return (DatumAuthorityFactory) factory;
+                return factory;
             }
         }
         return null;
@@ -1626,7 +1595,7 @@ public enum CommonCRS {
         String message = Resources.format(Resources.Keys.CanNotInstantiateGeodeticObject_1, (Constants.EPSG + ':') + code);
         message = Exceptions.formatChainedMessages(null, message, e);
         final LogRecord record = new LogRecord(Level.WARNING, message);
-        if (!(e instanceof UnavailableFactoryException) || !AuthorityFactories.failure((UnavailableFactoryException) e)) {
+        if (!(e instanceof UnavailableFactoryException) || AuthorityFactories.failure((UnavailableFactoryException) e)) {
             // Append the stack trace only if the exception is the the one we expect when the factory is not available.
             record.setThrown(e);
         }

@@ -19,13 +19,19 @@ package org.apache.sis.storage.geotiff;
 import java.util.Locale;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.logging.LogRecord;
+import java.nio.charset.StandardCharsets;
+import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
@@ -64,12 +70,13 @@ public class GeoTiffStore extends DataStore {
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
      *
-     * @param  storage information about the storage (URL, stream, <i>etc</i>).
+     * @param  storage  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
      */
     public GeoTiffStore(final StorageConnector storage) throws DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
-        encoding = storage.getOption(OptionKey.ENCODING);
+        final Charset encoding = storage.getOption(OptionKey.ENCODING);
+        this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
         final ChannelDataInput input = storage.getStorageAs(ChannelDataInput.class);
         if (input == null) {
             throw new DataStoreException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2,
@@ -93,18 +100,28 @@ public class GeoTiffStore extends DataStore {
      */
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
-        if (metadata == null) try {
-            int n = 0;
-            ImageFileDirectory dir;
-            final Locale locale = getLocale();
-            while ((dir = reader.getImageFileDirectory(n++)) != null) {
-                dir.completeMetadata(reader.metadata, locale);
+        if (metadata == null) {
+            final MetadataBuilder builder = reader.metadata;
+            try {
+                builder.setFormat("GeoTIFF");
+            } catch (MetadataStoreException e) {
+                warning(null, e);
             }
-            metadata = reader.metadata.build(true);
-        } catch (IOException e) {
-            throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
-        } catch (ArithmeticException e) {
-            throw new DataStoreContentException(reader.canNotDecode(), e);
+            builder.add(encoding);
+            builder.add(ScopeCode.valueOf("COVERAGE"));
+            final Locale locale = getLocale();
+            int n = 0;
+            try {
+                ImageFileDirectory dir;
+                while ((dir = reader.getImageFileDirectory(n++)) != null) {
+                    dir.completeMetadata(builder, locale);
+                }
+                metadata = builder.build(true);
+            } catch (IOException e) {
+                throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
+            } catch (FactoryException | ArithmeticException e) {
+                throw new DataStoreContentException(reader.canNotDecode(), e);
+            }
         }
         return metadata;
     }
@@ -134,5 +151,24 @@ public class GeoTiffStore extends DataStore {
      */
     final void warning(final String message, final Exception exception) {
         listeners.warning(message, exception);
+    }
+
+    /**
+     * Reports a warning contained in the given {@link LogRecord}.
+     * Note that the given record will not necessarily be sent to the logging framework;
+     * if the user as registered at least one listener, then the record will be sent to the listeners instead.
+     *
+     * <p>This method sets the {@linkplain LogRecord#setSourceClassName(String) source class name} and
+     * {@linkplain LogRecord#setSourceMethodName(String) source method name} to hard-coded values.
+     * Those values assume that the warnings occurred indirectly from a call to {@link #getMetadata()}
+     * in this class. We do not report private classes or methods as the source of warnings.</p>
+     *
+     * @param  record  the warning to report.
+     */
+    final void warning(final LogRecord record) {
+        // Logger name will be set by listeners.warning(record).
+        record.setSourceClassName(GeoTiffStore.class.getName());
+        record.setSourceMethodName("getMetadata");
+        listeners.warning(record);
     }
 }

@@ -21,9 +21,9 @@ import org.apache.sis.util.logging.Logging;
 
 
 /**
- * Utilities methods for threads. This class declares in a single place every {@link ThreadGroup}
- * used in SIS. Their intend is to bring some order in debugger informations, by grouping the
- * threads created by SIS together under the same parent tree node.
+ * Utilities methods for threads. This class declares in a single place every {@link ThreadGroup} used in SIS.
+ * Their intend is to bring some order in debugger informations, by grouping the threads created by SIS together
+ * under the same parent tree node.
  *
  * <div class="section">Note on dependencies</div>
  * This class shall not depend on {@link ReferenceQueueConsumer} or {@link DelayedExecutor},
@@ -93,9 +93,9 @@ final class Threads extends Static {
      * <p><strong>This method is for internal use by Apache SIS shutdown hooks only.</strong>
      * Users should never invoke this method explicitely.</p>
      *
-     * @param  stopWaitingAt A {@link System#nanoTime()} value telling when to stop waiting.
+     * @param  stopWaitingAt  a {@link System#nanoTime()} value telling when to stop waiting.
      *         This is used for preventing shutdown process to block an indefinite amount of time.
-     * @throws InterruptedException If an other thread invoked {@link Thread#interrupt()} while
+     * @throws InterruptedException if an other thread invoked {@link Thread#interrupt()} while
      *         we were waiting for the daemon threads to die.
      */
     static synchronized void shutdown(final long stopWaitingAt) throws InterruptedException {

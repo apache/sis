@@ -18,6 +18,8 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.HashMap;
+import org.opengis.util.ScopedName;
+import org.opengis.util.GenericName;
 import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.Containers;
@@ -26,6 +28,7 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 
+import org.apache.sis.internal.jdk8.JDK8;
 
 /**
  * Implementation of the map returned by {@link DefaultAttributeType#characteristics()}.
@@ -42,7 +45,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.8
  * @module
  */
 final class CharacteristicTypeMap extends AbstractMap<String,DefaultAttributeType<?>> {
@@ -78,9 +81,9 @@ final class CharacteristicTypeMap extends AbstractMap<String,DefaultAttributeTyp
      * <p>This method does not clone the {@code characterizedBy} array. If that array
      * is a user-provided argument, then cloning that array is caller responsibility.</p>
      *
-     * @param  source The attribute which is characterized by {@code characterizedBy}.
-     * @param  characterizedBy Characteristics of {@code source}. Should not be empty.
-     * @return A map for this given characteristics.
+     * @param  source  the attribute which is characterized by {@code characterizedBy}.
+     * @param  characterizedBy  characteristics of {@code source}. Should not be empty.
+     * @return a map for this given characteristics.
      * @throws IllegalArgumentException if two characteristics have the same name.
      */
     static CharacteristicTypeMap create(final DefaultAttributeType<?> source, final DefaultAttributeType<?>[] characterizedBy) {
@@ -101,20 +104,47 @@ final class CharacteristicTypeMap extends AbstractMap<String,DefaultAttributeTyp
      * <p>This constructor does not clone the {@code characterizedBy} array. If that array
      * is a user-provided argument, then cloning that array is caller responsibility.</p>
      *
-     * @param  source The attribute which is characterized by {@code characterizedBy}.
-     * @param  characterizedBy Characteristics of {@code source}. Should not be empty.
+     * @param  source  the attribute which is characterized by {@code characterizedBy}.
+     * @param  characterizedBy  characteristics of {@code source}. Should not be empty.
      * @throws IllegalArgumentException if two characteristics have the same name.
      */
     private CharacteristicTypeMap(final DefaultAttributeType<?> source, final DefaultAttributeType<?>[] characterizedBy) {
         this.characterizedBy = characterizedBy;
         int index = 0;
         final Map<String,Integer> indices = new HashMap<>(Containers.hashMapCapacity(characterizedBy.length));
+        final Map<String,Integer> aliases = new HashMap<>();
         for (int i=0; i<characterizedBy.length; i++) {
             final DefaultAttributeType<?> attribute = characterizedBy[i];
             ensureNonNullElement("characterizedBy", i, attribute);
-            final String name = AbstractIdentifiedType.toString(attribute.getName(), source, "characterizedBy", i);
-            if (indices.put(name, index++) != null) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, name));
+            GenericName name = attribute.getName();
+            String key = AbstractIdentifiedType.toString(name, source, "characterizedBy", i);
+            final Integer value = index++;
+            if (indices.put(key, value) != null) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, key));
+            }
+            /*
+             * If some characteristics use long name of the form "head:tip", creates short aliases containing
+             * only the "tip" name for convenience, provided that it does not create ambiguity. If an alias
+             * could map to two or more characteristics, then that alias is not added. Those ambiguous aliases
+             * are identified by the -1 value in the 'aliases' map.
+             */
+            while (name instanceof ScopedName) {
+                if (name == (name = ((ScopedName) name).tail())) break;   // Safety against broken implementations.
+                key = name.toString();
+                if (key == null || (key = key.trim()).isEmpty()) break;   // Safety against broken implementations.
+                if (aliases.put(key, value) != null) {
+                    aliases.put(key, -1);
+                }
+            }
+        }
+        /*
+         * Copy the aliases only after we finished to create the list of all fully-qualified names.
+         * The copy operation shall exclude all ambiguous names.
+         */
+        for (final Map.Entry<String,Integer> entry : aliases.entrySet()) {
+            final Integer value = entry.getValue();
+            if (value >= 0) {
+                JDK8.putIfAbsent(indices, entry.getKey(), value);
             }
         }
         this.indices = CollectionsExt.compact(indices);
