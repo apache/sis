@@ -25,15 +25,12 @@ import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.io.BufferedReader;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Fallback;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.PerformanceLevel;
@@ -64,9 +61,11 @@ final class EPSGInstaller extends ScriptRunner {
      *     UPDATE epsg_datum
      *     SET datum_name = replace(datum_name, CHAR(182), CHAR(10));
      * }
+     *
+     * Note: this regular expression use a capturing group.
      */
     static final String REPLACE_STATEMENT =
-            "\\s*UPDATE\\s+[\\w\\.\" ]+\\s+SET\\s+(\\w+)\\s*=\\s*replace\\s*\\(\\s*\\1\\W+.*";
+            "UPDATE\\s+[\\w\\.\" ]+\\s+SET\\s+(\\w+)\\s*=\\s*replace\\s*\\(\\s*\\1\\W+.*";
 
     /**
      * {@code true} if the Pilcrow character (¶ - decimal code 182) should be replaced by Line Feed
@@ -76,16 +75,10 @@ final class EPSGInstaller extends ScriptRunner {
     private final boolean replacePilcrow;
 
     /**
-     * Non-null if there is SQL statements to skip. This is the case of {@code UPDATE … SET x = REPLACE(x, …)}
-     * functions, since Derby does not supports the {@code REPLACE} function.
-     */
-    private final Matcher statementToSkip;
-
-    /**
      * Creates a new runner which will execute the statements using the given connection.
      * The encoding is {@code "ISO-8859-1"}, which is the encoding used for the files provided by EPSG.
      *
-     * @param connection The connection to the database.
+     * @param  connection  the connection to the database.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     public EPSGInstaller(final Connection connection) throws SQLException {
@@ -100,11 +93,15 @@ final class EPSGInstaller extends ScriptRunner {
                 break;
             }
         }
-        if (isReplaceSupported) {
-            statementToSkip = null;
-        } else {
-            statementToSkip = Pattern.compile(REPLACE_STATEMENT, Pattern.CASE_INSENSITIVE).matcher("");
+        if (!isReplaceSupported) {
+            addStatementToSkip(REPLACE_STATEMENT);
         }
+        /*
+         * The SQL scripts provided by EPSG contains some lines with only a "COMMIT" statement.
+         * This statement is not understood by all databases, and interferes with our calls to
+         * setAutoCommit(false) ... commit() / rollback().
+         */
+        addStatementToSkip("COMMIT");
         replacePilcrow = false;         // Never supported for now.
     }
 
@@ -114,7 +111,7 @@ final class EPSGInstaller extends ScriptRunner {
      *
      * <p>This method should be invoked only once. It does nothing if the database does not supports schema.</p>
      *
-     * @param schema The schema (usually {@code "epsg"}).
+     * @param  schema  the schema (usually {@code "epsg"}).
      * @throws SQLException if the schema can not be created.
      * @throws IOException if an I/O operation was required and failed.
      */
@@ -124,9 +121,10 @@ final class EPSGInstaller extends ScriptRunner {
              * Creates the schema on the database. We do that before to setup the 'toSchema' map, while the map still null.
              * Note that we do not quote the schema name, which is a somewhat arbitrary choice.
              */
-            execute(new StringBuilder("CREATE SCHEMA ").append(schema));
+            execute(new StringBuilder("CREATE SCHEMA ").append(identifierQuote).append(schema).append(identifierQuote));
             if (isGrantOnSchemaSupported) {
-                execute(new StringBuilder("GRANT USAGE ON SCHEMA ").append(schema).append(" TO ").append(PUBLIC));
+                execute(new StringBuilder("GRANT USAGE ON SCHEMA ")
+                        .append(identifierQuote).append(schema).append(identifierQuote).append(" TO ").append(PUBLIC));
             }
             /*
              * Mapping from the table names used in the SQL scripts to the original names used in the MS-Access database.
@@ -175,8 +173,16 @@ final class EPSGInstaller extends ScriptRunner {
     final void prependNamespace(final String schema) {
         modifyReplacements(new BiFunction<String,String,String>() {
             @Override public String apply(String key, String value) {
-                return key.startsWith(SQLTranslator.TABLE_PREFIX) ?
-                        schema + '.' + identifierQuote + value + identifierQuote : value;
+                if (key.startsWith(SQLTranslator.TABLE_PREFIX)) {
+                    final StringBuilder buffer = new StringBuilder(value.length() + schema.length() + 5);
+                    buffer.append(identifierQuote).append(schema).append(identifierQuote).append('.');
+                    final boolean isQuoted = value.endsWith(identifierQuote);
+                    if (!isQuoted) buffer.append(identifierQuote);
+                    buffer.append(value);
+                    if (!isQuoted) buffer.append(identifierQuote);
+                    value = buffer.toString();
+                }
+                return value;
             }
         });
     }
@@ -187,9 +193,9 @@ final class EPSGInstaller extends ScriptRunner {
      * same than "information is an empty string". This replacement is okay in this particular case
      * since there is no field in the EPSG database for which we really want an empty string.
      *
-     * @param sql   The whole SQL statement.
-     * @param lower Index of the first character of the text in {@code sql}.
-     * @param upper Index after the last character of the text in {@code sql}.
+     * @param sql    the whole SQL statement.
+     * @param lower  index of the first character of the text in {@code sql}.
+     * @param upper  index after the last character of the text in {@code sql}.
      */
     @Override
     protected void editText(final StringBuilder sql, final int lower, final int upper) {
@@ -213,30 +219,10 @@ final class EPSGInstaller extends ScriptRunner {
      * Modifies the SQL statement before to execute it, or omit unsupported statements.
      *
      * @throws SQLException if an error occurred while executing the SQL statement.
-     * @throws IOException if an I/O operation was required and failed.
+     * @throws IOException  if an I/O operation was required and failed.
      */
     @Override
     protected int execute(final StringBuilder sql) throws SQLException, IOException {
-        /*
-         * The SQL scripts provided by EPSG contains some lines with only a "COMMIT" statement.
-         * This statement is not understood by all databases, and interferes with our calls to
-         * setAutoCommit(false) ... commit() / rollback().
-         */
-        if (CharSequences.equalsIgnoreCase(sql, "COMMIT")) {
-            return 0;
-        }
-        if (!isGrantOnTableSupported && CharSequences.regionMatches(sql, 0, "GRANT")) {
-            return 0;
-        }
-        if (!isEnumTypeSupported && CharSequences.regionMatches(sql, 0, "CREATE")) {
-            final String t = CharSequences.trimWhitespaces(sql, 6, 12).toString();
-            if (t.equals("TYPE") || t.equals("CAST")) {
-                return 0;
-            }
-        }
-        if (statementToSkip != null && statementToSkip.reset(sql).matches()) {
-            return 0;
-        }
         if (replacePilcrow) {
             StringBuilders.replace(sql, "¶", "\n");
         }
@@ -246,8 +232,8 @@ final class EPSGInstaller extends ScriptRunner {
     /**
      * Processes to the creation of the EPSG database using the SQL scripts from the given provider.
      *
-     * @param  scriptProvider User-provided scripts, or {@code null} for automatic lookup.
-     * @throws IOException if an error occurred while reading an input.
+     * @param  scriptProvider  user-provided scripts, or {@code null} for automatic lookup.
+     * @throws IOException  if an error occurred while reading an input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     public void run(InstallationResources scriptProvider, final Locale locale) throws SQLException, IOException {

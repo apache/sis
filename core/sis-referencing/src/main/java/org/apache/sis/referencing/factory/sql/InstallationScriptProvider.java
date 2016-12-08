@@ -29,6 +29,10 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
@@ -38,12 +42,6 @@ import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
-
-// Branch-dependent imports
-import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 
 /**
@@ -118,8 +116,8 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      *   </tr>
      * </table>
      *
-     * @param authority The authority (typically {@code "EPSG"}), or {@code null} if not available.
-     * @param resources Names of the SQL scripts to read.
+     * @param  authority  the authority (typically {@code "EPSG"}), or {@code null} if not available.
+     * @param  resources  names of the SQL scripts to read.
      *
      * @see #getResourceNames(String)
      * @see #openStream(String)
@@ -142,7 +140,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * if that authority was {@code null}. An empty set means that the provider does not have all
      * needed resources or does not have permission to distribute the installation scripts.
      *
-     * @return Identifiers of SQL scripts that this instance can distribute.
+     * @return identifiers of SQL scripts that this instance can distribute.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -164,8 +162,8 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * This is a copy of the array of names given to the constructor.
      * Those names are often filenames, but not necessarily (they may be just labels).
      *
-     * @param  authority The value given at construction time (e.g. {@code "EPSG"}).
-     * @return The names of all SQL scripts to execute.
+     * @param  authority  the value given at construction time (e.g. {@code "EPSG"}).
+     * @return the names of all SQL scripts to execute.
      * @throws IllegalArgumentException if the given {@code authority} argument is not the expected value.
      * @throws IOException if fetching the script names required an I/O operation and that operation failed.
      */
@@ -201,10 +199,10 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * in which case an Apache SIS build-in script is used – and wrap the result in a {@link LineNumberReader}.
      * The file encoding is ISO LATIN-1 (the encoding used in the scripts distributed by EPSG).
      *
-     * @param  authority The value given at construction time (e.g. {@code "EPSG"}).
-     * @param  resource Index of the SQL script to read, from 0 inclusive to
+     * @param  authority  the value given at construction time (e.g. {@code "EPSG"}).
+     * @param  resource   index of the SQL script to read, from 0 inclusive to
      *         <code>{@linkplain #getResourceNames getResourceNames}(authority).length</code> exclusive.
-     * @return A reader for the content of SQL script to execute.
+     * @return a reader for the content of SQL script to execute.
      * @throws IllegalArgumentException if the given {@code authority} argument is not the expected value.
      * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
      * @throws IOException if an error occurred while creating the reader.
@@ -226,6 +224,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
         } else {
             in = openStream(name);
             charset = StandardCharsets.ISO_8859_1;
+            name = name.concat(".sql");
         }
         if (in == null) {
             throw new FileNotFoundException(Errors.format(Errors.Keys.FileNotFound_1, name));
@@ -261,8 +260,8 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * }
      * </div>
      *
-     * @param  name Name of the script file to open. Can be {@code null} if the resource is not found.
-     * @return An input stream opened of the given script file.
+     * @param  name  name of the script file to open. Can be {@code null} if the resource is not found.
+     * @return an input stream opened of the given script file.
      * @throws IOException if an error occurred while opening the file.
      */
     protected abstract InputStream openStream(final String name) throws IOException;
@@ -368,7 +367,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
         /**
          * Returns {@code null} since the user is presumed to have downloaded the files himself.
          *
-         * @return The terms of use in plain text or HTML, or {@code null} if the license is presumed already accepted.
+         * @return the terms of use in plain text or HTML, or {@code null} if the license is presumed already accepted.
          */
         @Override
         public String getLicense(String authority, Locale locale, String mimeType) {
@@ -378,8 +377,8 @@ public abstract class InstallationScriptProvider extends InstallationResources {
         /**
          * Opens the input stream for the SQL script of the given name.
          *
-         * @param  name Name of the script file to open.
-         * @return An input stream opened of the given script file, or {@code null} if the resource was not found.
+         * @param  name  name of the script file to open.
+         * @return an input stream opened of the given script file, or {@code null} if the resource was not found.
          * @throws IOException if an error occurred while opening the file.
          */
         @Override

@@ -139,7 +139,7 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
         assertEquals ("Inverse +1",     0, inverseTransform(+1),   NORMALIZED_TOLERANCE);
         assertEquals ("Inverse -1",     0, inverseTransform(-1),   NORMALIZED_TOLERANCE);
         assertEquals ("Inverse +∞", +PI/2, inverseTransform(INF),  NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse -∞", +PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
+        assertEquals ("Inverse −∞", +PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
 
         // Like the north case, but with sign inversed.
         createNormalizedProjection(((LambertConicConformal) transform).eccentricity != 0, -40);
@@ -158,7 +158,7 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
         assertEquals ("Not a number", NaN, inverseTransform(NaN),  NORMALIZED_TOLERANCE);
         assertEquals ("Inverse 0",  -PI/2, inverseTransform( 0),   NORMALIZED_TOLERANCE);
         assertEquals ("Inverse +∞", +PI/2, inverseTransform(INF),  NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse -∞", +PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
+        assertEquals ("Inverse −∞", +PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
     }
 
     /**

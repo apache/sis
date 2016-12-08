@@ -320,7 +320,25 @@ public final class CRS extends Static {
             context = new CoordinateOperationContext();
             context.setAreaOfInterest(areaOfInterest);
         }
-        return CoordinateOperations.factory().createOperation(sourceCRS, targetCRS, context);
+        /*
+         * In principle we should just delegate to factory.createOperation(…). However this operation may fail
+         * if a connection to the EPSG database has been found, but the EPSG tables do not yet exist in that
+         * database and
+         */
+        final DefaultCoordinateOperationFactory factory = CoordinateOperations.factory();
+        try {
+            return factory.createOperation(sourceCRS, targetCRS, context);
+        } catch (UnavailableFactoryException e) {
+            if (AuthorityFactories.failure(e)) {
+                throw e;
+            } try {
+                // Above method call replaced the EPSG factory by a fallback. Try again.
+                return factory.createOperation(sourceCRS, targetCRS, context);
+            } catch (FactoryException ex) {
+                ex.addSuppressed(e);
+                throw ex;
+            }
+        }
     }
 
     /**

@@ -19,10 +19,13 @@ package org.apache.sis.internal.metadata.sql;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.sql.Statement;
 import java.sql.Connection;
@@ -51,7 +54,7 @@ import org.apache.sis.internal.jdk8.BiFunction;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public class ScriptRunner implements AutoCloseable {
@@ -103,9 +106,9 @@ public class ScriptRunner implements AutoCloseable {
 
     /**
      * A mapping of words to replace. The replacements are performed only for occurrences outside identifiers or texts.
-     * See {@link #replace(String, String)} for more explanation.
+     * See {@link #addReplacement(String, String)} for more explanation.
      *
-     * @see #replace(String, String)
+     * @see #addReplacement(String, String)
      */
     private final Map<String,String> replacements = new HashMap<>();
 
@@ -125,6 +128,12 @@ public class ScriptRunner implements AutoCloseable {
 
     /**
      * {@code true} if the database supports enums.
+     * Example:
+     *
+     * {@preformat sql
+     *     CREATE TYPE metadata."CI_DateTypeCode" AS ENUM ('creation', 'publication');
+     *     CREATE CAST (VARCHAR AS metadata."CI_DateTypeCode") WITH INOUT AS ASSIGNMENT;
+     * }
      *
      * <p>Notes per database product:</p>
      * <ul>
@@ -132,6 +141,8 @@ public class ScriptRunner implements AutoCloseable {
      *       we require PostgreSQL 8.4 because we need the {@code CAST … WITH INOUT} feature.</li>
      *   <li><b>Other databases:</b> assumed not supported.</li>
      * </ul>
+     *
+     * @see #statementsToSkip
      */
     protected final boolean isEnumTypeSupported;
 
@@ -148,14 +159,40 @@ public class ScriptRunner implements AutoCloseable {
     /**
      * {@code true} if the database supports {@code "GRANT USAGE ON SCHEMA"} statements.
      * Read-only permissions are typically granted to {@link #PUBLIC}.
+     * Example:
+     *
+     * {@preformat sql
+     *     GRANT USAGE ON SCHEMA metadata TO PUBLIC;
+     * }
+     *
+     * @see #statementsToSkip
      */
     protected final boolean isGrantOnSchemaSupported;
 
     /**
      * {@code true} if the database supports {@code "GRANT SELECT ON TABLE"} statements.
      * Read-only permissions are typically granted to {@link #PUBLIC}.
+     * Example:
+     *
+     * {@preformat sql
+     *     GRANT SELECT ON TABLE epsg_coordinatereferencesystem TO PUBLIC;
+     * }
+     *
+     * @see #statementsToSkip
      */
     protected final boolean isGrantOnTableSupported;
+
+    /**
+     * {@code true} if the database supports the {@code COMMENT} statement.
+     * Example:
+     *
+     * {@preformat sql
+     *     COMMENT ON SCHEMA metadata IS 'ISO 19115 metadata';
+     * }
+     *
+     * @see #statementsToSkip
+     */
+    protected final boolean isCommentSupported;
 
     /**
      * {@code true} if the following instruction shall be executed
@@ -190,6 +227,26 @@ public class ScriptRunner implements AutoCloseable {
     private final Statement statement;
 
     /**
+     * If non-null, the SQL statements to skip (typically because not supported by the database).
+     * The matcher is built as an alternation of many regular expressions separated by the pipe symbol.
+     * The list of statements to skip depends on which {@code is*Supported} fields are set to {@code true}:
+     *
+     * <ul>
+     *   <li>{@link #isEnumTypeSupported} for {@code "CREATE TYPE …"} or {@code "CREATE CAST …"} statements.</li>
+     *   <li>{@link #isGrantOnSchemaSupported} for {@code "GRANT USAGE ON SCHEMA …"} statements.</li>
+     *   <li>{@link #isGrantOnTableSupported} for {@code "GRANT SELECT ON TABLE …"} statements.</li>
+     *   <li>{@link #isCommentSupported} for {@code "COMMENT ON …"} statements.</li>
+     * </ul>
+     */
+    private Matcher statementsToSkip;
+
+    /**
+     * The regular expression to use for building {@link #statementsToSkip}.
+     * At most one of {@code regexOfStmtToSkip} and {@code statementsToSkip} shall be non-null.
+     */
+    private StringBuilder regexOfStmtToSkip;
+
+    /**
      * Name of the SQL script under execution, or {@code null} if unknown.
      * This is used only for error reporting.
      */
@@ -222,8 +279,8 @@ public class ScriptRunner implements AutoCloseable {
      *       {@code INSERT INTO} statement. Note that this causes {@link StackOverflowError} in some JDBC driver.</li>
      * </ul>
      *
-     * @param connection        The connection to the database.
-     * @param maxRowsPerInsert  Maximum number of rows per {@code "INSERT INTO"} statement.
+     * @param  connection        the connection to the database.
+     * @param  maxRowsPerInsert  maximum number of rows per {@code "INSERT INTO"} statement.
      * @throws SQLException if an error occurred while creating a SQL statement.
      */
     protected ScriptRunner(final Connection connection, int maxRowsPerInsert) throws SQLException {
@@ -242,6 +299,7 @@ public class ScriptRunner implements AutoCloseable {
                 isGrantOnSchemaSupported = false;
                 isGrantOnTableSupported  = false;
                 isCreateLanguageRequired = false;
+                isCommentSupported       = false;
                 break;
             }
             case POSTGRESQL: {
@@ -250,6 +308,7 @@ public class ScriptRunner implements AutoCloseable {
                 isGrantOnSchemaSupported = true;
                 isGrantOnTableSupported  = true;
                 isCreateLanguageRequired = (version < 9);
+                isCommentSupported       = true;
                 break;
             }
             case HSQL: {
@@ -257,6 +316,7 @@ public class ScriptRunner implements AutoCloseable {
                 isGrantOnSchemaSupported = false;
                 isGrantOnTableSupported  = false;
                 isCreateLanguageRequired = false;
+                isCommentSupported       = false;
                 if (maxRowsPerInsert != 0) {
                     maxRowsPerInsert = 1;
                 }
@@ -274,16 +334,63 @@ public class ScriptRunner implements AutoCloseable {
         }
         this.maxRowsPerInsert = maxRowsPerInsert;
         statement = connection.createStatement();
+        /*
+         * Now build the list of statements to skip, depending of which features are supported by the database.
+         * WARNING: do not use capturing group here, because some subclasses (e.g. EPSGInstaller) will use their
+         * own capturing groups. A non-capturing group is declared by "(?:A|B)" instead than a plain "(A|B)".
+         */
+        if (!isEnumTypeSupported) {
+            addStatementToSkip("CREATE\\s+(?:TYPE|CAST)\\s+.*");
+        }
+        if (!isGrantOnSchemaSupported || !isGrantOnTableSupported) {
+            addStatementToSkip("GRANT\\s+\\w+\\s+ON\\s+");
+            if (isGrantOnSchemaSupported) {
+                regexOfStmtToSkip.append("TABLE");
+            } else if (isGrantOnTableSupported) {
+                regexOfStmtToSkip.append("SCHEMA");
+            } else {
+                regexOfStmtToSkip.append("(?:TABLE|SCHEMA)");
+            }
+            regexOfStmtToSkip.append("\\s+.*");
+        }
+        if (!isCommentSupported) {
+            addStatementToSkip("COMMENT\\s+ON\\s+.*");
+        }
     }
 
     /**
      * Returns the connection to the database.
      *
-     * @return The connection.
+     * @return the connection.
      * @throws SQLException if the connection can not be obtained.
      */
     protected final Connection getConnection() throws SQLException {
         return statement.getConnection();
+    }
+
+    /**
+     * Adds a statement to skip. By default {@code ScriptRunner} ignores the following statements:
+     *
+     * <ul>
+     *   <li>{@code "CREATE TYPE …"} or {@code "CREATE CAST …"} if {@link #isEnumTypeSupported} is {@code false}.</li>
+     *   <li>{@code "GRANT USAGE ON SCHEMA …"} if {@link #isGrantOnSchemaSupported} is {@code false}.</li>
+     *   <li>{@code "GRANT SELECT ON TABLE …"} if {@link #isGrantOnTableSupported} is {@code false}.</li>
+     *   <li>{@code "COMMENT ON …"} if {@link #isCommentSupported} is {@code false}.</li>
+     * </ul>
+     *
+     * This method can be invoked for ignoring some additional statements.
+     *
+     * @param  regex  regular expression of the statement to ignore.
+     */
+    protected final void addStatementToSkip(final String regex) {
+        if (statementsToSkip != null) {
+            throw new IllegalStateException();
+        }
+        if (regexOfStmtToSkip == null) {
+            regexOfStmtToSkip = new StringBuilder(regex);
+        } else {
+            regexOfStmtToSkip.append('|').append(regex);
+        }
     }
 
     /**
@@ -301,8 +408,8 @@ public class ScriptRunner implements AutoCloseable {
      * words, then in addition to the {@code "CREATE TABLE"} entry this {@code replacements} map shall also contain
      * a {@code "CREATE"} entry associated with the {@link #MORE_WORDS} value.
      *
-     * @param inScript The word in the script which need to be replaced.
-     * @param replacement The word to use instead.
+     * @param  inScript     the word in the script which need to be replaced.
+     * @param  replacement  the word to use instead.
      */
     protected final void addReplacement(final String inScript, final String replacement) {
         if (replacements.put(inScript, replacement) != null) {
@@ -314,18 +421,18 @@ public class ScriptRunner implements AutoCloseable {
      * Returns the word to use instead than the given one.
      * If there is no replacement, then {@code inScript} is returned.
      *
-     * @param inScript The word in the script which need to be replaced.
-     * @return The word to use instead.
+     * @param  inScript  the word in the script which need to be replaced.
+     * @return the word to use instead.
      */
     protected final String getReplacement(final String inScript) {
         return JDK8.getOrDefault(replacements, inScript, inScript);
     }
 
     /**
-     * For every entries in the replacements map, replace the entry value by the value returned by
+     * For every entries in the replacements map, replaces the entry value by the value returned by
      * {@code function(key, value)}.
      *
-     * @param function The function that modify the replacement mapping.
+     * @param function  the function that modify the replacement mapping.
      */
     protected final void modifyReplacements(final BiFunction<String,String,String> function) {
         JDK8.replaceAll(replacements, function);
@@ -335,8 +442,8 @@ public class ScriptRunner implements AutoCloseable {
      * Runs the given SQL script.
      * Lines are read and grouped up to the terminal {@value #END_OF_STATEMENT} character, then sent to the database.
      *
-     * @param  statement The SQL statements to execute.
-     * @return The number of rows added or modified as a result of the statement execution.
+     * @param  statement  the SQL statements to execute.
+     * @return the number of rows added or modified as a result of the statement execution.
      * @throws IOException if an error occurred while reading the input (should never happen).
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
@@ -345,12 +452,28 @@ public class ScriptRunner implements AutoCloseable {
     }
 
     /**
+     * Runs the SQL script of the given name in the same package than the given class.
+     * The script is presumed encoded in UTF-8.
+     *
+     * @param  loader    the class to use for loading the SQL script.
+     * @param  filename  the SQL script filename, relative to the {@code loader} package.
+     * @return the number of rows added or modified as a result of the statement execution.
+     * @throws IOException if an error occurred while reading the input (should never happen).
+     * @throws SQLException if an error occurred while executing a SQL statement.
+     */
+    public final int run(final Class<?> loader, final String filename) throws IOException, SQLException {
+        try (final BufferedReader in = new LineNumberReader(new InputStreamReader(loader.getResourceAsStream(filename), "UTF-8"))) {
+            return run(filename, in);
+        }
+    }
+
+    /**
      * Runs the script from the given reader. Lines are read and grouped up to the
      * terminal {@value #END_OF_STATEMENT} character, then sent to the database.
      *
-     * @param  filename Name of the SQL script being executed. This is used only for error reporting.
-     * @param  in The stream to read. It is caller's responsibility to close this reader.
-     * @return The number of rows added or modified as a result of the script execution.
+     * @param  filename  name of the SQL script being executed. This is used only for error reporting.
+     * @param  in        the stream to read. It is caller's responsibility to close this reader.
+     * @return the number of rows added or modified as a result of the script execution.
      * @throws IOException if an error occurred while reading the input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
@@ -517,11 +640,33 @@ parseLine:  while (pos < length) {
      * Subclasses can override this method if they wish to modify the text content.
      * Modifications are applied directly in the given {@code sql} buffer.
      *
-     * @param sql   The whole SQL statement.
-     * @param lower Index of the opening quote character ({@code '}) of the text in {@code sql}.
-     * @param upper Index after the closing quote character ({@code '}) of the text in {@code sql}.
+     * @param  sql    the whole SQL statement.
+     * @param  lower  index of the opening quote character ({@code '}) of the text in {@code sql}.
+     * @param  upper  index after the closing quote character ({@code '}) of the text in {@code sql}.
      */
     protected void editText(final StringBuilder sql, final int lower, final int upper) {
+    }
+
+    /**
+     * Returns {@code true} if the given SQL statements is supported by the database engine,
+     * or {@code false} if this statement should be ignored. The default implementation checks
+     * if the given query matches the regular expressions given to {@link #addStatementToSkip(String)}.
+     *
+     * <p>This method is only a hint; a value of {@code true} is not a guaranteed that the given
+     * SQL statement is valid.</p>
+     *
+     * @param  sql  the SQL statement to verify.
+     * @return whether the given SQL statement is supported by the database engine.
+     */
+    protected boolean isSupported(final CharSequence sql) {
+        if (regexOfStmtToSkip == null) {
+            return !statementsToSkip.reset(sql).matches();
+        } else {
+            // We do not use Pattern.CASE_INSENTITIVE for performance reasons.
+            statementsToSkip = Pattern.compile(regexOfStmtToSkip.toString(), Pattern.DOTALL).matcher(sql);
+            regexOfStmtToSkip = null;
+            return !statementsToSkip.matches();
+        }
     }
 
     /**
@@ -529,6 +674,7 @@ parseLine:  while (pos < length) {
      * This method performs the following choices:
      *
      * <ul>
+     *   <li>If {@link #isSupported(StringBuilder)} returns {@code false}, then this method does nothing.</li>
      *   <li>If the {@code maxRowsPerInsert} argument given at construction time was zero,
      *       then this method skips {@code "INSERT INTO"} statements but executes all other.</li>
      *   <li>Otherwise this method executes the given statement with the following modification:
@@ -540,12 +686,15 @@ parseLine:  while (pos < length) {
      * Subclasses that override this method can freely edit the {@link StringBuilder} content before
      * to invoke this method.
      *
-     * @param  sql The SQL statement to execute.
-     * @return The number of rows added or modified as a result of the statement execution.
+     * @param  sql  the SQL statement to execute.
+     * @return the number of rows added or modified as a result of the statement execution.
      * @throws SQLException if an error occurred while executing the SQL statement.
      * @throws IOException if an I/O operation was required and failed.
      */
     protected int execute(final StringBuilder sql) throws SQLException, IOException {
+        if (!isSupported(sql)) {
+            return 0;
+        }
         String subSQL = currentSQL = CharSequences.trimWhitespaces(sql).toString();
         int count = 0;
         /*
@@ -600,7 +749,7 @@ parseLine:  while (pos < length) {
      * Closes the statement used by this runner. Note that this method does not close the connection
      * given to the constructor; this connection still needs to be closed explicitly by the caller.
      *
-     * @throws SQLException If an error occurred while closing the statement.
+     * @throws SQLException if an error occurred while closing the statement.
      */
     @Override
     public void close() throws SQLException {
@@ -636,7 +785,7 @@ parseLine:  while (pos < length) {
      * current position in the script being executed, and the SQL statement. This method may be invoked after a
      * {@link SQLException} occurred in order to determine the line in the SQL script that caused the error.
      *
-     * @return The current position in the script being executed.
+     * @return the current position in the script being executed.
      */
     @Debug
     @Override

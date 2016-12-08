@@ -941,7 +941,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (SubTypes.isSingleOperation(main)) {
             final SingleOperation op = (SingleOperation) main;
             final MathTransform mt = factorySIS.getMathTransformFactory().createConcatenatedTransform(mt1, mt2);
-            main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
+            main = createFromMathTransform(new HashMap<String,Object>(IdentifiedObjects.getProperties(main)),
                    sourceCRS, targetCRS, mt, op.getMethod(), op.getParameterValues(),
                    (main instanceof Transformation) ? Transformation.class :
                    (main instanceof Conversion) ? Conversion.class : SingleOperation.class);
@@ -961,7 +961,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                     break;
                 }
             }
-            main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
+            main = createFromMathTransform(new HashMap<String,Object>(IdentifiedObjects.getProperties(main)),
                     main.getSourceCRS(), main.getTargetCRS(), main.getMathTransform(), null, null, type);
         }
         return main;

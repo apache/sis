@@ -160,8 +160,8 @@ public class MarshallerPool {
      * for the {@code Unmarshaller}, then consider overriding the {@link #createMarshaller()}
      * or {@link #createUnmarshaller()} methods instead.</p>
      *
-     * @param  properties The properties to be given to the (un)marshaller, or {@code null} if none.
-     * @throws JAXBException If the JAXB context can not be created.
+     * @param  properties  the properties to be given to the (un)marshaller, or {@code null} if none.
+     * @throws JAXBException if the JAXB context can not be created.
      */
     public MarshallerPool(final Map<String,?> properties) throws JAXBException {
         this(TypeRegistration.getSharedContext(), properties);
@@ -177,11 +177,11 @@ public class MarshallerPool {
      * for the {@code Unmarshaller}, then consider overriding the {@link #createMarshaller()}
      * or {@link #createUnmarshaller()} methods instead.</p>
      *
-     * @param  context The JAXB context.
-     * @param  properties The properties to be given to the (un)marshaller, or {@code null} if none.
-     * @throws JAXBException If the marshaller pool can not be created.
+     * @param  context     the JAXB context.
+     * @param  properties  the properties to be given to the (un)marshaller, or {@code null} if none.
+     * @throws JAXBException if the marshaller pool can not be created.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"}) // Generic array creation
+    @SuppressWarnings({"unchecked", "rawtypes"})          // Generic array creation
     public MarshallerPool(final JAXBContext context, final Map<String,?> properties) throws JAXBException {
         ArgumentChecks.ensureNonNull("context", context);
         this.context = context;
@@ -276,7 +276,7 @@ public class MarshallerPool {
     final void removeExpired() {
         isRemovalScheduled.set(false);
         final long now = System.nanoTime();
-        if (!removeExpired(marshallers, now) | // Really |, not ||
+        if (!removeExpired(marshallers, now) |                      // Really |, not ||
             !removeExpired(unmarshallers, now))
         {
             scheduleRemoval();
@@ -286,9 +286,9 @@ public class MarshallerPool {
     /**
      * Removes expired (un)marshallers from the given queue.
      *
-     * @param  <T>   Either {@code Marshaller} or {@code Unmarshaller} type.
-     * @param  queue The queue from which to remove expired (un)marshallers.
-     * @param  now   Current value of {@link System#nanoTime()}.
+     * @param  <T>    either {@code Marshaller} or {@code Unmarshaller} type.
+     * @param  queue  the queue from which to remove expired (un)marshallers.
+     * @param  now    current value of {@link System#nanoTime()}.
      * @return {@code true} if the queue became empty as a result of this method call.
      */
     private static <T> boolean removeExpired(final Deque<T> queue, final long now) {
@@ -333,8 +333,8 @@ public class MarshallerPool {
      * Note that {@link #recycle(Marshaller)} shall not be invoked in case of exception,
      * since the marshaller may be in an invalid state.
      *
-     * @return A marshaller configured for formatting OGC/ISO XML.
-     * @throws JAXBException If an error occurred while creating and configuring a marshaller.
+     * @return a marshaller configured for formatting OGC/ISO XML.
+     * @throws JAXBException if an error occurred while creating and configuring a marshaller.
      */
     public Marshaller acquireMarshaller() throws JAXBException {
         Marshaller marshaller = marshallers.poll();
@@ -359,8 +359,8 @@ public class MarshallerPool {
      * Note that {@link #recycle(Unmarshaller)} shall not be invoked in case of exception,
      * since the unmarshaller may be in an invalid state.
      *
-     * @return A unmarshaller configured for parsing OGC/ISO XML.
-     * @throws JAXBException If an error occurred while creating and configuring the unmarshaller.
+     * @return a unmarshaller configured for parsing OGC/ISO XML.
+     * @throws JAXBException if an error occurred while creating and configuring the unmarshaller.
      */
     public Unmarshaller acquireUnmarshaller() throws JAXBException {
         Unmarshaller unmarshaller = unmarshallers.poll();
@@ -388,7 +388,7 @@ public class MarshallerPool {
      * Note that this method does not close any output stream.
      * Closing the marshaller stream is caller's or JAXB responsibility.
      *
-     * @param marshaller The marshaller to return to the pool.
+     * @param  marshaller  the marshaller to return to the pool.
      */
     public void recycle(final Marshaller marshaller) {
         recycle(marshallers, marshaller);
@@ -412,7 +412,7 @@ public class MarshallerPool {
      * Note that this method does not close any input stream.
      * Closing the unmarshaller stream is caller's or JAXB responsibility.
      *
-     * @param unmarshaller The unmarshaller to return to the pool.
+     * @param  unmarshaller  the unmarshaller to return to the pool.
      */
     public void recycle(final Unmarshaller unmarshaller) {
         recycle(unmarshallers, unmarshaller);
@@ -423,8 +423,8 @@ public class MarshallerPool {
      * This method is invoked only when no existing marshaller is available in the pool.
      * Subclasses can override this method if they need to change the marshaller configuration.
      *
-     * @return A new marshaller configured for formatting OGC/ISO XML.
-     * @throws JAXBException If an error occurred while creating and configuring the marshaller.
+     * @return a new marshaller configured for formatting OGC/ISO XML.
+     * @throws JAXBException if an error occurred while creating and configuring the marshaller.
      */
     protected Marshaller createMarshaller() throws JAXBException {
         final Marshaller marshaller = context.createMarshaller();
@@ -456,8 +456,8 @@ public class MarshallerPool {
      * This method is invoked only when no existing unmarshaller is available in the pool.
      * Subclasses can override this method if they need to change the unmarshaller configuration.
      *
-     * @return A new unmarshaller configured for parsing OGC/ISO XML.
-     * @throws JAXBException If an error occurred while creating and configuring the unmarshaller.
+     * @return a new unmarshaller configured for parsing OGC/ISO XML.
+     * @throws JAXBException if an error occurred while creating and configuring the unmarshaller.
      */
     protected Unmarshaller createUnmarshaller() throws JAXBException {
         final Unmarshaller unmarshaller = context.createUnmarshaller();

@@ -18,18 +18,17 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -42,10 +41,10 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
-public class AbstractIdentifiedType implements Serializable {
+public class AbstractIdentifiedType implements Deprecable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -84,6 +83,19 @@ public class AbstractIdentifiedType implements Serializable {
     public static final String DESCRIPTION_KEY = "description";
 
     /**
+     * Key for the <code>{@value}</code> property to be given to the constructor.
+     * This is used for setting the value to be returned by {@link #isDeprecated()}.
+     *
+     * <p>If this property is set to {@code true}, then the value associated to {@link #DESCRIPTION_KEY}
+     * should give the replacement (e.g. <cite>"superceded by …"</cite>).</p>
+     *
+     * @see #isDeprecated()
+     *
+     * @since 0.8
+     */
+    public static final String DEPRECATED_KEY = "deprecated";
+
+    /**
      * The name of this type.
      *
      * @see #getName()
@@ -118,6 +130,14 @@ public class AbstractIdentifiedType implements Serializable {
     private final InternationalString description;
 
     /**
+     * {@code true} if this type is deprecated.
+     *
+     * @see #isDeprecated()
+     * @see #DEPRECATED_KEY
+     */
+    final boolean deprecated;
+
+    /**
      * Constructs a type from the given properties. Keys are strings from the table below.
      * The map given in argument shall contain an entry at least for the {@value #NAME_KEY}.
      * Other entries listed in the table below are optional.
@@ -148,6 +168,10 @@ public class AbstractIdentifiedType implements Serializable {
      *     <td>{@value #DESCRIPTION_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
+     *   <tr>
+     *     <td>{@value #DEPRECATED_KEY}</td>
+     *     <td>{@link Boolean}</td>
+     *     <td>{@link #isDeprecated()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
@@ -181,12 +205,29 @@ public class AbstractIdentifiedType implements Serializable {
         } else if (value instanceof GenericName) {
             name = (GenericName) value;
         } else {
-            throw new IllegalArgumentException(Errors.getResources(identification).getString(
-                    Errors.Keys.IllegalPropertyValueClass_2, NAME_KEY, value.getClass()));
+            throw illegalPropertyType(identification, NAME_KEY, value);
         }
-        definition  = Types.toInternationalString(identification, DEFINITION_KEY );
+        definition  = Types.toInternationalString(identification, DEFINITION_KEY);
         designation = Types.toInternationalString(identification, DESIGNATION_KEY);
         description = Types.toInternationalString(identification, DESCRIPTION_KEY);
+        value = identification.get(DEPRECATED_KEY);
+        if (value == null) {
+            deprecated = false;
+        } else if (value instanceof Boolean) {
+            deprecated = (Boolean) value;
+        } else {
+            throw illegalPropertyType(identification, DEPRECATED_KEY, value);
+        }
+    }
+
+    /**
+     * Returns the exception to be thrown when a property is of illegal type.
+     */
+    private static IllegalArgumentException illegalPropertyType(final Map<String,?> identification,
+            final String key, final Object value)
+    {
+        return new IllegalArgumentException(Errors.getResources(identification).getString(
+                Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
     }
 
     /**
@@ -242,10 +283,47 @@ public class AbstractIdentifiedType implements Serializable {
      * Returns optional information beyond that required for concise definition of the element.
      * The description may assist in understanding the element scope and application.
      *
+     * <p>If this type {@linkplain #isDeprecated() is deprecated}, then the description should give
+     * indication about the replacement (e.g. <cite>"superceded by …"</cite>).</p>
+     *
      * @return information beyond that required for concise definition of the element, or {@code null} if none.
      */
     public InternationalString getDescription() {
         return description;
+    }
+
+    /**
+     * Returns comments on or information about this type.
+     * The default implementation performs the following choice:
+     *
+     * <ul>
+     *   <li>If this type {@linkplain #isDeprecated() is deprecated}, returns the
+     *       {@linkplain #getDescription() description}. The description of deprecated types
+     *       should give indication about the replacement (e.g. <cite>"superceded by …"</cite>).</li>
+     *   <li>Otherwise returns {@code null} since remarks are not part of the ISO 19109 feature model.</li>
+     * </ul>
+     *
+     * @return the remarks, or {@code null} if none.
+     *
+     * @since 0.8
+     */
+    @Override
+    public InternationalString getRemarks() {
+        return deprecated ? description : null;
+    }
+
+    /**
+     * Returns {@code true} if this type is deprecated.
+     * If this method returns {@code true}, then the {@linkplain #getRemarks() remarks} should give
+     * indication about the replacement (e.g. <cite>"superceded by …"</cite>).
+     *
+     * @return whether this type is deprecated.
+     *
+     * @since 0.8
+     */
+    @Override
+    public boolean isDeprecated() {
+        return deprecated;
     }
 
     /*
@@ -267,7 +345,7 @@ public class AbstractIdentifiedType implements Serializable {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(name, definition, designation, description);
+        return Objects.hash(name, definition, designation, description, deprecated);
     }
 
     /**
@@ -283,7 +361,8 @@ public class AbstractIdentifiedType implements Serializable {
             return Objects.equals(name,        that.name) &&
                    Objects.equals(definition,  that.definition) &&
                    Objects.equals(designation, that.designation) &&
-                   Objects.equals(description, that.description);
+                   Objects.equals(description, that.description) &&
+                   deprecated == that.deprecated;
         }
         return false;
     }

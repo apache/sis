@@ -59,8 +59,8 @@ public final strictfp class TestDatabase {
      * Returns the path to the directory of the given name in {@code $SIS_DATA/Databases}.
      * If the directory is not found, then the test will be interrupted by an {@code org.junit.Assume} statement.
      *
-     * @param name The name of the sub-directory.
-     * @return The path to the given sub-directory.
+     * @param  name  the name of the sub-directory.
+     * @return the path to the given sub-directory.
      */
     public static Path directory(final String name) {
         Path dir = DataDirectory.DATABASES.getDirectory();
@@ -74,8 +74,8 @@ public final strictfp class TestDatabase {
      * Creates a Derby database in memory. If no Derby or JavaDB driver is not found,
      * then the test will be interrupted by an {@code org.junit.Assume} statement.
      *
-     * @param  name The database name (without {@code "memory:"} prefix).
-     * @return The data source.
+     * @param  name  the database name (without {@code "memory:"} prefix).
+     * @return the data source.
      * @throws Exception if an error occurred while creating the database.
      */
     public static DataSource create(final String name) throws Exception {
@@ -96,7 +96,7 @@ public final strictfp class TestDatabase {
     /**
      * Drops an in-memory Derby database after usage.
      *
-     * @param  ds The data source created by {@link #create(String)}.
+     * @param  ds  the data source created by {@link #create(String)}.
      * @throws Exception if an error occurred while dropping the database.
      */
     public static void drop(final DataSource ds) throws Exception {

@@ -191,7 +191,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * If name is a critical component of this object, then it shall be compared by the subclass.
      * This behavior is consistent with {@link org.apache.sis.referencing.AbstractIdentifiedObject}.
      *
-     * @param  object  the object to compare with this reference system.
+     * @param  object  the object to compare with this identified object.
      * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */

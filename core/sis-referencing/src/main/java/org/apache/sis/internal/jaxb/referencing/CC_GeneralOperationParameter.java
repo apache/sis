@@ -259,7 +259,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
          * by the 'complete' descriptor. If the descriptor is a group, then this 'replacement' method will
          * be invoked recursively for each parameter in the group.
          */
-        final Map<String,Object> merged = new HashMap<>(expected);
+        final Map<String,Object> merged = new HashMap<String,Object>(expected);
         merged.putAll(actual);  // May overwrite pre-defined properties.
         mergeArrays(GeneralParameterDescriptor.ALIAS_KEY,       GenericName.class, provided.getAlias(), merged, complete.getName());
         mergeArrays(GeneralParameterDescriptor.IDENTIFIERS_KEY, ReferenceIdentifier.class, provided.getIdentifiers(), merged, null);

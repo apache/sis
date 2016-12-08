@@ -30,7 +30,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/lambert_conic_conformal_2sp.html">Lambert Conic Conformal 2SP on RemoteSensing.org</a>
@@ -107,10 +107,13 @@ public final class LambertConformal2SP extends AbstractLambert {
          * NetCDF:  longitude_of_central_meridian
          * GeoTIFF: FalseOriginLong
          */
-        LONGITUDE_OF_FALSE_ORIGIN = createLongitude(
-                 rename(LambertConformal1SP.LONGITUDE_OF_ORIGIN, "8822", "Longitude of false origin", builder)
+        LONGITUDE_OF_FALSE_ORIGIN = createLongitude(builder
+                .addNamesAndIdentifiers(LambertConformal1SP.LONGITUDE_OF_ORIGIN)
+                .rename(Citations.EPSG, "Longitude of false origin")
                 .rename(Citations.NETCDF, "longitude_of_central_meridian")
-                .rename(Citations.GEOTIFF, "FalseOriginLong"));
+                .rename(Citations.GEOTIFF, "FalseOriginLong")
+                .reidentify(Citations.EPSG, "8822")
+                .reidentify(Citations.GEOTIFF, "3084"));
         /*
          * EPSG:    Latitude of 1st standard parallel
          * OGC:     standard_parallel_1
@@ -133,6 +136,7 @@ public final class LambertConformal2SP extends AbstractLambert {
          */
         STANDARD_PARALLEL_2 = createMandatoryLatitude(builder
                 .addIdentifier("8824")
+                .addIdentifier(Citations.GEOTIFF, "3079")
                 .addName("Latitude of 2nd standard parallel")
                 .addName(Citations.OGC,     Constants.STANDARD_PARALLEL_2)
                 .addName(Citations.ESRI,    "Standard_Parallel_2")

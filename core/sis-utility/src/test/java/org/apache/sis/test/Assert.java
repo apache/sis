@@ -182,7 +182,7 @@ public strictfp class Assert extends GeoapiAssert {
      */
     public static void assertSetEquals(final Collection<?> expected, final Collection<?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
-            final Set<Object> r = new LinkedHashSet<>(expected);
+            final Set<Object> r = new LinkedHashSet<Object>(expected);
             assertTrue("The two sets are disjoint.",                 r.removeAll(actual));
             assertTrue("The set is missing elements: " + r,          r.isEmpty());
             assertTrue("The set unexpectedly became empty.",         r.addAll(actual));
@@ -203,7 +203,7 @@ public strictfp class Assert extends GeoapiAssert {
      */
     public static void assertMapEquals(final Map<?,?> expected, final Map<?,?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
-            final Map<Object,Object> r = new LinkedHashMap<>(expected);
+            final Map<Object,Object> r = new LinkedHashMap<Object,Object>(expected);
             for (final Map.Entry<?,?> entry : actual.entrySet()) {
                 final Object key = entry.getKey();
                 if (!r.containsKey(key)) {

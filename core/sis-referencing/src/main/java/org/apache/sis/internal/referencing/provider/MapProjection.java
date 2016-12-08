@@ -40,7 +40,9 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -72,7 +74,7 @@ public abstract class MapProjection extends AbstractProvider {
      * All names known to Apache SIS for the <cite>semi-major</cite> parameter.
      * This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
      *
-     * <p>Some names for this parameter are {@code "semi_major"}, {@code "SemiMajor"} and {@code "a"}.</p>
+     * <p>Some names for this parameter are {@code "semi_major"}, {@code "SemiMajorAxis"} and {@code "a"}.</p>
      */
     public static final DefaultParameterDescriptor<Double> SEMI_MAJOR;
 
@@ -80,7 +82,7 @@ public abstract class MapProjection extends AbstractProvider {
      * All names known to Apache SIS for the <cite>semi-minor</cite> parameter.
      * This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
      *
-     * <p>Some names for this parameter are {@code "semi_minor"}, {@code "SemiMinor"} and {@code "b"}.</p>
+     * <p>Some names for this parameter are {@code "semi_minor"}, {@code "SemiMinorAxis"} and {@code "b"}.</p>
      */
     public static final DefaultParameterDescriptor<Double> SEMI_MINOR;
 
@@ -95,13 +97,14 @@ public abstract class MapProjection extends AbstractProvider {
         final GenericName[] aliases = {
             new NamedIdentifier(Citations.ESRI,    "Semi_Major"),
             new NamedIdentifier(Citations.NETCDF,  "semi_major_axis"),
-            new NamedIdentifier(Citations.GEOTIFF, "SemiMajor"),
+            new NamedIdentifier(Citations.GEOTIFF, "SemiMajorAxis"),
             new NamedIdentifier(Citations.PROJ4,   "a")
         };
         final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(AUTHORITY_KEY, Citations.OGC);
-        properties.put(NAME_KEY,      Constants.SEMI_MAJOR);
-        properties.put(ALIAS_KEY,     aliases);
+        properties.put(AUTHORITY_KEY,  Citations.OGC);
+        properties.put(NAME_KEY,       Constants.SEMI_MAJOR);
+        properties.put(ALIAS_KEY,      aliases);
+        properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.GEOTIFF, null, "2057"));
         SEMI_MAJOR = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class, valueDomain, null, null);
         /*
          * Change in-place the name and aliases (we do not need to create new objects)
@@ -110,8 +113,9 @@ public abstract class MapProjection extends AbstractProvider {
         properties.put(NAME_KEY, Constants.SEMI_MINOR);
         aliases[0] = new NamedIdentifier(Citations.ESRI,    "Semi_Minor");
         aliases[1] = new NamedIdentifier(Citations.NETCDF,  "semi_minor_axis");
-        aliases[2] = new NamedIdentifier(Citations.GEOTIFF, "SemiMinor");
+        aliases[2] = new NamedIdentifier(Citations.GEOTIFF, "SemiMinorAxis");
         aliases[3] = new NamedIdentifier(Citations.PROJ4,   "b");
+        properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.GEOTIFF, null, "2058"));
         SEMI_MINOR = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class, valueDomain, null, null);
         /*
          * SIS-specific parameter for debugging purpose only.
@@ -245,25 +249,8 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * Rename the primary name and identifier of the given descriptor. Aliases are copied as-is.
-     *
-     * @param  template    the parameter from which to copy the aliases.
-     * @param  identifier  the new EPSG identifier.
-     * @param  name        the new EPSG name.
-     * @param  builder     an initially clean builder where to add the names.
-     * @return the given {@code builder}, for method call chaining.
-     *
-     * @since 0.8
-     */
-    static ParameterBuilder rename(final ParameterDescriptor<?> template, final String identifier, final String name,
-            final ParameterBuilder builder)
-    {
-        return exceptEPSG(template, builder.addIdentifier(identifier).addName(name));
-    }
-
-    /**
-     * Copies name, aliases and identifiers of the given {@code template}, except the alias of the given authority
-     * which is replaced by the alias of the same authority in {@code replacement}.
+     * Copies name, aliases and identifiers of the given {@code template}, except the alias and identifiers of the
+     * given authority which are replaced by the alias and identifiers of the same authority in {@code replacement}.
      *
      * @param  template     the parameter from which to copy names and identifiers.
      * @param  toRename     authority of the alias to rename.
@@ -276,11 +263,9 @@ public abstract class MapProjection extends AbstractProvider {
     static ParameterBuilder renameAlias(final ParameterDescriptor<Double> template, final Citation toRename,
             final ParameterDescriptor<Double> replacement, final ParameterBuilder builder)
     {
-        copyAliases(template, toRename, sameNameAs(toRename, replacement), builder.addName(template.getName()));
-        for (final ReferenceIdentifier id : template.getIdentifiers()) {
-            builder.addIdentifier(id);
-        }
-        return builder;
+        return copyAliases(template, toRename, sameNameAs(toRename, replacement),
+                (ReferenceIdentifier) IdentifiedObjects.getIdentifier(replacement, toRename),
+                builder.addName(template.getName()));
     }
 
     /**
@@ -292,11 +277,12 @@ public abstract class MapProjection extends AbstractProvider {
      * @param  template     the parameter from which to copy the aliases.
      * @param  exclude      the authority of the alias to omit. Can not be EPSG.
      * @param  replacement  the alias to use instead of the omitted one, or {@code null} if none.
+     * @param  newCode      the identifier to use instead of the omitted one, or {@code null} if none.
      * @param  builder      where to add the aliases.
      * @return the given {@code builder}, for method call chaining.
      */
     private static ParameterBuilder copyAliases(final ParameterDescriptor<Double> template, final Citation exclude,
-            GenericName replacement, final ParameterBuilder builder)
+            GenericName replacement, ReferenceIdentifier newCode, final ParameterBuilder builder)
     {
         for (GenericName alias : template.getAlias()) {
             if (((Identifier) alias).getAuthority() == exclude) {
@@ -306,17 +292,23 @@ public abstract class MapProjection extends AbstractProvider {
             }
             builder.addName(alias);
         }
+        for (ReferenceIdentifier id : template.getIdentifiers()) {
+            if (id.getAuthority() == exclude) {
+                if (newCode == null) continue;
+                id = newCode;
+                newCode = null;
+            }
+            builder.addIdentifier(id);
+        }
         return builder;
     }
 
     /**
-     * Copies all aliases and identifiers, but using the alias specified by the given authority as the primary name.
-     * The old primary name (usually the EPSG name) is discarded. Identifier are <strong>not</strong> copied, which
-     * usually implies that only the EPSG identifier is ignored (because it is usually the only parameter identifier).
+     * Copies all aliases and all identifiers except EPSG, but using the alias specified by the given authority
+     * as the primary name. The old primary name (usually the EPSG name) is discarded.
      *
      * <p>This is a convenience method for defining the parameters of an ESRI-specific (or any other authority)
-     * projection using the EPSG parameters as template. Note that in the particular case where the desired
-     * authority is OGC, {@link #exceptEPSG(ParameterDescriptor, ParameterBuilder)} is more efficient.</p>
+     * projection using the EPSG parameters as template.</p>
      *
      * @param  template    the parameter from which to copy the names.
      * @param  authority   the authority to use for the primary name.
@@ -328,25 +320,7 @@ public abstract class MapProjection extends AbstractProvider {
     static ParameterBuilder alternativeAuthority(final ParameterDescriptor<Double> template,
             final Citation authority, final ParameterBuilder builder)
     {
-        return copyAliases(template, authority, null, builder.addName(sameNameAs(authority, template)));
-    }
-
-    /**
-     * Copies all names except the EPSG one from the given parameter into the builder.
-     * The EPSG information are presumed to be the primary name and the only identifier (this is not verified).
-     *
-     * <p>If this method is invoking with a "clean" builder, then the result is to promote the first alias as
-     * the primary name. The first alias is usually the OGC name.</p>
-     *
-     * @param  template  the parameter from which to copy the names.
-     * @param  builder   where to add the names.
-     * @return the given {@code builder}, for method call chaining.
-     */
-    static ParameterBuilder exceptEPSG(final ParameterDescriptor<?> template, final ParameterBuilder builder) {
-        for (final GenericName alias : template.getAlias()) {
-            builder.addName(alias);
-        }
-        return builder;
+        return copyAliases(template, authority, null, null, builder.addName(sameNameAs(authority, template)));
     }
 
     /**

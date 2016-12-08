@@ -25,10 +25,10 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
@@ -180,7 +180,7 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Sets the EPSG factory to the given instance and clears the cache of all {@link CommonCRS} enumeration values.
      */
-    private static void setEPSGFactory(final CRSAuthorityFactory factory) {
+    private static void setEPSGFactory(final GeodeticAuthorityFactory factory) {
         AuthorityFactories.EPSG(factory);
         for (final CommonCRS          crs : CommonCRS         .values()) crs.clear();
         for (final CommonCRS.Vertical crs : CommonCRS.Vertical.values()) crs.clear();
@@ -195,7 +195,7 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
     @Test
     @DependsOnMethod({"testGetAuthorityCodes", "testCreateCRS"})
     public void compareAllCodes() throws FactoryException {
-        final CRSAuthorityFactory EPSG = (CRSAuthorityFactory) AuthorityFactories.EPSG();
+        final GeodeticAuthorityFactory EPSG = AuthorityFactories.EPSG();
         try {
             setEPSGFactory(EPSGFactoryFallback.INSTANCE);
             final ArrayList<String> codes = new ArrayList<>(EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CoordinateReferenceSystem.class));

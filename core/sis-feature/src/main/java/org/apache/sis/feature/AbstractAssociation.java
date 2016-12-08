@@ -41,7 +41,7 @@ import org.apache.sis.internal.feature.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  *
  * @see AbstractFeature
@@ -229,7 +229,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     public String toString() {
         final String pt = DefaultAssociationRole.getTitleProperty(role);
         final Iterator<AbstractFeature> it = getValues().iterator();
-        return FieldType.toString("FeatureAssociation", role.getName(),
+        return FieldType.toString(isDeprecated(role), "FeatureAssociation", role.getName(),
                 DefaultAssociationRole.getValueTypeName(role), new Iterator<Object>()
         {
             @Override public boolean hasNext() {

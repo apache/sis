@@ -209,7 +209,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * Returns the simplified result of dividing this fraction by the given fraction.
      *
      * @param  other  the fraction by which to divide this fraction.
-     * @return the simplified result of {@code this} ÷ {@code other}.
+     * @return the simplified result of {@code this} ∕ {@code other}.
      * @throws ArithmeticException if the result overflows.
      */
     public Fraction divide(final Fraction other) {

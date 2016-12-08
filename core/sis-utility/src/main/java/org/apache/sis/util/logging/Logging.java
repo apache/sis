@@ -124,7 +124,7 @@ public final class Logging extends Static {
      * Factory changes will take effect only if this method is invoked before the initialization
      * of such classes.
      *
-     * @param factory The new logger factory, or {@code null} if none.
+     * @param  factory  the new logger factory, or {@code null} if none.
      */
     @Configuration
     public static void setLoggerFactory(final LoggerFactory<?> factory) {
@@ -148,8 +148,8 @@ public final class Logging extends Static {
      * Only if no factory was found or if the factory choose to not redirect the loggings, then this
      * method delegate to <code>{@linkplain Logger#getLogger(String) Logger.getLogger}(name)</code>.
      *
-     * @param  name The logger name.
-     * @return A logger for the specified name.
+     * @param  name  the logger name.
+     * @return a logger for the specified name.
      */
     public static Logger getLogger(final String name) {
         final LoggerFactory<?> factory = Logging.factory;
@@ -166,8 +166,8 @@ public final class Logging extends Static {
      * Returns a logger for the specified class. This convenience method invokes
      * {@link #getLogger(String)} with the package name as the logger name.
      *
-     * @param  classe The class for which to obtain a logger.
-     * @return A logger for the specified class.
+     * @param  classe  the class for which to obtain a logger.
+     * @return a logger for the specified class.
      */
     static Logger getLogger(Class<?> classe) {
         Class<?> outer;
@@ -200,9 +200,9 @@ public final class Logging extends Static {
      *   <li>{@linkplain Logger#log(LogRecord) Log} the modified record.</li>
      * </ul>
      *
-     * @param classe The class for which to obtain a logger.
-     * @param method The name of the method which is logging a record.
-     * @param record The record to log.
+     * @param  classe  the class for which to obtain a logger.
+     * @param  method  the name of the method which is logging a record.
+     * @param  record  the record to log.
      */
     public static void log(final Class<?> classe, final String method, final LogRecord record) {
         record.setSourceClassName(classe.getCanonicalName());
@@ -244,10 +244,10 @@ public final class Logging extends Static {
      * trace element where the fully qualified class name starts with {@code "org.apache.sis.image"} or
      * {@code "org.apache.sis.image.io"}, but not {@code "org.apache.sis.imageio"}.</div>
      *
-     * @param logger  Where to log the error, or {@code null} for inferring a default value from other arguments.
-     * @param classe  The class where the error occurred, or {@code null} for inferring a default value from other arguments.
-     * @param method  The method where the error occurred, or {@code null} for inferring a default value from other arguments.
-     * @param error   The error, or {@code null} if none.
+     * @param  logger  where to log the error, or {@code null} for inferring a default value from other arguments.
+     * @param  classe  the class where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param  method  the method where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param  error   the error, or {@code null} if none.
      * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
      *         was null or if the logger does not log anything at {@link Level#WARNING}.
      *
@@ -264,11 +264,11 @@ public final class Logging extends Static {
     /**
      * Implementation of {@link #unexpectedException(Logger, Class, String, Throwable)}.
      *
-     * @param logger  Where to log the error, or {@code null} for inferring a default value from other arguments.
-     * @param classe  The fully qualified class name where the error occurred, or {@code null} for inferring a default value from other arguments.
-     * @param method  The method where the error occurred, or {@code null} for inferring a default value from other arguments.
-     * @param error   The error, or {@code null} if none.
-     * @param level   The logging level.
+     * @param  logger  where to log the error, or {@code null} for inferring a default value from other arguments.
+     * @param  classe  the fully qualified class name where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param  method  the method where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param  error   the error, or {@code null} if none.
+     * @param  level   the logging level.
      * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
      *         was null or if the logger does not log anything at the specified level.
      */
@@ -396,10 +396,10 @@ public final class Logging extends Static {
      * {@code jre/lib/logging.properties} file is illegal, then {@link MonolineFormatter} will log
      * this problem and use a default time pattern.</div>
      *
-     * @param logger  Where to log the error, or {@code null} for inferring a default value from other arguments.
-     * @param classe  The class where the error occurred, or {@code null} for inferring a default value from other arguments.
-     * @param method  The method name where the error occurred, or {@code null} for inferring a default value from other arguments.
-     * @param error   The error, or {@code null} if none.
+     * @param  logger  where to log the error, or {@code null} for inferring a default value from other arguments.
+     * @param  classe  the class where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param  method  the method name where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param  error   the error, or {@code null} if none.
      * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
      *         was null or if the logger does not log anything at {@link Level#CONFIG}.
      *
@@ -415,10 +415,10 @@ public final class Logging extends Static {
      * {@link #unexpectedException(Logger,Class,String,Throwable) unexpectedException(…)}
      * except that it does not log the stack trace and uses a lower logging level.
      *
-     * @param logger  Where to log the error, or {@code null} for inferring a default value from other arguments.
-     * @param classe  The class where the error occurred, or {@code null} for inferring a default value from other arguments.
-     * @param method  The method name where the error occurred, or {@code null} for inferring a default value from other arguments.
-     * @param error   The error, or {@code null} if none.
+     * @param  logger  where to log the error, or {@code null} for inferring a default value from other arguments.
+     * @param  classe  the class where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param  method  the method name where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param  error   the error, or {@code null} if none.
      * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
      *         was null or if the logger does not log anything at {@link Level#FINE}.
      *
@@ -437,10 +437,10 @@ public final class Logging extends Static {
      * {@link #unexpectedException(Logger,Class,String,Throwable) unexpectedException}
      * except that it logs the message at the {@link Level#SEVERE SEVERE} level.
      *
-     * @param logger  Where to log the error, or {@code null} for inferring a default value from other arguments.
-     * @param classe  The class where the error occurred, or {@code null} for inferring a default value from other arguments.
-     * @param method  The method name where the error occurred, or {@code null} for inferring a default value from other arguments.
-     * @param error   The error, or {@code null} if none.
+     * @param  logger  where to log the error, or {@code null} for inferring a default value from other arguments.
+     * @param  classe  the class where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param  method  the method name where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param  error   the error, or {@code null} if none.
      * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
      *         was null or if the logger does not log anything at {@link Level#SEVERE}.
      *

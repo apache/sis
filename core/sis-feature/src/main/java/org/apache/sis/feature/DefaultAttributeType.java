@@ -102,7 +102,7 @@ import java.util.Objects;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.8
  * @module
  *
  * @see DefaultFeatureType
@@ -167,6 +167,11 @@ public class DefaultAttributeType<V> extends FieldType {
      *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEPRECATED_KEY}</td>
+     *     <td>{@link Boolean}</td>
+     *     <td>{@link #isDeprecated()}</td>
      *   </tr>
      * </table>
      *
@@ -360,6 +365,6 @@ public class DefaultAttributeType<V> extends FieldType {
     @Debug
     @Override
     public String toString() {
-        return toString("AttributeType", getName(), Classes.getShortName(valueClass)).toString();
+        return toString(deprecated, "AttributeType", getName(), Classes.getShortName(valueClass)).toString();
     }
 }

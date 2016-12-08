@@ -70,6 +70,7 @@ final class OperationWrapper extends PropertyTypeBuilder {
     @Override public TypeBuilder setDefinition (CharSequence definition)  {throw readOnly();}
     @Override public TypeBuilder setDesignation(CharSequence designation) {throw readOnly();}
     @Override public TypeBuilder setDescription(CharSequence description) {throw readOnly();}
+    @Override public TypeBuilder setDeprecated (boolean deprecated)       {throw readOnly();}
 
     /**
      * Returns the exception to be thrown for read-only wrapper.

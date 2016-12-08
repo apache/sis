@@ -47,6 +47,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
+import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.DataStoreException;
@@ -413,15 +414,15 @@ final class LandsatReader {
      * Invoked for every key-value pairs found in the file.
      * Leading and trailing spaces, if any, have been removed.
      *
-     * @param  key     the key in upper cases.
-     * @param  band    the band number, or 0 if none.
-     * @param  value   the value, without quotes if those quotes existed.
+     * @param  key    the key in upper cases.
+     * @param  band   the band number, or 0 if none.
+     * @param  value  the value, without quotes if those quotes existed.
      * @throws NumberFormatException if the value was expected to be a string but the parsing failed.
      * @throws DateTimeException if the value was expected to be a date but the parsing failed,
      *         or if the result of the parsing was not of the expected type.
      * @throws IllegalArgumentException if the value is out of range.
      */
-    private void parseKeyValuePair(final String key, final int band, final String value)
+    private void parseKeyValuePair(final String key, final int band, String value)
             throws IllegalArgumentException, DateTimeException, DataStoreException
     {
         switch (key) {
@@ -510,7 +511,14 @@ final class LandsatReader {
              * Value is "GEOTIFF".
              */
             case "OUTPUT_FORMAT": {
-                metadata.addFormat(value);
+                if ("GeoTIFF".equalsIgnoreCase(value)) {
+                    value = "GeoTIFF";                      // Because 'metadata.setFormat(…)' is case-sensitive.
+                }
+                try {
+                    metadata.setFormat(value);
+                } catch (MetadataStoreException e) {
+                    warning(key, null, e);
+                }
                 break;
             }
             /*
@@ -882,7 +890,7 @@ final class LandsatReader {
      */
     final Metadata getMetadata() throws FactoryException {
         metadata.add(Locale.ENGLISH);
-        metadata.add(ScopeCode.DATASET);
+        metadata.add(ScopeCode.valueOf("COVERAGE"));
         try {
             flushSceneTime();
         } catch (DateTimeException e) {

@@ -213,6 +213,15 @@ public final class AssociationRoleBuilder extends PropertyTypeBuilder {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AssociationRoleBuilder setDeprecated(final boolean deprecated) {
+        super.setDeprecated(deprecated);
+        return this;
+    }
+
+    /**
      * Builds the association role from the information specified to this builder.
      * If a role has already been built and this builder state has not changed since the role creation,
      * then the previously created {@code FeatureAssociationRole} instance is returned.

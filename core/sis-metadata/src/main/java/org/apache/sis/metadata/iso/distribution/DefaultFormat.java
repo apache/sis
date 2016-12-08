@@ -42,6 +42,26 @@ import static org.opengis.annotation.Specification.ISO_19115;
 /**
  * Description of the computer language construct that specifies the representation
  * of data objects in a record, file, message, storage device or transmission channel.
+ * Each {@code Format} instance should contain a {@linkplain #getFormatSpecificationCitation() reference
+ * to the format specification}, for example <cite>"PNG (Portable Network Graphics) Specification"</cite>.
+ * The specification often has an abbreviation (for example "PNG") which can be stored as an
+ * {@linkplain DefaultCitation#getAlternateTitles() alternate title}.
+ *
+ * <p>Apache SIS provides pre-defined metadata structures for some commonly-used formats.
+ * A pre-defined format can be obtained by a call to
+ * <code>{@linkplain org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String) lookup}(Format.class,
+ * <var>abbreviation</var>)</code> where <var>abbreviation</var> can be one of the values listed below:</p>
+ *
+ * <table class="sis">
+ *   <caption>Specification titles for well-known format names</caption>
+ *   <tr><th>Abbreviation</th> <th>Specification title</th></tr>
+ *   <tr><td>CSV</td>          <td>Common Format and MIME Type for Comma-Separated Values (CSV) Files</td></tr>
+ *   <tr><td>GeoTIFF</td>      <td>GeoTIFF Coverage Encoding Profile</td></tr>
+ *   <tr><td>NetCDF</td>       <td>NetCDF Classic and 64-bit Offset Format</td></tr>
+ *   <tr><td>PNG</td>          <td>PNG (Portable Network Graphics) Specification</td></tr>
+ * </table>
+ *
+ * Above list may be expanded in any future SIS version.
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -110,50 +130,21 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * Creates a format initialized to the given name and version.
      * The given name should be a short name or abbreviation, for example "JPEG" or "GeoTIFF".
      *
-     * <p>This convenience constructor automatically sets a format specification title for some well-known values.
-     * The currently recognized list of format names is given below. This list may be expanded in any future SIS
-     * version.</p>
-     *
-     * <table class="sis">
-     *   <caption>Specification titles for well-known format names</caption>
-     *   <tr><th>Name</th>    <th>Specification title</th></tr>
-     *   <tr><td>CSV</td>     <td>Common Format and MIME Type for Comma-Separated Values (CSV) Files</td></tr>
-     *   <tr><td>GeoTIFF</td> <td>GeoTIFF Coverage Encoding Profile</td></tr>
-     *   <tr><td>NetCDF</td>  <td>NetCDF Classic and 64-bit Offset Format</td></tr>
-     *   <tr><td>PNG</td>     <td>PNG (Portable Network Graphics) Specification</td></tr>
-     * </table>
-     *
      * @param  name     the abbreviated name of the data transfer format, or {@code null}.
      * @param  version  the version of the format (date, number, <i>etc.</i>), or {@code null}.
+     *
+     * @deprecated This constructor had a straightforward meaning in ISO 19115:2003, but became confusing
+     *             with the ISO 19115:2014 update because of differences in the {@code Format} model.
+     *             Consider using {@link org.apache.sis.metadata.sql.MetadataSource#lookup(Class, String)} instead.
      */
+    @Deprecated
     public DefaultFormat(CharSequence name, final CharSequence version) {
-        if (name != null || version != null) {
-            final DefaultCitation citation = new DefaultCitation();
-            if (name != null) {
-                /*
-                 * TODO: move the following hard-coded values in a database
-                 * after we ported the org.apache.sis.metadata.sql package.
-                 */
-                String title = null;
-                final String keyword = name.toString();
-                if (keyword.equalsIgnoreCase("GeoTIFF")) {
-                    title = "GeoTIFF Coverage Encoding Profile";
-                } else if (keyword.equalsIgnoreCase("NetCDF")) {
-                    title = "NetCDF Classic and 64-bit Offset Format";
-                } else if (keyword.equalsIgnoreCase("PNG")) {
-                    title = "PNG (Portable Network Graphics) Specification";
-                } else if (keyword.equalsIgnoreCase("CSV")) {
-                    title = "Common Format and MIME Type for Comma-Separated Values (CSV) Files";
-                } else if (keyword.equalsIgnoreCase("CSV/MF")) {    // Not yet documented format.
-                    title = "OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)";
-                    name  = "CSV";
-                }
-                citation.setTitle(Types.toInternationalString(title));
-                citation.setAlternateTitles(Collections.singleton(Types.toInternationalString(name)));
-            }
-            citation.setEdition(Types.toInternationalString(version));
-            formatSpecificationCitation = citation;
+        final DefaultCitation citation = new DefaultCitation();
+        if (name != null) {
+            citation.setAlternateTitles(Collections.singleton(Types.toInternationalString(name)));
         }
+        citation.setEdition(Types.toInternationalString(version));
+        formatSpecificationCitation = citation;
     }
 
     /**

@@ -127,7 +127,7 @@ final class Reader extends GeoTIFF {
         this.metadata = new MetadataBuilder();
         /*
          * A TIFF file begins with either "II" (0x4949) or "MM" (0x4D4D) characters.
-         * Those characters identify the byte order. Note we we do not need to care
+         * Those characters identify the byte order. Note that we do not need to care
          * about the byte order for this flag since the two bytes shall have the same value.
          */
         final short order = input.readShort();
@@ -139,7 +139,7 @@ final class Reader extends GeoTIFF {
              * The pointer type is implicitely the Java Integer type (4 bytes).
              *
              * Magic number of BigTIFF file is 43, followed by the pointer size.
-             * Currently, that pointer type canonly be the Java Long type (8 bytes),
+             * Currently, that pointer type can only be the Java Long type (8 bytes),
              * but a future BigTIFF version may allow 16 bytes wide pointers.
              */
             switch (input.readShort()) {
@@ -236,7 +236,7 @@ final class Reader extends GeoTIFF {
              * to get the pointer to the next IFD.
              */
             final int offsetSize = (Integer.SIZE / Byte.SIZE) << intSizeExpansion;
-            final ImageFileDirectory dir = new ImageFileDirectory();
+            final ImageFileDirectory dir = new ImageFileDirectory(this);
             for (long remaining = readUnsignedShort(); --remaining >= 0;) {
                 /*
                  * Each entry in the Image File Directory has the following format:
@@ -245,7 +245,7 @@ final class Reader extends GeoTIFF {
                  *   - The number of values of the indicated type.
                  *   - The value, or the file offset to the value elswhere in the file.
                  */
-                final int  tag   = input.readUnsignedShort();
+                final short tag  = (short) input.readUnsignedShort();
                 final Type type  = Type.valueOf(input.readShort());        // May be null.
                 final long count = readUnsignedInt();
                 final long size  = (type != null) ? JDK8.multiplyExact(type.size, count) : 0;
@@ -263,7 +263,7 @@ final class Reader extends GeoTIFF {
                              * recommends to ignore it (for allowing them to add new types in the future), or an entry
                              * without value (count = 0) - in principle illegal but we make this reader tolerant.
                              */
-                            error = dir.addEntry(this, tag, type, count);
+                            error = dir.addEntry(tag, type, count);
                         } catch (ParseException | RuntimeException e) {
                             error = e;
                         }
@@ -294,6 +294,7 @@ final class Reader extends GeoTIFF {
             resolveDeferredEntries(dir, Long.MAX_VALUE);
             dir.hasDeferredEntries = false;
         }
+        dir.validateMandatoryTags();
         return dir;
     }
 
@@ -329,7 +330,7 @@ final class Reader extends GeoTIFF {
                 input.seek(JDK8.addExact(origin, entry.offset));
                 Object error;
                 try {
-                    error = entry.owner.addEntry(this, entry.tag, entry.type, entry.count);
+                    error = entry.owner.addEntry(entry.tag, entry.type, entry.count);
                 } catch (ParseException | RuntimeException e) {
                     error = e;
                 }
@@ -348,7 +349,7 @@ final class Reader extends GeoTIFF {
      * @param tag    the tag than can not be read.
      * @param error  the value than can not be understand, or the exception that we got while trying to parse it.
      */
-    private void warning(final int tag, final Object error) {
+    private void warning(final short tag, final Object error) {
         final short key;
         final Object[] args;
         final Exception exception;

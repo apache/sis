@@ -533,7 +533,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * condition is meet, threads can safely use their iterators concurrently.</p>
      */
     final Iterator<AuthorityFactory> getAllFactories() {
-        return new LazySynchronizedIterator<>(providers);
+        return new LazySynchronizedIterator<AuthorityFactory>(providers);
     }
 
     /**

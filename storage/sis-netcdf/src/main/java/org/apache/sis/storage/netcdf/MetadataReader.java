@@ -71,6 +71,7 @@ import org.apache.sis.measure.Units;
 
 // The following dependency is used only for static final String constants.
 // Consequently the compiled class files should not have this dependency.
+import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
 import static java.util.Collections.singleton;
@@ -848,7 +849,7 @@ final class MetadataReader {
      * @throws IOException if an I/O operation was necessary but failed.
      */
     private Band createSampleDimension(final Variable variable) throws IOException {
-        final DefaultBand band = new DefaultBand();
+        final DefaultBand band = new DefaultBand();     // TODO: not necessarily a band.
         String name = variable.getName();
         if (name != null && !(name = name.trim()).isEmpty()) {
             if (nameFactory == null) {
@@ -867,6 +868,16 @@ final class MetadataReader {
             band.setUnits(Units.valueOf(units));
         } catch (ClassCastException | ParserException e) {
             decoder.listeners.warning(errors().getString(Errors.Keys.CanNotAssignUnitToDimension_2, name, units), e);
+        }
+        Object[] v = variable.getAttributeValues(CDM.SCALE_FACTOR, true);
+        if (v.length == 1) {
+            band.setScaleFactor(((Number) v[0]).doubleValue());
+            band.setTransferFunctionType(TransferFunctionType.LINEAR);
+        }
+        v = variable.getAttributeValues(CDM.ADD_OFFSET, true);
+        if (v.length == 1) {
+            band.setOffset(((Number) v[0]).doubleValue());
+            band.setTransferFunctionType(TransferFunctionType.LINEAR);
         }
         return band;
     }

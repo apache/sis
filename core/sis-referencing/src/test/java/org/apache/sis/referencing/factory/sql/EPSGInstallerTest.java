@@ -60,7 +60,7 @@ import static org.junit.Assume.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn(EPSGFactoryTest.class)
@@ -142,14 +142,9 @@ public final strictfp class EPSGInstallerTest extends TestCase {
      * Tests the creation of an EPSG database on HSQLDB.
      * This test is skipped if the SQL scripts are not found.
      *
-     * <p>This test is skipped by default because HSQLDB changes the {@code java.util.logging} configuration,
-     * which causes failures in all Apache SIS tests that verify the logging messages after execution of this
-     * test. This impact this {@code EPSGInstallerTest} class, but also other test classes.</p>
-     *
      * @throws Exception if an error occurred while creating the database.
      */
     @Test
-    @Ignore("Skipped for protecting java.util.logging configuration against changes.")
     public void testCreationOnHSQLDB() throws Exception {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         final DataSource ds = (DataSource) Class.forName("org.hsqldb.jdbc.JDBCDataSource").newInstance();
@@ -162,6 +157,30 @@ public final strictfp class EPSGInstallerTest extends TestCase {
             }
         }
         loggings.assertNextLogContains("EPSG", "jdbc:hsqldb:mem:test");
+        loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Tests the creation of an EPSG database on PostgreSQL. This test is disabled by default.
+     * To run this test, the tester needs to launch on {@code "localhost"} a PostgreSQL server
+     * having an empty database named {@code "SpatialMetadataTest"}. After the test completion,
+     * one can verify the {@code "EPSG"} schema created by the test, then delete that schema for future test executions
+     * (this test does <strong>not</strong> delete by itself the schema that it created).
+     *
+     * @throws Exception if an error occurred while creating the database.
+     *
+     * @since 0.8
+     */
+    @Test
+    @Ignore("This test need to be run manually on a machine having a local PostgreSQL database.")
+    public void testCreationOnPostgreSQL() throws Exception {
+        final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
+        final DataSource ds = (DataSource) Class.forName("org.postgresql.ds.PGSimpleDataSource").newInstance();
+        final Class<?> dsc = ds.getClass();
+        dsc.getMethod("setServerName",   String.class).invoke(ds, "localhost");
+        dsc.getMethod("setDatabaseName", String.class).invoke(ds, "SpatialMetadataTest");
+        createAndTest(ds, scripts);
+        loggings.assertNextLogContains("EPSG", "jdbc:postgresql://localhost/SpatialMetadataTest");
         loggings.assertNoUnexpectedLog();
     }
 
