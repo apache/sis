@@ -20,6 +20,7 @@ import java.util.Map;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.InvocationHandler;
 import org.opengis.util.InternationalString;
@@ -174,7 +175,7 @@ public final class NilReason implements Serializable {
      * defined in this class, in declaration order. All other elements are the instances
      * created by the {@link #valueOf(String)} method, in no particular order.
      *
-     * @return An array containing the instances of {@code NilReason}.
+     * @return an array containing the instances of {@code NilReason}.
      */
     public static NilReason[] values() {
         final int predefinedCount = PREDEFINED.length;
@@ -219,9 +220,9 @@ public final class NilReason implements Serializable {
      *
      * This method returns existing instances when possible.
      *
-     * @param  reason The reason why an element is not present.
-     * @return The reason as a {@code NilReason} object.
-     * @throws URISyntaxException If the given string is not one of the predefined enumeration
+     * @param  reason  the reason why an element is not present.
+     * @return the reason as a {@code NilReason} object.
+     * @throws URISyntaxException if the given string is not one of the predefined enumeration
      *         values and can not be parsed as a URI.
      */
     public static NilReason valueOf(String reason) throws URISyntaxException {
@@ -262,9 +263,9 @@ public final class NilReason implements Serializable {
     /**
      * Invoked after deserialization in order to return a unique instance if possible.
      *
-     * @return A unique instance of the deserialized {@code NilReason}.
+     * @return a unique instance of the deserialized {@code NilReason}.
      */
-    private Object readResolve() {
+    private Object readResolve() throws ObjectStreamException {
         if (reason instanceof String) {
             for (final NilReason candidate : PREDEFINED) {
                 if (reason.equals(candidate.reason)) {
@@ -284,7 +285,7 @@ public final class NilReason implements Serializable {
      * instance itself, then this method returns an empty string. For all other cases, the
      * string contains at least two characters.</p>
      *
-     * @return The explanation, or {@code null} if this {@code NilReason} is not of kind {@link #OTHER}.
+     * @return the explanation, or {@code null} if this {@code NilReason} is not of kind {@link #OTHER}.
      */
     public String getOtherExplanation() {
         if (reason instanceof String) {
@@ -305,8 +306,7 @@ public final class NilReason implements Serializable {
      * Otherwise returns {@code null}. The URI and the {@linkplain #getOtherExplanation() other
      * explanation} attributes are mutually exclusive.
      *
-     * @return The URI, or {@code null} if the explanation of this {@code NilReason}
-     *         is not referenced by a URI.
+     * @return the URI, or {@code null} if the explanation of this {@code NilReason} is not referenced by a URI.
      */
     public URI getURI() {
         return (reason instanceof URI) ? (URI) reason : null;
@@ -318,7 +318,7 @@ public final class NilReason implements Serializable {
      * is one of the predefined constants, or a string of the form {@code "other:explanation"},
      * or a URI.
      *
-     * @return The GML string representation of this {@code NilReason}.
+     * @return the GML string representation of this {@code NilReason}.
      */
     @Override
     public String toString() {
@@ -336,7 +336,7 @@ public final class NilReason implements Serializable {
     /**
      * Compares this {@code NilReason} with the specified object for equality.
      *
-     * @param other The object to compare with this {@code NilReason}.
+     * @param  other  the object to compare with this {@code NilReason}.
      */
     @Override
     public boolean equals(final Object other) {
@@ -366,11 +366,11 @@ public final class NilReason implements Serializable {
      *       will be recognized as "nil" by the XML marshaller.</li>
      * </ul>
      *
-     * @param  <T> The compile-time type of the {@code type} argument.
-     * @param  type The object type as an <strong>interface</strong>
+     * @param  <T>   the compile-time type of the {@code type} argument.
+     * @param  type  the object type as an <strong>interface</strong>
      *         (usually a <a href="http://www.geoapi.org">GeoAPI</a> one) or one of the special types.
-     * @throws IllegalArgumentException If the given type is not a supported type.
-     * @return An {@link NilObject} of the given type.
+     * @throws IllegalArgumentException if the given type is not a supported type.
+     * @return an {@link NilObject} of the given type.
      */
     @SuppressWarnings("unchecked")
     public synchronized <T> T createNilObject(final Class<T> type) {
@@ -440,9 +440,9 @@ public final class NilReason implements Serializable {
      * probably still use a {@link String} where the string contain 1 or 2 Java characters. This may also facilitate the
      * encoding in the XML files, since many files use an other encoding than UTF-16 anyway.</div>
      *
-     * @throws IllegalArgumentException If the given type is not a supported type.
+     * @throws IllegalArgumentException if the given type is not a supported type.
      */
-    @SuppressWarnings({"RedundantStringConstructorCall", "BooleanConstructorCall"})
+    @SuppressWarnings({"RedundantStringConstructorCall", "BooleanConstructorCall", "UnnecessaryBoxing"})
     private static Object createNilPrimitive(final Class<?> type) {
         if (type == String .class) return new String("");         // REALLY need a new instance.
         if (type == Boolean.class) return new Boolean(false);     // REALLY need a new instance, not Boolean.FALSE.
@@ -491,9 +491,8 @@ public final class NilReason implements Serializable {
      *   <li>Otherwise this method returns {@code null}.</li>
      * </ul>
      *
-     * @param  object The object for which to get the {@code NilReason}, or {@code null}.
-     * @return The reason why the given object contains no information,
-     *         or {@code null} if the given object is not nil.
+     * @param  object  the object for which to get the {@code NilReason}, or {@code null}.
+     * @return the reason why the given object contains no information, or {@code null} if the given object is not nil.
      *
      * @see NilObject#getNilReason()
      *

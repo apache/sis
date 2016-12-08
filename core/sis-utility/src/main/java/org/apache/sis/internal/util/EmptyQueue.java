@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.AbstractQueue;
 import java.util.Collections;
@@ -26,7 +27,7 @@ import java.util.Queue;
 /**
  * An immutable and serializable empty queue.
  *
- * @param  <E> Type of elements in the collection.
+ * @param  <E>  type of elements in the collection.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -63,7 +64,8 @@ final class EmptyQueue<E> extends AbstractQueue<E> implements Serializable {
     /**
      * Returns the singleton instance on deserialization.
      */
-    protected Object readResolve() {
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    protected Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }
 }

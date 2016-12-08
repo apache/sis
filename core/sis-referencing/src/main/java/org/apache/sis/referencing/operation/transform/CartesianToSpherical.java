@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
@@ -52,7 +53,7 @@ final class CartesianToSpherical extends CoordinateSystemTransform implements Se
     /**
      * Returns the singleton instance on deserialization.
      */
-    private Object readResolve() {
+    private Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }
 

@@ -18,6 +18,7 @@ package org.apache.sis.internal.simple;
 
 import java.util.Date;
 import java.util.Collection;
+import java.io.ObjectStreamException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -172,8 +173,9 @@ public class CitationConstant extends SimpleCitation {
      * instance defined in the {@link org.apache.sis.metadata.iso.citation.Citations} class.
      *
      * @return the instance to use, as an unique instance if possible.
+     * @throws ObjectStreamException never thrown.
      */
-    protected Object readResolve() {
+    protected Object readResolve() throws ObjectStreamException {
         CitationConstant c = MetadataServices.getInstance().getCitationConstant(title);
         if (c == null) {
             /*
