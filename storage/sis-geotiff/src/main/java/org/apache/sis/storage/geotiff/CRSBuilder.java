@@ -55,6 +55,7 @@ import org.opengis.util.FactoryException;
 
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -290,7 +291,7 @@ final class CRSBuilder {
      */
     private CoordinateOperationFactory operationFactory() {
         if (operationFactory == null) {
-            operationFactory = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
+            operationFactory = CoordinateOperations.factory();
         }
         return operationFactory;
     }
