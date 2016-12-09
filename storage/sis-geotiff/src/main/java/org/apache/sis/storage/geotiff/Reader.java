@@ -19,6 +19,8 @@ package org.apache.sis.storage.geotiff;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -27,6 +29,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -79,8 +82,19 @@ final class Reader extends GeoTIFF {
     /**
      * Offset (relative to the beginning of the TIFF file) of the next Image File Directory (IFD)
      * to read, or 0 if we have finished to read all of them.
+     *
+     * @see #readNextImageOffset()
      */
     private long nextIFD;
+
+    /**
+     * Offsets of all <cite>Image File Directory</cite> (IFD) that have been read so far.
+     * This field is used only as a protection against infinite recursivity, by preventing
+     * the same offset to appear twice.
+     *
+     * @see #readNextImageOffset()
+     */
+    private final Set<Long> doneIFD;
 
     /**
      * Positions of each <cite>Image File Directory</cite> (IFD) in this file.
@@ -121,6 +135,7 @@ final class Reader extends GeoTIFF {
         this.input    = input;
         this.origin   = input.getStreamPosition();
         this.metadata = new MetadataBuilder();
+        this.doneIFD  = new HashSet<>();
         /*
          * A TIFF file begins with either "II" (0x4949) or "MM" (0x4D4D) characters.
          * Those characters identify the byte order. Note that we do not need to care
@@ -141,7 +156,7 @@ final class Reader extends GeoTIFF {
             switch (input.readShort()) {
                 case 42: {                                          // Magic number of classical format.
                     intSizeExpansion = 0;
-                    nextIFD = input.readUnsignedInt();
+                    readNextImageOffset();
                     return;
                 }
                 case 43: {                                          // Magic number of BigTIFF format.
@@ -155,7 +170,7 @@ final class Reader extends GeoTIFF {
                              * one result in the end, but we did that generic computation anyway for keeping the
                              * code almost ready if the BigTIFF specification adds support for 16 bytes pointer.
                              */
-                            nextIFD = readUnsignedInt();
+                            readNextImageOffset();
                             return;
                         }
                     }
@@ -164,6 +179,18 @@ final class Reader extends GeoTIFF {
         }
         // Do not invoke errors() yet because GeoTiffStore construction may not be finished.
         throw new DataStoreContentException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
+    }
+
+    /**
+     * Sets {@link #nextIFD} to the next offset read from the TIFF file
+     * and makes sure that it will not cause an infinite loop.
+     */
+    private void readNextImageOffset() throws IOException, DataStoreException {
+        nextIFD = readUnsignedInt();
+        if (!doneIFD.add(nextIFD)) {
+            throw new DataStoreContentException(resources().getString(
+                    Resources.Keys.CircularImageReference_1, input.filename));
+        }
     }
 
     /**
@@ -276,7 +303,7 @@ final class Reader extends GeoTIFF {
                 }
             }
             imageFileDirectories.add(dir);
-            nextIFD = readUnsignedInt();                    // Zero if the IFD that we just read was the last one.
+            readNextImageOffset();                          // Zero if the IFD that we just read was the last one.
         }
         /*
          * At this point we got the requested IFD. But maybe some deferred entries need to be read.

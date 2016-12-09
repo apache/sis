@@ -61,6 +61,11 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * TIFF file “{0}” has circular references in its chain of images.
+         */
+        public static final short CircularImageReference_1 = 18;
+
+        /**
          * No value specified for the “{0}” TIFF tag. Computed the {1} value from other tags.
          */
         public static final short ComputedValueForAttribute_2 = 0;
