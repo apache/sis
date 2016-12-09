@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.lang.reflect.Field;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
+import org.apache.sis.util.Characters;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -137,6 +138,16 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertEquals(field, symbol,    UnitFormat.INSTANCE.format(unit));
         if (name != null) {
             assertEquals(field, name, UnitFormat.getBundle(Locale.UK).getString(symbol));
+            for (int i=0; i<name.length();) {
+                final int c = name.codePointAt(i);
+                assertTrue(name, AbstractUnit.isSymbolChar(c) || Character.isWhitespace(c));
+                i += Character.charCount(c);
+            }
+        }
+        for (int i=0; i<symbol.length();) {
+            final int c = symbol.codePointAt(i);
+            assertTrue(symbol, AbstractUnit.isSymbolChar(c) || Characters.isSuperScript(c) || c == '∕');
+            i += Character.charCount(c);
         }
         declared.remove(field);
     }
@@ -264,6 +275,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.CELSIUS,       f.parse("degC"));
         assertSame(Units.CELSIUS,       f.parse("deg C"));
         assertSame(Units.WATT,          f.parse("watt"));
+        assertSame(Units.UNITY,         f.parse("unity"));
         try {
             f.parse("degree foo");
             fail("Should not accept unknown unit.");

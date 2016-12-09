@@ -16,14 +16,12 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -47,7 +45,7 @@ import java.util.Objects;
  * Subclasses may or may not be immutable, at implementation choice. But implementors are
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
  *
- * @param <E> The type of range elements as a subclass of {@link Number}.
+ * @param  <E>  the type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.3

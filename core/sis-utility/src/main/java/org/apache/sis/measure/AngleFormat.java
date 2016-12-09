@@ -16,6 +16,7 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Objects;
 import java.util.Locale;
 import java.text.Format;
 import java.text.FieldPosition;
@@ -40,9 +41,6 @@ import static org.apache.sis.math.MathFunctions.pow10;
 import static org.apache.sis.math.MathFunctions.truncate;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**

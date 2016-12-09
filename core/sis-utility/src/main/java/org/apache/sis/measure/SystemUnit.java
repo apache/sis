@@ -69,7 +69,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      *
      * @see #related(int)
      */
-    transient ConventionalUnit<Q>[] related;
+    private transient ConventionalUnit<Q>[] related;
 
     /**
      * Creates a new unit having the given symbol and EPSG code.
@@ -465,7 +465,19 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     final void related(final int n) {
+        if (related != null) {
+            throw new IllegalStateException();
+        }
         related = new ConventionalUnit[n];
+    }
+
+    /**
+     * Returns units for the same quantity but with scale factors that are not the SI one.
+     * This method returns a direct reference to the internal field; caller shall not modify.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final ConventionalUnit<Q>[] related() {
+        return related;
     }
 
     /**

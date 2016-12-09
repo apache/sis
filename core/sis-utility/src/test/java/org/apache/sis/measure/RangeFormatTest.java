@@ -225,9 +225,9 @@ public final strictfp class RangeFormatTest extends TestCase {
 
         assertEquals(NumberRange.create(-10, true,   20, true ), parse("[-10 … 20]" ));
         assertEquals(NumberRange.create( -3, false,   4, false), parse("( -3 …  4) "));
-        assertEquals(NumberRange.create(  2, true,    8, false), parse("  [2 …  8) _"));
-        assertEquals(NumberRange.create( 40, false,  90, true ), parse(" (40 … 90]_"));
-        assertEquals(NumberRange.create(300, true,  300, true ), parse(" 300_"));
+        assertEquals(NumberRange.create(  2, true,    8, false), parse("  [2 …  8) "));
+        assertEquals(NumberRange.create( 40, false,  90, true ), parse(" (40 … 90]"));
+        assertEquals(NumberRange.create(300, true,  300, true ), parse(" 300 "));
         assertEquals(NumberRange.create(300, true,  300, true ), parse("[300]"));
         assertEquals(NumberRange.create(300, false, 300, false), parse("(300)"));
         assertEquals(NumberRange.create(300, true,  300, true ), parse("{300}"));
