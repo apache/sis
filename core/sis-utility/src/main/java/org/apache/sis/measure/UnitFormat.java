@@ -969,11 +969,9 @@ scan:   for (int n; i < end; i += n) {
              * overridden by an explicit × or / symbol, which is what happened if we reach this point (tip: look in
              * the above 'switch' statement all cases that end with 'break', not 'break scan' or 'continue').
              */
-            if (operation == IMPLICIT) {
-                operation = next;
-                continue;
+            if (operation != IMPLICIT) {
+                unit = apply(operation, unit, parseSymbol(symbols, start, i));
             }
-            unit = apply(operation, unit, parseSymbol(symbols, start, i));
             operation = next;
             start = i + n;
         }

@@ -374,10 +374,23 @@ public final strictfp class UnitFormatTest extends TestCase {
     public void testParseMultiplier() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         assertSame(Units.MILLIMETRE, f.parse("m/1000"));
+        assertSame(Units.KILOMETRE,  f.parse( "1000*m"));
+        assertSame(Units.KILOMETRE,  f.parse( "1000.0*m"));
         ConventionalUnitTest.verify(Units.METRE, f.parse("10*-6⋅m"),   "µm", 1E-6);
         ConventionalUnitTest.verify(Units.METRE, f.parse("10*-6.m"),   "µm", 1E-6);
-        ConventionalUnitTest.verify(Units.METRE, f.parse( "1000*m"),   "km", 1E+3);
-        ConventionalUnitTest.verify(Units.METRE, f.parse( "1000.0*m"), "km", 1E+3);
         ConventionalUnitTest.verify(Units.METRE, f.parse( "100 feet"), null, 30.48);
+    }
+
+    /**
+     * Tests parsing expressions containing parenthesis.
+     */
+    @Test
+    @DependsOnMethod("testParseMultiplier")
+    public void testParseWithParenthesis() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        assertSame(Units.PASCAL, f.parse("kg∕(m⋅s²)"));
+        assertSame(Units.PASCAL, f.parse("(kg)∕m∕s²"));
+        assertSame(Units.VOLT,   f.parse("kg⋅m²∕(s³⋅A)"));
+        assertSame(Units.VOLT,   f.parse("(kg)m²∕(s³⋅A)"));
     }
 }
