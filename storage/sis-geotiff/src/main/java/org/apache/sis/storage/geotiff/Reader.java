@@ -142,8 +142,8 @@ final class Reader extends GeoTIFF {
          * about the byte order for this flag since the two bytes shall have the same value.
          */
         final short order = input.readShort();
-        final boolean isBigEndian = (order == 0x4D4D);
-        if (isBigEndian || order == 0x4949) {
+        final boolean isBigEndian = (order == BIG_ENDIAN);
+        if (isBigEndian || order == LITTLE_ENDIAN) {
             input.buffer.order(isBigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
             /*
              * Magic number of TIFF file is 42, followed by nothing else.
@@ -154,12 +154,12 @@ final class Reader extends GeoTIFF {
              * but a future BigTIFF version may allow 16 bytes wide pointers.
              */
             switch (input.readShort()) {
-                case 42: {                                          // Magic number of classical format.
+                case CLASSIC: {                                     // Magic number of classical format.
                     intSizeExpansion = 0;
                     readNextImageOffset();
                     return;
                 }
-                case 43: {                                          // Magic number of BigTIFF format.
+                case BIG_TIFF: {                                    // Magic number of BigTIFF format.
                     final int numBits  = input.readUnsignedShort();
                     final int powerOf2 = Integer.numberOfTrailingZeros(numBits);    // In the [0 … 32] range.
                     if (numBits == (1L << powerOf2) && input.readShort() == 0) {

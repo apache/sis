@@ -19,6 +19,7 @@ package org.apache.sis.storage.netcdf;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.NoSuchFileException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -37,9 +38,6 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Version;
-
-// Branch-specific import
-import java.nio.file.NoSuchFileException;
 
 
 /**
@@ -121,7 +119,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
      * @param  connector  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @return {@code SUPPORTED} if the given storage seems to be usable by the {@code NetcdfStore} instances.
+     * @return {@code SUPPORTED} if the given storage seems to be usable by {@code NetcdfStore} instances.
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override
