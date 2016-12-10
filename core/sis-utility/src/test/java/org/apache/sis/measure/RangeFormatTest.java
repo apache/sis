@@ -349,4 +349,17 @@ public final strictfp class RangeFormatTest extends TestCase {
         assertEquals(9, minPos.getEndIndex());
         assertEquals(range, parse(text));
     }
+
+    /**
+     * Tests {@link RangeFormat#clone()}.
+     */
+    @Test
+    public void testClone() {
+        final RangeFormat f1 = new RangeFormat(Locale.FRANCE);
+        f1.setElementPattern("#0.###", false);
+        final RangeFormat f2 = f1.clone();
+        f2.setElementPattern("#0.00#", false);
+        assertEquals("#0.###", f1.getElementPattern(false));
+        assertEquals("#0.00#", f2.getElementPattern(false));
+    }
 }
