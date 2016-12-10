@@ -740,6 +740,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * This method also opportunistically recompute the {@link #quote} field if no replacement is done.
      *
      * @return the object to use after deserialization.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
     final Object readResolve() throws ObjectStreamException {
         if (isImmutable) {

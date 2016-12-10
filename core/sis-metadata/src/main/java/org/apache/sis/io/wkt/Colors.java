@@ -216,6 +216,7 @@ public class Colors implements Cloneable, Serializable {
      * Replaces the deserialized instance by {@link #DEFAULT} one if possible.
      *
      * @return the object to use after deserialization.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
     final Object readResolve() throws ObjectStreamException {
         return isImmutable && map.equals(DEFAULT.map) ? DEFAULT : this;

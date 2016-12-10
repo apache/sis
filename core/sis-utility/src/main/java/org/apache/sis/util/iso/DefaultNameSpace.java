@@ -526,6 +526,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * behavior since we don't want to replace an instance of a user-defined class.</p>
      *
      * @return the unique instance.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
     Object readResolve() throws ObjectStreamException {
         final DefaultNameSpace p = parent();

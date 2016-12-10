@@ -274,6 +274,7 @@ public class OptionKey<T> implements Serializable {
      * only for instance of the exact {@code OptionKey} class, not subclasses.
      *
      * @return  the unique {@code OptionKey} instance.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
     private Object readResolve() throws ObjectStreamException {
         try {
