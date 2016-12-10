@@ -79,6 +79,7 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
+import org.apache.sis.util.iso.DefaultNameSpace;
 
 
 /**
@@ -484,8 +485,12 @@ final class CRSBuilder {
                     symbol = ' ' + symbol;    // Add a space before "m" but not before "°".
                 }
             }
+            /*
+             * Use Double.toString(…) instead of NumberFormat because the later does not show
+             * enough significant digits for parameters like inverse flattening.
+             */
             warning(Resources.Keys.NotTheEpsgValue_5, IdentifiedObjects.getIdentifierOrName(epsg),
-                    expected, GeoKeys.name(key), actual, symbol);
+                    String.valueOf(expected), GeoKeys.name(key), String.valueOf(actual), symbol);
         }
     }
 
@@ -495,10 +500,11 @@ final class CRSBuilder {
      * there is no need to specify the EPSG codes of the components, but the file still supply
      * those EPSG codes. If the values do not match, a warning is reported.
      *
-     * @param  epsg  the EPSG object.
-     * @param  key   the GeoTIFF key for the EPSG code of the given {@code epsg} object.
+     * @param  parent  the parent which contains the {@code epsg} object
+     * @param  epsg    the object created from the EPSG geodetic dataset.
+     * @param  key     the GeoTIFF key for the EPSG code of the given {@code epsg} object.
      */
-    private void verifyIdentifier(final IdentifiedObject epsg, final short key) {
+    private void verifyIdentifier(final IdentifiedObject parent, final IdentifiedObject epsg, final short key) {
         final int code = getAsInteger(key);
         if (code > GeoCodes.undefined && code < GeoCodes.userDefined) {
             final Identifier id = IdentifiedObjects.getIdentifier(epsg, Citations.EPSG);
@@ -511,8 +517,9 @@ final class CRSBuilder {
                     return;
                 }
                 if (code != expected) {
-                    warning(Resources.Keys.NotTheEpsgValue_5, IdentifiedObjects.getIdentifierOrName(epsg),
-                            expected, GeoKeys.name(key), code, "");
+                    warning(Resources.Keys.NotTheEpsgValue_5, IdentifiedObjects.getIdentifierOrName(parent),
+                            Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected, GeoKeys.name(key),
+                            Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code, "");
                 }
             }
         }
@@ -1051,10 +1058,10 @@ final class CRSBuilder {
      */
     private void verify(final GeodeticDatum datum, final Unit<Angle> angularUnit, final Unit<Length> linearUnit) {
         final PrimeMeridian pm = datum.getPrimeMeridian();
-        verifyIdentifier(pm, GeoKeys.PrimeMeridian);
+        verifyIdentifier(datum, pm, GeoKeys.PrimeMeridian);
         verify(pm, angularUnit);
         final Ellipsoid ellipsoid = datum.getEllipsoid();
-        verifyIdentifier(ellipsoid, GeoKeys.Ellipsoid);
+        verifyIdentifier(datum, ellipsoid, GeoKeys.Ellipsoid);
         verify(ellipsoid, linearUnit);
     }
 
@@ -1207,7 +1214,7 @@ final class CRSBuilder {
          */
         final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits, GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
         final GeodeticDatum datum = crs.getDatum();
-        verifyIdentifier(datum, GeoKeys.GeodeticDatum);
+        verifyIdentifier(crs, datum, GeoKeys.GeodeticDatum);
         verify(datum, angularUnit, linearUnit);
     }
 
@@ -1291,10 +1298,10 @@ final class CRSBuilder {
         final Unit<Length> linearUnit  = createUnit(GeoKeys.LinearUnits,  GeoKeys.LinearUnitSize, Length.class, Units.METRE);
         final Unit<Angle>  angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
         final GeographicCRS baseCRS = crs.getBaseCRS();
-        verifyIdentifier(baseCRS, GeoKeys.GeographicType);
+        verifyIdentifier(crs, baseCRS, GeoKeys.GeographicType);
         verify(baseCRS, angularUnit);
         final Conversion projection = crs.getConversionFromBase();
-        verifyIdentifier(projection, GeoKeys.Projection);
+        verifyIdentifier(crs, projection, GeoKeys.Projection);
         verify(projection, angularUnit, linearUnit);
     }
 

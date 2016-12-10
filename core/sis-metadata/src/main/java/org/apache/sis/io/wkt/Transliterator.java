@@ -19,6 +19,7 @@ package org.apache.sis.io.wkt;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -155,8 +156,8 @@ public abstract class Transliterator implements Serializable {
      * <p>The default implementation invokes {@link CharSequences#toASCII(CharSequence)},
      * replaces line feed and tabulations by single spaces, then remove control characters.</p>
      *
-     * @param  text The text to format without non-ASCII characters.
-     * @return The text to write in <cite>Well Known Text</cite>.
+     * @param  text  the text to format without non-ASCII characters.
+     * @return the text to write in <cite>Well Known Text</cite>.
      *
      * @see org.apache.sis.util.Characters#isValidWKT(int)
      */
@@ -207,10 +208,10 @@ public abstract class Transliterator implements Serializable {
      *       or {@code GEOCENTRIC_Z} and the name is the same than the axis direction (ignoring case).</li>
      * </ul>
      *
-     * @param  cs        The enclosing coordinate system, or {@code null} if unknown.
-     * @param  direction The direction of the axis to format.
-     * @param  name      The axis name, to be eventually replaced by this method.
-     * @return The axis name to format, or {@code null} if the name shall be omitted.
+     * @param  cs         the enclosing coordinate system, or {@code null} if unknown.
+     * @param  direction  the direction of the axis to format.
+     * @param  name       the axis name, to be eventually replaced by this method.
+     * @return the axis name to format, or {@code null} if the name shall be omitted.
      *
      * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#formatTo(Formatter)
      */
@@ -257,10 +258,10 @@ public abstract class Transliterator implements Serializable {
      * SIS does not put restriction on axis names, but we nevertheless try to use a unique
      * name when we recognize it.</div>
      *
-     * @param  csType    The type of the coordinate system, or {@code null} if unknown.
-     * @param  direction The parsed axis direction.
-     * @param  name      The parsed axis abbreviation, to be eventually replaced by this method.
-     * @return The axis name to use. Can not be null.
+     * @param  csType     the type of the coordinate system, or {@code null} if unknown.
+     * @param  direction  the parsed axis direction.
+     * @param  name       the parsed axis abbreviation, to be eventually replaced by this method.
+     * @return the axis name to use. Can not be null.
      */
     public String toLongAxisName(final String csType, final AxisDirection direction, final String name) {
         if (csType != null) switch (csType) {
@@ -290,8 +291,8 @@ public abstract class Transliterator implements Serializable {
     /**
      * Returns {@code true} if the given axis name is at least part of the given expected axis name.
      *
-     * @param expected {@link AxisNames#LATITUDE} or {@link AxisNames#LONGITUDE}.
-     * @param name The parsed axis name.
+     * @param  expected  {@link AxisNames#LATITUDE} or {@link AxisNames#LONGITUDE}.
+     * @param  name      the parsed axis name.
      */
     private static boolean isLatLong(final String expected, final String name) {
         final int length = name.length();
@@ -320,10 +321,10 @@ public abstract class Transliterator implements Serializable {
      * Note that while this method may return a string of any length, ISO 19162 requires abbreviations
      * to be a single Latin character.
      *
-     * @param  cs           The enclosing coordinate system, or {@code null} if unknown.
-     * @param  direction    The direction of the axis to format.
-     * @param  abbreviation The axis abbreviation, to be eventually replaced by this method.
-     * @return The axis abbreviation to format.
+     * @param  cs            the enclosing coordinate system, or {@code null} if unknown.
+     * @param  direction     the direction of the axis to format.
+     * @param  abbreviation  the axis abbreviation, to be eventually replaced by this method.
+     * @return the axis abbreviation to format.
      *
      * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#formatTo(Formatter)
      */
@@ -398,10 +399,10 @@ public abstract class Transliterator implements Serializable {
      *   <li><var>U</var> → θ  if {@code csType} is {@code "polar"}.</li>
      * </ul>
      *
-     * @param  csType       The type of the coordinate system, or {@code null} if unknown.
-     * @param  direction    The parsed axis direction.
-     * @param  abbreviation The parsed axis abbreviation, to be eventually replaced by this method.
-     * @return The axis abbreviation to use. Can not be null.
+     * @param  csType        the type of the coordinate system, or {@code null} if unknown.
+     * @param  direction     the parsed axis direction.
+     * @param  abbreviation  the parsed axis abbreviation, to be eventually replaced by this method.
+     * @return the axis abbreviation to use. Can not be null.
      */
     public String toUnicodeAbbreviation(final String csType, final AxisDirection direction, String abbreviation) {
         if (abbreviation.length() == 1) {
@@ -439,7 +440,7 @@ public abstract class Transliterator implements Serializable {
         }
 
         /** Replaces deserialized instances by the unique instance. */
-        Object readResolve() {
+        Object readResolve() throws ObjectStreamException {
             return DEFAULT;
         }
     }
@@ -483,7 +484,7 @@ public abstract class Transliterator implements Serializable {
         }
 
         /** Replaces deserialized instances by the unique instance. */
-        Object readResolve() {
+        Object readResolve() throws ObjectStreamException {
             return IDENTITY;
         }
     }

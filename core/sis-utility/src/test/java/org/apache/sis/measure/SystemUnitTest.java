@@ -60,7 +60,7 @@ public final strictfp class SystemUnitTest extends TestCase {
         for (final Field f : Units.class.getFields()) {
             final Object value = f.get(null);
             if (value instanceof SystemUnit<?>) {
-                final ConventionalUnit<?>[] related = ((SystemUnit<?>) value).related;
+                final ConventionalUnit<?>[] related = ((SystemUnit<?>) value).related();
                 if (related != null) {
                     final String symbol = ((SystemUnit<?>) value).getSymbol();
                     for (final ConventionalUnit<?> r : related) {

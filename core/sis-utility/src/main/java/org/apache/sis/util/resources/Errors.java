@@ -735,7 +735,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnexpectedChange_1 = 128;
 
         /**
-         * The “{1}” characters after “{0}” was unexpected.
+         * The “{1}” characters after “{0}” were unexpected.
          */
         public static final short UnexpectedCharactersAfter_2 = 129;
 
