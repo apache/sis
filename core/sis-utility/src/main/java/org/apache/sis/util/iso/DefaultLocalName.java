@@ -318,6 +318,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * to replace an instance of a user-defined class.</p>
      *
      * @return the unique instance.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
     private Object readResolve() throws ObjectStreamException {
         final DefaultNameSpace ns;
