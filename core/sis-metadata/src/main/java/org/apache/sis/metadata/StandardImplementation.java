@@ -18,6 +18,7 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.IdentityHashMap;
+import java.io.ObjectStreamException;
 import org.opengis.annotation.UML;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
@@ -75,12 +76,12 @@ final class StandardImplementation extends MetadataStandard {
      * Creates a new instance working on implementation of interfaces defined in the
      * specified package. This constructor is used only for the pre-defined constants.
      *
-     * @param citation              The title of the standard.
-     * @param interfacePackage      The root package for metadata interfaces, with a trailing {@code '.'}.
-     * @param implementationPackage The root package for metadata implementations. with a trailing {@code '.'}.
-     * @param prefix                The prefix of implementation class. This array is not cloned.
-     * @param acronyms              An array of (full text, acronyms) pairs. This array is not cloned.
-     * @param dependencies          The dependencies to other metadata standards, or {@code null} if none.
+     * @param citation               the title of the standard.
+     * @param interfacePackage       the root package for metadata interfaces, with a trailing {@code '.'}.
+     * @param implementationPackage  the root package for metadata implementations. with a trailing {@code '.'}.
+     * @param prefix                 the prefix of implementation class. This array is not cloned.
+     * @param acronyms               an array of (full text, acronyms) pairs. This array is not cloned.
+     * @param dependencies           the dependencies to other metadata standards, or {@code null} if none.
      */
     StandardImplementation(final String citation, final String interfacePackage, final String implementationPackage,
             final String[] prefix, final String[] acronyms, final MetadataStandard[] dependencies)
@@ -106,9 +107,9 @@ final class StandardImplementation extends MetadataStandard {
      * Returns the implementation class for the given interface, or {@code null} if none.
      * This class uses heuristic rules based on naming conventions.
      *
-     * @param  <T>  The compile-time {@code type}.
-     * @param  type The interface, typically from the {@code org.opengis.metadata} package.
-     * @return The implementation class, or {@code null} if none.
+     * @param  <T>   the compile-time {@code type}.
+     * @param  type  the interface, typically from the {@code org.opengis.metadata} package.
+     * @return the implementation class, or {@code null} if none.
      */
     @Override
     public <T> Class<? extends T> getImplementation(final Class<T> type) {
@@ -177,7 +178,7 @@ final class StandardImplementation extends MetadataStandard {
     /**
      * Invoked on deserialization. Returns one of the pre-existing constants if possible.
      */
-    Object readResolve() {
+    Object readResolve() throws ObjectStreamException {
         if (ISO_19111.citation.equals(citation)) return ISO_19111;
         if (ISO_19115.citation.equals(citation)) return ISO_19115;
         /*

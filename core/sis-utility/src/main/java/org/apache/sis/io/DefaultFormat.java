@@ -20,6 +20,7 @@ import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.io.ObjectStreamException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.util.LocalizedParseException;
@@ -99,7 +100,7 @@ final class DefaultFormat extends Format {
      * Parses the given string. Callers shall catch the {@link NumberFormatException}
      * and handle the error according the caller's method contract.
      *
-     * @throws NumberFormatException If the parsing failed.
+     * @throws NumberFormatException if the parsing failed.
      */
     private Object valueOf(final String source) throws NumberFormatException {
         return (type != Number.class) ? Numbers.valueOf(source, type) : Numbers.narrowestNumber(source);
@@ -139,7 +140,7 @@ final class DefaultFormat extends Format {
     /**
      * Resolves to the singleton instance on deserialization.
      */
-    private Object readResolve() {
+    private Object readResolve() throws ObjectStreamException {
         final Format format = getInstance(type);
         return (format != null) ? format : this;
     }

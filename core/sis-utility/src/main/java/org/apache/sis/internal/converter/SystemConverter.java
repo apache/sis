@@ -18,6 +18,7 @@ package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
+import java.io.ObjectStreamException;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.resources.Errors;
@@ -48,8 +49,8 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
     /**
      * Creates a new converter for the given source and target classes.
      *
-     * @param sourceClass The {@linkplain #getSourceClass() source class}.
-     * @param targetClass The {@linkplain #getTargetClass() target class}.
+     * @param sourceClass  the {@linkplain #getSourceClass() source class}.
+     * @param targetClass  the {@linkplain #getTargetClass() target class}.
      */
     SystemConverter(final Class<S> sourceClass, final Class<T> targetClass) {
         super(sourceClass, targetClass);
@@ -58,7 +59,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
     /**
      * Returns the source class given at construction time.
      *
-     * @return The type of objects to convert.
+     * @return the type of objects to convert.
      */
     @Override
     public final Class<S> getSourceClass() {
@@ -68,7 +69,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
     /**
      * Returns the target class given at construction time.
      *
-     * @return The type of converted objects.
+     * @return the type of converted objects.
      */
     @Override
     public final Class<T> getTargetClass() {
@@ -87,7 +88,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
     /**
      * Default to non-invertible conversion. Must be overridden by subclasses that support inversions.
      *
-     * @return A converter for converting instances of <var>T</var> back to instances of <var>S</var>.
+     * @return a converter for converting instances of <var>T</var> back to instances of <var>S</var>.
      */
     @Override
     public ObjectConverter<T,S> inverse() throws UnsupportedOperationException {
@@ -120,7 +121,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      *       an instance of {@code ClassPair} instance (not a subclass).</li>
      * </ul>
      *
-     * @param  other The object to compare with this {@code SystemConverter}.
+     * @param  other the object to compare with this {@code SystemConverter}.
      * @return {@code true} if the given object is a {@code ClassPair} or a converter of the
      *         same class than {@code this}, and both have the same source and target classes.
      */
@@ -138,7 +139,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * exists for the same source an target classes, then this converter is returned.
      * Otherwise this converter is returned <strong>without</strong> being cached.
      *
-     * @return The unique instance, or {@code this} if no unique instance can be found.
+     * @return the unique instance, or {@code this} if no unique instance can be found.
      */
     public ObjectConverter<S,T> unique() {
         final ObjectConverter<S,T> existing = SystemRegistry.INSTANCE.findEquals(this);
@@ -149,15 +150,15 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * Returns the singleton instance on deserialization, if any. If no instance already exist
      * in the virtual machine, we do not cache the instance (for now) for security reasons.
      */
-    protected final Object readResolve() {
+    protected final Object readResolve() throws ObjectStreamException {
         return unique();
     }
 
     /**
      * Formats an error message for a value that can not be converted.
      *
-     * @param  value The value that can not be converted.
-     * @return The error message.
+     * @param  value  the value that can not be converted.
+     * @return the error message.
      */
     final String formatErrorMessage(final S value) {
         return Errors.format(Errors.Keys.CanNotConvertValue_2, value, targetClass);

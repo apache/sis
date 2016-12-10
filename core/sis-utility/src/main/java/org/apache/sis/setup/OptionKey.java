@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
@@ -273,8 +274,9 @@ public class OptionKey<T> implements Serializable {
      * only for instance of the exact {@code OptionKey} class, not subclasses.
      *
      * @return  the unique {@code OptionKey} instance.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
-    private Object readResolve() {
+    private Object readResolve() throws ObjectStreamException {
         try {
             return OptionKey.class.getField(name).get(null);
         } catch (ReflectiveOperationException e) {
