@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -186,7 +187,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         /**
          * Returns the singleton instance on deserialization.
          */
-        Object readResolve() {
+        Object readResolve() throws ObjectStreamException {
             return INSTANCE;
         }
     };
@@ -256,9 +257,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * This constructor is provided for sub-classing only.
      * Client code should use the static {@link #create(Class, boolean, boolean)} method instead.
      *
-     * @param elementType   The type of the range elements.
-     * @param isMinIncluded {@code true} if the minimal values are inclusive, or {@code false} if exclusive.
-     * @param isMaxIncluded {@code true} if the maximal values are inclusive, or {@code false} if exclusive.
+     * @param elementType    the type of the range elements.
+     * @param isMinIncluded  {@code true} if the minimal values are inclusive, or {@code false} if exclusive.
+     * @param isMaxIncluded  {@code true} if the maximal values are inclusive, or {@code false} if exclusive.
      */
     protected RangeSet(final Class<E> elementType, final boolean isMinIncluded, final boolean isMaxIncluded) {
         ArgumentChecks.ensureNonNull("elementType", elementType);
@@ -278,10 +279,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     /**
      * Constructs an initially empty set of ranges.
      *
-     * @param  <E>           The type of range elements.
-     * @param  elementType   The type of the range elements.
-     * @param  isMinIncluded {@code true} if the minimal values are inclusive, or {@code false} if exclusive.
-     * @param  isMaxIncluded {@code true} if the maximal values are inclusive, or {@code false} if exclusive.
+     * @param  <E>            the type of range elements.
+     * @param  elementType    the type of the range elements.
+     * @param  isMinIncluded  {@code true} if the minimal values are inclusive, or {@code false} if exclusive.
+     * @param  isMaxIncluded  {@code true} if the maximal values are inclusive, or {@code false} if exclusive.
      * @return A new range set for range elements of the given type.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -309,7 +310,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * Returns the comparator associated with this sorted set.
      */
     @Override
-    @SuppressWarnings({"unchecked","rawtypes"}) // Because we share the same static instance.
+    @SuppressWarnings({"unchecked","rawtypes"})             // Because we share the same static instance.
     public Comparator<Range<E>> comparator() {
         return Compare.INSTANCE;
     }
@@ -320,7 +321,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     @Override
     public void clear() {
         if (array instanceof Object[]) {
-            Arrays.fill((Object[]) array, 0, length, null); // Let GC do its job.
+            Arrays.fill((Object[]) array, 0, length, null);         // Let GC do its job.
         }
         length = 0;
         modCount++;
@@ -331,7 +332,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      */
     @Override
     public int size() {
-        assert (length & 1) == 0; // Length must be even.
+        assert (length & 1) == 0;                                   // Length must be even.
         return length >>> 1;
     }
 
@@ -356,7 +357,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     public final void trimToSize() {
         // This method is final because equals(Object) and other methods rely on this behavior.
         if (array != null && Array.getLength(array) != length) {
-            reallocate(); // Will set the array to null if length == 0.
+            reallocate();                           // Will set the array to null if length == 0.
             assert isSorted();
         }
     }
@@ -365,9 +366,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * Inserts two values at the given index. The underlying {@linkplain #array} shall be
      * non-null before this method is invoked. This method increases the array size as needed.
      *
-     * @param lower The index where to insert the values.
-     * @param minValue The first value to insert.
-     * @param maxValue The second value to insert.
+     * @param  lower     the index where to insert the values.
+     * @param  minValue  the first value to insert.
+     * @param  maxValue  the second value to insert.
      */
     private void insertAt(final int lower, final E minValue, final E maxValue) {
         final Object oldArray = array;
@@ -387,8 +388,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * Removes the values in the given range. The underlying {@linkplain #array} shall be
      * non-null before this method is invoked.
      *
-     * @param lower First value to remove, inclusive.
-     * @param upper Last value to remove, exclusive.
+     * @param  lower  first value to remove, inclusive.
+     * @param  upper  last value to remove, exclusive.
      */
     private void removeAt(final int lower, final int upper) {
         final int oldLength = length;
@@ -428,9 +429,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * Returns the index of {@code value} in {@link #array}. This method delegates to
      * one of {@code Arrays.binarySearch} methods, depending on element primary type.
      *
-     * @param value The value to search.
-     * @param lower Index of the first value to examine.
-     * @param upper Index after the last value to examine.
+     * @param  value  the value to search.
+     * @param  lower  index of the first value to examine.
+     * @param  upper  index after the last value to examine.
      */
     final int binarySearch(final E value, final int lower, final int upper) {
         switch (elementCode) {
@@ -466,10 +467,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * match the ones given to the constructor of this {@code RangeSet}, then delegates to
      * {@link #add(Comparable, Comparable)}.</p>
      *
-     * @param  range The range to add.
+     * @param  range  the range to add.
      * @return {@code true} if this set changed as a result of this method call.
-     * @throws IllegalArgumentException If the {@code isMinIncluded} or {@code isMaxIncluded}
-     *         property doesn't match the one given at this {@code RangeSet} constructor.
+     * @throws IllegalArgumentException if the {@code isMinIncluded} or {@code isMaxIncluded}
+     *         property does not match the one given at this {@code RangeSet} constructor.
      */
     @Override
     public boolean add(final Range<E> range) throws IllegalArgumentException {
@@ -489,8 +490,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * the existing ranges will be merged. This may result in smaller {@linkplain #size() size}
      * of this set.
      *
-     * @param  minValue The minimal value.
-     * @param  maxValue The maximal value.
+     * @param  minValue  the minimal value.
+     * @param  maxValue  the maximal value.
      * @return {@code true} if this set changed as a result of this method call.
      * @throws IllegalArgumentException if {@code minValue} is greater than {@code maxValue}.
      */
@@ -503,7 +504,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         if (array == null) {
             ensureOrdered(minValue, maxValue);
             Class<?> type = elementType;
-            if (type != Boolean.class) { // Because there is no Arrays.binarySearch(boolean[], …) method.
+            if (type != Boolean.class) {        // Because there is no Arrays.binarySearch(boolean[], …) method.
                 type = wrapperToPrimitive(type);
             }
             array = Array.newInstance(type, 8);
@@ -517,7 +518,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         int i0 = binarySearch(minValue, 0, length);
         int i1 = binarySearch(maxValue, (i0 >= 0) ? i0 : ~i0, length);
         if (i0 < 0) {
-            i0 = ~i0; // Really tild operator, not minus sign.
+            i0 = ~i0;                           // Really tild operator, not minus sign.
             if ((i0 & 1) == 0) {
                 /*
                  * If the "insertion point" is outside any existing range, if the maximum value
@@ -572,7 +573,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
          * Ensure that the index is odd. This means that if the maximum value is the begining of an
          * existing range, then we move to the end of that range. Otherwise the index is unchanged.
          */
-        i1 |= 1; // Equivalent to executing i1++ only if i1 is even.
+        i1 |= 1;                        // Equivalent to executing i1++ only if i1 is even.
         /*
          * At this point, the index of the [minValue … maxValue] range is now [i0 … i1].
          * Remove everything between i0 and i1, excluding i0 and i1 themselves.
@@ -610,9 +611,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * the {@code isMinIncluded} and {@code isMaxIncluded} are consistent with the ones given to the
      * constructor of this {@code RangeSet}, then delegates to {@link #remove(Comparable, Comparable)}.</p>
      *
-     * @param  object The range to remove.
+     * @param  object  the range to remove.
      * @return {@code true} if this set changed as a result of this method call.
-     * @throws IllegalArgumentException If the {@code isMinIncluded} or {@code isMaxIncluded}
+     * @throws IllegalArgumentException if the {@code isMinIncluded} or {@code isMaxIncluded}
      *         property is not the complement of the one given at this {@code RangeSet} constructor.
      */
     @Override
@@ -636,8 +637,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * then the existing range may be splitted in two smaller ranges. This may result in greater
      * {@linkplain #size() size} of this set.
      *
-     * @param  minValue The minimal value.
-     * @param  maxValue The maximal value.
+     * @param  minValue  the minimal value.
+     * @param  maxValue  the maximal value.
      * @return {@code true} if this set changed as a result of this method call.
      * @throws IllegalArgumentException if {@code minValue} is greater than {@code maxValue}.
      */
@@ -684,7 +685,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                  * index :      A0    B0       i1  Bn     A(n+1)   B(n+1)
                  * range :      ███████        █████      ██████████  ◾◾◾
                  */
-                removeAt(i0, i1 & ~1); // equivalent to (i0, i1 - 1)
+                removeAt(i0, i1 & ~1);                              // equivalent to (i0, i1 - 1)
                 Array.set(array, i0, maxValue);
             }
         } else {
@@ -747,7 +748,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                     final int di = i1 - i0;
                     assert di >= 2 : di;
                     if (di > 2) {
-                        removeAt(i0 + 1, i1 & ~1); // equivalent to (i0 + 1, i1 - 1)
+                        removeAt(i0 + 1, i1 & ~1);              // equivalent to (i0 + 1, i1 - 1)
                     }
                     Array.set(array, i0,     minValue);
                     Array.set(array, i0 + 1, maxValue);
@@ -780,13 +781,13 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * The default implementation checks the type of the given object, then delegates to
      * <code>{@linkplain #contains(Range, boolean) contains}(object, false)</code>.
      *
-     * @param  object The object to check for inclusion in this set.
+     * @param  object  the object to check for inclusion in this set.
      * @return {@code true} if the given object is contained in this set.
      */
     @Override
     public boolean contains(final Object object) {
         if (object instanceof Range<?>) {
-            @SuppressWarnings("unchecked") // We are going to check just the line after.
+            @SuppressWarnings("unchecked")                  // We are going to check just the line after.
             final Range<E> range = (Range<E>) object;
             if (range.getElementType() == elementType) {
                 return contains(range, false);
@@ -806,8 +807,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      *       behaves as documented in the {@link #contains(Object)} method.</li>
      * </ul>
      *
-     * @param  range The range to check for inclusion in this set.
-     * @param  exact {@code true} for searching for an exact match,
+     * @param  range  the range to check for inclusion in this set.
+     * @param  exact  {@code true} for searching for an exact match,
      *         or {@code false} for searching for inclusion in any range.
      * @return {@code true} if the given object is contained in this set.
      */
@@ -891,8 +892,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * this {@code RangeSet} with the given range. Changes in this {@code RangeSet}
      * will be reflected in the returned view, and conversely.
      *
-     * @param  subRange The range to intersect with this {@code RangeSet}.
-     * @return A view of the specified range within this range set.
+     * @param  subRange  the range to intersect with this {@code RangeSet}.
+     * @return a view of the specified range within this range set.
      */
     public SortedSet<Range<E>> intersect(final Range<E> subRange) {
         ArgumentChecks.ensureNonNull("subRange", subRange);
@@ -915,9 +916,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * This method takes the minimal value of the {@code upper} argument instead
      * than the maximal value because the upper endpoint is exclusive.</div>
      *
-     * @param  lower Low endpoint (inclusive) of the sub set.
-     * @param  upper High endpoint (exclusive) of the sub set.
-     * @return A view of the specified range within this sorted set.
+     * @param  lower  low endpoint (inclusive) of the sub set.
+     * @param  upper  high endpoint (exclusive) of the sub set.
+     * @return a view of the specified range within this sorted set.
      *
      * @see #intersect(Range)
      */
@@ -942,8 +943,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * documented in the {@link #subSet(Range, Range)} method, except that the lower
      * endpoint is {@code null}.
      *
-     * @param  upper High endpoint (exclusive) of the headSet.
-     * @return A view of the specified initial range of this sorted set.
+     * @param  upper  high endpoint (exclusive) of the headSet.
+     * @return a view of the specified initial range of this sorted set.
      *
      * @see #intersect(Range)
      */
@@ -965,8 +966,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * documented in the {@link #subSet(Range, Range)} method, except that the upper
      * endpoint is {@code null}.
      *
-     * @param  lower Low endpoint (inclusive) of the tailSet.
-     * @return A view of the specified final range of this sorted set.
+     * @param  lower  low endpoint (inclusive) of the tailSet.
+     * @return a view of the specified final range of this sorted set.
      *
      * @see #intersect(Range)
      */
@@ -1015,7 +1016,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         /**
          * Creates a new subset of the enclosing {@code RangeSet} between the given values.
          *
-         * @param subRange The range to intersect with the enclosing {@code RangeSet}.
+         * @param subRange  the range to intersect with the enclosing {@code RangeSet}.
          */
         SubSet(final Range<E> subRange) {
             this.subRange = subRange;
@@ -1384,8 +1385,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * If the specified value is inside a range, returns the index of this range.
      * Otherwise, returns {@code -1}.
      *
-     * @param  value The value to search.
-     * @return The index of the range which contains this value, or -1 if there is no such range.
+     * @param  value  the value to search.
+     * @return the index of the range which contains this value, or -1 if there is no such range.
      */
     public int indexOfRange(final E value) {
         int index = binarySearch(value, 0, length);
@@ -1410,8 +1411,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * exclusive. The returned values always increase with {@code index}.
      * Widening conversions are performed as needed.
      *
-     * @param  index The range index, from 0 inclusive to {@link #size() size} exclusive.
-     * @return The minimum value for the range at the specified index, inclusive.
+     * @param  index  the range index, from 0 inclusive to {@link #size() size} exclusive.
+     * @return the minimum value for the range at the specified index, inclusive.
      * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
      * @throws ClassCastException if range elements are not convertible to {@code long}.
      */
@@ -1428,8 +1429,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * exclusive. The returned values always increase with {@code index}.
      * Widening conversions are performed as needed.
      *
-     * @param  index The range index, from 0 inclusive to {@link #size() size} exclusive.
-     * @return The minimum value for the range at the specified index, inclusive.
+     * @param  index  the range index, from 0 inclusive to {@link #size() size} exclusive.
+     * @return the minimum value for the range at the specified index, inclusive.
      * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
      * @throws ClassCastException if range elements are not convertible to numbers.
      *
@@ -1448,8 +1449,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * exclusive. The returned values always increase with {@code index}.
      * Widening conversions are performed as needed.
      *
-     * @param  index The range index, from 0 inclusive to {@link #size() size} exclusive.
-     * @return The maximum value for the range at the specified index, inclusive.
+     * @param  index  the range index, from 0 inclusive to {@link #size() size} exclusive.
+     * @return the maximum value for the range at the specified index, inclusive.
      * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
      * @throws ClassCastException if range elements are not convertible to {@code long}.
      */
@@ -1466,8 +1467,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * exclusive. The returned values always increase with {@code index}.
      * Widening conversions are performed as needed.
      *
-     * @param  index The range index, from 0 inclusive to {@link #size size} exclusive.
-     * @return The maximum value for the range at the specified index, exclusive.
+     * @param  index  the range index, from 0 inclusive to {@link #size size} exclusive.
+     * @return the maximum value for the range at the specified index, exclusive.
      * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
      * @throws ClassCastException if range elements are not convertible to numbers.
      *
@@ -1493,7 +1494,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * Returns the range at the given array index. The given index is relative to
      * the interval {@link #array}, which is twice the index of range elements.
      *
-     * @param index The range index, from 0 inclusive to {@link #length} exclusive.
+     * @param index  the range index, from 0 inclusive to {@link #length} exclusive.
      */
     final Range<E> getRange(final int index) {
         return newRange(getValue(index), getValue(index+1));
@@ -1502,9 +1503,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     /**
      * Returns a new {@link Range} object initialized with the given values.
      *
-     * @param  lower The lower value, inclusive.
-     * @param  upper The upper value, exclusive.
-     * @return The new range for the given values.
+     * @param  lower  the lower value, inclusive.
+     * @param  upper  the upper value, exclusive.
+     * @return the new range for the given values.
      */
     protected Range<E> newRange(final E lower, final E upper) {
         return new Range<>(elementType, lower, isMinIncluded, upper, isMaxIncluded);
@@ -1536,7 +1537,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     /**
      * Compares the specified object with this set of ranges for equality.
      *
-     * @param object The object to compare with this range.
+     * @param  object  the object to compare with this range.
      * @return {@code true} if the given object is equal to this range.
      */
     @Override
@@ -1572,13 +1573,13 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                 default:        return Arrays.equals((Object[]) a1, (Object[]) a2);
             }
         }
-        return super.equals(object); // Allow comparison with other Set implementations.
+        return super.equals(object);        // Allow comparison with other Set implementations.
     }
 
     /**
      * Returns a clone of this range set.
      *
-     * @return A clone of this range set.
+     * @return a clone of this range set.
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -1598,8 +1599,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * Invoked before serialization. Trims the internal array to the minimal size
      * in order to reduce the size of the object to be serialized.
      *
-     * @param  out The output stream where to serialize this range set.
-     * @throws IOException If an I/O error occurred while writing.
+     * @param  out  the output stream where to serialize this range set.
+     * @throws IOException if an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         trimToSize();
@@ -1609,9 +1610,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     /**
      * Invoked after deserialization. Initializes the transient fields.
      *
-     * @param  in The input stream from which to deserialize a range set.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize a range set.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

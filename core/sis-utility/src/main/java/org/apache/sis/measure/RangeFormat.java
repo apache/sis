@@ -1016,4 +1016,33 @@ public class RangeFormat extends Format {
         }
         return convert(value);
     }
+
+    /**
+     * Returns a clone of this range format.
+     *
+     * @return a clone of this range format.
+     */
+    @Override
+    public RangeFormat clone() {
+        final RangeFormat f = (RangeFormat) super.clone();
+        try {
+            f.setFinal("elementFormat", elementFormat);
+            f.setFinal("unitFormat",    unitFormat);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+        return f;
+    }
+
+    /**
+     * Sets final field to a clone of the given format.
+     */
+    private void setFinal(final String name, Format value) throws ReflectiveOperationException {
+        if (value != null) {
+            value = (Format) value.clone();
+            java.lang.reflect.Field f = RangeFormat.class.getDeclaredField(name);
+            f.setAccessible(true);
+            f.set(this, value);
+        }
+    }
 }

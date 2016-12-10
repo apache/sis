@@ -307,15 +307,16 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
 
     /**
      * Returns {@code true} if the given Unicode code point is a valid character for a unit symbol.
-     * Current implementation accepts only letters, subscripts and the degree sign, but the set of
-     * legal characters may be expanded in any future SIS version.
-     * The most important goal is to avoid confusion with exponents.
+     * Current implementation accepts letters, subscripts and the degree sign, but the set of legal
+     * characters may be expanded in any future SIS version. The most important goal is to avoid
+     * confusion with exponents and to detect where a unit symbol ends.
      *
-     * <p>Note that some units defined in the {@link Units} class break this rule. But the hard-coded
-     * symbols in that class are known to be consistent with SI usage or with {@link UnitFormat} work.</p>
+     * <p>Note that some units defined in the {@link Units} class break this rule. In particular,
+     * some of those units contains superscripts or division sign. But the hard-coded symbols in
+     * that class are known to be consistent with SI usage or with {@link UnitFormat} work.</p>
      */
     static boolean isSymbolChar(final int c) {
-        return Character.isLetter(c) || Characters.isSubScript(c) || c == '°';
+        return Character.isLetter(c) || Characters.isSubScript(c) || "°'′’\"″%‰-_".indexOf(c) >= 0;
     }
 
     /**

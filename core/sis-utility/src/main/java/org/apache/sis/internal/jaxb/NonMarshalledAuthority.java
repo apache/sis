@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.Collection;
 import java.util.Collections;
+import java.io.ObjectStreamException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.CitationConstant;
@@ -96,9 +97,9 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
     /**
      * Creates a new citation for the given XML attribute name.
      *
-     * @param attribute The XML attribute name, to be returned by {@link #getName()}.
-     * @param ordinal   Ordinal value for switch statement, as one of the {@link #ID},
-     *                  {@link #UUID}, <i>etc.</i> constants.
+     * @param attribute  the XML attribute name, to be returned by {@link #getName()}.
+     * @param ordinal    ordinal value for switch statement, as one of the {@link #ID},
+     *                   {@link #UUID}, <i>etc.</i> constants.
      */
     public NonMarshalledAuthority(final String attribute, final byte ordinal) {
         super(attribute);
@@ -113,9 +114,9 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
      * <p>This method is used for implementation of {@code getIdentifier()} methods (singular form)
      * in public metadata objects.</p>
      *
-     * @param  <T> The type of object used as identifier values.
-     * @param  identifiers The collection from which to get identifiers, or {@code null}.
-     * @return The first identifier, or {@code null} if none.
+     * @param  <T>          the type of object used as identifier values.
+     * @param  identifiers  the collection from which to get identifiers, or {@code null}.
+     * @return the first identifier, or {@code null} if none.
      */
     public static <T extends Identifier> T getMarshallable(final Collection<? extends T> identifiers) {
         if (identifiers != null) {
@@ -137,9 +138,9 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
      * <p>This method is used for implementation of {@code setIdentifier(Identifier)} methods
      * in public metadata objects.</p>
      *
-     * @param <T>         The type of object used as identifier values.
-     * @param identifiers The collection in which to add the identifier.
-     * @param newValue    The identifier to add, or {@code null}.
+     * @param <T>          the type of object used as identifier values.
+     * @param identifiers  the collection in which to add the identifier.
+     * @param newValue     the identifier to add, or {@code null}.
      *
      * @see #setMarshallables(Collection, Collection)
      */
@@ -148,7 +149,7 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
         while (it.hasNext()) {
             final T old = it.next();
             if (old != null && old.getAuthority() instanceof NonMarshalledAuthority<?>) {
-                continue; // Don't touch this identifier.
+                continue;                   // Leave the identifier as-is.
             }
             it.remove();
         }
@@ -167,8 +168,8 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
      * {@link org.apache.sis.xml.IdentifiedObject#getIdentifiers()}, which is expected to return
      * all identifiers in normal (non-marshalling) usage.</p>
      *
-     * @param  identifiers The identifiers to filter, or {@code null}.
-     * @return The identifiers to marshal, or {@code null} if none.
+     * @param  identifiers  the identifiers to filter, or {@code null}.
+     * @return the identifiers to marshal, or {@code null} if none.
      */
     public static Collection<Identifier> filterOnMarshalling(Collection<Identifier> identifiers) {
         if (identifiers != null && Context.isFlagSet(Context.current(), Context.MARSHALLING)) {
@@ -196,9 +197,9 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
      * <p>This method is used for implementation of {@code setIdentifiers(Collection)} methods
      * in public metadata objects.</p>
      *
-     * @param  identifiers The metadata internal identifiers collection, or {@code null} if none.
-     * @param  newValues   The identifiers to add, or {@code null}.
-     * @return The collection to set (may be {@code newValues}.
+     * @param  identifiers  the metadata internal identifiers collection, or {@code null} if none.
+     * @param  newValues    the identifiers to add, or {@code null}.
+     * @return the collection to set (may be {@code newValues}.
      *
      * @see #setMarshallable(Collection, Identifier)
      */
@@ -261,10 +262,11 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
      * Invoked at deserialization time in order to replace the deserialized instance
      * by the appropriate instance defined in the {@link IdentifierSpace} interface.
      *
-     * @return The instance to use, as an unique instance if possible.
+     * @return the instance to use, as an unique instance if possible.
+     * @throws ObjectStreamException never thrown.
      */
     @Override
-    protected Object readResolve() {
+    protected Object readResolve() throws ObjectStreamException {
         final String name = getName();
         IdentifierSpace<?> candidate;
         int code = 0;

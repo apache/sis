@@ -17,6 +17,7 @@
 package org.apache.sis.test.foreigner;
 
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
 import org.apache.sis.util.collection.TableColumn;
 
@@ -67,7 +68,7 @@ public final strictfp class SerializableTableColumn<V> extends TableColumn<V> im
      * @return One of the predefined constants.
      * @throws InvalidObjectException If this instance can not be resolved.
      */
-    private Object readResolve() throws InvalidObjectException {
+    private Object readResolve() throws ObjectStreamException {
         try {
             return SerializableTableColumn.class.getField(field).get(null);
         } catch (Exception cause) { // Many exceptions, including unchecked ones.

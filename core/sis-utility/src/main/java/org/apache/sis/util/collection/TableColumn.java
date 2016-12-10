@@ -19,6 +19,7 @@ package org.apache.sis.util.collection;
 import java.util.Map;
 import java.util.Collections;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
@@ -90,7 +91,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * The constants defined in this class use a similar approach for providing serialization support.
  *
- * @param <V> Base type of all values in the column identified by this instance.
+ * @param  <V>  base type of all values in the column identified by this instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -180,7 +181,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * This implementation differs resource bundle loading until first needed,
      * and resolves deserialized instances to the singleton instances.
      *
-     * @param <V> Base type of all values in the column identified by this instance.
+     * @param  <V>  base type of all values in the column identified by this instance.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3
@@ -206,9 +207,9 @@ public class TableColumn<V> implements CheckedContainer<V> {
         /**
          * Creates a new instance for a build-in constant.
          *
-         * @param field  The programmatic name of the static final field holding this constant.
-         * @param type   Base type of all values in the column identified by this instance.
-         * @param header The resource key for the column header.
+         * @param field   the programmatic name of the static final field holding this constant.
+         * @param type    base type of all values in the column identified by this instance.
+         * @param header  the resource key for the column header.
          */
         Constant(final String field, final Class<V> type, final short header) {
             super(type);
@@ -231,10 +232,10 @@ public class TableColumn<V> implements CheckedContainer<V> {
         /**
          * Invoked on deserialization for resolving this instance to one of the predefined constants.
          *
-         * @return One of the predefined constants.
-         * @throws InvalidObjectException If this instance can not be resolved.
+         * @return one of the predefined constants.
+         * @throws InvalidObjectException if this instance can not be resolved.
          */
-        private Object readResolve() throws InvalidObjectException {
+        private Object readResolve() throws ObjectStreamException {
             try {
                 return TableColumn.class.getField(field).get(null);
             } catch (ReflectiveOperationException cause) {
@@ -259,7 +260,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
     /**
      * Creates a new instance for a build-in constant.
      *
-     * @param type Base type of all values in the column identified by this instance.
+     * @param type  base type of all values in the column identified by this instance.
      */
     TableColumn(final Class<V> type) {
         this.type = type;
@@ -268,8 +269,8 @@ public class TableColumn<V> implements CheckedContainer<V> {
     /**
      * Creates a new instance for the given type of values.
      *
-     * @param type   Base type of all values in the column identified by this instance.
-     * @param header The text to display as column header.
+     * @param type    base type of all values in the column identified by this instance.
+     * @param header  the text to display as column header.
      */
     public TableColumn(final Class<V> type, final CharSequence header) {
         ArgumentChecks.ensureNonNull("type",   this.type   = type);
@@ -279,7 +280,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
     /**
      * Returns the text to display as column header.
      *
-     * @return The text to display as column header.
+     * @return the text to display as column header.
      */
     public synchronized InternationalString getHeader() {
         final InternationalString i18n = Types.toInternationalString(header);
@@ -288,8 +289,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
     }
 
     /**
-     * Returns the base type of all values in any column identified by this {@code TableColumn}
-     * instance.
+     * Returns the base type of all values in any column identified by this {@code TableColumn} instance.
      */
     @Override
     public final Class<V> getElementType() {
@@ -298,8 +298,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
 
     /**
      * Returns a string representation of this table column.
-     * The default implementation returns the {@linkplain #getHeader() header}
-     * in its default locale.
+     * The default implementation returns the {@linkplain #getHeader() header} in its default locale.
      */
     @Override
     public String toString() {
