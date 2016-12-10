@@ -393,4 +393,22 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.VOLT,   f.parse("kg⋅m²∕(s³⋅A)"));
         assertSame(Units.VOLT,   f.parse("(kg)m²∕(s³⋅A)"));
     }
+
+    /**
+     * Tests {@link UnitFormat#clone()}.
+     */
+    @Test
+    public void testClone() {
+        final UnitFormat f1 = new UnitFormat(Locale.FRANCE);
+        f1.label(Units.METRE,  "myMeterLabel");
+        f1.label(Units.SECOND, "mySecondLabel");
+        final UnitFormat f2 = f1.clone();
+        f2.label(Units.METRE, "otherMeterLabel");
+        assertSame  (Locale.FRANCE,     f1.getLocale());
+        assertSame  (Locale.FRANCE,     f2.getLocale());
+        assertEquals("myMeterLabel",    f1.format(Units.METRE));
+        assertEquals("mySecondLabel",   f1.format(Units.SECOND));
+        assertEquals("otherMeterLabel", f2.format(Units.METRE));
+        assertEquals("mySecondLabel",   f2.format(Units.SECOND));
+    }
 }

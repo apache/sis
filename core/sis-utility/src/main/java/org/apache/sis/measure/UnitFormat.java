@@ -256,7 +256,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
-     * Symbols or names to use for formatting unit in replacement to the default unit symbols or names.
+     * Symbols or names to use for formatting units in replacement to the default unit symbols or names.
      *
      * @see #label(Unit, String)
      */
@@ -1218,5 +1218,38 @@ scan:   for (int n; i < end; i += n) {
             pos.setErrorIndex(e.getPosition());
             return null;
         }
+    }
+
+    /**
+     * Returns a clone of this unit format. The new unit format will be initialized to the same
+     * {@linkplain #getLocale() locale} and {@linkplain #label(Unit, String) labels} than this format.
+     *
+     * @return a clone of this unit format.
+     */
+    @Override
+    public UnitFormat clone() {
+        final UnitFormat f = (UnitFormat) super.clone();
+        try {
+            f.setFinal("unitToLabel", unitToLabel);
+            f.setFinal("labelToUnit", labelToUnit);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+        return f;
+    }
+
+    /**
+     * Sets final field to a clone of the given map. The given map shall be either
+     * a {@link HashMap} or the instance returned by {@link Collections#emptyMap()}.
+     */
+    private void setFinal(final String name, Map<?,?> value) throws ReflectiveOperationException {
+        if (value instanceof HashMap<?,?>) {
+            value = (Map<?,?>) ((HashMap<?,?>) value).clone();
+        } else {
+            value = new HashMap<>();
+        }
+        java.lang.reflect.Field f = UnitFormat.class.getDeclaredField(name);
+        f.setAccessible(true);
+        f.set(this, value);
     }
 }
