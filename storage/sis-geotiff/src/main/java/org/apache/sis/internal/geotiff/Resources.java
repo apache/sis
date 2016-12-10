@@ -129,8 +129,8 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MissingValue_2 = 7;
 
         /**
-         * The file defines “{2}” with a value of {3}{4}, but that value should be {1}{4} for
-         * consistency with {0}.
+         * The file defines “{2}” with a value of {3}{4}, but that value should be {1}{4} according
+         * parent definition ({0}).
          */
         public static final short NotTheEpsgValue_5 = 17;
 
