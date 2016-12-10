@@ -98,7 +98,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
          * The SystemUnitTest.verifyRelatedUnits() method verified that the array does
          * not contain null element and that all 'toTarget' are instances of LinearConverter.
          */
-        final ConventionalUnit<Q>[] related = target.related;
+        final ConventionalUnit<Q>[] related = target.related();
         if (related != null && toTarget instanceof LinearConverter) {
             final LinearConverter c = (LinearConverter) toTarget;
             for (final ConventionalUnit<Q> existing : related) {

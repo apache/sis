@@ -71,6 +71,9 @@ import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
 import org.apache.sis.metadata.iso.acquisition.DefaultOperation;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
 import org.apache.sis.metadata.iso.acquisition.DefaultRequirement;
+import org.apache.sis.metadata.iso.lineage.DefaultLineage;
+import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
+import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.util.CharSequences;
@@ -82,9 +85,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.LocalDate;
 import org.apache.sis.internal.jdk8.JDK8;
-import org.apache.sis.metadata.iso.lineage.DefaultLineage;
-import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
-import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
 import org.opengis.feature.FeatureType;
 
 

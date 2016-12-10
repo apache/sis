@@ -16,6 +16,7 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Objects;
 import java.util.Locale;
 import java.text.Format;
 import java.text.FieldPosition;
@@ -41,10 +42,7 @@ import static org.apache.sis.math.MathFunctions.truncate;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
 
-// Branch-dependent imports
-import java.util.Objects;
 import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Parses and formats angles according a specified pattern. The pattern is a string

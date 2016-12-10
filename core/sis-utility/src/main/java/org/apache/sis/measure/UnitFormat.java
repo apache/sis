@@ -43,6 +43,7 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.iso.DefaultNameSpace;
 
 
 /**
@@ -83,7 +84,12 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     private static final long serialVersionUID = -3064428584419360693L;
 
     /**
-     * The SI "“deca” prefix. This is the only SI prefix encoded on two letters instead than one.
+     * The unit name for dimensionless unit.
+     */
+    static final String UNITY = "unity";
+
+    /**
+     * The SI “deca” prefix. This is the only SI prefix encoded on two letters instead than one.
      * It can be represented by the CJK compatibility character “㍲”, but use of those characters
      * is generally not recommended outside of Chinese, Japanese or Korean texts.
      */
@@ -186,8 +192,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
 
             /** Actually illegal for UCUM, but at least ensure that it contains only ASCII characters. */
             @Override void appendPower(final Appendable toAppendTo, final Fraction power) throws IOException {
-                toAppendTo.append("^(").append(String.valueOf(power.numerator))
-                           .append('/').append(String.valueOf(power.denominator)).append(')');
+                toAppendTo.append(EXPONENT).append(OPEN).append(String.valueOf(power.numerator))
+                           .append('/').append(String.valueOf(power.denominator)).append(CLOSE);
             }
         },
 
@@ -197,6 +203,11 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          * @see Unit#getName()
          */
         NAME('⋅', '∕');
+
+        /**
+         * Other symbols not in the {@link Style} enumeration because common to all.
+         */
+        static final char EXPONENT_OR_MULTIPLY = '*', EXPONENT = '^', OPEN = '(', CLOSE = ')';
 
         /**
          * Symbols to use for unit multiplications or divisions.
@@ -234,17 +245,18 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          * Appends a rational power.
          */
         void appendPower(final Appendable toAppendTo, final Fraction power) throws IOException {
+            toAppendTo.append(EXPONENT);
             final String value = power.toString();
             if (value.length() == 1) {
-                toAppendTo.append('^').append(value);
+                toAppendTo.append(value);
             } else {
-                toAppendTo.append("^(").append(value).append(')');
+                toAppendTo.append(OPEN).append(value).append(CLOSE);
             }
         }
     }
 
     /**
-     * Symbols or names to use for formatting unit in replacement to the default unit symbols or names.
+     * Symbols or names to use for formatting units in replacement to the default unit symbols or names.
      *
      * @see #label(Unit, String)
      */
@@ -452,7 +464,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 if (!locale.equals(Locale.ROOT)) copy(Locale.ROOT, getBundle(Locale.ROOT), map);
                 /*
                  * The UnitAliases file contains names that are not unit symbols and are not included in the UnitNames
-                 * property files neither. It contains longer names somtime used (for example "decimal degree" instead
+                 * property files neither. It contains longer names sometime used (for example "decimal degree" instead
                  * of "degree"), some plural forms (for example "feet" instead of "foot") and a few common misspellings
                  * (for exemple "Celcius" instead of "Celsius").
                  */
@@ -541,7 +553,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 label = unit.getSymbol();
                 if (label != null) {
                     if (label.isEmpty()) {
-                        label = "unity";
+                        label = UNITY;
                     }
                     // Following is not thread-safe, but it is okay since we do not use INSTANCE for unit names.
                     final ResourceBundle names = symbolToName();
@@ -569,7 +581,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         final double scale = Units.toStandardUnit(unit);
         if (scale != 1) {
             if (Double.isNaN(scale)) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonRatioUnit_1, "?(" + unit.getSystemUnit() + ')'));
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonRatioUnit_1,
+                        "?⋅" + Style.OPEN + unit.getSystemUnit() + Style.CLOSE));
             }
             final String text = Double.toString(scale);
             int length = text.length();
@@ -620,12 +633,16 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 deferred.add(entry);
             }
         }
-        // At this point, all numerators have been appended. Now append the denominators together.
+        /*
+         * At this point, all numerators have been appended. Now append the denominators together.
+         * For example pressure dimension is formatted as M∕(L⋅T²) no matter if 'M' was the first
+         * dimension in the given 'components' map or not.
+         */
         if (!deferred.isEmpty()) {
             toAppendTo.append(style.divide);
             final boolean useParenthesis = (deferred.size() > 1);
             if (useParenthesis) {
-                toAppendTo.append('(');
+                toAppendTo.append(Style.OPEN);
             }
             isFirst = true;
             for (final Map.Entry<?,? extends Number> entry : deferred) {
@@ -636,7 +653,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 formatComponent(entry, true, style, toAppendTo);
             }
             if (useParenthesis) {
-                toAppendTo.append(')');
+                toAppendTo.append(Style.CLOSE);
             }
         }
     }
@@ -733,24 +750,6 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
-     * Returns {@code true} if the given unit seems to be an URI.
-     * Examples:
-     * <ul>
-     *   <li>{@code "urn:ogc:def:uom:EPSG::9001"}</li>
-     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"}</li>
-     * </ul>
-     */
-    private static boolean isURI(final CharSequence uom) {
-        for (int i=uom.length(); --i>=0;) {
-            final char c = uom.charAt(i);
-            if (c == ':' || c == '#') {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Returns {@code true} if the {@code '*'} character at the given index is surrounded by digits
      * or a sign on its right side. For example this method returns {@code true} for "10*-6", which
      * means 1E-6 in UCUM syntax. This check is used for heuristic rules at parsing time.
@@ -796,6 +795,10 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * The product operator can be either {@code '.'} (ASCII) or {@code '⋅'} (Unicode) character.
      * Exponent after symbol can be decimal digits as in “m2” or a superscript as in “m²”.</p>
      *
+     * <p>The default implementation delegates to
+     * <code>{@linkplain #parse(CharSequence, ParsePosition) parse}(symbols, new ParsePosition(0))</code>
+     * and verifies that all non-white characters have been parsed.</p>
+     *
      * @param  symbols  the unit symbols or URI to parse.
      * @return the unit parsed from the specified symbols.
      * @throws ParserException if a problem occurred while parsing the given symbols.
@@ -803,8 +806,43 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * @see Units#valueOf(String)
      */
     @Override
-    @SuppressWarnings( {"null", "fallthrough"})
-    public Unit<?> parse(CharSequence symbols) throws ParserException {
+    public Unit<?> parse(final CharSequence symbols) throws ParserException {
+        final ParsePosition position = new ParsePosition(0);
+        final Unit<?> unit = parse(symbols, position);
+        final int length = symbols.length();
+        final int unrecognized = CharSequences.skipTrailingWhitespaces(symbols, position.getIndex(), length);
+        if (unrecognized < length) {
+            throw new ParserException(Errors.format(Errors.Keys.UnexpectedCharactersAfter_2,
+                    CharSequences.trimWhitespaces(symbols, 0, unrecognized),
+                    CharSequences.trimWhitespaces(symbols, unrecognized, length)),
+                    symbols, unrecognized);
+        }
+        return unit;
+    }
+
+    /**
+     * Parses a portion of the given text as an instance of {@code Unit}.
+     * Parsing begins at the index given by {@link ParsePosition#getIndex()}.
+     * After parsing, the above-cited index is updated to the first unparsed character.
+     *
+     * <p>The parsing is lenient: symbols can be products or quotients of units like “m∕s”,
+     * words like “meters per second”, or authority codes like {@code "urn:ogc:def:uom:EPSG::1026"}.
+     * The product operator can be either {@code '.'} (ASCII) or {@code '⋅'} (Unicode) character.
+     * Exponent after symbol can be decimal digits as in “m2” or a superscript as in “m²”.</p>
+     *
+     * <p>Note that contrarily to {@link #parseObject(String, ParsePosition)}, this method never return {@code null}.
+     * If an error occurs at parsing time, an unchecked {@link ParserException} is thrown.</p>
+     *
+     * @param  symbols  the unit symbols to parse.
+     * @param  position on input, index of the first character to parse.
+     *                  On output, index after the last parsed character.
+     * @return the unit parsed from the specified symbols.
+     * @throws ParserException if a problem occurred while parsing the given symbols.
+     */
+    @SuppressWarnings({"null", "fallthrough"})
+    public Unit<?> parse(CharSequence symbols, final ParsePosition position) throws ParserException {
+        ArgumentChecks.ensureNonNull("symbols",  symbols);
+        ArgumentChecks.ensureNonNull("position", position);
         /*
          * Check for authority codes (currently only EPSG, but more could be added later).
          * If the unit is not an authority code (which is the most common case), then we
@@ -815,77 +853,159 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          * This is the intended behavior for AuthorityFactory, but in the particular case of this method
          * we want to try to parse as a xpointer before to give up.
          */
-        if (isURI(symbols)) {
-            final String uom = symbols.toString();
+        int start = CharSequences.skipLeadingWhitespaces(symbols, position.getIndex(), symbols.length());
+        int end = XPaths.endOfURI(symbols, start);
+        if (end >= 0) {
+            final String uom = symbols.subSequence(start, end).toString();
             String code = DefinitionURI.codeOf("uom", Constants.EPSG, uom);
-            if (code != null && code != uom) try {              // Really identity check, see above comment.
-                return Units.valueOfEPSG(Integer.parseInt(code));
-            } catch (NumberFormatException e) {
-                throw (ParserException) new ParserException(
-                        Errors.format(Errors.Keys.IllegalArgumentValue_2, "symbols", symbols),
-                        uom, Math.max(0, uom.indexOf(code))).initCause(e);
+            if (code != null && code != uom) {                  // Really identity check, see above comment.
+                NumberFormatException failure = null;
+                try {
+                    final Unit<?> unit = Units.valueOfEPSG(Integer.parseInt(code));
+                    if (unit != null) {
+                        position.setIndex(end);
+                        return unit;
+                    }
+                } catch (NumberFormatException e) {
+                    failure = e;
+                }
+                throw (ParserException) new ParserException(Errors.format(Errors.Keys.UnknownUnit_1,
+                        Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code),
+                        symbols, start + Math.max(0, uom.indexOf(code))).initCause(failure);
             }
             code = XPaths.xpointer("uom", uom);
             if (code != null) {
                 symbols = code;
+                start = 0;
             }
         }
         /*
          * Split the unit around the multiplication and division operators and parse each term individually.
+         * Note that exponentation need to be kept as part of a single unit symbol.
+         *
+         * The 'start' variable is the index of the first character of the next unit term to parse.
          */
-        int offset    = 0;                  // Index of the first character of the next unit term to parse.
-        int operation = NOOP;               // Enumeration value: MULTIPLY, DIVIDE.
-        Unit<?> unit  = null;
-        final int length = symbols.length();
-        for (int i=0; i<length; i++) {
-            final char c = symbols.charAt(i);   // No need to use code points because we search characters in BMP.
+        int operation = NOOP;            // Enumeration value: IMPLICIT, MULTIPLY, DIVIDE.
+        Unit<?> unit = null;
+        end = symbols.length();
+        int i = start;
+scan:   for (int n; i < end; i += n) {
+            final int c = Character.codePointAt(symbols, i);
+            n = Character.charCount(c);
             final int next;
             switch (c) {
                 /*
-                 * Star is for exponentiation in UCUM syntax, but some symbols may use it for unit multiplications.
-                 * We interpret
+                 * For any character that are is not an operator or parenthesis, either continue the scanning of
+                 * character or stop it, depending on whether the character is valid for a unit symbol or not.
+                 * In the later case, we consider that we reached the end of a unit symbol.
                  */
-                case '*': if (isExponentOperator(symbols, i, length)) continue;
-                          next = MULTIPLY; break;
+                default:  {
+                    if (AbstractUnit.isSymbolChar(c)) {
+                        if (operation == IMPLICIT) {
+                            operation = MULTIPLY;
+                        }
+                        continue;
+                    }
+                    if (Character.isWhitespace(c) || Character.isDigit(c) || Characters.isSuperScript(c)) {
+                        continue;
+                    }
+                    break scan;
+                }
+                /*
+                 * Star is for exponentiation in UCUM syntax, but some symbols may use it for unit multiplication.
+                 * We interpret the symbol as a multiplication if the characters before or after it seem to be for
+                 * a unit symbol.
+                 */
+                case Style.EXPONENT_OR_MULTIPLY: {
+                    if (!isExponentOperator(symbols, i, end)) {
+                        next = MULTIPLY;
+                        break;
+                    }
+                    // else fall through.
+                }
+                case Style.EXPONENT: {
+                    if (operation == IMPLICIT) {
+                        // Support of exponentiation after parenthesis is not yet supported.
+                        break scan;
+                    }
+                    continue;
+                }
                 /*
                  * The period is the multiplication operator in UCUM format. According UCUM there is no ambiguity
                  * with the decimal separator since unit terms should not contain floating point numbers. However
                  * we relax this rule in order to support scale factor of angular units (e.g. π/180).  The period
                  * is interpreted as a decimal separator if there is a decimal digit before and after it.
                  */
-                case '.': if (isDecimalSeparator(symbols, i, length)) continue;
-                case '⋅': // Fallthrough
+                case '.': if (isDecimalSeparator(symbols, i, end)) continue;
+                case '⋅': // Fall through
                 case '×': next = MULTIPLY; break;
                 case '÷':
                 case '⁄': // Fraction slash
                 case '/':
                 case '∕': next = DIVIDE; break;
-                default:  continue;
+                /*
+                 * If we find an '(' parenthesis, invoke recursively this method for the part inside parenthesis.
+                 * The parsing should end at the ')' parenthesis since it is not a valid unit symbol. If we do not
+                 * find that closing parenthesis, this will be considered an error.
+                 */
+                case Style.OPEN: {
+                    final ParsePosition sub = new ParsePosition(i + Character.charCount(c));
+                    final Unit<?> term = parse(symbols, sub);
+                    i = CharSequences.skipLeadingWhitespaces(symbols, sub.getIndex(), end);
+                    if (i >= end || Character.codePointAt(symbols, i) != Style.CLOSE) {
+                        throw new ParserException(Errors.format(Errors.Keys.NonEquilibratedParenthesis_2,
+                               symbols.subSequence(start, i), Style.CLOSE), symbols, start);
+                    }
+                    unit = apply(operation, unit, term);
+                    operation = IMPLICIT;       // Default operation if there is no × or / symbols after parenthesis.
+                    start = i + (n = 1);        // Skip the number of characters in the '(' Unicode code point.
+                    continue;
+                }
             }
-            final Unit<?> term = parseSymbol(symbols, offset, i);
-            switch (operation) {
-                case NOOP:     unit = term; break;
-                case MULTIPLY: unit = unit.multiply(term); break;
-                case DIVIDE:   unit = unit.divide(term); break;
-                default: throw new AssertionError(operation);
+            /*
+             * At this point, we have either a first unit to parse (NOOP), or a multiplication or division to apply
+             * between the previously parsed units and the next unit to parse. A special case is IMPLICIT, which is
+             * a multiplication without explicit × symbol after the parenthesis. The implicit multiplication can be
+             * overridden by an explicit × or / symbol, which is what happened if we reach this point (tip: look in
+             * the above 'switch' statement all cases that end with 'break', not 'break scan' or 'continue').
+             */
+            if (operation != IMPLICIT) {
+                unit = apply(operation, unit, parseSymbol(symbols, start, i));
             }
             operation = next;
-            offset = i+1;
+            start = i + n;
         }
-        final Unit<?> term = parseSymbol(symbols, offset, length);
-        switch (operation) {
-            case NOOP:     unit = term; break;
-            case MULTIPLY: unit = unit.multiply(term); break;
-            case DIVIDE:   unit = unit.divide(term); break;
-            default: throw new AssertionError(operation);
-        }
+        /*
+         * At this point we either found an unrecognized character or reached the end of string. Parse the
+         * remaining characters as a unit and apply the pending unit operation (multiplication or division).
+         */
+        unit = apply(operation, unit, parseSymbol(symbols, start, i));
+        position.setIndex(i);
         return unit;
     }
 
     /**
-     * Meaning of some characters parsed by {@link #parse(CharSequence)}.
+     * Meaning of some characters parsed by {@link #parse(CharSequence)}. The {@code IMPLICIT} case
+     * is a multiplication without symbol, which can be overridden by an explicit × or / symbol.
      */
-    private static final int NOOP = 0, MULTIPLY = 1, DIVIDE = 2;
+    private static final int NOOP = 0, IMPLICIT = 1, MULTIPLY = 2, DIVIDE = 3;
+
+    /**
+     * Applies a multiplication or division operation between the given units.
+     *
+     * @param  operation  one of {@link #NOOP}, {@link #IMPLICIT}, {@link #MULTIPLY} or {@link #DIVIDE}.
+     * @param  unit       the left operand, which is the unit parsed so far.
+     * @param  term       the right operation, which is the newly parsed unit.
+     */
+    private static Unit<?> apply(final int operation, final Unit<?> unit, final Unit<?> term) {
+        switch (operation) {
+            case NOOP:     return term;
+            case IMPLICIT:
+            case MULTIPLY: return unit.multiply(term);
+            case DIVIDE:   return unit.divide(term);
+            default: throw new AssertionError(operation);
+        }
+    }
 
     /**
      * Parses a single unit symbol with its exponent.
@@ -933,7 +1053,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                                     return parseSymbol(uom, s, length).multiply(multiplier);
                                 }
                             }
-                            s = uom.lastIndexOf('*');
+                            s = uom.lastIndexOf(Style.EXPONENT_OR_MULTIPLY);
                             if (s >= 0) {
                                 final int base = Integer.parseInt(uom.substring(0, s));
                                 final int exp  = Integer.parseInt(uom.substring(s+1));
@@ -1022,6 +1142,9 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                         "degrees", "degree").toString();
                 unit = nameToUnit().get(lc);
                 if (unit == null) {
+                    if (CharSequences.regionMatches(symbols, lower, UNITY, true)) {
+                        return Units.UNITY;
+                    }
                     throw new ParserException(Errors.format(Errors.Keys.UnknownUnit_1, uom), symbols, lower);
                 }
             }
@@ -1062,33 +1185,6 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
-     * Parses the given text as an instance of {@code Unit}.
-     *
-     * @param  symbols  the unit symbols to parse.
-     * @param  pos      on input, index of the first character to parse.
-     *                  On output, index after the last parsed character.
-     * @return the unit parsed from the specified symbols.
-     * @throws ParserException if a problem occurred while parsing the given symbols.
-     */
-    public Unit<?> parse(final CharSequence symbols, final ParsePosition pos) {
-        final int start = pos.getIndex();
-        int stop = start;
-        while (stop < symbols.length()) {
-            final int c = Character.codePointAt(symbols, stop);
-            if (Character.isWhitespace(c) || c == ']') break;       // Temporary hack before we complete the JSR-275 replacement.
-            stop += Character.charCount(c);
-        }
-        try {
-            final Unit<?> unit = parse(symbols.subSequence(start, stop));
-            pos.setIndex(stop);
-            return unit;
-        } catch (ParserException e) {
-            pos.setErrorIndex(start);
-            return null;
-        }
-    }
-
-    /**
      * Parses text from a string to produce a unit. The default implementation delegates to {@link #parse(CharSequence)}
      * and wraps the {@link ParserException} into a {@link ParseException} for compatibility with {@code java.text} API.
      *
@@ -1106,8 +1202,9 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
-     * Parses text from a string to produce a unit. The default implementation delegates to
-     * {@link #parse(CharSequence, ParsePosition)} with no additional work.
+     * Parses text from a string to produce a unit, or returns {@code null} if the parsing failed.
+     * The default implementation delegates to {@link #parse(CharSequence, ParsePosition)} and catches
+     * the {@link ParserException}.
      *
      * @param  source  the text, part of which should be parsed.
      * @param  pos     index and error index information as described above.
@@ -1115,6 +1212,44 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     @Override
     public Object parseObject(final String source, final ParsePosition pos) {
-        return parse(source, pos);
+        try {
+            return parse(source, pos);
+        } catch (ParserException e) {
+            pos.setErrorIndex(e.getPosition());
+            return null;
+        }
+    }
+
+    /**
+     * Returns a clone of this unit format. The new unit format will be initialized to the same
+     * {@linkplain #getLocale() locale} and {@linkplain #label(Unit, String) labels} than this format.
+     *
+     * @return a clone of this unit format.
+     */
+    @Override
+    public UnitFormat clone() {
+        final UnitFormat f = (UnitFormat) super.clone();
+        try {
+            f.setFinal("unitToLabel", unitToLabel);
+            f.setFinal("labelToUnit", labelToUnit);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+        return f;
+    }
+
+    /**
+     * Sets final field to a clone of the given map. The given map shall be either
+     * a {@link HashMap} or the instance returned by {@link Collections#emptyMap()}.
+     */
+    private void setFinal(final String name, Map<?,?> value) throws ReflectiveOperationException {
+        if (value instanceof HashMap<?,?>) {
+            value = (Map<?,?>) ((HashMap<?,?>) value).clone();
+        } else {
+            value = new HashMap<>();
+        }
+        java.lang.reflect.Field f = UnitFormat.class.getDeclaredField(name);
+        f.setAccessible(true);
+        f.set(this, value);
     }
 }

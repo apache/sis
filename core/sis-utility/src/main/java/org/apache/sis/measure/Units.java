@@ -1208,9 +1208,9 @@ public final class Units extends Static {
      */
     private static <Q extends Quantity<Q>> ConventionalUnit<Q> add(SystemUnit<Q> target, UnitConverter toTarget, String symbol, byte scope, short epsg) {
         final ConventionalUnit<Q> unit = UnitRegistry.init(new ConventionalUnit<>(target, toTarget, symbol, scope, epsg));
-        final ConventionalUnit<Q>[] related = target.related;
+        final ConventionalUnit<Q>[] related = target.related();
         if (related != null && unit.scope != UnitRegistry.SI) {
-            // Search first empty slot. This algorithm is inefficient, but the length of those arrays is small (<= 6).
+            // Search first empty slot. This algorithm is inefficient, but the length of those arrays is small (<= 7).
             int i = 0;
             while (related[i] != null) i++;
             related[i] = unit;

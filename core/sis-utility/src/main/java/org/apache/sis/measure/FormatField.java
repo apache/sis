@@ -62,14 +62,14 @@ class FormatField extends Format.Field {
      * Invoked on deserialization for resolving this instance to one of the predefined constants.
      *
      * @return One of the predefined constants.
-     * @throws InvalidObjectException If this instance can not be resolved.
+     * @throws InvalidObjectException if this instance can not be resolved.
      */
     @Override
     protected final Object readResolve() throws InvalidObjectException {
         final Class<?> type = getClass();
         try {
             return type.cast(type.getField(getName()).get(null));
-        } catch (Exception cause) { // Many exceptions, including unchecked ones.
+        } catch (Exception cause) {                                 // Many exceptions, including unchecked ones.
             InvalidObjectException e = new InvalidObjectException(cause.toString());
             e.initCause(cause);
             throw e;

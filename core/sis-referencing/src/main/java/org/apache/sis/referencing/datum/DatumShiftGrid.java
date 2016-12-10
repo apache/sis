@@ -371,7 +371,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
 
     /**
      * Converts the given normalized <var>x</var> ordinate to grid index.
-     * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#toSI()}.
+     * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#getSystemUnit()}.
      * For angular coordinates, this is radians. For linear coordinates, this is metres.
      *
      * @param  x  the "real world" ordinate (often longitude in radians) of the point for which to get the translation.
@@ -383,7 +383,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
 
     /**
      * Converts the given normalized <var>x</var> ordinate to grid index.
-     * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#toSI()}.
+     * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#getSystemUnit()}.
      * For angular coordinates, this is radians. For linear coordinates, this is metres.
      *
      * @param  y  the "real world" ordinate (often latitude in radians) of the point for which to get the translation.
