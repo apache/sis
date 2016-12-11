@@ -142,5 +142,13 @@
         <node name="org.netbeans.modules.java.hints.jdk.ThrowableInitCause">
             <attribute name="strict" value="false"/>
         </node>
+        <node name="org.netbeans.modules.java.hints.suggestions.ConstantNameHint">
+            <attribute name="immutableClasses" value=""/>
+            <attribute name="namePattern" value="[A-Z]([A-Z\d_]*[A-Z\d])?"/>
+            <attribute name="minLength" value="0"/>
+            <attribute name="onlyCheckImmutables" value="true"/>
+            <attribute name="maxLength" value="35"/>
+            <attribute name="enabled" value="false"/>
+        </node>
     </tool>
 </configuration>
