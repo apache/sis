@@ -16,10 +16,8 @@
  */
 package org.apache.sis.internal.taglet;
 
-import java.util.Map;
 import java.util.StringTokenizer;
-import com.sun.javadoc.Tag;
-import com.sun.tools.doclets.Taglet;
+import com.sun.source.doctree.DocTree;
 import org.apache.sis.internal.book.CodeColorizer;
 
 
@@ -31,11 +29,11 @@ import org.apache.sis.internal.book.CodeColorizer;
  *
  * <p>This taglet will automatically replace {@code &}, {@code <} and {@code >} by their HTML entities.
  * The only exception is {@code &#64;}, which is converted to the original {@code @} character because
- * we can't use that character directly inside this taglet.</p>
+ * we can not use that character directly inside this taglet.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 public final class Preformat extends InlineTaglet {
@@ -59,26 +57,16 @@ public final class Preformat extends InlineTaglet {
     };
 
     /**
-     * Register this taglet.
-     *
-     * @param tagletMap the map to register this tag to.
+     * Constructs a <code>@preformat</code> taglet.
      */
-    public static void register(final Map<String,Taglet> tagletMap) {
-       final Preformat tag = new Preformat();
-       tagletMap.put(tag.getName(), tag);
-    }
-
-    /**
-     * Constructs a default <code>@preformat</code> taglet.
-     */
-    private Preformat() {
+    public Preformat() {
         super();
     }
 
     /**
      * Returns the name of this custom tag.
      *
-     * @return The tag name.
+     * @return "preformat".
      */
     @Override
     public String getName() {
@@ -86,24 +74,14 @@ public final class Preformat extends InlineTaglet {
     }
 
     /**
-     * Returns {@code false} since <code>@preformat</code> can not be used in overview.
+     * Given the <code>DocTree</code> representation of this custom tag, return its string representation.
      *
-     * @return Always {@code false}.
+     * @param  tag  the tag to format.
+     * @return a string representation of the given tag.
      */
     @Override
-    public boolean inOverview() {
-        return false;
-    }
-
-    /**
-     * Given the <code>Tag</code> representation of this custom tag, return its string representation.
-     *
-     * @param tag The tag to format.
-     * @return A string representation of the given tag.
-     */
-    @Override
-    public String toString(final Tag tag) {
-        String text = tag.text().trim().replace("\r\n", "\n").replace('\r', '\n');
+    public String toString(final DocTree tag) {
+        String text = text(tag).replace("\r\n", "\n").replace('\r', '\n');
         String format = "<unspecified>";
         /*
          * Extracts the first word, which is expected to be the format name.
@@ -119,7 +97,7 @@ public final class Preformat extends InlineTaglet {
         try {
             style = Style.valueOf(format);
         } catch (IllegalArgumentException e) {
-            printWarning(tag.position(), "Unknown format: " + format);
+            printWarning(tag, "Unknown format: " + format);
             style = Style.text;
         }
         /*

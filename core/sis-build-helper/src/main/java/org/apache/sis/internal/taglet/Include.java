@@ -17,10 +17,7 @@
 package org.apache.sis.internal.taglet;
 
 import java.io.*;
-import java.util.Map;
-import com.sun.javadoc.Tag;
-import com.sun.javadoc.SourcePosition;
-import com.sun.tools.doclets.Taglet;
+import com.sun.source.doctree.DocTree;
 
 
 /**
@@ -37,7 +34,7 @@ import com.sun.tools.doclets.Taglet;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.8
  * @module
  */
 public final class Include extends InlineTaglet {
@@ -52,26 +49,16 @@ public final class Include extends InlineTaglet {
     private static final String DOCUMENT_END = "</body>";
 
     /**
-     * Register this taglet.
-     *
-     * @param tagletMap the map to register this tag to.
+     * Constructs an <code>@include</code> taglet.
      */
-    public static void register(final Map<String,Taglet> tagletMap) {
-       final Include tag = new Include();
-       tagletMap.put(tag.getName(), tag);
-    }
-
-    /**
-     * Constructs a default <code>@include</code> taglet.
-     */
-    private Include() {
+    public Include() {
         super();
     }
 
     /**
      * Returns the name of this custom tag.
      *
-     * @return The tag name.
+     * @return "include".
      */
     @Override
     public String getName() {
@@ -79,21 +66,20 @@ public final class Include extends InlineTaglet {
     }
 
     /**
-     * Given the <code>Tag</code> representation of this custom tag, return its string representation.
+     * Given the <code>DocTree</code> representation of this custom tag, return its string representation.
      *
-     * @param tag The tag to format.
-     * @return A string representation of the given tag.
+     * @param  tag  the tag to format.
+     * @return a string representation of the given tag.
      */
     @Override
-    public String toString(final Tag tag) {
-        final SourcePosition position = tag.position();
-        final String reference = tag.text();
+    public String toString(final DocTree tag) {
+        final String reference = text(tag);
         final int sep = reference.indexOf('#');
         if (sep < 0) {
-            printWarning(position, "@include expected a reference like \"filename#anchor\" but got \"" + reference + "\".");
+            printWarning(tag, "@include expected a reference like \"filename#anchor\" but got \"" + reference + "\".");
             return reference;
         }
-        File file = position.file();
+        File file = file(tag);
         file = new File(file.getParentFile(), reference.substring(0, sep));
         final String anchor = reference.substring(sep + 1);
         final StringBuilder buffer = new StringBuilder();
@@ -104,7 +90,7 @@ public final class Include extends InlineTaglet {
             String line;
             int start, end;
             do if ((line = in.readLine()) == null) {
-                printWarning(position, "Header \"" + anchor + "\" not found in file " + file);
+                printWarning(tag, "Header \"" + anchor + "\" not found in file " + file);
                 return reference;
             }
             while ((start = line.indexOf(ANCHOR_START)) < 0 ||
@@ -117,7 +103,7 @@ public final class Include extends InlineTaglet {
             while (true) {
                 line = in.readLine();
                 if (line == null) {
-                    printWarning(position, "Unexpected end of file in " + file);
+                    printWarning(tag, "Unexpected end of file in " + file);
                     return reference;
                 }
                 start = line.indexOf(ANCHOR_START);
@@ -130,7 +116,7 @@ public final class Include extends InlineTaglet {
                 buffer.append(line).append('\n');
             }
         } catch (IOException e) {
-            printError(position, "Error reading " + file + ":\n" + e);
+            printError(tag, "Error reading " + file + ":\n" + e);
         }
         return buffer.toString();
     }

@@ -16,12 +16,16 @@
  */
 package org.apache.sis.internal.taglet;
 
-import com.sun.javadoc.Tag;
-import com.sun.javadoc.RootDoc;
-import com.sun.javadoc.SourcePosition;
-import com.sun.tools.doclets.Taglet;
-import com.sun.tools.doclets.internal.toolkit.Configuration;
-import com.sun.tools.doclets.formats.html.ConfigurationImpl;
+import java.io.File;
+import java.util.Set;
+import java.util.EnumSet;
+import java.util.List;
+import javax.tools.Diagnostic;
+import jdk.javadoc.doclet.Reporter;
+import jdk.javadoc.doclet.taglet.Taglet;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.TextTree;
+import com.sun.source.doctree.UnknownInlineTagTree;
 
 
 /**
@@ -29,24 +33,15 @@ import com.sun.tools.doclets.formats.html.ConfigurationImpl;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
-abstract class InlineTaglet implements Taglet {
+public abstract class InlineTaglet implements Taglet {
     /**
-     * The doclet configuration, created when first needed for reporting warnings.
+     * Where to report warnings, or {@code null} if unknown.
+     * This is initialized by {@link org.apache.sis.internal.doclet.Doclet#init Doclet.init(…)}.
      */
-    private static Configuration configuration;
-
-    /**
-     * Returns the root document, or {@code null} if none.
-     */
-    private static synchronized RootDoc getRootDoc() {
-        if (configuration == null) {
-            configuration = new ConfigurationImpl();
-        }
-        return configuration.root;
-    }
+    public static volatile Reporter reporter;
 
     /**
      * Constructs a default inline taglet.
@@ -55,70 +50,20 @@ abstract class InlineTaglet implements Taglet {
     }
 
     /**
-     * Returns {@code true} since SIS taglets can be used in overview.
+     * Returns the set of locations in which this taglet may be used.
+     * By default the taglet can be used everywhere.
      *
-     * @return Default to {@code true}.
+     * @return the set of locations in which this taglet may be used.
      */
     @Override
-    public boolean inOverview() {
-        return true;
-    }
-
-    /**
-     * Returns {@code true} since SIS taglets can be used in package documentation.
-     *
-     * @return Default to {@code true}.
-     */
-    @Override
-    public boolean inPackage() {
-        return true;
-    }
-
-    /**
-     * Returns {@code true} since SIS taglets can be used in type documentation
-     * (classes or interfaces).
-     *
-     * @return Default to {@code true}.
-     */
-    @Override
-    public boolean inType() {
-        return true;
-    }
-
-    /**
-     * Returns {@code true} since SIS taglets can be used in constructor
-     *
-     * @return Default to {@code true}.
-     */
-    @Override
-    public boolean inConstructor() {
-        return true;
-    }
-
-    /**
-     * Returns {@code true} since SIS taglets can be used in method documentation.
-     *
-     * @return Default to {@code true}.
-     */
-    @Override
-    public boolean inMethod() {
-        return true;
-    }
-
-    /**
-     * Returns {@code true} since SIS taglets can be used in field documentation.
-     *
-     * @return Default to {@code true}.
-     */
-    @Override
-    public boolean inField() {
-        return true;
+    public Set<Taglet.Location> getAllowedLocations() {
+        return EnumSet.allOf(Taglet.Location.class);
     }
 
     /**
      * Returns {@code true} since this base class is all about inline tags.
      *
-     * @return Always {@code true}.
+     * @return always {@code true}.
      */
     @Override
     public final boolean isInlineTag() {
@@ -126,18 +71,35 @@ abstract class InlineTaglet implements Taglet {
     }
 
     /**
-     * Given an array of {@code Tag}s representing this custom tag, return its string
-     * representation. This method should not be called since arrays of inline tags do
-     * not exist. However we define it as a matter of principle.
+     * Returns the text contained in the given inline tag.
+     */
+    static String text(final DocTree tag) {
+        for (final DocTree node : ((UnknownInlineTagTree) tag).getContent()) {
+            if (node.getKind() == DocTree.Kind.TEXT) {
+                return ((TextTree) node).getBody().trim();
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Returns the file that contains the given tag.
+     */
+    static File file(final DocTree tag) {
+        throw new UnsupportedOperationException("We have not yet found how to get the file where a tag is contained."); // TODO
+    }
+
+    /**
+     * Given a list of {@code DocTree}s representing this custom tag, returns its string representation.
      *
-     * @param  tags The tags to format.
-     * @return A string representation of the given tags.
+     * @param  tags  the tags to format.
+     * @return a string representation of the given tags.
      */
     @Override
-    public final String toString(final Tag[] tags) {
+    public final String toString(final List<? extends DocTree> tags) {
         final StringBuilder buffer = new StringBuilder(64);
-        for (int i=0; i<tags.length; i++) {
-            buffer.append(toString(tags[i]));
+        for (final DocTree tag : tags) {
+            buffer.append(toString(tag));
         }
         return buffer.toString();
     }
@@ -145,10 +107,10 @@ abstract class InlineTaglet implements Taglet {
     /**
      * Prints a warning message.
      */
-    static void printWarning(final SourcePosition position, final String message) {
-        final RootDoc root = getRootDoc();
-        if (root != null) {
-            root.printWarning(position, message);
+    static void printWarning(final DocTree tag, final String message) {
+        final Reporter reporter = InlineTaglet.reporter;
+        if (reporter != null) {
+            reporter.print(Diagnostic.Kind.WARNING, message);
         } else {
             System.err.println(message);
         }
@@ -157,10 +119,10 @@ abstract class InlineTaglet implements Taglet {
     /**
      * Prints an error message.
      */
-    static void printError(final SourcePosition position, final String message) {
-        final RootDoc root = getRootDoc();
-        if (root != null) {
-            root.printError(position, message);
+    static void printError(final DocTree tag, final String message) {
+        final Reporter reporter = InlineTaglet.reporter;
+        if (reporter != null) {
+            reporter.print(Diagnostic.Kind.ERROR, message);
         } else {
             System.err.println(message);
         }
