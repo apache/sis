@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.gpx;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -107,7 +106,8 @@ public class GPXReaderTest extends TestCase{
 
             assertEquals("gnu", data.copyright.author);
             assertEquals(2010, data.copyright.year.intValue());
-            assertEquals("http://www.gnu.org/licenses/lgpl-3.0-standalone.html", data.copyright.license.toString());
+            assertEquals("http://www.gnu.org/licenses/lgpl-3.0-standalone.html",
+                         data.copyright.license.getLinkage().toString());
 
             assertEquals(3, data.links.size());
             assertEquals("http://first-adress.org", data.links.get(0).toString());
@@ -203,7 +203,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals("route type",          f.getPropertyValue("type"));
             assertEquals(7,                     f.getPropertyValue("number"));
 
-            List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
+            List<Link> links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
             assertEquals(1,links.size());
             assertEquals("http://route-adress1.org", links.get(0).toString());
 
@@ -228,7 +228,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals(null,                  f.getPropertyValue("type"));
             assertEquals(null,                  f.getPropertyValue("number"));
 
-            links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
+            links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
             assertEquals(0,links.size());
 
             points = new ArrayList<>((Collection<Feature>) f.getPropertyValue("rtept"));
@@ -268,7 +268,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals("route type",          f.getPropertyValue("type"));
             assertEquals(7,                     f.getPropertyValue("number"));
 
-            List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
+            List<Link> links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
             assertEquals(3,links.size());
             assertEquals("http://route-adress1.org", links.get(0).toString());
             assertEquals("http://route-adress2.org", links.get(1).toString());
@@ -295,7 +295,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals(null,                  f.getPropertyValue("type"));
             assertEquals(null,                  f.getPropertyValue("number"));
 
-            links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
+            links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
             assertEquals(0,links.size());
 
             points = new ArrayList<>((Collection<Feature>) f.getPropertyValue("rtept"));
@@ -335,7 +335,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals("track type",          f.getPropertyValue("type"));
             assertEquals(7,                     f.getPropertyValue("number"));
 
-            List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
+            List<Link> links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
             assertEquals(1,links.size());
             assertEquals("http://track-adress1.org", links.get(0).toString());
 
@@ -365,7 +365,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals(null,                  f.getPropertyValue("type"));
             assertEquals(null,                  f.getPropertyValue("number"));
 
-            links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
+            links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
             assertEquals(0,links.size());
 
             segments = new ArrayList<>((Collection<Feature>) f.getPropertyValue("trkseg"));
@@ -405,7 +405,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals("track type",          f.getPropertyValue("type"));
             assertEquals(7,                     f.getPropertyValue("number"));
 
-            List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
+            List<Link> links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
             assertEquals(3,links.size());
             assertEquals("http://track-adress1.org", links.get(0).toString());
             assertEquals("http://track-adress2.org", links.get(1).toString());
@@ -437,7 +437,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals(null,                  f.getPropertyValue("type"));
             assertEquals(null,                  f.getPropertyValue("number"));
 
-            links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
+            links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
             assertEquals(0,links.size());
 
             segments = new ArrayList<>((Collection<Feature>) f.getPropertyValue("trkseg"));
@@ -474,7 +474,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals(55.55,                 f.getPropertyValue("ageofdgpsdata"));
             assertEquals(256,                   f.getPropertyValue("dgpsid"));
 
-            final List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
+            final List<Link> links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
             if (v11) {
                 assertEquals(3,links.size());
                 assertEquals("http://first-adress1.org", links.get(0).toString());
@@ -513,7 +513,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals(null,                  f.getPropertyValue("ageofdgpsdata"));
             assertEquals(null,                  f.getPropertyValue("dgpsid"));
 
-            final List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
+            final List<Link> links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
             assertEquals(0,links.size());
 
             final Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
@@ -544,7 +544,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals(85.55,                 f.getPropertyValue("ageofdgpsdata"));
             assertEquals(456,                   f.getPropertyValue("dgpsid"));
 
-            final List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
+            final List<Link> links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
             if (v11) {
                 assertEquals(2,links.size());
                 assertEquals("http://third-adress1.org", links.get(0).toString());

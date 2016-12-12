@@ -16,42 +16,27 @@
  */
 package org.apache.sis.internal.gpx;
 
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.util.Version;
+
 
 /**
- * GPX versions enumeration
+ * A data store backed by GeoTIFF files.
  *
- * @author Johann Sorel (Geomatys)
- * @since   0.7
- * @version 0.7
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.8
+ * @version 0.8
  * @module
  */
-public enum GPXVersion {
+abstract class GPXStore extends DataStore {
     /**
-     * GPX 1.0
+     * The "1.0" version.
      */
-    v1_0_0,
-    /**
-     * GPX 1.1
-     */
-    v1_1_0;
+    static final Version V1_0 = new Version("1.0");
 
     /**
-     * Convert code to GPXVersion enum.
-     *
-     * @param code gpx version as string
-     * @return enumeration
-     * @throws NumberFormatException if version is not formatted as expected
+     * The "1.1" version.
      */
-    public static GPXVersion toVersion(String code) throws NumberFormatException {
-        ArgumentChecks.ensureNonNull("code", code);
-        switch (code.trim()) {
-            case "1.0":
-                return v1_0_0;
-            case "1.1":
-                return v1_1_0;
-            default:
-                throw new NumberFormatException("Invalid version number " + code);
-        }
-    }
+    static final Version V1_1 = new Version("1.1");
 }

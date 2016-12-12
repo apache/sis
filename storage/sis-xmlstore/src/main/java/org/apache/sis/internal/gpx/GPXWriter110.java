@@ -16,13 +16,10 @@
  */
 package org.apache.sis.internal.gpx;
 
-import java.net.URI;
 import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
-
-import static org.apache.sis.internal.gpx.Constants.*;
 
 
 /**
@@ -39,7 +36,7 @@ public class GPXWriter110 extends GPXWriter100 {
      * @param creator gpx file creator
      */
     public GPXWriter110(final String creator, final Object output) throws IOException, XMLStreamException {
-        super(NAMESPACE_V11, creator, output);
+        super(Tags.NAMESPACE_V11, creator, output);
     }
 
     /**
@@ -59,21 +56,21 @@ public class GPXWriter110 extends GPXWriter100 {
      */
     @Override
     public void write(final Metadata metadata) throws XMLStreamException {
-        writer.writeStartElement(namespace, TAG_METADATA);
-        writeSimpleTag(namespace, TAG_NAME, metadata.name);
-        writeSimpleTag(namespace, TAG_DESC, metadata.description);
+        writer.writeStartElement(namespace, Tags.METADATA);
+        writeSimpleTag(namespace, Tags.NAME, metadata.name);
+        writeSimpleTag(namespace, Tags.DESCRIPTION, metadata.description);
         writePerson(metadata.author);
         writeCopyright(metadata.copyright);
-        for (URI uri : metadata.links) {
+        for (Link uri : metadata.links) {
             writeLink(uri);
         }
 
         final Temporal d = metadata.time;
         if (d != null) {
-            writeSimpleTag(namespace, TAG_METADATA_TIME, toString(d));
+            writeSimpleTag(namespace, Tags.TIME, toString(d));
         }
 
-        writeSimpleTag(namespace, TAG_METADATA_KEYWORDS, metadata.keywords);
+        writeSimpleTag(namespace, Tags.KEYWORDS, metadata.keywords);
         writeBounds(metadata.bounds);
 
         writer.writeEndElement();
@@ -89,9 +86,9 @@ public class GPXWriter110 extends GPXWriter100 {
     protected void writePerson(final Person person) throws XMLStreamException {
         if (person == null) return;
 
-        writer.writeStartElement(namespace, TAG_AUTHOR);
-        writeSimpleTag(namespace, TAG_NAME, person.getName());
-        writeSimpleTag(namespace, TAG_AUTHOR_EMAIL, person.email);
+        writer.writeStartElement(namespace, Tags.AUTHOR);
+        writeSimpleTag(namespace, Tags.NAME, person.getName());
+        writeSimpleTag(namespace, Tags.EMAIL, person.email);
         writeLink(person.link);
         writer.writeEndElement();
     }
@@ -103,10 +100,10 @@ public class GPXWriter110 extends GPXWriter100 {
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
     @Override
-    protected void writeLinkURIs(final Collection<URI> links) throws XMLStreamException {
+    protected void writeLinkURIs(final Collection<Link> links) throws XMLStreamException {
         if (links != null && !links.isEmpty()) {
-            for (URI uri : links) {
-                writeLink(uri);
+            for (Link link : links) {
+                writeLink(link);
             }
         }
     }
@@ -114,15 +111,15 @@ public class GPXWriter110 extends GPXWriter100 {
     /**
      * Write a link tag.
      *
-     * @param uri if null nothing will be written
+     * @param link if null nothing will be written
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
     @Override
-    protected void writeLink(final URI uri) throws XMLStreamException {
-        if (uri == null) return;
+    protected void writeLink(final Link link) throws XMLStreamException {
+        if (link == null) return;
 
-        writer.writeStartElement(namespace, TAG_LINK);
-        writer.writeAttribute(ATT_LINK_HREF, uri.toASCIIString());
+        writer.writeStartElement(namespace, Tags.LINK);
+        writer.writeAttribute(Constants.ATT_LINK_HREF, link.uri.toASCIIString());
         writer.writeEndElement();
     }
 
@@ -135,13 +132,13 @@ public class GPXWriter110 extends GPXWriter100 {
     public void writeCopyright(final Copyright copyRight) throws XMLStreamException {
         if (copyRight == null) return;
 
-        writer.writeStartElement(namespace, TAG_COPYRIGHT);
+        writer.writeStartElement(namespace, Tags.COPYRIGHT);
         final String author = copyRight.author;
         if (author != null) {
-            writer.writeAttribute(ATT_COPYRIGHT_AUTHOR, author);
+            writer.writeAttribute(Constants.ATT_COPYRIGHT_AUTHOR, author);
         }
-        writeSimpleTag(namespace, TAG_COPYRIGHT_YEAR, copyRight.year);
-        writeSimpleTag(namespace, TAG_COPYRIGHT_LICENSE, copyRight.license);
+        writeSimpleTag(namespace, Tags.YEAR, copyRight.year);
+        writeSimpleTag(namespace, Tags.LICENSE, copyRight.license);
         writer.writeEndElement();
     }
 

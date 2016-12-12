@@ -17,16 +17,10 @@
 package org.apache.sis.internal.gpx;
 
 import java.util.Map;
-import java.util.Collections;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.feature.DefaultAttributeType;
-import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.FeatureUtilities;
-
-// Branch-dependent imports
-import org.opengis.feature.AttributeType;
 
 
 /**
@@ -58,19 +52,13 @@ final class GroupPointsAsPolylineOperation extends GroupAsPolylineOperation {
     private static final ParameterDescriptorGroup EMPTY_PARAMS = FeatureUtilities.parameters("GroupPoints");
 
     /**
-     * The type of the values computed by this operation. The name of this type presumes
-     * that the result will be assigned to the "geometry" attribute of the feature type.
-     */
-    private static final AttributeType<Polyline> RESULT_TYPE = new DefaultAttributeType<>(
-            Collections.singletonMap(NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY), Polyline.class, 1, 1, null);
-
-    /**
+     * Creates a new operation which will look for geometries in the given feature association.
      *
-     * @param identification operation identification parameters
-     * @param attributePath names of the properties to group
+     * @param  identification  name and other information to be given to this operation.
+     * @param  association     name of the property to follow in order to get the geometries to add to a polyline.
      */
-    GroupPointsAsPolylineOperation(Map<String,?> identification, String... attributePath) {
-        super(identification, attributePath);
+    GroupPointsAsPolylineOperation(final Map<String,?> identification, final String association) {
+        super(identification, association);
     }
 
     /**
@@ -82,13 +70,12 @@ final class GroupPointsAsPolylineOperation extends GroupAsPolylineOperation {
     }
 
     /**
-     * {@inheritDoc}
+     * Invoked for every points to put in a single polyline.
+     *
+     * @param addTo     where to add the points.
+     * @param geometry  the point to add to {@code addTo}.
+     * @param isFirst   whether {@code geometry} is the first object added to the given polyline.
      */
-    @Override
-    public AttributeType<Polyline> getResult() {
-        return RESULT_TYPE;
-    }
-
     @Override
     void addGeometry(Polyline geom, final Object propVal, final boolean first) {
         if (first) {

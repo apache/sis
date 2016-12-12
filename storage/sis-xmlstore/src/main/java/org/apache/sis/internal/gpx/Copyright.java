@@ -16,13 +16,11 @@
  */
 package org.apache.sis.internal.gpx;
 
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Objects;
-import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -64,7 +62,7 @@ import org.opengis.util.InternationalString;
  * @version 0.8
  * @module
  */
-public final class Copyright extends Element implements LegalConstraints, Responsibility, Party, Citation, CitationDate {
+public final class Copyright implements LegalConstraints, Responsibility, Party, Citation, CitationDate {
     /**
      * The copyright holder.
      * This field is mandatory in principle, but {@code Copyright} implementation is robust to null value.
@@ -90,10 +88,10 @@ public final class Copyright extends Element implements LegalConstraints, Respon
      *
      * @see #getOnlineResources()
      */
-    public URI license;
+    public OnlineResource license;
 
     /**
-     * Creates a new initially empty instance.
+     * Creates an initially empty instance.
      * Callers should set at least the {@link #author} field after construction.
      */
     public Copyright() {
@@ -179,8 +177,8 @@ public final class Copyright extends Element implements LegalConstraints, Respon
      * @see #getOnlineResources()
      */
     @Override
-    public Collection<Citation> getReferences() {
-        return thisOrEmpty(this, year != null || license != null);
+    public Collection<? extends Citation> getReferences() {
+        return thisOrEmpty(year != null || license != null);
     }
 
     /**
@@ -205,8 +203,8 @@ public final class Copyright extends Element implements LegalConstraints, Respon
      * @see #getCitedResponsibleParties()
      */
     @Override
-    public Collection<Responsibility> getResponsibleParties() {
-        return thisOrEmpty(this, author != null);
+    public Collection<? extends Responsibility> getResponsibleParties() {
+        return thisOrEmpty(author != null);
     }
 
 
@@ -248,8 +246,8 @@ public final class Copyright extends Element implements LegalConstraints, Respon
      * @see #getName()
      */
     @Override
-    public Collection<Party> getParties() {
-        return thisOrEmpty(this, author != null);
+    public Collection<? extends Party> getParties() {
+        return thisOrEmpty(author != null);
     }
 
     /**
@@ -315,8 +313,8 @@ public final class Copyright extends Element implements LegalConstraints, Respon
      * @see #getDateType()
      */
     @Override
-    public Collection<CitationDate> getDates() {
-        return thisOrEmpty(this, year != null);
+    public Collection<? extends CitationDate> getDates() {
+        return thisOrEmpty(year != null);
     }
 
     /**
@@ -466,10 +464,15 @@ public final class Copyright extends Element implements LegalConstraints, Respon
      */
     @Override
     public Collection<OnlineResource> getOnlineResources() {
-        if (license != null) {
-            return Collections.singleton(new DefaultOnlineResource(license));
-        }
-        return Collections.emptySet();
+        return (license != null) ? Collections.singleton(license) : Collections.emptySet();
+    }
+
+    /**
+     * Returns this object as a singleton if the given condition is {@code true},
+     * or an empty set if the given condition is {@code false}.
+     */
+    private Collection<Copyright> thisOrEmpty(final boolean condition) {
+        return condition ? Collections.singleton(this) : Collections.emptySet();
     }
 
     /**
