@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.io.IOException;
 import javax.xml.bind.annotation.XmlElement;
 
 import org.opengis.metadata.citation.CitationDate;
@@ -52,7 +53,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * At most one such element may appear in the document.
  * The XML content is like below:
  *
- * {@preformat java
+ * {@preformat xml
  *   <metadata>
  *     <name> String </name>
  *     <desc> String </desc>
@@ -78,31 +79,31 @@ public final class Metadata extends SimpleMetadata {
     /**
      * The name of the GPX file.
      */
-    @XmlElement
+    @XmlElement(name = Constants.TAG_NAME)
     public String name;
 
     /**
      * A description of the contents of the GPX file.
      */
-    @XmlElement(name = "desc")
+    @XmlElement(name = Constants.TAG_DESC)
     public String description;
 
     /**
      * The person or organization who created the GPX file.
      */
-    @XmlElement
+    @XmlElement(name = Constants.TAG_AUTHOR)
     public Person author;
 
     /**
      * Copyright and license information governing use of the file.
      */
-    @XmlElement
+    @XmlElement(name = Constants.TAG_COPYRIGHT)
     public Copyright copyright;
 
     /**
      * URLs associated with the location described in the file.
      */
-    @XmlElement(name = "link")
+    @XmlElement(name = Constants.TAG_LINK)
     public final List<URI> links = new ArrayList<>();
 
     /**
@@ -277,16 +278,16 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public String toString() {
-        final TableAppender table = new TableAppender();
+        final StringBuilder buffer = new StringBuilder();
+        buffer.append("GPX metadata");
+        final TableAppender table = new TableAppender(buffer);
         table.setMultiLinesCells(true);
-        table.appendHorizontalSeparator();
-        table.append("GPX metadata").nextLine();
         table.appendHorizontalSeparator();
         append(table, "Name",        name);
         append(table, "Description", description);
         append(table, "Author",      author);
         append(table, "Copyright",   copyright);
-        String label = "link";
+        String label = "Link(s)";
         for (final URI uri : links) {
             append(table, label, uri);
             label = null;
@@ -294,9 +295,13 @@ public final class Metadata extends SimpleMetadata {
         append(table, "Time",     time);
         append(table, "Keywords", keywords);
         append(table, "Bounds",   bounds);
-        table.append("Links\t");
         table.appendHorizontalSeparator();
-        return table.toString();
+        try {
+            table.flush();
+        } catch (IOException e) {
+            throw new AssertionError(e);        // Should never happen since we are writing to a StringBuilder.
+        }
+        return buffer.toString();
     }
 
     /**

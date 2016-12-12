@@ -39,7 +39,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.xml.StaxStreamReader;
 
 import static javax.xml.stream.XMLStreamReader.*;
-import static org.apache.sis.internal.gpx.GPXConstants.*;
+import static org.apache.sis.internal.gpx.Constants.*;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -78,7 +78,7 @@ public class GPXReader extends StaxStreamReader {
     private int routeInc = 0;
     private int trackInc = 0;
     private GPXVersion version = null;
-    private String baseNamespace = GPX_NAMESPACE_V11;
+    private String baseNamespace = NAMESPACE_V11;
 
     /**
      * {@inheritDoc }
@@ -114,12 +114,12 @@ searchLoop:
                         }
 
                         if (version == GPXVersion.v1_0_0) {
-                            baseNamespace = GPX_NAMESPACE_V10;
+                            baseNamespace = NAMESPACE_V10;
                             //we wont found a metadata tag, must read the tags here.
                             metadata = parseMetadata100();
                             break searchLoop;
                         } else{
-                            baseNamespace = GPX_NAMESPACE_V11;
+                            baseNamespace = NAMESPACE_V11;
                         }
 
                     } else if (TAG_METADATA.equalsIgnoreCase(typeName)) {

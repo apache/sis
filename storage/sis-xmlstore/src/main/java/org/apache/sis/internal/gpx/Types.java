@@ -27,9 +27,6 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.feature.AbstractIdentifiedType;
-import org.apache.sis.feature.DefaultAttributeType;
-import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.feature.DefaultAssociationRole;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.AttributeRole;
@@ -38,11 +35,10 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.Static;
 
-import static org.apache.sis.internal.gpx.GPXConstants.*;
+import static org.apache.sis.internal.gpx.Constants.*;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 
 
 /**
@@ -113,7 +109,7 @@ final class Types extends Static {
          * └─────────────┴─────────┴─────────────┘
          */
         FeatureTypeBuilder builder = new FeatureTypeBuilder(null, factory, locale);
-        builder.setDefaultScope(GPX_NAMESPACE).setName("GPXEntity").setAbstract(true);
+        builder.setDefaultScope(NAMESPACE).setName("GPXEntity").setAbstract(true);
         builder.addAttribute(Integer.class).setName(AttributeConvention.IDENTIFIER_PROPERTY);
         final FeatureType parent = builder.build();
         /*
@@ -144,8 +140,8 @@ final class Types extends Static {
          * │ dgpsid        │ Integer  │ gpx:dgpsStationType    │   [0 … 1]   │
          * └───────────────┴──────────┴────────────────────────┴─────────────┘
          */
-        builder = new FeatureTypeBuilder(null, factory, locale);
-        builder.setDefaultScope(GPX_NAMESPACE).setName("WayPoint").setSuperTypes(parent);
+        builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
+        builder.setDefaultScope(NAMESPACE).setName("WayPoint");
         builder.addAttribute(Point.class).setName(geomName)
                 .setCRS(CommonCRS.WGS84.normalizedGeographic())
                 .addRole(AttributeRole.DEFAULT_GEOMETRY);
@@ -187,23 +183,21 @@ final class Types extends Static {
          * │ rtept       │ WayPoint │ gpx:wptType            │   [0 … ∞]   │
          * └─────────────┴──────────┴────────────────────────┴─────────────┘
          */
-        final DefaultAssociationRole attWayPoints = new DefaultAssociationRole(
-                identification(factory, TAG_RTE_RTEPT), wayPoint, 0, Integer.MAX_VALUE);
-        PropertyType[] properties = {
-                wayPoint.getProperty(TAG_NAME),
-                wayPoint.getProperty(TAG_CMT),
-                wayPoint.getProperty(TAG_DESC),
-                wayPoint.getProperty(TAG_SRC),
-                wayPoint.getProperty(TAG_LINK),
-                new DefaultAttributeType<>(identification(factory, TAG_NUMBER), Integer.class, 0, 1, null),
-                wayPoint.getProperty(TAG_TYPE),
-                attWayPoints,
-                new GroupPointsAsPolylineOperation(geomInfo, TAG_RTE_RTEPT, geomName.toString()),
-                null
-        };
-        properties[properties.length - 1] = FeatureOperations.envelope(envpInfo, null, properties);
-        route = new DefaultFeatureType(identification(factory, "Route"), false,
-                new FeatureType[] {parent}, properties);
+        GroupAsPolylineOperation groupOp = new GroupPointsAsPolylineOperation(geomInfo, TAG_RTE_RTEPT, geomName.toString());
+        builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
+        builder.setDefaultScope(NAMESPACE).setName("Route");
+        builder.addProperty(groupOp);
+        builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
+        builder.setDefaultCardinality(0, 1);
+        builder.addProperty(wayPoint.getProperty(TAG_NAME));
+        builder.addProperty(wayPoint.getProperty(TAG_CMT));
+        builder.addProperty(wayPoint.getProperty(TAG_DESC));
+        builder.addProperty(wayPoint.getProperty(TAG_SRC));
+        builder.addProperty(wayPoint.getProperty(TAG_LINK));
+        builder.addAttribute(Integer.class).setName(TAG_NUMBER);
+        builder.addProperty(wayPoint.getProperty(TAG_TYPE));
+        builder.addAssociation(wayPoint).setName(TAG_RTE_RTEPT).setMaximumOccurs(Integer.MAX_VALUE);
+        route = builder.build();
         /*
          * http://www.topografix.com:TrackSegment ⇾ GPXEntity
          * ┌─────────────┬──────────┬─────────────┬─────────────┐
@@ -215,16 +209,14 @@ final class Types extends Static {
          * │ trkpt       │ WayPoint │ gpx:wptType │   [0 … ∞]   │
          * └─────────────┴──────────┴─────────────┴─────────────┘
          */
-        final DefaultAssociationRole attTrackPoints = new DefaultAssociationRole(
-                identification(factory, TAG_TRK_SEG_PT), wayPoint, 0, Integer.MAX_VALUE);
-        properties = new PropertyType[] {
-                attTrackPoints,
-                new GroupPointsAsPolylineOperation(geomInfo, TAG_TRK_SEG_PT, geomName.toString()),
-                null
-        };
-        properties[properties.length - 1] = FeatureOperations.envelope(envpInfo, null, properties);
-        trackSegment = new DefaultFeatureType(identification(factory, "TrackSegment"), false,
-                new FeatureType[] {parent}, properties);
+        groupOp = new GroupPointsAsPolylineOperation(geomInfo, TAG_TRK_SEG_PT, geomName.toString());
+        builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
+        builder.setDefaultScope(NAMESPACE).setName("TrackSegment");
+        builder.addProperty(groupOp);
+        builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
+        builder.setDefaultCardinality(0, 1);
+        builder.addAssociation(wayPoint).setName(TAG_TRK_SEG_PT).setMaximumOccurs(Integer.MAX_VALUE);
+        trackSegment = builder.build();
         /*
          * http://www.topografix.com:Track ⇾ GPXEntity
          * ┌─────────────┬──────────────┬────────────────────────┬─────────────┐
@@ -243,27 +235,20 @@ final class Types extends Static {
          * │ trkseg      │ TrackSegment │ gpx:trksegType         │   [0 … ∞]   │
          * └─────────────┴──────────────┴────────────────────────┴─────────────┘
          */
-        final DefaultAssociationRole attTrackSegments = new DefaultAssociationRole(
-                identification(factory, TAG_TRK_SEG), trackSegment, 0, Integer.MAX_VALUE);
-        properties = new PropertyType[] {
-                route.getProperty(TAG_NAME),
-                route.getProperty(TAG_CMT),
-                route.getProperty(TAG_DESC),
-                route.getProperty(TAG_SRC),
-                route.getProperty(TAG_LINK),
-                route.getProperty(TAG_NUMBER),
-                route.getProperty(TAG_TYPE),
-                attTrackSegments,
-                new GroupPolylinesOperation(geomInfo, TAG_TRK_SEG, geomName.toString()),
-                null
-        };
-        properties[properties.length - 1] = FeatureOperations.envelope(envpInfo, null, properties);
-        track = new DefaultFeatureType(identification(factory, "Track"), false,
-                new FeatureType[] {parent}, properties);
-    }
-
-    private static Map<String,?> identification(final NameFactory factory, final String localPart) {
-        return Collections.singletonMap(AbstractIdentifiedType.NAME_KEY,
-                factory.createGenericName(null, GPX_NAMESPACE, localPart));
+        groupOp = new GroupAsPolylineOperation(geomInfo, TAG_TRK_SEG, geomName.toString());
+        builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
+        builder.setDefaultScope(NAMESPACE).setName("Track");
+        builder.addProperty(groupOp);
+        builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
+        builder.setDefaultCardinality(0, 1);
+        builder.addProperty(route.getProperty(TAG_NAME));
+        builder.addProperty(route.getProperty(TAG_CMT));
+        builder.addProperty(route.getProperty(TAG_DESC));
+        builder.addProperty(route.getProperty(TAG_SRC));
+        builder.addProperty(route.getProperty(TAG_LINK));
+        builder.addProperty(route.getProperty(TAG_NUMBER));
+        builder.addProperty(route.getProperty(TAG_TYPE));
+        builder.addAssociation(trackSegment).setName(TAG_TRK_SEG).setMaximumOccurs(Integer.MAX_VALUE);
+        track = builder.build();
     }
 }
