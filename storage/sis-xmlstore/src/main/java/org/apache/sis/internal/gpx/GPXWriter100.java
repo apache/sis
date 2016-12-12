@@ -29,15 +29,16 @@ import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.Iterator;
 import javax.xml.stream.XMLStreamException;
-import static org.apache.sis.internal.gpx.GPXConstants.*;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.internal.xml.StaxStreamWriter;
-
+import org.apache.sis.util.collection.BackingStoreException;
 
 import static org.apache.sis.util.ArgumentChecks.*;
-import org.apache.sis.util.collection.BackingStoreException;
+import static org.apache.sis.internal.gpx.Constants.*;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 
 
 /**
@@ -61,7 +62,7 @@ public class GPXWriter100 extends StaxStreamWriter {
      * @param creator file creator
      */
     public GPXWriter100(final String creator, final Object output) throws IOException, XMLStreamException {
-        this(GPX_NAMESPACE_V10, creator, output);
+        this(NAMESPACE_V10, creator, output);
     }
 
     /**

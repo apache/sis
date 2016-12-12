@@ -20,14 +20,14 @@ import org.apache.sis.util.Static;
 
 
 /**
- * GPX XML tags and feature types.
+ * GPX XML tag and attribute names.
  *
  * @author  Johann Sorel (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-final class GPXConstants extends Static {
+final class Constants extends Static {
     /*
      * Main GPX XML tags.
      */
@@ -169,20 +169,20 @@ final class GPXConstants extends Static {
     /**
      * GPX scope name used for feature type names.
      */
-    public static final String GPX_NAMESPACE = "http://www.topografix.com";
+    public static final String NAMESPACE = "http://www.topografix.com";
 
     /**
      * GPX 1.1 XML namespace.
      */
-    public static final String GPX_NAMESPACE_V11 = "http://www.topografix.com/GPX/1/1";
+    public static final String NAMESPACE_V11 = "http://www.topografix.com/GPX/1/1";
     /**
      * GPX 1.0 XML namespace.
      */
-    public static final String GPX_NAMESPACE_V10 = "http://www.topografix.com/GPX/1/0";
+    public static final String NAMESPACE_V10 = "http://www.topografix.com/GPX/1/0";
 
     /**
      * Do not allow instantiation of this class.
      */
-    private GPXConstants() {
+    private Constants() {
     }
 }

@@ -63,8 +63,8 @@
  * @version 0.8
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = GPXConstants.GPX_NAMESPACE_V11, xmlns = {
-    @XmlNs(prefix = "gpx", namespaceURI = GPXConstants.GPX_NAMESPACE_V11)
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Constants.NAMESPACE_V11, xmlns = {
+    @XmlNs(prefix = "gpx", namespaceURI = Constants.NAMESPACE_V11)
 })
 package org.apache.sis.internal.gpx;
 

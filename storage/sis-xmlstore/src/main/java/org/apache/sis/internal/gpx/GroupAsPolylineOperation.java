@@ -25,7 +25,8 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.feature.AbstractAttribute;
 import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.DefaultAttributeType;
-import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
+import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.feature.FeatureUtilities;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -35,33 +36,39 @@ import org.opengis.feature.MultiValuedPropertyException;
 
 
 /**
- * A calculated attribute that define a MultiLineString geometry calculated
- * from other attributes of the feature.
+ * Creates a single (Multi){@code Polyline} instance from a sequence of points or polylines stored in another property.
+ * This base class expects a sequence of {@link Polyline} as input, but subclass will expect other kind of geometries.
+ * The single (Multi){@code Polyline} instance is re-computed every time this property is requested.
  *
- * For example : a boat that record tracks every hour.
- * each record is available in a 0-N complex attribute.
- * This class while extract each track and create a Polyline as a new attribute.
- * Any change applied to the tracks will be visible on the Polyline.
+ * <div class="note"><b>Example:</b>
+ * a boat that record track every hour.
+ * The list of all tracks is stored in an attribute with [0 … ∞] cardinality.
+ * This class will extract each track and create a polyline as a new attribute.
+ * Any change applied to the tracks will be visible on the polyline.
+ * </div>
  *
  * @author  Johann Sorel (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-class GroupPolylinesOperation extends AbstractOperation {
+class GroupAsPolylineOperation extends AbstractOperation {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 7898989085371304159L;
 
-    private static final AttributeType<Polyline> TYPE = new DefaultAttributeType<>(
-            Collections.singletonMap(NAME_KEY, "MultiLineString"), Polyline.class, 1, 1, null);
+    /**
+     * The parameter descriptor for the "Group polylines" operation, which does not take any parameter.
+     */
+    private static final ParameterDescriptorGroup EMPTY_PARAMS = FeatureUtilities.parameters("GroupPolylines");
 
     /**
-     * An empty parameter value group for this operation.
+     * The type of the values computed by this operation. The name of this type presumes
+     * that the result will be assigned to the "geometry" attribute of the feature type.
      */
-    private static final ParameterDescriptorGroup EMPTY_PARAMS =
-            new DefaultParameterDescriptorGroup(Collections.singletonMap("name", "noargs"), 0, 1);
+    private static final AttributeType<Polyline> RESULT_TYPE = new DefaultAttributeType<>(
+            Collections.singletonMap(NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY), Polyline.class, 1, 1, null);
 
     private final String[] path;
 
@@ -70,7 +77,7 @@ class GroupPolylinesOperation extends AbstractOperation {
      * @param identification operation identification parameters
      * @param attributePath names of the properties to group
      */
-    GroupPolylinesOperation(Map<String,?> identification, String... attributePath) {
+    GroupAsPolylineOperation(Map<String,?> identification, String... attributePath) {
         super(identification);
         this.path = attributePath;
     }
@@ -88,7 +95,7 @@ class GroupPolylinesOperation extends AbstractOperation {
      */
     @Override
     public AttributeType<Polyline> getResult() {
-        return TYPE;
+        return RESULT_TYPE;
     }
 
     /**
