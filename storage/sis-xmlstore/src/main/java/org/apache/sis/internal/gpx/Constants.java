@@ -20,7 +20,9 @@ import org.apache.sis.util.Static;
 
 
 /**
- * GPX XML tag and attribute names.
+ * GPX attribute names in XML files.
+ *
+ * @todo may be refactored.
  *
  * @author  Johann Sorel (Geomatys)
  * @since   0.8
@@ -32,69 +34,19 @@ final class Constants extends Static {
      * Main GPX XML tags.
      */
     /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_GPX = "gpx";
-    /** Used in versions 1.0 and 1.1. */
     public static final String ATT_GPX_VERSION = "version";
     /** Used in versions 1.0 and 1.1. */
     public static final String ATT_GPX_CREATOR = "creator";
 
     /*
-     * Attributes used a bit everywhere.
-     */
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_NAME = "name";
-    /** Used in version 1.0. */
-    public static final String TAG_URL = "url";
-    /** Used in version 1.0. */
-    public static final String TAG_URLNAME = "urlname";
-    /** Used in version 1.1. */
-    public static final String TAG_LINK = "link";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_DESC = "desc";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_CMT = "cmt";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_SRC = "src";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_TYPE = "type";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_NUMBER = "number";
-
-    /*
-     * Metadata tags.
-     */
-    /** Used in version 1.1. */
-    public static final String TAG_METADATA = "metadata";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_METADATA_TIME = "time";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_METADATA_KEYWORDS = "keywords";
-
-    /*
-     * Person tags.
-     */
-    /** Used in version 1.0 (as attribute) and 1.1 (as tag) */
-    public static final String TAG_AUTHOR = "author";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_AUTHOR_EMAIL = "email";
-
-    /*
      * Copyright tags.
      */
-    /** Used in version 1.1. */
-    public static final String TAG_COPYRIGHT = "copyright";
-    /** Used in version 1.1. */
-    public static final String TAG_COPYRIGHT_YEAR = "year";
-    /** Used in version 1.1. */
-    public static final String TAG_COPYRIGHT_LICENSE = "license";
     /** Used in version 1.1. */
     public static final String ATT_COPYRIGHT_AUTHOR = "author";
 
     /*
      * Bounds tags.
      */
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_BOUNDS = "bounds";
     /** Used in versions 1.0 and 1.1. */
     public static final String ATT_BOUNDS_MINLAT = "minlat";
     /** Used in versions 1.0 and 1.1. */
@@ -108,77 +60,15 @@ final class Constants extends Static {
      * Link tags.
      */
     /** Used in version 1.1. */
-    public static final String TAG_LINK_TEXT = "text";
-    /** Used in version 1.1. */
-    public static final String TAG_LINK_TYPE = "type";
-    /** Used in version 1.1. */
     public static final String ATT_LINK_HREF = "href";
 
     /*
      * WPT tags.
      */
     /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT = "wpt";
-    /** Used in versions 1.0 and 1.1. */
     public static final String ATT_WPT_LAT = "lat";
     /** Used in versions 1.0 and 1.1. */
     public static final String ATT_WPT_LON = "lon";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT_ELE = "ele";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT_TIME = "time";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT_MAGVAR = "magvar";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT_GEOIHEIGHT = "geoidheight";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT_SYM = "sym";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT_FIX = "fix";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT_SAT = "sat";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT_HDOP = "hdop";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT_VDOP = "vdop";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT_PDOP = "pdop";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT_AGEOFGPSDATA = "ageofdgpsdata";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_WPT_DGPSID = "dgpsid";
-
-    /*
-     * RTE tags.
-     */
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_RTE = "rte";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_RTE_RTEPT = "rtept";
-
-    /*
-     * TRK tags.
-     */
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_TRK = "trk";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_TRK_SEG = "trkseg";
-    /** Used in versions 1.0 and 1.1. */
-    public static final String TAG_TRK_SEG_PT = "trkpt";
-
-    /**
-     * GPX scope name used for feature type names.
-     */
-    public static final String NAMESPACE = "http://www.topografix.com";
-
-    /**
-     * GPX 1.1 XML namespace.
-     */
-    public static final String NAMESPACE_V11 = "http://www.topografix.com/GPX/1/1";
-    /**
-     * GPX 1.0 XML namespace.
-     */
-    public static final String NAMESPACE_V10 = "http://www.topografix.com/GPX/1/0";
 
     /**
      * Do not allow instantiation of this class.

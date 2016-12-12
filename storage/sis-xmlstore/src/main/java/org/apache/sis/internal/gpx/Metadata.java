@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.gpx;
 
-import java.net.URI;
 import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
@@ -41,7 +40,6 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.internal.simple.SimpleMetadata;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
-import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -79,32 +77,32 @@ public final class Metadata extends SimpleMetadata {
     /**
      * The name of the GPX file.
      */
-    @XmlElement(name = Constants.TAG_NAME)
+    @XmlElement(name = Tags.NAME)
     public String name;
 
     /**
      * A description of the contents of the GPX file.
      */
-    @XmlElement(name = Constants.TAG_DESC)
+    @XmlElement(name = Tags.DESCRIPTION)
     public String description;
 
     /**
      * The person or organization who created the GPX file.
      */
-    @XmlElement(name = Constants.TAG_AUTHOR)
+    @XmlElement(name = Tags.AUTHOR)
     public Person author;
 
     /**
      * Copyright and license information governing use of the file.
      */
-    @XmlElement(name = Constants.TAG_COPYRIGHT)
+    @XmlElement(name = Tags.COPYRIGHT)
     public Copyright copyright;
 
     /**
      * URLs associated with the location described in the file.
      */
-    @XmlElement(name = Constants.TAG_LINK)
-    public final List<URI> links = new ArrayList<>();
+    @XmlElement(name = Tags.LINK)
+    public final List<Link> links = new ArrayList<>();
 
     /**
      * The creation date of the file.
@@ -228,8 +226,8 @@ public final class Metadata extends SimpleMetadata {
         final int size = links.size();
         if (size != 0) {
             final List<OnlineResource> resources = new ArrayList<>(size);
-            for (URI uri : links) {
-                resources.add(new DefaultOnlineResource(uri));
+            for (final Link link : links) {
+                resources.add(link);
             }
             return resources;
         }
@@ -288,8 +286,8 @@ public final class Metadata extends SimpleMetadata {
         append(table, "Author",      author);
         append(table, "Copyright",   copyright);
         String label = "Link(s)";
-        for (final URI uri : links) {
-            append(table, label, uri);
+        for (final Link link : links) {
+            append(table, label, link);
             label = null;
         }
         append(table, "Time",     time);

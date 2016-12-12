@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.gpx;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -25,6 +24,7 @@ import com.esri.core.geometry.Point;
 import org.opengis.util.LocalName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
+import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.FeatureOperations;
@@ -34,8 +34,6 @@ import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.Static;
-
-import static org.apache.sis.internal.gpx.Constants.*;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
@@ -81,7 +79,7 @@ final class Types extends Static {
         try {
             DEFAULT = new Types(DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class), null);
         } catch (FactoryException e) {
-            throw new AssertionError(e);    // Should never happen with DefaultNameFactory implementation.
+            throw new AssertionError(e);        // Should never happen with DefaultNameFactory implementation.
         }
     }
 
@@ -109,94 +107,94 @@ final class Types extends Static {
          * └─────────────┴─────────┴─────────────┘
          */
         FeatureTypeBuilder builder = new FeatureTypeBuilder(null, factory, locale);
-        builder.setDefaultScope(NAMESPACE).setName("GPXEntity").setAbstract(true);
+        builder.setDefaultScope(Tags.NAMESPACE).setName("GPXEntity").setAbstract(true);
         builder.addAttribute(Integer.class).setName(AttributeConvention.IDENTIFIER_PROPERTY);
         final FeatureType parent = builder.build();
         /*
          * http://www.topografix.com:WayPoint ⇾ GPXEntity
-         * ┌───────────────┬──────────┬────────────────────────┬─────────────┐
-         * │ Name          │ Type     │ XML type               │ Cardinality │
-         * ├───────────────┼──────────┼────────────────────────┼─────────────┤
-         * │ @identifier   │ Integer  │                        │   [1 … 1]   │
-         * │ @envelope     │ Envelope │                        │   [1 … 1]   │
-         * │ @geometry     │ Point    │ (lat,lon) attributes   │   [1 … 1]   │
-         * │ ele           │ Double   │ xsd:decimal            │   [0 … 1]   │
-         * │ time          │ Temporal │ xsd:dateTime           │   [0 … 1]   │
-         * │ magvar        │ Double   │ gpx:degreesType        │   [0 … 1]   │
-         * │ geoidheight   │ Double   │ xsd:decimal            │   [0 … 1]   │
-         * │ name          │ String   │ xsd:string             │   [0 … 1]   │
-         * │ cmt           │ String   │ xsd:string             │   [0 … 1]   │
-         * │ desc          │ String   │ xsd:string             │   [0 … 1]   │
-         * │ src           │ String   │ xsd:string             │   [0 … 1]   │
-         * │ link          │ URI      │ gpx:linkType           │   [0 … ∞]   │
-         * │ sym           │ String   │ xsd:string             │   [0 … 1]   │
-         * │ type          │ String   │ xsd:string             │   [0 … 1]   │
-         * │ fix           │ String   │ gpx:fixType            │   [0 … 1]   │
-         * │ sat           │ Integer  │ xsd:nonNegativeInteger │   [0 … 1]   │
-         * │ hdop          │ Double   │ xsd:decimal            │   [0 … 1]   │
-         * │ vdop          │ Double   │ xsd:decimal            │   [0 … 1]   │
-         * │ pdop          │ Double   │ xsd:decimal            │   [0 … 1]   │
-         * │ ageofdgpsdata │ Double   │ xsd:decimal            │   [0 … 1]   │
-         * │ dgpsid        │ Integer  │ gpx:dgpsStationType    │   [0 … 1]   │
-         * └───────────────┴──────────┴────────────────────────┴─────────────┘
+         * ┌───────────────┬────────────────┬────────────────────────┬─────────────┐
+         * │ Name          │ Type           │ XML type               │ Cardinality │
+         * ├───────────────┼────────────────┼────────────────────────┼─────────────┤
+         * │ @identifier   │ Integer        │                        │   [1 … 1]   │
+         * │ @envelope     │ Envelope       │                        │   [1 … 1]   │
+         * │ @geometry     │ Point          │ (lat,lon) attributes   │   [1 … 1]   │
+         * │ ele           │ Double         │ xsd:decimal            │   [0 … 1]   │
+         * │ time          │ Temporal       │ xsd:dateTime           │   [0 … 1]   │
+         * │ magvar        │ Double         │ gpx:degreesType        │   [0 … 1]   │
+         * │ geoidheight   │ Double         │ xsd:decimal            │   [0 … 1]   │
+         * │ name          │ String         │ xsd:string             │   [0 … 1]   │
+         * │ cmt           │ String         │ xsd:string             │   [0 … 1]   │
+         * │ desc          │ String         │ xsd:string             │   [0 … 1]   │
+         * │ src           │ String         │ xsd:string             │   [0 … 1]   │
+         * │ link          │ OnlineResource │ gpx:linkType           │   [0 … ∞]   │
+         * │ sym           │ String         │ xsd:string             │   [0 … 1]   │
+         * │ type          │ String         │ xsd:string             │   [0 … 1]   │
+         * │ fix           │ String         │ gpx:fixType            │   [0 … 1]   │
+         * │ sat           │ Integer        │ xsd:nonNegativeInteger │   [0 … 1]   │
+         * │ hdop          │ Double         │ xsd:decimal            │   [0 … 1]   │
+         * │ vdop          │ Double         │ xsd:decimal            │   [0 … 1]   │
+         * │ pdop          │ Double         │ xsd:decimal            │   [0 … 1]   │
+         * │ ageofdgpsdata │ Double         │ xsd:decimal            │   [0 … 1]   │
+         * │ dgpsid        │ Integer        │ gpx:dgpsStationType    │   [0 … 1]   │
+         * └───────────────┴────────────────┴────────────────────────┴─────────────┘
          */
         builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setDefaultScope(NAMESPACE).setName("WayPoint");
+        builder.setDefaultScope(Tags.NAMESPACE).setName("WayPoint");
         builder.addAttribute(Point.class).setName(geomName)
                 .setCRS(CommonCRS.WGS84.normalizedGeographic())
                 .addRole(AttributeRole.DEFAULT_GEOMETRY);
         builder.setDefaultCardinality(0, 1);
-        builder.addAttribute(Double  .class).setName(TAG_WPT_ELE);
-        builder.addAttribute(Temporal.class).setName(TAG_WPT_TIME);
-        builder.addAttribute(Double  .class).setName(TAG_WPT_MAGVAR);
-        builder.addAttribute(Double  .class).setName(TAG_WPT_GEOIHEIGHT);
-        builder.addAttribute(String  .class).setName(TAG_NAME);
-        builder.addAttribute(String  .class).setName(TAG_CMT);
-        builder.addAttribute(String  .class).setName(TAG_DESC);
-        builder.addAttribute(String  .class).setName(TAG_SRC);
-        builder.addAttribute(URI     .class).setName(TAG_LINK).setMaximumOccurs(Integer.MAX_VALUE);
-        builder.addAttribute(String  .class).setName(TAG_WPT_SYM);
-        builder.addAttribute(String  .class).setName(TAG_TYPE);
-        builder.addAttribute(String  .class).setName(TAG_WPT_FIX);
-        builder.addAttribute(Integer .class).setName(TAG_WPT_SAT);
-        builder.addAttribute(Double  .class).setName(TAG_WPT_HDOP);
-        builder.addAttribute(Double  .class).setName(TAG_WPT_VDOP);
-        builder.addAttribute(Double  .class).setName(TAG_WPT_PDOP);
-        builder.addAttribute(Double  .class).setName(TAG_WPT_AGEOFGPSDATA);
-        builder.addAttribute(Integer .class).setName(TAG_WPT_DGPSID);
+        builder.addAttribute(Double        .class).setName(Tags.ELEVATION);
+        builder.addAttribute(Temporal      .class).setName(Tags.TIME);
+        builder.addAttribute(Double        .class).setName(Tags.MAGNETIC_VAR);
+        builder.addAttribute(Double        .class).setName(Tags.GEOID_HEIGHT);
+        builder.addAttribute(String        .class).setName(Tags.NAME);
+        builder.addAttribute(String        .class).setName(Tags.COMMENT);
+        builder.addAttribute(String        .class).setName(Tags.DESCRIPTION);
+        builder.addAttribute(String        .class).setName(Tags.SOURCE);
+        builder.addAttribute(OnlineResource.class).setName(Tags.LINK).setMaximumOccurs(Integer.MAX_VALUE);
+        builder.addAttribute(String        .class).setName(Tags.SYMBOL);
+        builder.addAttribute(String        .class).setName(Tags.TYPE);
+        builder.addAttribute(String        .class).setName(Tags.FIX);
+        builder.addAttribute(Integer       .class).setName(Tags.SATELITTES);
+        builder.addAttribute(Double        .class).setName(Tags.HDOP);
+        builder.addAttribute(Double        .class).setName(Tags.VDOP);
+        builder.addAttribute(Double        .class).setName(Tags.PDOP);
+        builder.addAttribute(Double        .class).setName(Tags.AGE_OF_GPS_DATA);
+        builder.addAttribute(Integer       .class).setName(Tags.DGPS_ID);
         wayPoint = builder.build();
         /*
          * http://www.topografix.com:Route ⇾ GPXEntity
-         * ┌─────────────┬──────────┬────────────────────────┬─────────────┐
-         * │ Name        │ Type     │ XML type               │ Cardinality │
-         * ├─────────────┼──────────┼────────────────────────┼─────────────┤
-         * │ @identifier │ Integer  │                        │   [1 … 1]   │
-         * │ @envelope   │ Envelope │                        │   [1 … 1]   │
-         * │ @geometry   │ Polyline │                        │   [1 … 1]   │
-         * │ name        │ String   │ xsd:string             │   [0 … 1]   │
-         * │ cmt         │ String   │ xsd:string             │   [0 … 1]   │
-         * │ desc        │ String   │ xsd:string             │   [0 … 1]   │
-         * │ src         │ String   │ xsd:string             │   [0 … 1]   │
-         * │ link        │ URI      │ gpx:linkType           │   [0 … ∞]   │
-         * │ number      │ Integer  │ xsd:nonNegativeInteger │   [0 … 1]   │
-         * │ type        │ String   │ xsd:string             │   [0 … 1]   │
-         * │ rtept       │ WayPoint │ gpx:wptType            │   [0 … ∞]   │
-         * └─────────────┴──────────┴────────────────────────┴─────────────┘
+         * ┌─────────────┬────────────────┬────────────────────────┬─────────────┐
+         * │ Name        │ Type           │ XML type               │ Cardinality │
+         * ├─────────────┼────────────────┼────────────────────────┼─────────────┤
+         * │ @identifier │ Integer        │                        │   [1 … 1]   │
+         * │ @envelope   │ Envelope       │                        │   [1 … 1]   │
+         * │ @geometry   │ Polyline       │                        │   [1 … 1]   │
+         * │ name        │ String         │ xsd:string             │   [0 … 1]   │
+         * │ cmt         │ String         │ xsd:string             │   [0 … 1]   │
+         * │ desc        │ String         │ xsd:string             │   [0 … 1]   │
+         * │ src         │ String         │ xsd:string             │   [0 … 1]   │
+         * │ link        │ OnlineResource │ gpx:linkType           │   [0 … ∞]   │
+         * │ number      │ Integer        │ xsd:nonNegativeInteger │   [0 … 1]   │
+         * │ type        │ String         │ xsd:string             │   [0 … 1]   │
+         * │ rtept       │ WayPoint       │ gpx:wptType            │   [0 … ∞]   │
+         * └─────────────┴────────────────┴────────────────────────┴─────────────┘
          */
-        GroupAsPolylineOperation groupOp = new GroupPointsAsPolylineOperation(geomInfo, TAG_RTE_RTEPT, geomName.toString());
+        GroupAsPolylineOperation groupOp = new GroupPointsAsPolylineOperation(geomInfo, Tags.ROUTE_POINTS);
         builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setDefaultScope(NAMESPACE).setName("Route");
+        builder.setDefaultScope(Tags.NAMESPACE).setName("Route");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
-        builder.addProperty(wayPoint.getProperty(TAG_NAME));
-        builder.addProperty(wayPoint.getProperty(TAG_CMT));
-        builder.addProperty(wayPoint.getProperty(TAG_DESC));
-        builder.addProperty(wayPoint.getProperty(TAG_SRC));
-        builder.addProperty(wayPoint.getProperty(TAG_LINK));
-        builder.addAttribute(Integer.class).setName(TAG_NUMBER);
-        builder.addProperty(wayPoint.getProperty(TAG_TYPE));
-        builder.addAssociation(wayPoint).setName(TAG_RTE_RTEPT).setMaximumOccurs(Integer.MAX_VALUE);
+        builder.addProperty(wayPoint.getProperty(Tags.NAME));
+        builder.addProperty(wayPoint.getProperty(Tags.COMMENT));
+        builder.addProperty(wayPoint.getProperty(Tags.DESCRIPTION));
+        builder.addProperty(wayPoint.getProperty(Tags.SOURCE));
+        builder.addProperty(wayPoint.getProperty(Tags.LINK));
+        builder.addAttribute(Integer.class).setName(Tags.NUMBER);
+        builder.addProperty(wayPoint.getProperty(Tags.TYPE));
+        builder.addAssociation(wayPoint).setName(Tags.ROUTE_POINTS).setMaximumOccurs(Integer.MAX_VALUE);
         route = builder.build();
         /*
          * http://www.topografix.com:TrackSegment ⇾ GPXEntity
@@ -209,46 +207,46 @@ final class Types extends Static {
          * │ trkpt       │ WayPoint │ gpx:wptType │   [0 … ∞]   │
          * └─────────────┴──────────┴─────────────┴─────────────┘
          */
-        groupOp = new GroupPointsAsPolylineOperation(geomInfo, TAG_TRK_SEG_PT, geomName.toString());
+        groupOp = new GroupPointsAsPolylineOperation(geomInfo, Tags.TRACK_POINTS);
         builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setDefaultScope(NAMESPACE).setName("TrackSegment");
+        builder.setDefaultScope(Tags.NAMESPACE).setName("TrackSegment");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
-        builder.addAssociation(wayPoint).setName(TAG_TRK_SEG_PT).setMaximumOccurs(Integer.MAX_VALUE);
+        builder.addAssociation(wayPoint).setName(Tags.TRACK_POINTS).setMaximumOccurs(Integer.MAX_VALUE);
         trackSegment = builder.build();
         /*
          * http://www.topografix.com:Track ⇾ GPXEntity
-         * ┌─────────────┬──────────────┬────────────────────────┬─────────────┐
-         * │ Name        │ Type         │ XML type               │ Cardinality │
-         * ├─────────────┼──────────────┼────────────────────────┼─────────────┤
-         * │ @identifier │ Integer      │                        │   [1 … 1]   │
-         * │ @envelope   │ Envelope     │                        │   [1 … 1]   │
-         * │ @geometry   │ Polyline     │                        │   [1 … 1]   │
-         * │ name        │ String       │ xsd:string             │   [0 … 1]   │
-         * │ cmt         │ String       │ xsd:string             │   [0 … 1]   │
-         * │ desc        │ String       │ xsd:string             │   [0 … 1]   │
-         * │ src         │ String       │ xsd:string             │   [0 … 1]   │
-         * │ link        │ URI          │ gpx:linkType           │   [0 … ∞]   │
-         * │ number      │ Integer      │ xsd:nonNegativeInteger │   [0 … 1]   │
-         * │ type        │ String       │ xsd:string             │   [0 … 1]   │
-         * │ trkseg      │ TrackSegment │ gpx:trksegType         │   [0 … ∞]   │
-         * └─────────────┴──────────────┴────────────────────────┴─────────────┘
+         * ┌─────────────┬────────────────┬────────────────────────┬─────────────┐
+         * │ Name        │ Type           │ XML type               │ Cardinality │
+         * ├─────────────┼────────────────┼────────────────────────┼─────────────┤
+         * │ @identifier │ Integer        │                        │   [1 … 1]   │
+         * │ @envelope   │ Envelope       │                        │   [1 … 1]   │
+         * │ @geometry   │ Polyline       │                        │   [1 … 1]   │
+         * │ name        │ String         │ xsd:string             │   [0 … 1]   │
+         * │ cmt         │ String         │ xsd:string             │   [0 … 1]   │
+         * │ desc        │ String         │ xsd:string             │   [0 … 1]   │
+         * │ src         │ String         │ xsd:string             │   [0 … 1]   │
+         * │ link        │ OnlineResource │ gpx:linkType           │   [0 … ∞]   │
+         * │ number      │ Integer        │ xsd:nonNegativeInteger │   [0 … 1]   │
+         * │ type        │ String         │ xsd:string             │   [0 … 1]   │
+         * │ trkseg      │ TrackSegment   │ gpx:trksegType         │   [0 … ∞]   │
+         * └─────────────┴────────────────┴────────────────────────┴─────────────┘
          */
-        groupOp = new GroupAsPolylineOperation(geomInfo, TAG_TRK_SEG, geomName.toString());
+        groupOp = new GroupAsPolylineOperation(geomInfo, Tags.TRACK_SEGMENTS);
         builder = new FeatureTypeBuilder(null, factory, locale).setSuperTypes(parent);
-        builder.setDefaultScope(NAMESPACE).setName("Track");
+        builder.setDefaultScope(Tags.NAMESPACE).setName("Track");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
         builder.setDefaultCardinality(0, 1);
-        builder.addProperty(route.getProperty(TAG_NAME));
-        builder.addProperty(route.getProperty(TAG_CMT));
-        builder.addProperty(route.getProperty(TAG_DESC));
-        builder.addProperty(route.getProperty(TAG_SRC));
-        builder.addProperty(route.getProperty(TAG_LINK));
-        builder.addProperty(route.getProperty(TAG_NUMBER));
-        builder.addProperty(route.getProperty(TAG_TYPE));
-        builder.addAssociation(trackSegment).setName(TAG_TRK_SEG).setMaximumOccurs(Integer.MAX_VALUE);
+        builder.addProperty(route.getProperty(Tags.NAME));
+        builder.addProperty(route.getProperty(Tags.COMMENT));
+        builder.addProperty(route.getProperty(Tags.DESCRIPTION));
+        builder.addProperty(route.getProperty(Tags.SOURCE));
+        builder.addProperty(route.getProperty(Tags.LINK));
+        builder.addProperty(route.getProperty(Tags.NUMBER));
+        builder.addProperty(route.getProperty(Tags.TYPE));
+        builder.addAssociation(trackSegment).setName(Tags.TRACK_SEGMENTS).setMaximumOccurs(Integer.MAX_VALUE);
         track = builder.build();
     }
 }

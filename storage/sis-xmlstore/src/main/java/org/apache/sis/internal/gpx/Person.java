@@ -16,11 +16,9 @@
  */
 package org.apache.sis.internal.gpx;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
-import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
@@ -57,7 +55,7 @@ import org.opengis.util.InternationalString;
  * @version 0.8
  * @module
  */
-public final class Person extends Element implements Responsibility, Party, Contact, Address {
+public final class Person implements Responsibility, Party, Contact, Address {
     /**
      * Name of person or organization.
      *
@@ -77,10 +75,10 @@ public final class Person extends Element implements Responsibility, Party, Cont
      *
      * @see #getOnlineResources()
      */
-    public URI link;
+    public Link link;
 
     /**
-     * Creates a new initially empty instance.
+     * Creates an initially empty instance.
      */
     public Person() {
     }
@@ -116,8 +114,8 @@ public final class Person extends Element implements Responsibility, Party, Cont
      * @see #getContactInfo()
      */
     @Override
-    public Collection<Party> getParties() {
-        return thisOrEmpty(this, name != null || email != null || link != null);
+    public Collection<? extends Party> getParties() {
+        return thisOrEmpty(name != null || email != null || link != null);
     }
 
 
@@ -147,8 +145,8 @@ public final class Person extends Element implements Responsibility, Party, Cont
      * @see #getOnlineResources()
      */
     @Override
-    public Collection<Contact> getContactInfo() {
-        return thisOrEmpty(this, email != null || link != null);
+    public Collection<? extends Contact> getContactInfo() {
+        return thisOrEmpty(email != null || link != null);
     }
 
 
@@ -186,8 +184,8 @@ public final class Person extends Element implements Responsibility, Party, Cont
      * @see #getElectronicMailAddresses()
      */
     @Override
-    public Collection<Address> getAddresses() {
-        return thisOrEmpty(this, email != null);
+    public Collection<? extends Address> getAddresses() {
+        return thisOrEmpty(email != null);
     }
 
     /**
@@ -206,10 +204,7 @@ public final class Person extends Element implements Responsibility, Party, Cont
      */
     @Override
     public Collection<OnlineResource> getOnlineResources() {
-        if (link != null) {
-            return Collections.singleton(new DefaultOnlineResource(link));
-        }
-        return Collections.emptySet();
+        return (link != null) ? Collections.singleton(link) : Collections.emptySet();
     }
 
     /**
@@ -218,7 +213,7 @@ public final class Person extends Element implements Responsibility, Party, Cont
     @Override
     @Deprecated
     public OnlineResource getOnlineResource() {
-        return (link != null) ? new DefaultOnlineResource(link) : null;
+        return link;
     }
 
     /**
@@ -314,10 +309,15 @@ public final class Person extends Element implements Responsibility, Party, Cont
      */
     @Override
     public Collection<String> getElectronicMailAddresses() {
-        if (email != null) {
-            return Collections.singleton(email);
-        }
-        return Collections.emptySet();
+        return (email != null) ? Collections.singleton(email) : Collections.emptySet();
+    }
+
+    /**
+     * Returns this object as a singleton if the given condition is {@code true},
+     * or an empty set if the given condition is {@code false}.
+     */
+    private Collection<Person> thisOrEmpty(final boolean condition) {
+        return condition ? Collections.singleton(this) : Collections.emptySet();
     }
 
     /**
