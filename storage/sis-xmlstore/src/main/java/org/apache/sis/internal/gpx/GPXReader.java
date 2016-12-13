@@ -16,7 +16,10 @@
  */
 package org.apache.sis.internal.gpx;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.io.IOException;
+import java.io.EOFException;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -26,8 +29,6 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.UnsupportedTemporalTypeException;
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import com.esri.core.geometry.Point;
@@ -38,41 +39,45 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.xml.StaxStreamReader;
 import org.apache.sis.util.Version;
 
-import static javax.xml.stream.XMLStreamReader.*;
-
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 
 
 /**
- * Stax reader class for GPX 1.0 and 1.1 files.
+ * Reader for GPX 1.0 and 1.1 files.
+ * Usage:
  *
- * Usage :<br>
- * <pre>
- * {@code
- * final GPXReader reader = new GPXReader();
- * reader.setInput(gpxInput);
- *
- * final GPXVersion version = reader.getVersion();
- * final Metadata metadata = reader.getMetadata();
- *
- * while(reader.hasNext()) {
- *     Feature feature = reader.next();
+ * {@preformat java
+ *     final Reader    reader   = new Reader(dataStore, gpxInput, null);
+ *     final Version   version  = reader.getVersion();
+ *     final Metadata  metadata = reader.getMetadata();
+ *     while(reader.hasNext()) {
+ *         Feature feature = reader.next();
+ *     }
  * }
  *
- * }
- * </pre>
- *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
 public class GPXReader extends StaxStreamReader {
-
+    /**
+     * The {@link org.opengis.feature.FeatureType} for routes, tracks, way points, <i>etc</i>.
+     */
     private final Types types;
+
+    /**
+     * The metadata (ISO 19115 compatible), or {@code null} if none.
+     */
     private Metadata metadata;
+
+    /**
+     * The feature to be returned by {@link #next()}.
+     * This field is updated during iteration.
+     */
     private Feature current;
+
     private int wayPointInc = 0;
     private int routeInc = 0;
     private int trackInc = 0;
@@ -84,11 +89,12 @@ public class GPXReader extends StaxStreamReader {
      * {@inheritDoc }
      *
      * @param input input object
-     * @throws IOException if input failed to be opened for any IO reason
      * @throws XMLStreamException if input is not a valid XML stream
      */
-    public GPXReader(final Object input, final StorageConnector storage) throws DataStoreException, IOException, XMLStreamException {
-        super(input, storage);
+    public GPXReader(final GPXStore owner, final Object input, final StorageConnector storage)
+            throws DataStoreException, XMLStreamException, EOFException
+    {
+        super(owner, input, storage);
         types = Types.DEFAULT;
         final XMLStreamReader reader = getReader();
 
@@ -127,7 +133,7 @@ searchLoop:
                     } else if (Tags.METADATA.equalsIgnoreCase(typeName)) {
                         metadata = parseMetadata110();
                         break searchLoop;
-                    } else if (  Tags.WAY_POINT.equalsIgnoreCase(typeName)
+                    } else if (Tags.WAY_POINT.equalsIgnoreCase(typeName)
                             || Tags.TRACKS.equalsIgnoreCase(typeName)
                             || Tags.ROUTES.equalsIgnoreCase(typeName)) {
                         //there is no metadata tag
@@ -178,7 +184,7 @@ searchLoop:
      * @throws XMLStreamException if xml parser encounter an invalid element
      *         or underlying stream caused an exception
      */
-    public boolean hasNext() throws IOException, XMLStreamException {
+    public boolean hasNext() throws XMLStreamException {
         findNext();
         return current != null;
     }
@@ -190,7 +196,7 @@ searchLoop:
      * @throws XMLStreamException if xml parser encounter an invalid element
      *         or underlying stream caused an exception
      */
-    public Feature next() throws IOException, XMLStreamException {
+    public Feature next() throws XMLStreamException {
         findNext();
         final Feature ele = current;
         current = null;
@@ -201,7 +207,7 @@ searchLoop:
      * Search for the next feature in the stax stream.
      * This method will set the current local property if there is one.
      */
-    private void findNext() throws IOException, XMLStreamException {
+    private void findNext() throws XMLStreamException {
         final XMLStreamReader reader = getReader();
         if (current != null) return;
 
@@ -234,15 +240,13 @@ searchLoop:
      * Parse current metadata element.
      * The stax reader must be placed to the start element of the metadata.
      */
-    private Metadata parseMetadata100() throws IOException, XMLStreamException {
+    private Metadata parseMetadata100() throws XMLStreamException, EOFException {
         final XMLStreamReader reader = getReader();
         final Metadata metadata = new Metadata();
 
 searchLoop:
         while (reader.hasNext()) {
-            final int type = reader.next();
-
-            switch (type) {
+            switch (reader.next()) {
                 case START_ELEMENT: {
                     final String localName = reader.getLocalName();
                     if (Tags.NAME.equalsIgnoreCase(localName)) {
@@ -269,7 +273,7 @@ searchLoop:
                         metadata.keywords = reader.getElementText();
                     } else if (Tags.BOUNDS.equalsIgnoreCase(localName)) {
                         metadata.bounds = parseBound();
-                    } else if (  Tags.WAY_POINT.equalsIgnoreCase(localName)
+                    } else if (Tags.WAY_POINT.equalsIgnoreCase(localName)
                             || Tags.TRACKS.equalsIgnoreCase(localName)
                             || Tags.ROUTES.equalsIgnoreCase(localName)) {
                         //there is no more metadata tags
@@ -286,7 +290,7 @@ searchLoop:
      * Parse current metadata element.
      * The stax reader must be placed to the start element of the metadata.
      */
-    private Metadata parseMetadata110() throws IOException, XMLStreamException {
+    private Metadata parseMetadata110() throws XMLStreamException, EOFException {
         final XMLStreamReader reader = getReader();
         final Metadata metadata = new Metadata();
 
@@ -329,7 +333,7 @@ searchLoop:
      * Parse current copyright element.
      * The stax reader must be placed to the start element of the copyright.
      */
-    private Copyright parseCopyright() throws IOException, XMLStreamException {
+    private Copyright parseCopyright() throws XMLStreamException {
         final XMLStreamReader reader = getReader();
         final Copyright copyright = new Copyright();
         copyright.author = reader.getAttributeValue(null, Constants.ATT_COPYRIGHT_AUTHOR);
@@ -364,7 +368,7 @@ searchLoop:
      * Parse current URI element.
      * The stax reader must be placed to the start element.
      */
-    private Link parseLink() throws IOException, XMLStreamException {
+    private Link parseLink() throws XMLStreamException {
         final XMLStreamReader reader = getReader();
         String text = reader.getAttributeValue(null, Constants.ATT_LINK_HREF);
         String mime = null;
@@ -400,7 +404,7 @@ searchLoop:
      * Parse current Person element.
      * The stax reader must be placed to the start element.
      */
-    private Person parsePerson() throws IOException, XMLStreamException {
+    private Person parsePerson() throws XMLStreamException {
         final XMLStreamReader reader = getReader();
         final Person person = new Person();
 
@@ -433,7 +437,7 @@ searchLoop:
      * Parse current Envelope element.
      * The stax reader must be placed to the start element.
      */
-    private GeographicBoundingBox parseBound() throws IOException, XMLStreamException {
+    private GeographicBoundingBox parseBound() throws XMLStreamException, EOFException {
         final XMLStreamReader reader = getReader();
         final String xmin = reader.getAttributeValue(null, Constants.ATT_BOUNDS_MINLON);
         final String xmax = reader.getAttributeValue(null, Constants.ATT_BOUNDS_MAXLON);
@@ -457,7 +461,7 @@ searchLoop:
      * Parse way point type feature element.
      * The stax reader must be placed to the start element.
      */
-    private Feature parseWayPoint(final int index) throws IOException, XMLStreamException {
+    private Feature parseWayPoint(final int index) throws XMLStreamException {
         final XMLStreamReader reader = getReader();
         final Feature feature = types.wayPoint.newInstance();
         feature.setPropertyValue("@identifier", index);
@@ -546,7 +550,7 @@ searchLoop:
      * Parse route type feature element.
      * The stax reader must be placed to the start element.
      */
-    private Feature parseRoute(final int index) throws IOException, XMLStreamException {
+    private Feature parseRoute(final int index) throws XMLStreamException {
         final XMLStreamReader reader = getReader();
         final Feature feature = types.route.newInstance();
         feature.setPropertyValue("@identifier", index);
@@ -606,7 +610,7 @@ searchLoop:
      * Parse track segment type feature element.
      * The stax reader must be placed to the start element.
      */
-    private Feature parseTrackSegment(final int index) throws IOException, XMLStreamException {
+    private Feature parseTrackSegment(final int index) throws XMLStreamException {
         final XMLStreamReader reader = getReader();
         final Feature feature = types.trackSegment.newInstance();
         feature.setPropertyValue("@identifier", index);
@@ -640,7 +644,7 @@ searchLoop:
      * Parse track type feature element.
      * The stax reader must be placed to the start element.
      */
-    private Feature parseTrack(final int index) throws IOException, XMLStreamException {
+    private Feature parseTrack(final int index) throws XMLStreamException {
         final XMLStreamReader reader = getReader();
         final Feature feature = types.track.newInstance();
         feature.setPropertyValue("@identifier", index);
@@ -697,7 +701,7 @@ searchLoop:
 
     /**
      * Parse date or date time from string.
-     * The method support only ISO 8601 Date and DateTime formats.
+     * Dates and times in GPX files are Coordinated Universal Time (UTC) using ISO 8601 format.
      *
      * @param dateStr date in ISO date or data time format
      */

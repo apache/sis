@@ -20,6 +20,8 @@ import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
@@ -35,8 +37,10 @@ public class GPXWriter110 extends GPXWriter100 {
      *
      * @param creator gpx file creator
      */
-    public GPXWriter110(final String creator, final Object output) throws IOException, XMLStreamException {
-        super(Tags.NAMESPACE_V11, creator, output);
+    public GPXWriter110(final GPXStore owner, final String creator, final Object output, final String encoding)
+            throws IOException, XMLStreamException, DataStoreException
+    {
+        super(owner, Tags.NAMESPACE_V11, creator, output, encoding);
     }
 
     /**
@@ -56,6 +60,7 @@ public class GPXWriter110 extends GPXWriter100 {
      */
     @Override
     public void write(final Metadata metadata) throws XMLStreamException {
+        final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, Tags.METADATA);
         writeSimpleTag(namespace, Tags.NAME, metadata.name);
         writeSimpleTag(namespace, Tags.DESCRIPTION, metadata.description);
@@ -86,6 +91,7 @@ public class GPXWriter110 extends GPXWriter100 {
     protected void writePerson(final Person person) throws XMLStreamException {
         if (person == null) return;
 
+        final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, Tags.AUTHOR);
         writeSimpleTag(namespace, Tags.NAME, person.getName());
         writeSimpleTag(namespace, Tags.EMAIL, person.email);
@@ -118,6 +124,7 @@ public class GPXWriter110 extends GPXWriter100 {
     protected void writeLink(final Link link) throws XMLStreamException {
         if (link == null) return;
 
+        final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, Tags.LINK);
         writer.writeAttribute(Constants.ATT_LINK_HREF, link.uri.toASCIIString());
         writer.writeEndElement();
@@ -132,6 +139,7 @@ public class GPXWriter110 extends GPXWriter100 {
     public void writeCopyright(final Copyright copyRight) throws XMLStreamException {
         if (copyRight == null) return;
 
+        final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, Tags.COPYRIGHT);
         final String author = copyRight.author;
         if (author != null) {

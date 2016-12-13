@@ -19,6 +19,8 @@ package org.apache.sis.storage;
 
 /**
  * Thrown when no {@link DataStoreProvider} is found for a given storage object.
+ * May also be thrown if a {@code DataStore} is instantiated directly (without {@code DataStoreProvider}
+ * for verifying the input) but the data store can not handle the given input or output object.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

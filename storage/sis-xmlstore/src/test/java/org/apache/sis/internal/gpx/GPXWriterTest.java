@@ -50,9 +50,13 @@ import org.opengis.feature.Feature;
 public final strictfp class GPXWriterTest extends TestCase{
 
 
-    private static GPXReader create(final File resource) throws DataStoreException, IOException, XMLStreamException {
+    private static GPXReader reader(final File resource) throws DataStoreException, IOException, XMLStreamException {
         StorageConnector storage = new StorageConnector(resource);
-        return new GPXReader(storage.getStorage(), storage);
+        return new GPXReader(new GPXStore(storage), storage.getStorage(), storage);
+    }
+
+    private static GPXWriter110 writer(final File f) throws DataStoreException, IOException, XMLStreamException {
+        return new GPXWriter110(new GPXStore(new StorageConnector("dummy")), "Apache SIS", f, "UTF-8");
     }
 
     /**
@@ -65,7 +69,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         final File f = new File("output.xml");
         f.deleteOnExit();
         if (f.exists()) f.delete();
-        final GPXWriter110 writer = new GPXWriter110("Apache SIS", f);
+        final GPXWriter110 writer = writer(f);
 
         final Person person = new Person();
         person.name = "Jean-Pierre";
@@ -94,7 +98,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         writer.writeEndDocument();
         writer.close();
 
-        try (GPXReader reader = create(f)) {
+        try (GPXReader reader = reader(f)) {
             assertEquals(metaData, reader.getMetadata());
         }
 
@@ -113,7 +117,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         final File f = new File("output.xml");
         f.deleteOnExit();
         if (f.exists()) f.delete();
-        final GPXWriter110 writer = new GPXWriter110("Apache SIS", f);
+        final GPXWriter110 writer = writer(f);
 
         //way points -----------------------------------------------------------
         Feature point1 = types.wayPoint.newInstance();
@@ -254,7 +258,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         writer.writeEndDocument();
         writer.close();
 
-        final GPXReader reader = create(f);
+        final GPXReader reader = reader(f);
 
         //testing on toString since JTS geometry always fail on equals method.
         assertEquals(point1.toString(), reader.next().toString());

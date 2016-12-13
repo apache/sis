@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf;
 
 import java.util.Date;
+import java.util.Objects;
 import java.io.Closeable;
 import java.io.IOException;
 import javax.measure.Unit;
@@ -24,9 +25,6 @@ import javax.measure.format.ParserException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**

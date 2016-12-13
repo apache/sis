@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.xml;
 
-import java.util.Locale;
+import java.io.Closeable;
 import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
-import org.apache.sis.util.Localized;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -40,41 +40,42 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.8
  * @module
  */
-abstract class StaxStream implements AutoCloseable, Localized {
+abstract class StaxStream implements AutoCloseable {
     /**
-     * The locale to use for error messages, or {@code null} for the default locale.
+     * The data store for which this reader or writer has been created.
      */
-    private Locale locale;
+    final StaxDataStore owner;
+
+    /**
+     * The underlying stream to close when this {@code StaxStream} reader or writer is closed,
+     * or {@code null} if none.
+     */
+    private Closeable stream;
 
     /**
      * For sub-classes constructors.
-     */
-    StaxStream() {
-    }
-
-    /**
-     * Sets the locale to use for formatting error messages.
-     * A null value means to use the default locale.
      *
-     * @param locale the locale to use for formatting error messages (can be null).
+     * @param owner  the data store for which this reader or writer is created.
      */
-    public void setLocale(final Locale locale) {
-        this.locale = locale;
+    StaxStream(final StaxDataStore owner) {
+        ArgumentChecks.ensureNonNull("owner", owner);
+        this.owner = owner;
     }
 
     /**
-     * Returns the locale to use for formatting error messages.
+     * Notifies this {@code StaxStream} that the given stream will need to be closed by the {@link #close()} method.
+     * This method can be invoked at most once. This method does nothing if the given object does not implement the
+     * {@link Closeable} interface.
+     *
+     * @param stream the stream to be closed when {@link #close()} will be invoked.
      */
-    @Override
-    public Locale getLocale() {
-        return locale;
-    }
-
-    /**
-     * Returns the error resources in the current locale.
-     */
-    protected final Errors errors() {
-        return Errors.getResources(getLocale());
+    protected final void initCloseable(final Object stream) {
+        if (this.stream != null) {
+            throw new IllegalStateException();
+        }
+        if (stream instanceof Closeable) {
+            this.stream = (Closeable) stream;
+        }
     }
 
     /**
@@ -85,5 +86,17 @@ abstract class StaxStream implements AutoCloseable, Localized {
      * @throws XMLStreamException if an error occurred while releasing XML reader/writer resources.
      */
     @Override
-    public abstract void close() throws IOException, XMLStreamException;
+    public void close() throws IOException, XMLStreamException {
+        if (stream != null) {
+            stream.close();
+            stream = null;
+        }
+    }
+
+    /**
+     * Returns the error resources in the current locale.
+     */
+    final Errors errors() {
+        return Errors.getResources(owner.getLocale());
+    }
 }
