@@ -166,6 +166,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ClosedReader_1 = 19;
 
         /**
+         * This {0} writer is closed.
+         */
+        public static final short ClosedWriter_1 = 166;
+
+        /**
          * Database error while creating a ‘{0}’ object for the “{1}” identifier.
          */
         public static final short DatabaseError_2 = 20;
@@ -356,6 +361,11 @@ public final class Errors extends IndexedResourceBundle {
          * The [{0} … {1}] range of ordinate values is not valid for the “{2}” axis.
          */
         public static final short IllegalOrdinateRange_3 = 57;
+
+        /**
+         * The {0} writer does not accept outputs of type ‘{1}’.
+         */
+        public static final short IllegalOutputTypeForWriter_2 = 165;
 
         /**
          * Property “{0}” does not accept instances of ‘{1}’.

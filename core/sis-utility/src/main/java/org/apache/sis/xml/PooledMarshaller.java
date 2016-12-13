@@ -36,7 +36,6 @@ import javax.xml.validation.Schema;
 import org.xml.sax.ContentHandler;
 import org.w3c.dom.Node;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.system.XMLOutputFactory;
 
 
 /**
@@ -144,7 +143,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final Result output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version);
+            marshal(object, OutputFactory.createXMLStreamWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -165,7 +164,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final OutputStream output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output, getEncoding()), version);
+            marshal(object, OutputFactory.createXMLStreamWriter(output, getEncoding()), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -187,7 +186,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
             try (OutputStream s = new BufferedOutputStream(new FileOutputStream(output))) {
-                marshal(object, XMLOutputFactory.createXMLStreamWriter(s, getEncoding()), version);
+                marshal(object, OutputFactory.createXMLStreamWriter(s, getEncoding()), version);
             }
         } catch (IOException | XMLStreamException e) {
             throw new JAXBException(e);
@@ -209,7 +208,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final Writer output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version);
+            marshal(object, OutputFactory.createXMLStreamWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -230,7 +229,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final ContentHandler output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version);
+            marshal(object, OutputFactory.createXMLStreamWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -251,7 +250,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final Node output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version);
+            marshal(object, OutputFactory.createXMLStreamWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {
@@ -289,7 +288,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     public void marshal(final Object object, final XMLEventWriter output) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            marshal(object, XMLOutputFactory.createXMLStreamWriter(output), version);
+            marshal(object, OutputFactory.createXMLStreamWriter(output), version);
         } catch (XMLStreamException e) {
             throw new JAXBException(e);
         } else {

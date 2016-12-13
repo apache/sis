@@ -14,24 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.xml;
+package org.apache.sis.xml;
 
-import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 
 /**
- * The provider of {@link StaxStreamReader} instances.
+ * Tests the {@link Namespaces} class.
  *
- * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-public abstract class XMLStoreProvider extends DataStoreProvider {
+public final strictfp class NamespacesTest extends TestCase {
     /**
-     * Creates a new provider.
+     * Tests {@link Namespaces#getPreferredPrefix(String, String)}.
      */
-    protected XMLStoreProvider() {
+    @Test
+    public void testGetPreferredPrefix() {
+        assertEquals("gml", Namespaces.getPreferredPrefix("http://www.opengis.net/gml/3.2", null));
     }
 }

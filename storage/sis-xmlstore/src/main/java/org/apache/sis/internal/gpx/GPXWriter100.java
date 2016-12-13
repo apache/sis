@@ -28,8 +28,10 @@ import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.Iterator;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.internal.xml.StaxStreamWriter;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -50,6 +52,7 @@ import org.opengis.feature.Property;
 public class GPXWriter100 extends StaxStreamWriter {
 
     private final String creator;
+
     /**
      * GPX file namespace
      */
@@ -59,8 +62,10 @@ public class GPXWriter100 extends StaxStreamWriter {
      *
      * @param creator file creator
      */
-    public GPXWriter100(final String creator, final Object output) throws IOException, XMLStreamException {
-        this(Tags.NAMESPACE_V10, creator, output);
+    public GPXWriter100(final GPXStore owner, final String creator, final Object output, final String encoding)
+            throws IOException, XMLStreamException, DataStoreException
+    {
+        this(owner, Tags.NAMESPACE_V10, creator, output, encoding);
     }
 
     /**
@@ -68,8 +73,10 @@ public class GPXWriter100 extends StaxStreamWriter {
      * @param namespace gpx namespace
      * @param creator file creator
      */
-    protected  GPXWriter100(final String namespace, final String creator, final Object output) throws IOException, XMLStreamException {
-        super(output);
+    GPXWriter100(final GPXStore owner, final String namespace, final String creator, final Object output, final String encoding)
+            throws DataStoreException, XMLStreamException, IOException
+    {
+        super(owner, output, encoding);
         ensureNonNull("creator", creator);
         this.creator = creator;
         this.namespace = namespace;
@@ -89,6 +96,7 @@ public class GPXWriter100 extends StaxStreamWriter {
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
     public void writeStartDocument() throws XMLStreamException {
+        final XMLStreamWriter writer = getWriter();
         writer.writeStartDocument("UTF-8", "1.0");
         writer.flush();
     }
@@ -98,6 +106,7 @@ public class GPXWriter100 extends StaxStreamWriter {
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
     public void writeEndDocument() throws XMLStreamException {
+        final XMLStreamWriter writer = getWriter();
         writer.writeEndDocument();
         writer.flush();
     }
@@ -107,6 +116,7 @@ public class GPXWriter100 extends StaxStreamWriter {
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
     public void writeGPXTag() throws XMLStreamException {
+        final XMLStreamWriter writer = getWriter();
         writer.setDefaultNamespace(namespace);
         writer.writeStartElement(namespace, Tags.GPX);
         writer.writeAttribute(Constants.ATT_GPX_VERSION, getVersion());
@@ -193,6 +203,7 @@ public class GPXWriter100 extends StaxStreamWriter {
             }
         }
 
+        final XMLStreamWriter writer = getWriter();
         writer.writeEndElement();
     }
 
@@ -220,6 +231,7 @@ public class GPXWriter100 extends StaxStreamWriter {
 
         writeSimpleTag(namespace, Tags.KEYWORDS, metadata.keywords);
         writeBounds(metadata.bounds);
+        final XMLStreamWriter writer = getWriter();
         writer.flush();
     }
 
@@ -232,7 +244,7 @@ public class GPXWriter100 extends StaxStreamWriter {
      */
     public void writeWayPoint(final Feature feature, final String tagName) throws XMLStreamException {
         if (feature == null) return;
-
+        final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, tagName);
 
         final Point pt = (Point) feature.getProperty("@geometry").getValue();
@@ -270,6 +282,7 @@ public class GPXWriter100 extends StaxStreamWriter {
     public void writeRoute(final Feature feature) throws XMLStreamException {
         if (feature == null) return;
 
+        final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, Tags.ROUTES);
 
         writeProperty(Tags.NAME,         feature.getProperty(Tags.NAME));
@@ -296,6 +309,7 @@ public class GPXWriter100 extends StaxStreamWriter {
     public void writeTrack(final Feature feature) throws XMLStreamException {
         if (feature == null) return;
 
+        final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, Tags.TRACKS);
 
         writeProperty(Tags.NAME,         feature.getProperty(Tags.NAME));
@@ -321,6 +335,7 @@ public class GPXWriter100 extends StaxStreamWriter {
      */
     protected void writeTrackSegment(final Feature feature) throws XMLStreamException {
         if (feature == null) return;
+        final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, Tags.TRACK_SEGMENTS);
 
         for (Feature prop : (Collection<Feature>)feature.getPropertyValue(Tags.TRACK_POINTS)) {
@@ -352,6 +367,7 @@ public class GPXWriter100 extends StaxStreamWriter {
     protected void writeLink(final Link link) throws XMLStreamException {
         if (link == null) return;
 
+        final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, Tags.LINK);
         writer.writeAttribute(Constants.ATT_LINK_HREF, link.uri.toASCIIString());
         writer.writeEndElement();
@@ -366,6 +382,7 @@ public class GPXWriter100 extends StaxStreamWriter {
     protected void writeBounds(final GeographicBoundingBox env) throws XMLStreamException {
         if (env == null) return;
 
+        final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, Tags.BOUNDS);
 
         writer.writeAttribute(Constants.ATT_BOUNDS_MINLAT, Double.toString(env.getSouthBoundLatitude()));

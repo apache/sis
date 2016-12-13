@@ -54,7 +54,7 @@ public class GPXReaderTest extends TestCase{
 
     private static GPXReader create(final String resource) throws DataStoreException, IOException, XMLStreamException {
         StorageConnector storage = new StorageConnector(GPXReaderTest.class.getResource(resource));
-        return new GPXReader(storage.getStorage(), storage);
+        return new GPXReader(new GPXStore(storage), storage.getStorage(), storage);
     }
 
     /**
