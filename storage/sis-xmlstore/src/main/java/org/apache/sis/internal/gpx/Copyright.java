@@ -16,11 +16,14 @@
  */
 package org.apache.sis.internal.gpx;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Objects;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -72,6 +75,7 @@ public final class Copyright implements LegalConstraints, Responsibility, Party,
      * @see #getParties()
      * @see #getName()
      */
+    @XmlAttribute(name = Attributes.AUTHOR, required = true)
     public String author;
 
     /**
@@ -80,6 +84,7 @@ public final class Copyright implements LegalConstraints, Responsibility, Party,
      *
      * @see #getDate()
      */
+    @XmlElement(name = Tags.YEAR)
     public Integer year;
 
     /**
@@ -88,7 +93,8 @@ public final class Copyright implements LegalConstraints, Responsibility, Party,
      *
      * @see #getOnlineResources()
      */
-    public OnlineResource license;
+    @XmlElement(name = Tags.LICENSE)
+    public URI license;
 
     /**
      * Creates an initially empty instance.
@@ -464,7 +470,7 @@ public final class Copyright implements LegalConstraints, Responsibility, Party,
      */
     @Override
     public Collection<OnlineResource> getOnlineResources() {
-        return (license != null) ? Collections.singleton(license) : Collections.emptySet();
+        return (license != null) ? Collections.singleton(new Link(license)) : Collections.emptySet();
     }
 
     /**
@@ -517,8 +523,8 @@ public final class Copyright implements LegalConstraints, Responsibility, Party,
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Copyright");
-        if (year   != null) sb.append(' ').append(year);
-        if (author != null) sb.append(' ').append(author);
+        if (year    != null) sb.append(' ').append(year);
+        if (author  != null) sb.append(' ').append(author);
         if (license != null) {
             sb.append(System.lineSeparator()).append(license);
         }

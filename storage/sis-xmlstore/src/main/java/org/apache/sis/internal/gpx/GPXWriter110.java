@@ -75,7 +75,7 @@ public class GPXWriter110 extends GPXWriter100 {
             writeSimpleTag(namespace, Tags.TIME, toString(d));
         }
 
-        writeSimpleTag(namespace, Tags.KEYWORDS, metadata.keywords);
+        writeSimpleTag(namespace, Tags.KEYWORDS, toSpaceSeparatedList(metadata.keywords));
         writeBounds(metadata.bounds);
 
         writer.writeEndElement();
@@ -126,7 +126,7 @@ public class GPXWriter110 extends GPXWriter100 {
 
         final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, Tags.LINK);
-        writer.writeAttribute(Constants.ATT_LINK_HREF, link.uri.toASCIIString());
+        writer.writeAttribute(Attributes.HREF, link.uri.toASCIIString());
         writer.writeEndElement();
     }
 
@@ -143,7 +143,7 @@ public class GPXWriter110 extends GPXWriter100 {
         writer.writeStartElement(namespace, Tags.COPYRIGHT);
         final String author = copyRight.author;
         if (author != null) {
-            writer.writeAttribute(Constants.ATT_COPYRIGHT_AUTHOR, author);
+            writer.writeAttribute(Attributes.AUTHOR, author);
         }
         writeSimpleTag(namespace, Tags.YEAR, copyRight.year);
         writeSimpleTag(namespace, Tags.LICENSE, copyRight.license);

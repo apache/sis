@@ -19,17 +19,24 @@ package org.apache.sis.internal.gpx;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
+import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
- * Link to a resource in a GPX file.
+ * A link to an external resource (Web page, digital photo, video clip, <i>etc</i>) with additional information.
  * This element provides 3 properties:
  *
  * <ul>
  *   <li>The {@linkplain #uri}, which is the only mandatory property.</li>
+ *   <li>The {@linkplain #text} to show for the link.</li>
+ *   <li>The MIME {@linkplain #type}.</li>
  * </ul>
  *
  * Those properties can be read or modified directly. All methods defined in this class are bridges to
@@ -43,9 +50,26 @@ import org.opengis.metadata.citation.OnlineResource;
  */
 public final class Link implements OnlineResource {
     /**
-     * The link value.
+     * URL of hyper-link.
+     *
+     * @see #getLinkage()
      */
+    @XmlAttribute(name = Attributes.HREF, required = true)
     public URI uri;
+
+    /**
+     * Text of hyper-link.
+     *
+     * @see #getName()
+     */
+    @XmlElement(name = Tags.TEXT)
+    public String text;
+
+    /**
+     * MIME type of content (for example "image/jpeg").
+     */
+    @XmlElement(name = Tags.TYPE)
+    public String type;
 
     /**
      * Creates an initially empty instance.
@@ -58,16 +82,45 @@ public final class Link implements OnlineResource {
      * Creates a new instance initialized to the given URI.
      *
      * @param  uri  the URI.
-     * @throws URISyntaxException if the given URI is invalid.
      */
-    public Link(final String uri) throws URISyntaxException {
-        this.uri = new URI(uri);
+    public Link(final URI uri) {
+        this.uri = uri;
     }
 
     /**
-     * Returns the link value.
+     * Invoked by JAXB after unmarshalling. If the {@linkplain #uri} is not set but the {@link #text} looks
+     * like a URI, uses that text. The intend is to handle link that should have been defined like below:
      *
-     * @return {@link #uri}.
+     * {@preformat xml
+     *   <link href="http://some.site.org">
+     *   </link>
+     * }
+     *
+     * but instead has erroneously been defined like below:
+     *
+     * {@preformat xml
+     *   <link>
+     *     <text>http://some.site.org</text>
+     *   </link>
+     * }
+     *
+     * If we fail to convert the text to an URI, we will leave the object state as-is.
+     */
+    final void afterUnmarshal(Unmarshaller um, Object parent) {
+        if (uri == null && text != null) {
+            final Context context = Context.current();
+            try {
+                Context.converter(context).toURI(context, text);
+            } catch (URISyntaxException e) {
+                Context.warningOccured(context, Link.class, "afterUnmarshal", e, true);
+            }
+        }
+    }
+
+    /**
+     * ISO 19115 metadata property determined by the {@link #uri} field.
+     *
+     * @return location for on-line access using a URL address or similar scheme.
      */
     @Override
     public URI getLinkage() {
@@ -95,13 +148,13 @@ public final class Link implements OnlineResource {
     }
 
     /**
-     * ISO 19115 metadata property not specified by GPX.
+     * ISO 19115 metadata property determined by the {@link #text} field.
      *
      * @return name of the online resource.
      */
     @Override
     public InternationalString getName() {
-        return null;
+        return (text != null) ? new SimpleInternationalString(text) : null;
     }
 
     /**
@@ -144,7 +197,9 @@ public final class Link implements OnlineResource {
     public boolean equals(Object obj) {
         if (obj instanceof Link) {
             final Link that = (Link) obj;
-            return Objects.equals(this.uri, that.uri);
+            return Objects.equals(this.uri,  that.uri)  &&
+                   Objects.equals(this.text, that.text) &&
+                   Objects.equals(this.type, that.type);
         }
         return false;
     }
@@ -156,7 +211,7 @@ public final class Link implements OnlineResource {
      */
     @Override
     public int hashCode() {
-        return Objects.hashCode(uri);
+        return Objects.hash(uri, text, type);
     }
 
     /**

@@ -19,6 +19,8 @@ package org.apache.sis.internal.gpx;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
@@ -61,6 +63,7 @@ public final class Person implements Responsibility, Party, Contact, Address {
      *
      * @see #getName()
      */
+    @XmlElement(name = Tags.NAME)
     public String name;
 
     /**
@@ -68,6 +71,8 @@ public final class Person implements Responsibility, Party, Contact, Address {
      *
      * @see #getElectronicMailAddresses()
      */
+    @XmlElement(name = Tags.EMAIL)
+    @XmlJavaTypeAdapter(Email.class)
     public String email;
 
     /**
@@ -75,6 +80,7 @@ public final class Person implements Responsibility, Party, Contact, Address {
      *
      * @see #getOnlineResources()
      */
+    @XmlElement(name = Tags.LINK)
     public Link link;
 
     /**
