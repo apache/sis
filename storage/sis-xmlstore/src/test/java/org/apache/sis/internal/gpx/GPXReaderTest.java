@@ -70,7 +70,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals("sample", data.name);
             assertEquals("sample gpx test file", data.description);
             assertEquals(parseTime("2010-03-01"), data.time);
-            assertEquals("sample,metadata", data.keywords);
+            assertArrayEquals(new String[] {"sample", "metadata"}, data.keywords.toArray());
             assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
 
             assertEquals("Jean-Pierre", data.author.name);
@@ -97,7 +97,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals("sample", data.name);
             assertEquals("sample gpx test file", data.description);
             assertEquals(parseTime("2010-03-01"), data.time);
-            assertEquals("sample,metadata", data.keywords);
+            assertArrayEquals(new String[] {"sample", "metadata"}, data.keywords.toArray());
             assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
 
             assertEquals("Jean-Pierre", data.author.name);
@@ -107,7 +107,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals("gnu", data.copyright.author);
             assertEquals(2010, data.copyright.year.intValue());
             assertEquals("http://www.gnu.org/licenses/lgpl-3.0-standalone.html",
-                         data.copyright.license.getLinkage().toString());
+                         data.copyright.license.toString());
 
             assertEquals(3, data.links.size());
             assertEquals("http://first-adress.org", data.links.get(0).toString());
@@ -208,7 +208,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals("http://route-adress1.org", links.get(0).toString());
 
             List<Feature> points = new ArrayList<>((Collection<Feature>) f.getPropertyValue("rtept"));
-            assertEquals(3,points.size());
+            assertEquals(3, points.size());
             checkPoint(points.get(0), 0, false);
             checkPoint(points.get(1), 1, false);
             checkPoint(points.get(2), 2, false);
@@ -453,7 +453,7 @@ public class GPXReaderTest extends TestCase{
 
     private void checkPoint(final Feature f, final int num, final boolean v11) throws Exception {
         if (num == 0) {
-            assertEquals(0,                     f.getPropertyValue("@identifier"));
+            assertEquals(1,                     f.getPropertyValue("@identifier"));
             assertEquals(15.0,                  ((Point)f.getPropertyValue("@geometry")).getX(), DELTA);
             assertEquals(10.0,                  ((Point)f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(140.0,                 f.getPropertyValue("ele"));
@@ -492,7 +492,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals(bbox.getMaximum(1), 10.0d, DELTA);
 
         } else if (num == 1) {
-            assertEquals(1,                     f.getPropertyValue("@identifier"));
+            assertEquals(2,                     f.getPropertyValue("@identifier"));
             assertEquals(25.0,                  ((Point)f.getPropertyValue("@geometry")).getX(), DELTA);
             assertEquals(20.0,                  ((Point)f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(null,                  f.getPropertyValue("ele"));
@@ -523,7 +523,7 @@ public class GPXReaderTest extends TestCase{
             assertEquals(bbox.getMaximum(1), 20.0d, DELTA);
 
         } else if (num == 2) {
-            assertEquals(2,                     f.getPropertyValue("@identifier"));
+            assertEquals(3,                     f.getPropertyValue("@identifier"));
             assertEquals(35.0,                  ((Point) f.getPropertyValue("@geometry")).getX(), DELTA);
             assertEquals(30.0,                  ((Point) f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(150.0,                 f.getPropertyValue("ele"));

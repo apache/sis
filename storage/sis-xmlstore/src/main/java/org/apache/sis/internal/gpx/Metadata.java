@@ -18,6 +18,7 @@ package org.apache.sis.internal.gpx;
 
 import java.time.Instant;
 import java.time.temporal.Temporal;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import java.io.IOException;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlList;
 
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
@@ -76,50 +78,67 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 public final class Metadata extends SimpleMetadata {
     /**
      * The name of the GPX file.
+     *
+     * @see #getTitle()
      */
     @XmlElement(name = Tags.NAME)
     public String name;
 
     /**
      * A description of the contents of the GPX file.
+     *
+     * @see #getAbstract()
      */
     @XmlElement(name = Tags.DESCRIPTION)
     public String description;
 
     /**
      * The person or organization who created the GPX file.
+     *
+     * @see #getPointOfContacts()
      */
     @XmlElement(name = Tags.AUTHOR)
     public Person author;
 
     /**
      * Copyright and license information governing use of the file.
+     *
+     * @see #getResourceConstraints()
      */
     @XmlElement(name = Tags.COPYRIGHT)
     public Copyright copyright;
 
     /**
      * URLs associated with the location described in the file.
+     *
+     * @see #getOnlineResources()
      */
     @XmlElement(name = Tags.LINK)
     public final List<Link> links = new ArrayList<>();
 
     /**
      * The creation date of the file.
+     *
+     * @see #getDates()
      */
-    @XmlElement
+    @XmlElement(name = Tags.TIME)
     public Temporal time;
 
     /**
-     * Keywords associated with the file.
+     * Keywords associated with the file, or {@code null} if unspecified.
      * Search engines or databases can use this information to classify the data.
+     *
+     * @see #getDescriptiveKeywords()
      */
-    @XmlElement
-    public String keywords;
+    @XmlList
+    @XmlElement(name = Tags.KEYWORDS)
+    public List<String> keywords;
 
     /**
      * Minimum and maximum coordinates which describe the extent of the coordinates in the file.
      * The GPX 1.1 specification restricts the coordinate reference system to WGS84.
+     *
+     * @see #getExtents()
      */
     @XmlElement
     public GeographicBoundingBox bounds;
@@ -160,7 +179,22 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<Keywords> getDescriptiveKeywords() {
-        return (keywords != null) ? Collections.singleton(new DefaultKeywords(keywords)) : super.getDescriptiveKeywords();
+        if (keywords != null) {
+            return new KW(keywords);
+        }
+        return super.getDescriptiveKeywords();
+    }
+
+    /**
+     * The list to be returned by {@link #getDescriptiveKeywords()}.
+     * Each keywords is created when first needed.
+     */
+    private static final class KW extends AbstractList<Keywords> {
+        private final List<String> keywords;
+
+        KW(final List<String> keywords)      {this.keywords = keywords;}
+        @Override public int      size()     {return keywords.size();}
+        @Override public Keywords get(int i) {return new DefaultKeywords(keywords.get(i));}
     }
 
     /**
@@ -216,22 +250,14 @@ public final class Metadata extends SimpleMetadata {
     }
 
     /**
-     * ISO 19115 metadata property determined by the {@link #bounds} field.
+     * ISO 19115 metadata property determined by the {@link #links} field.
      * This is part of the information returned by {@link #getCitation()}.
      *
      * @return online references to the cited resource.
      */
     @Override
     public Collection<OnlineResource> getOnlineResources() {
-        final int size = links.size();
-        if (size != 0) {
-            final List<OnlineResource> resources = new ArrayList<>(size);
-            for (final Link link : links) {
-                resources.add(link);
-            }
-            return resources;
-        }
-        return super.getOnlineResources();
+        return Collections.unmodifiableList(links);
     }
 
     /**
@@ -285,14 +311,10 @@ public final class Metadata extends SimpleMetadata {
         append(table, "Description", description);
         append(table, "Author",      author);
         append(table, "Copyright",   copyright);
-        String label = "Link(s)";
-        for (final Link link : links) {
-            append(table, label, link);
-            label = null;
-        }
-        append(table, "Time",     time);
-        append(table, "Keywords", keywords);
-        append(table, "Bounds",   bounds);
+        append(table, "Link(s)",     links, System.lineSeparator());
+        append(table, "Time",        time);
+        append(table, "Keywords",    keywords, " ");
+        append(table, "Bounds",      bounds);
         table.appendHorizontalSeparator();
         try {
             table.flush();
@@ -306,16 +328,33 @@ public final class Metadata extends SimpleMetadata {
      * Appends a row to the given table if the given value is non-null.
      *
      * @param  table  the table where to append a row.
-     * @param  label  the label, or {@code null} if none.
+     * @param  label  the label.
      * @param  value  the value, or {@code null} if none.
      */
     private static void append(final TableAppender table, final String label, final Object value) {
         if (value != null) {
-            if (label != null) {
-                table.append(label).append(':');
-            }
-            table.nextColumn();
+            table.append(label).append(':').nextColumn();
             table.append(value.toString()).nextLine();
+        }
+    }
+
+    /**
+     * Appends a multi-values to the given table if the given list is non-null.
+     *
+     * @param  table      the table where to append a row.
+     * @param  label      the label.
+     * @param  values     the values, or {@code null} if none.
+     * @param  separator  the separator to insert between each value.
+     */
+    private static void append(final TableAppender table, final String label, final List<?> values, final String separator) {
+        if (values != null) {
+            table.append(label).append(':').nextColumn();
+            final int n = values.size();
+            for (int i=0; i<n; i++) {
+                if (i != 0) table.append(separator);
+                table.append(values.get(i).toString());
+            }
+            table.nextLine();
         }
     }
 }

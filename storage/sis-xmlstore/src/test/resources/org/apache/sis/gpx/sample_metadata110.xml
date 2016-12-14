@@ -29,7 +29,7 @@
             <type>website</type>
         </link>
         <time>2010-03-01</time>
-        <keywords>sample,metadata</keywords>
+        <keywords>sample metadata</keywords>
         <bounds minlat="10" minlon="-20" maxlat="40" maxlon="30"/>
         <extensions/>
     </metadata>

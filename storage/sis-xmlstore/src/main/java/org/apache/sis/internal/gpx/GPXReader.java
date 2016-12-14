@@ -17,9 +17,11 @@
 package org.apache.sis.internal.gpx;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.io.EOFException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -68,6 +70,18 @@ public class GPXReader extends StaxStreamReader {
     private final Types types;
 
     /**
+     * Version of the GPX file, or {@code null} if unspecified.
+     * Can be {@link GPXStore#V1_0} or {@link GPXStore#V1_1}.
+     */
+    private Version version;
+
+    /**
+     * Convenience flag set to {@code true} if the {@link #version} field is {@link GPXStore#V1_0},
+     * or {@code false} if the version is {@link GPXStore#V1_1}.
+     */
+    private boolean isLegacy;
+
+    /**
      * The metadata (ISO 19115 compatible), or {@code null} if none.
      */
     private Metadata metadata;
@@ -78,70 +92,92 @@ public class GPXReader extends StaxStreamReader {
      */
     private Feature current;
 
-    private int wayPointInc = 0;
-    private int routeInc = 0;
-    private int trackInc = 0;
-    private Version version;
-    private boolean isRevision;
-    private String baseNamespace = Tags.NAMESPACE_V11;
+    /**
+     * Identifier of the last "way point" feature instance created.
+     * We use sequential numbers starting from 1.
+     */
+    private int wayPointId;
 
     /**
-     * {@inheritDoc }
-     *
-     * @param input input object
-     * @throws XMLStreamException if input is not a valid XML stream
+     * Identifier of the last "route" feature instance created.
+     * We use sequential numbers starting from 1.
      */
-    public GPXReader(final GPXStore owner, final Object input, final StorageConnector storage)
+    private int routeId;
+
+    /**
+     * Identifier of the last "track" feature instance created.
+     * We use sequential numbers starting from 1.
+     */
+    private int trackId;
+
+    /**
+     * Creates a new GPX reader from the given file, URL, stream or reader object.
+     * See {@linkplain StaxStreamReader#StaxStreamReader super-class constructor}
+     * for more information about constructor arguments.
+     *
+     * @param  owner      the data store for which this reader is created.
+     * @param  input      value of {@code storage.getStorage()}.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>), or {@code null} if unknown.
+     * @throws DataStoreException if the input type is not recognized.
+     * @throws XMLStreamException if an error occurred while opening the XML file.
+     * @throws EOFException if the file seems to be truncated.
+     */
+    public GPXReader(final GPXStore owner, final Object input, final StorageConnector connector)
             throws DataStoreException, XMLStreamException, EOFException
     {
-        super(owner, input, storage);
+        super(owner, input, connector);
         types = Types.DEFAULT;
+        /*
+         * Read metadata immediately. We are especially interrested in the "bounds" tag,
+         * for creating the envelope.
+         */
         final XMLStreamReader reader = getReader();
-
-        // Search for the bound tag to generate the envelope
-searchLoop:
-        while(reader.hasNext()) {
+readMD: while (reader.hasNext()) {
             switch (reader.next()) {
                 case START_ELEMENT: {
-                    final String typeName = reader.getLocalName();
-                    if (Tags.GPX.equalsIgnoreCase(typeName)) {
-
-                        String str = "1.1";     // Consider 1.1 by default
-                        for (int i=0,n=reader.getAttributeCount(); i<n;i++) {
-                            if (Constants.ATT_GPX_VERSION.equalsIgnoreCase(reader.getAttributeLocalName(i))) {
-                                str = reader.getAttributeValue(i);
+                    if (isGPX(reader)) {
+                        switch (reader.getLocalName()) {
+                            case Tags.GPX: {
+                                String str = "1.1";     // Consider 1.1 by default
+                                final int n=reader.getAttributeCount();
+                                for (int i=0; i<n; i++) {
+                                    if (Attributes.VERSION.equals(reader.getAttributeLocalName(i))) {
+                                        str = reader.getAttributeValue(i);
+                                    }
+                                }
+                                version = new Version(str);
+                                isLegacy = GPXStore.V1_0.equals(version);
+                                if (isLegacy) {
+                                    // we wont found a metadata tag, must read the tags here.
+                                    metadata = parseMetadata100();
+                                    break readMD;
+                                } else if (!GPXStore.V1_1.equals(version)) {
+                                    throw new DataStoreException("Unsupported version: " + version);
+                                }
+                                break;
+                            }
+                            case Tags.METADATA: {
+                                metadata = parseMetadata110();
+                                break readMD;
+                            }
+                            case Tags.WAY_POINT:
+                            case Tags.TRACKS:
+                            case Tags.ROUTES: {
+                                break readMD;
                             }
                         }
-
-                        try {
-                            this.version = new Version(str);
-                        } catch (NumberFormatException ex) {
-                            throw new XMLStreamException(ex);
-                        }
-                        isRevision = GPXStore.V1_1.equals(version);
-                        if (isRevision) {
-                            baseNamespace = Tags.NAMESPACE_V11;
-                        } else if (GPXStore.V1_0.equals(version)) {
-                            baseNamespace = Tags.NAMESPACE_V10;
-                            //we wont found a metadata tag, must read the tags here.
-                            metadata = parseMetadata100();
-                            break searchLoop;
-                        } else {
-                            throw new DataStoreException("Unsupported version: " + version);
-                        }
-
-                    } else if (Tags.METADATA.equalsIgnoreCase(typeName)) {
-                        metadata = parseMetadata110();
-                        break searchLoop;
-                    } else if (Tags.WAY_POINT.equalsIgnoreCase(typeName)
-                            || Tags.TRACKS.equalsIgnoreCase(typeName)
-                            || Tags.ROUTES.equalsIgnoreCase(typeName)) {
-                        //there is no metadata tag
-                        break searchLoop;
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if the current element of the given reader is in the GPX namespace or has no namespace.
+     */
+    private static boolean isGPX(final XMLStreamReader reader) {
+        final String ns = reader.getNamespaceURI();
+        return (ns == null) || ns.startsWith(Tags.NAMESPACE);
     }
 
     /**
@@ -172,9 +208,9 @@ searchLoop:
         super.close();
         metadata = null;
         current = null;
-        wayPointInc = 0;
-        routeInc = 0;
-        trackInc = 0;
+        wayPointId = 0;
+        routeId = 0;
+        trackId = 0;
     }
 
     /**
@@ -223,13 +259,13 @@ searchLoop:
             if (type == START_ELEMENT) {
                 final String localName = reader.getLocalName();
                 if (Tags.WAY_POINT.equalsIgnoreCase(localName)) {
-                    current = parseWayPoint(wayPointInc++);
+                    current = parseWayPoint(++wayPointId);
                     break;
                 } else if (Tags.ROUTES.equalsIgnoreCase(localName)) {
-                    current = parseRoute(routeInc++);
+                    current = parseRoute(++routeId);
                     break;
                 } else if (Tags.TRACKS.equalsIgnoreCase(localName)) {
-                    current = parseTrack(trackInc++);
+                    current = parseTrack(++trackId);
                     break;
                 }
             }
@@ -243,43 +279,43 @@ searchLoop:
     private Metadata parseMetadata100() throws XMLStreamException, EOFException {
         final XMLStreamReader reader = getReader();
         final Metadata metadata = new Metadata();
-
-searchLoop:
-        while (reader.hasNext()) {
+readMD: while (reader.hasNext()) {
             switch (reader.next()) {
                 case START_ELEMENT: {
-                    final String localName = reader.getLocalName();
-                    if (Tags.NAME.equalsIgnoreCase(localName)) {
-                        metadata.name = reader.getElementText();
-                    } else if (Tags.DESCRIPTION.equalsIgnoreCase(localName)) {
-                        metadata.description = reader.getElementText();
-                    } else if (Tags.AUTHOR.equalsIgnoreCase(localName)) {
-                        if (metadata.author == null) metadata.author = new Person();
-                        metadata.author.name = reader.getElementText();
-                    } else if (Tags.EMAIL.equalsIgnoreCase(localName)) {
-                        if (metadata.author == null) metadata.author = new Person();
-                        metadata.author.email = reader.getElementText();
-                    } else if (Tags.URL.equalsIgnoreCase(localName)) {
-                        try {
-                            metadata.links.add(new Link(reader.getElementText()));
-                        } catch (URISyntaxException ex) {
-                            throw new XMLStreamException(ex);
+                    switch (reader.getLocalName()) {
+                        case Tags.NAME:        metadata.name        = reader.getElementText(); break;
+                        case Tags.DESCRIPTION: metadata.description = reader.getElementText(); break;
+                        case Tags.AUTHOR: {
+                            if (metadata.author == null) metadata.author = new Person();
+                            metadata.author.name = reader.getElementText();
+                            break;
                         }
-                    } else if (Tags.URL_NAME.equalsIgnoreCase(localName)) {
-                        //reader.getElementText();
-                    } else if (Tags.TIME.equalsIgnoreCase(localName)) {
-                        metadata.time = parseTime(reader.getElementText());
-                    } else if (Tags.KEYWORDS.equalsIgnoreCase(localName)) {
-                        metadata.keywords = reader.getElementText();
-                    } else if (Tags.BOUNDS.equalsIgnoreCase(localName)) {
-                        metadata.bounds = parseBound();
-                    } else if (Tags.WAY_POINT.equalsIgnoreCase(localName)
-                            || Tags.TRACKS.equalsIgnoreCase(localName)
-                            || Tags.ROUTES.equalsIgnoreCase(localName)) {
-                        //there is no more metadata tags
-                        break searchLoop;
+                        case Tags.EMAIL: {
+                            if (metadata.author == null) metadata.author = new Person();
+                            metadata.author.email = reader.getElementText();
+                            break;
+                        }
+                        case Tags.URL: {
+                            try {
+                                metadata.links.add(new Link(new URI(reader.getElementText())));
+                            } catch (URISyntaxException ex) {
+                                throw new XMLStreamException(ex);
+                            }
+                            break;
+                        }
+                        case Tags.URL_NAME: {
+                            //reader.getElementText();
+                            break;
+                        }
+                        case Tags.TIME:     metadata.time     = parseTime(reader.getElementText()); break;
+                        case Tags.KEYWORDS: metadata.keywords = Arrays.asList(reader.getElementText().split(" ")); break;
+                        case Tags.BOUNDS:   metadata.bounds   = parseBound(); break;
+                        case Tags.WAY_POINT:
+                        case Tags.TRACKS:
+                        case Tags.ROUTES:
+                            //there is no more metadata tags
+                            break readMD;
                     }
-                    break;
                 }
             }
         }
@@ -293,34 +329,26 @@ searchLoop:
     private Metadata parseMetadata110() throws XMLStreamException, EOFException {
         final XMLStreamReader reader = getReader();
         final Metadata metadata = new Metadata();
-
         while (reader.hasNext()) {
             switch (reader.next()) {
                 case START_ELEMENT: {
-                    final String localName = reader.getLocalName();
-                    if (Tags.NAME.equalsIgnoreCase(localName)) {
-                        metadata.name = reader.getElementText();
-                    } else if (Tags.DESCRIPTION.equalsIgnoreCase(localName)) {
-                        metadata.description = reader.getElementText();
-                    } else if (Tags.AUTHOR.equalsIgnoreCase(localName)) {
-                        metadata.author = parsePerson();
-                    } else if (Tags.COPYRIGHT.equalsIgnoreCase(localName)) {
-                        metadata.copyright = parseCopyright();
-                    } else if (Tags.LINK.equalsIgnoreCase(localName)) {
-                        metadata.links.add(parseLink());
-                    } else if (Tags.TIME.equalsIgnoreCase(localName)) {
-                        metadata.time = parseTime(reader.getElementText());
-                    } else if (Tags.KEYWORDS.equalsIgnoreCase(localName)) {
-                        metadata.keywords = reader.getElementText();
-                    } else if (Tags.BOUNDS.equalsIgnoreCase(localName)) {
-                        metadata.bounds = parseBound();
+                    switch (reader.getLocalName()) {
+                        case Tags.NAME: metadata.name = reader.getElementText(); break;
+                        case Tags.DESCRIPTION: metadata.description = reader.getElementText(); break;
+                        case Tags.AUTHOR: metadata.author = parsePerson(); break;
+                        case Tags.COPYRIGHT: metadata.copyright = parseCopyright(); break;
+                        case Tags.LINK: metadata.links.add(parseLink()); break;
+                        case Tags.TIME: metadata.time = parseTime(reader.getElementText()); break;
+                        case Tags.KEYWORDS: metadata.keywords = Arrays.asList(reader.getElementText().split(" ")); break;
+                        case Tags.BOUNDS: metadata.bounds = parseBound(); break;
                     }
                     break;
                 }
                 case END_ELEMENT: {
-                    if (Tags.METADATA.equalsIgnoreCase(reader.getLocalName())) {
-                        // End of the metadata element
-                        return metadata;
+                    switch (reader.getLocalName()) {
+                        case Tags.METADATA:
+                            // End of the metadata element
+                            return metadata;
                     }
                     break;
                 }
@@ -336,7 +364,7 @@ searchLoop:
     private Copyright parseCopyright() throws XMLStreamException {
         final XMLStreamReader reader = getReader();
         final Copyright copyright = new Copyright();
-        copyright.author = reader.getAttributeValue(null, Constants.ATT_COPYRIGHT_AUTHOR);
+        copyright.author = reader.getAttributeValue(null, Attributes.AUTHOR);
 
         while (reader.hasNext()) {
             switch (reader.next()) {
@@ -346,7 +374,7 @@ searchLoop:
                         copyright.year = Integer.valueOf(reader.getElementText());
                     } else if (Tags.LICENSE.equalsIgnoreCase(localName)) {
                         try {
-                            copyright.license = new Link(reader.getElementText());
+                            copyright.license = new URI(reader.getElementText());
                         } catch (URISyntaxException ex) {
                             throw new XMLStreamException(ex);
                         }
@@ -370,7 +398,7 @@ searchLoop:
      */
     private Link parseLink() throws XMLStreamException {
         final XMLStreamReader reader = getReader();
-        String text = reader.getAttributeValue(null, Constants.ATT_LINK_HREF);
+        String text = reader.getAttributeValue(null, Attributes.HREF);
         String mime = null;
 
         while (reader.hasNext()) {
@@ -388,7 +416,7 @@ searchLoop:
                     if (Tags.LINK.equalsIgnoreCase(reader.getLocalName())) {
                         try {
                             // End of the link element
-                            return new Link(text);
+                            return new Link(new URI(text));
                         } catch (URISyntaxException ex) {
                             throw new XMLStreamException(ex);
                         }
@@ -439,10 +467,10 @@ searchLoop:
      */
     private GeographicBoundingBox parseBound() throws XMLStreamException, EOFException {
         final XMLStreamReader reader = getReader();
-        final String xmin = reader.getAttributeValue(null, Constants.ATT_BOUNDS_MINLON);
-        final String xmax = reader.getAttributeValue(null, Constants.ATT_BOUNDS_MAXLON);
-        final String ymin = reader.getAttributeValue(null, Constants.ATT_BOUNDS_MINLAT);
-        final String ymax = reader.getAttributeValue(null, Constants.ATT_BOUNDS_MAXLAT);
+        final String xmin = reader.getAttributeValue(null, Attributes.MIN_X);
+        final String xmax = reader.getAttributeValue(null, Attributes.MAX_X);
+        final String ymin = reader.getAttributeValue(null, Attributes.MIN_Y);
+        final String ymax = reader.getAttributeValue(null, Attributes.MAX_Y);
 
         if (xmin == null || xmax == null || ymin == null || ymax == null) {
             throw new XMLStreamException("Error in xml file, metadata bounds not defined correctly");
@@ -472,8 +500,8 @@ searchLoop:
 
         List<Link> links = null;
 
-        final String lat = reader.getAttributeValue(null, Constants.ATT_WPT_LAT);
-        final String lon = reader.getAttributeValue(null, Constants.ATT_WPT_LON);
+        final String lat = reader.getAttributeValue(null, Attributes.LATITUDE);
+        final String lon = reader.getAttributeValue(null, Attributes.LONGITUDE);
 
         if (lat == null || lon == null) {
             throw new XMLStreamException("Error in xml file, way point lat/lon not defined correctly");
@@ -522,11 +550,11 @@ searchLoop:
                         feature.setPropertyValue(Tags.AGE_OF_GPS_DATA, Double.valueOf(reader.getElementText()));
                     } else if (Tags.DGPS_ID.equalsIgnoreCase(localName)) {
                         feature.setPropertyValue(Tags.DGPS_ID, Integer.valueOf(reader.getElementText()));
-                    } else if (!isRevision && Tags.URL.equalsIgnoreCase(localName)) {
+                    } else if (isLegacy && Tags.URL.equalsIgnoreCase(localName)) {
                         // GPX 1.0 only
                         if (links == null) links = new ArrayList<>();
                         try {
-                            links.add(new Link(reader.getElementText()));
+                            links.add(new Link(new URI(reader.getElementText())));
                         } catch (URISyntaxException ex) {
                             throw new XMLStreamException(ex);
                         }
@@ -565,7 +593,7 @@ searchLoop:
                     final String localName = reader.getLocalName();
                     if (Tags.ROUTE_POINTS.equalsIgnoreCase(localName)) {
                         if (wayPoints == null) wayPoints = new ArrayList<>();
-                        wayPoints.add(parseWayPoint(ptInc++));
+                        wayPoints.add(parseWayPoint(++ptInc));
                     } else if (Tags.NAME.equalsIgnoreCase(localName)) {
                         feature.setPropertyValue(Tags.NAME, reader.getElementText());
                     } else if (Tags.COMMENT.equalsIgnoreCase(localName)) {
@@ -581,11 +609,11 @@ searchLoop:
                         feature.setPropertyValue(Tags.NUMBER, Integer.valueOf(reader.getElementText()));
                     } else if (Tags.TYPE.equalsIgnoreCase(localName)) {
                         feature.setPropertyValue(Tags.TYPE, reader.getElementText());
-                    } else if (!isRevision && Tags.URL.equalsIgnoreCase(localName)) {
+                    } else if (isLegacy && Tags.URL.equalsIgnoreCase(localName)) {
                         //GPX 1.0 only
                         if (links == null) links = new ArrayList<>();
                         try {
-                            links.add(new Link(reader.getElementText()));
+                            links.add(new Link(new URI(reader.getElementText())));
                         } catch (URISyntaxException ex) {
                             throw new XMLStreamException(ex);
                         }
@@ -623,7 +651,7 @@ searchLoop:
                     final String localName = reader.getLocalName();
                     if (Tags.TRACK_POINTS.equalsIgnoreCase(localName)) {
                         if (wayPoints == null) wayPoints = new ArrayList<>();
-                        wayPoints.add(parseWayPoint(ptInc++));
+                        wayPoints.add(parseWayPoint(++ptInc));
                     }
                     break;
                 }
@@ -674,11 +702,11 @@ searchLoop:
                         feature.setPropertyValue(Tags.NUMBER, Integer.valueOf(reader.getElementText()));
                     } else if (Tags.TYPE.equalsIgnoreCase(localName)) {
                         feature.setPropertyValue(Tags.TYPE, reader.getElementText());
-                    } else if (!isRevision && Tags.URL.equalsIgnoreCase(localName)) {
+                    } else if (isLegacy && Tags.URL.equalsIgnoreCase(localName)) {
                         // GPX 1.0 only
                         if (links == null) links = new ArrayList<>();
                         try {
-                            links.add(new Link(reader.getElementText()));
+                            links.add(new Link(new URI(reader.getElementText())));
                         } catch (URISyntaxException ex) {
                             throw new XMLStreamException(ex);
                         }

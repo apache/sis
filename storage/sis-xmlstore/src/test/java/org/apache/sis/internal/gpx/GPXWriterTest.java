@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.gpx;
 
+import java.net.URI;
 import java.io.File;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -74,12 +75,12 @@ public final strictfp class GPXWriterTest extends TestCase{
         final Person person = new Person();
         person.name = "Jean-Pierre";
         person.email = "jean-pierre@test.com";
-        person.link = new Link("http://son-site.com");
+        person.link = new Link(new URI("http://son-site.com"));
 
         final Copyright copyright = new Copyright();
         copyright.author = "GNU";
         copyright.year = 2010;
-        copyright.license = new Link("http://gnu.org");
+        copyright.license = new URI("http://gnu.org");
 
         final GeographicBoundingBox bounds = new DefaultGeographicBoundingBox(-10, 20, -30, 40);
 
@@ -88,9 +89,9 @@ public final strictfp class GPXWriterTest extends TestCase{
         metaData.description = "description";
         metaData.author = person;
         metaData.copyright = copyright;
-        metaData.links.addAll(Arrays.asList(new Link("http://adress1.org"), new Link("http://adress2.org")));
+        metaData.links.addAll(Arrays.asList(new Link(new URI("http://adress1.org")), new Link(new URI("http://adress2.org"))));
         metaData.time = Instant.now();
-        metaData.keywords = "test,sample";
+        metaData.keywords = Arrays.asList("test", "sample");
         metaData.bounds = bounds;
 
         writer.writeStartDocument();
@@ -121,7 +122,7 @@ public final strictfp class GPXWriterTest extends TestCase{
 
         //way points -----------------------------------------------------------
         Feature point1 = types.wayPoint.newInstance();
-        point1.setPropertyValue("@identifier", 0);
+        point1.setPropertyValue("@identifier", 1);
         point1.setPropertyValue("@geometry", new Point(-10, 10));
         point1.setPropertyValue("ele", 15.6);
         point1.setPropertyValue("time", LocalDate.now());
@@ -131,7 +132,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         point1.setPropertyValue("cmt", "fdrt");
         point1.setPropertyValue("desc", "ffe");
         point1.setPropertyValue("src", "aaz");
-        point1.setPropertyValue("link", Collections.singletonList(new Link("http://test.com")));
+        point1.setPropertyValue("link", Collections.singletonList(new Link(new URI("http://test.com"))));
         point1.setPropertyValue("sym", "fdsg");
         point1.setPropertyValue("type", "klj");
         point1.setPropertyValue("fix", "yy");
@@ -142,7 +143,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         point1.setPropertyValue("ageofdgpsdata", 78.9);
         point1.setPropertyValue("dgpsid", 6);
         Feature point2 = types.wayPoint.newInstance();
-        point2.setPropertyValue("@identifier", 1);
+        point2.setPropertyValue("@identifier", 2);
         point2.setPropertyValue("@geometry", new Point(-15, 15));
         point2.setPropertyValue("ele", 15.6);
         point2.setPropertyValue("time", LocalDate.now());
@@ -152,7 +153,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         point2.setPropertyValue("cmt", "fdrt");
         point2.setPropertyValue("desc", "ffe");
         point2.setPropertyValue("src", "aaz");
-        point2.setPropertyValue("link", Collections.singletonList(new Link("http://test.com")));
+        point2.setPropertyValue("link", Collections.singletonList(new Link(new URI("http://test.com"))));
         point2.setPropertyValue("sym", "fdsg");
         point2.setPropertyValue("type", "klj");
         point2.setPropertyValue("fix", "yy");
@@ -163,7 +164,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         point2.setPropertyValue("ageofdgpsdata", 78.9);
         point2.setPropertyValue("dgpsid", 6);
         Feature point3 = types.wayPoint.newInstance();
-        point3.setPropertyValue("@identifier", 2);
+        point3.setPropertyValue("@identifier", 3);
         point3.setPropertyValue("@geometry", new Point(-20, 20));
         point3.setPropertyValue("ele", 15.6);
         point3.setPropertyValue("time", LocalDate.now());
@@ -173,7 +174,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         point3.setPropertyValue("cmt", "fdrt");
         point3.setPropertyValue("desc", "ffe");
         point3.setPropertyValue("src", "aaz");
-        point3.setPropertyValue("link", Collections.singletonList(new Link("http://test.com")));
+        point3.setPropertyValue("link", Collections.singletonList(new Link(new URI("http://test.com"))));
         point3.setPropertyValue("sym", "fdsg");
         point3.setPropertyValue("type", "klj");
         point3.setPropertyValue("fix", "yy");
@@ -191,22 +192,22 @@ public final strictfp class GPXWriterTest extends TestCase{
 
         //routes ---------------------------------------------------------------
         final Feature route1 = types.route.newInstance();
-        route1.setPropertyValue("@identifier", 0);
+        route1.setPropertyValue("@identifier", 1);
         route1.setPropertyValue("name", "tt");
         route1.setPropertyValue("cmt", "cc");
         route1.setPropertyValue("desc", "des");
         route1.setPropertyValue("src", "src");
-        route1.setPropertyValue("link", Collections.singletonList(new Link("http://test.com")));
+        route1.setPropertyValue("link", Collections.singletonList(new Link(new URI("http://test.com"))));
         route1.setPropertyValue("number", 15);
         route1.setPropertyValue("type", "test");
         route1.setPropertyValue("rtept", wayPoints);
         final Feature route2 = types.route.newInstance();
-        route2.setPropertyValue("@identifier", 1);
+        route2.setPropertyValue("@identifier", 2);
         route2.setPropertyValue("name", "tt2");
         route2.setPropertyValue("cmt", "cc2");
         route2.setPropertyValue("desc", "des2");
         route2.setPropertyValue("src", "src2");
-        route2.setPropertyValue("link", Collections.singletonList(new Link("http://test2.com")));
+        route2.setPropertyValue("link", Collections.singletonList(new Link(new URI("http://test2.com"))));
         route2.setPropertyValue("number", 15);
         route2.setPropertyValue("type", "test2");
         route2.setPropertyValue("rtept", wayPoints);
@@ -218,32 +219,32 @@ public final strictfp class GPXWriterTest extends TestCase{
         //tracks ---------------------------------------------------------------
         final List<Feature> segments = new ArrayList<>();
         final Feature seg1 = types.trackSegment.newInstance();
-        seg1.setPropertyValue("@identifier", 0);
+        seg1.setPropertyValue("@identifier", 1);
         seg1.setPropertyValue("trkpt", wayPoints);
         final Feature seg2 = types.trackSegment.newInstance();
-        seg2.setPropertyValue("@identifier", 1);
+        seg2.setPropertyValue("@identifier", 2);
         seg2.setPropertyValue("trkpt", wayPoints);
         final Feature seg3 = types.trackSegment.newInstance();
-        seg3.setPropertyValue("@identifier", 2);
+        seg3.setPropertyValue("@identifier", 3);
         seg3.setPropertyValue("trkpt", wayPoints);
 
         final Feature track1 = types.track.newInstance();
-        track1.setPropertyValue("@identifier", 0);
+        track1.setPropertyValue("@identifier", 1);
         track1.setPropertyValue("name", "tc");
         track1.setPropertyValue("cmt", "cc");
         track1.setPropertyValue("desc", "des");
         track1.setPropertyValue("src", "src");
-        track1.setPropertyValue("link", Collections.singletonList(new Link("http://test4.com")));
+        track1.setPropertyValue("link", Collections.singletonList(new Link(new URI("http://test4.com"))));
         track1.setPropertyValue("number", 15);
         track1.setPropertyValue("type", "test");
         track1.setPropertyValue("trkseg", segments);
         final Feature track2 = types.track.newInstance();
-        track2.setPropertyValue("@identifier", 1);
+        track2.setPropertyValue("@identifier", 2);
         track2.setPropertyValue("name", "tc2");
         track2.setPropertyValue("cmt", "cc2");
         track2.setPropertyValue("desc", "des2");
         track2.setPropertyValue("src", "src2");
-        track2.setPropertyValue("link", Collections.singletonList(new Link("http://test5.com")));
+        track2.setPropertyValue("link", Collections.singletonList(new Link(new URI("http://test5.com"))));
         track2.setPropertyValue("number", 15);
         track2.setPropertyValue("type", "test2");
         track2.setPropertyValue("trkseg", segments);

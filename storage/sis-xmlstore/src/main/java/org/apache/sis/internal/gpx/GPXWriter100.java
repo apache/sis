@@ -27,6 +27,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -119,8 +121,8 @@ public class GPXWriter100 extends StaxStreamWriter {
         final XMLStreamWriter writer = getWriter();
         writer.setDefaultNamespace(namespace);
         writer.writeStartElement(namespace, Tags.GPX);
-        writer.writeAttribute(Constants.ATT_GPX_VERSION, getVersion());
-        writer.writeAttribute(Constants.ATT_GPX_CREATOR, creator);
+        writer.writeAttribute(Attributes.VERSION, getVersion());
+        writer.writeAttribute(Attributes.CREATOR, creator);
         writer.writeDefaultNamespace(namespace);
         writer.flush();
     }
@@ -229,10 +231,15 @@ public class GPXWriter100 extends StaxStreamWriter {
             writeSimpleTag(namespace, Tags.TIME, toString(metadata.time));
         }
 
-        writeSimpleTag(namespace, Tags.KEYWORDS, metadata.keywords);
+        writeSimpleTag(namespace, Tags.KEYWORDS, toSpaceSeparatedList(metadata.keywords));
         writeBounds(metadata.bounds);
         final XMLStreamWriter writer = getWriter();
         writer.flush();
+    }
+
+    static String toSpaceSeparatedList(final List<String> keywords) {
+        if (keywords == null) return null;
+        return keywords.stream().collect(Collectors.joining(" "));
     }
 
     /**
@@ -248,8 +255,8 @@ public class GPXWriter100 extends StaxStreamWriter {
         writer.writeStartElement(namespace, tagName);
 
         final Point pt = (Point) feature.getProperty("@geometry").getValue();
-        writer.writeAttribute(Constants.ATT_WPT_LAT, Double.toString(pt.getY()));
-        writer.writeAttribute(Constants.ATT_WPT_LON, Double.toString(pt.getX()));
+        writer.writeAttribute(Attributes.LATITUDE, Double.toString(pt.getY()));
+        writer.writeAttribute(Attributes.LONGITUDE, Double.toString(pt.getX()));
 
         writeProperty(Tags.ELEVATION,       feature.getProperty(Tags.ELEVATION));
         writeProperty(Tags.TIME,            feature.getProperty(Tags.TIME));
@@ -369,7 +376,7 @@ public class GPXWriter100 extends StaxStreamWriter {
 
         final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, Tags.LINK);
-        writer.writeAttribute(Constants.ATT_LINK_HREF, link.uri.toASCIIString());
+        writer.writeAttribute(Attributes.HREF, link.uri.toASCIIString());
         writer.writeEndElement();
     }
 
@@ -385,10 +392,10 @@ public class GPXWriter100 extends StaxStreamWriter {
         final XMLStreamWriter writer = getWriter();
         writer.writeStartElement(namespace, Tags.BOUNDS);
 
-        writer.writeAttribute(Constants.ATT_BOUNDS_MINLAT, Double.toString(env.getSouthBoundLatitude()));
-        writer.writeAttribute(Constants.ATT_BOUNDS_MINLON, Double.toString(env.getWestBoundLongitude()));
-        writer.writeAttribute(Constants.ATT_BOUNDS_MAXLAT, Double.toString(env.getNorthBoundLatitude()));
-        writer.writeAttribute(Constants.ATT_BOUNDS_MAXLON, Double.toString(env.getEastBoundLongitude()));
+        writer.writeAttribute(Attributes.MIN_Y, Double.toString(env.getSouthBoundLatitude()));
+        writer.writeAttribute(Attributes.MIN_X, Double.toString(env.getWestBoundLongitude()));
+        writer.writeAttribute(Attributes.MAX_Y, Double.toString(env.getNorthBoundLatitude()));
+        writer.writeAttribute(Attributes.MAX_X, Double.toString(env.getEastBoundLongitude()));
 
         writer.writeEndElement();
     }
