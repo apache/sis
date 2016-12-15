@@ -27,8 +27,6 @@ import java.util.List;
 import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
 import com.esri.core.geometry.Point;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.test.TestCase;
@@ -44,16 +42,15 @@ import org.opengis.feature.Feature;
  * GPX Writer tests.
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.7
- * @version 0.7
+ * @since   0.8
+ * @version 0.8
  * @module
  */
-public final strictfp class GPXWriterTest extends TestCase{
+public final strictfp class GPXWriterTest extends TestCase {
 
-
-    private static GPXReader reader(final File resource) throws DataStoreException, IOException, XMLStreamException {
+    private static GPXReader reader(final File resource) throws Exception {
         StorageConnector storage = new StorageConnector(resource);
-        return new GPXReader(new GPXStore(storage), storage.getStorage(), storage);
+        return new GPXReader(new GPXStore(storage), storage);
     }
 
     private static GPXWriter110 writer(final File f) throws DataStoreException, IOException, XMLStreamException {
@@ -74,15 +71,19 @@ public final strictfp class GPXWriterTest extends TestCase{
 
         final Person person = new Person();
         person.name = "Jean-Pierre";
-        person.email = "jean-pierre@test.com";
+//      person.email = "jean-pierre@test.com";
         person.link = new Link(new URI("http://son-site.com"));
 
         final Copyright copyright = new Copyright();
-        copyright.author = "GNU";
-        copyright.year = 2010;
-        copyright.license = new URI("http://gnu.org");
+        copyright.author = "Apache";
+        copyright.year = 2004;
+        copyright.license = new URI("http://www.apache.org/licenses/LICENSE-2.0");
 
-        final GeographicBoundingBox bounds = new DefaultGeographicBoundingBox(-10, 20, -30, 40);
+        final Bounds bounds = new Bounds();
+        bounds.westBoundLongitude = -10;
+        bounds.eastBoundLongitude =  20;
+        bounds.southBoundLatitude = -30;
+        bounds.northBoundLatitude =  40;
 
         final Metadata metaData = new Metadata();
         metaData.name = "name";
@@ -90,7 +91,7 @@ public final strictfp class GPXWriterTest extends TestCase{
         metaData.author = person;
         metaData.copyright = copyright;
         metaData.links.addAll(Arrays.asList(new Link(new URI("http://adress1.org")), new Link(new URI("http://adress2.org"))));
-        metaData.time = Instant.now();
+        if (false) metaData.time = Instant.now();   // TODO
         metaData.keywords = Arrays.asList("test", "sample");
         metaData.bounds = bounds;
 

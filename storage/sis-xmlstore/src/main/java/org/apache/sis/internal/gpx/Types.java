@@ -99,7 +99,7 @@ final class Types extends Static {
          * This parent has a single property, "@identifier" of type Integer,
          * which is not part of GPX specification.
          *
-         * http://www.topografix.com:GPXEntity
+         * http://www.topografix.com/GPX/GPXEntity
          * ┌─────────────┬─────────┬─────────────┐
          * │ Name        │ Type    │ Cardinality │
          * ├─────────────┼─────────┼─────────────┤
@@ -111,7 +111,7 @@ final class Types extends Static {
         builder.addAttribute(Integer.class).setName(AttributeConvention.IDENTIFIER_PROPERTY);
         final FeatureType parent = builder.build();
         /*
-         * http://www.topografix.com:WayPoint ⇾ GPXEntity
+         * http://www.topografix.com/GPX/WayPoint ⇾ GPXEntity
          * ┌───────────────┬────────────────┬────────────────────────┬─────────────┐
          * │ Name          │ Type           │ XML type               │ Cardinality │
          * ├───────────────┼────────────────┼────────────────────────┼─────────────┤
@@ -164,7 +164,7 @@ final class Types extends Static {
         builder.addAttribute(Integer       .class).setName(Tags.DGPS_ID);
         wayPoint = builder.build();
         /*
-         * http://www.topografix.com:Route ⇾ GPXEntity
+         * http://www.topografix.com/GPX/Route ⇾ GPXEntity
          * ┌─────────────┬────────────────┬────────────────────────┬─────────────┐
          * │ Name        │ Type           │ XML type               │ Cardinality │
          * ├─────────────┼────────────────┼────────────────────────┼─────────────┤
@@ -197,7 +197,7 @@ final class Types extends Static {
         builder.addAssociation(wayPoint).setName(Tags.ROUTE_POINTS).setMaximumOccurs(Integer.MAX_VALUE);
         route = builder.build();
         /*
-         * http://www.topografix.com:TrackSegment ⇾ GPXEntity
+         * http://www.topografix.com/GPX/TrackSegment ⇾ GPXEntity
          * ┌─────────────┬──────────┬─────────────┬─────────────┐
          * │ Name        │ Type     │ XML type    │ Cardinality │
          * ├─────────────┼──────────┼─────────────┼─────────────┤
@@ -216,7 +216,7 @@ final class Types extends Static {
         builder.addAssociation(wayPoint).setName(Tags.TRACK_POINTS).setMaximumOccurs(Integer.MAX_VALUE);
         trackSegment = builder.build();
         /*
-         * http://www.topografix.com:Track ⇾ GPXEntity
+         * http://www.topografix.com/GPX/Track ⇾ GPXEntity
          * ┌─────────────┬────────────────┬────────────────────────┬─────────────┐
          * │ Name        │ Type           │ XML type               │ Cardinality │
          * ├─────────────┼────────────────┼────────────────────────┼─────────────┤

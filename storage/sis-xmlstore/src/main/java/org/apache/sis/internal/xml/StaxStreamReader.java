@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.util.NoSuchElementException;
 import java.io.EOFException;
 import java.io.Reader;
+import java.util.function.Predicate;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -35,9 +36,9 @@ import org.xml.sax.InputSource;
 import org.w3c.dom.Node;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 
 
@@ -82,32 +83,24 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
     private XMLStreamReader reader;
 
     /**
+     * Input name (typically filename) for formatting error messages.
+     */
+    protected final String inputName;
+
+    /**
      * Creates a new XML reader from the given file, URL, stream or reader object.
-     * This constructor is used in two ways depending on whether the optional {@code connector} argument is null or not:
-     *
-     * <ul class="verbose">
-     *   <li>If the {@code connector} argument is {@code null}, then the {@code input} argument shall be an instance of
-     *       {@link XMLStreamReader}, {@link XMLEventReader}, {@link InputSource}, {@link InputStream}, {@link Reader},
-     *       {@link Source} or {@link Node}, otherwise a {@link DataStoreException} will be thrown.</li>
-     *
-     *   <li>If the {@code connector} argument is not {@code null}, then the {@code input} argument should be the
-     *       value of {@link StorageConnector#getStorage()} (i.e. the input object as given by the user). If that
-     *       value is not recognized, then this constructor will fallback on {@link StorageConnector#getStorageAs(Class)}
-     *       with the {@link InputStream} type. In any cases, this constructor invokes
-     *       {@link StorageConnector#closeAllExcept(Object)} after the input has been set.</li>
-     * </ul>
      *
      * @param  owner      the data store for which this reader is created.
-     * @param  input      value of {@code storage.getStorage()}.
-     * @param  connector  information about the storage (URL, stream, <i>etc</i>), or {@code null} if unknown.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if the input type is not recognized.
      * @throws XMLStreamException if an error occurred while opening the XML file.
      */
-    protected StaxStreamReader(final StaxDataStore owner, final Object input, final StorageConnector connector)
+    protected StaxStreamReader(final StaxDataStore owner, final StorageConnector connector)
             throws DataStoreException, XMLStreamException
     {
         super(owner);
-        ArgumentChecks.ensureNonNull("input", input);
+        inputName = connector.getStorageName();
+        final Object input = connector.getStorage();
         if      (input instanceof XMLStreamReader) reader = (XMLStreamReader) input;
         else if (input instanceof XMLEventReader)  reader = factory().createXMLStreamReader(new StAXSource((XMLEventReader) input));
         else if (input instanceof InputSource)     reader = factory().createXMLStreamReader(new SAXSource((InputSource) input));
@@ -116,8 +109,8 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
         else if (input instanceof Source)          reader = factory().createXMLStreamReader((Source) input);
         else if (input instanceof Node)            reader = factory().createXMLStreamReader(new DOMSource((Node) input));
         else {
-            final InputStream in;
-            if (connector == null || (in = connector.getStorageAs(InputStream.class)) == null) {
+            final InputStream in = connector.getStorageAs(InputStream.class);
+            if (in == null) {
                 throw new UnsupportedStorageException(errors().getString(Errors.Keys.IllegalInputTypeForReader_2,
                                                       owner.getFormatName(), Classes.getClass(input)));
             }
@@ -127,9 +120,7 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
             return;
         }
         initCloseable(input);
-        if (connector != null) {
-            connector.closeAllExcept(input);
-        }
+        connector.closeAllExcept(input);
     }
 
     /**
@@ -149,7 +140,7 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
         if (reader != null) {
             return reader;
         }
-        throw new XMLStreamException(errors().getString(Errors.Keys.ClosedReader_1, "XML"));
+        throw new XMLStreamException(errors().getString(Errors.Keys.ClosedReader_1, owner.getFormatName()));
     }
 
     /**
@@ -187,6 +178,36 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
     }
 
     /**
+     * Moves the cursor the the first start element and verifies that it is the expected element.
+     * This method is useful for skipping comments, entity declarations, <i>etc.</i> before the root element.
+     *
+     * <p>If the reader is already on a start element, then this method does not move forward.
+     * Once a root element has been found, this method verifies that the namespace and local name
+     * are the expected ones, or throws an exception otherwise.</p>
+     *
+     * @param  isNamespace  a predicate receiving the namespace in argument (which may be null)
+     *                      and returning whether that namespace is the expected one.
+     * @param  localName    the expected name of the root element.
+     * @throws EOFException if no start element has been found before we reached the end of file.
+     * @throws XMLStreamException if an error occurred while reading the XML stream.
+     * @throws DataStoreContentException if the root element is not the expected one.
+     */
+    protected final void moveToRootElement(final Predicate<String> isNamespace, final String localName)
+            throws EOFException, XMLStreamException, DataStoreContentException
+    {
+        final XMLStreamReader reader = getReader();
+        if (!reader.isStartElement()) {
+            do if (!reader.hasNext()) {
+                throw new EOFException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, inputName));
+            } while (reader.next() != START_ELEMENT);
+        }
+        if (!isNamespace.test(reader.getNamespaceURI()) || !localName.equals(reader.getLocalName())) {
+            throw new DataStoreContentException(errors().getString(
+                    Errors.Keys.UnexpectedFileFormat_2, owner.getFormatName(), inputName));
+        }
+    }
+
+    /**
      * Skips all remaining elements until we reach the end of the given tag.
      * Nested tags of the same name, if any, are also skipped.
      *
@@ -213,7 +234,7 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
                 }
             }
         }
-        throw new EOFException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, tagName));
+        throw new EOFException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, inputName));
     }
 
     /**

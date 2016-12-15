@@ -19,23 +19,17 @@ package org.apache.sis.internal.gpx;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.io.IOException;
-import javax.xml.stream.XMLStreamException;
 import com.esri.core.geometry.Point;
+import java.time.Instant;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 // Branch-dependent imports
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
-import java.time.temporal.TemporalAccessor;
 import org.opengis.feature.Feature;
 
 
@@ -43,18 +37,30 @@ import org.opengis.feature.Feature;
  * Test {@link GPXReader} class.
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.7
- * @version 0.7
+ * @since   0.8
+ * @version 0.8
  * @module
  */
-public class GPXReaderTest extends TestCase{
+public final strictfp class GPXReaderTest extends TestCase {
 
     private static final double DELTA = 0.000001;
 
 
-    private static GPXReader create(final String resource) throws DataStoreException, IOException, XMLStreamException {
+    private static GPXReader create(final String resource) throws Exception {
         StorageConnector storage = new StorageConnector(GPXReaderTest.class.getResource(resource));
-        return new GPXReader(new GPXStore(storage), storage.getStorage(), storage);
+        return new GPXReader(new GPXStore(storage), storage);
+    }
+
+    private static void assertBoundsEquals(final double westBoundLongitude,
+                                           final double eastBoundLongitude,
+                                           final double southBoundLatitude,
+                                           final double northBoundLatitude,
+                                           final Bounds actual)
+    {
+        assertEquals("westBoundLongitude", westBoundLongitude, actual.westBoundLongitude, STRICT);
+        assertEquals("eastBoundLongitude", eastBoundLongitude, actual.eastBoundLongitude, STRICT);
+        assertEquals("southBoundLatitude", southBoundLatitude, actual.southBoundLatitude, STRICT);
+        assertEquals("northBoundLatitude", northBoundLatitude, actual.northBoundLatitude, STRICT);
     }
 
     /**
@@ -64,14 +70,14 @@ public class GPXReaderTest extends TestCase{
      */
     @Test
     public void testMetadataRead100() throws Exception {
-        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_metadata100.xml")) {
+        try (final GPXReader reader = create("1.0/metadata.xml")) {
             final Metadata data = reader.getMetadata();
 
-            assertEquals("sample", data.name);
-            assertEquals("sample gpx test file", data.description);
-            assertEquals(parseTime("2010-03-01"), data.time);
+            assertEquals("Sample", data.name);
+            assertEquals("GPX test file", data.description);
+            assertEquals(parseTime("2010-03-01T00:00:00Z"), data.time);
             assertArrayEquals(new String[] {"sample", "metadata"}, data.keywords.toArray());
-            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
+            assertBoundsEquals(-20, 30, 10, 40, data.bounds);
 
             assertEquals("Jean-Pierre", data.author.name);
             assertEquals("jean.pierre@test.com", data.author.email);
@@ -91,22 +97,22 @@ public class GPXReaderTest extends TestCase{
      */
     @Test
     public void testMetadataRead110() throws Exception {
-        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_metadata110.xml")) {
+        try (final GPXReader reader = create("1.1/metadata.xml")) {
             final Metadata data = reader.getMetadata();
 
-            assertEquals("sample", data.name);
-            assertEquals("sample gpx test file", data.description);
-            assertEquals(parseTime("2010-03-01"), data.time);
+            assertEquals("Sample", data.name);
+            assertEquals("GPX test file", data.description);
+//          assertEquals(parseTime("2010-03-01T00:00:00Z"), data.time);
             assertArrayEquals(new String[] {"sample", "metadata"}, data.keywords.toArray());
-            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
+            assertBoundsEquals(-20, 30, 10, 40, data.bounds);
 
             assertEquals("Jean-Pierre", data.author.name);
-            assertEquals("jean.pierre@test.com", data.author.email);
+//          assertEquals("jean.pierre@test.com", data.author.email);
             assertEquals("http://someone-site.org", data.author.link.toString());
 
-            assertEquals("gnu", data.copyright.author);
-            assertEquals(2010, data.copyright.year.intValue());
-            assertEquals("http://www.gnu.org/licenses/lgpl-3.0-standalone.html",
+            assertEquals("Apache", data.copyright.author);
+            assertEquals(2004, data.copyright.year.intValue());
+            assertEquals("http://www.apache.org/licenses/LICENSE-2.0",
                          data.copyright.license.toString());
 
             assertEquals(3, data.links.size());
@@ -116,7 +122,6 @@ public class GPXReaderTest extends TestCase{
         }
     }
 
-
     /**
      * Tests GPX version 1.0.0 way point tag parsing.
      *
@@ -124,14 +129,14 @@ public class GPXReaderTest extends TestCase{
      */
     @Test
     public void testWayPointRead100() throws Exception {
-        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_waypoint100.xml")) {
+        try (final GPXReader reader = create("1.0/waypoint.xml")) {
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
-            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
+            assertBoundsEquals(-20, 30, 10, 40, data.bounds);
             assertNull(data.author);
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
@@ -153,14 +158,14 @@ public class GPXReaderTest extends TestCase{
      */
     @Test
     public void testWayPointRead110() throws Exception {
-        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_waypoint110.xml")) {
+        try (final GPXReader reader = create("1.1/waypoint.xml")) {
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
-            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
+            assertBoundsEquals(-20, 30, 10, 40, data.bounds);
             assertNull(data.author);
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
@@ -183,24 +188,24 @@ public class GPXReaderTest extends TestCase{
      */
     @Test
     public void testRouteRead100() throws Exception {
-        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_route100.xml")) {
+        try (final GPXReader reader = create("1.0/route.xml")) {
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
-            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
+            assertBoundsEquals(-20, 30, 10, 40, data.bounds);
             assertNull(data.author);
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
             Feature f = reader.next();
-            assertEquals("route name",          f.getPropertyValue("name"));
-            assertEquals("route comment",       f.getPropertyValue("cmt"));
-            assertEquals("route description",   f.getPropertyValue("desc"));
-            assertEquals("route source",        f.getPropertyValue("src"));
-            assertEquals("route type",          f.getPropertyValue("type"));
+            assertEquals("Route name",          f.getPropertyValue("name"));
+            assertEquals("Route comment",       f.getPropertyValue("cmt"));
+            assertEquals("Route description",   f.getPropertyValue("desc"));
+            assertEquals("Route source",        f.getPropertyValue("src"));
+            assertNull  ("Route type",          f.getPropertyValue("type"));
             assertEquals(7,                     f.getPropertyValue("number"));
 
             List<Link> links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
@@ -248,24 +253,24 @@ public class GPXReaderTest extends TestCase{
      */
     @Test
     public void testRouteRead110() throws Exception {
-        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_route110.xml")) {
+        try (final GPXReader reader = create("1.1/route.xml")) {
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
-            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
+            assertBoundsEquals(-20, 30, 10, 40, data.bounds);
             assertNull(data.author);
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
             Feature f = reader.next();
-            assertEquals("route name",          f.getPropertyValue("name"));
-            assertEquals("route comment",       f.getPropertyValue("cmt"));
-            assertEquals("route description",   f.getPropertyValue("desc"));
-            assertEquals("route source",        f.getPropertyValue("src"));
-            assertEquals("route type",          f.getPropertyValue("type"));
+            assertEquals("Route name",          f.getPropertyValue("name"));
+            assertEquals("Route comment",       f.getPropertyValue("cmt"));
+            assertEquals("Route description",   f.getPropertyValue("desc"));
+            assertEquals("Route source",        f.getPropertyValue("src"));
+            assertEquals("Route type",          f.getPropertyValue("type"));
             assertEquals(7,                     f.getPropertyValue("number"));
 
             List<Link> links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
@@ -315,24 +320,24 @@ public class GPXReaderTest extends TestCase{
      */
     @Test
     public void testTrackRead100() throws Exception {
-        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_track100.xml")) {
+        try (final GPXReader reader = create("1.0/track.xml")) {
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
-            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
+            assertBoundsEquals(-20, 30, 10, 40, data.bounds);
             assertNull(data.author);
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
             Feature f = reader.next();
-            assertEquals("track name",          f.getPropertyValue("name"));
-            assertEquals("track comment",       f.getPropertyValue("cmt"));
-            assertEquals("track description",   f.getPropertyValue("desc"));
-            assertEquals("track source",        f.getPropertyValue("src"));
-            assertEquals("track type",          f.getPropertyValue("type"));
+            assertEquals("Track name",          f.getPropertyValue("name"));
+            assertEquals("Track comment",       f.getPropertyValue("cmt"));
+            assertEquals("Track description",   f.getPropertyValue("desc"));
+            assertEquals("Track source",        f.getPropertyValue("src"));
+            assertNull  ("Track type",          f.getPropertyValue("type"));
             assertEquals(7,                     f.getPropertyValue("number"));
 
             List<Link> links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
@@ -385,24 +390,24 @@ public class GPXReaderTest extends TestCase{
      */
     @Test
     public void testTrackRead110() throws Exception {
-        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_track110.xml")) {
+        try (final GPXReader reader = create("1.1/track.xml")) {
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
             assertNull(data.description);
             assertNull(data.time);
             assertNull(data.keywords);
-            assertEquals(new DefaultGeographicBoundingBox(-20, 30, 10, 40), data.bounds);
+            assertBoundsEquals(-20, 30, 10, 40, data.bounds);
             assertNull(data.author);
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
             Feature f = reader.next();
-            assertEquals("track name",          f.getPropertyValue("name"));
-            assertEquals("track comment",       f.getPropertyValue("cmt"));
-            assertEquals("track description",   f.getPropertyValue("desc"));
-            assertEquals("track source",        f.getPropertyValue("src"));
-            assertEquals("track type",          f.getPropertyValue("type"));
+            assertEquals("Track name",          f.getPropertyValue("name"));
+            assertEquals("Track comment",       f.getPropertyValue("cmt"));
+            assertEquals("Track description",   f.getPropertyValue("desc"));
+            assertEquals("Track source",        f.getPropertyValue("src"));
+            assertEquals("Track type",          f.getPropertyValue("type"));
             assertEquals(7,                     f.getPropertyValue("number"));
 
             List<Link> links = new ArrayList<>((Collection<Link>) f.getPropertyValue("link"));
@@ -457,16 +462,16 @@ public class GPXReaderTest extends TestCase{
             assertEquals(15.0,                  ((Point)f.getPropertyValue("@geometry")).getX(), DELTA);
             assertEquals(10.0,                  ((Point)f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(140.0,                 f.getPropertyValue("ele"));
-            assertEquals(parseTime("2010-01-10"),f.getPropertyValue("time"));
+            assertEquals(parseTime("2010-01-10T00:00:00Z"),f.getPropertyValue("time"));
             assertEquals(35.0,                  f.getPropertyValue("magvar"));
             assertEquals(112.32,                f.getPropertyValue("geoidheight"));
             assertEquals("first point",         f.getPropertyValue("name"));
             assertEquals("first comment",       f.getPropertyValue("cmt"));
             assertEquals("first description",   f.getPropertyValue("desc"));
             assertEquals("first source",        f.getPropertyValue("src"));
-            assertEquals("first sym",           f.getPropertyValue("sym"));
+            assertEquals("first symbol",        f.getPropertyValue("sym"));
             assertEquals("first type",          f.getPropertyValue("type"));
-            assertEquals("first fix",           f.getPropertyValue("fix"));
+            assertEquals("none",                f.getPropertyValue("fix"));
             assertEquals(11,                    f.getPropertyValue("sat"));
             assertEquals(15.15,                 f.getPropertyValue("hdop"));
             assertEquals(14.14,                 f.getPropertyValue("vdop"));
@@ -527,16 +532,16 @@ public class GPXReaderTest extends TestCase{
             assertEquals(35.0,                  ((Point) f.getPropertyValue("@geometry")).getX(), DELTA);
             assertEquals(30.0,                  ((Point) f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(150.0,                 f.getPropertyValue("ele"));
-            assertEquals(parseTime("2010-01-30"),f.getPropertyValue("time"));
+            assertEquals(parseTime("2010-01-30T00:00:00Z"),f.getPropertyValue("time"));
             assertEquals(25.0,                  f.getPropertyValue("magvar"));
             assertEquals(142.32,                f.getPropertyValue("geoidheight"));
             assertEquals("third point",         f.getPropertyValue("name"));
             assertEquals("third comment",       f.getPropertyValue("cmt"));
             assertEquals("third description",   f.getPropertyValue("desc"));
             assertEquals("third source",        f.getPropertyValue("src"));
-            assertEquals("third sym",           f.getPropertyValue("sym"));
+            assertEquals("third symbol",        f.getPropertyValue("sym"));
             assertEquals("third type",          f.getPropertyValue("type"));
-            assertEquals("third fix",           f.getPropertyValue("fix"));
+            assertEquals("3d",                  f.getPropertyValue("fix"));
             assertEquals(35,                    f.getPropertyValue("sat"));
             assertEquals(35.15,                 f.getPropertyValue("hdop"));
             assertEquals(34.14,                 f.getPropertyValue("vdop"));
@@ -565,10 +570,8 @@ public class GPXReaderTest extends TestCase{
         }
     }
 
-    private static Temporal parseTime(String str) {
-        final DateTimeFormatter format = DateTimeFormatter.ISO_DATE;
-        final TemporalAccessor accessor = format.parse(str);
-        final LocalDate localDate = LocalDate.from(accessor);
-        return localDate;
+    private static Instant parseTime(String str) {
+        final DateTimeFormatter format = DateTimeFormatter.ISO_INSTANT;
+        return Instant.from(format.parse(str));
     }
 }

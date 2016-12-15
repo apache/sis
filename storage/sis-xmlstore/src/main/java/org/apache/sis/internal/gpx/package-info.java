@@ -66,8 +66,11 @@
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Tags.NAMESPACE_V11, xmlns = {
     @XmlNs(prefix = "gpx", namespaceURI = Tags.NAMESPACE_V11)
 })
+@XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.internal.gpx;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlSchema;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;

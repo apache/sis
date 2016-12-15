@@ -26,8 +26,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.io.IOException;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlList;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
@@ -35,14 +36,12 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.util.InternationalString;
 
 import org.apache.sis.internal.simple.SimpleMetadata;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
-import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.util.iso.SimpleInternationalString;
 
@@ -75,6 +74,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * @version 0.8
  * @module
  */
+@XmlRootElement(name = Tags.METADATA)
 public final class Metadata extends SimpleMetadata {
     /**
      * The name of the GPX file.
@@ -121,7 +121,7 @@ public final class Metadata extends SimpleMetadata {
      *
      * @see #getDates()
      */
-    @XmlElement(name = Tags.TIME)
+//  @XmlElement(name = Tags.TIME)
     public Temporal time;
 
     /**
@@ -140,8 +140,8 @@ public final class Metadata extends SimpleMetadata {
      *
      * @see #getExtents()
      */
-    @XmlElement
-    public GeographicBoundingBox bounds;
+    @XmlElement(name = Tags.BOUNDS)
+    public Bounds bounds;
 
     /**
      * Creates an initially empty metadata object.
@@ -227,11 +227,7 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<Extent> getExtents() {
-        if (bounds != null) {
-            return Collections.singleton(new DefaultExtent(null, bounds, null, null));
-        } else {
-            return super.getExtents();
-        }
+        return (bounds != null) ? Collections.singleton(bounds) : super.getExtents();
     }
 
     /**
@@ -303,7 +299,7 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder();
-        buffer.append("GPX metadata");
+        buffer.append("GPX metadata").append(System.lineSeparator());
         final TableAppender table = new TableAppender(buffer);
         table.setMultiLinesCells(true);
         table.appendHorizontalSeparator();
@@ -347,7 +343,7 @@ public final class Metadata extends SimpleMetadata {
      * @param  separator  the separator to insert between each value.
      */
     private static void append(final TableAppender table, final String label, final List<?> values, final String separator) {
-        if (values != null) {
+        if (values != null && !values.isEmpty()) {
             table.append(label).append(':').nextColumn();
             final int n = values.size();
             for (int i=0; i<n; i++) {
