@@ -16,12 +16,18 @@
  */
 package org.apache.sis.internal.xml;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.NoSuchElementException;
-import java.io.EOFException;
-import java.io.Reader;
+import java.util.Date;
+import java.util.List;
+import java.util.Arrays;
 import java.util.function.Predicate;
+import java.util.NoSuchElementException;
+import java.net.URI;
+import java.io.Reader;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.EOFException;
+import java.net.URISyntaxException;
+import java.time.LocalDate;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -34,12 +40,19 @@ import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stax.StAXSource;
 import org.xml.sax.InputSource;
 import org.w3c.dom.Node;
+import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
+
+// Branch-dependent imports
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
+import java.time.format.DateTimeParseException;
 
 
 /**
@@ -235,6 +248,83 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
             }
         }
         throw new EOFException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, inputName));
+    }
+
+    /**
+     * Returns the current value of {@link XMLStreamReader#getElementText()},
+     * or {@code null} if that value is null or empty.
+     *
+     * @return the current text element, or {@code null} if empty.
+     * @throws XMLStreamException if a text element can not be returned.
+     */
+    protected final String getElementText() throws XMLStreamException {
+        String text = getReader().getElementText();
+        if (text != null) {
+            text = text.trim();
+            if (!text.isEmpty()) {
+                return text;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the current value of {@link XMLStreamReader#getElementText()} as an URI,
+     * or {@code null} if that value is null or empty.
+     *
+     * @return the current text element as an URI, or {@code null} if empty.
+     * @throws XMLStreamException if a text element can not be returned.
+     * @throws URISyntaxException if the text can not be parsed as an URI.
+     */
+    protected final URI getElementAsURI() throws XMLStreamException, URISyntaxException {
+        final Context context = Context.current();
+        return Context.converter(context).toURI(context, getElementText());
+    }
+
+    /**
+     * Returns the current value of {@link XMLStreamReader#getElementText()} as a date,
+     * or {@code null} if that value is null or empty.
+     *
+     * @return the current text element as a date, or {@code null} if empty.
+     * @throws XMLStreamException if a text element can not be returned.
+     * @throws DateTimeParseException if the text can not be parsed as a date.
+     */
+    protected final Date getElementAsDate() throws XMLStreamException {
+        final String text = getElementText();
+        return (text != null) ? StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse(text)) : null;
+    }
+
+    /**
+     * Returns the current value of {@link XMLStreamReader#getElementText()} as a temporal object,
+     * or {@code null} if that value is null or empty.
+     *
+     * @return the current text element as a temporal object, or {@code null} if empty.
+     * @throws XMLStreamException if a text element can not be returned.
+     * @throws DateTimeParseException if the text can not be parsed as a date.
+     */
+    protected final Temporal getElementAsTemporal() throws XMLStreamException {
+        final String text = getElementText();
+        if (text != null) {
+            final TemporalAccessor accessor = StandardDateFormat.FORMAT.parse(text);
+            if (accessor instanceof Temporal) {
+                return (Temporal) accessor;
+            }
+            return LocalDate.from(accessor);
+            // TODO: need more extensive check.
+        }
+        return null;
+    }
+
+    /**
+     * Returns the current value of {@link XMLStreamReader#getElementText()} as a list of strings,
+     * or {@code null} if that value is null or empty.
+     *
+     * @return the current text element as a list.
+     * @throws XMLStreamException if a text element can not be returned.
+     */
+    protected final List<String> getElementAsList() throws XMLStreamException {
+        final String text = getElementText();
+        return (text != null) ? Arrays.asList(text.split(" ")) : null;
     }
 
     /**

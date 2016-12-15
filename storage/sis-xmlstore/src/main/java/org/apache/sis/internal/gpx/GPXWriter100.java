@@ -228,7 +228,7 @@ public class GPXWriter100 extends StaxStreamWriter {
         writeLinkURIs(metadata.links);
 
         if (metadata.time != null) {
-            writeSimpleTag(namespace, Tags.TIME, toString(metadata.time));
+            writeSimpleTag(namespace, Tags.TIME, metadata.time.toInstant().toString());
         }
 
         writeSimpleTag(namespace, Tags.KEYWORDS, toSpaceSeparatedList(metadata.keywords));
@@ -423,7 +423,7 @@ public class GPXWriter100 extends StaxStreamWriter {
      * @param temp not null
      * @return String representation
      */
-    protected static String toString(final Temporal temp){
+    protected static String toString(final Temporal temp) {
         if(temp instanceof LocalDate){
             return DateTimeFormatter.ISO_DATE.format(temp);
         }else if(temp instanceof LocalDateTime){

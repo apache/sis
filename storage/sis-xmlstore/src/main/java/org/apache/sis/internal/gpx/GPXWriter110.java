@@ -16,9 +16,9 @@
  */
 package org.apache.sis.internal.gpx;
 
-import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.io.IOException;
+import java.util.Date;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.sis.storage.DataStoreException;
@@ -70,9 +70,9 @@ public class GPXWriter110 extends GPXWriter100 {
             writeLink(uri);
         }
 
-        final Temporal d = metadata.time;
+        final Date d = metadata.time;
         if (d != null) {
-            writeSimpleTag(namespace, Tags.TIME, toString(d));
+            writeSimpleTag(namespace, Tags.TIME, d.toInstant().toString());
         }
 
         writeSimpleTag(namespace, Tags.KEYWORDS, toSpaceSeparatedList(metadata.keywords));
