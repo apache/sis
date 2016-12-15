@@ -17,20 +17,11 @@
 package org.apache.sis.internal.gpx;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.io.EOFException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.Temporal;
-import java.time.temporal.TemporalAccessor;
-import java.time.temporal.UnsupportedTemporalTypeException;
 import javax.xml.transform.stax.StAXSource;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -115,17 +106,23 @@ public class GPXReader extends StaxStreamReader {
     private int trackId;
 
     /**
+     * {@code true} if we reached the end of {@code <gpx>} element.
+     */
+    private boolean finished;
+
+    /**
      * Creates a new GPX reader from the given file, URL, stream or reader object.
      *
      * @param  owner      the data store for which this reader is created.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if the input type is not recognized.
      * @throws XMLStreamException if an error occurred while opening the XML file.
+     * @throws URISyntaxException if an error occurred while parsing URI in GPX 1.0 metadata.
      * @throws JAXBException if an error occurred while parsing GPX 1.1 metadata.
      * @throws EOFException if the file seems to be truncated.
      */
     public GPXReader(final GPXStore owner, final StorageConnector connector)
-            throws DataStoreException, XMLStreamException, JAXBException, EOFException
+            throws DataStoreException, XMLStreamException, JAXBException, URISyntaxException, EOFException
     {
         super(owner, connector);
         types = Types.DEFAULT;
@@ -178,52 +175,30 @@ public class GPXReader extends StaxStreamReader {
                                         Errors.Keys.NestedElementNotAllowed_1, Tags.GPX));
                             }
                             case Tags.METADATA: {
+                                // GPX 1.1 metadata
                                 metadata = (Metadata) XML.unmarshal(new StAXSource(reader), null);
-                                return;
-                            }
-                            case Tags.NAME: {
-                                metadata().name = reader.getElementText();
                                 break;
                             }
-                            case Tags.DESCRIPTION: {
-                                metadata().description = reader.getElementText();
-                                break;
-                            }
-                            case Tags.AUTHOR: {
-                                if (metadata().author == null) metadata.author = new Person();
-                                metadata.author.name = reader.getElementText();
-                                break;
-                            }
-                            case Tags.EMAIL: {
-                                if (metadata().author == null) metadata.author = new Person();
-                                metadata.author.email = reader.getElementText();
-                                break;
-                            }
-                            case Tags.URL: {
-                                try {
-                                    metadata().links.add(new Link(new URI(reader.getElementText())));
-                                } catch (URISyntaxException ex) {
-                                    throw new XMLStreamException(ex);
-                                }
-                                break;
-                            }
-                            case Tags.URL_NAME: {
-                                //reader.getElementText();
-                                break;
-                            }
-                            case Tags.TIME:     metadata().time     = parseTime(reader.getElementText()); break;
-                            case Tags.KEYWORDS: metadata().keywords = Arrays.asList(reader.getElementText().split(" ")); break;
-                            case Tags.BOUNDS:   metadata().bounds   = parseBound(); break;
-                            case Tags.WAY_POINT:
+                            // GPX 1.0 metadata
+                            case Tags.NAME:         metadata().name        = getElementText();   break;
+                            case Tags.DESCRIPTION:  metadata().description = getElementText();   break;
+                            case Tags.AUTHOR:       person()  .name        = getElementText();   break;
+                            case Tags.EMAIL:        person()  .email       = getElementText();   break;
+                            case Tags.URL:          link()    .uri         = getElementAsURI();  break;
+                            case Tags.URL_NAME:     link()    .text        = getElementText();   break;
+                            case Tags.TIME:         metadata().time        = getElementAsDate(); break;
+                            case Tags.KEYWORDS:     metadata().keywords    = getElementAsList(); break;
+                            case Tags.BOUNDS:       metadata().bounds      = parseBound();       break;
+                            case Tags.WAY_POINT:    // stop metadata parsing.
                             case Tags.TRACKS:
-                            case Tags.ROUTES: return;
+                            case Tags.ROUTES:       return;
                         }
                     }
                     break;
                 }
                 case END_ELEMENT: {
                     if (isNamespace(reader.getNamespaceURI()) && Tags.GPX.equals(reader.getLocalName())) {
-                        // TODO
+                        finished = true;
                     }
                     break;
                 }
@@ -243,6 +218,26 @@ public class GPXReader extends StaxStreamReader {
             metadata = new Metadata();
         }
         return metadata;
+    }
+
+    private Person person() {
+        final Metadata metadata = metadata();
+        if (metadata.author == null) {
+            metadata.author = new Person();
+        }
+        return metadata.author;
+    }
+
+    private Link link() {
+        final List<Link> links = metadata().links;
+        final Link first;
+        if (links.isEmpty()) {
+            first = new Link();
+            links.add(first);
+        } else {
+            first = links.get(0);
+        }
+        return first;
     }
 
     /**
@@ -286,6 +281,7 @@ public class GPXReader extends StaxStreamReader {
      *         or underlying stream caused an exception
      */
     public boolean hasNext() throws XMLStreamException {
+        if (finished) return false;
         findNext();
         return current != null;
     }
@@ -310,8 +306,6 @@ public class GPXReader extends StaxStreamReader {
      */
     private void findNext() throws XMLStreamException {
         final XMLStreamReader reader = getReader();
-        if (current != null) return;
-
         boolean first = true;
         while ( first || (current == null && reader.hasNext()) ) {
             final int type;
@@ -335,76 +329,6 @@ public class GPXReader extends StaxStreamReader {
                 }
             }
         }
-    }
-
-    /**
-     * Parse current metadata element.
-     * The stax reader must be placed to the start element of the metadata.
-     */
-    private Metadata parseMetadata110() throws XMLStreamException, EOFException {
-        final XMLStreamReader reader = getReader();
-        final Metadata metadata = new Metadata();
-        while (reader.hasNext()) {
-            switch (reader.next()) {
-                case START_ELEMENT: {
-                    switch (reader.getLocalName()) {
-                        case Tags.NAME: metadata.name = reader.getElementText(); break;
-                        case Tags.DESCRIPTION: metadata.description = reader.getElementText(); break;
-                        case Tags.AUTHOR: metadata.author = parsePerson(); break;
-                        case Tags.COPYRIGHT: metadata.copyright = parseCopyright(); break;
-                        case Tags.LINK: metadata.links.add(parseLink()); break;
-                        case Tags.TIME: metadata.time = parseTime(reader.getElementText()); break;
-                        case Tags.KEYWORDS: metadata.keywords = Arrays.asList(reader.getElementText().split(" ")); break;
-                        case Tags.BOUNDS: metadata.bounds = parseBound(); break;
-                    }
-                    break;
-                }
-                case END_ELEMENT: {
-                    switch (reader.getLocalName()) {
-                        case Tags.METADATA:
-                            // End of the metadata element
-                            return metadata;
-                    }
-                    break;
-                }
-            }
-        }
-        throw new XMLStreamException("Error in xml file, relation tag without end.");
-    }
-
-    /**
-     * Parse current copyright element.
-     * The stax reader must be placed to the start element of the copyright.
-     */
-    private Copyright parseCopyright() throws XMLStreamException {
-        final XMLStreamReader reader = getReader();
-        final Copyright copyright = new Copyright();
-        copyright.author = reader.getAttributeValue(null, Attributes.AUTHOR);
-
-        while (reader.hasNext()) {
-            switch (reader.next()) {
-                case START_ELEMENT: {
-                    final String localName = reader.getLocalName();
-                    if (Tags.YEAR.equalsIgnoreCase(localName)) {
-                        copyright.year = Integer.valueOf(reader.getElementText());
-                    } else if (Tags.LICENSE.equalsIgnoreCase(localName)) {
-                        try {
-                            copyright.license = new URI(reader.getElementText());
-                        } catch (URISyntaxException ex) {
-                            throw new XMLStreamException(ex);
-                        }
-                    }
-                    break;
-                }
-                case END_ELEMENT: {
-                    if (Tags.COPYRIGHT.equalsIgnoreCase(reader.getLocalName())) {
-                        return copyright;
-                    }
-                    break;
-                }
-            }
-        }
-        throw new XMLStreamException("Error in xml file, copyright tag without end.");
     }
 
     /**
@@ -441,39 +365,6 @@ public class GPXReader extends StaxStreamReader {
             }
         }
         throw new XMLStreamException("Error in xml file, link tag without end.");
-    }
-
-    /**
-     * Parse current Person element.
-     * The stax reader must be placed to the start element.
-     */
-    private Person parsePerson() throws XMLStreamException {
-        final XMLStreamReader reader = getReader();
-        final Person person = new Person();
-
-        while (reader.hasNext()) {
-            switch (reader.next()) {
-                case START_ELEMENT: {
-                    final String localName = reader.getLocalName();
-                    if (Tags.NAME.equalsIgnoreCase(localName)) {
-                        person.name = reader.getElementText();
-                    } else if (Tags.EMAIL.equalsIgnoreCase(localName)) {
-                        person.email = reader.getElementText();
-                    } else if (Tags.LINK.equalsIgnoreCase(localName)) {
-                        person.link = parseLink();
-                    }
-                    break;
-                }
-                case END_ELEMENT: {
-                    if (Tags.AUTHOR.equalsIgnoreCase(reader.getLocalName())) {
-                        // End of the author element
-                        return person;
-                    }
-                    break;
-                }
-            }
-        }
-        throw new XMLStreamException("Error in xml file, person tag without end.");
     }
 
     /**
@@ -531,7 +422,7 @@ public class GPXReader extends StaxStreamReader {
                     if (Tags.ELEVATION.equalsIgnoreCase(localName)) {
                         feature.setPropertyValue(Tags.ELEVATION, Double.valueOf(reader.getElementText()));
                     } else if (Tags.TIME.equalsIgnoreCase(localName)) {
-                        feature.setPropertyValue(Tags.TIME, parseTime(reader.getElementText()));
+                        feature.setPropertyValue(Tags.TIME, getElementAsTemporal());
                     } else if (Tags.MAGNETIC_VAR.equalsIgnoreCase(localName)) {
                         feature.setPropertyValue(Tags.MAGNETIC_VAR, Double.valueOf(reader.getElementText()));
                     } else if (Tags.GEOID_HEIGHT.equalsIgnoreCase(localName)) {
@@ -740,29 +631,5 @@ public class GPXReader extends StaxStreamReader {
             }
         }
         throw new XMLStreamException("Error in xml file, "+Tags.TRACKS+" tag without end.");
-    }
-
-    /**
-     * Parse date or date time from string.
-     * Dates and times in GPX files are Coordinated Universal Time (UTC) using ISO 8601 format.
-     *
-     * @param dateStr date in ISO date or data time format
-     */
-    private static Temporal parseTime(String dateStr) {
-        try {
-            final DateTimeFormatter format = DateTimeFormatter.ISO_INSTANT;
-            final TemporalAccessor accessor = format.parse(dateStr);
-            return Instant.from(accessor);
-        } catch (UnsupportedTemporalTypeException | DateTimeParseException ex) {
-            try {
-                final DateTimeFormatter format = DateTimeFormatter.ISO_DATE;
-                final TemporalAccessor accessor = format.parse(dateStr);
-                return LocalDate.from(accessor);
-            } catch (UnsupportedTemporalTypeException | DateTimeParseException e) {
-                final DateTimeFormatter format = DateTimeFormatter.ISO_DATE_TIME;
-                final TemporalAccessor accessor = format.parse(dateStr);
-                return LocalDateTime.from(accessor);
-            }
-        }
     }
 }

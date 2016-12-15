@@ -16,8 +16,6 @@
  */
 package org.apache.sis.internal.gpx;
 
-import java.time.Instant;
-import java.time.temporal.Temporal;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,11 +37,11 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.util.InternationalString;
 
-import org.apache.sis.internal.simple.SimpleMetadata;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.internal.simple.SimpleMetadata;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
-import org.apache.sis.util.iso.SimpleInternationalString;
 
 
 /**
@@ -58,11 +56,11 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *     <desc> String </desc>
  *     <author> Person </author>
  *     <copyright> Copyright </copyright>
- *     <link> URI </link>
+ *     <link href="URI"/>
  *     <time> Temporal </time>
- *     <keywords> String </keywords>
+ *     <keywords> String[] </keywords>
  *     <bounds> Envelope </bounds>
- *     <extensions> (ignored) </extensions>
+ *     <extensions> any object known to JAXB </extensions>
  *   </metadata>
  * }
  *
@@ -120,9 +118,12 @@ public final class Metadata extends SimpleMetadata {
      * The creation date of the file.
      *
      * @see #getDates()
+     *
+     * @todo We could like to use {@link java.time}, but it does not yet word out-of-the-box with JAXB
+     *       (we need adapter). Furthermore current GeoAPI interfaces does not yet use {@code java.time}.
      */
-//  @XmlElement(name = Tags.TIME)
-    public Temporal time;
+    @XmlElement(name = Tags.TIME)
+    public Date time;
 
     /**
      * Keywords associated with the file, or {@code null} if unspecified.
@@ -239,8 +240,7 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<CitationDate> getDates() {
         if (time != null) {
-            final CitationDate date = new DefaultCitationDate(Date.from(Instant.from(time)), DateType.CREATION);
-            return Collections.singleton(date);
+            return Collections.singleton(new DefaultCitationDate(time, DateType.CREATION));
         }
         return super.getDates();
     }
@@ -308,7 +308,7 @@ public final class Metadata extends SimpleMetadata {
         append(table, "Author",      author);
         append(table, "Copyright",   copyright);
         append(table, "Link(s)",     links, System.lineSeparator());
-        append(table, "Time",        time);
+        append(table, "Time",        (time != null) ? time.toInstant() : null);
         append(table, "Keywords",    keywords, " ");
         append(table, "Bounds",      bounds);
         table.appendHorizontalSeparator();

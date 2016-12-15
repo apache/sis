@@ -18,8 +18,7 @@ package org.apache.sis.internal.gpx;
 
 import java.net.URI;
 import java.io.File;
-import java.time.Instant;
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +34,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 // Branch-dependent imports
+import java.time.LocalDate;
 import org.opengis.feature.Feature;
 
 
@@ -91,7 +91,7 @@ public final strictfp class GPXWriterTest extends TestCase {
         metaData.author = person;
         metaData.copyright = copyright;
         metaData.links.addAll(Arrays.asList(new Link(new URI("http://adress1.org")), new Link(new URI("http://adress2.org"))));
-        if (false) metaData.time = Instant.now();   // TODO
+        metaData.time = new Date();
         metaData.keywords = Arrays.asList("test", "sample");
         metaData.bounds = bounds;
 
