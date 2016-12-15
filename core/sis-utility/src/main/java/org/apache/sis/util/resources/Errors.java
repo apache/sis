@@ -545,6 +545,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NegativeArrayLength_1 = 91;
 
         /**
+         * Nested “{0}” elements are not allowed.
+         */
+        public static final short NestedElementNotAllowed_1 = 167;
+
+        /**
          * No value is associated to “{0}”.
          */
         public static final short NoSuchValue_1 = 92;

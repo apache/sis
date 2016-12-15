@@ -96,7 +96,7 @@ abstract class StaxStream implements AutoCloseable {
     /**
      * Returns the error resources in the current locale.
      */
-    final Errors errors() {
+    protected final Errors errors() {
         return Errors.getResources(owner.getLocale());
     }
 }

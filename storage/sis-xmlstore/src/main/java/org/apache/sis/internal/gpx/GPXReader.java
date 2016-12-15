@@ -31,15 +31,18 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.UnsupportedTemporalTypeException;
+import javax.xml.transform.stax.StAXSource;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.bind.JAXBException;
 import com.esri.core.geometry.Point;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.xml.StaxStreamReader;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Version;
+import org.apache.sis.xml.XML;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -47,13 +50,14 @@ import org.opengis.feature.Feature;
 
 /**
  * Reader for GPX 1.0 and 1.1 files.
+ * This reader is itself an iterator over all features found in the XML file.
  * Usage:
  *
  * {@preformat java
- *     final Reader    reader   = new Reader(dataStore, gpxInput, null);
- *     final Version   version  = reader.getVersion();
- *     final Metadata  metadata = reader.getMetadata();
- *     while(reader.hasNext()) {
+ *     final Reader   reader   = new Reader(dataStore, connector);
+ *     final Version  version  = reader.getVersion();
+ *     final Metadata metadata = reader.getMetadata();
+ *     while (reader.hasNext()) {
  *         Feature feature = reader.next();
  *     }
  * }
@@ -112,72 +116,133 @@ public class GPXReader extends StaxStreamReader {
 
     /**
      * Creates a new GPX reader from the given file, URL, stream or reader object.
-     * See {@linkplain StaxStreamReader#StaxStreamReader super-class constructor}
-     * for more information about constructor arguments.
      *
      * @param  owner      the data store for which this reader is created.
-     * @param  input      value of {@code storage.getStorage()}.
-     * @param  connector  information about the storage (URL, stream, <i>etc</i>), or {@code null} if unknown.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if the input type is not recognized.
      * @throws XMLStreamException if an error occurred while opening the XML file.
+     * @throws JAXBException if an error occurred while parsing GPX 1.1 metadata.
      * @throws EOFException if the file seems to be truncated.
      */
-    public GPXReader(final GPXStore owner, final Object input, final StorageConnector connector)
-            throws DataStoreException, XMLStreamException, EOFException
+    public GPXReader(final GPXStore owner, final StorageConnector connector)
+            throws DataStoreException, XMLStreamException, JAXBException, EOFException
     {
-        super(owner, input, connector);
+        super(owner, connector);
         types = Types.DEFAULT;
         /*
-         * Read metadata immediately. We are especially interrested in the "bounds" tag,
-         * for creating the envelope.
+         * Skip comments, characters, entity declarations, etc. until we find the root element.
+         * If that root is anything other than <gpx>, we consider that this is not a GPX file.
+         */
+        moveToRootElement(GPXReader::isNamespace, Tags.GPX);
+        /*
+         * If a version attribute is found on the <gpx> element, use that value for detecting
+         * the GPX version. Otherwise use the namespace URL.  If the version is not found, we
+         * leave the field to null (we do not assume any version). If a version is specified,
+         * we require major.minor version 1.0 or 1.1 but accept any bug-fix versions.
          */
         final XMLStreamReader reader = getReader();
-readMD: while (reader.hasNext()) {
+        String ver = reader.getAttributeValue(null, Attributes.VERSION);
+        if (ver != null) {
+            version = new Version(ver);
+        } else {
+            final String ns = reader.getNamespaceURI();
+            if (ns != null) switch (ns) {
+                case Tags.NAMESPACE_V10: version = GPXStore.V1_0; break;
+                case Tags.NAMESPACE_V11: version = GPXStore.V1_1; break;
+            }
+        }
+        if (version != null) {
+            isLegacy = version.compareTo(GPXStore.V1_0, 2) <= 0;
+            if (version.compareTo(GPXStore.V1_1, 2) > 0) {
+                throw new DataStoreContentException(errors().getString(
+                        Errors.Keys.UnsupportedFormatVersion_2, owner.getFormatName(), version));
+            }
+        }
+        /*
+         * Read metadata immediately, from current position until the beginning of way points, tracks or routes.
+         * The metadata can appear in two forms:
+         *
+         *   - In GPX 1.0, they are declared directly in the <gpx> body.
+         *     Those elements are parsed in the switch statement below.
+         *
+         *   - In GPX 1.1, they are declared in a <metadata> sub-element and their structure is a little bit
+         *     more elaborated than it was in the previous version. We will use JAXB for parsing them.
+         */
+        while (reader.hasNext()) {
             switch (reader.next()) {
                 case START_ELEMENT: {
-                    if (isGPX(reader)) {
+                    if (isNamespace(reader.getNamespaceURI())) {
                         switch (reader.getLocalName()) {
                             case Tags.GPX: {
-                                String str = "1.1";     // Consider 1.1 by default
-                                final int n=reader.getAttributeCount();
-                                for (int i=0; i<n; i++) {
-                                    if (Attributes.VERSION.equals(reader.getAttributeLocalName(i))) {
-                                        str = reader.getAttributeValue(i);
-                                    }
-                                }
-                                version = new Version(str);
-                                isLegacy = GPXStore.V1_0.equals(version);
-                                if (isLegacy) {
-                                    // we wont found a metadata tag, must read the tags here.
-                                    metadata = parseMetadata100();
-                                    break readMD;
-                                } else if (!GPXStore.V1_1.equals(version)) {
-                                    throw new DataStoreException("Unsupported version: " + version);
+                                throw new DataStoreContentException(errors().getString(
+                                        Errors.Keys.NestedElementNotAllowed_1, Tags.GPX));
+                            }
+                            case Tags.METADATA: {
+                                metadata = (Metadata) XML.unmarshal(new StAXSource(reader), null);
+                                return;
+                            }
+                            case Tags.NAME: {
+                                metadata().name = reader.getElementText();
+                                break;
+                            }
+                            case Tags.DESCRIPTION: {
+                                metadata().description = reader.getElementText();
+                                break;
+                            }
+                            case Tags.AUTHOR: {
+                                if (metadata().author == null) metadata.author = new Person();
+                                metadata.author.name = reader.getElementText();
+                                break;
+                            }
+                            case Tags.EMAIL: {
+                                if (metadata().author == null) metadata.author = new Person();
+                                metadata.author.email = reader.getElementText();
+                                break;
+                            }
+                            case Tags.URL: {
+                                try {
+                                    metadata().links.add(new Link(new URI(reader.getElementText())));
+                                } catch (URISyntaxException ex) {
+                                    throw new XMLStreamException(ex);
                                 }
                                 break;
                             }
-                            case Tags.METADATA: {
-                                metadata = parseMetadata110();
-                                break readMD;
+                            case Tags.URL_NAME: {
+                                //reader.getElementText();
+                                break;
                             }
+                            case Tags.TIME:     metadata().time     = parseTime(reader.getElementText()); break;
+                            case Tags.KEYWORDS: metadata().keywords = Arrays.asList(reader.getElementText().split(" ")); break;
+                            case Tags.BOUNDS:   metadata().bounds   = parseBound(); break;
                             case Tags.WAY_POINT:
                             case Tags.TRACKS:
-                            case Tags.ROUTES: {
-                                break readMD;
-                            }
+                            case Tags.ROUTES: return;
                         }
                     }
+                    break;
+                }
+                case END_ELEMENT: {
+                    if (isNamespace(reader.getNamespaceURI()) && Tags.GPX.equals(reader.getLocalName())) {
+                        // TODO
+                    }
+                    break;
                 }
             }
         }
     }
 
     /**
-     * Returns {@code true} if the current element of the given reader is in the GPX namespace or has no namespace.
+     * Returns {@code true} if the given namespace is a GPX namespace or is null.
      */
-    private static boolean isGPX(final XMLStreamReader reader) {
-        final String ns = reader.getNamespaceURI();
-        return (ns == null) || ns.startsWith(Tags.NAMESPACE);
+    private static boolean isNamespace(final String ns) {
+        return (ns == null) || ns.startsWith(Tags.NAMESPACE + "/GPX/");
+    }
+
+    private Metadata metadata() {
+        if (metadata == null) {
+            metadata = new Metadata();
+        }
+        return metadata;
     }
 
     /**
@@ -270,56 +335,6 @@ readMD: while (reader.hasNext()) {
                 }
             }
         }
-    }
-
-    /**
-     * Parse current metadata element.
-     * The stax reader must be placed to the start element of the metadata.
-     */
-    private Metadata parseMetadata100() throws XMLStreamException, EOFException {
-        final XMLStreamReader reader = getReader();
-        final Metadata metadata = new Metadata();
-readMD: while (reader.hasNext()) {
-            switch (reader.next()) {
-                case START_ELEMENT: {
-                    switch (reader.getLocalName()) {
-                        case Tags.NAME:        metadata.name        = reader.getElementText(); break;
-                        case Tags.DESCRIPTION: metadata.description = reader.getElementText(); break;
-                        case Tags.AUTHOR: {
-                            if (metadata.author == null) metadata.author = new Person();
-                            metadata.author.name = reader.getElementText();
-                            break;
-                        }
-                        case Tags.EMAIL: {
-                            if (metadata.author == null) metadata.author = new Person();
-                            metadata.author.email = reader.getElementText();
-                            break;
-                        }
-                        case Tags.URL: {
-                            try {
-                                metadata.links.add(new Link(new URI(reader.getElementText())));
-                            } catch (URISyntaxException ex) {
-                                throw new XMLStreamException(ex);
-                            }
-                            break;
-                        }
-                        case Tags.URL_NAME: {
-                            //reader.getElementText();
-                            break;
-                        }
-                        case Tags.TIME:     metadata.time     = parseTime(reader.getElementText()); break;
-                        case Tags.KEYWORDS: metadata.keywords = Arrays.asList(reader.getElementText().split(" ")); break;
-                        case Tags.BOUNDS:   metadata.bounds   = parseBound(); break;
-                        case Tags.WAY_POINT:
-                        case Tags.TRACKS:
-                        case Tags.ROUTES:
-                            //there is no more metadata tags
-                            break readMD;
-                    }
-                }
-            }
-        }
-        return metadata;
     }
 
     /**
@@ -465,7 +480,7 @@ readMD: while (reader.hasNext()) {
      * Parse current Envelope element.
      * The stax reader must be placed to the start element.
      */
-    private GeographicBoundingBox parseBound() throws XMLStreamException, EOFException {
+    private Bounds parseBound() throws XMLStreamException, EOFException {
         final XMLStreamReader reader = getReader();
         final String xmin = reader.getAttributeValue(null, Attributes.MIN_X);
         final String xmax = reader.getAttributeValue(null, Attributes.MAX_X);
@@ -477,12 +492,12 @@ readMD: while (reader.hasNext()) {
         }
 
         skipUntilEnd(Tags.BOUNDS);
-
-        return new DefaultGeographicBoundingBox(
-                Double.parseDouble(xmin),
-                Double.parseDouble(xmax),
-                Double.parseDouble(ymin),
-                Double.parseDouble(ymax));
+        final Bounds bounds = new Bounds();
+        bounds.westBoundLongitude = Double.parseDouble(xmin);
+        bounds.eastBoundLongitude = Double.parseDouble(xmax);
+        bounds.southBoundLatitude = Double.parseDouble(ymin);
+        bounds.northBoundLatitude = Double.parseDouble(ymax);
+        return bounds;
     }
 
     /**
