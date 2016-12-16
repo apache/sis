@@ -16,6 +16,8 @@
  */
 package org.apache.sis.util.logging;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +27,7 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
@@ -275,6 +278,22 @@ public class WarningListeners<S> implements Localized {
             }
         }
         throw new NoSuchElementException(Errors.format(Errors.Keys.ElementNotFound_1, listener));
+    }
+
+    /**
+     * Returns all registered warning listeners, or an empty list if none.
+     * This method returns an unmodifiable snapshot of the listener list at the time this method is invoked.
+     *
+     * @return immutable list of all registered warning listeners.
+     *
+     * @since 0.8
+     */
+    public List<WarningListener<? super S>> getListeners() {
+        final WarningListener<? super S>[] current;
+        synchronized (this) {
+            current = listeners;
+        }
+        return (current != null) ? UnmodifiableArrayList.wrap(current) : Collections.emptyList();
     }
 
     /**

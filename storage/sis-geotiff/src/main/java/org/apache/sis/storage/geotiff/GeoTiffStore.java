@@ -34,7 +34,6 @@ import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 
 
@@ -75,7 +74,7 @@ public class GeoTiffStore extends DataStore {
      * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
      */
     public GeoTiffStore(final StorageConnector connector) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("connector", connector);
+        super(connector);
         final Charset encoding = connector.getOption(OptionKey.ENCODING);
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
         final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);

@@ -20,7 +20,6 @@ import java.io.IOException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -65,7 +64,7 @@ public class NetcdfStore extends DataStore {
      * @throws DataStoreException if an error occurred while opening the NetCDF file.
      */
     public NetcdfStore(final StorageConnector connector) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("connector", connector);
+        super(connector);
         try {
             decoder = NetcdfStoreProvider.decoder(listeners, connector);
         } catch (IOException e) {

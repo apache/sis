@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.EOFException;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -38,8 +39,10 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stax.StAXSource;
+import javax.xml.bind.JAXBException;
 import org.xml.sax.InputSource;
 import org.w3c.dom.Node;
+import org.apache.sis.xml.XML;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.storage.DataStoreException;
@@ -165,7 +168,7 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
      * @return a reader over a portion of the stream.
      * @throws XMLStreamException if this XML reader has been closed.
      */
-    protected final XMLStreamReader getSubReader(final String tagName) throws XMLStreamException {
+    protected final XMLStreamReader getSubReader(final QName tagName) throws XMLStreamException {
         return new StreamReaderDelegate(getReader()) {
             /** Increased every time a nested element of the same name is found. */
             private int nested;
@@ -182,8 +185,8 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
                 }
                 final int t = super.next();
                 switch (t) {
-                    case START_ELEMENT: if (tagName.equals(getLocalName())) nested++; break;
-                    case END_ELEMENT:   if (tagName.equals(getLocalName())) nested--; break;
+                    case START_ELEMENT: if (tagName.equals(getName())) nested++; break;
+                    case END_ELEMENT:   if (tagName.equals(getName())) nested--; break;
                 }
                 return t;
             }
@@ -228,19 +231,19 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
      * @throws EOFException if end tag could not be found.
      * @throws XMLStreamException if an error occurred while reading the XML stream.
      */
-    protected final void skipUntilEnd(final String tagName) throws EOFException, XMLStreamException {
+    protected final void skipUntilEnd(final QName tagName) throws EOFException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         int nested = 0;
         while (reader.hasNext()) {
             switch (reader.next()) {
                 case XMLStreamReader.START_ELEMENT: {
-                    if (tagName.equals(reader.getLocalName())) {
+                    if (tagName.equals(reader.getName())) {
                         nested++;
                     }
                     break;
                 }
                 case XMLStreamReader.END_ELEMENT: {
-                    if (tagName.equals(reader.getLocalName())) {
+                    if (tagName.equals(reader.getName())) {
                         if (--nested < 0) return;
                     }
                     break;
@@ -343,6 +346,22 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
             }
         }
         return Boolean.parseBoolean(value);
+    }
+
+    /**
+     * Delegates to JAXB the unmarshalling of a part of XML document, starting from the current element (inclusive).
+     *
+     * @param  <T>   compile-time value of the {@code type} argument.
+     * @param  type  expected type of the object to unmarshal.
+     * @return the unmarshalled object, or {@code null} if none.
+     * @throws XMLStreamException if the XML stream is closed.
+     * @throws JAXBException if an error occurred during unmarshalling.
+     * @throws ClassCastException if the unmarshalling result is not of the expected type.
+     *
+     * @see javax.xml.bind.Unmarshaller#unmarshal(XMLStreamReader, Class)
+     */
+    protected final <T> T unmarshal(final Class<T> type) throws XMLStreamException, JAXBException {
+        return XML.unmarshal(new StAXSource(getReader()), type, owner.configuration(this)).getValue();
     }
 
     /**

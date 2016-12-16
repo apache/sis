@@ -16,9 +16,21 @@
  */
 package org.apache.sis.internal.xml;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLReporter;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
+import org.apache.sis.xml.XML;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
@@ -30,7 +42,23 @@ import org.apache.sis.storage.DataStore;
  * @version 0.8
  * @module
  */
-public abstract class StaxDataStore extends DataStore {
+public abstract class StaxDataStore extends DataStore implements XMLReporter {
+    /**
+     * The locale to use for locale-sensitive data (<strong>not</strong> for logging or warning messages),
+     * or {@code null} if unspecified.
+     *
+     * @see OptionKey#LOCALE
+     */
+    private final Locale locale;
+
+    /**
+     * The timezone to use when parsing or formatting dates and times without explicit timezone,
+     * or {@code null} if unspecified.
+     *
+     * @see OptionKey#TIMEZONE
+     */
+    private final TimeZone timezone;
+
     /**
      * The STAX readers factory, created when first needed.
      *
@@ -47,8 +75,13 @@ public abstract class StaxDataStore extends DataStore {
 
     /**
      * Creates a new data store.
+     *
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      */
-    protected StaxDataStore() {
+    protected StaxDataStore(final StorageConnector connector) {
+        super(connector);
+        locale   = connector.getOption(OptionKey.LOCALE);
+        timezone = connector.getOption(OptionKey.TIMEZONE);
     }
 
     /**
@@ -65,7 +98,7 @@ public abstract class StaxDataStore extends DataStore {
     final synchronized XMLInputFactory inputFactory() {
         if (inputFactory == null) {
             inputFactory = XMLInputFactory.newInstance();
-            // TODO: register listeners here.
+            inputFactory.setXMLReporter(this);
         }
         return inputFactory;
     }
@@ -79,5 +112,41 @@ public abstract class StaxDataStore extends DataStore {
             outputFactory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
         }
         return outputFactory;
+    }
+
+    /**
+     * Returns the properties that can be used to JAXB (un)marshaller.
+     *
+     * @param  target  the object for which we are creating (un)marshaller configuration.
+     */
+    final Map<String,Object> configuration(final StaxStream target) {
+        final Map<String,Object> properties = new HashMap<>(4);
+        if (locale   != null) properties.put(XML.LOCALE,   locale);
+        if (timezone != null) properties.put(XML.TIMEZONE, timezone);
+        properties.put(XML.WARNING_LISTENER, target);
+        return properties;
+    }
+
+    /**
+     * Gives to {@link StaxStream} an access to the {@link #listeners} field.
+     */
+    final WarningListeners<DataStore> listeners() {
+        return listeners;
+    }
+
+    /**
+     * Forwards STAX warnings to {@link DataStore} listeners.
+     * This method is invoked by {@link javax.xml.stream.XMLStreamReader} when needed.
+     *
+     * @param message    the message to put in a logging record.
+     * @param errorType  ignored.
+     * @param info       ignored.
+     * @param location   ignored.
+     */
+    @Override
+    public void report(String message, String errorType, Object info, Location location) {
+        final LogRecord record = new LogRecord(Level.WARNING, message);
+        record.setSourceClassName(getClass().getCanonicalName());
+        listeners.warning(record);
     }
 }

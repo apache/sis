@@ -18,11 +18,11 @@ package org.apache.sis.internal.gpx;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.EOFException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.xml.transform.stax.StAXSource;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.bind.JAXBException;
@@ -33,10 +33,10 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.xml.StaxStreamReader;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Version;
-import org.apache.sis.xml.XML;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
+import java.time.format.DateTimeParseException;
 
 
 /**
@@ -65,16 +65,22 @@ public class GPXReader extends StaxStreamReader {
     private final Types types;
 
     /**
+     * The namespace, which should be either {@link Tags#NAMESPACE_V10} or {@link Tags#NAMESPACE_V11}.
+     * We store this information for identifying the closing {@code <gpx>} tag.
+     */
+    private final String namespace;
+
+    /**
      * Version of the GPX file, or {@code null} if unspecified.
      * Can be {@link GPXStore#V1_0} or {@link GPXStore#V1_1}.
      */
-    private Version version;
+    private final Version version;
 
     /**
      * Convenience flag set to {@code true} if the {@link #version} field is {@link GPXStore#V1_0},
      * or {@code false} if the version is {@link GPXStore#V1_1}.
      */
-    private boolean isLegacy;
+    private final boolean isLegacy;
 
     /**
      * The metadata (ISO 19115 compatible), or {@code null} if none.
@@ -119,6 +125,8 @@ public class GPXReader extends StaxStreamReader {
      * @throws XMLStreamException if an error occurred while opening the XML file.
      * @throws URISyntaxException if an error occurred while parsing URI in GPX 1.0 metadata.
      * @throws JAXBException if an error occurred while parsing GPX 1.1 metadata.
+     * @throws ClassCastException if an object unmarshalled by JAXB was not of the expected type.
+     * @throws DateTimeParseException if a text can not be parsed as a date.
      * @throws EOFException if the file seems to be truncated.
      */
     public GPXReader(final GPXStore owner, final StorageConnector connector)
@@ -130,25 +138,20 @@ public class GPXReader extends StaxStreamReader {
          * Skip comments, characters, entity declarations, etc. until we find the root element.
          * If that root is anything other than <gpx>, we consider that this is not a GPX file.
          */
-        moveToRootElement(GPXReader::isNamespace, Tags.GPX);
+        moveToRootElement(GPXReader::isNamespaceGPX, Tags.GPX);
         /*
-         * If a version attribute is found on the <gpx> element, use that value for detecting
-         * the GPX version. Otherwise use the namespace URL.  If the version is not found, we
-         * leave the field to null (we do not assume any version). If a version is specified,
-         * we require major.minor version 1.0 or 1.1 but accept any bug-fix versions.
+         * If a version attribute is found on the <gpx> element, use that value for detecting the GPX version.
+         * If the version is not found, we leave the field to null (we do not assume any version). If a version
+         * is specified, we require major.minor version 1.0 or 1.1 but accept any bug-fix versions (e.g. 1.1.x).
          */
         final XMLStreamReader reader = getReader();
+        namespace = reader.getNamespaceURI();
         String ver = reader.getAttributeValue(null, Attributes.VERSION);
-        if (ver != null) {
-            version = new Version(ver);
+        if (ver == null) {
+            version  = null;
+            isLegacy = false;
         } else {
-            final String ns = reader.getNamespaceURI();
-            if (ns != null) switch (ns) {
-                case Tags.NAMESPACE_V10: version = GPXStore.V1_0; break;
-                case Tags.NAMESPACE_V11: version = GPXStore.V1_1; break;
-            }
-        }
-        if (version != null) {
+            version  = new Version(ver);
             isLegacy = version.compareTo(GPXStore.V1_0, 2) <= 0;
             if (version.compareTo(GPXStore.V1_1, 2) > 0) {
                 throw new DataStoreContentException(errors().getString(
@@ -168,27 +171,29 @@ public class GPXReader extends StaxStreamReader {
         while (reader.hasNext()) {
             switch (reader.next()) {
                 case START_ELEMENT: {
-                    if (isNamespace(reader.getNamespaceURI())) {
+                    /*
+                     * GPX 1.0 and 1.1 metadata should not be mixed. However the following code will work even
+                     * if GPX 1.0 metadata like <name> or <author> appear after the GPX 1.1 <metadata> element.
+                     */
+                    if (isNamespaceGPX(reader.getNamespaceURI())) {
                         switch (reader.getLocalName()) {
                             case Tags.GPX: {
                                 throw new DataStoreContentException(errors().getString(
                                         Errors.Keys.NestedElementNotAllowed_1, Tags.GPX));
                             }
-                            case Tags.METADATA: {
-                                // GPX 1.1 metadata
-                                metadata = (Metadata) XML.unmarshal(new StAXSource(reader), null);
-                                break;
-                            }
+                            // GPX 1.1 metadata
+                            case Tags.METADATA:     metadata = unmarshal(Metadata.class); break;
+
                             // GPX 1.0 metadata
                             case Tags.NAME:         metadata().name        = getElementText();   break;
                             case Tags.DESCRIPTION:  metadata().description = getElementText();   break;
-                            case Tags.AUTHOR:       person()  .name        = getElementText();   break;
-                            case Tags.EMAIL:        person()  .email       = getElementText();   break;
+                            case Tags.AUTHOR:       author()  .name        = getElementText();   break;
+                            case Tags.EMAIL:        author()  .email       = getElementText();   break;
                             case Tags.URL:          link()    .uri         = getElementAsURI();  break;
                             case Tags.URL_NAME:     link()    .text        = getElementText();   break;
                             case Tags.TIME:         metadata().time        = getElementAsDate(); break;
                             case Tags.KEYWORDS:     metadata().keywords    = getElementAsList(); break;
-                            case Tags.BOUNDS:       metadata().bounds      = parseBound();       break;
+                            case Tags.BOUNDS:       metadata().bounds      = parseBound(reader); break;
                             case Tags.WAY_POINT:    // stop metadata parsing.
                             case Tags.TRACKS:
                             case Tags.ROUTES:       return;
@@ -197,8 +202,14 @@ public class GPXReader extends StaxStreamReader {
                     break;
                 }
                 case END_ELEMENT: {
-                    if (isNamespace(reader.getNamespaceURI()) && Tags.GPX.equals(reader.getLocalName())) {
+                    /*
+                     * Reminder: END_ELEMENT events are already handled by XMLStreamReader.getElementText(),
+                     * Unmarshaller.unmarshal(XMLStreamReader, …) and our parseBound(…) methods. There is only
+                     * the enclosing <gpx> tag to check.
+                     */
+                    if (isEndGPX(reader)) {
                         finished = true;
+                        return;
                     }
                     break;
                 }
@@ -209,10 +220,22 @@ public class GPXReader extends StaxStreamReader {
     /**
      * Returns {@code true} if the given namespace is a GPX namespace or is null.
      */
-    private static boolean isNamespace(final String ns) {
+    private static boolean isNamespaceGPX(final String ns) {
         return (ns == null) || ns.startsWith(Tags.NAMESPACE + "/GPX/");
     }
 
+    /**
+     * Returns {@code true} if the current position of the given reader is the closing {@code </gpx>} tag.
+     * The reader event should be {@link #END_DOCUMENT} before to invoke this method.
+     */
+    private boolean isEndGPX(final XMLStreamReader reader) {
+        return Tags.GPX.equals(reader.getLocalName()) && Objects.equals(namespace, reader.getNamespaceURI());
+    }
+
+    /**
+     * Returns the {@link #metadata} field, creating it if needed.
+     * This is a convenience method for GPX 1.0 metadata parsing.
+     */
     private Metadata metadata() {
         if (metadata == null) {
             metadata = new Metadata();
@@ -220,7 +243,11 @@ public class GPXReader extends StaxStreamReader {
         return metadata;
     }
 
-    private Person person() {
+    /**
+     * Returns the {@link Metadata#author} field, creating all necessary objects if needed.
+     * This is a convenience method for GPX 1.0 metadata parsing.
+     */
+    private Person author() {
         final Metadata metadata = metadata();
         if (metadata.author == null) {
             metadata.author = new Person();
@@ -228,6 +255,10 @@ public class GPXReader extends StaxStreamReader {
         return metadata.author;
     }
 
+    /**
+     * Returns the first element of the {@link Metadata#links} field, creating all necessary objects if needed.
+     * This is a convenience method for GPX 1.0 metadata parsing.
+     */
     private Link link() {
         final List<Link> links = metadata().links;
         final Link first;
@@ -241,36 +272,29 @@ public class GPXReader extends StaxStreamReader {
     }
 
     /**
-     * Get GPX file version.
-     * This method will return a result only if called only after the input has been set.
+     * Returns the GPX file version, or {@code null} if unknown. If a {@code version} attribute
+     * was found on the root {@code <gpx>} element, then that version is returned.
+     * Otherwise this method tries to infer the version from the namespace URL.
      *
-     * @return Version or null if input is not set.
+     * @return GPX file version, or {@code null} if unknown.
      */
     public Version getVersion() {
+        if (version == null && namespace != null) {
+            switch (namespace) {
+                case Tags.NAMESPACE_V10: return GPXStore.V1_0;
+                case Tags.NAMESPACE_V11: return GPXStore.V1_1;
+            }
+        }
         return version;
     }
 
     /**
-     * Get GPX metadata.
-     * This method will return a result only if called only after the input has been set.
+     * Returns the metadata (ISO 19115 compatible), or {@code null} if none.
      *
-     * @return Metadata or null if input is not set.
+     * @return the metadata or {@code null} if none.
      */
     public Metadata getMetadata() {
         return metadata;
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public void close() throws IOException, XMLStreamException {
-        super.close();
-        metadata = null;
-        current = null;
-        wayPointId = 0;
-        routeId = 0;
-        trackId = 0;
     }
 
     /**
@@ -371,8 +395,7 @@ public class GPXReader extends StaxStreamReader {
      * Parse current Envelope element.
      * The stax reader must be placed to the start element.
      */
-    private Bounds parseBound() throws XMLStreamException, EOFException {
-        final XMLStreamReader reader = getReader();
+    private Bounds parseBound(final XMLStreamReader reader) throws XMLStreamException, EOFException {
         final String xmin = reader.getAttributeValue(null, Attributes.MIN_X);
         final String xmax = reader.getAttributeValue(null, Attributes.MAX_X);
         final String ymin = reader.getAttributeValue(null, Attributes.MIN_Y);
@@ -382,7 +405,7 @@ public class GPXReader extends StaxStreamReader {
             throw new XMLStreamException("Error in xml file, metadata bounds not defined correctly");
         }
 
-        skipUntilEnd(Tags.BOUNDS);
+        skipUntilEnd(reader.getName());
         final Bounds bounds = new Bounds();
         bounds.westBoundLongitude = Double.parseDouble(xmin);
         bounds.eastBoundLongitude = Double.parseDouble(xmax);
@@ -631,5 +654,19 @@ public class GPXReader extends StaxStreamReader {
             }
         }
         throw new XMLStreamException("Error in xml file, "+Tags.TRACKS+" tag without end.");
+    }
+
+    /**
+     * Closes the input stream and releases any resources used by this XML reader.
+     * This reader can not be used anymore after this method has been invoked.
+     *
+     * @throws IOException if an error occurred while closing the input stream.
+     * @throws XMLStreamException if an error occurred while releasing XML reader/writer resources.
+     */
+    @Override
+    public void close() throws IOException, XMLStreamException {
+        super.close();
+        current  = null;
+        finished = true;
     }
 }

@@ -181,6 +181,7 @@ public final class Store extends DataStore {
      * @throws DataStoreException if an error occurred while opening the stream.
      */
     public Store(final StorageConnector connector) throws DataStoreException {
+        super(connector);
         filename = connector.getStorageName();
         final Reader r = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(r);
