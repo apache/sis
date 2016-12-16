@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.io.IOException;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
@@ -72,7 +71,6 @@ import org.apache.sis.metadata.iso.identification.DefaultKeywords;
  * @version 0.8
  * @module
  */
-@XmlRootElement(name = Tags.METADATA)
 public final class Metadata extends SimpleMetadata {
     /**
      * The name of the GPX file.

@@ -18,8 +18,10 @@ package org.apache.sis.internal.xml;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.logging.LogRecord;
 import javax.xml.stream.XMLStreamException;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -40,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.8
  * @module
  */
-abstract class StaxStream implements AutoCloseable {
+abstract class StaxStream implements AutoCloseable, WarningListener<Object> {
     /**
      * The data store for which this reader or writer has been created.
      */
@@ -98,5 +100,25 @@ abstract class StaxStream implements AutoCloseable {
      */
     protected final Errors errors() {
         return Errors.getResources(owner.getLocale());
+    }
+
+    /**
+     * Reports a warning represented by the given log record.
+     *
+     * @param source  ignored (typically a JAXB object being unmarshalled). Can be {@code null}.
+     * @param record  the warning as a log record.
+     */
+    @Override
+    public final void warningOccured(final Object source, final LogRecord warning) {
+        owner.listeners().warning(warning);
+    }
+
+    /**
+     * Returns the type of objects that emit warnings of interest for this listener.
+     * Fixed to {@code Object.class} as required by {@link org.apache.sis.xml.XML#WARNING_LISTENER} documentation.
+     */
+    @Override
+    public final Class<Object> getSourceClass() {
+        return Object.class;
     }
 }

@@ -19,7 +19,7 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.logging.LogRecord; // For javadoc
+import java.util.logging.LogRecord;             // For javadoc
 import java.net.URL;
 import java.io.File;
 import java.io.IOException;
@@ -27,8 +27,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Result;
@@ -36,6 +40,7 @@ import javax.xml.transform.stax.StAXSource;
 import javax.xml.stream.XMLStreamReader;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.system.Modules;
@@ -43,11 +48,6 @@ import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.jaxb.TypeRegistration;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 
 
 /**
@@ -358,7 +358,7 @@ public final class XML extends Static {
     }
 
     /**
-     * Marshall the given object into a string.
+     * Marshal the given object into a string.
      *
      * @param  object  the root of content tree to be marshalled.
      * @return the XML representation of the given object.
@@ -375,7 +375,7 @@ public final class XML extends Static {
     }
 
     /**
-     * Marshall the given object into a stream.
+     * Marshal the given object into a stream.
      *
      * @param  object  the root of content tree to be marshalled.
      * @param  output  the stream where to write.
@@ -391,7 +391,7 @@ public final class XML extends Static {
     }
 
     /**
-     * Marshall the given object into a file.
+     * Marshal the given object into a file.
      *
      * @param  object  the root of content tree to be marshalled.
      * @param  output  the file to be written.
@@ -407,7 +407,7 @@ public final class XML extends Static {
     }
 
     /**
-     * Marshall the given object into a path.
+     * Marshal the given object into a path.
      *
      * @param  object  the root of content tree to be marshalled.
      * @param  output  the file to be written.
@@ -427,7 +427,7 @@ public final class XML extends Static {
     }
 
     /**
-     * Marshall the given object to a stream, DOM or other destinations.
+     * Marshal the given object to a stream, DOM or other destinations.
      * This is the most flexible marshalling method provided in this {@code XML} class.
      * The destination is specified by the {@code output} argument implementation, for example
      * {@link javax.xml.transform.stream.StreamResult} for writing to a file or output stream.
@@ -457,7 +457,7 @@ public final class XML extends Static {
     }
 
     /**
-     * Unmarshall an object from the given string.
+     * Unmarshal an object from the given string.
      * Note that the given argument is the XML document itself,
      * <strong>not</strong> a URL to a XML document.
      *
@@ -476,7 +476,7 @@ public final class XML extends Static {
     }
 
     /**
-     * Unmarshall an object from the given stream.
+     * Unmarshal an object from the given stream.
      *
      * @param  input  the stream from which to read a XML representation.
      * @return the object unmarshalled from the given input.
@@ -492,7 +492,7 @@ public final class XML extends Static {
     }
 
     /**
-     * Unmarshall an object from the given URL.
+     * Unmarshal an object from the given URL.
      *
      * @param  input  the URL from which to read a XML representation.
      * @return the object unmarshalled from the given input.
@@ -508,7 +508,7 @@ public final class XML extends Static {
     }
 
     /**
-     * Unmarshall an object from the given file.
+     * Unmarshal an object from the given file.
      *
      * @param  input  the file from which to read a XML representation.
      * @return the object unmarshalled from the given input.
@@ -524,7 +524,7 @@ public final class XML extends Static {
     }
 
     /**
-     * Unmarshall an object from the given path.
+     * Unmarshal an object from the given path.
      *
      * @param  input  the path from which to read a XML representation.
      * @return the object unmarshalled from the given input.
@@ -545,8 +545,9 @@ public final class XML extends Static {
     }
 
     /**
-     * Unmarshall an object from the given stream, DOM or other sources.
-     * This is the most flexible unmarshalling method provided in this {@code XML} class.
+     * Unmarshal an object from the given stream, DOM or other sources.
+     * Together with the {@linkplain #unmarshal(Source, Class, Map) Unmarshal by Declared Type} variant,
+     * this is the most flexible unmarshalling method provided in this {@code XML} class.
      * The source is specified by the {@code input} argument implementation, for example
      * {@link javax.xml.transform.stream.StreamSource} for reading from a file or input stream.
      * The optional {@code properties} map can contain any key documented in this {@code XML} class,
@@ -563,21 +564,67 @@ public final class XML extends Static {
     public static Object unmarshal(final Source input, final Map<String,?> properties) throws JAXBException {
         ensureNonNull("input", input);
         final MarshallerPool pool = getPool();
-        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
-        if (properties != null) {
-            for (final Map.Entry<String,?> entry : properties.entrySet()) {
-                unmarshaller.setProperty(entry.getKey(), entry.getValue());
-            }
-        }
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller(properties);
         final Object object;
-        final XMLStreamReader reader;
-        if (input instanceof StAXSource && (reader = ((StAXSource) input).getXMLStreamReader()) != null) {
-            // As of JDK 8, XMLStreamReader is not handled by default unmarshal(Source) implementation.
-            object = unmarshaller.unmarshal(reader);
+        /*
+         * STAX sources are not handled by javax.xml.bind.helpers.AbstractUnmarshallerImpl implementation as of JDK 8.
+         * We have to handle those cases ourselves. This workaround should be removed if a future JDK version handles
+         * those cases.
+         */
+        if (input instanceof StAXSource) {
+            @Workaround(library = "JDK", version = "1.8")
+            final XMLStreamReader reader = ((StAXSource) input).getXMLStreamReader();
+            if (reader != null) {
+                object = unmarshaller.unmarshal(reader);
+            } else {
+                object = unmarshaller.unmarshal(((StAXSource) input).getXMLEventReader());
+            }
         } else {
             object = unmarshaller.unmarshal(input);
         }
         pool.recycle(unmarshaller);
         return object;
+    }
+
+    /**
+     * Unmarshal an object from the given stream, DOM or other sources.
+     * Together with the {@linkplain #unmarshal(Source, Map) Unmarshal Global Root Element} variant,
+     * this is the most flexible unmarshalling method provided in this {@code XML} class.
+     * The source is specified by the {@code input} argument implementation, for example
+     * {@link javax.xml.transform.stream.StreamSource} for reading from a file or input stream.
+     * The optional {@code properties} map can contain any key documented in this {@code XML} class,
+     * together with the keys documented in the <cite>supported properties</cite> section of the the
+     * {@link Unmarshaller} class.
+     *
+     * @param  <T>           compile-time value of the {@code declaredType} argument.
+     * @param  input         the file from which to read a XML representation.
+     * @param  declaredType  the JAXB mapped class of the object to unmarshal.
+     * @param  properties    an optional map of properties to give to the unmarshaller, or {@code null} if none.
+     * @return the object unmarshalled from the given input, wrapped in a JAXB element.
+     * @throws JAXBException if a property has an illegal value, or if an error occurred during the unmarshalling.
+     *
+     * @since 0.8
+     */
+    public static <T> JAXBElement<T> unmarshal(final Source input, final Class<T> declaredType, final Map<String,?> properties)
+            throws JAXBException
+    {
+        ensureNonNull("input", input);
+        ensureNonNull("declaredType", declaredType);
+        final MarshallerPool pool = getPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller(properties);
+        final JAXBElement<T> element;
+        if (input instanceof StAXSource) {                  // Same workaround than the one documented in above method.
+            @Workaround(library = "JDK", version = "1.8")
+            final XMLStreamReader reader = ((StAXSource) input).getXMLStreamReader();
+            if (reader != null) {
+                element = unmarshaller.unmarshal(reader, declaredType);
+            } else {
+                element = unmarshaller.unmarshal(((StAXSource) input).getXMLEventReader(), declaredType);
+            }
+        } else {
+            element = unmarshaller.unmarshal(input, declaredType);
+        }
+        pool.recycle(unmarshaller);
+        return element;
     }
 }

@@ -61,6 +61,7 @@ public class GPXStore extends StaxDataStore {
      * @throws DataStoreException if an error occurred while opening the GPX file.
      */
     public GPXStore(final StorageConnector connector) throws DataStoreException {
+        super(connector);
         ArgumentChecks.ensureNonNull("connector", connector);
         final Charset encoding = connector.getOption(OptionKey.ENCODING);
         this.encoding = (encoding != null) ? encoding : StandardCharsets.UTF_8;
