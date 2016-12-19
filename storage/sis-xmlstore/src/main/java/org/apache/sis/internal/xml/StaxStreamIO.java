@@ -27,14 +27,14 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Common base class for {@code StaxStreamReader} and {@code StaxStreamWriter}.
- * {@code StaxStream} subclasses are not used directly (they are Apache SIS internal mechanic);
+ * {@code StaxStreamIO} subclasses are not used directly (they are Apache SIS internal mechanic);
  * they are rather used as helper classes for {@link org.apache.sis.storage.DataStore} implementations.
  * Those {@code DataStore}s will typically manage {@code StaxStreamReader} and {@code StaxStreamWriter}
  * instances on which they delegate their read and write operations.
  *
  * <div class="section">Multi-threading</div>
  * This class and subclasses are not tread-safe. Synchronization shall be done by the {@code DataStore}
- * that contains the {@code StaxStream} instances.
+ * that contains the {@code StaxStreamIO} instances.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -42,14 +42,14 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.8
  * @module
  */
-abstract class StaxStream implements AutoCloseable, WarningListener<Object> {
+abstract class StaxStreamIO implements AutoCloseable, WarningListener<Object> {
     /**
      * The data store for which this reader or writer has been created.
      */
-    final StaxDataStore owner;
+    protected final StaxDataStore owner;
 
     /**
-     * The underlying stream to close when this {@code StaxStream} reader or writer is closed,
+     * The underlying stream to close when this {@code StaxStreamIO} reader or writer is closed,
      * or {@code null} if none.
      */
     private Closeable stream;
@@ -59,13 +59,13 @@ abstract class StaxStream implements AutoCloseable, WarningListener<Object> {
      *
      * @param owner  the data store for which this reader or writer is created.
      */
-    StaxStream(final StaxDataStore owner) {
+    StaxStreamIO(final StaxDataStore owner) {
         ArgumentChecks.ensureNonNull("owner", owner);
         this.owner = owner;
     }
 
     /**
-     * Notifies this {@code StaxStream} that the given stream will need to be closed by the {@link #close()} method.
+     * Notifies this {@code StaxStreamIO} that the given stream will need to be closed by the {@link #close()} method.
      * This method can be invoked at most once. This method does nothing if the given object does not implement the
      * {@link Closeable} interface.
      *

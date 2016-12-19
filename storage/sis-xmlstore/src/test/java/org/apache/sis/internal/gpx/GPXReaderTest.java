@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import com.esri.core.geometry.Point;
+import java.time.Instant;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.test.TestCase;
@@ -29,7 +30,6 @@ import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
 
 // Branch-dependent imports
-import java.time.LocalDate;
 import org.opengis.feature.Feature;
 
 
@@ -71,6 +71,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testMetadataRead100() throws Exception {
         try (final GPXReader reader = create("1.0/metadata.xml")) {
+            reader.initialize();
             final Metadata data = reader.getMetadata();
 
             assertEquals("Sample", data.name);
@@ -98,6 +99,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testMetadataRead110() throws Exception {
         try (final GPXReader reader = create("1.1/metadata.xml")) {
+            reader.initialize();
             final Metadata data = reader.getMetadata();
 
             assertEquals("Sample", data.name);
@@ -130,6 +132,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testWayPointRead100() throws Exception {
         try (final GPXReader reader = create("1.0/waypoint.xml")) {
+            reader.initialize();
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
@@ -159,6 +162,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testWayPointRead110() throws Exception {
         try (final GPXReader reader = create("1.1/waypoint.xml")) {
+            reader.initialize();
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
@@ -189,6 +193,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testRouteRead100() throws Exception {
         try (final GPXReader reader = create("1.0/route.xml")) {
+            reader.initialize();
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
@@ -254,6 +259,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testRouteRead110() throws Exception {
         try (final GPXReader reader = create("1.1/route.xml")) {
+            reader.initialize();
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
@@ -321,6 +327,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testTrackRead100() throws Exception {
         try (final GPXReader reader = create("1.0/track.xml")) {
+            reader.initialize();
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
@@ -391,6 +398,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testTrackRead110() throws Exception {
         try (final GPXReader reader = create("1.1/track.xml")) {
+            reader.initialize();
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
@@ -462,7 +470,7 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertEquals(15.0,                  ((Point)f.getPropertyValue("@geometry")).getX(), DELTA);
             assertEquals(10.0,                  ((Point)f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(140.0,                 f.getPropertyValue("ele"));
-            assertEquals(LocalDate.parse("2010-01-10"),f.getPropertyValue("time"));
+            assertEquals(Instant.parse("2010-01-10T00:00:00Z"), f.getPropertyValue("time"));
             assertEquals(35.0,                  f.getPropertyValue("magvar"));
             assertEquals(112.32,                f.getPropertyValue("geoidheight"));
             assertEquals("first point",         f.getPropertyValue("name"));
@@ -532,7 +540,7 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertEquals(35.0,                  ((Point) f.getPropertyValue("@geometry")).getX(), DELTA);
             assertEquals(30.0,                  ((Point) f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(150.0,                 f.getPropertyValue("ele"));
-            assertEquals(LocalDate.parse("2010-01-30"),f.getPropertyValue("time"));
+            assertEquals(Instant.parse("2010-01-30T00:00:00Z"), f.getPropertyValue("time"));
             assertEquals(25.0,                  f.getPropertyValue("magvar"));
             assertEquals(142.32,                f.getPropertyValue("geoidheight"));
             assertEquals("third point",         f.getPropertyValue("name"));

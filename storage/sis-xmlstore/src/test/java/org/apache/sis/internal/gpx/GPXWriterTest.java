@@ -101,6 +101,7 @@ public final strictfp class GPXWriterTest extends TestCase {
         writer.close();
 
         try (GPXReader reader = reader(f)) {
+            reader.initialize();
             assertEquals(metaData, reader.getMetadata());
         }
 
@@ -260,22 +261,19 @@ public final strictfp class GPXWriterTest extends TestCase {
         writer.writeEndDocument();
         writer.close();
 
-        final GPXReader reader = reader(f);
+        try (final GPXReader reader = reader(f)) {
+            reader.initialize();
 
-        //testing on toString since JTS geometry always fail on equals method.
-        assertEquals(point1.toString(), reader.next().toString());
-        assertEquals(point2.toString(), reader.next().toString());
-        assertEquals(point3.toString(), reader.next().toString());
-        assertEquals(route1.toString(), reader.next().toString());
-        assertEquals(route2.toString(), reader.next().toString());
-        assertEquals(track1.toString(), reader.next().toString());
-        assertEquals(track2.toString(), reader.next().toString());
-        assertFalse(reader.hasNext());
-
-        reader.close();
-
+            //testing on toString since JTS geometry always fail on equals method.
+            assertEquals(point1.toString(), reader.next().toString());
+            assertEquals(point2.toString(), reader.next().toString());
+            assertEquals(point3.toString(), reader.next().toString());
+            assertEquals(route1.toString(), reader.next().toString());
+            assertEquals(route2.toString(), reader.next().toString());
+            assertEquals(track1.toString(), reader.next().toString());
+            assertEquals(track2.toString(), reader.next().toString());
+            assertFalse(reader.hasNext());
+        }
         if (f.exists()) f.delete();
     }
-
-
 }
