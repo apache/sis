@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.system;
+package org.apache.sis.xml;
 
 import java.io.OutputStream;
 import java.io.Writer;
 import javax.xml.stream.XMLEventWriter;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.Result;
@@ -31,25 +32,25 @@ import org.apache.sis.util.Static;
 
 
 /**
- * Provides access to {@link javax.xml.stream.XMLOutputFactory} methods as static methods working on
- * a SIS-wide instance. This convenience is provided in a separated class in order to allow the JVM
- * to instantiate the factory only when first needed, when initializing this class.
+ * Provides access to {@link XMLOutputFactory} methods as static methods working on a SIS-wide instance.
+ * This convenience is provided in a separated class in order to allow the JVM to instantiate the factory
+ * only when first needed, when initializing this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
-public final class XMLOutputFactory extends Static {
+final class OutputFactory extends Static {
     /**
      * The SIS-wide factory.
      */
-    private static final javax.xml.stream.XMLOutputFactory FACTORY = javax.xml.stream.XMLOutputFactory.newInstance();
+    private static final XMLOutputFactory FACTORY = XMLOutputFactory.newInstance();
 
     /**
      * Do not allow instantiation of this class.
      */
-    private XMLOutputFactory() {
+    private OutputFactory() {
     }
 
     /*
@@ -60,10 +61,10 @@ public final class XMLOutputFactory extends Static {
     /**
      * Creates a new writer for the given stream.
      *
-     * @param  out Where to write to.
-     * @param  encoding The document encoding (usually {@code "UTF-8"}).
-     * @return The writer.
-     * @throws XMLStreamException If the writer can not be created.
+     * @param  out       where to write to.
+     * @param  encoding  the document encoding (usually {@code "UTF-8"}).
+     * @return the writer.
+     * @throws XMLStreamException if the writer can not be created.
      */
     public static XMLStreamWriter createXMLStreamWriter(OutputStream out, String encoding) throws XMLStreamException {
         return FACTORY.createXMLStreamWriter(out, encoding);
@@ -72,9 +73,9 @@ public final class XMLOutputFactory extends Static {
     /**
      * Creates a new writer for the given stream.
      *
-     * @param  out Where to write to.
-     * @return The writer.
-     * @throws XMLStreamException If the writer can not be created.
+     * @param  out  where to write to.
+     * @return the writer.
+     * @throws XMLStreamException if the writer can not be created.
      */
     public static XMLStreamWriter createXMLStreamWriter(final Writer out) throws XMLStreamException {
         return FACTORY.createXMLStreamWriter(out);
@@ -84,9 +85,9 @@ public final class XMLOutputFactory extends Static {
      * Creates a new writer for the JAXP result.
      * Note that this method is identified as <em>optional</em> in JSE javadoc.
      *
-     * @param  out Where to write to.
-     * @return The writer.
-     * @throws XMLStreamException If the writer can not be created.
+     * @param  out  where to write to.
+     * @return the writer.
+     * @throws XMLStreamException if the writer can not be created.
      */
     public static XMLStreamWriter createXMLStreamWriter(final ContentHandler out) throws XMLStreamException {
         return FACTORY.createXMLStreamWriter(new SAXResult(out));
@@ -96,9 +97,9 @@ public final class XMLOutputFactory extends Static {
      * Creates a new writer for the JAXP result.
      * Note that this method is identified as <em>optional</em> in JSE javadoc.
      *
-     * @param  out Where to write to.
-     * @return The writer.
-     * @throws XMLStreamException If the writer can not be created.
+     * @param  out  where to write to.
+     * @return the writer.
+     * @throws XMLStreamException if the writer can not be created.
      */
     public static XMLStreamWriter createXMLStreamWriter(final Node out) throws XMLStreamException {
         return FACTORY.createXMLStreamWriter(new DOMResult(out));
@@ -108,9 +109,9 @@ public final class XMLOutputFactory extends Static {
      * Creates a new writer for the JAXP result.
      * Note that this method is identified as <em>optional</em> in JSE javadoc.
      *
-     * @param  out Where to write to.
-     * @return The writer.
-     * @throws XMLStreamException If the writer can not be created.
+     * @param  out  where to write to.
+     * @return the writer.
+     * @throws XMLStreamException if the writer can not be created.
      */
     public static XMLStreamWriter createXMLStreamWriter(final XMLEventWriter out) throws XMLStreamException {
         return FACTORY.createXMLStreamWriter(new StAXResult(out));
@@ -120,9 +121,9 @@ public final class XMLOutputFactory extends Static {
      * Creates a new writer for the JAXP result.
      * Note that this method is identified as <em>optional</em> in JSE javadoc.
      *
-     * @param  out Where to write to.
-     * @return The writer.
-     * @throws XMLStreamException If the writer can not be created.
+     * @param  out  where to write to.
+     * @return the writer.
+     * @throws XMLStreamException if the writer can not be created.
      */
     public static XMLStreamWriter createXMLStreamWriter(final Result out) throws XMLStreamException {
         return FACTORY.createXMLStreamWriter(out);

@@ -371,6 +371,19 @@ public class MarshallerPool {
     }
 
     /**
+     * Acquires a unmarshaller and set the properties to the given value, if non-null.
+     */
+    final Unmarshaller acquireUnmarshaller(final Map<String,?> properties) throws JAXBException {
+        final Unmarshaller unmarshaller = acquireUnmarshaller();
+        if (properties != null) {
+            for (final Map.Entry<String,?> entry : properties.entrySet()) {
+                unmarshaller.setProperty(entry.getKey(), entry.getValue());
+            }
+        }
+        return unmarshaller;
+    }
+
+    /**
      * Declares a marshaller as available for reuse.
      * The caller should not use anymore the given marshaller after this method call,
      * since the marshaller may be re-used by another thread at any time after recycle.

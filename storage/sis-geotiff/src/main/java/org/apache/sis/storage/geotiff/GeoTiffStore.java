@@ -29,11 +29,11 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 
 
@@ -70,19 +70,19 @@ public class GeoTiffStore extends DataStore {
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
      *
-     * @param  storage  information about the storage (URL, stream, <i>etc</i>).
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
      */
-    public GeoTiffStore(final StorageConnector storage) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("storage", storage);
-        final Charset encoding = storage.getOption(OptionKey.ENCODING);
+    public GeoTiffStore(final StorageConnector connector) throws DataStoreException {
+        super(connector);
+        final Charset encoding = connector.getOption(OptionKey.ENCODING);
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
-        final ChannelDataInput input = storage.getStorageAs(ChannelDataInput.class);
+        final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
         if (input == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2,
-                    "TIFF", Classes.getClass(storage.getStorage())));
+            throw new UnsupportedStorageException(errors().getString(Errors.Keys.IllegalInputTypeForReader_2,
+                    "TIFF", Classes.getClass(connector.getStorage())));
         }
-        storage.closeAllExcept(input);
+        connector.closeAllExcept(input);
         try {
             reader = new Reader(this, input);
         } catch (IOException e) {
@@ -118,7 +118,7 @@ public class GeoTiffStore extends DataStore {
                 }
                 metadata = builder.build(true);
             } catch (IOException e) {
-                throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
+                throw new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
             } catch (FactoryException | ArithmeticException e) {
                 throw new DataStoreContentException(reader.canNotDecode(), e);
             }
@@ -140,6 +140,14 @@ public class GeoTiffStore extends DataStore {
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
+    }
+
+    /**
+     * Returns the error resources in the current locale.
+     */
+    final Errors errors() {
+        // Must use "super" because GeoTiffStore construction may not be finished.
+        return Errors.getResources(super.getLocale());
     }
 
     /**

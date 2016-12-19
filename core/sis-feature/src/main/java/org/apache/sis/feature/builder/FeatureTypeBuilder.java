@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Set;
+import java.util.Objects;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
@@ -38,7 +39,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 
 // Branch-dependent imports
-import java.util.Objects;
 import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;

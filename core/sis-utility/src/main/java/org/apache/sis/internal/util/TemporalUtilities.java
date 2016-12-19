@@ -32,7 +32,7 @@ import org.apache.sis.internal.system.DefaultFactories;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 public final class TemporalUtilities extends Static {
@@ -56,8 +56,8 @@ public final class TemporalUtilities extends Static {
     /**
      * Returns a temporal factory if available.
      *
-     * @return The temporal factory.
-     * @throws UnsupportedOperationException If the temporal factory is not available on the classpath.
+     * @return the temporal factory.
+     * @throws UnsupportedOperationException if the temporal factory is not available on the classpath.
      */
     public static TemporalFactory getTemporalFactory() throws UnsupportedOperationException {
         final TemporalFactory factory = DefaultFactories.forClass(TemporalFactory.class);
@@ -77,12 +77,12 @@ public final class TemporalUtilities extends Static {
     /**
      * Creates an instant for the given date.
      *
-     * @param  time The date for which to create instant.
-     * @return The instant.
-     * @throws UnsupportedOperationException If the temporal factory is not available on the classpath.
+     * @param  time  the date for which to create instant, or {@code null}.
+     * @return the instant, or {@code null} if the given time was null.
+     * @throws UnsupportedOperationException if the temporal factory is not available on the classpath.
      */
     public static Instant createInstant(final Date time) throws UnsupportedOperationException {
-        return createInstant(getTemporalFactory(), time);
+        return (time != null) ? createInstant(getTemporalFactory(), time) : null;
     }
 
     /**
@@ -90,10 +90,10 @@ public final class TemporalUtilities extends Static {
      * {@link TemporalFactory#createPosition(Date)} method accepts null dates, which stand for
      * undetermined position.
      *
-     * @param  begin The begin date, inclusive.
-     * @param  end The end date, inclusive.
-     * @return The period.
-     * @throws UnsupportedOperationException If the temporal factory is not available on the classpath.
+     * @param  begin  the begin date, inclusive.
+     * @param  end    the end date, inclusive.
+     * @return the period.
+     * @throws UnsupportedOperationException if the temporal factory is not available on the classpath.
      */
     public static Period createPeriod(final Date begin, final Date end) throws UnsupportedOperationException {
         final TemporalFactory factory = getTemporalFactory();

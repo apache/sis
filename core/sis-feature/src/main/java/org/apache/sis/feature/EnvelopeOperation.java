@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
@@ -29,6 +30,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.geometry.Envelopes;
@@ -37,7 +39,6 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import java.util.Objects;
 import org.apache.sis.internal.jdk8.JDK8;
 
 
@@ -74,7 +75,7 @@ final class EnvelopeOperation extends AbstractOperation {
     /**
      * The parameter descriptor for the "Envelope" operation, which does not take any parameter.
      */
-    private static final ParameterDescriptorGroup EMPTY_PARAMS = LinkOperation.parameters("Envelope", 1);
+    private static final ParameterDescriptorGroup EMPTY_PARAMS = FeatureUtilities.parameters("Envelope");
 
     /**
      * The names of all properties containing a geometry object.
@@ -111,9 +112,9 @@ final class EnvelopeOperation extends AbstractOperation {
     /**
      * Creates a new operation computing the envelope of features of the given type.
      *
-     * @param identification     the name and other information to be given to this operation.
-     * @param crs                the coordinate reference system of envelopes to computes, or {@code null}.
-     * @param geometryAttributes the operation or attribute type from which to get geometry values.
+     * @param identification      the name and other information to be given to this operation.
+     * @param crs                 the coordinate reference system of envelopes to computes, or {@code null}.
+     * @param geometryAttributes  the operation or attribute type from which to get geometry values.
      */
     EnvelopeOperation(final Map<String,?> identification, CoordinateReferenceSystem crs,
             final AbstractIdentifiedType[] geometryAttributes) throws FactoryException
