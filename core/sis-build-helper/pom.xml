@@ -89,7 +89,7 @@ Define Maven Mojos and Javadoc taglets for generating resource files
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.4</version>
+        <version>3.5</version>
         <executions>
           <execution>
             <id>default-descriptor</id>
