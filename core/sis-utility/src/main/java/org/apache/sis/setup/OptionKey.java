@@ -20,15 +20,15 @@ import java.util.Map;
 import java.util.HashMap;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import java.util.Locale;
+import java.util.TimeZone;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
-
-// Branch-dependent imports
-import java.nio.file.OpenOption;
-import java.nio.file.StandardOpenOption;
 
 
 /**
@@ -64,7 +64,7 @@ import java.nio.file.StandardOpenOption;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public class OptionKey<T> implements Serializable {
@@ -74,13 +74,44 @@ public class OptionKey<T> implements Serializable {
     private static final long serialVersionUID = -7580514229639750246L;
 
     /**
+     * The locale to use for locale-sensitive data. This option determines the language to use for writing
+     * {@link org.apache.sis.util.iso.AbstractInternationalString international strings} when the target
+     * storage support only one language. It may also control number and date patterns in some file formats
+     * like Comma Separated Values (CSV). However most data formats will ignore this locale.
+     *
+     * <p>This option is <strong>not</strong> for the locale of logging or warning messages. Messages
+     * locale is rather controlled by {@link org.apache.sis.storage.DataStore#setLocale(Locale)}.</p>
+     *
+     * @see org.apache.sis.xml.XML#LOCALE
+     *
+     * @since 0.8
+     */
+    public static final OptionKey<Locale> LOCALE = new OptionKey<>("LOCALE", Locale.class);
+
+    /**
+     * The timezone to use when parsing or formatting dates and times without explicit timezone.
+     * If this option is not provided, then the default value is format specific.
+     * That default is often, but not necessarily, the {@linkplain TimeZone#getDefault() platform default}.
+     *
+     * <div class="warning"><b>Upcoming API change — Java time API</b><br>
+     * The type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
+     * This change may be applied in synchronization with GeoAPI 4.0.
+     * </div>
+     *
+     * @see org.apache.sis.xml.XML#TIMEZONE
+     *
+     * @since 0.8
+     */
+    public static final OptionKey<TimeZone> TIMEZONE = new OptionKey<>("TIMEZONE", TimeZone.class);
+
+    /**
      * The character encoding of document content.
      * This option can be used when the file to read does not describe itself its encoding.
      * For example this option can be used when reading plain text files, but is ignored when
      * reading XML files having a {@code <?xml version="1.0" encoding="…"?>} declaration.
      *
      * <p>If this option is not provided, then the default value is format specific.
-     * That default is often, but not necessarily, the {@link Charset#defaultCharset() platform default}.</p>
+     * That default is often, but not necessarily, the {@linkplain Charset#defaultCharset() platform default}.</p>
      *
      * @since 0.4
      */
@@ -273,7 +304,7 @@ public class OptionKey<T> implements Serializable {
      * Resolves this option key on deserialization. This method is invoked
      * only for instance of the exact {@code OptionKey} class, not subclasses.
      *
-     * @return  the unique {@code OptionKey} instance.
+     * @return the unique {@code OptionKey} instance.
      * @throws ObjectStreamException required by specification but should never be thrown.
      */
     private Object readResolve() throws ObjectStreamException {

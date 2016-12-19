@@ -166,6 +166,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ClosedReader_1 = 19;
 
         /**
+         * This {0} writer is closed.
+         */
+        public static final short ClosedWriter_1 = 166;
+
+        /**
          * Database error while creating a ‘{0}’ object for the “{1}” identifier.
          */
         public static final short DatabaseError_2 = 20;
@@ -358,6 +363,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalOrdinateRange_3 = 57;
 
         /**
+         * The {0} writer does not accept outputs of type ‘{1}’.
+         */
+        public static final short IllegalOutputTypeForWriter_2 = 165;
+
+        /**
          * Property “{0}” does not accept instances of ‘{1}’.
          */
         public static final short IllegalPropertyValueClass_2 = 58;
@@ -533,6 +543,11 @@ public final class Errors extends IndexedResourceBundle {
          * Can not create a “{0}” array of negative length.
          */
         public static final short NegativeArrayLength_1 = 91;
+
+        /**
+         * Nested “{0}” elements are not allowed.
+         */
+        public static final short NestedElementNotAllowed_1 = 167;
 
         /**
          * No value is associated to “{0}”.

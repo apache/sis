@@ -181,8 +181,8 @@ final class Reader extends GeoTIFF {
                 }
             }
         }
-        // Do not invoke errors() yet because GeoTiffStore construction may not be finished.
-        throw new DataStoreContentException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
+        // Do not invoke this.errors() yet because GeoTiffStore construction may not be finished. Owner.error() is okay.
+        throw new DataStoreContentException(owner.errors().getString(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
     }
 
     /**

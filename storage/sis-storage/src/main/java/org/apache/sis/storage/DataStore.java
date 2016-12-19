@@ -35,7 +35,7 @@ import org.apache.sis.util.logging.WarningListeners;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  *
  * @see DataStores#open(Object)
@@ -43,6 +43,7 @@ import org.apache.sis.util.logging.WarningListeners;
 public abstract class DataStore implements Localized, AutoCloseable {
     /**
      * The locale to use for formatting warnings.
+     * This is not the locale for formatting data in the storage.
      *
      * @see #getLocale()
      * @see #setLocale(Locale)
@@ -60,6 +61,25 @@ public abstract class DataStore implements Localized, AutoCloseable {
     protected DataStore() {
         locale = Locale.getDefault(Locale.Category.DISPLAY);
         listeners = new WarningListeners<>(this);
+    }
+
+    /**
+     * Creates a new instance for the given storage (typically file or database).
+     *
+     * @param connector information about the storage (URL, stream, reader instance, <i>etc</i>).
+     *
+     * @since 0.8
+     */
+    protected DataStore(final StorageConnector connector) {
+        ArgumentChecks.ensureNonNull("connector", connector);
+        locale = Locale.getDefault(Locale.Category.DISPLAY);
+        listeners = new WarningListeners<>(this);
+        /*
+         * A future version could fetch some information from the StorageConnector.
+         * For now we do not, not even OptionKey.LOCALE because we are not talking
+         * about the same locale (the one in this DataStore is for warning messages,
+         * not for data).
+         */
     }
 
     /**

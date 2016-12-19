@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.system;
+package org.apache.sis.xml;
 
 import java.io.Reader;
 import java.io.InputStream;
 import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.Source;
@@ -31,61 +32,36 @@ import org.apache.sis.util.Static;
 
 
 /**
- * Provides access to {@link javax.xml.stream.XMLInputFactory} methods as static methods working on
- * a SIS-wide instance. This convenience is provided in a separated class in order to allow the JVM
- * to instantiate the factory only when first needed, when initializing this class.
+ * Provides access to {@link XMLInputFactory} methods as static methods working on a SIS-wide instance.
+ * This convenience is provided in a separated class in order to allow the JVM to instantiate the factory
+ * only when first needed, when initializing this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.8
  * @module
  */
-public final class XMLInputFactory extends Static {
+final class InputFactory extends Static {
     /**
      * The SIS-wide factory.
      */
-    private static final javax.xml.stream.XMLInputFactory FACTORY = javax.xml.stream.XMLInputFactory.newInstance();
+    private static final XMLInputFactory FACTORY = XMLInputFactory.newInstance();
 
     /**
      * Do not allow instantiation of this class.
      */
-    private XMLInputFactory() {
-    }
-
-    /**
-     * Creates a new reader for the given object. The given object should be one of the types
-     * expected by a {@code createXMLStreamReader(…)} method defined in this class.
-     *
-     * <p>Note that this method does <strong>not</strong> open streams from files, paths or URLs.
-     * Creating input streams and closing them after usage are caller's responsibility.</p>
-     *
-     * @param  in where to read from.
-     * @return the reader, or {@code null} if the given file where not recognized.
-     * @throws XMLStreamException if the type of the given input is one recognized types,
-     *         but despite that the reader can not be created.
-     *
-     * @since 0.8
-     */
-    public static XMLStreamReader createFromAny(final Object in) throws XMLStreamException {
-        if (in instanceof XMLStreamReader) return                      ((XMLStreamReader) in);
-        if (in instanceof XMLEventReader)  return createXMLStreamReader((XMLEventReader)  in);
-        if (in instanceof InputSource)     return createXMLStreamReader((InputSource)     in);
-        if (in instanceof InputStream)     return createXMLStreamReader((InputStream)     in);
-        if (in instanceof Reader)          return createXMLStreamReader((Reader)          in);
-        if (in instanceof Source)          return createXMLStreamReader((Source)          in);
-        if (in instanceof Node)            return createXMLStreamReader((Node)            in);
-        return null;
+    private InputFactory() {
     }
 
     /*
      * Do not provide convenience method for java.io.File, because the caller needs to close the created
-     * input stream himself (this is not done by XMLInputFactory.close(), despite its method name).
+     * input stream himself (this is not done by XMLStreamReader.close(), despite its method name).
      */
 
     /**
      * Creates a new reader for the given stream.
      *
-     * @param  in where to read from.
+     * @param  in  where to read from.
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
@@ -96,7 +72,7 @@ public final class XMLInputFactory extends Static {
     /**
      * Creates a new reader for the given stream.
      *
-     * @param  in where to read from.
+     * @param  in  where to read from.
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
@@ -107,7 +83,7 @@ public final class XMLInputFactory extends Static {
     /**
      * Creates a new reader for the given source.
      *
-     * @param  in where to read from.
+     * @param  in  where to read from.
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
@@ -118,7 +94,7 @@ public final class XMLInputFactory extends Static {
     /**
      * Creates a new reader for the given source.
      *
-     * @param  in where to read from.
+     * @param  in  where to read from.
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
@@ -129,7 +105,7 @@ public final class XMLInputFactory extends Static {
     /**
      * Creates a new reader for the given source.
      *
-     * @param  in where to read from.
+     * @param  in  where to read from.
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
@@ -140,7 +116,7 @@ public final class XMLInputFactory extends Static {
     /**
      * Creates a new reader for the given source.
      *
-     * @param  in where to read from.
+     * @param  in  where to read from.
      * @return the reader.
      * @throws XMLStreamException if the reader can not be created.
      */
