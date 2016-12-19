@@ -36,6 +36,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalQuery;
 import java.time.temporal.TemporalAccessor;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -97,6 +98,32 @@ public final class StandardDateFormat extends DateFormat {
             .optionalEnd().optionalEnd().optionalEnd()    // Move back to the optional block of HOUR_OF_DAY.
             .optionalStart().appendOffsetId()
             .toFormatter(Locale.ROOT);
+
+    /**
+     * The kind of objects to get from calls to {@link #parseBest(CharSequence)}, in preference order.
+     * The time is converted to UTC timezone if possible.
+     *
+     * Tip: if we want to preserve the timezone instead than converting to UTC, we could try replacing
+     * {@code Instant::from} by {@code ZonedDateTime::from, OffsetDateTime::from}.
+     */
+    private static TemporalQuery<?>[] QUERIES = {
+        Instant::from, LocalDateTime::from, LocalDate::from
+    };
+
+    /**
+     * Parses the given date and/or time, which may have an optional timezone. This method applies heuristic rules
+     * for choosing if the object should be returned as a local date, or a date and time with timezone, <i>etc</i>.
+     *
+     * @param  text  the character string to parse, or {@code null}.
+     * @return a temporal object for the given text, or {@code null} if the given text was null.
+     * @throws DateTimeParseException if the text can not be parsed as a date.
+     *
+     * @since 0.8
+     */
+    public static Temporal parseBest(final CharSequence text) {
+        // Cast is safe if all QUERIES elements return a Temporal subtype.
+        return (text != null) ? (Temporal) FORMAT.parseBest(text, QUERIES) : null;
+    }
 
     /**
      * The length of a day in number of milliseconds.

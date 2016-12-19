@@ -68,19 +68,19 @@ public class GPXReader extends StaxStreamReader {
      * The namespace, which should be either {@link Tags#NAMESPACE_V10} or {@link Tags#NAMESPACE_V11}.
      * We store this information for identifying the closing {@code <gpx>} tag.
      */
-    private final String namespace;
+    private String namespace;
 
     /**
      * Version of the GPX file, or {@code null} if unspecified.
      * Can be {@link GPXStore#V1_0} or {@link GPXStore#V1_1}.
      */
-    private final Version version;
+    private Version version;
 
     /**
      * Convenience flag set to {@code true} if the {@link #version} field is {@link GPXStore#V1_0},
      * or {@code false} if the version is {@link GPXStore#V1_1}.
      */
-    private final boolean isLegacy;
+    private boolean isLegacy;
 
     /**
      * The metadata (ISO 19115 compatible), or {@code null} if none.
@@ -118,22 +118,34 @@ public class GPXReader extends StaxStreamReader {
 
     /**
      * Creates a new GPX reader from the given file, URL, stream or reader object.
+     * The {@link #initialize()} method must be invoked after this constructor.
      *
      * @param  owner      the data store for which this reader is created.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if the input type is not recognized.
      * @throws XMLStreamException if an error occurred while opening the XML file.
+     */
+    public GPXReader(final GPXStore owner, final StorageConnector connector)
+            throws DataStoreException, XMLStreamException
+    {
+        super(owner, connector);
+        types = Types.DEFAULT;
+    }
+
+    /**
+     * Reads the metadata. This method should be invoked exactly once after construction.
+     * This work is performed outside the constructor for allowing {@link #close()} method
+     * invocation no matter if this {@code initialize()} method fails.
+     *
+     * @throws DataStoreContentException if the root element is not the expected one.
+     * @throws XMLStreamException if an error occurred while reading the XML file.
      * @throws URISyntaxException if an error occurred while parsing URI in GPX 1.0 metadata.
      * @throws JAXBException if an error occurred while parsing GPX 1.1 metadata.
      * @throws ClassCastException if an object unmarshalled by JAXB was not of the expected type.
      * @throws DateTimeParseException if a text can not be parsed as a date.
      * @throws EOFException if the file seems to be truncated.
      */
-    public GPXReader(final GPXStore owner, final StorageConnector connector)
-            throws DataStoreException, XMLStreamException, JAXBException, URISyntaxException, EOFException
-    {
-        super(owner, connector);
-        types = Types.DEFAULT;
+    public void initialize() throws DataStoreException, XMLStreamException, JAXBException, URISyntaxException, EOFException {
         /*
          * Skip comments, characters, entity declarations, etc. until we find the root element.
          * If that root is anything other than <gpx>, we consider that this is not a GPX file.
@@ -147,16 +159,14 @@ public class GPXReader extends StaxStreamReader {
         final XMLStreamReader reader = getReader();
         namespace = reader.getNamespaceURI();
         String ver = reader.getAttributeValue(null, Attributes.VERSION);
-        if (ver == null) {
-            version  = null;
-            isLegacy = false;
-        } else {
-            version  = new Version(ver);
-            isLegacy = version.compareTo(GPXStore.V1_0, 2) <= 0;
-            if (version.compareTo(GPXStore.V1_1, 2) > 0) {
+        if (ver != null) {
+            version = new Version(ver);
+            final int c = version.compareTo(GPXStore.V1_0, 2);
+            if (c < 0 || version.compareTo(GPXStore.V1_1, 2) > 0) {
                 throw new DataStoreContentException(errors().getString(
                         Errors.Keys.UnsupportedFormatVersion_2, owner.getFormatName(), version));
             }
+            isLegacy = (c == 0);
         }
         /*
          * Read metadata immediately, from current position until the beginning of way points, tracks or routes.
@@ -166,7 +176,7 @@ public class GPXReader extends StaxStreamReader {
          *     Those elements are parsed in the switch statement below.
          *
          *   - In GPX 1.1, they are declared in a <metadata> sub-element and their structure is a little bit
-         *     more elaborated than it was in the previous version. We will use JAXB for parsing them.
+         *     more elaborated than what it was in the previous version. We will use JAXB for parsing them.
          */
         while (reader.hasNext()) {
             switch (reader.next()) {

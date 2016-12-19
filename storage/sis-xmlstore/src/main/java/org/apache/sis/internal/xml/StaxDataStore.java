@@ -119,7 +119,7 @@ public abstract class StaxDataStore extends DataStore implements XMLReporter {
      *
      * @param  target  the object for which we are creating (un)marshaller configuration.
      */
-    final Map<String,Object> configuration(final StaxStream target) {
+    final Map<String,Object> configuration(final StaxStreamIO target) {
         final Map<String,Object> properties = new HashMap<>(4);
         if (locale   != null) properties.put(XML.LOCALE,   locale);
         if (timezone != null) properties.put(XML.TIMEZONE, timezone);
@@ -128,7 +128,7 @@ public abstract class StaxDataStore extends DataStore implements XMLReporter {
     }
 
     /**
-     * Gives to {@link StaxStream} an access to the {@link #listeners} field.
+     * Gives to {@link StaxStreamIO} an access to the {@link #listeners} field.
      */
     final WarningListeners<DataStore> listeners() {
         return listeners;

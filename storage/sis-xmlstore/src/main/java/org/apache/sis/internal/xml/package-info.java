@@ -16,9 +16,10 @@
  */
 
 /**
- * Helper classes for reading and writing XML documents using STAX.
+ * Helper classes for reading and writing XML documents using STAX (Streaming API for XML).
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module

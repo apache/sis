@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.EOFException;
 import java.net.URISyntaxException;
-import java.time.LocalDate;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -54,7 +53,6 @@ import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
 import java.time.temporal.Temporal;
-import java.time.temporal.TemporalAccessor;
 import java.time.format.DateTimeParseException;
 
 
@@ -92,7 +90,7 @@ import java.time.format.DateTimeParseException;
  * @version 0.8
  * @module
  */
-public abstract class StaxStreamReader extends StaxStream implements XMLStreamConstants {
+public abstract class StaxStreamReader extends StaxStreamIO implements XMLStreamConstants {
     /**
      * The XML stream reader.
      */
@@ -126,12 +124,12 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
         else if (input instanceof Node)            reader = factory().createXMLStreamReader(new DOMSource((Node) input));
         else {
             final InputStream in = connector.getStorageAs(InputStream.class);
+            connector.closeAllExcept(in);
             if (in == null) {
                 throw new UnsupportedStorageException(errors().getString(Errors.Keys.IllegalInputTypeForReader_2,
-                                                      owner.getFormatName(), Classes.getClass(input)));
+                        owner.getFormatName(), Classes.getClass(input)));
             }
             reader = factory().createXMLStreamReader(in);
-            connector.closeAllExcept(in);
             initCloseable(in);
             return;
         }
@@ -306,16 +304,7 @@ public abstract class StaxStreamReader extends StaxStream implements XMLStreamCo
      * @throws DateTimeParseException if the text can not be parsed as a date.
      */
     protected final Temporal getElementAsTemporal() throws XMLStreamException {
-        final String text = getElementText();
-        if (text != null) {
-            final TemporalAccessor accessor = StandardDateFormat.FORMAT.parse(text);
-            if (accessor instanceof Temporal) {
-                return (Temporal) accessor;
-            }
-            return LocalDate.from(accessor);
-            // TODO: need more extensive check.
-        }
-        return null;
+        return StandardDateFormat.parseBest(getElementText());
     }
 
     /**

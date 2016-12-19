@@ -70,7 +70,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * <div class="section">Multi-threading</div>
  * This class and subclasses are not tread-safe. Synchronization shall be done by the {@code DataStore}
- * that contains the {@code StaxStream} instances.
+ * that contains the {@code StaxStreamIO} instances.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -78,7 +78,7 @@ import org.apache.sis.xml.Namespaces;
  * @version 0.8
  * @module
  */
-public abstract class StaxStreamWriter extends StaxStream {
+public abstract class StaxStreamWriter extends StaxStreamIO {
     /**
      * The XML stream writer.
      */

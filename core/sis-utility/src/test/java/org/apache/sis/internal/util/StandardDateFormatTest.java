@@ -23,6 +23,11 @@ import org.junit.Test;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.junit.Assert.*;
 
+// Branch-dependent imports
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 
 /**
  * Tests the {@link StandardDateFormat} class.
@@ -57,5 +62,21 @@ public final strictfp class StandardDateFormatTest extends TestCase {
         assertEquals(date("2005-09-22 00:00:00"), f.parse("2005-09-22"));
         assertEquals(date("2005-09-22 00:00:00"), f.parse("2005-9-22"));
         assertEquals(date("1992-01-01 00:00:00"), f.parse("1992-1-1"));
+    }
+
+    /**
+     * Tests parsing a temporal object.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testParseBest() {
+        final long day = 1466985600000L;
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseBest("2016-06-27T16:48Z"));
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60 + 12)*1000),      StandardDateFormat.parseBest("2016-06-27T16:48:12Z"));
+        assertEquals(Instant.ofEpochMilli(day + (( 3*60 +  2)*60 +  1)*1000 + 90), StandardDateFormat.parseBest("2016-06-27T03:02:01.09Z"));
+        assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48, 12),                    StandardDateFormat.parseBest("2016-06-27T16:48:12"));
+        assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48),                        StandardDateFormat.parseBest("2016-06-27T16:48"));
+        assertEquals(LocalDate.of(2016, 6, 27),                                    StandardDateFormat.parseBest("2016-06-27"));
     }
 }
