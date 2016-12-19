@@ -31,16 +31,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.Static;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.Modules;
-
-// Branch-dependent imports
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
@@ -48,7 +38,15 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Static;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -85,8 +83,8 @@ public final class IOUtilities extends Static {
      * dedicated API like {@link Path#getFileName()}. Otherwise this method gets a string representation of the path
      * and returns the part after the last {@code '/'} or platform-dependent name separator character, if any.
      *
-     * @param  path The path as an instance of one of the above-cited types, or {@code null}.
-     * @return The filename in the given path, or {@code null} if the given object is null or of unknown type.
+     * @param  path  the path as an instance of one of the above-cited types, or {@code null}.
+     * @return the filename in the given path, or {@code null} if the given object is null or of unknown type.
      */
     public static String filename(final Object path) {
         return part(path, false);
@@ -97,8 +95,8 @@ public final class IOUtilities extends Static {
      * {@link CharSequence} instance. If no extension is found, returns an empty string. If the given
      * object is of unknown type, return {@code null}.
      *
-     * @param  path The path as an instance of one of the above-cited types, or {@code null}.
-     * @return The extension in the given path, or an empty string if none, or {@code null}
+     * @param  path  the path as an instance of one of the above-cited types, or {@code null}.
+     * @return the extension in the given path, or an empty string if none, or {@code null}
      *         if the given object is null or of unknown type.
      */
     public static String extension(final Object path) {
@@ -147,8 +145,8 @@ public final class IOUtilities extends Static {
      * Returns a string representation of the given path, or {@code null} if none. The current implementation
      * recognizes only the {@link Path}, {@link File}, {@link URL}, {@link URI} or {@link CharSequence} types.
      *
-     * @param  path The path for which to return a string representation.
-     * @return The string representation, or {@code null} if none.
+     * @param  path  the path for which to return a string representation.
+     * @return the string representation, or {@code null} if none.
      */
     public static String toString(final Object path) {
         // For the following types, the string that we want can be obtained only by toString(),
@@ -175,8 +173,8 @@ public final class IOUtilities extends Static {
      * and the {@code %} character. Future versions may replace more characters as we learn
      * from experience.</p>
      *
-     * @param  path The path to encode, or {@code null}.
-     * @return The encoded path, or {@code null} if and only if the given path was null.
+     * @param  path  the path to encode, or {@code null}.
+     * @return the encoded path, or {@code null} if and only if the given path was null.
      */
     public static String encodeURI(final String path) {
         if (path == null) {
@@ -227,11 +225,11 @@ public final class IOUtilities extends Static {
      *   <li>Converts various exceptions into subclasses of {@link IOException}.</li>
      * </ul>
      *
-     * @param  url The URL to convert, or {@code null}.
-     * @param  encoding If the URL is encoded in a {@code application/x-www-form-urlencoded}
-     *         MIME format, the character encoding (normally {@code "UTF-8"}). If the URL is
-     *         not encoded, then {@code null}.
-     * @return The URI for the given URL, or {@code null} if the given URL was null.
+     * @param  url       the URL to convert, or {@code null}.
+     * @param  encoding  if the URL is encoded in a {@code application/x-www-form-urlencoded} MIME format,
+     *                   the character encoding (normally {@code "UTF-8"}). If the URL is not encoded,
+     *                   then {@code null}.
+     * @return the URI for the given URL, or {@code null} if the given URL was null.
      * @throws IOException if the URL can not be converted to a URI.
      *
      * @see URI#URI(String)
@@ -276,11 +274,11 @@ public final class IOUtilities extends Static {
      *   <li>Converts various exceptions into subclasses of {@link IOException}.</li>
      * </ul>
      *
-     * @param  url The URL to convert, or {@code null}.
-     * @param  encoding If the URL is encoded in a {@code application/x-www-form-urlencoded}
-     *         MIME format, the character encoding (normally {@code "UTF-8"}). If the URL is
-     *         not encoded, then {@code null}.
-     * @return The file for the given URL, or {@code null} if the given URL was null.
+     * @param  url       the URL to convert, or {@code null}.
+     * @param  encoding  if the URL is encoded in a {@code application/x-www-form-urlencoded} MIME format,
+     *                   the character encoding (normally {@code "UTF-8"}). If the URL is not encoded,
+     *                   then {@code null}.
+     * @return the file for the given URL, or {@code null} if the given URL was null.
      * @throws IOException if the URL can not be converted to a file.
      *
      * @see File#File(URI)
@@ -318,11 +316,11 @@ public final class IOUtilities extends Static {
      *   <li>Converts various exceptions into subclasses of {@link IOException}.</li>
      * </ul>
      *
-     * @param  url The URL to convert, or {@code null}.
-     * @param  encoding If the URL is encoded in a {@code application/x-www-form-urlencoded}
-     *         MIME format, the character encoding (normally {@code "UTF-8"}). If the URL is
-     *         not encoded, then {@code null}.
-     * @return The path for the given URL, or {@code null} if the given URL was null.
+     * @param  url       the URL to convert, or {@code null}.
+     * @param  encoding  if the URL is encoded in a {@code application/x-www-form-urlencoded} MIME format,
+     *                   the character encoding (normally {@code "UTF-8"}). If the URL is not encoded,
+     *                   then {@code null}.
+     * @return the path for the given URL, or {@code null} if the given URL was null.
      * @throws IOException if the URL can not be converted to a path.
      *
      * @see Paths#get(URI)
@@ -363,13 +361,13 @@ public final class IOUtilities extends Static {
      * A URL can represent a file, but {@link URL#openStream()} appears to return a {@code BufferedInputStream}
      * wrapping the {@link FileInputStream}, which is not a desirable feature when we want to obtain a channel.
      *
-     * @param  path The path to convert, or {@code null}.
-     * @param  encoding If the URL is encoded in a {@code application/x-www-form-urlencoded}
-     *         MIME format, the character encoding (normally {@code "UTF-8"}). If the URL is
-     *         not encoded, then {@code null}. This argument is ignored if the given path does
-     *         not need to be converted from URL to {@code File}.
-     * @return The path as a {@link File} if possible, or a {@link URL} otherwise.
-     * @throws IOException If the given path is not a file and can't be parsed as a URL.
+     * @param  path      the path to convert, or {@code null}.
+     * @param  encoding  if the URL is encoded in a {@code application/x-www-form-urlencoded} MIME format,
+     *                   the character encoding (normally {@code "UTF-8"}). If the URL is not encoded,
+     *                   then {@code null}. This argument is ignored if the given path does not need
+     *                   to be converted from URL to {@code File}.
+     * @return the path as a {@link File} if possible, or a {@link URL} otherwise.
+     * @throws IOException if the given path is not a file and can't be parsed as a URL.
      */
     public static Object toFileOrURL(final String path, final String encoding) throws IOException {
         if (path == null) {
@@ -428,13 +426,13 @@ public final class IOUtilities extends Static {
      * would alter significatively the channel behavior depending on whether we have been able to
      * honor the options or not.</p>
      *
-     * @param  input The file to open, or {@code null}.
-     * @param  encoding If the input is an encoded URL, the character encoding (normally {@code "UTF-8"}).
-     *         If the URL is not encoded, then {@code null}. This argument is ignored if the given input
-     *         does not need to be converted from URL to {@code File}.
-     * @param  options The options to use for creating a new byte channel. Can be null or empty for read-only.
-     * @return The channel for the given input, or {@code null} if the given input is of unknown type.
-     * @throws IOException If an error occurred while opening the given file.
+     * @param  input     the file to open, or {@code null}.
+     * @param  encoding  if the input is an encoded URL, the character encoding (normally {@code "UTF-8"}).
+     *                   If the URL is not encoded, then {@code null}. This argument is ignored if the given
+     *                   input does not need to be converted from URL to {@code File}.
+     * @param  options   the options to use for creating a new byte channel. Can be null or empty for read-only.
+     * @return the channel for the given input, or {@code null} if the given input is of unknown type.
+     * @throws IOException if an error occurred while opening the given file.
      */
     public static ReadableByteChannel open(Object input, final String encoding, OpenOption... options) throws IOException {
         /*

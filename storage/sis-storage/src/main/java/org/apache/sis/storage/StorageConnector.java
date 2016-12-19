@@ -170,7 +170,7 @@ public class StorageConnector implements Serializable {
      * Creates a new data store connection wrapping the given input/output object.
      * The object can be of any type, but the class javadoc lists the most typical ones.
      *
-     * @param storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @param storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
      */
     public StorageConnector(final Object storage) {
         ArgumentChecks.ensureNonNull("storage", storage);
@@ -180,9 +180,9 @@ public class StorageConnector implements Serializable {
     /**
      * Returns the option value for the given key, or {@code null} if none.
      *
-     * @param  <T> The type of option value.
-     * @param  key The option for which to get the value.
-     * @return The current value for the given option, or {@code null} if none.
+     * @param  <T>  the type of option value.
+     * @param  key  the option for which to get the value.
+     * @return the current value for the given option, or {@code null} if none.
      */
     public <T> T getOption(final OptionKey<T> key) {
         ArgumentChecks.ensureNonNull("key", key);
@@ -199,9 +199,9 @@ public class StorageConnector implements Serializable {
      *   <li>{@link OptionKey#BYTE_BUFFER}  for allowing users to control the byte buffer to be created.</li>
      * </ul>
      *
-     * @param <T>   The type of option value.
-     * @param key   The option for which to set the value.
-     * @param value The new value for the given option, or {@code null} for removing the value.
+     * @param <T>    the type of option value.
+     * @param key    the option for which to set the value.
+     * @param value  the new value for the given option, or {@code null} for removing the value.
      */
     public <T> void setOption(final OptionKey<T> key, final T value) {
         ArgumentChecks.ensureNonNull("key", key);
@@ -212,7 +212,7 @@ public class StorageConnector implements Serializable {
      * Returns the input/output object given at construction time.
      * The object can be of any type, but the class javadoc lists the most typical ones.
      *
-     * @return The input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @return the input/output object as a URL, file, image input stream, <i>etc.</i>.
      *
      * @see #getStorageAs(Class)
      */
@@ -233,7 +233,7 @@ public class StorageConnector implements Serializable {
      *       Note that the string representation of unknown types may change in any future SIS version.</li>
      * </ul>
      *
-     * @return A short name of the storage object.
+     * @return a short name of the storage object.
      */
     public String getStorageName() {
         if (name == null) {
@@ -257,8 +257,8 @@ public class StorageConnector implements Serializable {
      *   <li>For instances of unknown type, this method returns {@code null}.</li>
      * </ul>
      *
-     * @return The filename extension, or an empty string if none, or {@code null} if the storage
-     *         is an object of unknown type.
+     * @return the filename extension, or an empty string if none,
+     *         or {@code null} if the storage is an object of unknown type.
      */
     public String getFileExtension() {
         if (extension == null) {
@@ -355,10 +355,10 @@ public class StorageConnector implements Serializable {
      * database connection returned by this method. In addition, those {@code probeContent(StorageConnector)}
      * methods are responsible for restoring the stream or byte buffer to its original position on return.
      *
-     * @param  <T>  The compile-time type of the {@code type} argument.
-     * @param  type The desired type as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
-     *         class or other type supported by {@code StorageConnector} subclasses.
-     * @return The storage as a view of the given type, or {@code null} if no view can be created for the given type.
+     * @param  <T>   the compile-time type of the {@code type} argument.
+     * @param  type  the desired type as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
+     *               class or other type supported by {@code StorageConnector} subclasses.
+     * @return the storage as a view of the given type, or {@code null} if no view can be created for the given type.
      * @throws IllegalArgumentException if the given {@code type} argument is not a supported type.
      * @throws DataStoreException if an error occurred while opening a stream or database connection.
      *
@@ -438,7 +438,7 @@ public class StorageConnector implements Serializable {
      * Creates a view for the input as a {@link ChannelDataInput} if possible.
      * If the view can not be created, remember that fact in order to avoid new attempts.
      *
-     * @param  asImageInputStream If the {@code ChannelDataInput} needs to be {@link ChannelImageInputStream} subclass.
+     * @param  asImageInputStream  whether the {@code ChannelDataInput} needs to be {@link ChannelImageInputStream} subclass.
      * @throws IOException if an error occurred while opening a channel for the input.
      */
     private void createChannelDataInput(final boolean asImageInputStream) throws IOException {
@@ -553,7 +553,7 @@ public class StorageConnector implements Serializable {
                 if (n >= 1) {
                     asByteBuffer = ByteBuffer.wrap(buffer).order(in.getByteOrder());
                     asByteBuffer.limit(n);
-                    // Can't invoke asReadOnly() because 'prefetch()' need to be able to write in it.
+                    // Can not invoke asReadOnly() because 'prefetch()' need to be able to write in it.
                 }
             }
         }
@@ -602,10 +602,11 @@ public class StorageConnector implements Serializable {
 
     /**
      * Creates a storage view of the given type if possible, or returns {@code null} otherwise.
-     * This method is invoked by {@link #getStorageAs(Class)} when first needed, and the result is cached.
+     * This method is invoked by {@link #getStorageAs(Class)} when first needed, and the result
+     * is cached by the caller.
      *
-     * @param  type The type of the view to create.
-     * @return The storage as a view of the given type, or {@code null} if no view can be created for the given type.
+     * @param  type  the type of the view to create.
+     * @return the storage as a view of the given type, or {@code null} if no view can be created for the given type.
      * @throws IllegalArgumentException if the given {@code type} argument is not a supported type.
      * @throws Exception if an error occurred while opening a stream or database connection.
      */
@@ -680,9 +681,9 @@ public class StorageConnector implements Serializable {
     /**
      * Adds the given view in the cache.
      *
-     * @param <T>   The compile-time type of the {@code type} argument.
-     * @param type  The view type.
-     * @param view  The view, or {@code null} if none.
+     * @param  <T>   the compile-time type of the {@code type} argument.
+     * @param  type  the view type.
+     * @param  view  the view, or {@code null} if none.
      */
     private <T> void addView(final Class<T> type, final T view) {
         if (views.put(type, (view != null) ? view : Void.TYPE) != null) {
@@ -693,9 +694,9 @@ public class StorageConnector implements Serializable {
     /**
      * Returns the view for the given type from the cache.
      *
-     * @param <T>   The compile-time type of the {@code type} argument.
-     * @param type  The view type.
-     * @return      The view, or {@code null} if none.
+     * @param  <T>   the compile-time type of the {@code type} argument.
+     * @param  type  the view type.
+     * @return the view, or {@code null} if none.
      */
     private <T> T getView(final Class<T> type) {
         final Object view = views.get(type);
@@ -707,8 +708,8 @@ public class StorageConnector implements Serializable {
      * The {@code input} argument is always a new instance wrapping, directly or indirectly, the {@link #storage}.
      * Callers must specify the wrapped object in the {@code delegate} argument.
      *
-     * @param input    The newly created object which will need to be closed.
-     * @param delegate The object wrapped by the given {@code input}.
+     * @param  input     the newly created object which will need to be closed.
+     * @param  delegate  the object wrapped by the given {@code input}.
      */
     private void addViewToClose(final Object input, final Object delegate) {
         if (viewsToClose == null) {
@@ -731,7 +732,7 @@ public class StorageConnector implements Serializable {
      *
      * <p>This {@code StorageConnector} instance shall not be used anymore after invocation of this method.</p>
      *
-     * @param  view The view to leave open, or {@code null} if none.
+     * @param  view  the view to leave open, or {@code null} if none.
      * @throws DataStoreException if an error occurred while closing the stream or database connection.
      *
      * @see #getStorageAs(Class)

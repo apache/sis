@@ -32,8 +32,6 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 
-// Branch-dependent imports
-
 
 /**
  * An instance of an {@linkplain DefaultAttributeType attribute type} containing the value of an attribute in a feature.
@@ -58,9 +56,12 @@ import org.apache.sis.util.ArgumentChecks;
  *   <li><b>Serialization:</b> serialized objects of this class are not guaranteed to be compatible with future
  *       versions. Serialization should be used only for short term storage or RMI between applications running
  *       the same SIS version.</li>
+ *   <li><b>Cloning:</b> despite providing a public {@link #clone()} method, this base class is <strong>not</strong>
+ *       cloneable by default. Subclasses shall implement the {@link Cloneable} interface themselves if they choose
+ *       to support cloning.</li>
  * </ul>
  *
- * @param <V> The type of attribute values.
+ * @param  <V>  the type of attribute values.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -71,7 +72,8 @@ import org.apache.sis.util.ArgumentChecks;
  * @see AbstractFeature
  * @see DefaultAttributeType
  */
-public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable, Serializable {
+@SuppressWarnings("CloneInNonCloneableClass")       // Decision left to subclasses - see javadoc
+public abstract class AbstractAttribute<V> extends Field<V> implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -475,8 +477,10 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
     }
 
     /**
-     * Returns a copy of this attribute.
-     * The default implementation returns a <em>shallow</em> copy:
+     * Returns a copy of this attribute if cloning is supported.
+     * The decision to support cloning or not is left to subclasses. If the subclass does not implement
+     * the {@link Cloneable} interface, then this method throws a {@link CloneNotSupportedException}.
+     * Otherwise the default implementation returns a <em>shallow</em> copy of this {@code Attribute}:
      * the attribute {@linkplain #getValue() value} and {@linkplain #characteristics() characteristics}
      * are <strong>not</strong> cloned.
      * However subclasses may choose to do otherwise.

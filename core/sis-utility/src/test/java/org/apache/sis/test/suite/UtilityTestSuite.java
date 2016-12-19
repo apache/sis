@@ -142,6 +142,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.converter.NumberConverterTest.class,        // Shall be after SystemRegistryTest.
 
     // XML most basic types.
+    org.apache.sis.xml.NamespacesTest.class,
     org.apache.sis.xml.XLinkTest.class,
     org.apache.sis.xml.NilReasonTest.class,
     org.apache.sis.xml.LegacyCodesTest.class,

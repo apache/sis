@@ -19,12 +19,11 @@ package org.apache.sis.internal.util;
 import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.RandomAccess;
 import java.lang.reflect.Array;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.CheckedContainer;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -55,14 +54,14 @@ import java.util.Objects;
  * <p>Note that the public API, {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])},
  * returns {@code List<? extends E>}, which is okay.</p>
  *
- * @param <E> The type of elements in the list.
+ * @param  <E>  the type of elements in the list.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.3
  * @version 0.3
  * @module
  */
-public class UnmodifiableArrayList<E> extends AbstractList<E> implements CheckedContainer<E>, Serializable {
+public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomAccess, CheckedContainer<E>, Serializable {
     /**
      * For compatibility with different versions.
      */
@@ -89,7 +88,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. See class javadoc for more information.
      *
-     * @param array The array to wrap.
+     * @param array the array to wrap.
      */
     protected UnmodifiableArrayList(final E[] array) {                          // NOT "E..." - see javadoc.
         this.array = Objects.requireNonNull(array);
@@ -110,10 +109,9 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * the caller to instantiate the array explicitely, in order to make sure that the array type is
      * the intended one.</p>
      *
-     * @param  <E> The type of elements in the list.
-     * @param  array The array to wrap, or {@code null} if none.
-     * @return The given array wrapped in an unmodifiable list, or {@code null} if the given
-     *         array was null.
+     * @param  <E>    the type of elements in the list.
+     * @param  array  the array to wrap, or {@code null} if none.
+     * @return the given array wrapped in an unmodifiable list, or {@code null} if the given array was null.
      */
     public static <E> UnmodifiableArrayList<E> wrap(final E[] array) {          // NOT "E..." - see javadoc.
         return (array != null) ? new UnmodifiableArrayList<>(array) : null;
@@ -134,11 +132,11 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.
      * See class javadoc for more information.
      *
-     * @param  <E>   The type of elements in the list.
-     * @param  array The array to wrap.
-     * @param  lower Low endpoint (inclusive) of the sublist.
-     * @param  upper High endpoint (exclusive) of the sublist.
-     * @return The given array wrapped in an unmodifiable list.
+     * @param  <E>    the type of elements in the list.
+     * @param  array  the array to wrap.
+     * @param  lower  low endpoint (inclusive) of the sublist.
+     * @param  upper  high endpoint (exclusive) of the sublist.
+     * @return the given array wrapped in an unmodifiable list.
      */
     public static <E> UnmodifiableArrayList<E> wrap(final E[] array, final int lower, final int upper) {
         if (lower == 0 && upper == array.length) {
@@ -151,7 +149,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * Returns the element type of the wrapped array. The default implementation returns
      * <code>array.getClass().{@linkplain Class#getComponentType() getComponentType()}</code>.
      *
-     * @return The type of elements in the list.
+     * @return the type of elements in the list.
      */
     @Override
     public Class<E> getElementType() {
@@ -170,7 +168,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
     /**
      * Returns the list size.
      *
-     * @return The size of this list.
+     * @return the size of this list.
      */
     @Override
     public int size() {
@@ -188,7 +186,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * greater value is not necessarily more memory consuming, since the backing array
      * may be shared by many sublists.</p>
      *
-     * @return The length of the backing array.
+     * @return the length of the backing array.
      */
     public final int arraySize() {
         return array.length;
@@ -197,8 +195,8 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
     /**
      * Returns the element at the specified index.
      *
-     * @param  index The index of the element to get.
-     * @return The element at the given index.
+     * @param  index  the index of the element to get.
+     * @return the element at the given index.
      */
     @Override
     public E get(final int index) {
@@ -209,8 +207,8 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * Returns the index in this list of the first occurrence of the specified element,
      * or -1 if the list does not contain the element.
      *
-     * @param object The element to search for.
-     * @return The index of the first occurrence of the given object, or {@code -1}.
+     * @param  object  the element to search for.
+     * @return the index of the first occurrence of the given object, or {@code -1}.
      */
     @Override
     public int indexOf(final Object object) {
@@ -236,8 +234,8 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * Returns the index in this list of the last occurrence of the specified element,
      * or -1 if the list does not contain the element.
      *
-     * @param object The element to search for.
-     * @return The index of the last occurrence of the given object, or {@code -1}.
+     * @param  object  the element to search for.
+     * @return the index of the last occurrence of the given object, or {@code -1}.
      */
     @Override
     public int lastIndexOf(final Object object) {
@@ -262,7 +260,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
     /**
      * Returns {@code true} if this list contains the specified element.
      *
-     * @param object The element to check for existence.
+     * @param  object  the element to check for existence.
      * @return {@code true} if this collection contains the given element.
      */
     @Override
@@ -289,10 +287,10 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * Returns a view of the portion of this list between the specified
      * {@code lower}, inclusive, and {@code upper}, exclusive.
      *
-     * @param  lower Low endpoint (inclusive) of the sublist.
-     * @param  upper High endpoint (exclusive) of the sublist.
-     * @return A view of the specified range within this list.
-     * @throws IndexOutOfBoundsException If the lower or upper value are out of bounds.
+     * @param  lower  low endpoint (inclusive) of the sublist.
+     * @param  upper  high endpoint (exclusive) of the sublist.
+     * @return a view of the specified range within this list.
+     * @throws IndexOutOfBoundsException if the lower or upper value are out of bounds.
      *
      * @see #wrap(Object[], int, int)
      */
@@ -307,7 +305,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
     /**
      * A view over a portion of {@link UnmodifiableArrayList}.
      *
-     * @param <E> The type of elements in the list.
+     * @param  <E>  the type of elements in the list.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3
@@ -377,7 +375,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * This is not what {@code ArrayList} does, but is not forbidden by {@link java.util.List#toArray()} javadoc
      * neither.
      *
-     * @return A copy of the wrapped array.
+     * @return a copy of the wrapped array.
      */
     @Override
     public E[] toArray() {
@@ -388,9 +386,9 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * Copies the backing array in the given one if the list fits in the given array.
      * If the list does not fit in the given array, returns the collection in a new array.
      *
-     * @param  <T>   The type of array element.
-     * @param  dest  The array where to copy the elements if the list can fits in the array.
-     * @return The given array, or a newly created array if this list is larger than the given array.
+     * @param  <T>   the type of array element.
+     * @param  dest  the array where to copy the elements if the list can fits in the array.
+     * @return the given array, or a newly created array if this list is larger than the given array.
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -406,7 +404,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
                  */
                 dest = (T[]) Array.newInstance(dest.getClass().getComponentType(), size);
             } else {
-                dest[size] = null; // Required by Collection.toArray(T[]) javadoc.
+                dest[size] = null;              // Required by Collection.toArray(T[]) javadoc.
             }
         }
         System.arraycopy(array, lower(), dest, 0, size);
@@ -416,7 +414,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
     /**
      * Compares this list with the given object for equality.
      *
-     * @param  object The object to compare with this list.
+     * @param  object  the object to compare with this list.
      * @return {@code true} if the given object is equal to this list.
      */
     @Override
