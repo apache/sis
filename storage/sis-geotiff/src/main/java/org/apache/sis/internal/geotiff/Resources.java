@@ -88,9 +88,9 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DitheringOrHalftoningApplied_2 = 3;
 
         /**
-         * The “{0}” GeoTIFF key has been ignored.
+         * The following GeoTIFF keys have been ignored: {0}
          */
-        public static final short IgnoredGeoKey_1 = 16;
+        public static final short IgnoredGeoKeys_1 = 19;
 
         /**
          * The “{0}” TIFF tag has been ignored.
@@ -129,8 +129,8 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MissingValue_2 = 7;
 
         /**
-         * The file defines “{2}” with a value of {3}{4}, but that value should be {1}{4} according
-         * parent definition ({0}).
+         * The file defines “{2}” with value {3}{4}, but that value should be {1}{4} according parent
+         * definition ({0}).
          */
         public static final short NotTheEpsgValue_5 = 17;
 
@@ -143,6 +143,11 @@ public final class Resources extends IndexedResourceBundle {
          * A single value was expected for the “{0}” key but {1} values have been found.
          */
         public static final short UnexpectedListOfValues_2 = 15;
+
+        /**
+         * The “{1}” parameter was not expected for the “{0}” projection method.
+         */
+        public static final short UnexpectedParameter_2 = 20;
 
         /**
          * Found {2} tiles or strips in the “{0}” file while {1} were expected.
@@ -158,6 +163,11 @@ public final class Resources extends IndexedResourceBundle {
          * Version {0} of GeoTIFF key directory is not supported.
          */
         public static final short UnsupportedGeoKeyDirectory_1 = 13;
+
+        /**
+         * Unsupported storage location for the “{0}” GeoTIFF value.
+         */
+        public static final short UnsupportedGeoKeyStorage_1 = 16;
     }
 
     /**

@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import org.apache.sis.util.Version;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreProvider;
@@ -45,6 +46,11 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
      * The MIME type for GeoTIFF files.
      */
     private static final String MIME_TYPE = "image/tiff";
+
+    /**
+     * The TIFF version.
+     */
+    private static final Version VERSION = new Version("6.0");
 
     /**
      * Creates a new provider.
@@ -78,7 +84,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
                     buffer.order(isBigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
                     switch (buffer.getShort(p + (Short.SIZE / Byte.SIZE))) {
                         case GeoTIFF.CLASSIC:
-                        case GeoTIFF.BIG_TIFF: return new ProbeResult(true, MIME_TYPE, null);
+                        case GeoTIFF.BIG_TIFF: return new ProbeResult(true, MIME_TYPE, VERSION);
                     }
                 } finally {
                     buffer.order(old);

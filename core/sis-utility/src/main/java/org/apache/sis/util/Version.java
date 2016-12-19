@@ -96,7 +96,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     /**
      * Creates a new version object from the supplied string.
      *
-     * @param version The version as a string.
+     * @param version  the version as a string.
      */
     public Version(final String version) {
         ArgumentChecks.ensureNonNull("version", version);
@@ -114,8 +114,8 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      *   <li>Other elements (if any) will be appended to the {@link #toString() string value}.</li>
      * </ul>
      *
-     * @param  components The major number, optionally followed by minor, revision or other numbers.
-     * @return A new or existing instance of {@code Version} for the given numbers.
+     * @param  components  the major number, optionally followed by minor, revision or other numbers.
+     * @return a new or existing instance of {@code Version} for the given numbers.
      *
      * @since 0.4
      */
@@ -156,7 +156,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * Returns the major version number. This method returns an {@link Integer} if possible,
      * or a {@link String} otherwise.
      *
-     * @return The major version number.
+     * @return the major version number.
      */
     public Comparable<?> getMajor() {
         return getComponent(0);
@@ -167,7 +167,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * or a {@link String} otherwise. If there is no minor version number, then this method
      * returns {@code null}.
      *
-     * @return The minor version number, or {@code null} if none.
+     * @return the minor version number, or {@code null} if none.
      */
     public Comparable<?> getMinor() {
         return getComponent(1);
@@ -178,7 +178,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * or a {@link String} otherwise. If there is no revision number, then this method
      * returns {@code null}.
      *
-     * @return The revision number, or {@code null} if none.
+     * @return the revision number, or {@code null} if none.
      */
     public Comparable<?> getRevision() {
         return getComponent(2);
@@ -193,8 +193,8 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * or a {@link String} otherwise. If there is no component at the specified index,
      * then this method returns {@code null}.</p>
      *
-     * @param  index The index of the component to fetch.
-     * @return The value at the specified index, or {@code null} if none.
+     * @param  index  the index of the component to fetch.
+     * @return the value at the specified index, or {@code null} if none.
      * @throws IndexOutOfBoundsException if {@code index} is negative.
      */
     final synchronized Comparable<?> getComponent(final int index) {
@@ -245,10 +245,10 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * The comparisons are performed as {@link Integer} object if possible, or as {@link String}
      * otherwise.
      *
-     * @param  other The other version object to compare with.
-     * @param  limit The maximum number of components to compare.
-     * @return A negative value if this version is lower than the supplied version, a positive
-     *         value if it is higher, or 0 if they are equal.
+     * @param  other  the other version object to compare with.
+     * @param  limit  the maximum number of components to compare.
+     * @return a negative value if this version is lower than the supplied version,
+     *         a positive value if it is higher, or 0 if they are equal.
      */
     public int compareTo(final Version other, final int limit) {
         ArgumentChecks.ensureNonNull ("other", other);
@@ -295,8 +295,8 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * Compares this version with an other version object. This method performs the same
      * comparison than {@link #compareTo(Version, int)} with no limit.
      *
-     * @param  other The other version object to compare with.
-     * @return A negative value if this version is lower than the supplied version,
+     * @param  other  the other version object to compare with.
+     * @return a negative value if this version is lower than the supplied version,
      *         a positive value if it is higher, or 0 if they are equal.
      */
     @Override
@@ -308,7 +308,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * Compare this version string with the specified object for equality. Two version are
      * considered equal if <code>{@linkplain #compareTo(Object) compareTo}(other) == 0</code>.
      *
-     * @param other The object to compare with this version for equality.
+     * @param other  the object to compare with this version for equality.
      */
     @Override
     public boolean equals(final Object other) {
