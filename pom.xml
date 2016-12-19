@@ -510,35 +510,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </properties>
     </profile>
 
-    <!-- Cross-version compilation (to be removed with JDK9). -->
-    <profile>
-      <id>bootclasspath</id>
-      <activation>
-        <property>
-          <name>bootclasspath</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <compilerArgs>
-                <arg>-bootclasspath</arg>
-                <arg>${bootclasspath}</arg>
-              </compilerArgs>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-              <bootclasspath>${bootclasspath}</bootclasspath>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
     <!-- ===================================================================
            If the user has not set the SIS_DATA environment variable, set a
            default value where we can create a minimalist database.
@@ -577,6 +548,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <!-- Compile -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.0</version>
         <configuration>
           <source>${maven.compile.source}</source>
           <target>${maven.compile.target}</target>
