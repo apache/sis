@@ -43,40 +43,60 @@ import org.xml.sax.InputSource;
 import org.w3c.dom.Node;
 import org.apache.sis.xml.XML;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
+import java.util.Spliterator;
+import java.util.function.Consumer;
 import java.time.temporal.Temporal;
 import java.time.format.DateTimeParseException;
+import org.opengis.feature.Feature;
 
 
 /**
  * Base class of Apache SIS readers of XML files using STAX parser.
+ * This class is itself an spliterator over all {@code Feature} instances found in the XML file,
+ * with the following restrictions:
+ *
+ * <ul>
+ *   <li>{@link #tryAdvance(Consumer)} shall returns the features in the order they are declared in the XML file.</li>
+ *   <li>{@code tryAdvance(Consumer)} shall not return {@code null} value.</li>
+ *   <li>Modifications of the XML file are not allowed while an iteration is in progress.</li>
+ *   <li>A {@code StaxStreamReader} instance can iterate over the features only once;
+ *       if a new iteration is wanted, a new {@code StaxStreamReader} instance must be created.</li>
+ * </ul>
+ *
  * This is a helper class for {@link org.apache.sis.storage.DataStore} implementations.
- * Readers for a given specification should extend this class and provide appropriate read methods.
+ * Readers for a given specification should extend this class and provide the following methods:
  *
  * <p>Example:</p>
  * {@preformat java
  *     public class UserObjectReader extends StaxStreamReader {
- *         public UserObject read() throws XMLStreamException {
- *             // Actual STAX read operations.
- *             return userObject;
+ *         public boolean tryAdvance(Consumer<? super Feature> action) throws BackingStoreException {
+ *             if (endOfFile) {
+ *                 return false;
+ *             }
+ *             Feature f = ...;         // Actual STAX read operations.
+ *             action.accept(f);
+ *             return true;
  *         }
  *     }
  * }
  *
- * And should be used like below:
+ * And can be used like below:
  *
  * {@preformat java
- *     UserObject obj;
+ *     Consumer<Feature> consumer = ...;
  *     try (UserObjectReader reader = new UserObjectReader(input)) {
- *         obj = instance.read();
+ *         reader.forEachRemaining(consumer);
  *     }
  * }
  *
@@ -90,7 +110,7 @@ import java.time.format.DateTimeParseException;
  * @version 0.8
  * @module
  */
-public abstract class StaxStreamReader extends StaxStreamIO implements XMLStreamConstants {
+public abstract class StaxStreamReader extends StaxStreamIO implements XMLStreamConstants, Spliterator<Feature> {
     /**
      * The XML stream reader.
      */
@@ -136,6 +156,62 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
         initCloseable(input);
         connector.closeAllExcept(input);
     }
+
+    /**
+     * Returns the characteristics of the iteration over feature instances.
+     * The iteration is assumed {@link #ORDERED} in the declaration order in the XML file.
+     * The iteration is {@link #NONNULL} (i.e. {@link #tryAdvance(Consumer)} is not allowed
+     * to return null value) and {@link #IMMUTABLE} (i.e. we do not support modification of
+     * the XML file while an iteration is in progress).
+     *
+     * @return characteristics of iteration over the features in the XML file.
+     */
+    @Override
+    public int characteristics() {
+        return ORDERED | NONNULL | IMMUTABLE;
+    }
+
+    /**
+     * Performs the given action on the next feature instance, or returns {@code null} if there is no more
+     * feature to parse.
+     *
+     * @param  action  the action to perform on the next feature instances.
+     * @return {@code true} if a feature has been found, or {@code false} if we reached the end of XML file.
+     * @throws BackingStoreException if an error occurred while parsing the next feature instance.
+     *         The cause may be {@link DataStoreException}, {@link IOException}, {@link URISyntaxException}
+     *         or various {@link RuntimeException} among others.
+     */
+    @Override
+    public abstract boolean tryAdvance(Consumer<? super Feature> action) throws BackingStoreException;
+
+    /**
+     * Returns {@code null} by default since non-binary XML files are hard to split.
+     *
+     * @return {@code null}.
+     */
+    @Override
+    public Spliterator<Feature> trySplit() {
+        return null;
+    }
+
+    /**
+     * Returns the sentinel value meaning that the number of elements is too expensive to compute.
+     *
+     * @return {@link Long#MAX_VALUE}.
+     */
+    @Override
+    public long estimateSize() {
+        return Long.MAX_VALUE;
+    }
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                ////////
+    ////////                Convenience methods for subclass implementations                ////////
+    ////////                                                                                ////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Convenience method invoking {@link StaxDataStore#inputFactory()}.
@@ -212,7 +288,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
         final XMLStreamReader reader = getReader();
         if (!reader.isStartElement()) {
             do if (!reader.hasNext()) {
-                throw new EOFException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, inputName));
+                throw new EOFException(endOfFile());
             } while (reader.next() != START_ELEMENT);
         }
         if (!isNamespace.test(reader.getNamespaceURI()) || !localName.equals(reader.getLocalName())) {
@@ -224,6 +300,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     /**
      * Skips all remaining elements until we reach the end of the given tag.
      * Nested tags of the same name, if any, are also skipped.
+     * After this method invocation, the current event is {@link #END_DOCUMENT}.
      *
      * @param  tagName name of the tag to close.
      * @throws EOFException if end tag could not be found.
@@ -234,13 +311,13 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
         int nested = 0;
         while (reader.hasNext()) {
             switch (reader.next()) {
-                case XMLStreamReader.START_ELEMENT: {
+                case START_ELEMENT: {
                     if (tagName.equals(reader.getName())) {
                         nested++;
                     }
                     break;
                 }
-                case XMLStreamReader.END_ELEMENT: {
+                case END_ELEMENT: {
                     if (tagName.equals(reader.getName())) {
                         if (--nested < 0) return;
                     }
@@ -248,7 +325,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
                 }
             }
         }
-        throw new EOFException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, inputName));
+        throw new EOFException(endOfFile());
     }
 
     /**
@@ -280,6 +357,32 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     protected final URI getElementAsURI() throws XMLStreamException, URISyntaxException {
         final Context context = Context.current();
         return Context.converter(context).toURI(context, getElementText());
+    }
+
+    /**
+     * Returns the current value of {@link XMLStreamReader#getElementText()} as an integer,
+     * or {@code null} if that value is null or empty.
+     *
+     * @return the current text element as an integer, or {@code null} if empty.
+     * @throws XMLStreamException if a text element can not be returned.
+     * @throws NumberFormatException if the text can not be parsed as an integer.
+     */
+    protected final Integer getElementAsInteger() throws XMLStreamException {
+        final String text = getElementText();
+        return (text != null) ? Integer.valueOf(text) : null;
+    }
+
+    /**
+     * Returns the current value of {@link XMLStreamReader#getElementText()} as a floating point number,
+     * or {@code null} if that value is null or empty.
+     *
+     * @return the current text element as a floating point number, or {@code null} if empty.
+     * @throws XMLStreamException if a text element can not be returned.
+     * @throws NumberFormatException if the text can not be parsed as a floating point number.
+     */
+    protected final Double getElementAsDouble() throws XMLStreamException {
+        final String text = getElementText();
+        return (text != null) ? Numerics.valueOf(Double.parseDouble(text)) : null;
     }
 
     /**
@@ -367,5 +470,35 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
             reader = null;
         }
         super.close();
+    }
+
+    /**
+     * Returns an error message for {@link EOFException}.
+     * This a convenience method for a frequently-used error.
+     *
+     * @return a localized error message for end of file error.
+     */
+    protected final String endOfFile() {
+        return errors().getString(Errors.Keys.UnexpectedEndOfFile_1, inputName);
+    }
+
+    /**
+     * Returns an error message for {@link BackingStoreException}.
+     * This a convenience method for {@link #tryAdvance(Consumer)} implementations.
+     *
+     * @return a localized error message for a file that can not be parsed.
+     */
+    protected final String canNotReadFile() {
+        return errors().getString(Errors.Keys.CanNotParseFile_2, owner.getFormatName(), inputName);
+    }
+
+    /**
+     * Returns an error message saying that nested elements are not allowed.
+     *
+     * @param  name  the name of the nested element found.
+     * @return a localized error message for forbidden nested element.
+     */
+    protected final String nestedElement(final String name) {
+        return errors().getString(Errors.Keys.NestedElementNotAllowed_1, name);
     }
 }

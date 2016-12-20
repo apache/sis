@@ -18,11 +18,13 @@ package org.apache.sis.internal.gpx;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
-import com.esri.core.geometry.Point;
 import java.time.Instant;
+import com.esri.core.geometry.Point;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -30,6 +32,7 @@ import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
 
 // Branch-dependent imports
+import java.util.Spliterators;
 import org.opengis.feature.Feature;
 
 
@@ -71,7 +74,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testMetadataRead100() throws Exception {
         try (final GPXReader reader = create("1.0/metadata.xml")) {
-            reader.initialize();
+            reader.initialize(true);
             final Metadata data = reader.getMetadata();
 
             assertEquals("Sample", data.name);
@@ -99,7 +102,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testMetadataRead110() throws Exception {
         try (final GPXReader reader = create("1.1/metadata.xml")) {
-            reader.initialize();
+            reader.initialize(true);
             final Metadata data = reader.getMetadata();
 
             assertEquals("Sample", data.name);
@@ -132,7 +135,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testWayPointRead100() throws Exception {
         try (final GPXReader reader = create("1.0/waypoint.xml")) {
-            reader.initialize();
+            reader.initialize(true);
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
@@ -144,13 +147,14 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
-            Feature f = reader.next();
+            final Iterator<Feature> it = Spliterators.iterator(reader);
+            Feature f = it.next();
             checkPoint(f, 0, false);
-            f = reader.next();
+            f = it.next();
             checkPoint(f, 1, false);
-            f = reader.next();
+            f = it.next();
             checkPoint(f, 2, false);
-            assertFalse(reader.hasNext());
+            assertFalse(it.hasNext());
         }
     }
 
@@ -162,7 +166,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testWayPointRead110() throws Exception {
         try (final GPXReader reader = create("1.1/waypoint.xml")) {
-            reader.initialize();
+            assertEquals(GPXStore.V1_1, reader.initialize(true));
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
@@ -174,15 +178,15 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
-            Feature f = reader.next();
+            final Iterator<Feature> it = Spliterators.iterator(reader);
+            Feature f = it.next();
             checkPoint(f, 0, true);
-            f = reader.next();
+            f = it.next();
             checkPoint(f, 1 , true);
-            f = reader.next();
+            f = it.next();
             checkPoint(f, 2, true);
-            assertFalse(reader.hasNext());
+            assertFalse(it.hasNext());
         }
-
     }
 
     /**
@@ -193,7 +197,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testRouteRead100() throws Exception {
         try (final GPXReader reader = create("1.0/route.xml")) {
-            reader.initialize();
+            assertEquals(GPXStore.V1_0, reader.initialize(true));
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
@@ -205,7 +209,8 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
-            Feature f = reader.next();
+            final Iterator<Feature> it = Spliterators.iterator(reader);
+            Feature f = it.next();
             assertEquals("Route name",          f.getPropertyValue("name"));
             assertEquals("Route comment",       f.getPropertyValue("cmt"));
             assertEquals("Route description",   f.getPropertyValue("desc"));
@@ -229,8 +234,7 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
             assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
 
-
-            f = reader.next();
+            f = it.next();
             assertEquals(null,                  f.getPropertyValue("name"));
             assertEquals(null,                  f.getPropertyValue("cmt"));
             assertEquals(null,                  f.getPropertyValue("desc"));
@@ -247,7 +251,7 @@ public final strictfp class GPXReaderTest extends TestCase {
             bbox = (Envelope) f.getPropertyValue("@envelope");
             assertNull(bbox);
 
-            assertFalse(reader.hasNext());
+            assertFalse(it.hasNext());
         }
     }
 
@@ -259,7 +263,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testRouteRead110() throws Exception {
         try (final GPXReader reader = create("1.1/route.xml")) {
-            reader.initialize();
+            assertEquals(GPXStore.V1_1, reader.initialize(true));
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
@@ -271,7 +275,8 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
-            Feature f = reader.next();
+            final Iterator<Feature> it = Spliterators.iterator(reader);
+            Feature f = it.next();
             assertEquals("Route name",          f.getPropertyValue("name"));
             assertEquals("Route comment",       f.getPropertyValue("cmt"));
             assertEquals("Route description",   f.getPropertyValue("desc"));
@@ -297,8 +302,7 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
             assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
 
-
-            f = reader.next();
+            f = it.next();
             assertEquals(null,                  f.getPropertyValue("name"));
             assertEquals(null,                  f.getPropertyValue("cmt"));
             assertEquals(null,                  f.getPropertyValue("desc"));
@@ -315,7 +319,7 @@ public final strictfp class GPXReaderTest extends TestCase {
             bbox = (Envelope) f.getPropertyValue("@envelope");
             assertNull(bbox);
 
-            assertFalse(reader.hasNext());
+            assertFalse(it.hasNext());
         }
     }
 
@@ -327,7 +331,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testTrackRead100() throws Exception {
         try (final GPXReader reader = create("1.0/track.xml")) {
-            reader.initialize();
+            assertEquals(GPXStore.V1_0, reader.initialize(true));
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
@@ -339,7 +343,8 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
-            Feature f = reader.next();
+            final Iterator<Feature> it = Spliterators.iterator(reader);
+            Feature f = it.next();
             assertEquals("Track name",          f.getPropertyValue("name"));
             assertEquals("Track comment",       f.getPropertyValue("cmt"));
             assertEquals("Track description",   f.getPropertyValue("desc"));
@@ -369,7 +374,7 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
             assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
 
-            f = reader.next();
+            f = it.next();
             assertEquals(null,                  f.getPropertyValue("name"));
             assertEquals(null,                  f.getPropertyValue("cmt"));
             assertEquals(null,                  f.getPropertyValue("desc"));
@@ -386,7 +391,7 @@ public final strictfp class GPXReaderTest extends TestCase {
             bbox = (Envelope) f.getPropertyValue("@envelope");
             assertNull(bbox);
 
-            assertFalse(reader.hasNext());
+            assertFalse(it.hasNext());
         }
     }
 
@@ -398,7 +403,7 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     public void testTrackRead110() throws Exception {
         try (final GPXReader reader = create("1.1/track.xml")) {
-            reader.initialize();
+            assertEquals(GPXStore.V1_1, reader.initialize(true));
             final Metadata data = reader.getMetadata();
 
             assertNull(data.name);
@@ -410,7 +415,8 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertNull(data.copyright);
             assertEquals(0, data.links.size());
 
-            Feature f = reader.next();
+            final Iterator<Feature> it = Spliterators.iterator(reader);
+            Feature f = it.next();
             assertEquals("Track name",          f.getPropertyValue("name"));
             assertEquals("Track comment",       f.getPropertyValue("cmt"));
             assertEquals("Track description",   f.getPropertyValue("desc"));
@@ -442,7 +448,7 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
             assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
 
-            f = reader.next();
+            f = it.next();
             assertEquals(null,                  f.getPropertyValue("name"));
             assertEquals(null,                  f.getPropertyValue("cmt"));
             assertEquals(null,                  f.getPropertyValue("desc"));
@@ -459,8 +465,7 @@ public final strictfp class GPXReaderTest extends TestCase {
             bbox = (Envelope) f.getPropertyValue("@envelope");
             assertNull(bbox);
 
-
-            assertFalse(reader.hasNext());
+            assertFalse(it.hasNext());
         }
     }
 
@@ -479,7 +484,7 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertEquals("first source",        f.getPropertyValue("src"));
             assertEquals("first symbol",        f.getPropertyValue("sym"));
             assertEquals("first type",          f.getPropertyValue("type"));
-            assertEquals("none",                f.getPropertyValue("fix"));
+            assertEquals(Fix.NONE,              f.getPropertyValue("fix"));
             assertEquals(11,                    f.getPropertyValue("sat"));
             assertEquals(15.15,                 f.getPropertyValue("hdop"));
             assertEquals(14.14,                 f.getPropertyValue("vdop"));
@@ -549,7 +554,7 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertEquals("third source",        f.getPropertyValue("src"));
             assertEquals("third symbol",        f.getPropertyValue("sym"));
             assertEquals("third type",          f.getPropertyValue("type"));
-            assertEquals("3d",                  f.getPropertyValue("fix"));
+            assertEquals(Fix.THREE_DIMENSIONAL, f.getPropertyValue("fix"));
             assertEquals(35,                    f.getPropertyValue("sat"));
             assertEquals(35.15,                 f.getPropertyValue("hdop"));
             assertEquals(34.14,                 f.getPropertyValue("vdop"));
