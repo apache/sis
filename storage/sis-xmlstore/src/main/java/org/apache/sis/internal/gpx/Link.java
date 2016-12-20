@@ -88,6 +88,16 @@ public final class Link implements OnlineResource {
     }
 
     /**
+     * Creates a new instance initialized to the given URI.
+     *
+     * @param  uri  the URI, or {@code null}.
+     * @return the link, or {@code null} if the given URI was null.
+     */
+    static Link valueOf(final URI uri) {
+        return (uri != null) ? new Link(uri) : null;
+    }
+
+    /**
      * Invoked by JAXB after unmarshalling. If the {@linkplain #uri} is not set but the {@link #text} looks
      * like a URI, uses that text. The intend is to handle link that should have been defined like below:
      *

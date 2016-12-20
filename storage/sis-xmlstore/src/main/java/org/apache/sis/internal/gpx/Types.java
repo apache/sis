@@ -25,6 +25,7 @@ import org.opengis.util.LocalName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.citation.OnlineResource;
+import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.FeatureOperations;
@@ -129,7 +130,7 @@ final class Types extends Static {
          * │ link          │ OnlineResource │ gpx:linkType           │   [0 … ∞]   │
          * │ sym           │ String         │ xsd:string             │   [0 … 1]   │
          * │ type          │ String         │ xsd:string             │   [0 … 1]   │
-         * │ fix           │ String         │ gpx:fixType            │   [0 … 1]   │
+         * │ fix           │ Fix            │ gpx:fixType            │   [0 … 1]   │
          * │ sat           │ Integer        │ xsd:nonNegativeInteger │   [0 … 1]   │
          * │ hdop          │ Double         │ xsd:decimal            │   [0 … 1]   │
          * │ vdop          │ Double         │ xsd:decimal            │   [0 … 1]   │
@@ -155,7 +156,7 @@ final class Types extends Static {
         builder.addAttribute(OnlineResource.class).setName(Tags.LINK).setMaximumOccurs(Integer.MAX_VALUE);
         builder.addAttribute(String        .class).setName(Tags.SYMBOL);
         builder.addAttribute(String        .class).setName(Tags.TYPE);
-        builder.addAttribute(String        .class).setName(Tags.FIX);
+        builder.addAttribute(Fix           .class).setName(Tags.FIX);
         builder.addAttribute(Integer       .class).setName(Tags.SATELITTES);
         builder.addAttribute(Double        .class).setName(Tags.HDOP);
         builder.addAttribute(Double        .class).setName(Tags.VDOP);

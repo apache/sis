@@ -32,9 +32,10 @@ import java.util.stream.Collectors;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.internal.xml.StaxStreamWriter;
+import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.internal.xml.StaxStreamWriter;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
@@ -269,7 +270,7 @@ public class GPXWriter100 extends StaxStreamWriter {
         writeLinkURIs((Collection<Link>)    feature.getPropertyValue(Tags.LINK));
         writeProperty(Tags.SYMBOL,          feature.getProperty(Tags.SYMBOL));
         writeProperty(Tags.TYPE,            feature.getProperty(Tags.TYPE));
-        writeProperty(Tags.FIX,             feature.getProperty(Tags.FIX));
+        writeFix((Fix)                      feature.getPropertyValue(Tags.FIX));
         writeProperty(Tags.SATELITTES,      feature.getProperty(Tags.SATELITTES));
         writeProperty(Tags.HDOP,            feature.getProperty(Tags.HDOP));
         writeProperty(Tags.VDOP,            feature.getProperty(Tags.VDOP));
@@ -406,7 +407,7 @@ public class GPXWriter100 extends StaxStreamWriter {
      * @param prop can be null
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
-    protected void writeProperty(final String tagName,final Property prop) throws XMLStreamException {
+    protected void writeProperty(final String tagName, final Property prop) throws XMLStreamException {
         if (prop == null) return;
 
         Object val = prop.getValue();
@@ -415,6 +416,10 @@ public class GPXWriter100 extends StaxStreamWriter {
         }
 
         writeSimpleTag(namespace, tagName, val);
+    }
+
+    private void writeFix(final Fix fix) throws XMLStreamException {
+        writeSimpleTag(namespace, Tags.FIX, (fix != null) ? fix.toGPX() : null);
     }
 
     /**
