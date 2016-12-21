@@ -29,7 +29,7 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * @version 0.8
  * @module
  */
-public final class JAXB extends TypeRegistration {
+public final class MetadataTypes extends TypeRegistration {
     /**
      * Adds to the given collection the metadata types that should be given to the initial JAXB context.
      */

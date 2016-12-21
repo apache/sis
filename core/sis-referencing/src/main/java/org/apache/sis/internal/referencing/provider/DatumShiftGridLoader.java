@@ -84,9 +84,9 @@ class DatumShiftGridLoader {
     /**
      * Creates a new loader for the given channel and an existing buffer.
      *
-     * @param  channel Where to read data from.
-     * @param  buffer  The buffer to use.
-     * @param  file    Path to the longitude or latitude difference file. Used only for error reporting.
+     * @param  channel  where to read data from.
+     * @param  buffer   the buffer to use.
+     * @param  file     path to the longitude or latitude difference file. Used only for error reporting.
      */
     DatumShiftGridLoader(final ReadableByteChannel channel, final ByteBuffer buffer, final Path file) throws IOException {
         this.file    = file;
@@ -101,9 +101,9 @@ class DatumShiftGridLoader {
      * It is caller's responsibility to ensure that the given number of bytes is
      * not greater than the {@linkplain ByteBuffer#capacity() buffer capacity}.
      *
-     * @param  n The minimal number of bytes needed in the {@linkplain #buffer}.
-     * @throws EOFException If the channel has reached the end of stream.
-     * @throws IOException If an other kind of error occurred while reading.
+     * @param  n  the minimal number of bytes needed in the {@linkplain #buffer}.
+     * @throws EOFException if the channel has reached the end of stream.
+     * @throws IOException if an other kind of error occurred while reading.
      */
     final void ensureBufferContains(int n) throws IOException {
         assert n >= 0 && n <= buffer.capacity() : n;
@@ -141,9 +141,9 @@ class DatumShiftGridLoader {
     /**
      * Logs a message about a grid which is about to be loaded.
      *
-     * @param caller The provider to logs as the source class.
-     *               The source method will be set to {@code "createMathTransform"}.
-     * @param file   The grid file, as a {@link String} or a {@link Path}.
+     * @param  caller  the provider to logs as the source class.
+     *                 the source method will be set to {@code "createMathTransform"}.
+     * @param  file    the grid file, as a {@link String} or a {@link Path}.
      */
     static void log(final Class<?> caller, final Object file) {
         final LogRecord record = Resources.forLocale(null).getLogRecord(Level.FINE, Resources.Keys.LoadingDatumShiftFile_1, file);
@@ -154,9 +154,9 @@ class DatumShiftGridLoader {
     /**
      * Creates the exception to thrown when the provider failed to load the grid file.
      *
-     * @param format   The format name (e.g. "NTv2" or "NADCON").
-     * @param file     The grid file that the subclass tried to load.
-     * @param cause    The cause of the failure to load the grid file.
+     * @param  format  the format name (e.g. "NTv2" or "NADCON").
+     * @param  file    the grid file that the subclass tried to load.
+     * @param  cause   the cause of the failure to load the grid file.
      */
     static FactoryException canNotLoad(final String format, final Path file, final Exception cause) {
         final String message = Errors.format(Errors.Keys.CanNotParseFile_2, format, file);

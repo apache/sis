@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.Reader;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -61,7 +63,7 @@ import org.apache.sis.internal.system.Modules;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public final class IOUtilities extends Static {
@@ -552,5 +554,54 @@ public final class IOUtilities extends Static {
      */
     private static void recoverableException(final Exception warning) {
         Logging.recoverableException(Logging.getLogger(Modules.STORAGE), IOUtilities.class, "open", warning);
+    }
+
+    /**
+     * Returns an error message a file that can not be parsed because of an error at the given location.
+     *
+     * @param  errors    the resource bundle to use for creating the message.
+     * @param  format    abbreviation of the file format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
+     * @param  filename  name of the file being parsed.
+     * @param  line      1-based line number where the error occurred, or 0 if unknown.
+     * @param  column    1-based column number where the error occurred, or 0 if unknown.
+     * @return a localized error message for a file that can not be parsed.
+     *
+     * @since 0.8
+     */
+    @SuppressWarnings("fallthrough")
+    public static String canNotParseFile(final Errors errors, final String format,
+            final String filename, final int line, final int column)
+    {
+        final Object[] params = new Object[(line == 0) ? 2 : (column == 0) ? 3 : 4];
+        switch (params.length) {
+            default: // Fallthrough everywhere
+            case 4:  params[3] = column;
+            case 3:  params[2] = line;
+            case 2:  params[1] = filename;
+            case 1:  params[0] = format;
+            case 0:  break;
+        }
+        return errors.getString((line   == 0) ? Errors.Keys.CanNotParseFile_2 :
+                                (column == 0) ? Errors.Keys.CanNotParseFile_3 :
+                                                Errors.Keys.CanNotParseFile_4, params);
+    }
+
+    /**
+     * Returns an error message a file that can not be parsed because of an error at the current line.
+     * This method uses the {@link LineNumberReader#getLineNumber()} value if the given {@code input}
+     * is an instance of {@link LineNumberReader}.
+     *
+     * @param  errors    the resource bundle to use for creating the message.
+     * @param  format    abbreviation of the file format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
+     * @param  filename  name of the file being parsed.
+     * @param  input     the reader, preferably as an instance of {@link LineNumberReader}.
+     * @return a localized error message for a file that can not be parsed.
+     *
+     * @since 0.8
+     */
+    @SuppressWarnings("fallthrough")
+    public static String canNotParseFile(final Errors errors, final String format, final String filename, final Reader input) {
+        return canNotParseFile(errors, format, filename,
+                (input instanceof LineNumberReader) ? ((LineNumberReader) input).getLineNumber() : 0, 0);
     }
 }

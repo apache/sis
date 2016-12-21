@@ -34,6 +34,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -136,9 +137,19 @@ final class Store extends DataStore {
                     listeners.warning(record);
                 }
             } while (pos.getIndex() < wkt.length());
-        } catch (IOException | ParseException e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotParseFile_2, "WKT", name), e);
+        } catch (ParseException e) {
+            throw new DataStoreContentException(canNotParseFile(in), e);
+        } catch (IOException e) {
+            throw new DataStoreException(canNotParseFile(in), e);
         }
+    }
+
+    /**
+     * Returns the error message for a file that can not be parsed.
+     * The error message will contain the line number if available.
+     */
+    private String canNotParseFile(final Reader in) {
+        return IOUtilities.canNotParseFile(Errors.getResources(getLocale()), "WKT", name, in);
     }
 
     /**

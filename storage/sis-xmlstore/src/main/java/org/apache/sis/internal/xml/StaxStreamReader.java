@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.EOFException;
 import java.net.URISyntaxException;
 import javax.xml.namespace.QName;
+import javax.xml.stream.Location;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -45,6 +46,7 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreContentException;
@@ -224,7 +226,9 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * Returns the XML stream reader if it is not closed.
      *
      * @return the XML stream reader (never null).
-     * @throws XMLStreamException if this XML reader has been closed.
+     * @throws XMLStreamException if this XML reader has been closed. Note that a closed reader does not mean that
+     *         the whole {@link StaxDataStore} has been closed since the same datastore may produce many iterators,
+     *         which is why the exception type is not {@link org.apache.sis.storage.DataStoreContentException}.
      */
     protected final XMLStreamReader getReader() throws XMLStreamException {
         if (reader != null) {
@@ -485,11 +489,21 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     /**
      * Returns an error message for {@link BackingStoreException}.
      * This a convenience method for {@link #tryAdvance(Consumer)} implementations.
+     * The error message will contain the current line and column number if available.
      *
      * @return a localized error message for a file that can not be parsed.
      */
-    protected final String canNotReadFile() {
-        return errors().getString(Errors.Keys.CanNotParseFile_2, owner.getFormatName(), inputName);
+    protected final String canNotParseFile() {
+        final int line, column;
+        if (reader != null) {
+            final Location location = reader.getLocation();
+            line   = location.getLineNumber()   + 1;
+            column = location.getColumnNumber() + 1;
+        } else {
+            line   = 0;
+            column = 0;
+        }
+        return IOUtilities.canNotParseFile(errors(), owner.getFormatName(), inputName, line, column);
     }
 
     /**
