@@ -116,6 +116,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotParseFile_2 = 9;
 
         /**
+         * Can not parse line {2} of “{1}” as part of a file in the {0} format.
+         */
+        public static final short CanNotParseFile_3 = 168;
+
+        /**
+         * Can not parse line {2} (after column {3}) of “{1}” as part of a file in the {0} format.
+         */
+        public static final short CanNotParseFile_4 = 169;
+
+        /**
          * Can not read property “{1}” in file “{0}”.
          */
         public static final short CanNotReadPropertyInFile_2 = 10;

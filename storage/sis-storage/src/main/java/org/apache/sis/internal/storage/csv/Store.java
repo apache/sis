@@ -44,12 +44,14 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
@@ -57,7 +59,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.measure.Units;
 
@@ -238,8 +239,12 @@ public final class Store extends DataStore {
                 source.mark(1024);
             }
             source.reset();
-        } catch (IOException | FactoryException | IllegalArgumentException | DateTimeException e) {
-            throw new DataStoreException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", filename), e);
+        } catch (IOException e) {
+            throw new DataStoreException(canNotParseFile(), e);
+        } catch (FactoryException e) {
+            throw new DataStoreReferencingException(canNotParseFile(), e);
+        } catch (IllegalArgumentException | DateTimeException e) {
+            throw new DataStoreContentException(canNotParseFile(), e);
         }
         this.encoding    = connector.getOption(OptionKey.ENCODING);
         this.envelope    = envelope;
@@ -497,7 +502,7 @@ public final class Store extends DataStore {
             try {
                 builder.addExtent(envelope);
             } catch (TransformException e) {
-                throw new DataStoreContentException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", filename), e);
+                throw new DataStoreReferencingException(canNotParseFile(), e);
             } catch (UnsupportedOperationException e) {
                 // Failed to set the temporal components if the sis-temporal module was
                 // not on the classpath, but the other dimensions still have been set.
@@ -642,7 +647,7 @@ public final class Store extends DataStore {
             try {
                 return read(action, false);
             } catch (IOException | IllegalArgumentException | DateTimeException e) {
-                throw new BackingStoreException(canNotParse(), e);
+                throw new BackingStoreException(canNotParseFile(), e);
             }
         }
 
@@ -654,15 +659,8 @@ public final class Store extends DataStore {
             try {
                 read(action, true);
             } catch (IOException | IllegalArgumentException | DateTimeException e) {
-                throw new BackingStoreException(canNotParse(), e);
+                throw new BackingStoreException(canNotParseFile(), e);
             }
-        }
-
-        /**
-         * Returns the error message for a file that can not be parsed.
-         */
-        private String canNotParse() {
-            return errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", filename);
         }
 
         /**
@@ -765,9 +763,17 @@ public final class Store extends DataStore {
     }
 
     /**
+     * Returns the error message for a file that can not be parsed.
+     * The error message will contain the line number if available.
+     */
+    final String canNotParseFile() {
+        return IOUtilities.canNotParseFile(errors(), "CSV", filename, source);
+    }
+
+    /**
      * Returns the resources to use for producing error messages.
      */
-    private IndexedResourceBundle errors() {
+    private Errors errors() {
         return Errors.getResources(getLocale());
     }
 
