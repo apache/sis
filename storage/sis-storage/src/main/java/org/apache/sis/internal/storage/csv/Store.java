@@ -48,7 +48,7 @@ import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.storage.DataStore;
+import org.apache.sis.internal.storage.FeatureStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -84,7 +84,7 @@ import org.opengis.feature.AttributeType;
  * @version 0.8
  * @module
  */
-public final class Store extends DataStore {
+public final class Store extends FeatureStore {
     /**
      * The character at the beginning of lines to ignore in the header.
      * Note that this is not part of OGC Moving Feature Specification.
@@ -521,6 +521,7 @@ public final class Store extends DataStore {
      *
      * @todo Needs to reset the position when doing another pass on the features.
      */
+    @Override
     public Stream<Feature> getFeatures() {
         return StreamSupport.stream(new Iter(), false);
     }

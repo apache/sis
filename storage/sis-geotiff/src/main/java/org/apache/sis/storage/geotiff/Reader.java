@@ -127,7 +127,7 @@ final class Reader extends GeoTIFF {
      * Creates a new GeoTIFF reader which will read data from the given input.
      * The input must be at the beginning of the GeoTIFF file.
      *
-     * @throws IOException if an error occurred while reading bytes from the stream.
+     * @throws IOException if an error occurred while reading first bytes from the stream.
      * @throws DataStoreException if the file is not encoded in the TIFF or BigTIFF format.
      */
     Reader(final GeoTiffStore owner, final ChannelDataInput input) throws IOException, DataStoreException {
