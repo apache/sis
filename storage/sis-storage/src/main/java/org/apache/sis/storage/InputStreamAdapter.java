@@ -19,6 +19,7 @@ package org.apache.sis.storage;
 import java.io.InputStream;
 import java.io.IOException;
 import javax.imageio.stream.ImageInputStream;
+import org.apache.sis.internal.storage.Trackable;
 
 
 /**
@@ -26,10 +27,10 @@ import javax.imageio.stream.ImageInputStream;
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
-final class InputStreamAdapter extends InputStream {
+final class InputStreamAdapter extends InputStream implements Trackable {
     /**
      * The data input stream.
      */
@@ -110,6 +111,17 @@ final class InputStreamAdapter extends InputStream {
     @Override
     public void reset() throws IOException {
         input.reset();
+    }
+
+    /**
+     * Returns the current byte position of the stream.
+     *
+     * @return the position of the stream.
+     * @throws IOException if the position can not be obtained.
+     */
+    @Override
+    public long getStreamPosition() throws IOException {
+        return input.getStreamPosition();
     }
 
     /**
