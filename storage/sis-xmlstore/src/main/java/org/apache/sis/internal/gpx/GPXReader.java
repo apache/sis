@@ -27,7 +27,6 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.bind.JAXBException;
 import com.esri.core.geometry.Point;
 import org.apache.sis.storage.gps.Fix;
-import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.xml.StaxStreamReader;
@@ -48,7 +47,7 @@ import org.opengis.feature.Feature;
  *
  * {@preformat java
  *     Consumer<Feature> consumer = ...;
- *     try (Reader reader = new Reader(dataStore, connector)) {
+ *     try (Reader reader = new Reader(dataStore)) {
  *         final Version  version  = reader.initialize(true);
  *         final Metadata metadata = reader.getMetadata();
  *         reader.forEachRemaining(consumer);
@@ -99,18 +98,15 @@ public class GPXReader extends StaxStreamReader {
     private int trackId;
 
     /**
-     * Creates a new GPX reader from the given file, URL, stream or reader object.
+     * Creates a new GPX reader for the given data store.
      * The {@link #initialize(boolean)} method must be invoked after this constructor.
      *
      * @param  owner      the data store for which this reader is created.
-     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if the input type is not recognized.
      * @throws XMLStreamException if an error occurred while opening the XML file.
      */
-    public GPXReader(final GPXStore owner, final StorageConnector connector)
-            throws DataStoreException, XMLStreamException
-    {
-        super(owner, connector);
+    public GPXReader(final GPXStore owner) throws DataStoreException, XMLStreamException {
+        super(owner);
         types = Types.DEFAULT;
     }
 
@@ -126,7 +122,7 @@ public class GPXReader extends StaxStreamReader {
      * Strictly speaking we should require the namespace URI to be exactly {@link #namespace},
      * but this method is a little bit more lenient.
      */
-    private boolean isGPX(final XMLStreamReader reader) {
+    private boolean isGPX() {
         final String ns = reader.getNamespaceURI();
         return Objects.equals(namespace, ns) || isGPX(ns);
     }
@@ -135,7 +131,7 @@ public class GPXReader extends StaxStreamReader {
      * Returns {@code true} if the current position of the given reader is the closing {@code </gpx>} tag.
      * The reader event should be {@link #END_ELEMENT} before to invoke this method.
      */
-    private boolean isEndGPX(final XMLStreamReader reader) {
+    private boolean isEndGPX() {
         assert reader.isEndElement();
         return Tags.GPX.equals(reader.getLocalName()) && Objects.equals(namespace, reader.getNamespaceURI());
     }
@@ -168,7 +164,6 @@ public class GPXReader extends StaxStreamReader {
          * If a version is specified, we require major.minor version 1.0 or 1.1 but accept any bug-fix versions
          * (e.g. 1.1.x). If no version attribute was found, try to infer the version from the namespace URL.
          */
-        final XMLStreamReader reader = getReader();
         namespace = reader.getNamespaceURI();
         String ver = reader.getAttributeValue(null, Attributes.VERSION);
         Version version = null;
@@ -204,7 +199,7 @@ parse:  while (reader.hasNext()) {
                      * if GPX 1.0 metadata like <name> or <author> appear after the GPX 1.1 <metadata> element.
                      * If both kind of metadata are specified, the latest value overwrites the values before it.
                      */
-                    if (isGPX(reader)) {
+                    if (isGPX()) {
                         final String name = reader.getLocalName();
                         if (readMetadata) {
                             switch (name) {
@@ -246,7 +241,7 @@ parse:  while (reader.hasNext()) {
                      * Reminder: END_ELEMENT events are skipped by getElementText(), getElementAsFoo()
                      * and unmarshal(…) methods. There is only the enclosing <gpx> tag to check here.
                      */
-                    if (isEndGPX(reader)) {
+                    if (isEndGPX()) {
                         break parse;
                     }
                     break;
@@ -383,7 +378,6 @@ parse:  while (reader.hasNext()) {
      */
     @SuppressWarnings("fallthrough")
     private boolean parse(final Consumer<? super Feature> action, final boolean all) throws Exception {
-        final XMLStreamReader reader = getReader();
         for (int type = reader.getEventType(); ; type = reader.next()) {
             /*
              * We do not need to check 'reader.hasNext()' in above loop
@@ -392,10 +386,10 @@ parse:  while (reader.hasNext()) {
             switch (type) {
                 case START_ELEMENT: {
                     final Feature f;
-                    switch (isGPX(reader) ? reader.getLocalName() : "") {
-                        case Tags.WAY_POINT: f = parseWayPoint(reader, ++wayPointId); break;
-                        case Tags.ROUTES:    f = parseRoute   (reader, ++routeId);    break;
-                        case Tags.TRACKS:    f = parseTrack   (reader, ++trackId);    break;
+                    switch (isGPX() ? reader.getLocalName() : "") {
+                        case Tags.WAY_POINT: f = parseWayPoint(++wayPointId); break;
+                        case Tags.ROUTES:    f = parseRoute   (++routeId);    break;
+                        case Tags.TRACKS:    f = parseTrack   (++trackId);    break;
                         case Tags.GPX:       throw new DataStoreContentException(nestedElement(Tags.GPX));
                         default:             skipUntilEnd(reader.getName()); continue;
                     }
@@ -404,7 +398,7 @@ parse:  while (reader.hasNext()) {
                     reader.next();                                      // Skip the END_ELEMENT
                     return true;
                 }
-                case END_ELEMENT:  if (!isEndGPX(reader)) continue;     // else fallthrough
+                case END_ELEMENT:  if (!isEndGPX()) continue;           // else fallthrough
                 case END_DOCUMENT: return false;
             }
         }
@@ -416,7 +410,7 @@ parse:  while (reader.hasNext()) {
      *
      * @throws Exception see the list of exceptions documented in {@link #parse(Consumer, boolean)}.
      */
-    private Feature parseWayPoint(final XMLStreamReader reader, final int index) throws Exception {
+    private Feature parseWayPoint(final int index) throws Exception {
         assert reader.isStartElement();
         /*
          * Way points might be located in different elements: <wpt>, <rtept> and <trkpt>.
@@ -443,7 +437,7 @@ parse:  while (reader.hasNext()) {
                 case START_ELEMENT: {
                     final Object value;
                     final String name = reader.getLocalName();
-                    switch (isGPX(reader) ? name : "") {
+                    switch (isGPX() ? name : "") {
                         case Tags.NAME:             // Fallthrough to getElementText()
                         case Tags.COMMENT:          // ︙
                         case Tags.DESCRIPTION:      // ︙
@@ -474,7 +468,7 @@ parse:  while (reader.hasNext()) {
                     break;
                 }
                 case END_ELEMENT: {
-                    if (tagName.equals(reader.getLocalName()) && isGPX(reader)) {
+                    if (tagName.equals(reader.getLocalName()) && isGPX()) {
                         if (links != null) feature.setPropertyValue(Tags.LINK, links);
                         return feature;
                     }
@@ -493,7 +487,7 @@ parse:  while (reader.hasNext()) {
      *
      * @throws Exception see the list of exceptions documented in {@link #parse(Consumer, boolean)}.
      */
-    private Feature parseRoute(final XMLStreamReader reader, final int index) throws Exception {
+    private Feature parseRoute(final int index) throws Exception {
         assert reader.isStartElement() && Tags.ROUTES.equals(reader.getLocalName());
         final Feature feature = types.route.newInstance();
         feature.setPropertyValue("@identifier", index);
@@ -508,7 +502,7 @@ parse:  while (reader.hasNext()) {
                 case START_ELEMENT: {
                     final Object value;
                     final String name = reader.getLocalName();
-                    switch (isGPX(reader) ? name : "") {
+                    switch (isGPX() ? name : "") {
                         default: continue;
                         case Tags.NAME:        // Fallthrough to getElementText()
                         case Tags.COMMENT:     // ︙
@@ -521,7 +515,7 @@ parse:  while (reader.hasNext()) {
                         case Tags.ROUTES:      throw new DataStoreContentException(nestedElement(name));
                         case Tags.ROUTE_POINTS: {
                             if (wayPoints == null) wayPoints = new ArrayList<>(8);
-                            wayPoints.add(parseWayPoint(reader, wayPoints.size() + 1));
+                            wayPoints.add(parseWayPoint(wayPoints.size() + 1));
                             continue;
                         }
                     }
@@ -529,7 +523,7 @@ parse:  while (reader.hasNext()) {
                     break;
                 }
                 case END_ELEMENT: {
-                    if (Tags.ROUTES.equals(reader.getLocalName()) && isGPX(reader)) {
+                    if (Tags.ROUTES.equals(reader.getLocalName()) && isGPX()) {
                         if (wayPoints != null) feature.setPropertyValue(Tags.ROUTE_POINTS, wayPoints);
                         if (links     != null) feature.setPropertyValue(Tags.LINK, links);
                         return feature;
@@ -549,7 +543,7 @@ parse:  while (reader.hasNext()) {
      *
      * @throws Exception see the list of exceptions documented in {@link #parse(Consumer, boolean)}.
      */
-    private Feature parseTrackSegment(final XMLStreamReader reader, final int index) throws Exception {
+    private Feature parseTrackSegment(final int index) throws Exception {
         assert reader.isStartElement() && Tags.TRACK_SEGMENTS.equals(reader.getLocalName());
         final Feature feature = types.trackSegment.newInstance();
         feature.setPropertyValue("@identifier", index);
@@ -562,18 +556,18 @@ parse:  while (reader.hasNext()) {
             switch (reader.next()) {
                 case START_ELEMENT: {
                     final String name = reader.getLocalName();
-                    switch (isGPX(reader) ? name : "") {
+                    switch (isGPX() ? name : "") {
                         default: continue;
                         case Tags.TRACK_POINTS: {
                             if (wayPoints == null) wayPoints = new ArrayList<>(8);
-                            wayPoints.add(parseWayPoint(reader, wayPoints.size() + 1));
+                            wayPoints.add(parseWayPoint(wayPoints.size() + 1));
                             continue;
                         }
                         case Tags.TRACK_SEGMENTS: throw new DataStoreContentException(nestedElement(name));
                     }
                 }
                 case END_ELEMENT: {
-                    if (Tags.TRACK_SEGMENTS.equals(reader.getLocalName()) && isGPX(reader)) {
+                    if (Tags.TRACK_SEGMENTS.equals(reader.getLocalName()) && isGPX()) {
                         if (wayPoints != null) feature.setPropertyValue(Tags.TRACK_POINTS, wayPoints);
                         return feature;
                     }
@@ -592,7 +586,7 @@ parse:  while (reader.hasNext()) {
      *
      * @throws Exception see the list of exceptions documented in {@link #parse(Consumer, boolean)}.
      */
-    private Feature parseTrack(final XMLStreamReader reader, final int index) throws Exception {
+    private Feature parseTrack(final int index) throws Exception {
         assert reader.isStartElement() && Tags.TRACKS.equals(reader.getLocalName());
         final Feature feature = types.track.newInstance();
         feature.setPropertyValue("@identifier", index);
@@ -607,7 +601,7 @@ parse:  while (reader.hasNext()) {
                 case START_ELEMENT: {
                     final Object value;
                     final String name = reader.getLocalName();
-                    switch (isGPX(reader) ? name : "") {
+                    switch (isGPX() ? name : "") {
                         default: continue;
                         case Tags.NAME:         // Fallthrough to getElementText()
                         case Tags.COMMENT:      // ︙
@@ -620,7 +614,7 @@ parse:  while (reader.hasNext()) {
                         case Tags.TRACKS:       throw new DataStoreContentException(nestedElement(name));
                         case Tags.TRACK_SEGMENTS: {
                             if (segments == null) segments = new ArrayList<>(8);
-                            segments.add(parseTrackSegment(reader, segments.size() + 1));
+                            segments.add(parseTrackSegment(segments.size() + 1));
                             continue;
                         }
                     }
@@ -628,7 +622,7 @@ parse:  while (reader.hasNext()) {
                     break;
                 }
                 case END_ELEMENT: {
-                    if (Tags.TRACKS.equals(reader.getLocalName()) && isGPX(reader)) {
+                    if (Tags.TRACKS.equals(reader.getLocalName()) && isGPX()) {
                         if (segments != null) feature.setPropertyValue(Tags.TRACK_SEGMENTS, segments);
                         if (links    != null) feature.setPropertyValue(Tags.LINK, links);
                         return feature;

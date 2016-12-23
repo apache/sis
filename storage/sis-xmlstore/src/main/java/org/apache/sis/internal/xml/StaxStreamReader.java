@@ -22,38 +22,26 @@ import java.util.Arrays;
 import java.util.function.Predicate;
 import java.util.NoSuchElementException;
 import java.net.URI;
-import java.io.Reader;
-import java.io.InputStream;
 import java.io.IOException;
 import java.io.EOFException;
 import java.net.URISyntaxException;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.util.StreamReaderDelegate;
-import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stax.StAXSource;
 import javax.xml.bind.JAXBException;
-import org.xml.sax.InputSource;
-import org.w3c.dom.Node;
 import org.apache.sis.xml.XML;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
 import java.util.Spliterator;
@@ -97,7 +85,7 @@ import org.opengis.feature.Feature;
  *
  * {@preformat java
  *     Consumer<Feature> consumer = ...;
- *     try (UserObjectReader reader = new UserObjectReader(input)) {
+ *     try (UserObjectReader reader = new UserObjectReader(dataStore)) {
  *         reader.forEachRemaining(consumer);
  *     }
  * }
@@ -116,47 +104,18 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     /**
      * The XML stream reader.
      */
-    private XMLStreamReader reader;
+    protected final XMLStreamReader reader;
 
     /**
-     * Input name (typically filename) for formatting error messages.
-     */
-    protected final String inputName;
-
-    /**
-     * Creates a new XML reader from the given file, URL, stream or reader object.
+     * Creates a new XML reader for the given data store.
      *
-     * @param  owner      the data store for which this reader is created.
-     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @param  owner  the data store for which this reader is created.
      * @throws DataStoreException if the input type is not recognized.
      * @throws XMLStreamException if an error occurred while opening the XML file.
      */
-    protected StaxStreamReader(final StaxDataStore owner, final StorageConnector connector)
-            throws DataStoreException, XMLStreamException
-    {
+    protected StaxStreamReader(final StaxDataStore owner) throws DataStoreException, XMLStreamException {
         super(owner);
-        inputName = connector.getStorageName();
-        final Object input = connector.getStorage();
-        if      (input instanceof XMLStreamReader) reader = (XMLStreamReader) input;
-        else if (input instanceof XMLEventReader)  reader = factory().createXMLStreamReader(new StAXSource((XMLEventReader) input));
-        else if (input instanceof InputSource)     reader = factory().createXMLStreamReader(new SAXSource((InputSource) input));
-        else if (input instanceof InputStream)     reader = factory().createXMLStreamReader((InputStream) input);
-        else if (input instanceof Reader)          reader = factory().createXMLStreamReader((Reader) input);
-        else if (input instanceof Source)          reader = factory().createXMLStreamReader((Source) input);
-        else if (input instanceof Node)            reader = factory().createXMLStreamReader(new DOMSource((Node) input));
-        else {
-            final InputStream in = connector.getStorageAs(InputStream.class);
-            connector.closeAllExcept(in);
-            if (in == null) {
-                throw new UnsupportedStorageException(errors().getString(Errors.Keys.IllegalInputTypeForReader_2,
-                        owner.getFormatName(), Classes.getClass(input)));
-            }
-            reader = factory().createXMLStreamReader(in);
-            initCloseable(in);
-            return;
-        }
-        initCloseable(input);
-        connector.closeAllExcept(input);
+        reader = owner.createReader();
     }
 
     /**
@@ -216,28 +175,6 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Convenience method invoking {@link StaxDataStore#inputFactory()}.
-     */
-    private XMLInputFactory factory() {
-        return owner.inputFactory();
-    }
-
-    /**
-     * Returns the XML stream reader if it is not closed.
-     *
-     * @return the XML stream reader (never null).
-     * @throws XMLStreamException if this XML reader has been closed. Note that a closed reader does not mean that
-     *         the whole {@link StaxDataStore} has been closed since the same datastore may produce many iterators,
-     *         which is why the exception type is not {@link org.apache.sis.storage.DataStoreContentException}.
-     */
-    protected final XMLStreamReader getReader() throws XMLStreamException {
-        if (reader != null) {
-            return reader;
-        }
-        throw new XMLStreamException(errors().getString(Errors.Keys.ClosedReader_1, owner.getFormatName()));
-    }
-
-    /**
      * Returns a XML stream reader over only a portion of the document, from given position inclusive
      * until the end of the given element exclusive. Nested elements of the same name, if any, will be
      * ignored.
@@ -247,7 +184,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @throws XMLStreamException if this XML reader has been closed.
      */
     protected final XMLStreamReader getSubReader(final QName tagName) throws XMLStreamException {
-        return new StreamReaderDelegate(getReader()) {
+        return new StreamReaderDelegate(reader) {
             /** Increased every time a nested element of the same name is found. */
             private int nested;
 
@@ -289,7 +226,6 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     protected final void moveToRootElement(final Predicate<String> isNamespace, final String localName)
             throws EOFException, XMLStreamException, DataStoreContentException
     {
-        final XMLStreamReader reader = getReader();
         if (!reader.isStartElement()) {
             do if (!reader.hasNext()) {
                 throw new EOFException(endOfFile());
@@ -297,7 +233,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
         }
         if (!isNamespace.test(reader.getNamespaceURI()) || !localName.equals(reader.getLocalName())) {
             throw new DataStoreContentException(errors().getString(
-                    Errors.Keys.UnexpectedFileFormat_2, owner.getFormatName(), inputName));
+                    Errors.Keys.UnexpectedFileFormat_2, owner.getFormatName(), owner.name));
         }
     }
 
@@ -311,7 +247,6 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @throws XMLStreamException if an error occurred while reading the XML stream.
      */
     protected final void skipUntilEnd(final QName tagName) throws EOFException, XMLStreamException {
-        final XMLStreamReader reader = getReader();
         int nested = 0;
         while (reader.hasNext()) {
             switch (reader.next()) {
@@ -340,7 +275,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @throws XMLStreamException if a text element can not be returned.
      */
     protected final String getElementText() throws XMLStreamException {
-        String text = getReader().getElementText();
+        String text = reader.getElementText();
         if (text != null) {
             text = text.trim();
             if (!text.isEmpty()) {
@@ -457,23 +392,18 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @see javax.xml.bind.Unmarshaller#unmarshal(XMLStreamReader, Class)
      */
     protected final <T> T unmarshal(final Class<T> type) throws XMLStreamException, JAXBException {
-        return XML.unmarshal(new StAXSource(getReader()), type, owner.configuration(this)).getValue();
+        return XML.unmarshal(new StAXSource(reader), type, owner.configuration).getValue();
     }
 
     /**
      * Closes the input stream and releases any resources used by this XML reader.
      * This reader can not be used anymore after this method has been invoked.
      *
-     * @throws IOException if an error occurred while closing the input stream.
      * @throws XMLStreamException if an error occurred while releasing XML reader/writer resources.
      */
     @Override
-    public void close() throws IOException, XMLStreamException {
-        if (reader != null) {
-            reader.close();
-            reader = null;
-        }
-        super.close();
+    public void close() throws XMLStreamException {
+        reader.close();
     }
 
     /**
@@ -483,7 +413,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @return a localized error message for end of file error.
      */
     protected final String endOfFile() {
-        return errors().getString(Errors.Keys.UnexpectedEndOfFile_1, inputName);
+        return errors().getString(Errors.Keys.UnexpectedEndOfFile_1, owner.name);
     }
 
     /**
@@ -503,7 +433,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
             line   = 0;
             column = 0;
         }
-        return IOUtilities.canNotParseFile(errors(), owner.getFormatName(), inputName, line, column);
+        return IOUtilities.canNotParseFile(errors(), owner.getFormatName(), owner.name, line, column);
     }
 
     /**

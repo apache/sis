@@ -119,13 +119,10 @@ public abstract class StaxStreamWriter extends StaxStreamIO {
             final Path path = ObjectConverters.convert(output, Path.class);
             final BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(path));
             writer = factory().createXMLStreamWriter(out, encoding);
-            initCloseable(out);
-            return;
         } catch (UnconvertibleObjectException e) {
             throw new UnsupportedStorageException(errors().getString(Errors.Keys.IllegalOutputTypeForWriter_2,
                                                   owner.getFormatName(), Classes.getClass(output)), e);
         }
-        initCloseable(output);
     }
 
     /**
@@ -189,15 +186,13 @@ public abstract class StaxStreamWriter extends StaxStreamIO {
      * Closes the output stream and releases any resources used by this XML writer.
      * This writer can not be used anymore after this method has been invoked.
      *
-     * @throws IOException if an error occurred while closing the output stream.
      * @throws XMLStreamException if an error occurred while releasing XML writer resources.
      */
     @Override
-    public void close() throws IOException, XMLStreamException {
+    public void close() throws XMLStreamException {
         if (writer != null) {
             writer.close();
             writer = null;
         }
-        super.close();
     }
 }
