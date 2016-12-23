@@ -96,10 +96,21 @@ final class InputStreamAdapter extends InputStream implements Trackable {
     /**
      * Marks the current position in this input stream.
      *
+     * @param  readlimit ignored.
      * @throws IOException if an I/O error occurs.
      */
     @Override
     public void mark(final int readlimit) {
+        input.mark();
+    }
+
+    /**
+     * Marks the current position in this input stream.
+     *
+     * @throws IOException if an I/O error occurs.
+     */
+    @Override
+    public void mark() {
         input.mark();
     }
 

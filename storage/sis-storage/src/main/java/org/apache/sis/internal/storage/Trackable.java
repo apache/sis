@@ -17,11 +17,24 @@
 package org.apache.sis.internal.storage;
 
 import java.io.IOException;
+import java.nio.InvalidMarkException;
 
 
 /**
  * Stream reader or writer capable to keep trace of its position.
- * The stream does not need to be able to seekable.
+ * The stream does not need to be able to seek at arbitrary positions.
+ * However it may support nested marks.
+ *
+ * <div class="note"><b>Use case:</b>
+ * this interface can be used when we need to move to a previously marked position, but we do not know how many nested
+ * {@code mark()} method calls may have been performed (typically because the stream has been used by arbitrary code).
+ * We can compare {@link #getStreamPosition()} value after {@link #reset()} method calls with the expected position.
+ * </div>
+ *
+ * <div class="note"><b>Design note:</b>
+ * an alternative could be to support the {@code seek(long)} method. But using marks instead allows the stream
+ * to invalidate the marks if needed (for example when {@link ChannelData#setStreamPosition(long)} is invoked).
+ * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
@@ -36,4 +49,24 @@ public interface Trackable {
      * @throws IOException if the position can not be obtained.
      */
     long getStreamPosition() throws IOException;
+
+    /**
+     * Pushes the current stream position onto a stack of marked positions.
+     * A subsequent call to the {@link #reset()} method repositions this stream
+     * at the last marked position so that subsequent reads re-read the same bytes.
+     * Calls to {@code mark()} and {@code reset()} can be nested arbitrarily.
+     *
+     * @throws IOException if this stream can not mark the current position.
+     */
+    void mark() throws IOException;
+
+    /**
+     * Resets the current stream byte and bit positions from the stack of marked positions.
+     * An {@code IOException} may be be thrown if the previous marked position lies in the
+     * discarded portion of the stream.
+     *
+     * @throws InvalidMarkException if there is no mark.
+     * @throws IOException if a mark was defined but this stream can not move to that position.
+     */
+    void reset() throws IOException;
 }

@@ -262,6 +262,7 @@ public abstract class ChannelData implements Trackable {
      * Note that {@code ChannelData} maintains its own marks - the buffer's
      * mark is left unchanged.
      */
+    @Override
     public final void mark() {
         mark = new Mark(getStreamPosition(), (byte) getBitOffset(), mark);
     }
@@ -281,6 +282,7 @@ public abstract class ChannelData implements Trackable {
      *
      * @throws IOException if an I/O error occurs.
      */
+    @Override
     public final void reset() throws IOException {
         final Mark m = mark;
         if (m == null) {
