@@ -26,6 +26,7 @@ import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.test.TestCase;
+import org.junit.After;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -33,11 +34,12 @@ import static org.apache.sis.test.TestUtilities.date;
 
 // Branch-dependent imports
 import java.util.Spliterators;
+import org.apache.sis.storage.DataStoreException;
 import org.opengis.feature.Feature;
 
 
 /**
- * Test {@link GPXReader} class.
+ * Tests the {@link GPXReader} class.
  *
  * @author  Johann Sorel (Geomatys)
  * @since   0.8
@@ -45,13 +47,18 @@ import org.opengis.feature.Feature;
  * @module
  */
 public final strictfp class GPXReaderTest extends TestCase {
+    private GPXStore store;
 
-    private static final double DELTA = 0.000001;
-
-
-    private static GPXReader create(final String resource) throws Exception {
+    private GPXReader create(final String resource) throws Exception {
         StorageConnector storage = new StorageConnector(GPXReaderTest.class.getResource(resource));
-        return new GPXReader(new GPXStore(storage), storage);
+        return new GPXReader(store = new GPXStore(storage));
+    }
+
+    @After
+    public void closeReader() throws DataStoreException {
+        if (store != null) {
+            store.close();
+        }
     }
 
     private static void assertBoundsEquals(final double westBoundLongitude,
@@ -229,10 +236,10 @@ public final strictfp class GPXReaderTest extends TestCase {
             checkPoint(points.get(2), 2, false);
 
             Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
-            assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
-            assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
-            assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
-            assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
+            assertEquals(bbox.getMinimum(0), 15.0d, STRICT);
+            assertEquals(bbox.getMaximum(0), 35.0d, STRICT);
+            assertEquals(bbox.getMinimum(1), 10.0d, STRICT);
+            assertEquals(bbox.getMaximum(1), 30.0d, STRICT);
 
             f = it.next();
             assertEquals(null,                  f.getPropertyValue("name"));
@@ -297,10 +304,10 @@ public final strictfp class GPXReaderTest extends TestCase {
             checkPoint(points.get(2), 2, true);
 
             Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
-            assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
-            assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
-            assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
-            assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
+            assertEquals(bbox.getMinimum(0), 15.0d, STRICT);
+            assertEquals(bbox.getMaximum(0), 35.0d, STRICT);
+            assertEquals(bbox.getMinimum(1), 10.0d, STRICT);
+            assertEquals(bbox.getMaximum(1), 30.0d, STRICT);
 
             f = it.next();
             assertEquals(null,                  f.getPropertyValue("name"));
@@ -369,10 +376,10 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertEquals(0, points.size());
 
             Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
-            assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
-            assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
-            assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
-            assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
+            assertEquals(bbox.getMinimum(0), 15.0d, STRICT);
+            assertEquals(bbox.getMaximum(0), 35.0d, STRICT);
+            assertEquals(bbox.getMinimum(1), 10.0d, STRICT);
+            assertEquals(bbox.getMaximum(1), 30.0d, STRICT);
 
             f = it.next();
             assertEquals(null,                  f.getPropertyValue("name"));
@@ -443,10 +450,10 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertEquals(0, points.size());
 
             Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
-            assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
-            assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
-            assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
-            assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
+            assertEquals(bbox.getMinimum(0), 15.0d, STRICT);
+            assertEquals(bbox.getMaximum(0), 35.0d, STRICT);
+            assertEquals(bbox.getMinimum(1), 10.0d, STRICT);
+            assertEquals(bbox.getMaximum(1), 30.0d, STRICT);
 
             f = it.next();
             assertEquals(null,                  f.getPropertyValue("name"));
@@ -472,8 +479,8 @@ public final strictfp class GPXReaderTest extends TestCase {
     private void checkPoint(final Feature f, final int num, final boolean v11) throws Exception {
         if (num == 0) {
             assertEquals(1,                     f.getPropertyValue("@identifier"));
-            assertEquals(15.0,                  ((Point)f.getPropertyValue("@geometry")).getX(), DELTA);
-            assertEquals(10.0,                  ((Point)f.getPropertyValue("@geometry")).getY(), DELTA);
+            assertEquals(15.0,                  ((Point)f.getPropertyValue("@geometry")).getX(), STRICT);
+            assertEquals(10.0,                  ((Point)f.getPropertyValue("@geometry")).getY(), STRICT);
             assertEquals(140.0,                 f.getPropertyValue("ele"));
             assertEquals(Instant.parse("2010-01-10T00:00:00Z"), f.getPropertyValue("time"));
             assertEquals(35.0,                  f.getPropertyValue("magvar"));
@@ -504,15 +511,15 @@ public final strictfp class GPXReaderTest extends TestCase {
             }
 
             final Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
-            assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
-            assertEquals(bbox.getMaximum(0), 15.0d, DELTA);
-            assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
-            assertEquals(bbox.getMaximum(1), 10.0d, DELTA);
+            assertEquals(bbox.getMinimum(0), 15.0d, STRICT);
+            assertEquals(bbox.getMaximum(0), 15.0d, STRICT);
+            assertEquals(bbox.getMinimum(1), 10.0d, STRICT);
+            assertEquals(bbox.getMaximum(1), 10.0d, STRICT);
 
         } else if (num == 1) {
             assertEquals(2,                     f.getPropertyValue("@identifier"));
-            assertEquals(25.0,                  ((Point)f.getPropertyValue("@geometry")).getX(), DELTA);
-            assertEquals(20.0,                  ((Point)f.getPropertyValue("@geometry")).getY(), DELTA);
+            assertEquals(25.0,                  ((Point)f.getPropertyValue("@geometry")).getX(), STRICT);
+            assertEquals(20.0,                  ((Point)f.getPropertyValue("@geometry")).getY(), STRICT);
             assertEquals(null,                  f.getPropertyValue("ele"));
             assertEquals(null,                  f.getPropertyValue("time"));
             assertEquals(null,                  f.getPropertyValue("magvar"));
@@ -535,15 +542,15 @@ public final strictfp class GPXReaderTest extends TestCase {
             assertEquals(0,links.size());
 
             final Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
-            assertEquals(bbox.getMinimum(0), 25.0d, DELTA);
-            assertEquals(bbox.getMaximum(0), 25.0d, DELTA);
-            assertEquals(bbox.getMinimum(1), 20.0d, DELTA);
-            assertEquals(bbox.getMaximum(1), 20.0d, DELTA);
+            assertEquals(bbox.getMinimum(0), 25.0d, STRICT);
+            assertEquals(bbox.getMaximum(0), 25.0d, STRICT);
+            assertEquals(bbox.getMinimum(1), 20.0d, STRICT);
+            assertEquals(bbox.getMaximum(1), 20.0d, STRICT);
 
         } else if (num == 2) {
             assertEquals(3,                     f.getPropertyValue("@identifier"));
-            assertEquals(35.0,                  ((Point) f.getPropertyValue("@geometry")).getX(), DELTA);
-            assertEquals(30.0,                  ((Point) f.getPropertyValue("@geometry")).getY(), DELTA);
+            assertEquals(35.0,                  ((Point) f.getPropertyValue("@geometry")).getX(), STRICT);
+            assertEquals(30.0,                  ((Point) f.getPropertyValue("@geometry")).getY(), STRICT);
             assertEquals(150.0,                 f.getPropertyValue("ele"));
             assertEquals(Instant.parse("2010-01-30T00:00:00Z"), f.getPropertyValue("time"));
             assertEquals(25.0,                  f.getPropertyValue("magvar"));
@@ -573,10 +580,10 @@ public final strictfp class GPXReaderTest extends TestCase {
             }
 
             final Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
-            assertEquals(bbox.getMinimum(0), 35.0d, DELTA);
-            assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
-            assertEquals(bbox.getMinimum(1), 30.0d, DELTA);
-            assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
+            assertEquals(bbox.getMinimum(0), 35.0d, STRICT);
+            assertEquals(bbox.getMaximum(0), 35.0d, STRICT);
+            assertEquals(bbox.getMinimum(1), 30.0d, STRICT);
+            assertEquals(bbox.getMaximum(1), 30.0d, STRICT);
 
         } else {
             fail("unexpected point number :" + num);

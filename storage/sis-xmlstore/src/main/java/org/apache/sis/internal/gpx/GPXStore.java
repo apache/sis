@@ -18,6 +18,7 @@ package org.apache.sis.internal.gpx;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import javax.xml.stream.XMLStreamException;
 import org.apache.sis.internal.xml.StaxDataStore;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStoreException;
@@ -25,6 +26,11 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
 import org.opengis.metadata.Metadata;
+
+// Branch-dependent imports
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import org.opengis.feature.Feature;
 
 
 /**
@@ -51,6 +57,16 @@ public class GPXStore extends StaxDataStore {
      * The file encoding. Actually used only by the writer; ignored by the reader.
      */
     final Charset encoding;
+
+    /**
+     * The metadata, or {@code null} if not yet parsed.
+     */
+    private transient Metadata metadata;
+
+    /**
+     * Iterator over the features.
+     */
+    private GPXReader reader;
 
     /**
      * Creates a new GPX store from the given file, URL or stream object.
@@ -82,8 +98,42 @@ public class GPXStore extends StaxDataStore {
         return null;    // TODO
     }
 
+    /**
+     * Returns the stream of features.
+     *
+     * @return a stream over all features in the CSV file.
+     *
+     * @todo Needs to reset the position when doing another pass on the features.
+     */
     @Override
-    public void close() throws DataStoreException {
-        // TODO
+    public Stream<Feature> getFeatures() {
+        return StreamSupport.stream(reader, false);
+    }
+
+    final GPXReader reader() throws DataStoreException, XMLStreamException {
+        return reader = new GPXReader(this);
+    }
+
+    /**
+     * Closes this data store and releases any underlying resources.
+     *
+     * @throws DataStoreException if an error occurred while closing this data store.
+     */
+    @Override
+    public synchronized void close() throws DataStoreException {
+        final GPXReader r = reader;
+        reader = null;
+        if (r != null) try {
+            r.close();
+        } catch (XMLStreamException e) {
+            final DataStoreException ds = new DataStoreException(e);
+            try {
+                super.close();
+            } catch (DataStoreException s) {
+                ds.addSuppressed(s.getCause());
+            }
+            throw ds;
+        }
+        super.close();
     }
 }
