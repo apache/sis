@@ -348,7 +348,7 @@ public final class XML extends Static {
         MarshallerPool pool = POOL;
         if (pool == null) {
             synchronized (XML.class) {
-                pool = POOL; // Double-check idiom: see javadoc.
+                pool = POOL;                            // Double-check idiom: see javadoc.
                 if (pool == null) {
                     POOL = pool = new MarshallerPool(null);
                 }

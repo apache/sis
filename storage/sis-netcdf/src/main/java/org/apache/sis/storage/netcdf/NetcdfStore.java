@@ -62,9 +62,27 @@ public class NetcdfStore extends DataStore {
      *
      * @param  connector information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the NetCDF file.
+     *
+     * @deprecated Replaced by {@link #NetcdfStore(NetcdfStoreProvider, StorageConnector)}.
      */
+    @Deprecated
     public NetcdfStore(final StorageConnector connector) throws DataStoreException {
-        super(connector);
+        this(null, connector);
+    }
+
+    /**
+     * Creates a new NetCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
+     * This constructor invokes {@link StorageConnector#closeAllExcept(Object)}, keeping open only the
+     * needed resource.
+     *
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
+     * @throws DataStoreException if an error occurred while opening the NetCDF file.
+     *
+     * @since 0.8
+     */
+    public NetcdfStore(final NetcdfStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
         try {
             decoder = NetcdfStoreProvider.decoder(listeners, connector);
         } catch (IOException e) {

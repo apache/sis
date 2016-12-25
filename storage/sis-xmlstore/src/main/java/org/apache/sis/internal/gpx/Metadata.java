@@ -38,6 +38,7 @@ import org.opengis.util.InternationalString;
 
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.internal.simple.SimpleMetadata;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
@@ -72,6 +73,12 @@ import org.apache.sis.metadata.iso.identification.DefaultKeywords;
  * @module
  */
 public final class Metadata extends SimpleMetadata {
+    /**
+     * The creator of the GPX file. The creator is a property of the GPX node;
+     * it is not part of the content marshalled in a GPX {@code <metadata>} element.
+     */
+    public String creator;
+
     /**
      * The name of the GPX file.
      *
@@ -204,6 +211,11 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<Responsibility> getPointOfContacts() {
+        if (creator != null) {
+            final Person p = new Person(creator);
+            return (author != null) ? UnmodifiableArrayList.wrap(new Responsibility[] {p, author})
+                                    : Collections.singletonList(author);
+        }
         return (author != null) ? Collections.singletonList(author) : super.getPointOfContacts();
     }
 

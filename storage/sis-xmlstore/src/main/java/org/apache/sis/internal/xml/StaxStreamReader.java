@@ -17,6 +17,7 @@
 package org.apache.sis.internal.xml;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -31,9 +32,10 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.util.StreamReaderDelegate;
-import javax.xml.transform.stax.StAXSource;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import org.apache.sis.xml.XML;
+import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.StandardDateFormat;
@@ -65,7 +67,8 @@ import org.opengis.feature.Feature;
  * </ul>
  *
  * This is a helper class for {@link org.apache.sis.storage.DataStore} implementations.
- * Readers for a given specification should extend this class and provide the following methods:
+ * Readers for a given specification should extend this class and implement methods as
+ * in the following example:
  *
  * <p>Example:</p>
  * {@preformat java
@@ -81,7 +84,7 @@ import org.opengis.feature.Feature;
  *     }
  * }
  *
- * And can be used like below:
+ * Readers can be used like below:
  *
  * {@preformat java
  *     Consumer<Feature> consumer = ...;
@@ -394,7 +397,14 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @see javax.xml.bind.Unmarshaller#unmarshal(XMLStreamReader, Class)
      */
     protected final <T> T unmarshal(final Class<T> type) throws XMLStreamException, JAXBException {
-        return XML.unmarshal(new StAXSource(reader), type, owner.configuration).getValue();
+        final MarshallerPool pool = getMarshallerPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        for (final Map.Entry<String,?> entry : ((Map<String,?>) owner.configuration).entrySet()) {
+            unmarshaller.setProperty(entry.getKey(), entry.getValue());
+        }
+        final JAXBElement<T> element = unmarshaller.unmarshal(reader, type);
+        pool.recycle(unmarshaller);
+        return element.getValue();
     }
 
     /**

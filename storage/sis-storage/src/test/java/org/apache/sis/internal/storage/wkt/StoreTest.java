@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage.wkt;
 
 import java.io.StringReader;
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.cs.AxisDirection;
@@ -29,9 +30,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
-
-// Branch-dependent imports
-import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -68,12 +66,12 @@ public final strictfp class StoreTest extends TestCase {
     /**
      * Tests {@link Store#getMetadata()} reading from a {@link Reader}.
      *
-     * @throws DataStoreException If an error occurred while reading the metadata.
+     * @throws DataStoreException if an error occurred while reading the metadata.
      */
     @Test
     public void testFromReader() throws DataStoreException {
         final Metadata metadata;
-        try (Store store = new Store(new StorageConnector(new StringReader(WKT)))) {
+        try (Store store = new Store(null, new StorageConnector(new StringReader(WKT)))) {
             metadata = store.getMetadata();
             assertSame("Expected cached value.", metadata, store.getMetadata());
         }
@@ -93,7 +91,7 @@ public final strictfp class StoreTest extends TestCase {
         final StoreProvider p = new StoreProvider();
         final StorageConnector c = new StorageConnector(new ByteArrayInputStream(StoreTest.WKT.getBytes(StandardCharsets.US_ASCII)));
         assertTrue("isSupported", p.probeContent(c).isSupported());
-        try (Store store = new Store(c)) {
+        try (Store store = new Store(null, c)) {
             metadata = store.getMetadata();
             assertSame("Expected cached value.", metadata, store.getMetadata());
         }

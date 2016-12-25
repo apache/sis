@@ -42,6 +42,15 @@ import org.apache.sis.util.logging.WarningListeners;
  */
 public abstract class DataStore implements Localized, AutoCloseable {
     /**
+     * The factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * This information can be useful for fetching information common to all {@code DataStore}
+     * instances of the same class.
+     *
+     * @since 0.8
+     */
+    protected final DataStoreProvider provider;
+
+    /**
      * The locale to use for formatting warnings.
      * This is not the locale for formatting data in the storage.
      *
@@ -56,25 +65,30 @@ public abstract class DataStore implements Localized, AutoCloseable {
     protected final WarningListeners<DataStore> listeners;
 
     /**
-     * Creates a new instance with initially no listener.
+     * Creates a new instance with no provider and initially no listener.
      */
     protected DataStore() {
-        locale = Locale.getDefault(Locale.Category.DISPLAY);
+        provider  = null;
+        locale    = Locale.getDefault(Locale.Category.DISPLAY);
         listeners = new WarningListeners<>(this);
     }
 
     /**
      * Creates a new instance for the given storage (typically file or database).
+     * The {@code provider} argument is an optional information.
+     * The {@code connector} argument is mandatory.
      *
-     * @param  connector information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      *
      * @since 0.8
      */
-    protected DataStore(final StorageConnector connector) throws DataStoreException {
+    protected DataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         ArgumentChecks.ensureNonNull("connector", connector);
-        locale = Locale.getDefault(Locale.Category.DISPLAY);
-        listeners = new WarningListeners<>(this);
+        this.provider  = provider;
+        this.locale    = Locale.getDefault(Locale.Category.DISPLAY);
+        this.listeners = new WarningListeners<>(this);
         /*
          * A future version could fetch some information from the StorageConnector.
          * For now we do not, not even OptionKey.LOCALE because we are not talking

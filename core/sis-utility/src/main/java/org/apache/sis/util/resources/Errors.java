@@ -520,6 +520,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MissingComponentInElement_2 = 84;
 
         /**
+         * JAXB context has not been specified.
+         */
+        public static final short MissingJAXBContext = 170;
+
+        /**
          * This operation requires the “{0}” module.
          */
         public static final short MissingRequiredModule_1 = 85;
