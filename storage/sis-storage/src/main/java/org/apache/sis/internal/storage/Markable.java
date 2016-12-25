@@ -21,9 +21,8 @@ import java.nio.InvalidMarkException;
 
 
 /**
- * Stream reader or writer capable to keep trace of its position.
- * The stream does not need to be able to seek at arbitrary positions.
- * However it may support nested marks.
+ * Stream reader or writer capable to mark its current position and reset to that position later.
+ * The stream shall support nested marks.
  *
  * <div class="note"><b>Use case:</b>
  * this interface can be used when we need to move to a previously marked position, but we do not know how many nested
@@ -41,7 +40,7 @@ import java.nio.InvalidMarkException;
  * @version 0.8
  * @module
  */
-public interface Trackable {
+public interface Markable {
     /**
      * Returns the current byte position of the stream.
      *

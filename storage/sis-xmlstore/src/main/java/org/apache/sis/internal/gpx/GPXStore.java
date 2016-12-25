@@ -16,14 +16,14 @@
  */
 package org.apache.sis.internal.gpx;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import org.apache.sis.internal.xml.StaxDataStore;
-import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.Version;
 import org.opengis.metadata.Metadata;
 
@@ -54,17 +54,24 @@ public class GPXStore extends StaxDataStore {
     static final Version V1_1 = new Version("1.1");
 
     /**
-     * The file encoding. Actually used only by the writer; ignored by the reader.
+     * Version of the GPX file, or {@code null} if unknown.
      */
-    final Charset encoding;
+    private Version version;
+
+    /**
+     * {@code true} if the {@linkplain #metadata} field has been initialized.
+     * Note that metadata after initialization may still be {@code null}.
+     */
+    private boolean initialized;
 
     /**
      * The metadata, or {@code null} if not yet parsed.
      */
-    private transient Metadata metadata;
+    private Metadata metadata;
 
     /**
-     * Iterator over the features.
+     * If a reader has been created for parsing the {@linkplain #metadata} and has not yet been used
+     * for iterating over the features, that reader. Otherwise {@code null}.
      */
     private GPXReader reader;
 
@@ -78,9 +85,6 @@ public class GPXStore extends StaxDataStore {
      */
     public GPXStore(final StorageConnector connector) throws DataStoreException {
         super(connector);
-        ArgumentChecks.ensureNonNull("connector", connector);
-        final Charset encoding = connector.getOption(OptionKey.ENCODING);
-        this.encoding = (encoding != null) ? encoding : StandardCharsets.UTF_8;
     }
 
     /**
@@ -93,25 +97,60 @@ public class GPXStore extends StaxDataStore {
         return "GPX";
     }
 
+    /**
+     * Returns the GPX file version.
+     *
+     * @return the GPX file version, or {@code null} if none.
+     * @throws DataStoreException if an error occurred while reading the metadata.
+     */
+    public synchronized Version getVersion() throws DataStoreException {
+        if (version == null) {
+            getMetadata();
+        }
+        return version;
+    }
+
+    /**
+     * Returns information about the dataset as a whole.
+     *
+     * @return information about the dataset, or {@code null} if none.
+     * @throws DataStoreException if an error occurred while reading the metadata.
+     */
     @Override
-    public Metadata getMetadata() throws DataStoreException {
-        return null;    // TODO
+    public synchronized Metadata getMetadata() throws DataStoreException {
+        if (!initialized) try {
+            initialized = true;
+            reader = new GPXReader(this);
+            version = reader.initialize(true);
+            metadata = reader.getMetadata();
+        } catch (XMLStreamException | IOException | JAXBException e) {
+            throw new DataStoreException(e);
+        } catch (URISyntaxException | RuntimeException e) {
+            throw new DataStoreContentException(e);
+        }
+        return metadata;
     }
 
     /**
      * Returns the stream of features.
      *
      * @return a stream over all features in the CSV file.
-     *
-     * @todo Needs to reset the position when doing another pass on the features.
+     * @throws DataStoreException if an error occurred while creating the feature stream.
      */
     @Override
-    public Stream<Feature> getFeatures() {
-        return StreamSupport.stream(reader, false);
-    }
-
-    final GPXReader reader() throws DataStoreException, XMLStreamException {
-        return reader = new GPXReader(this);
+    public synchronized Stream<Feature> getFeatures() throws DataStoreException {
+        GPXReader r = reader;
+        reader = null;
+        if (r == null) try {
+            r = new GPXReader(this);
+            version = r.initialize(false);
+        } catch (XMLStreamException | IOException | JAXBException e) {
+            throw new DataStoreException(e);
+        } catch (URISyntaxException | RuntimeException e) {
+            throw new DataStoreContentException(e);
+        }
+        final Stream<Feature> features = StreamSupport.stream(r, false);
+        return features.onClose(r);
     }
 
     /**
@@ -125,7 +164,7 @@ public class GPXStore extends StaxDataStore {
         reader = null;
         if (r != null) try {
             r.close();
-        } catch (XMLStreamException e) {
+        } catch (Exception e) {
             final DataStoreException ds = new DataStoreException(e);
             try {
                 super.close();

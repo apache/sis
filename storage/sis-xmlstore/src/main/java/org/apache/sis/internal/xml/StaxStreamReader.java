@@ -100,7 +100,7 @@ import org.opengis.feature.Feature;
  * @version 0.8
  * @module
  */
-public abstract class StaxStreamReader extends StaxStreamIO implements XMLStreamConstants, Spliterator<Feature> {
+public abstract class StaxStreamReader extends StaxStreamIO implements XMLStreamConstants, Spliterator<Feature>, Runnable {
     /**
      * The XML stream reader.
      */
@@ -110,12 +110,14 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * Creates a new XML reader for the given data store.
      *
      * @param  owner  the data store for which this reader is created.
-     * @throws DataStoreException if the input type is not recognized.
+     * @throws DataStoreException if the input type is not recognized or the data store is closed.
      * @throws XMLStreamException if an error occurred while opening the XML file.
+     * @throws IOException if an error occurred while preparing the input stream.
      */
-    protected StaxStreamReader(final StaxDataStore owner) throws DataStoreException, XMLStreamException {
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    protected StaxStreamReader(final StaxDataStore owner) throws DataStoreException, XMLStreamException, IOException {
         super(owner);
-        reader = owner.createReader();
+        reader = owner.createReader(this);      // Okay because will not store the 'this' reference.
     }
 
     /**
@@ -399,11 +401,29 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * Closes the input stream and releases any resources used by this XML reader.
      * This reader can not be used anymore after this method has been invoked.
      *
-     * @throws XMLStreamException if an error occurred while releasing XML reader/writer resources.
+     * @throws XMLStreamException if an error occurred while releasing XML reader resources.
+     * @throws IOException if an error occurred while closing the input stream.
      */
     @Override
-    public void close() throws XMLStreamException {
+    public void close() throws Exception {
         reader.close();
+        super.close();
+    }
+
+    /**
+     * Invokes {@link #close()} and wraps checked exceptions in a {@link BackingStoreException}.
+     * This method is defined for allowing this {@code StaxStreamReader} to be given to
+     * {@link java.util.stream.Stream#onClose(Runnable)}.
+     */
+    @Override
+    public final void run() throws BackingStoreException {
+        try {
+            close();
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BackingStoreException(e);
+        }
     }
 
     /**

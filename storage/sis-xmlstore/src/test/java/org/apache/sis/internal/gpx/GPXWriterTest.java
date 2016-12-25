@@ -105,7 +105,7 @@ public final strictfp class GPXWriterTest extends TestCase {
         metaData.description = "description";
         metaData.author = person;
         metaData.copyright = copyright;
-        metaData.links.addAll(Arrays.asList(new Link(new URI("http://adress1.org")), new Link(new URI("http://adress2.org"))));
+        metaData.links.addAll(Arrays.asList(new Link(new URI("http://address1.org")), new Link(new URI("http://address2.org"))));
         metaData.time = new Date();
         metaData.keywords = Arrays.asList("test", "sample");
         metaData.bounds = bounds;

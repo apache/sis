@@ -101,11 +101,12 @@ public class GPXReader extends StaxStreamReader {
      * Creates a new GPX reader for the given data store.
      * The {@link #initialize(boolean)} method must be invoked after this constructor.
      *
-     * @param  owner      the data store for which this reader is created.
+     * @param  owner  the data store for which this reader is created.
      * @throws DataStoreException if the input type is not recognized.
      * @throws XMLStreamException if an error occurred while opening the XML file.
+     * @throws IOException if an error occurred while preparing the input stream.
      */
-    public GPXReader(final GPXStore owner) throws DataStoreException, XMLStreamException {
+    public GPXReader(final GPXStore owner) throws DataStoreException, XMLStreamException, IOException {
         super(owner);
         types = Types.DEFAULT;
     }
