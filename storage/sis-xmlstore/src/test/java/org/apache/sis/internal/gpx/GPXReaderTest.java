@@ -27,6 +27,8 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -48,12 +50,33 @@ import org.opengis.feature.Feature;
  */
 public final strictfp class GPXReaderTest extends TestCase {
     /**
+     * The provider shared by all data stores created in this test class.
+     */
+    private static StoreProvider provider;
+
+    /**
+     * Creates the provider to be shared by all data stores created in this test class.
+     */
+    @BeforeClass
+    public static void createProvider() {
+        provider = new StoreProvider();
+    }
+
+    /**
+     * Disposes the data store provider after all tests have been completed.
+     */
+    @AfterClass
+    public static void disposeProvider() {
+        provider = null;
+    }
+
+    /**
      * Creates a new GPX data store which will read the given test file.
      *
      * @param  resource  name of the test file in a directory relative to {@code "org/apache/sis/internal/gpx"}.
      */
     private static GPXStore create(final String resource) throws DataStoreException {
-        return new GPXStore(new StorageConnector(GPXReaderTest.class.getResourceAsStream(resource)));
+        return new GPXStore(provider, new StorageConnector(GPXReaderTest.class.getResourceAsStream(resource)));
     }
 
     /**

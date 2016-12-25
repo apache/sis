@@ -80,11 +80,12 @@ public class GPXStore extends StaxDataStore {
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
      *
+     * @param  provider   the provider of this data store, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the GPX file.
      */
-    public GPXStore(final StorageConnector connector) throws DataStoreException {
-        super(connector);
+    public GPXStore(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
     }
 
     /**

@@ -17,6 +17,7 @@ package org.apache.sis.internal.storage;
 
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 
 // Branch-dependent imports
@@ -39,11 +40,12 @@ public abstract class FeatureStore extends DataStore {
     /**
      * Creates a new instance for the given storage (typically file or database).
      *
-     * @param connector information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      */
-    protected FeatureStore(final StorageConnector connector) throws DataStoreException {
-        super(connector);
+    protected FeatureStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
     }
 
     /**

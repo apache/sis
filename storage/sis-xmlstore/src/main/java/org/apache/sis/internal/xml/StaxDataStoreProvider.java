@@ -16,7 +16,10 @@
  */
 package org.apache.sis.internal.xml;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.xml.MarshallerPool;
 
 
 /**
@@ -30,8 +33,48 @@ import org.apache.sis.storage.DataStoreProvider;
  */
 public abstract class StaxDataStoreProvider extends DataStoreProvider {
     /**
+     * Pool of JAXB marshallers shared by all data stores created by this provider.
+     * This pool is created only when first needed; it will never be instantiated
+     * if the data stores do not use JAXB.
+     */
+    private volatile MarshallerPool jaxb;
+
+    /**
      * Creates a new provider.
      */
     protected StaxDataStoreProvider() {
+    }
+
+    /**
+     * Returns the JAXB context for the data store, or {@code null} if the data stores
+     * {@linkplain #open created} by this provided do not use JAXB.
+     *
+     * <p>The default implementation returns {@code null}.</p>
+     *
+     * @return the JAXB context, or {@code null} if none.
+     * @throws JAXBException if an error occurred while creating the JAXB context.
+     */
+    protected JAXBContext getJAXBContext() throws JAXBException {
+        return null;
+    }
+
+    /**
+     * Returns the (un)marshaller pool, creating it when first needed.
+     * If the subclass does not define a JAXB context, then this method returns {@code null}.
+     */
+    final MarshallerPool getMarshallerPool() throws JAXBException {
+        MarshallerPool pool = jaxb;
+        if (pool == null) {
+            synchronized (this) {
+                pool = jaxb;
+                if (pool == null) {
+                    final JAXBContext context = getJAXBContext();
+                    if (context != null) {
+                        jaxb = pool = new MarshallerPool(context, null);
+                    }
+                }
+            }
+        }
+        return pool;
     }
 }

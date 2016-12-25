@@ -151,12 +151,14 @@ public abstract class StaxDataStore extends FeatureStore {
 
     /**
      * Creates a new data store.
+     * The {@code provider} is mandatory if the data store will use JAXB, otherwise it is optional.
      *
+     * @param  provider   the provider of this data store, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if the input or output type is not recognized.
      */
-    protected StaxDataStore(final StorageConnector connector) throws DataStoreException {
-        super(connector);
+    protected StaxDataStore(final StaxDataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
         name            = connector.getStorageName();
         storage         = connector.getStorage();
         encoding        = connector.getOption(OptionKey.ENCODING);
@@ -292,6 +294,13 @@ public abstract class StaxDataStore extends FeatureStore {
     }
 
     /**
+     * Returns the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     */
+    final StaxDataStoreProvider getProvider() {
+        return (StaxDataStoreProvider) provider;
+    }
+
+    /**
      * Returns the short name (abbreviation) of the format being read or written.
      * This is used for error messages.
      *
@@ -337,7 +346,7 @@ public abstract class StaxDataStore extends FeatureStore {
      * input stream) or on whether the previous reader has been closed.
      *
      * @param  target  the reader which will store the {@code XMLStreamReader} reference.
-     * @return a new reader for reading the same XML data.
+     * @return a new reader for reading the XML data.
      * @throws DataStoreException if the input type is not recognized or the data store is closed.
      * @throws XMLStreamException if an error occurred while opening the XML file.
      * @throws IOException if an error occurred while preparing the input stream.
@@ -395,6 +404,41 @@ reset:  switch (state) {
         target.stream = stream;
         state = IN_USE;
         return reader;
+    }
+
+    /**
+     * Creates a new XML stream writer for writing the XML document.
+     * If another {@code XMLStreamWriter} has already been created before this method call,
+     * whether this method will succeed in creating a new writer depends on the storage type
+     * (e.g. file or output stream).
+     *
+     * @param  target  the writer which will store the {@code XMLStreamWriter} reference.
+     * @return a new writer for writing the XML data.
+     * @throws DataStoreException if the output type is not recognized or the data store is closed.
+     * @throws XMLStreamException if an error occurred while opening the XML file.
+     * @throws IOException if an error occurred while preparing the output stream.
+     */
+    final synchronized XMLStreamWriter createWriter(final StaxStreamWriter target)
+            throws DataStoreException, XMLStreamException, IOException
+    {
+        Object output = storage;
+        if (output == null) {
+            throw new DataStoreClosedException(errors().getString(Errors.Keys.ClosedWriter_1, getFormatName()));
+        }
+        /*
+         * If the storage given by the user was not one of OutputStream, Writer or other type recognized
+         * by OutputType, then maybe that storage was a Path, File or URL, in which case the constructor
+         * should have opened an InputStream for it. If not, then this was an unsupported storage type.
+         */
+        OutputType type = storageToWriter;
+        if (type == null) {
+            // TODO
+            throw new UnsupportedStorageException(errors().getString(Errors.Keys.IllegalOutputTypeForWriter_2,
+                    getFormatName(), Classes.getClass(storage)));
+        }
+        final XMLStreamWriter writer = type.create(this, output);
+        target.stream = stream;
+        return writer;
     }
 
     /**

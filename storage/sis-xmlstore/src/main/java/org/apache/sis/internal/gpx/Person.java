@@ -67,6 +67,11 @@ public final class Person implements Responsibility, Party, Contact, Address {
     public String name;
 
     /**
+     * {@code true} if this name is the creator, {@code false} if it is the author.
+     */
+    private boolean isCreator;
+
+    /**
      * Email address.
      *
      * @see #getElectronicMailAddresses()
@@ -90,13 +95,21 @@ public final class Person implements Responsibility, Party, Contact, Address {
     }
 
     /**
-     * ISO 19115 metadata property fixed to {@link Role#ORIGINATOR}.
+     * Creates an instance for the given creator.
+     */
+    Person(final String creator) {
+        name = creator;
+        isCreator = true;
+    }
+
+    /**
+     * ISO 19115 metadata property fixed to {@link Role#ORIGINATOR} or {@link Role#AUTHOR}.
      *
      * @return function performed by the responsible party.
      */
     @Override
     public Role getRole() {
-        return Role.ORIGINATOR;
+        return isCreator ? Role.ORIGINATOR : Role.AUTHOR;
     }
 
     /**

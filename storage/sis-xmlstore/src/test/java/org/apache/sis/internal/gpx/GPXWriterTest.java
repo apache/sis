@@ -31,6 +31,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
 import org.junit.After;
 import org.junit.Test;
 
@@ -53,11 +55,32 @@ import org.opengis.feature.Feature;
  */
 @DependsOn(GPXReaderTest.class)
 public final strictfp class GPXWriterTest extends TestCase {
+    /**
+     * The provider shared by all data stores created in this test class.
+     */
+    private static StoreProvider provider;
+
+    /**
+     * Creates the provider to be shared by all data stores created in this test class.
+     */
+    @BeforeClass
+    public static void createProvider() {
+        provider = new StoreProvider();
+    }
+
+    /**
+     * Disposes the data store provider after all tests have been completed.
+     */
+    @AfterClass
+    public static void disposeProvider() {
+        provider = null;
+    }
+
     private GPXStore store;
 
     private GPXReader reader(final File resource) throws Exception {
         StorageConnector storage = new StorageConnector(resource);
-        return new GPXReader(store = new GPXStore(storage));
+        return new GPXReader(store = new GPXStore(provider, storage));
     }
 
     @After
@@ -68,7 +91,7 @@ public final strictfp class GPXWriterTest extends TestCase {
     }
 
     private static GPXWriter110 writer(final File f) throws DataStoreException, IOException, XMLStreamException {
-        return new GPXWriter110(new GPXStore(new StorageConnector("dummy")), "Apache SIS", f, "UTF-8");
+        return new GPXWriter110(new GPXStore(provider, new StorageConnector(f)), null);
     }
 
     /**
@@ -82,7 +105,6 @@ public final strictfp class GPXWriterTest extends TestCase {
         final File f = new File("output.xml");
         f.deleteOnExit();
         if (f.exists()) f.delete();
-        final GPXWriter110 writer = writer(f);
 
         final Person person = new Person();
         person.name = "Jean-Pierre";
@@ -110,16 +132,13 @@ public final strictfp class GPXWriterTest extends TestCase {
         metaData.keywords = Arrays.asList("test", "sample");
         metaData.bounds = bounds;
 
-        writer.writeStartDocument();
-        writer.write(metaData, null, null, null);
-        writer.writeEndDocument();
-        writer.close();
-
+        try (GPXWriter110 writer = writer(f)) {
+            writer.write(metaData, null, null, null);
+        }
         try (GPXReader reader = reader(f)) {
             assertEquals(GPXStore.V1_1, reader.initialize(true));
             assertEquals(metaData, reader.getMetadata());
         }
-
         if (f.exists()) f.delete();
     }
 
@@ -136,7 +155,6 @@ public final strictfp class GPXWriterTest extends TestCase {
         final File f = new File("output.xml");
         f.deleteOnExit();
         if (f.exists()) f.delete();
-        final GPXWriter110 writer = writer(f);
 
         //way points -----------------------------------------------------------
         Feature point1 = types.wayPoint.newInstance();
@@ -271,12 +289,9 @@ public final strictfp class GPXWriterTest extends TestCase {
         tracks.add(track1);
         tracks.add(track2);
 
-
-        writer.writeStartDocument();
-        writer.write(null, wayPoints, routes, tracks);
-        writer.writeEndDocument();
-        writer.close();
-
+        try (GPXWriter110 writer = writer(f)) {
+            writer.write(null, wayPoints, routes, tracks);
+        }
         try (final GPXReader reader = reader(f)) {
             assertEquals(GPXStore.V1_1, reader.initialize(false));
 

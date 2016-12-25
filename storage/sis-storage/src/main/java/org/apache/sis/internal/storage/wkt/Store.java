@@ -82,11 +82,12 @@ final class Store extends DataStore {
     /**
      * Creates a new WKT store from the given file, URL or stream.
      *
-     * @param  connector information about the storage (URL, stream, <i>etc</i>).
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public Store(final StorageConnector connector) throws DataStoreException {
-        super(connector);
+    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
         objects = new ArrayList<>();
         name    = connector.getStorageName();
         source  = connector.getStorageAs(Reader.class);

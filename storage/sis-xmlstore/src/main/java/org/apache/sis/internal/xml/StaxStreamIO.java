@@ -17,7 +17,9 @@
 package org.apache.sis.internal.xml;
 
 import java.io.IOException;
+import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
+import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -53,6 +55,13 @@ abstract class StaxStreamIO implements AutoCloseable {
     AutoCloseable stream;
 
     /**
+     * The (un)marshaller pool, fetched when first needed. The same pool is shared by all {@code StaxStreamIO}
+     * instances created by the same {@link StaxDataStoreProvider}, but we nevertheless store a reference here
+     * in order to reduce the amount of synchronizations done every time we need a (un)marshaller.
+     */
+    private MarshallerPool jaxb;
+
+    /**
      * For sub-classes constructors.
      *
      * @param owner  the data store for which this reader or writer is created.
@@ -60,6 +69,22 @@ abstract class StaxStreamIO implements AutoCloseable {
     StaxStreamIO(final StaxDataStore owner) {
         ArgumentChecks.ensureNonNull("owner", owner);
         this.owner = owner;
+    }
+
+    /**
+     * Returns the shared marshaller pool.
+     */
+    final MarshallerPool getMarshallerPool() throws JAXBException {
+        if (jaxb == null) {
+            final StaxDataStoreProvider provider = owner.getProvider();
+            if (provider != null) {
+                jaxb = provider.getMarshallerPool();
+            }
+            if (jaxb == null) {
+                throw new JAXBException(errors().getString(Errors.Keys.MissingJAXBContext));
+            }
+        }
+        return jaxb;
     }
 
     /**
