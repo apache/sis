@@ -37,7 +37,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * @version 0.5
  * @module
  */
-public abstract class ChannelData implements Trackable {
+public abstract class ChannelData implements Markable {
     /**
      * Number of bits needed for storing the bit offset in {@link #bitPosition}.
      * The following condition must hold:

@@ -66,11 +66,12 @@ public abstract class DataStore implements Localized, AutoCloseable {
     /**
      * Creates a new instance for the given storage (typically file or database).
      *
-     * @param connector information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @param  connector information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      *
      * @since 0.8
      */
-    protected DataStore(final StorageConnector connector) {
+    protected DataStore(final StorageConnector connector) throws DataStoreException {
         ArgumentChecks.ensureNonNull("connector", connector);
         locale = Locale.getDefault(Locale.Category.DISPLAY);
         listeners = new WarningListeners<>(this);

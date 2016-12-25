@@ -19,18 +19,18 @@ package org.apache.sis.storage;
 import java.io.InputStream;
 import java.io.IOException;
 import javax.imageio.stream.ImageInputStream;
-import org.apache.sis.internal.storage.Trackable;
+import org.apache.sis.internal.storage.Markable;
 
 
 /**
- * Wraps a {@link ImageInputStream} as a standard {@link InputStream}.
+ * Wraps an {@link ImageInputStream} as a standard {@link InputStream}.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.4
  * @version 0.8
  * @module
  */
-final class InputStreamAdapter extends InputStream implements Trackable {
+final class InputStreamAdapter extends InputStream implements Markable {
     /**
      * The data input stream.
      */

@@ -35,9 +35,9 @@
     <cmt>first comment</cmt>
     <desc>first description</desc>
     <src>first source</src>
-    <link href="http://first-adress1.org"/>
-    <link href="http://first-adress2.org"/>
-    <link href="http://first-adress3.org"/>
+    <link href="http://first-address1.org"/>
+    <link href="http://first-address2.org"/>
+    <link href="http://first-address3.org"/>
     <sym>first symbol</sym>
     <type>first type</type>
     <fix>none</fix>
@@ -58,8 +58,8 @@
     <cmt>third comment</cmt>
     <desc>third description</desc>
     <src>third source</src>
-    <link href="http://third-adress1.org"/>
-    <link href="http://third-adress2.org"/>
+    <link href="http://third-address1.org"/>
+    <link href="http://third-address2.org"/>
     <sym>third symbol</sym>
     <type>third type</type>
     <fix>3d</fix>

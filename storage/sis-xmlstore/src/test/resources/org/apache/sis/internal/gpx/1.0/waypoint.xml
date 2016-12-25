@@ -33,7 +33,7 @@
     <cmt>first comment</cmt>
     <desc>first description</desc>
     <src>first source</src>
-    <url>http://first-adress1.org</url>
+    <url>http://first-address1.org</url>
     <sym>first symbol</sym>
     <type>first type</type>
     <fix>none</fix>
@@ -54,7 +54,7 @@
     <cmt>third comment</cmt>
     <desc>third description</desc>
     <src>third source</src>
-    <url>http://third-adress1.org</url>
+    <url>http://third-address1.org</url>
     <sym>third symbol</sym>
     <type>third type</type>
     <fix>3d</fix>

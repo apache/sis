@@ -187,12 +187,14 @@ public abstract class StaxStreamWriter extends StaxStreamIO {
      * This writer can not be used anymore after this method has been invoked.
      *
      * @throws XMLStreamException if an error occurred while releasing XML writer resources.
+     * @throws IOException if an error occurred while closing the output stream.
      */
     @Override
-    public void close() throws XMLStreamException {
+    public void close() throws Exception {
         if (writer != null) {
             writer.close();
             writer = null;
         }
+        super.close();
     }
 }

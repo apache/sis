@@ -17,6 +17,7 @@ package org.apache.sis.internal.storage;
 
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreException;
 
 // Branch-dependent imports
 import java.util.stream.Stream;
@@ -39,8 +40,9 @@ public abstract class FeatureStore extends DataStore {
      * Creates a new instance for the given storage (typically file or database).
      *
      * @param connector information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      */
-    protected FeatureStore(final StorageConnector connector) {
+    protected FeatureStore(final StorageConnector connector) throws DataStoreException {
         super(connector);
     }
 
@@ -48,6 +50,7 @@ public abstract class FeatureStore extends DataStore {
      * Returns the stream of features.
      *
      * @return a stream over all features in the file.
+     * @throws DataStoreException if an error occurred while creating the feature stream.
      */
-    public abstract Stream<Feature> getFeatures();
+    public abstract Stream<Feature> getFeatures() throws DataStoreException;
 }

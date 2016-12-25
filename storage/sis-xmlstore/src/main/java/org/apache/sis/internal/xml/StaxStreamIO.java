@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.xml;
 
+import java.io.IOException;
+import javax.xml.stream.XMLStreamException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -44,6 +46,13 @@ abstract class StaxStreamIO implements AutoCloseable {
     protected final StaxDataStore owner;
 
     /**
+     * The underlying stream to close when this {@code StaxStreamIO} reader or writer is closed,
+     * or {@code null} if none. This may be the same reference than {@link StaxDataStore#stream},
+     * but not necessarily if we had to create a new stream for reading the data one more time.
+     */
+    AutoCloseable stream;
+
+    /**
      * For sub-classes constructors.
      *
      * @param owner  the data store for which this reader or writer is created.
@@ -51,6 +60,22 @@ abstract class StaxStreamIO implements AutoCloseable {
     StaxStreamIO(final StaxDataStore owner) {
         ArgumentChecks.ensureNonNull("owner", owner);
         this.owner = owner;
+    }
+
+    /**
+     * Closes the input or output stream and releases any resources used by this XML reader or writer.
+     * This reader or writer can not be used anymore after this method has been invoked.
+     *
+     * @throws XMLStreamException if an error occurred while releasing XML reader/writer resources.
+     * @throws IOException if an error occurred while closing the input or output stream.
+     */
+    @Override
+    public void close() throws Exception {
+        final AutoCloseable s = stream;
+        stream = null;
+        if (owner.canClose(s)) {
+            s.close();
+        }
     }
 
     /**
