@@ -17,6 +17,7 @@
 package org.apache.sis.internal.xml;
 
 import java.util.Map;
+import java.util.Date;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import javax.xml.bind.Marshaller;
@@ -24,7 +25,13 @@ import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.xml.MarshallerPool;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.resources.Errors;
+
+// Branch-dependent imports
+import java.io.UncheckedIOException;
+import java.util.function.Consumer;
+import org.opengis.feature.Feature;
 
 
 /**
@@ -32,13 +39,24 @@ import org.apache.sis.xml.MarshallerPool;
  * This class is itself a consumer of {@code Feature} instances to write in the XML file.
  *
  * <p>This is a helper class for {@link org.apache.sis.storage.DataStore} implementations.
- * Writers for a given specification should extend this class and implement methods as
- * in the following example:</p>
+ * Writers for a given specification should extend this class and implement methods as in
+ * the following example:</p>
  *
  * <p>Example:</p>
  * {@preformat java
  *     public class UserObjectWriter extends StaxStreamWriter {
- *         public void accept(Feature f) throws BackingStoreException {
+ *         UserObjectWriter(StaxDataStore owner, Metadata metadata) throws ... {
+ *             super(owner);
+ *         }
+ *
+ *         &#64;Override
+ *         public void writeStartDocument() throws Exception {
+ *             super.writeStartDocument();
+ *             // Write header (typically metadata) here.
+ *         }
+ *
+ *         &#64;Override
+ *         public void write(Feature f) throws Exception {
  *             // Actual STAX write operations.
  *             writer.writeStartElement(…);
  *         }
@@ -48,8 +66,13 @@ import org.apache.sis.xml.MarshallerPool;
  * Writers can be used like below:
  *
  * {@preformat java
- *     try (UserObjectWriter writer = new UserObjectWriter(dataStore)) {
- *         writer.accept(feature);
+ *     try (UserObjectWriter writer = new UserObjectWriter(dataStore, metadata)) {
+ *         writer.writeStartDocument();
+ *         writer.write(feature1);
+ *         writer.write(feature2);
+ *         writer.write(feature3);
+ *         // etc.
+ *         writer.writeEndDocument();
  *     }
  * }
  *
@@ -63,11 +86,19 @@ import org.apache.sis.xml.MarshallerPool;
  * @version 0.8
  * @module
  */
-public abstract class StaxStreamWriter extends StaxStreamIO {
+public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<Feature> {
     /**
      * The XML stream writer.
      */
     protected final XMLStreamWriter writer;
+
+    /**
+     * The marshaller reserved to this writer usage,
+     * created only when first needed and kept until this writer is closed.
+     *
+     * @see #marshal(Object)
+     */
+    private Marshaller marshaller;
 
     /**
      * Creates a new XML writer for the given data store.
@@ -81,11 +112,69 @@ public abstract class StaxStreamWriter extends StaxStreamIO {
     protected StaxStreamWriter(final StaxDataStore owner) throws DataStoreException, XMLStreamException, IOException {
         super(owner);
         writer = owner.createWriter(this);      // Okay because will not store the 'this' reference.
+    }
+
+    /**
+     * Writes the XML declaration with the data store encoding and default XML version (1.0).
+     * The encoding is specified as an option of the {@link org.apache.sis.storage.StorageConnector}
+     * given at {@link StaxDataStore} construction time.
+     *
+     * <p>Subclasses should overwrite this method if they need to write metadata in the XML document before
+     * the features. The overwritten method shall begin by a call to {@code super.writeStartDocument()}.</p>
+     *
+     * @throws Exception if an error occurred while writing to the XML file.
+     *         Possible subtypes include {@link XMLStreamException},
+     *         but also {@link JAXBException} if JAXB is used for marshalling metadata objects,
+     *         {@link DataStoreException}, {@link ClassCastException}, <i>etc.</i>
+     */
+    public void writeStartDocument() throws Exception {
         Charset encoding = owner.encoding;
         if (encoding == null) {
             encoding = Charset.defaultCharset();
         }
         writer.writeStartDocument(encoding.name());
+    }
+
+    /**
+     * Closes any start tags and writes corresponding end tags.
+     * Subclasses should overwrite this method if they need to write some elements before the end tags.
+     *
+     * @throws Exception if an error occurred while writing to the XML file.
+     */
+    public void writeEndDocument() throws Exception {
+        writer.writeEndDocument();
+    }
+
+    /**
+     * Writes the given features to the XML document.
+     *
+     * @param  feature  the feature to write.
+     * @throws Exception if an error occurred while writing to the XML file.
+     *         Possible subtypes include {@link XMLStreamException},
+     *         but also {@link JAXBException} if JAXB is used for marshalling metadata objects,
+     *         {@link DataStoreException}, {@link ClassCastException}, <i>etc.</i>
+     */
+    public abstract void write(Feature feature) throws Exception;
+
+    /**
+     * Delegates to {@link #write(Feature)}, wrapping {@code Exception} into unchecked {@code BackingStoreException}.
+     *
+     * @param  feature  the feature to write.
+     * @throws BackingStoreException if an error occurred while writing to the XML file.
+     */
+    @Override
+    public void accept(final Feature feature) throws BackingStoreException {
+        try {
+            write(feature);
+        } catch (BackingStoreException e) {
+            throw e;
+        } catch (Exception e) {
+            if (e instanceof UncheckedIOException) {
+                e = ((UncheckedIOException) e).getCause();
+            }
+            throw new BackingStoreException(errors().getString(Errors.Keys.CanNotWriteFile_2,
+                                                               owner.getFormatName(), owner.name), e);
+        }
     }
 
 
@@ -98,18 +187,56 @@ public abstract class StaxStreamWriter extends StaxStreamIO {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Writes a new tag with the given value and no attribute.
+     * Writes a new element with the given value and no attribute.
      * If the given value is null, then this method does nothing.
      *
      * @param  localName  local name of the tag to write.
-     * @param  value      text to write inside the tag.
+     * @param  value      text to write inside the element.
      * @throws XMLStreamException if the underlying STAX writer raised an error.
      */
-    protected final void writeSimpleTag(final String localName, final Object value) throws XMLStreamException {
+    protected final void writeSingleValue(final String localName, final Object value) throws XMLStreamException {
         if (value != null) {
             writer.writeStartElement(localName);
             writer.writeCharacters(value.toString());
             writer.writeEndElement();
+        }
+    }
+
+    /**
+     * Writes a new element with the given date and no attribute.
+     * If the given date is null, then this method does nothing.
+     *
+     * @param  localName  local name of the tag to write.
+     * @param  value      date to write inside the element.
+     * @throws XMLStreamException if the underlying STAX writer raised an error.
+     */
+    protected final void writeSingle(final String localName, final Date value) throws XMLStreamException {
+        if (value != null) {
+            writeSingleValue(localName, value.toInstant());
+        }
+    }
+
+    /**
+     * Writes the given list of values, ignoring null values.
+     * If the given list is null, then this method does nothing.
+     *
+     * @param  localName  local name of the tag to write.
+     * @param  values     values to write inside the element.
+     * @throws XMLStreamException if the underlying STAX writer raised an error.
+     */
+    protected final void writeList(final String localName, final Iterable<?> values) throws XMLStreamException {
+        if (values != null) {
+            final StringBuilder buffer = new StringBuilder();
+            for (final Object value : values) {
+                if (value != null) {
+                    final int length = buffer.length();
+                    if (length != 0 && buffer.charAt(length - 1) != ' ') {
+                        buffer.append(' ');
+                    }
+                    buffer.append(value);
+                }
+            }
+            writeSingleValue(localName, buffer.toString());
         }
     }
 
@@ -123,13 +250,16 @@ public abstract class StaxStreamWriter extends StaxStreamIO {
      * @see javax.xml.bind.Marshaller#marshal(Object, XMLStreamWriter)
      */
     protected final void marshal(final Object object) throws XMLStreamException, JAXBException {
-        final MarshallerPool pool = getMarshallerPool();
-        final Marshaller marshaller = pool.acquireMarshaller();
-        for (final Map.Entry<String,?> entry : ((Map<String,?>) owner.configuration).entrySet()) {
-            marshaller.setProperty(entry.getKey(), entry.getValue());
+        Marshaller m = marshaller;
+        if (m == null) {
+            m = getMarshallerPool().acquireMarshaller();
+            for (final Map.Entry<String,?> entry : ((Map<String,?>) owner.configuration).entrySet()) {
+                m.setProperty(entry.getKey(), entry.getValue());
+            }
         }
-        marshaller.marshal(object, writer);
-        pool.recycle(marshaller);
+        marshaller = null;
+        m.marshal(object, writer);
+        marshaller = m;                 // Allow reuse or recycling only on success.
     }
 
     /**
@@ -141,7 +271,11 @@ public abstract class StaxStreamWriter extends StaxStreamIO {
      */
     @Override
     public void close() throws Exception {
-        writer.writeEndDocument();
+        final Marshaller m = marshaller;
+        if (m != null) {
+            marshaller = null;
+            getMarshallerPool().recycle(m);
+        }
         writer.close();
         super.close();
     }
