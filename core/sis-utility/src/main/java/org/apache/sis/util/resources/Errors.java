@@ -156,6 +156,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotTransformEnvelope = 15;
 
         /**
+         * Can not write “{1}” as a file in the {0} format.
+         */
+        public static final short CanNotWriteFile_2 = 171;
+
+        /**
          * Circular reference.
          */
         public static final short CircularReference = 16;

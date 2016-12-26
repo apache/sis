@@ -24,12 +24,15 @@ import org.apache.sis.internal.xml.StaxDataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
 import org.opengis.metadata.Metadata;
 
 // Branch-dependent imports
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import java.io.UncheckedIOException;
 import org.opengis.feature.Feature;
 
 
@@ -112,6 +115,17 @@ public class GPXStore extends StaxDataStore {
     }
 
     /**
+     * Sets the version of the file to write.
+     *
+     * @param  version  the target GPX file format.
+     * @throws DataStoreException if an error occurred while setting the format.
+     */
+    public synchronized void setVersion(final Version version) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("version", version);
+        this.version = version;
+    }
+
+    /**
      * Returns information about the dataset as a whole.
      *
      * @return information about the dataset, or {@code null} if none.
@@ -152,6 +166,37 @@ public class GPXStore extends StaxDataStore {
         }
         final Stream<Feature> features = StreamSupport.stream(r, false);
         return features.onClose(r);
+    }
+
+    /**
+     * Replaces the content of this GPX file by the given metadata and features.
+     *
+     * @param  metadata  the metadata to write, or {@code null} if none.
+     * @param  features  the features to write, or {@code null} if none.
+     * @throws DataStoreException if an error occurred while writing the data.
+     *
+     * @todo verify that the given stream is not connected to this GPX file.
+     */
+    public synchronized void write(final Metadata metadata, final Stream<? extends Feature> features)
+            throws DataStoreException
+    {
+        // TODO: convert the metadata if needed.
+        try (final GPXWriter writer = new GPXWriter(this, (org.apache.sis.internal.gpx.Metadata) metadata)) {
+            writer.writeStartDocument();
+            features.forEachOrdered(writer);
+            writer.writeEndDocument();
+        } catch (BackingStoreException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof DataStoreException) {
+                throw (DataStoreException) cause;
+            }
+            throw new DataStoreException(e.getMessage(), cause);
+        } catch (Exception e) {
+            if (e instanceof UncheckedIOException) {
+                e = ((UncheckedIOException) e).getCause();
+            }
+            throw new DataStoreException(e);
+        }
     }
 
     /**

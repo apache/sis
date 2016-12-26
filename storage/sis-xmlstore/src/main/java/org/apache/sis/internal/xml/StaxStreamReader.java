@@ -35,7 +35,6 @@ import javax.xml.stream.util.StreamReaderDelegate;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.StandardDateFormat;
@@ -73,6 +72,11 @@ import org.opengis.feature.Feature;
  * <p>Example:</p>
  * {@preformat java
  *     public class UserObjectReader extends StaxStreamReader {
+ *         UserObjectReader(StaxDataStore owner) throws ... {
+ *             super(owner);
+ *         }
+ *
+ *         &#64;Override
  *         public boolean tryAdvance(Consumer<? super Feature> action) throws BackingStoreException {
  *             if (endOfFile) {
  *                 return false;
@@ -108,6 +112,14 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * The XML stream reader.
      */
     protected final XMLStreamReader reader;
+
+    /**
+     * The unmarshaller reserved to this reader usage,
+     * created only when first needed and kept until this reader is closed.
+     *
+     * @see #unmarshal(Class)
+     */
+    private Unmarshaller unmarshaller;
 
     /**
      * Creates a new XML reader for the given data store.
@@ -397,13 +409,16 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @see javax.xml.bind.Unmarshaller#unmarshal(XMLStreamReader, Class)
      */
     protected final <T> T unmarshal(final Class<T> type) throws XMLStreamException, JAXBException {
-        final MarshallerPool pool = getMarshallerPool();
-        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
-        for (final Map.Entry<String,?> entry : ((Map<String,?>) owner.configuration).entrySet()) {
-            unmarshaller.setProperty(entry.getKey(), entry.getValue());
+        Unmarshaller m = unmarshaller;
+        if (m == null) {
+            m = getMarshallerPool().acquireUnmarshaller();
+            for (final Map.Entry<String,?> entry : ((Map<String,?>) owner.configuration).entrySet()) {
+                m.setProperty(entry.getKey(), entry.getValue());
+            }
         }
-        final JAXBElement<T> element = unmarshaller.unmarshal(reader, type);
-        pool.recycle(unmarshaller);
+        unmarshaller = null;
+        final JAXBElement<T> element = m.unmarshal(reader, type);
+        unmarshaller = m;                                           // Allow reuse or recycling only on success.
         return element.getValue();
     }
 
@@ -416,6 +431,11 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      */
     @Override
     public void close() throws Exception {
+        final Unmarshaller m = unmarshaller;
+        if (m != null) {
+            unmarshaller = null;
+            getMarshallerPool().recycle(m);
+        }
         reader.close();
         super.close();
     }

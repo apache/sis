@@ -101,7 +101,7 @@
             <attribute name="enabled" value="true"/>
         </node>
         <node name="org.netbeans.modules.java.hints.AssignmentIssues.assignmentToCatchBlockParameter">
-            <attribute name="enabled" value="true"/>
+            <attribute name="enabled" value="false"/>
         </node>
         <node name="org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.packageField">
             <attribute name="allow.enums" value="false"/>
