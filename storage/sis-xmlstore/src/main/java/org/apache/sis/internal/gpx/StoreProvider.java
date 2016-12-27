@@ -35,7 +35,7 @@ import org.apache.sis.internal.xml.StaxDataStoreProvider;
  * @version 0.8
  * @module
  */
-public class StoreProvider extends StaxDataStoreProvider {
+public final class StoreProvider extends StaxDataStoreProvider {
     /**
      * Creates a new GPX store provider.
      */
@@ -59,7 +59,7 @@ public class StoreProvider extends StaxDataStoreProvider {
      */
     @Override
     public DataStore open(StorageConnector connector) throws DataStoreException {
-        return new GPXStore(this, connector);
+        return new Store(this, connector);
     }
 
     /**

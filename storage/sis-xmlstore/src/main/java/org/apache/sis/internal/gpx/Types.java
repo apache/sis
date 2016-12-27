@@ -42,8 +42,8 @@ import org.opengis.feature.FeatureType;
 
 /**
  * Feature types that may appear in GPX files. All values defined in this class are immutable and can be shared
- * by many {@link GPXReader} instances. There is usually only one {@code Types} instance for a running JVM, but
- * we nevertheless allows definition of alternative {@code Types} with names created by different factories.
+ * by many {@link Reader} instances. There is usually only one {@code Types} instance for a running JVM, but we
+ * nevertheless allows definition of alternative {@code Types} with names created by different factories.
  *
  * @author  Johann Sorel (Geomatys)
  * @since   0.8

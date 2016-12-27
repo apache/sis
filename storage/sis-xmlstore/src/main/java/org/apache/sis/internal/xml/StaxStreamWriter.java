@@ -272,10 +272,10 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
         final QName qn;
         XMLStreamWriter out = writer;
         if (defaultNamespace != null) {
-            out = new DefaultNamespaceStreamWriter(writer, defaultNamespace);
-            qn = new QName(defaultNamespace, name);
+            out = new DefaultNamespaceStreamWriter(out, defaultNamespace);
+            qn  = new QName(defaultNamespace, name);
         } else {
-            qn = new QName(name);
+            qn  = new QName(name);
         }
         marshaller = null;
         m.marshal(new JAXBElement<>(qn, type, object), out);
