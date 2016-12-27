@@ -54,6 +54,11 @@ public class GPXWriter extends StaxStreamWriter {
     private final int version;
 
     /**
+     * The namespace, which is either {@link Tags#NAMESPACE_V10} or {@link Tags#NAMESPACE_V11}.
+     */
+    private final String namespace;
+
+    /**
      * The metadata to write, or {@code null} if none.
      */
     private final Metadata metadata;
@@ -73,8 +78,7 @@ public class GPXWriter extends StaxStreamWriter {
         super(owner);
         types = Types.DEFAULT;
         this.metadata = metadata;
-        final String namespace;
-        final Version ver = owner.getVersion();
+        final Version ver = owner.version;
         if (ver != null && ver.compareTo(GPXStore.V1_0, 2) <= 0) {
             version   = 0;
             namespace = Tags.NAMESPACE_V10;
@@ -114,7 +118,7 @@ public class GPXWriter extends StaxStreamWriter {
                      * In GPX 1.1 format, the metadata are stored under a <metadata> node.
                      * This can conveniently be written by JAXB.
                      */
-                    marshal(metadata);
+                    marshal(namespace, Tags.METADATA, Metadata.class, metadata);
                     break;
                 }
                 case 0: {
@@ -132,7 +136,7 @@ public class GPXWriter extends StaxStreamWriter {
                     writeLinks(metadata.links);
                     writeSingle(Tags.TIME, metadata.time);
                     writeList(Tags.KEYWORDS, metadata.keywords);
-                    marshal(metadata.bounds);
+                    marshal(namespace, Tags.BOUNDS, Bounds.class, metadata.bounds);
                 }
             }
         }
@@ -246,7 +250,7 @@ public class GPXWriter extends StaxStreamWriter {
                     switch (version) {
                         default:
                         case 1: {
-                            marshal(link);
+                            marshal(namespace, Tags.LINK, Link.class, (Link) link);
                             break;
                         }
                         case 0: {

@@ -155,7 +155,6 @@ public final class XML extends Static {
      * <div class="section">Current limitation</div>
      * In current SIS implementation, this property is honored only by the {@link MarshallerPool} constructors.
      * Specifying this property to {@link javax.xml.bind.Marshaller#setProperty(String, Object)} is too late.
-     * This limitation may be fixed in a future SIS version.
      */
     public static final String DEFAULT_NAMESPACE = "org.apache.sis.xml.defaultNamespace";
 

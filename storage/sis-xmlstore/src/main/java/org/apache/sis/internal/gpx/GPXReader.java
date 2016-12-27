@@ -427,7 +427,7 @@ parse:  while (reader.hasNext()) {
         }
         final Feature feature = types.wayPoint.newInstance();
         feature.setPropertyValue("@identifier", index);
-        feature.setPropertyValue("@geometry", new Point(Double.parseDouble(lon), Double.parseDouble(lat)));
+        feature.setPropertyValue("@geometry", new Point(parseDouble(lon), parseDouble(lat)));
         List<Link> links = null;
         while (true) {
             /*

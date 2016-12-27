@@ -178,7 +178,8 @@ public abstract class StaxDataStore extends FeatureStore {
              * if needed (and if the underlying channel is writable).
              */
             stream = connector.getStorageAs(InputStream.class);
-        } else if (storage instanceof AutoCloseable) {
+        }
+        if (stream == null && storage instanceof AutoCloseable) {
             stream = (AutoCloseable) storage;
         }
         connector.closeAllExcept(stream);

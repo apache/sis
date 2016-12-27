@@ -59,7 +59,7 @@ public class GPXStore extends StaxDataStore {
     /**
      * Version of the GPX file, or {@code null} if unknown.
      */
-    private Version version;
+    Version version;
 
     /**
      * {@code true} if the {@linkplain #metadata} field has been initialized.
@@ -183,7 +183,9 @@ public class GPXStore extends StaxDataStore {
         // TODO: convert the metadata if needed.
         try (final GPXWriter writer = new GPXWriter(this, (org.apache.sis.internal.gpx.Metadata) metadata)) {
             writer.writeStartDocument();
-            features.forEachOrdered(writer);
+            if (features != null) {
+                features.forEachOrdered(writer);
+            }
             writer.writeEndDocument();
         } catch (BackingStoreException e) {
             final Throwable cause = e.getCause();
