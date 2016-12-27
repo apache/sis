@@ -42,6 +42,9 @@ public class StoreProvider extends StaxDataStoreProvider {
     public StoreProvider() {
     }
 
+    /**
+     * TODO
+     */
     @Override
     public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -57,6 +60,16 @@ public class StoreProvider extends StaxDataStoreProvider {
     @Override
     public DataStore open(StorageConnector connector) throws DataStoreException {
         return new GPXStore(this, connector);
+    }
+
+    /**
+     * Returns the namespace URI of GPX 1.1 file format.
+     *
+     * @return GPX 1.1 namespace.
+     */
+    @Override
+    protected String getDefaultNamespace() {
+        return Tags.NAMESPACE_V11;
     }
 
     /**

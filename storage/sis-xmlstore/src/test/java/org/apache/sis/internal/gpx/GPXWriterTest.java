@@ -18,14 +18,17 @@ package org.apache.sis.internal.gpx;
 
 import java.net.URI;
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import com.esri.core.geometry.Point;
+import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.util.Debug;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.BeforeClass;
@@ -37,7 +40,6 @@ import static org.junit.Assert.*;
 // Branch-dependent imports
 import java.time.LocalDate;
 import java.util.stream.Stream;
-import org.apache.sis.storage.gps.Fix;
 import org.opengis.feature.Feature;
 
 
@@ -85,6 +87,22 @@ public final strictfp class GPXWriterTest extends TestCase {
      */
     private GPXStore create() throws DataStoreException {
         return new GPXStore(provider, new StorageConnector(output));
+    }
+
+    /**
+     * Returns a string representation of the XML data written by the test case.
+     * This is a helper method for debugging purpose only.
+     *
+     * @return the XML document written by the test case.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        try {
+            return output.toString("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**

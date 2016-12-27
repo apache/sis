@@ -16,10 +16,13 @@
  */
 package org.apache.sis.internal.xml;
 
+import java.util.Map;
+import java.util.Collections;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.xml.MarshallerPool;
+import org.apache.sis.xml.XML;
 
 
 /**
@@ -46,6 +49,13 @@ public abstract class StaxDataStoreProvider extends DataStoreProvider {
     }
 
     /**
+     * Returns the default namespace URI for the XML documents created by this format.
+     *
+     * @return the default namespace URI.
+     */
+    protected abstract String getDefaultNamespace();
+
+    /**
      * Returns the JAXB context for the data store, or {@code null} if the data stores
      * {@linkplain #open created} by this provided do not use JAXB.
      *
@@ -70,7 +80,8 @@ public abstract class StaxDataStoreProvider extends DataStoreProvider {
                 if (pool == null) {
                     final JAXBContext context = getJAXBContext();
                     if (context != null) {
-                        jaxb = pool = new MarshallerPool(context, null);
+                        Map<String,?> properties = Collections.singletonMap(XML.DEFAULT_NAMESPACE, getDefaultNamespace());
+                        jaxb = pool = new MarshallerPool(context, properties);
                     }
                 }
             }

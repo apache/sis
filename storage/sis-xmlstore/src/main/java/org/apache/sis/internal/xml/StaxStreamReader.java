@@ -335,10 +335,12 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @return the current text element as a floating point number, or {@code null} if empty.
      * @throws XMLStreamException if a text element can not be returned.
      * @throws NumberFormatException if the text can not be parsed as a floating point number.
+     *
+     * @see #parseDouble(String)
      */
     protected final Double getElementAsDouble() throws XMLStreamException {
         final String text = getElementText();
-        return (text != null) ? Numerics.valueOf(Double.parseDouble(text)) : null;
+        return (text != null) ? Numerics.valueOf(parseDouble(text)) : null;
     }
 
     /**
@@ -379,12 +381,59 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     }
 
     /**
+     * Parses the given text as a XML floating point number. This method performs the same parsing than
+     * {@link Double#valueOf(String)} with the addition of {@code INF} and {@code -INF} values.
+     * The following summarizes the special values (note that parsing is case-sensitive):
+     *
+     * <ul>
+     *   <li>{@code NaN}  — a XML value which is also understood natively by {@link Double#valueOf(String)}.</li>
+     *   <li>{@code INF}  — a XML value which is processed by this method.</li>
+     *   <li>{@code -INF} — a XML value which is processed by this method.</li>
+     *   <li>{@code +INF} — illegal XML value, nevertheless processed by this method.</li>
+     *   <li>{@code Infinity} — a {@link Double#valueOf(String)} specific value.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * this method duplicates {@link javax.xml.bind.DatatypeConverter#parseDouble(String)} work,
+     * but avoid synchronization or volatile field cost of {@code DatatypeConverter}.</div>
+     *
+     * @param  value  the text to parse.
+     * @return the floating point value for the given text.
+     * @throws NumberFormatException if parsing failed.
+     *
+     * @see #getElementAsDouble()
+     * @see javax.xml.bind.DatatypeConverter#parseDouble(String)
+     */
+    @SuppressWarnings("fallthrough")
+    protected static double parseDouble(final String value) throws NumberFormatException {
+        if (!value.endsWith("INF")) {
+            return Double.parseDouble(value);
+        }
+parse:  switch (value.length()) {
+            case 4: switch (value.charAt(0)) {
+                default:  break parse;
+                case '-': return Double.NEGATIVE_INFINITY;
+                case '+': // Fall through
+            }
+            case 3: return Double.POSITIVE_INFINITY;
+        }
+        throw new NumberFormatException(value);
+    }
+
+    /**
      * Parses the given string as a boolean value. This method performs the same parsing than
      * {@link Boolean#parseBoolean(String)} with one extension: the "0" value is considered
      * as {@code false} and the "1" value as {@code true}.
      *
-     * @param value The string value to parse as a boolean.
+     * <div class="note"><b>Note:</b>
+     * this method duplicates {@link javax.xml.bind.DatatypeConverter#parseBoolean(String)} work
+     * (except for its behavior in case of invalid value), but avoid synchronization or volatile
+     * field cost of {@code DatatypeConverter}.</div>
+     *
+     * @param value  the string value to parse as a boolean.
      * @return true if the boolean is equal to "true" or "1".
+     *
+     * @see javax.xml.bind.DatatypeConverter#parseBoolean(String)
      */
     protected static boolean parseBoolean(final String value) {
         if (value.length() == 1) {

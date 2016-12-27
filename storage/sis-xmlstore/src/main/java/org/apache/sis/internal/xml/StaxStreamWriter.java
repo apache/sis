@@ -20,7 +20,9 @@ import java.util.Map;
 import java.util.Date;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import javax.xml.namespace.QName;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -128,11 +130,12 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      *         {@link DataStoreException}, {@link ClassCastException}, <i>etc.</i>
      */
     public void writeStartDocument() throws Exception {
-        Charset encoding = owner.encoding;
-        if (encoding == null) {
-            encoding = Charset.defaultCharset();
+        final Charset encoding = owner.encoding;
+        if (encoding != null) {
+            writer.writeStartDocument(encoding.name());
+        } else {
+            writer.writeStartDocument();
         }
-        writer.writeStartDocument(encoding.name());
     }
 
     /**
@@ -243,22 +246,39 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
     /**
      * Delegates to JAXB the marshalling of a part of XML document.
      *
-     * @param  object  the object to marshall, or {@code null} if none.
+     * @param  <T>     compile-time value of the {@code type} argument.
+     * @param  name    the XML tag to write.
+     * @param  type    the Java class that define the XML schema of the object to marshal.
+     * @param  object  the object to marshal, or {@code null} if none.
+     * @param  defaultNamespace  the namespace to omit (i.e. the namespace of elements to move in the default namespace),
+     *                 or {@code null} if none. This is used for removing the redundant {@code xmlns} attributes inserted
+     *                 by JAXB.
      * @throws XMLStreamException if the XML stream is closed.
      * @throws JAXBException if an error occurred during marshalling.
      *
      * @see javax.xml.bind.Marshaller#marshal(Object, XMLStreamWriter)
      */
-    protected final void marshal(final Object object) throws XMLStreamException, JAXBException {
+    protected final <T> void marshal(final String defaultNamespace, final String name, final Class<T> type, final T object)
+            throws XMLStreamException, JAXBException
+    {
         Marshaller m = marshaller;
         if (m == null) {
             m = getMarshallerPool().acquireMarshaller();
+            m.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
             for (final Map.Entry<String,?> entry : ((Map<String,?>) owner.configuration).entrySet()) {
                 m.setProperty(entry.getKey(), entry.getValue());
             }
         }
+        final QName qn;
+        XMLStreamWriter out = writer;
+        if (defaultNamespace != null) {
+            out = new DefaultNamespaceStreamWriter(writer, defaultNamespace);
+            qn = new QName(defaultNamespace, name);
+        } else {
+            qn = new QName(name);
+        }
         marshaller = null;
-        m.marshal(object, writer);
+        m.marshal(new JAXBElement<>(qn, type, object), out);
         marshaller = m;                 // Allow reuse or recycling only on success.
     }
 
