@@ -45,7 +45,7 @@ import org.opengis.feature.Feature;
  * @version 0.8
  * @module
  */
-public class GPXStore extends StaxDataStore {
+public final class Store extends StaxDataStore {
     /**
      * The "1.0" version.
      */
@@ -76,7 +76,7 @@ public class GPXStore extends StaxDataStore {
      * If a reader has been created for parsing the {@linkplain #metadata} and has not yet been used
      * for iterating over the features, that reader. Otherwise {@code null}.
      */
-    private GPXReader reader;
+    private Reader reader;
 
     /**
      * Creates a new GPX store from the given file, URL or stream object.
@@ -87,7 +87,7 @@ public class GPXStore extends StaxDataStore {
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the GPX file.
      */
-    public GPXStore(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
     }
 
@@ -135,7 +135,7 @@ public class GPXStore extends StaxDataStore {
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (!initialized) try {
             initialized = true;
-            reader = new GPXReader(this);
+            reader = new Reader(this);
             version = reader.initialize(true);
             metadata = reader.getMetadata();
         } catch (XMLStreamException | IOException | JAXBException e) {
@@ -154,10 +154,10 @@ public class GPXStore extends StaxDataStore {
      */
     @Override
     public synchronized Stream<Feature> getFeatures() throws DataStoreException {
-        GPXReader r = reader;
+        Reader r = reader;
         reader = null;
         if (r == null) try {
-            r = new GPXReader(this);
+            r = new Reader(this);
             version = r.initialize(false);
         } catch (XMLStreamException | IOException | JAXBException e) {
             throw new DataStoreException(e);
@@ -181,7 +181,7 @@ public class GPXStore extends StaxDataStore {
             throws DataStoreException
     {
         // TODO: convert the metadata if needed.
-        try (final GPXWriter writer = new GPXWriter(this, (org.apache.sis.internal.gpx.Metadata) metadata)) {
+        try (final Writer writer = new Writer(this, (org.apache.sis.internal.gpx.Metadata) metadata)) {
             writer.writeStartDocument();
             if (features != null) {
                 features.forEachOrdered(writer);
@@ -208,7 +208,7 @@ public class GPXStore extends StaxDataStore {
      */
     @Override
     public synchronized void close() throws DataStoreException {
-        final GPXReader r = reader;
+        final Reader r = reader;
         reader = null;
         if (r != null) try {
             r.close();

@@ -39,8 +39,8 @@ import org.opengis.feature.Feature;
 
 
 /**
- * Tests (indirectly) the {@link GPXReader} class.
- * This class creates a {@link GPXStore} instance and uses it in read-only mode.
+ * Tests (indirectly) the {@link Reader} class.
+ * This class creates a {@link Store} instance and uses it in read-only mode.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -48,7 +48,7 @@ import org.opengis.feature.Feature;
  * @version 0.8
  * @module
  */
-public final strictfp class GPXReaderTest extends TestCase {
+public final strictfp class ReaderTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
      */
@@ -75,8 +75,8 @@ public final strictfp class GPXReaderTest extends TestCase {
      *
      * @param  resource  name of the test file in a directory relative to {@code "org/apache/sis/internal/gpx"}.
      */
-    private static GPXStore create(final String resource) throws DataStoreException {
-        return new GPXStore(provider, new StorageConnector(GPXReaderTest.class.getResourceAsStream(resource)));
+    private static Store create(final String resource) throws DataStoreException {
+        return new Store(provider, new StorageConnector(ReaderTest.class.getResourceAsStream(resource)));
     }
 
     /**
@@ -127,12 +127,12 @@ public final strictfp class GPXReaderTest extends TestCase {
      */
     @Test
     public void testMetadata100() throws DataStoreException {
-        try (final GPXStore reader = create("1.0/metadata.xml")) {
+        try (final Store reader = create("1.0/metadata.xml")) {
             final Metadata md = (Metadata) reader.getMetadata();
             verifyMetadata(md, 1);
             assertNull(md.author.link);
             assertNull(md.copyright);
-            assertEquals("version", GPXStore.V1_0, reader.getVersion());
+            assertEquals("version", Store.V1_0, reader.getVersion());
         }
     }
 
@@ -143,14 +143,14 @@ public final strictfp class GPXReaderTest extends TestCase {
      */
     @Test
     public void testMetadata110() throws DataStoreException {
-        try (final GPXStore reader = create("1.1/metadata.xml")) {
+        try (final Store reader = create("1.1/metadata.xml")) {
             final Metadata md = (Metadata) reader.getMetadata();
             verifyMetadata(md, 3);
             assertStringEquals("http://someone-site.org", md.author.link);
             assertEquals("Apache", md.copyright.author);
             assertEquals(2004, md.copyright.year.intValue());
             assertStringEquals("http://www.apache.org/licenses/LICENSE-2.0", md.copyright.license);
-            assertEquals("version", GPXStore.V1_1, reader.getVersion());
+            assertEquals("version", Store.V1_1, reader.getVersion());
         }
     }
 
@@ -199,9 +199,9 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testMetadata100")
     public void testWayPoint100() throws DataStoreException {
-        try (final GPXStore reader = create("1.0/waypoint.xml")) {
+        try (final Store reader = create("1.0/waypoint.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
-            assertEquals("version", GPXStore.V1_0, reader.getVersion());
+            assertEquals("version", Store.V1_0, reader.getVersion());
             final Iterator<Feature> it = reader.getFeatures().iterator();
             verifyPoint(it.next(), 0, false);
             verifyPoint(it.next(), 1, false);
@@ -218,9 +218,9 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testMetadata110")
     public void testWayPoint110() throws DataStoreException {
-        try (final GPXStore reader = create("1.1/waypoint.xml")) {
+        try (final Store reader = create("1.1/waypoint.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
-            assertEquals("version", GPXStore.V1_1, reader.getVersion());
+            assertEquals("version", Store.V1_1, reader.getVersion());
             final Iterator<Feature> it = reader.getFeatures().iterator();
             verifyPoint(it.next(), 0, true);
             verifyPoint(it.next(), 1, true);
@@ -237,9 +237,9 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testWayPoint100")
     public void testRoute100() throws DataStoreException {
-        try (final GPXStore reader = create("1.0/route.xml")) {
+        try (final Store reader = create("1.0/route.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
-            assertEquals("version", GPXStore.V1_0, reader.getVersion());
+            assertEquals("version", Store.V1_0, reader.getVersion());
             final Iterator<Feature> it = reader.getFeatures().iterator();
             verifyRoute(it.next(), false, 1);
             verifyEmpty(it.next(), "rtept");
@@ -255,9 +255,9 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testWayPoint110")
     public void testRoute110() throws DataStoreException {
-        try (final GPXStore reader = create("1.1/route.xml")) {
+        try (final Store reader = create("1.1/route.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
-            assertEquals("version", GPXStore.V1_1, reader.getVersion());
+            assertEquals("version", Store.V1_1, reader.getVersion());
             final Iterator<Feature> it = reader.getFeatures().iterator();
             verifyRoute(it.next(), true, 3);
             verifyEmpty(it.next(), "rtept");
@@ -327,9 +327,9 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testRoute100")
     public void testTrack100() throws DataStoreException {
-        try (final GPXStore reader = create("1.0/track.xml")) {
+        try (final Store reader = create("1.0/track.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
-            assertEquals("version", GPXStore.V1_0, reader.getVersion());
+            assertEquals("version", Store.V1_0, reader.getVersion());
             final Iterator<Feature> it = reader.getFeatures().iterator();
             verifyTrack(it.next(), false, 1);
             verifyEmpty(it.next(), "trkseg");
@@ -345,9 +345,9 @@ public final strictfp class GPXReaderTest extends TestCase {
     @Test
     @DependsOnMethod("testRoute110")
     public void testTrack110() throws DataStoreException {
-        try (final GPXStore reader = create("1.1/track.xml")) {
+        try (final Store reader = create("1.1/track.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
-            assertEquals("version", GPXStore.V1_1, reader.getVersion());
+            assertEquals("version", Store.V1_1, reader.getVersion());
             final Iterator<Feature> it = reader.getFeatures().iterator();
             verifyTrack(it.next(), true, 3);
             verifyEmpty(it.next(), "trkseg");

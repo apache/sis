@@ -60,10 +60,10 @@ import org.opengis.feature.Feature;
  * @version 0.8
  * @module
  */
-public class GPXReader extends StaxStreamReader {
+final class Reader extends StaxStreamReader {
     /**
      * The {@link org.opengis.feature.FeatureType} for routes, tracks, way points, <i>etc</i>.
-     * Currently always {@link Types#DEFAULT}, but we use a field for keeping {@code GPXReader}
+     * Currently always {@link Types#DEFAULT}, but we use a field for keeping {@code Reader}
      * ready to handle profiles or extensions.
      */
     private final Types types;
@@ -106,7 +106,7 @@ public class GPXReader extends StaxStreamReader {
      * @throws XMLStreamException if an error occurred while opening the XML file.
      * @throws IOException if an error occurred while preparing the input stream.
      */
-    public GPXReader(final GPXStore owner) throws DataStoreException, XMLStreamException, IOException {
+    public Reader(final Store owner) throws DataStoreException, XMLStreamException, IOException {
         super(owner);
         types = Types.DEFAULT;
     }
@@ -159,7 +159,7 @@ public class GPXReader extends StaxStreamReader {
          * Skip comments, characters, entity declarations, etc. until we find the root element.
          * If that root is anything other than <gpx>, we consider that this is not a GPX file.
          */
-        moveToRootElement(GPXReader::isGPX, Tags.GPX);
+        moveToRootElement(Reader::isGPX, Tags.GPX);
         /*
          * If a version attribute is found on the <gpx> element, use that value for detecting the GPX version.
          * If a version is specified, we require major.minor version 1.0 or 1.1 but accept any bug-fix versions
@@ -170,16 +170,16 @@ public class GPXReader extends StaxStreamReader {
         Version version = null;
         if (ver != null) {
             version = new Version(ver);
-            if (version.compareTo(GPXStore.V1_0, 2) < 0 ||
-                version.compareTo(GPXStore.V1_1, 2) > 0)
+            if (version.compareTo(Store.V1_0, 2) < 0 ||
+                version.compareTo(Store.V1_1, 2) > 0)
             {
                 throw new DataStoreContentException(errors().getString(
                         Errors.Keys.UnsupportedFormatVersion_2, owner.getFormatName(), version));
             }
         } else if (namespace != null) {
             switch (namespace) {
-                case Tags.NAMESPACE_V10: version = GPXStore.V1_0; break;
-                case Tags.NAMESPACE_V11: version = GPXStore.V1_1; break;
+                case Tags.NAMESPACE_V10: version = Store.V1_0; break;
+                case Tags.NAMESPACE_V11: version = Store.V1_1; break;
             }
         }
         /*

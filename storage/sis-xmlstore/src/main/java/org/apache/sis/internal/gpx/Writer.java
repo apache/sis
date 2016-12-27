@@ -40,10 +40,10 @@ import org.opengis.feature.FeatureType;
  * @version 0.8
  * @module
  */
-public class GPXWriter extends StaxStreamWriter {
+final class Writer extends StaxStreamWriter {
     /**
      * The {@link org.opengis.feature.FeatureType} for routes, tracks, way points, <i>etc</i>.
-     * Currently always {@link Types#DEFAULT}, but we use a field for keeping {@code GPXWriter}
+     * Currently always {@link Types#DEFAULT}, but we use a field for keeping {@code Writer}
      * ready to handle profiles or extensions.
      */
     private final Types types;
@@ -72,14 +72,14 @@ public class GPXWriter extends StaxStreamWriter {
      * @throws XMLStreamException if an error occurred while opening the XML file.
      * @throws IOException if an error occurred while preparing the output stream.
      */
-    public GPXWriter(final GPXStore owner, final Metadata metadata)
+    public Writer(final Store owner, final Metadata metadata)
             throws DataStoreException, XMLStreamException, IOException
     {
         super(owner);
         types = Types.DEFAULT;
         this.metadata = metadata;
         final Version ver = owner.version;
-        if (ver != null && ver.compareTo(GPXStore.V1_0, 2) <= 0) {
+        if (ver != null && ver.compareTo(Store.V1_0, 2) <= 0) {
             version   = 0;
             namespace = Tags.NAMESPACE_V10;
         } else {
@@ -102,8 +102,8 @@ public class GPXWriter extends StaxStreamWriter {
         final Version ver;
         switch (version) {
             default:
-            case 1: ver = GPXStore.V1_1; break;
-            case 0: ver = GPXStore.V1_0; break;
+            case 1: ver = Store.V1_1; break;
+            case 0: ver = Store.V1_0; break;
         }
         writer.writeAttribute(Attributes.VERSION, ver.toString());
         if (metadata != null) {

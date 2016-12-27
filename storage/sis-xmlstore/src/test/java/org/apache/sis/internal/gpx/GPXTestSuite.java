@@ -25,8 +25,8 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-xmlstore} module, in approximative dependency order.
  */
 @Suite.SuiteClasses({
-    org.apache.sis.internal.gpx.GPXReaderTest.class,
-    org.apache.sis.internal.gpx.GPXWriterTest.class
+    org.apache.sis.internal.gpx.ReaderTest.class,
+    org.apache.sis.internal.gpx.WriterTest.class
 })
 public final strictfp class GPXTestSuite extends TestSuite {
     /**

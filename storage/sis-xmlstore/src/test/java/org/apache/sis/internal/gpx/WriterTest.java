@@ -44,9 +44,9 @@ import org.opengis.feature.Feature;
 
 
 /**
- * Tests (indirectly) the {@link GPXWriter} class.
- * This class creates a {@link GPXStore} instance and uses it in write mode.
- * The {@link GPXReader} is used for verifying the content.
+ * Tests (indirectly) the {@link Writer} class.
+ * This class creates a {@link Store} instance and uses it in write mode.
+ * The {@link Reader} is used for verifying the content.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -54,8 +54,8 @@ import org.opengis.feature.Feature;
  * @version 0.8
  * @module
  */
-@DependsOn(GPXReaderTest.class)
-public final strictfp class GPXWriterTest extends TestCase {
+@DependsOn(ReaderTest.class)
+public final strictfp class WriterTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
      */
@@ -85,8 +85,8 @@ public final strictfp class GPXWriterTest extends TestCase {
     /**
      * Creates a new GPX data store which will read and write in memory.
      */
-    private GPXStore create() throws DataStoreException {
-        return new GPXStore(provider, new StorageConnector(output));
+    private Store create() throws DataStoreException {
+        return new Store(provider, new StorageConnector(output));
     }
 
     /**
@@ -140,12 +140,12 @@ public final strictfp class GPXWriterTest extends TestCase {
         metaData.links.add(new Link(new URI("http://address1.org")));
         metaData.links.add(new Link(new URI("http://address2.org")));
 
-        try (GPXStore store = create()) {
+        try (Store store = create()) {
             store.write(metaData, null);
 
             // Re-read the data we just wrote.
             assertEquals(metaData,      store.getMetadata());
-            assertEquals(GPXStore.V1_1, store.getVersion());
+            assertEquals(Store.V1_1, store.getVersion());
         }
     }
 
@@ -294,7 +294,7 @@ public final strictfp class GPXWriterTest extends TestCase {
         tracks.add(track1);
         tracks.add(track2);
 
-        try (GPXStore store = create()) {
+        try (Store store = create()) {
             store.write(null, Stream.concat(Stream.concat(wayPoints.stream(), routes.stream()), tracks.stream()));
 
             // Re-read the data we just wrote.
@@ -308,7 +308,7 @@ public final strictfp class GPXWriterTest extends TestCase {
             assertEquals(track1.toString(), it.next().toString());
             assertEquals(track2.toString(), it.next().toString());
             assertFalse(it.hasNext());
-            assertEquals(GPXStore.V1_1, store.getVersion());
+            assertEquals(Store.V1_1, store.getVersion());
         }
     }
 }
