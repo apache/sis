@@ -170,9 +170,11 @@ public final strictfp class ReaderTest extends TestCase {
         assertEquals      ("links.size()", numLinks,                            md.links.size());
         switch (numLinks) {
             default: // Fallthrough everywhere.
-            case 3:  assertStringEquals("http://third-address.org",  md.links.get(2));
+            case 3:  assertStringEquals("website",                   md.links.get(2).type);
+                     assertStringEquals("http://third-address.org",  md.links.get(2));
             case 2:  assertStringEquals("http://second-address.org", md.links.get(1));
             case 1:  assertStringEquals("http://first-address.org",  md.links.get(0));
+                     assertStringEquals("first",                     md.links.get(0).text);
             case 0:  break;
         }
     }

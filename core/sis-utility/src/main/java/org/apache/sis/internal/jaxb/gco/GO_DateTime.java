@@ -38,6 +38,9 @@ import org.apache.sis.internal.jaxb.XmlUtilities;
  * @since   0.3
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.internal.jaxb.gml.DateAdapter
+ * @see org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter
  */
 @XmlType(name = "Date_PropertyType")
 public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
@@ -66,7 +69,7 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
     /**
      * Builds a wrapper for the given {@link Date}.
      *
-     * @param date The date to marshal. Can not be {@code null}.
+     * @param date  the date to marshal. Can not be {@code null}.
      */
     private GO_DateTime(final Date date) {
         final Context context = Context.current();
@@ -94,8 +97,8 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
      * Converts a date read from a XML stream to the object which will contains
      * the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param value The adapter for this metadata value.
-     * @return A {@linkplain Date date} which represents the metadata value.
+     * @param  value  the adapter for this metadata value.
+     * @return a {@linkplain Date date} which represents the metadata value.
      */
     @Override
     public Date unmarshal(final GO_DateTime value) {
@@ -107,8 +110,8 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
      * file or stream. JAXB calls automatically this method at marshalling time.
      * The use of {@code <gco:Date>} or {@code <gco:DateTime>} is determined automatically.
      *
-     * @param value The date value.
-     * @return The adapter for this date.
+     * @param  value  the date value.
+     * @return the adapter for this date.
      */
     @Override
     public GO_DateTime marshal(final Date value) {

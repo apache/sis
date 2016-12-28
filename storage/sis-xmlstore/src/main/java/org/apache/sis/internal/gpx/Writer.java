@@ -54,11 +54,6 @@ final class Writer extends StaxStreamWriter {
     private final int version;
 
     /**
-     * The namespace, which is either {@link Tags#NAMESPACE_V10} or {@link Tags#NAMESPACE_V11}.
-     */
-    private final String namespace;
-
-    /**
      * The metadata to write, or {@code null} if none.
      */
     private final Metadata metadata;
@@ -80,13 +75,10 @@ final class Writer extends StaxStreamWriter {
         this.metadata = metadata;
         final Version ver = owner.version;
         if (ver != null && ver.compareTo(Store.V1_0, 2) <= 0) {
-            version   = 0;
-            namespace = Tags.NAMESPACE_V10;
+            version = 0;
         } else {
-            version   = 1;
-            namespace = Tags.NAMESPACE_V11;
+            version = 1;
         }
-        writer.setDefaultNamespace(namespace);
     }
 
     /**
@@ -97,14 +89,17 @@ final class Writer extends StaxStreamWriter {
      */
     @Override
     public void writeStartDocument() throws Exception {
-        super.writeStartDocument();
-        writer.writeStartElement(Tags.GPX);
+        final String namespace;
         final Version ver;
         switch (version) {
             default:
-            case 1: ver = Store.V1_1; break;
-            case 0: ver = Store.V1_0; break;
+            case 1: ver = Store.V1_1; namespace = Tags.NAMESPACE_V11; break;
+            case 0: ver = Store.V1_0; namespace = Tags.NAMESPACE_V10; break;
         }
+        super.writeStartDocument();
+        writer.setDefaultNamespace(namespace);
+        writer.writeStartElement(Tags.GPX);
+        writer.writeDefaultNamespace(namespace);
         writer.writeAttribute(Attributes.VERSION, ver.toString());
         if (metadata != null) {
             final String creator = metadata.creator;
@@ -118,7 +113,7 @@ final class Writer extends StaxStreamWriter {
                      * In GPX 1.1 format, the metadata are stored under a <metadata> node.
                      * This can conveniently be written by JAXB.
                      */
-                    marshal(namespace, Tags.METADATA, Metadata.class, metadata);
+                    marshal(Tags.NAMESPACE_V11, Tags.METADATA, Metadata.class, metadata);
                     break;
                 }
                 case 0: {
@@ -136,7 +131,8 @@ final class Writer extends StaxStreamWriter {
                     writeLinks(metadata.links);
                     writeSingle(Tags.TIME, metadata.time);
                     writeList(Tags.KEYWORDS, metadata.keywords);
-                    marshal(namespace, Tags.BOUNDS, Bounds.class, metadata.bounds);
+                    // Really 1.1 namespace below, not 1.0. See 'marshal(…)' javadoc for explanation.
+                    marshal(Tags.NAMESPACE_V11, Tags.BOUNDS, Bounds.class, metadata.bounds);
                 }
             }
         }
@@ -250,7 +246,7 @@ final class Writer extends StaxStreamWriter {
                     switch (version) {
                         default:
                         case 1: {
-                            marshal(namespace, Tags.LINK, Link.class, (Link) link);
+                            marshal(Tags.NAMESPACE_V11, Tags.LINK, Link.class, (Link) link);
                             break;
                         }
                         case 0: {

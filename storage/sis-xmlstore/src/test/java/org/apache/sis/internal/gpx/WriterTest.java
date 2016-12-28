@@ -19,7 +19,6 @@ package org.apache.sis.internal.gpx;
 import java.net.URI;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -28,6 +27,7 @@ import com.esri.core.geometry.Point;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.util.Version;
 import org.apache.sis.util.Debug;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -35,7 +35,8 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.TestUtilities.date;
 
 // Branch-dependent imports
 import java.time.LocalDate;
@@ -106,17 +107,35 @@ public final strictfp class WriterTest extends TestCase {
     }
 
     /**
-     * Test writing GPX metadata.
+     * Test writing GPX 1.0 metadata. This test creates programmatically the same metadata than the ones
+     * found in {@code 1.0/metadata.xml} file, then compare the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
      */
     @Test
-    @org.junit.Ignore("Writer not yet synchronized with changes in reader.")
-    public void testMetadata() throws Exception {
+    public void testMetadata100() throws Exception {
+        testMetadata(Store.V1_0, "1.0/metadata.xml");
+    }
+
+    /**
+     * Test writing GPX 1.1 metadata. This test creates programmatically the same metadata than the ones
+     * found in {@code 1.1/metadata.xml} file, then compare the written XML file with the expected file.
+     *
+     * @throws Exception if an error occurred while writing the XML data.
+     */
+    @Test
+    public void testMetadata110() throws Exception {
+        testMetadata(Store.V1_1, "1.1/metadata.xml");
+    }
+
+    /**
+     * Implementations of {@link #testMetadata100()} and {@link #testMetadata110()}.
+     */
+    private void testMetadata(final Version version, final String expected) throws Exception {
         final Person person = new Person();
         person.name  = "Jean-Pierre";
-        person.email = "jean-pierre@test.com";
-        person.link  = new Link(new URI("http://son-site.com"));
+        person.email = "jean.pierre@test.com";
+        person.link  = new Link(new URI("http://someone-site.org"));
 
         final Copyright copyright = new Copyright();
         copyright.author  = "Apache";
@@ -124,29 +143,33 @@ public final strictfp class WriterTest extends TestCase {
         copyright.license = new URI("http://www.apache.org/licenses/LICENSE-2.0");
 
         final Bounds bounds = new Bounds();
-        bounds.westBoundLongitude = -10;
-        bounds.eastBoundLongitude =  20;
-        bounds.southBoundLatitude = -30;
+        bounds.westBoundLongitude = -20;
+        bounds.eastBoundLongitude =  30;
+        bounds.southBoundLatitude =  10;
         bounds.northBoundLatitude =  40;
 
-        final Metadata metaData = new Metadata();
-        metaData.name        = "name";
-        metaData.description = "description";
-        metaData.author      = person;
-        metaData.copyright   = copyright;
-        metaData.keywords    = Arrays.asList("test", "sample");
-        metaData.bounds      = bounds;
-        metaData.time        = new Date();
-        metaData.links.add(new Link(new URI("http://address1.org")));
-        metaData.links.add(new Link(new URI("http://address2.org")));
+        final Metadata metadata = new Metadata();
+        metadata.name        = "Sample";
+        metadata.description = "GPX test file";
+        metadata.author      = person;
+        metadata.creator     = "DataProducer";
+        metadata.copyright   = copyright;
+        metadata.keywords    = Arrays.asList("sample", "metadata");
+        metadata.bounds      = bounds;
+        metadata.time        = date("2010-03-01 00:00:00");
+        metadata.links.add(new Link(new URI("http://first-address.org")));
+        metadata.links.add(new Link(new URI("http://second-address.org")));
+        metadata.links.add(new Link(new URI("http://third-address.org")));
+        metadata.links.get(2).type = "website";
+        metadata.links.get(0).text = "first";
 
         try (Store store = create()) {
-            store.write(metaData, null);
-
-            // Re-read the data we just wrote.
-            assertEquals(metaData,      store.getMetadata());
-            assertEquals(Store.V1_1, store.getVersion());
+            store.setVersion(version);
+            store.write(metadata, null);
         }
+        assertXmlEquals(WriterTest.class.getResourceAsStream(expected), toString(), STRICT,
+                        new String[] {Tags.NAMESPACE_V11 + ":extensions"},
+                        new String[] {"xmlns:xsi", "xsi:schemaLocation", "xsi:type"});
     }
 
     /**

@@ -67,6 +67,7 @@
     @XmlNs(prefix = "gpx", namespaceURI = Tags.NAMESPACE_V11)
 })
 @XmlAccessorType(XmlAccessType.NONE)
+@XmlJavaTypeAdapter(UniversalTimeAdapter.class)
 package org.apache.sis.internal.gpx;
 
 import javax.xml.bind.annotation.XmlNs;
@@ -74,3 +75,5 @@ import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter;

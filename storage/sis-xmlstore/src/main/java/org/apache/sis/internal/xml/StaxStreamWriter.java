@@ -122,7 +122,18 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      * given at {@link StaxDataStore} construction time.
      *
      * <p>Subclasses should overwrite this method if they need to write metadata in the XML document before
-     * the features. The overwritten method shall begin by a call to {@code super.writeStartDocument()}.</p>
+     * the features. The overwritten method shall begin by a call to {@code super.writeStartDocument()}.
+     * Example:</p>
+     *
+     * {@preformat java
+     *     &#64;Override
+     *     public void writeStartDocument() throws Exception {
+     *         super.writeStartDocument();
+     *         writer.setDefaultNamespace(namespace);
+     *         writer.writeStartElement(rootElement);
+     *         writer.writeDefaultNamespace(namespace);
+     *     }
+     * }
      *
      * @throws Exception if an error occurred while writing to the XML file.
      *         Possible subtypes include {@link XMLStreamException},
@@ -245,20 +256,36 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
 
     /**
      * Delegates to JAXB the marshalling of a part of XML document.
+     * The XML content will be written in an element of the given name with no namespace (see below).
+     *
+     * <div class="section">Hiding namespace</div>
+     * The {@code hideNS} argument, if non-null, gives a namespace to remove in the marshalling result.
+     * There is two reasons why we may want to hide a namespace. The most straightforward reason is to
+     * simplify the XML document when the {@linkplain javax.xml.bind.annotation.XmlElement#namespace()
+     * namespace of elements} to marshal is the {@linkplain XMLStreamWriter#setDefaultNamespace(String)
+     * default namespace}. Since some JAXB implementation systematically inserts a prefix no matter if
+     * the namespace is the default one or not, we have to manually erase the namespace when it is the
+     * default one.
+     *
+     * <p>But a more convolved reason is to reuse an element defined for another version of the file format.
+     * For example some elements may be identical in 1.0 and 1.1 versions of a file format, so we may want
+     * to define only one JAXB annotated class for both versions. In that case the {@code hideNS} argument is
+     * <strong>not</strong> necessarily the {@linkplain XMLStreamWriter#setDefaultNamespace(String) default namespace}.
+     * It is rather the namespace of the JAXB element that we want to erase (for example {@code "foo/1.1"}),
+     * in order to pretend that it is the element of a different version specified by the default namespace
+     * (for example defined by {@code xmlns = "foo/1.0"}).</p>
      *
      * @param  <T>     compile-time value of the {@code type} argument.
+     * @param  hideNS  the namespace to erase from the marshalling output, or {@code null} if none.
      * @param  name    the XML tag to write.
      * @param  type    the Java class that define the XML schema of the object to marshal.
      * @param  object  the object to marshal, or {@code null} if none.
-     * @param  defaultNamespace  the namespace to omit (i.e. the namespace of elements to move in the default namespace),
-     *                 or {@code null} if none. This is used for removing the redundant {@code xmlns} attributes inserted
-     *                 by JAXB.
      * @throws XMLStreamException if the XML stream is closed.
      * @throws JAXBException if an error occurred during marshalling.
      *
      * @see javax.xml.bind.Marshaller#marshal(Object, XMLStreamWriter)
      */
-    protected final <T> void marshal(final String defaultNamespace, final String name, final Class<T> type, final T object)
+    protected final <T> void marshal(final String hideNS, final String name, final Class<T> type, final T object)
             throws XMLStreamException, JAXBException
     {
         Marshaller m = marshaller;
@@ -271,9 +298,9 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
         }
         final QName qn;
         XMLStreamWriter out = writer;
-        if (defaultNamespace != null) {
-            out = new DefaultNamespaceStreamWriter(out, defaultNamespace);
-            qn  = new QName(defaultNamespace, name);
+        if (hideNS != null) {
+            out = new DefaultNamespaceStreamWriter(out, hideNS);
+            qn  = new QName(hideNS, name);
         } else {
             qn  = new QName(name);
         }

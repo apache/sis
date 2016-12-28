@@ -59,8 +59,8 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * Asserts that the two given objects are not equal.
      * This method tests all {@link ComparisonMode} except {@code DEBUG}.
      *
-     * @param o1  The first object.
-     * @param o2  The second object.
+     * @param  o1  the first object.
+     * @param  o2  the second object.
      */
     public static void assertNotDeepEquals(final Object o1, final Object o2) {
         assertNotSame("same", o1, o2);
@@ -78,8 +78,8 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * {@link ComparisonMode#APPROXIMATIVE} criterion, but not equal according the
      * {@link ComparisonMode#IGNORE_METADATA} criterion.
      *
-     * @param expected  The expected object.
-     * @param actual    The actual object.
+     * @param  expected  the expected object.
+     * @param  actual    the actual object.
      */
     public static void assertAlmostEquals(final Object expected, final Object actual) {
         assertFalse("Shall not be strictly equals",          Utilities.deepEquals(expected, actual, ComparisonMode.STRICT));
@@ -92,8 +92,8 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * Asserts that the two given objects are equal ignoring metadata.
      * See {@link ComparisonMode#IGNORE_METADATA} for more information.
      *
-     * @param expected  The expected object.
-     * @param actual    The actual object.
+     * @param  expected  the expected object.
+     * @param  actual    the actual object.
      */
     public static void assertEqualsIgnoreMetadata(final Object expected, final Object actual) {
         assertTrue("Shall be approximatively equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
@@ -105,8 +105,8 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * Asserts that the two given arrays contains objects that are equal ignoring metadata.
      * See {@link ComparisonMode#IGNORE_METADATA} for more information.
      *
-     * @param expected  The expected objects (array can be {@code null}).
-     * @param actual    The actual objects (array can be {@code null}).
+     * @param  expected  the expected objects (array can be {@code null}).
+     * @param  actual    the actual objects (array can be {@code null}).
      *
      * @since 0.7
      */
@@ -133,8 +133,8 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * The comparisons is performed one a line-by-line basis. For each line, trailing
      * spaces (but not leading spaces) are ignored.
      *
-     * @param expected The expected string.
-     * @param actual   The actual string.
+     * @param  expected  the expected string.
+     * @param  actual    the actual string.
      */
     public static void assertMultilinesEquals(final CharSequence expected, final CharSequence actual) {
         assertMultilinesEquals(null, expected, actual);
@@ -145,9 +145,9 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * The comparisons is performed one a line-by-line basis. For each line, trailing
      * spaces (but not leading spaces) are ignored.
      *
-     * @param message  The message to print in case of failure, or {@code null} if none.
-     * @param expected The expected string.
-     * @param actual   The actual string.
+     * @param  message   the message to print in case of failure, or {@code null} if none.
+     * @param  expected  the expected string.
+     * @param  actual    the actual string.
      */
     public static void assertMultilinesEquals(final String message, final CharSequence expected, final CharSequence actual) {
         final CharSequence[] expectedLines = CharSequences.splitOnEOL(expected);
@@ -177,8 +177,8 @@ public strictfp class Assert extends org.opengis.test.Assert {
      *
      * <p>The given collections are typically instances of {@link Set}, but this is not mandatory.</p>
      *
-     * @param expected The expected set, or {@code null}.
-     * @param actual   The actual set, or {@code null}.
+     * @param  expected  the expected set, or {@code null}.
+     * @param  actual    the actual set, or {@code null}.
      */
     public static void assertSetEquals(final Collection<?> expected, final Collection<?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
@@ -198,8 +198,8 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * Asserts that the given map contains the same entries.
      * In case of failure, this method lists the missing or unexpected entries.
      *
-     * @param expected The expected map, or {@code null}.
-     * @param actual   The actual map, or {@code null}.
+     * @param  expected  the expected map, or {@code null}.
+     * @param  actual    the actual map, or {@code null}.
      */
     public static void assertMapEquals(final Map<?,?> expected, final Map<?,?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
@@ -241,9 +241,9 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * Ensures that a tree is equals to an other tree.
      * This method invokes itself recursively for every child nodes.
      *
-     * @param  expected The expected tree, or {@code null}.
-     * @param  actual   The tree to compare with the expected one, or {@code null}.
-     * @return The number of nodes.
+     * @param  expected  the expected tree, or {@code null}.
+     * @param  actual    the tree to compare with the expected one, or {@code null}.
+     * @return the number of nodes.
      */
     public static int assertTreeEquals(final TreeNode expected, final TreeNode actual) {
         if (expected == null) {
@@ -319,10 +319,10 @@ public strictfp class Assert extends org.opengis.test.Assert {
      *   "xmlns:*", "xsi:schemaLocation", "xsi:type"
      * }
      *
-     * @param  expected The expected XML document.
-     * @param  actual   The XML document to compare.
-     * @param  ignoredAttributes The fully-qualified names of attributes to ignore
-     *         (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
+     * @param  expected           the expected XML document.
+     * @param  actual             the XML document to compare.
+     * @param  ignoredAttributes  the fully-qualified names of attributes to ignore
+     *                            (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
      *
      * @see XMLComparator
      */
@@ -337,12 +337,12 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * will ignore comments and the optional attributes given in arguments as documented in the
      * above method.
      *
-     * @param  expected  The expected XML document.
-     * @param  actual    The XML document to compare.
-     * @param  tolerance The tolerance threshold for comparison of numerical values.
-     * @param  ignoredNodes The fully-qualified names of the nodes to ignore, or {@code null} if none.
-     * @param  ignoredAttributes The fully-qualified names of attributes to ignore
-     *         (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
+     * @param  expected           the expected XML document.
+     * @param  actual             the XML document to compare.
+     * @param  tolerance          the tolerance threshold for comparison of numerical values.
+     * @param  ignoredNodes       the fully-qualified names of the nodes to ignore, or {@code null} if none.
+     * @param  ignoredAttributes  the fully-qualified names of attributes to ignore
+     *                            (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
      *
      * @see XMLComparator
      */
@@ -381,9 +381,9 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * <p>If the serialization fails, then this method throws an {@link AssertionError}
      * as do the other JUnit assertion methods.</p>
      *
-     * @param  <T> The type of the object to serialize.
-     * @param  object The object to serialize.
-     * @return The deserialized object.
+     * @param  <T>     the type of the object to serialize.
+     * @param  object  the object to serialize.
+     * @return the deserialized object.
      */
     public static <T> T assertSerializedEquals(final T object) {
         final Object deserialized;

@@ -335,7 +335,6 @@ public abstract class StaxDataStore extends FeatureStore {
         assert Thread.holdsLock(this);
         if (outputFactory == null) {
             outputFactory = XMLOutputFactory.newInstance();
-            outputFactory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
         }
         return outputFactory;
     }
