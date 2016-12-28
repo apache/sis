@@ -34,6 +34,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -81,11 +82,12 @@ final class Store extends DataStore {
     /**
      * Creates a new WKT store from the given file, URL or stream.
      *
-     * @param  connector information about the storage (URL, stream, <i>etc</i>).
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public Store(final StorageConnector connector) throws DataStoreException {
-        super(connector);
+    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
         objects = new ArrayList<>();
         name    = connector.getStorageName();
         source  = connector.getStorageAs(Reader.class);
@@ -136,9 +138,19 @@ final class Store extends DataStore {
                     listeners.warning(record);
                 }
             } while (pos.getIndex() < wkt.length());
-        } catch (IOException | ParseException e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotParseFile_2, "WKT", name), e);
+        } catch (ParseException e) {
+            throw new DataStoreContentException(canNotParseFile(in), e);
+        } catch (IOException e) {
+            throw new DataStoreException(canNotParseFile(in), e);
         }
+    }
+
+    /**
+     * Returns the error message for a file that can not be parsed.
+     * The error message will contain the line number if available.
+     */
+    private String canNotParseFile(final Reader in) {
+        return IOUtilities.canNotParseFile(Errors.getResources(getLocale()), "WKT", name, in);
     }
 
     /**

@@ -47,7 +47,7 @@ public final strictfp class NetcdfStoreTest extends IOTestCase {
      * @throws DataStoreException if an error occurred while reading the NetCDF file.
      */
     private static NetcdfStore create(final String dataset) throws DataStoreException {
-        return new NetcdfStore(new StorageConnector(IOTestCase.class.getResource(dataset)));
+        return new NetcdfStore(null, new StorageConnector(IOTestCase.class.getResource(dataset)));
     }
 
     /**

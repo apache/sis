@@ -119,11 +119,11 @@ public abstract class DataStoreProvider {
      * Implementors shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
      * creation, keeping open only the needed resource.
      *
-     * @param  storage  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
+     * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
      * @return a data store implementation associated with this provider for the given storage.
      * @throws DataStoreException if an error occurred while creating the data store instance.
      *
      * @see DataStores#open(Object)
      */
-    public abstract DataStore open(StorageConnector storage) throws DataStoreException;
+    public abstract DataStore open(StorageConnector connector) throws DataStoreException;
 }

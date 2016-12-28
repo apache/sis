@@ -93,7 +93,7 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testMetadata() throws DataStoreException {
         final Metadata metadata;
-        try (Store store = new Store(new StorageConnector(new StringReader(XML)))) {
+        try (Store store = new Store(null, new StorageConnector(new StringReader(XML)))) {
             metadata = store.getMetadata();
             assertSame("Expected cached value.", metadata, store.getMetadata());
         }
