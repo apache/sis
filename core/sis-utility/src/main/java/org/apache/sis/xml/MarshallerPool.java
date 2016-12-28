@@ -75,7 +75,7 @@ public class MarshallerPool {
      * This is a very approximative value: actual timeout will not be shorter,
      * but may be twice longer.
      */
-    private static final long TIMEOUT = 15000000000L; // 15 seconds.
+    private static final long TIMEOUT = 15000000000L;           // 15 seconds.
 
     /**
      * Kind of JAXB implementations.

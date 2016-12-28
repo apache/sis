@@ -27,13 +27,11 @@ import java.nio.LongBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
-
-// Branch-dependent imports
-import java.nio.channels.SeekableByteChannel;
 
 
 /**

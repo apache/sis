@@ -70,11 +70,12 @@ public class GeoTiffStore extends DataStore {
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
      *
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
      */
-    public GeoTiffStore(final StorageConnector connector) throws DataStoreException {
-        super(connector);
+    public GeoTiffStore(final GeoTiffStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
         final Charset encoding = connector.getOption(OptionKey.ENCODING);
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
         final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
