@@ -52,7 +52,7 @@ import static java.util.Collections.singleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class Store extends DataStore {
@@ -80,11 +80,12 @@ final class Store extends DataStore {
     /**
      * Creates a new XML store from the given file, URL or stream.
      *
-     * @param  connector information about the storage (URL, stream, <i>etc</i>).
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public Store(final StorageConnector connector) throws DataStoreException {
-        super(connector);
+    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
         name = connector.getStorageName();
         final InputStream in = connector.getStorageAs(InputStream.class);
         if (in != null) {

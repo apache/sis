@@ -86,11 +86,12 @@ public class LandsatStore extends DataStore {
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
      *
-     * @param  connector information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the Landsat file.
      */
-    public LandsatStore(final StorageConnector connector) throws DataStoreException {
-        super(connector);
+    public LandsatStore(final LandsatStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
         name = connector.getStorageName();
         source = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(source);

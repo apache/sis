@@ -44,7 +44,7 @@ import org.apache.sis.util.ArgumentChecks;
  *   <tr><td>srv</td>    <td>{@value #SRV}</td>   <td></td></tr>
  *   <tr><td>gts</td>    <td>{@value #GTS}</td>   <td></td></tr>
  *   <tr><td>gmx</td>    <td>{@value #GMX}</td>   <td></td></tr>
- *   <tr><td>gml</td>    <td>{@value #GML}</td>   <td>0.4</td></tr>
+ *   <tr><td>gml</td>    <td>{@value #GML}</td>   <td>SIS 0.4</td></tr>
  *   <tr><td>csw</td>    <td>{@value #CSW}</td>   <td></td></tr>
  *   <tr><td>xsi</td>    <td>{@value #XSI}</td>   <td></td></tr>
  *   <tr><td>xlink</td>  <td>{@value #XLINK}</td> <td></td></tr>

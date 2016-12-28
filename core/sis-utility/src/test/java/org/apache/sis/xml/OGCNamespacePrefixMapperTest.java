@@ -48,7 +48,7 @@ public final strictfp class OGCNamespacePrefixMapperTest extends TestCase {
      * defined in the JDK class. This test is ignored if the Java framework running this test
      * is not the Oracle one (i.e. if it does not bundle the Sun internal JAXB implementation).
      *
-     * @throws ReflectiveOperationException If an error occurred while invoking a method by
+     * @throws ReflectiveOperationException if an error occurred while invoking a method by
      *         the reflection API.
      */
     @Test
@@ -65,7 +65,7 @@ public final strictfp class OGCNamespacePrefixMapperTest extends TestCase {
      * methods defined in the JAXB class. This test is ignored if the Java framework running
      * this test does not contains JAXB in its endorsed directory.
      *
-     * @throws ReflectiveOperationException If an error occurred while invoking a method by
+     * @throws ReflectiveOperationException if an error occurred while invoking a method by
      *         the reflection API.
      */
     @Test
@@ -84,9 +84,9 @@ public final strictfp class OGCNamespacePrefixMapperTest extends TestCase {
      * method. Additionally, this test checks the result of some method calls in order to
      * ensure that the invoked method was the one defined in {@link OGCNamespacePrefixMapper}.
      *
-     * @param  The {@code OGCNamespacePrefixMapper} or {@code OGCNamespacePrefixMapper_Endorsed}
+     * @param  mapper the {@code OGCNamespacePrefixMapper} or {@code OGCNamespacePrefixMapper_Endorsed}
      *         instance to check.
-     * @throws ReflectiveOperationException If an error occurred while invoking a method by
+     * @throws ReflectiveOperationException if an error occurred while invoking a method by
      *         the reflection API.
      */
     private void ensureOverrideMethods(final Object mapper) throws ReflectiveOperationException {

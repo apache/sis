@@ -116,6 +116,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotParseFile_2 = 9;
 
         /**
+         * Can not parse line {2} of “{1}” as part of a file in the {0} format.
+         */
+        public static final short CanNotParseFile_3 = 168;
+
+        /**
+         * Can not parse line {2} (after column {3}) of “{1}” as part of a file in the {0} format.
+         */
+        public static final short CanNotParseFile_4 = 169;
+
+        /**
          * Can not read property “{1}” in file “{0}”.
          */
         public static final short CanNotReadPropertyInFile_2 = 10;
@@ -144,6 +154,11 @@ public final class Errors extends IndexedResourceBundle {
          * Can not transform envelope.
          */
         public static final short CanNotTransformEnvelope = 15;
+
+        /**
+         * Can not write “{1}” as a file in the {0} format.
+         */
+        public static final short CanNotWriteFile_2 = 171;
 
         /**
          * Circular reference.
@@ -508,6 +523,11 @@ public final class Errors extends IndexedResourceBundle {
          * Missing a “{1}” component in “{0}”.
          */
         public static final short MissingComponentInElement_2 = 84;
+
+        /**
+         * JAXB context has not been specified.
+         */
+        public static final short MissingJAXBContext = 170;
 
         /**
          * This operation requires the “{0}” module.

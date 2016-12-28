@@ -207,7 +207,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new NetcdfStore(connector);
+        return new NetcdfStore(this, connector);
     }
 
     /**

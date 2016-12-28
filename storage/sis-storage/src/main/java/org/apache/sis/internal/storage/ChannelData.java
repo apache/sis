@@ -20,13 +20,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.InvalidMarkException;
 import java.nio.channels.Channel;
+import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
-
-// Branch-dependent imports
-import java.nio.channels.SeekableByteChannel;
 
 
 /**
@@ -39,7 +37,7 @@ import java.nio.channels.SeekableByteChannel;
  * @version 0.5
  * @module
  */
-public abstract class ChannelData {
+public abstract class ChannelData implements Markable {
     /**
      * Number of bits needed for storing the bit offset in {@link #bitPosition}.
      * The following condition must hold:
@@ -113,10 +111,10 @@ public abstract class ChannelData {
      * Creates a new instance for the given channel and using the given buffer.
      * The channel is not stored by this class - it shall be stored by the subclass.
      *
-     * @param  filename A file identifier used only for formatting error message.
-     * @param  channel  The channel from where data are read or where to wrote.
-     * @param  buffer   The buffer where to store the data.
-     * @throws IOException If an error occurred while reading the channel.
+     * @param  filename  a file identifier used only for formatting error message.
+     * @param  channel   the channel from where data are read or where to wrote.
+     * @param  buffer    the buffer where to store the data.
+     * @throws IOException if an error occurred while reading the channel.
      */
     ChannelData(final String filename, final Channel channel, final ByteBuffer buffer) throws IOException {
         this.filename      = filename;
@@ -131,7 +129,7 @@ public abstract class ChannelData {
      * by every call to any {@code read} or {@code write} method except {@code readBit()}, {@code readBits(int)},
      * {@code writeBit(int)} and {@code writeBits(long, int)}.</p>
      *
-     * @return The bit offset of the stream.
+     * @return the bit offset of the stream.
      */
     public final int getBitOffset() {
         final long position = bufferOffset + buffer.position();
@@ -144,7 +142,7 @@ public abstract class ChannelData {
     /**
      * Sets the bit offset to the given value.
      *
-     * @param bitOffset The new bit offset of the stream.
+     * @param  bitOffset  the new bit offset of the stream.
      */
     public final void setBitOffset(final int bitOffset) {
         ensureBetween("bitOffset", 0, Byte.SIZE - 1, bitOffset);
@@ -162,8 +160,9 @@ public abstract class ChannelData {
     /**
      * Returns the current byte position of the stream.
      *
-     * @return The position of the stream.
+     * @return the position of the stream.
      */
+    @Override
     public long getStreamPosition() {
         return bufferOffset + buffer.position();
     }
@@ -182,7 +181,7 @@ public abstract class ChannelData {
      *       has changed.</li>
      * </ul>
      *
-     * @param position The new position of the stream.
+     * @param position the new position of the stream.
      */
     public final void setStreamPosition(final long position) {
         bufferOffset = position - buffer.position();
@@ -193,8 +192,7 @@ public abstract class ChannelData {
     }
 
     /**
-     * Returns the earliest position in the stream to which {@linkplain #seek(long) seeking}
-     * may be performed.
+     * Returns the earliest position in the stream to which {@linkplain #seek(long) seeking} may be performed.
      *
      * @return the earliest legal position for seeking.
      */
@@ -210,8 +208,8 @@ public abstract class ChannelData {
      * <p>This method moves the data starting at the given position to the beginning of the {@link #buffer},
      * thus making more room for new data before the data at the given position is discarded.</p>
      *
-     * @param  position The length of the stream prefix that may be flushed.
-     * @throws IOException If an I/O error occurred.
+     * @param  position  the length of the stream prefix that may be flushed.
+     * @throws IOException if an I/O error occurred.
      */
     public final void flushBefore(final long position) throws IOException {
         final long currentPosition = getStreamPosition();
@@ -254,8 +252,8 @@ public abstract class ChannelData {
     /**
      * Moves to the given position in the stream, relative to the stream position at construction time.
      *
-     * @param  position The position where to move.
-     * @throws IOException If the stream can not be moved to the given position.
+     * @param  position  the position where to move.
+     * @throws IOException if the stream can not be moved to the given position.
      */
     public abstract void seek(final long position) throws IOException;
 
@@ -264,6 +262,7 @@ public abstract class ChannelData {
      * Note that {@code ChannelData} maintains its own marks - the buffer's
      * mark is left unchanged.
      */
+    @Override
     public final void mark() {
         mark = new Mark(getStreamPosition(), (byte) getBitOffset(), mark);
     }
@@ -281,8 +280,9 @@ public abstract class ChannelData {
      *       doing nothing. Doing nothing is considered a too high risk of error.</li>
      * </ul>
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws IOException if an I/O error occurs.
      */
+    @Override
     public final void reset() throws IOException {
         final Mark m = mark;
         if (m == null) {
@@ -303,7 +303,7 @@ public abstract class ChannelData {
      * We do that in order to avoid high CPU consumption when data are expected to take more than
      * a few nanoseconds to arrive.</p>
      *
-     * @throws IOException If the implementation chooses to stop the process.
+     * @throws IOException if the implementation chooses to stop the process.
      */
     protected void onEmptyTransfer() throws IOException {
         try {
@@ -322,7 +322,7 @@ public abstract class ChannelData {
     /**
      * Returns a string representation of this object for debugging purpose.
      *
-     * @return A string representation of this object.
+     * @return a string representation of this object.
      */
     @Debug
     @Override
