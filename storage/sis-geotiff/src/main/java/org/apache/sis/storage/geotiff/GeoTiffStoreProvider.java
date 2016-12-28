@@ -103,6 +103,6 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new GeoTiffStore(connector);
+        return new GeoTiffStore(this, connector);
     }
 }

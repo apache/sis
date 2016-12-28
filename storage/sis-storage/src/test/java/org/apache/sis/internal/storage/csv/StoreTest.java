@@ -78,7 +78,7 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testGetMetadata() throws DataStoreException {
         final Metadata metadata;
-        try (Store store = new Store(new StorageConnector(testData()))) {
+        try (Store store = new Store(null, new StorageConnector(testData()))) {
             metadata = store.getMetadata();
         }
         final Extent extent = getSingleton(((AbstractIdentification) getSingleton(metadata.getIdentificationInfo())).getExtents());
@@ -97,7 +97,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testGetFeatures() throws DataStoreException {
-        try (Store store = new Store(new StorageConnector(testData()))) {
+        try (Store store = new Store(null, new StorageConnector(testData()))) {
             verifyFeatureType(store.featureType);
             assertEquals("foliation", Foliation.TIME, store.foliation);
             final Iterator<AbstractFeature> it = store.getFeatures().iterator();

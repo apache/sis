@@ -41,6 +41,7 @@ import static org.apache.sis.internal.jaxb.XmlUtilities.getDatatypeFactory;
  * @module
  *
  * @see DateAdapter
+ * @see org.apache.sis.internal.jaxb.gco.GO_DateTime
  */
 public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
     /**
@@ -58,8 +59,8 @@ public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar,
      * Converts a date read from a XML stream to the object which will contains
      * the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  value The XML date, or {@code null}.
-     * @return The {@code java.util} date, or {@code null}.
+     * @param  value  the XML date, or {@code null}.
+     * @return the {@code java.util} date, or {@code null}.
      */
     @Override
     public Date unmarshal(final XMLGregorianCalendar value) {
@@ -70,8 +71,8 @@ public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar,
      * Converts the date to the object to be marshalled in a XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The {@code java.util} date value, or {@code null}.
-     * @return The XML date, or {@code null}.
+     * @param  value  the {@code java.util} date value, or {@code null}.
+     * @return the XML date, or {@code null}.
      */
     @Override
     public XMLGregorianCalendar marshal(final Date value) {

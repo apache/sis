@@ -158,7 +158,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
         PARAMETERS = builder
                 .addIdentifier("9655")
                 .addName("France geocentric interpolation")
-                .createGroup(Molodensky.DIMENSION,       // Not an EPSG parameter.
+                .createGroup(Molodensky.DIMENSION,              // Not an EPSG parameter.
                              Molodensky.SRC_SEMI_MAJOR,
                              Molodensky.SRC_SEMI_MINOR,
                              Molodensky.TGT_SEMI_MAJOR,
@@ -200,7 +200,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * {@code "gr3df97a.txt"} grid, but in fact the Apache SIS implementation should be flexible enough for use
      * with other area.
      *
-     * @param file The grid file.
+     * @param  file  the grid file.
      * @return {@code true} if the given file looks like a fie from the French mapping agency.
      */
     public static boolean isRecognized(final Path file) {
@@ -233,14 +233,14 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * Creates the source or the target ellipsoid. This is a temporary ellipsoid
      * used only at {@link InterpolatedGeocentricTransform} time, then discarded.
      *
-     * @param values     The parameter group from which to get the axis lengths.
-     * @param semiMajor  The descriptor for locating the semi-major axis parameter.
-     * @param semiMinor  The descriptor for locating the semi-minor axis parameter.
-     * @param candidate  An ellipsoid to return if the axis lengths match the lengths found in the parameters,
-     *                   or {@code null} if none. The intend is to use the pre-defined "GRS 1980" ellipsoid if
-     *                   we can, because that ellipsoid is defined by inverse flattening factor instead than by
-     *                   semi-minor axis length.
-     * @return A temporary ellipsoid encapsulating the axis lengths found in the parameters.
+     * @param  values     the parameter group from which to get the axis lengths.
+     * @param  semiMajor  the descriptor for locating the semi-major axis parameter.
+     * @param  semiMinor  the descriptor for locating the semi-minor axis parameter.
+     * @param  candidate  an ellipsoid to return if the axis lengths match the lengths found in the parameters,
+     *                    or {@code null} if none. The intend is to use the pre-defined "GRS 1980" ellipsoid if
+     *                    we can, because that ellipsoid is defined by inverse flattening factor instead than by
+     *                    semi-minor axis length.
+     * @return a temporary ellipsoid encapsulating the axis lengths found in the parameters.
      */
     private static Ellipsoid createEllipsoid(final Parameters values,
                                              final ParameterDescriptor<Double> semiMajor,
@@ -264,9 +264,9 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * (which is the direction that use the interpolation grid directly without iteration),
      * then inverts the transform.
      *
-     * @param  factory The factory to use if this constructor needs to create other math transforms.
-     * @param  values The group of parameter values.
-     * @return The created math transform.
+     * @param  factory  the factory to use if this constructor needs to create other math transforms.
+     * @param  values   the group of parameter values.
+     * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws FactoryException if an error occurred while loading the grid.
      */
@@ -317,9 +317,9 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * Returns the grid of the given name. This method returns the cached instance if it still exists,
      * or load the grid otherwise.
      *
-     * @param  file      Name of the datum shift grid file to load.
-     * @param  averages  An "average" value for the offset in each dimension, or {@code null} if unknown.
-     * @param  scale     The factor by which to multiply each compressed value before to add to the average value.
+     * @param  file      name of the datum shift grid file to load.
+     * @param  averages  an "average" value for the offset in each dimension, or {@code null} if unknown.
+     * @param  scale     the factor by which to multiply each compressed value before to add to the average value.
      */
     @SuppressWarnings("null")
     static DatumShiftGridFile<Angle,Length> getOrLoad(final Path file, final double[] averages, final double scale)
@@ -352,8 +352,8 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * Unconditionally loads the grid for the given file without in-memory compression.
      *
-     * @param  in Reader of the RGF93 datum shift file.
-     * @param  file Path to the file being read, used only for error reporting.
+     * @param  in    reader of the RGF93 datum shift file.
+     * @param  file  path to the file being read, used only for error reporting.
      * @throws IOException if an I/O error occurred.
      * @throws NumberFormatException if a number can not be parsed.
      * @throws NoSuchElementException if a data line is missing a value.
@@ -460,11 +460,11 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
         final float[] tZ = grid.offsets[2];
         do {
             final StringTokenizer t = new StringTokenizer(line.trim());
-            t.nextToken();                                                // Ignored
-            final double x = Double.parseDouble(t.nextToken());           // Longitude in degrees
-            final double y = Double.parseDouble(t.nextToken());           // Latitude in degrees
-            final int    i = JDK8.toIntExact(Math.round((x - x0) / Δx));  // Column index
-            final int    j = JDK8.toIntExact(Math.round((y - y0) / Δy));  // Row index
+            t.nextToken();                                                      // Ignored
+            final double x = Double.parseDouble(t.nextToken());                 // Longitude in degrees
+            final double y = Double.parseDouble(t.nextToken());                 // Latitude in degrees
+            final int    i = JDK8.toIntExact(Math.round((x - x0) / Δx));        // Column index
+            final int    j = JDK8.toIntExact(Math.round((y - y0) / Δy));        // Row index
             if (i < 0 || i >= nx) {
                 throw new FactoryException(Errors.format(Errors.Keys.ValueOutOfRange_4, "x", x, x0, xf));
             }
@@ -475,12 +475,12 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             if (!Double.isNaN(tX[p]) || !Double.isNaN(tY[p]) || !Double.isNaN(tZ[p])) {
                 throw new FactoryException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, x + ", " + y));
             }
-            tX[p] = -parseFloat(t.nextToken());  // See javadoc for the reason why we reverse the sign.
+            tX[p] = -parseFloat(t.nextToken());     // See javadoc for the reason why we reverse the sign.
             tY[p] = -parseFloat(t.nextToken());
             tZ[p] = -parseFloat(t.nextToken());
             final double accuracy = ACCURACY[Math.min(ACCURACY.length-1,
                     Math.max(0, Integer.parseInt(t.nextToken()) - 1))];
-            if (!(accuracy >= grid.accuracy)) {   // Use '!' for replacing the initial NaN.
+            if (!(accuracy >= grid.accuracy)) {     // Use '!' for replacing the initial NaN.
                 grid.accuracy = accuracy;
             }
         } while ((line = in.readLine()) != null);

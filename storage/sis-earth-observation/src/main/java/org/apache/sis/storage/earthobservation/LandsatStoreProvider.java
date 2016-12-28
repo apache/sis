@@ -144,6 +144,6 @@ public class LandsatStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new LandsatStore(connector);
+        return new LandsatStore(this, connector);
     }
 }

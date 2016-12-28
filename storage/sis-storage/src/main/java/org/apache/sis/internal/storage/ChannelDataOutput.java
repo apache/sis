@@ -27,12 +27,10 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
-
-// Branch-dependent imports
-import java.nio.channels.SeekableByteChannel;
 
 
 /**
@@ -74,10 +72,10 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Creates a new data output for the given channel and using the given buffer.
      *
-     * @param  filename A file identifier used only for formatting error message.
-     * @param  channel  The channel where data are written.
-     * @param  buffer   The buffer where to put the data.
-     * @throws IOException If an error occurred while creating the data output.
+     * @param  filename  a file identifier used only for formatting error message.
+     * @param  channel   the channel where data are written.
+     * @param  buffer    the buffer where to put the data.
+     * @throws IOException if an error occurred while creating the data output.
      */
     public ChannelDataOutput(final String filename, final WritableByteChannel channel, final ByteBuffer buffer)
             throws IOException
@@ -95,8 +93,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * <p>After this method call, the buffer {@linkplain ByteBuffer#limit() limit}
      * will be equal or greater than {@code position + n}.</p>
      *
-     * @param  n The minimal number of additional bytes that the {@linkplain #buffer buffer} shall accept.
-     * @throws IOException If an error occurred while writing to the channel.
+     * @param  n  the minimal number of additional bytes that the {@linkplain #buffer buffer} shall accept.
+     * @throws IOException if an error occurred while writing to the channel.
      */
     private void ensureBufferAccepts(final int n) throws IOException {
         final int capacity = buffer.capacity();
@@ -132,7 +130,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Returns the current byte position of the stream.
      *
-     * @return The position of the stream.
+     * @return the position of the stream.
      */
     @Override
     public long getStreamPosition() {
@@ -152,8 +150,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * Writes a single bit. This method uses only the rightmost bit of the given argument;
      * the upper 31 bits are ignored.
      *
-     * @param bit The bit to write (rightmost bit).
-     * @throws IOException If an error occurred while creating the data output.
+     * @param  bit  the bit to write (rightmost bit).
+     * @throws IOException if an error occurred while creating the data output.
      */
     public final void writeBit(final int bit) throws IOException {
         writeBits(bit, 1);
@@ -163,9 +161,9 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * Writes a sequence of bits. This method uses only the <code>numBits</code> rightmost bits;
      * other bits are ignored.
      *
-     * @param  bits The bits to write (rightmost bits).
-     * @param  numBits The number of bits to write.
-     * @throws IOException If an error occurred while creating the data output.
+     * @param  bits     the bits to write (rightmost bits).
+     * @param  numBits  the number of bits to write.
+     * @throws IOException if an error occurred while creating the data output.
      */
     public final void writeBits(long bits, int numBits) throws IOException {
         ensureBetween("numBits", 0, Long.SIZE, numBits);
@@ -216,12 +214,12 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * This method ensures that there is space for at least 1 byte in the buffer,
      * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(byte)}.
      *
-     * @param  v byte to be written.
+     * @param  value  byte to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
-    public final void writeByte(final int v) throws IOException {
+    public final void writeByte(final int value) throws IOException {
         ensureBufferAccepts(Byte.SIZE / Byte.SIZE);
-        buffer.put((byte) v);
+        buffer.put((byte) value);
     }
 
     /**
@@ -230,12 +228,12 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * This method ensures that there is space for at least 2 bytes in the buffer,
      * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(short)}.
      *
-     * @param  v short to be written.
+     * @param  value  short integer to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
-    public final void writeShort(final int v) throws IOException {
+    public final void writeShort(final int value) throws IOException {
         ensureBufferAccepts(Short.SIZE / Byte.SIZE);
-        buffer.putShort((short) v);
+        buffer.putShort((short) value);
     }
 
     /**
@@ -243,12 +241,12 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * This method ensures that there is space for at least 2 bytes in the buffer,
      * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(char)}.
      *
-     * @param  v char to be written.
+     * @param  value  character to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
-    public final void writeChar(final int v) throws IOException {
+    public final void writeChar(final int value) throws IOException {
         ensureBufferAccepts(Character.SIZE / Byte.SIZE);
-        buffer.putChar((char) v);
+        buffer.putChar((char) value);
     }
 
     /**
@@ -256,12 +254,12 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * This method ensures that there is space for at least 4 bytes in the buffer,
      * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(int)}.
      *
-     * @param  v Integer to be written.
+     * @param  value  integer to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
-    public final void writeInt(final int v) throws IOException {
+    public final void writeInt(final int value) throws IOException {
         ensureBufferAccepts(Integer.SIZE / Byte.SIZE);
-        buffer.putInt(v);
+        buffer.putInt(value);
     }
 
     /**
@@ -269,12 +267,12 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * This method ensures that there is space for at least 4 bytes in the buffer,
      * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(long)}.
      *
-     * @param  v Long to be written.
+     * @param  value  long integer to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
-    public final void writeLong(final long v) throws IOException {
+    public final void writeLong(final long value) throws IOException {
         ensureBufferAccepts(Long.SIZE / Byte.SIZE);
-        buffer.putLong(v);
+        buffer.putLong(value);
     }
 
     /**
@@ -282,12 +280,12 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * This method ensures that there is space for at least 4 bytes in the buffer,
      * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(float)}.
      *
-     * @param  v Float to be written.
+     * @param  value floating point value to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
-    public final void writeFloat(final float v) throws IOException {
+    public final void writeFloat(final float value) throws IOException {
         ensureBufferAccepts(Float.SIZE / Byte.SIZE);
-        buffer.putFloat(v);
+        buffer.putFloat(value);
     }
 
     /**
@@ -295,12 +293,12 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * This method ensures that there is space for at least 8 bytes in the buffer,
      * (writing previous bytes into the channel if necessary), then delegates to {@link ByteBuffer#put(double)}.
      *
-     * @param  v Double to be written.
+     * @param  value  double precision floating point value to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
-    public final void writeDouble(final double v) throws IOException {
+    public final void writeDouble(final double value) throws IOException {
         ensureBufferAccepts(Double.SIZE / Byte.SIZE);
-        buffer.putDouble(v);
+        buffer.putDouble(value);
     }
 
     /**
@@ -311,8 +309,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      *     return write(src, 0, src.length);
      * }
      *
-     * @param  src An array of bytes to be written into stream.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src  an array of bytes to be written into stream.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void write(final byte[] src) throws IOException {
         write(src, 0, src.length);
@@ -326,8 +324,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      *     return writeShorts(src, 0, src.length);
      * }
      *
-     * @param  src An array of shorts to be written into stream.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src  an array of shorts to be written into stream.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void writeShorts(final short[] src) throws IOException {
         writeShorts(src, 0, src.length);
@@ -341,8 +339,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      *     return writeChars(src, 0, src.length);
      * }
      *
-     * @param  src An array of characters to be written into stream.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src  an array of characters to be written into stream.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void writeChars(final char[] src) throws IOException {
         writeChars(src, 0, src.length);
@@ -356,8 +354,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      *     return writeInts(src, 0, src.length);
      * }
      *
-     * @param  src An array of integers to be written into stream.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src  an array of integers to be written into stream.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void writeInts(final int[] src) throws IOException {
         writeInts(src, 0, src.length);
@@ -371,8 +369,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      *     return writeLongs(src, 0, src.length);
      * }
      *
-     * @param  src An array of longs to be written into stream.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src  an array of longs to be written into stream.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void writeLongs(final long[] src) throws IOException {
         writeLongs(src, 0, src.length);
@@ -386,8 +384,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      *     return writeFloats(src, 0, src.length);
      * }
      *
-     * @param  src An array of floats to be written into stream.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src  an array of floats to be written into stream.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void writeFloats(final float[] src) throws IOException {
         writeFloats(src, 0, src.length);
@@ -401,8 +399,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      *     return writeDoubles(src, 0, src.length);
      * }
      *
-     * @param  src An array of doubles to be written into stream.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src  an array of doubles to be written into stream.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void writeDoubles(final double[] src) throws IOException {
         writeDoubles(src, 0, src.length);
@@ -411,10 +409,10 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Writes {@code length} bytes starting at index {@code offset} from the given array.
      *
-     * @param  src    An array containing the bytes to write.
-     * @param  offset Index within {@code src} of the first byte to write.
-     * @param  length The number of bytes to write.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src     an array containing the bytes to write.
+     * @param  offset  index within {@code src} of the first byte to write.
+     * @param  length  the number of bytes to write.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void write(final byte[] src, int offset, int length) throws IOException {
         if (length != 0) {
@@ -455,7 +453,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
          * Skips the given amount of bytes in the buffer. It is caller responsibility to ensure
          * that there is enough bytes remaining in the buffer.
          *
-         * @param nByte byte shift of buffer position.
+         * @param  nByte  byte shift of buffer position.
          */
         private void skipInBuffer(int nByte) {
             buffer.position(buffer.position() + nByte);
@@ -464,10 +462,10 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
         /**
          * Writes {@code length} characters from the array to the stream.
          *
-         * @param  dataSize The size of the Java primitive type which is the element of the array.
-         * @param  offset   The starting position within {@code src} to write.
-         * @param  length   The number of characters to write.
-         * @throws IOException If an error occurred while writing the stream.
+         * @param  dataSize  the size of the Java primitive type which is the element of the array.
+         * @param  offset    the starting position within {@code src} to write.
+         * @param  length    the number of characters to write.
+         * @throws IOException if an error occurred while writing the stream.
          */
         final void writeFully(final int dataSize, int offset, int length) throws IOException {
             clearBitOffset(); // Actually needed only if length == 0.
@@ -489,10 +487,10 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Writes {@code length} chars starting at index {@code offset} from the given array.
      *
-     * @param  src    An array containing the characters to write.
-     * @param  offset Index within {@code src} of the first char to write.
-     * @param  length The number of chars to write.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src     an array containing the characters to write.
+     * @param  offset  index within {@code src} of the first char to write.
+     * @param  length  the number of chars to write.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void writeChars(final char[] src, int offset, int length) throws IOException {
         new ArrayWriter() {
@@ -505,10 +503,10 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Writes {@code length} shorts starting at index {@code offset} from the given array.
      *
-     * @param  src    An array containing the shorts to write.
-     * @param  offset Index within {@code src} of the first short to write.
-     * @param  length The number of shorts to write.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src     an array containing the shorts to write.
+     * @param  offset  index within {@code src} of the first short to write.
+     * @param  length  the number of shorts to write.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void writeShorts(final short[] src, int offset, int length) throws IOException {
         new ArrayWriter() {
@@ -521,10 +519,10 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Writes {@code length} integers starting at index {@code offset} from the given array.
      *
-     * @param  src    An array containing the integers to write.
-     * @param  offset Index within {@code src} of the first integer to write.
-     * @param  length The number of integers to write.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src     an array containing the integers to write.
+     * @param  offset  index within {@code src} of the first integer to write.
+     * @param  length  the number of integers to write.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void writeInts(final int[] src, int offset, int length) throws IOException {
         new ArrayWriter() {
@@ -537,10 +535,10 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Writes {@code length} longs starting at index {@code offset} from the given array.
      *
-     * @param  src    An array containing the longs to write.
-     * @param  offset Index within {@code src} of the first long to write.
-     * @param  length The number of longs to write.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src     an array containing the longs to write.
+     * @param  offset  index within {@code src} of the first long to write.
+     * @param  length  the number of longs to write.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void writeLongs(final long[] src, int offset, int length) throws IOException {
         new ArrayWriter() {
@@ -553,10 +551,10 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Writes {@code length} floats starting at index {@code offset} from the given array.
      *
-     * @param  src    An array containing the floats to write.
-     * @param  offset Index within {@code src} of the first float to write.
-     * @param  length The number of floats to write.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src     an array containing the floats to write.
+     * @param  offset  index within {@code src} of the first float to write.
+     * @param  length  the number of floats to write.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void writeFloats(final float[] src, int offset, int length) throws IOException {
         new ArrayWriter() {
@@ -569,10 +567,10 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
     /**
      * Writes {@code length} doubles starting at index {@code offset} from the given array.
      *
-     * @param  src    An array containing the doubles to write.
-     * @param  offset Index within {@code src} of the first double to write.
-     * @param  length The number of doubles to write.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  src     an array containing the doubles to write.
+     * @param  offset  index within {@code src} of the first double to write.
+     * @param  length  the number of doubles to write.
+     * @throws IOException if an error occurred while writing the stream.
      */
     public final void writeDoubles(final double[] src, int offset, int length) throws IOException {
         new ArrayWriter() {
@@ -603,8 +601,8 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * If the given position is greater than the stream length, then the values of bytes between the
      * previous stream length and the given position are unspecified. The limit is unchanged.
      *
-     * @param  position The position where to move.
-     * @throws IOException If the stream can not be moved to the given position.
+     * @param  position  the position where to move.
+     * @throws IOException if the stream can not be moved to the given position.
      */
     @Override
     public final void seek(final long position) throws IOException {
@@ -657,7 +655,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * Flushes the {@link #buffer buffer} content to the channel.
      * This method does <strong>not</strong> flush the channel itself.
      *
-     * @throws IOException If an error occurred while writing to the channel.
+     * @throws IOException if an error occurred while writing to the channel.
      */
     @Override
     public final void flush() throws IOException {
@@ -684,7 +682,7 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * Writes fully the buffer content from its position to its limit.
      * After this method call, the buffer position is equals to its limit.
      *
-     * @throws IOException If an error occurred while writing to the channel.
+     * @throws IOException if an error occurred while writing to the channel.
      */
     private void writeFully() throws IOException {
         int n = buffer.remaining();
