@@ -62,6 +62,28 @@ public abstract class StaxDataStore extends FeatureStore {
     protected final String name;
 
     /**
+     * The locale to use for locale-sensitive data (<strong>not</strong> for logging or warning messages),
+     * or {@code null} if unspecified.
+     *
+     * @see OptionKey#LOCALE
+     */
+    protected final Locale locale;
+
+    /**
+     * The timezone to use when parsing or formatting dates and times without explicit timezone,
+     * or {@code null} if unspecified.
+     *
+     * @see OptionKey#TIMEZONE
+     */
+    protected final TimeZone timezone;
+
+    /**
+     * The character encoding of the file content, or {@code null} if unspecified.
+     * This is often (but not always) ignored at reading time, but taken in account at writing time.
+     */
+    protected final Charset encoding;
+
+    /**
      * Configuration information for JAXB (un)marshaller (actually the SIS wrappers) or for the STAX factories.
      * This object is a read-only map which may contain the following entries:
      *
@@ -77,12 +99,6 @@ public abstract class StaxDataStore extends FeatureStore {
      * @see OptionKey#TIMEZONE
      */
     final Config configuration;
-
-    /**
-     * The character encoding of the file content, or {@code null} if unspecified.
-     * This is often (but not always) ignored at reading time, but taken in account at writing time.
-     */
-    final Charset encoding;
 
     /**
      * The storage object given by the user. May be {@link Path}, {@link java.net.URL}, {@link InputStream},
@@ -161,8 +177,10 @@ public abstract class StaxDataStore extends FeatureStore {
         super(provider, connector);
         name            = connector.getStorageName();
         storage         = connector.getStorage();
+        locale          = connector.getOption(OptionKey.LOCALE);
+        timezone        = connector.getOption(OptionKey.TIMEZONE);
         encoding        = connector.getOption(OptionKey.ENCODING);
-        configuration   = new Config(connector);
+        configuration   = new Config();
         storageToWriter = OutputType.forType(storage.getClass());
         storageToReader = InputType.forType(storage.getClass());
         if (storageToReader == null) {
@@ -207,27 +225,9 @@ public abstract class StaxDataStore extends FeatureStore {
      */
     private final class Config extends AbstractMap<String,Object> implements XMLReporter, WarningListener<Object> {
         /**
-         * The locale to use for locale-sensitive data (<strong>not</strong> for logging or warning messages),
-         * or {@code null} if unspecified.
-         *
-         * @see OptionKey#LOCALE
-         */
-        private final Locale locale;
-
-        /**
-         * The timezone to use when parsing or formatting dates and times without explicit timezone,
-         * or {@code null} if unspecified.
-         *
-         * @see OptionKey#TIMEZONE
-         */
-        private final TimeZone timezone;
-
-        /**
          * Fetches configuration information from the given object.
          */
-        Config(final StorageConnector connector) {
-            locale   = connector.getOption(OptionKey.LOCALE);
-            timezone = connector.getOption(OptionKey.TIMEZONE);
+        Config() {
         }
 
         /**

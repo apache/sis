@@ -21,10 +21,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import org.apache.sis.util.iso.SimpleInternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -43,6 +43,8 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.metadata.maintenance.Scope;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -101,6 +103,43 @@ public final class Copyright implements LegalConstraints, Responsibility, Party,
      * Callers should set at least the {@link #author} field after construction.
      */
     public Copyright() {
+    }
+
+    /**
+     * Copies properties from the given ISO 19115 metadata.
+     */
+    private Copyright(final LegalConstraints c, final Locale locale) {
+resp:   for (final Responsibility r : c.getResponsibleParties()) {
+            for (final Party p : r.getParties()) {
+                author = Types.toString(p.getName(), locale);
+                if (author != null) break resp;
+            }
+        }
+        for (final Citation ci : c.getReferences()) {
+            for (final CitationDate d : ci.getDates()) {
+                final Date date = d.getDate();
+                if (date != null) {
+                    year = date.getYear() + 1900;
+                    break;
+                }
+            }
+            for (final OnlineResource r : ci.getOnlineResources()) {
+                license = r.getLinkage();
+                if (license != null) break;
+            }
+        }
+    }
+
+    /**
+     * Returns the given ISO 19115 metadata as a {@code Copyright} instance.
+     * This method copies the data only if needed.
+     *
+     * @param  c       the ISO 19115 metadata, or {@code null}.
+     * @param  locale  the locale to use for localized strings.
+     * @return the GPX metadata, or {@code null}.
+     */
+    public static Copyright castOrCopy(final LegalConstraints c, final Locale locale) {
+        return (c == null || c instanceof Copyright) ? (Copyright) c : new Copyright(c, locale);
     }
 
     /**

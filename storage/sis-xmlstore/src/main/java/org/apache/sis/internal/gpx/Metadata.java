@@ -16,25 +16,29 @@
  */
 package org.apache.sis.internal.gpx;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.io.IOException;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlElement;
 
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.constraint.Constraints;
+import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.Keywords;
+import org.opengis.metadata.identification.Identification;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.iso.Types;
 
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.internal.simple.SimpleMetadata;
@@ -112,19 +116,19 @@ public final class Metadata extends SimpleMetadata {
     public Copyright copyright;
 
     /**
-     * URLs associated with the location described in the file.
+     * URLs associated with the location described in the file, or {@code null} if none.
      *
      * @see #getOnlineResources()
      */
     @XmlElement(name = Tags.LINK)
-    public final List<Link> links = new ArrayList<>();
+    public List<Link> links;
 
     /**
      * The creation date of the file.
      *
      * @see #getDates()
      *
-     * @todo We could like to use {@link java.time}, but it does not yet word out-of-the-box with JAXB
+     * @todo We would like to use {@link java.time}, but it does not yet work out-of-the-box with JAXB
      *       (we need adapter). Furthermore current GeoAPI interfaces does not yet use {@code java.time}.
      */
     @XmlElement(name = Tags.TIME)
@@ -153,6 +157,81 @@ public final class Metadata extends SimpleMetadata {
      * Creates an initially empty metadata object.
      */
     public Metadata() {
+    }
+
+    /**
+     * Copies properties from the given ISO 19115 metadata.
+     */
+    private Metadata(final org.opengis.metadata.Metadata md, final Locale locale) {
+        for (final Identification id : md.getIdentificationInfo()) {
+            final Citation c = id.getCitation();
+            if (c != null) {
+                if (name == null) {
+                    name = Types.toString(c.getTitle(), locale);
+                }
+                if (time == null) {
+                    for (final CitationDate d : c.getDates()) {
+                        time = d.getDate();
+                        if (time != null) break;
+                    }
+                }
+                for (final OnlineResource r : c.getOnlineResources()) {
+                    final Link link = Link.castOrCopy(r, locale);
+                    if (link != null) {
+                        if (links == null) {
+                            links = new ArrayList<>();
+                        }
+                        links.add(link);
+                    }
+                }
+            }
+            if (description == null) {
+                description = Types.toString(id.getAbstract(), locale);
+            }
+            for (final Responsibility r : id.getPointOfContacts()) {
+                final Person p = Person.castOrCopy(r, locale);
+                if (p != null) {
+                    if (p.isCreator) {
+                        if (creator == null) {
+                            creator = p.name;
+                        }
+                    } else if (author == null) {
+                        author = p;
+                    }
+                }
+            }
+            if (copyright == null) {
+                for (final Constraints cr : id.getResourceConstraints()) {
+                    if (cr instanceof LegalConstraints) {
+                        copyright = Copyright.castOrCopy((LegalConstraints) cr, locale);
+                        if (copyright != null) break;
+                    }
+                }
+            }
+            for (final Keywords k : id.getDescriptiveKeywords()) {
+                for (final InternationalString kw : k.getKeywords()) {
+                    final String s = Types.toString(kw, locale);
+                    if (s != null) {
+                        if (keywords == null) {
+                            keywords = new ArrayList<>();
+                        }
+                        keywords.add(s);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the given ISO 19115 metadata as a {@code Metadata} instance.
+     * This method copies the data only if needed.
+     *
+     * @param  md      the ISO 19115 metadata, or {@code null}.
+     * @param  locale  the locale to use for localized strings.
+     * @return the GPX metadata, or {@code null}.
+     */
+    public static Metadata castOrCopy(final org.opengis.metadata.Metadata md, final Locale locale) {
+        return (md == null || md instanceof Metadata) ? (Metadata) md : new Metadata(md, locale);
     }
 
     /**
@@ -186,21 +265,9 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<Keywords> getDescriptiveKeywords() {
         if (keywords != null) {
-            return new KW(keywords);
+            return Collections.singleton(new DefaultKeywords(keywords.toArray(new String[keywords.size()])));
         }
         return super.getDescriptiveKeywords();
-    }
-
-    /**
-     * The list to be returned by {@link #getDescriptiveKeywords()}.
-     * Each keywords is created when first needed.
-     */
-    private static final class KW extends AbstractList<Keywords> {
-        private final List<String> keywords;
-
-        KW(final List<String> keywords)      {this.keywords = keywords;}
-        @Override public int      size()     {return keywords.size();}
-        @Override public Keywords get(int i) {return new DefaultKeywords(keywords.get(i));}
     }
 
     /**
@@ -263,7 +330,7 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<OnlineResource> getOnlineResources() {
-        return Collections.unmodifiableList(links);
+        return (links != null) ? Collections.unmodifiableList(links) : super.getOnlineResources();
     }
 
     /**
@@ -279,7 +346,8 @@ public final class Metadata extends SimpleMetadata {
         }
         if (obj instanceof Metadata) {
             final Metadata that = (Metadata) obj;
-            return Objects.equals(this.name,        that.name)        &&
+            return Objects.equals(this.creator,     that.creator)     &&
+                   Objects.equals(this.name,        that.name)        &&
                    Objects.equals(this.description, that.description) &&
                    Objects.equals(this.author,      that.author)      &&
                    Objects.equals(this.copyright,   that.copyright)   &&
@@ -298,7 +366,7 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, author, copyright, links, time, keywords, bounds);
+        return Objects.hash(creator, name, description, author, copyright, links, time, keywords, bounds);
     }
 
     /**
@@ -313,6 +381,7 @@ public final class Metadata extends SimpleMetadata {
         final TableAppender table = new TableAppender(buffer);
         table.setMultiLinesCells(true);
         table.appendHorizontalSeparator();
+        append(table, "Creator",     creator);
         append(table, "Name",        name);
         append(table, "Description", description);
         append(table, "Author",      author);

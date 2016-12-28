@@ -18,10 +18,10 @@ package org.apache.sis.internal.gpx;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.apache.sis.util.iso.SimpleInternationalString;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.OnlineResource;
@@ -31,6 +31,8 @@ import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Telephone;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -69,7 +71,7 @@ public final class Person implements Responsibility, Party, Contact, Address {
     /**
      * {@code true} if this name is the creator, {@code false} if it is the author.
      */
-    private boolean isCreator;
+    boolean isCreator;
 
     /**
      * Email address.
@@ -100,6 +102,34 @@ public final class Person implements Responsibility, Party, Contact, Address {
     Person(final String creator) {
         name = creator;
         isCreator = true;
+    }
+
+    /**
+     * Returns the given ISO 19115 metadata as a {@code Person} instance.
+     * This method copies the data only if needed.
+     *
+     * @param  r       the ISO 19115 metadata, or {@code null}.
+     * @param  locale  the locale to use for localized strings.
+     * @return the GPX metadata, or {@code null}.
+     */
+    public static Person castOrCopy(final Responsibility r, final Locale locale) {
+        if (r == null || r instanceof Person) {
+            return (Person) r;
+        }
+        final Role role = r.getRole();
+        final boolean isCreator = Role.ORIGINATOR.equals(role);
+        if (isCreator || Role.AUTHOR.equals(role)) {
+            for (final Party p : r.getParties()) {
+                final String name = Types.toString(p.getName(), locale);
+                if (name != null) {
+                    final Person pr = new Person();
+                    pr.name = name;
+                    pr.isCreator = isCreator;
+                    return pr;
+                }
+            }
+        }
+        return null;
     }
 
     /**

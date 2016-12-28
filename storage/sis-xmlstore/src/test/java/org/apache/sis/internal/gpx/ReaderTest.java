@@ -190,7 +190,7 @@ public final strictfp class ReaderTest extends TestCase {
         assertBoundsEquals(-20, 30, 10, 40, md.bounds);
         assertNull("author",                md.author);
         assertNull("copyright",             md.copyright);
-        assertTrue("links.isEmpty()",       md.links.isEmpty());
+        assertNull("links",                 md.links);
     }
 
     /**
