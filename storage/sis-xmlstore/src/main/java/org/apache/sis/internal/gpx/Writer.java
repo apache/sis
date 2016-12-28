@@ -164,7 +164,9 @@ final class Writer extends StaxStreamWriter {
                 writeSingleValue(Tags.SOURCE,      feature.getPropertyValue(Tags.SOURCE));
                 writeLinks((Collection<?>)         feature.getPropertyValue(Tags.LINK));
                 writeSingleValue(Tags.NUMBER,      feature.getPropertyValue(Tags.NUMBER));
-                writeSingleValue(Tags.TYPE,        feature.getPropertyValue(Tags.TYPE));
+                if (version != 0) {
+                    writeSingleValue(Tags.TYPE,    feature.getPropertyValue(Tags.TYPE));
+                }
                 if (isRoute) {
                     for (Object prop : (Collection<?>) feature.getPropertyValue(Tags.ROUTE_POINTS)) {
                         writeWayPoint((Feature) prop, Tags.ROUTE_POINTS);
