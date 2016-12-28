@@ -16,13 +16,11 @@
  */
 package org.apache.sis.internal.gpx;
 
+import java.util.List;
+import java.util.Arrays;
 import java.net.URI;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import com.esri.core.geometry.Point;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
@@ -39,8 +37,8 @@ import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
 
 // Branch-dependent imports
-import java.time.LocalDate;
-import java.util.stream.Stream;
+import java.time.Instant;
+import org.apache.sis.test.DependsOnMethod;
 import org.opengis.feature.Feature;
 
 
@@ -130,6 +128,9 @@ public final strictfp class WriterTest extends TestCase {
 
     /**
      * Implementations of {@link #testMetadata100()} and {@link #testMetadata110()}.
+     *
+     * @param version   either {@link Store#V1_0} or {@link Store#V1_1}.
+     * @param expected  name of a test file containing the expected XML result.
      */
     private void testMetadata(final Version version, final String expected) throws Exception {
         final Person person = new Person();
@@ -173,165 +174,203 @@ public final strictfp class WriterTest extends TestCase {
     }
 
     /**
-     * Tests writing various GPX feature types.
+     * Tests writing various GPX 1.0 way points. This test creates programmatically the same features than
+     * the ones found in {@code 1.0/waypoint.xml}, then compare the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
      */
     @Test
-    @org.junit.Ignore("Writer not yet synchronized with changes in reader.")
-    public void testFeatures() throws Exception {
+    @DependsOnMethod("testMetadata100")
+    public void testWayPoints100() throws Exception {
+        testFeatures(Store.V1_0, Type.WAY_POINT, "1.0/waypoint.xml");
+    }
+
+    /**
+     * Tests writing various GPX 1.1 way points. This test creates programmatically the same features than
+     * the ones found in {@code 1.1/waypoint.xml}, then compare the written XML file with the expected file.
+     *
+     * @throws Exception if an error occurred while writing the XML data.
+     */
+    @Test
+    @DependsOnMethod("testMetadata110")
+    public void testWayPoints110() throws Exception {
+        testFeatures(Store.V1_1, Type.WAY_POINT, "1.1/waypoint.xml");
+    }
+
+    /**
+     * Tests writing various GPX 1.0 routes. This test creates programmatically the same features than
+     * the ones found in {@code 1.0/route.xml}, then compare the written XML file with the expected file.
+     *
+     * @throws Exception if an error occurred while writing the XML data.
+     */
+    @Test
+    @DependsOnMethod("testWayPoints100")
+    public void testRoutes100() throws Exception {
+        testFeatures(Store.V1_0, Type.ROUTE, "1.0/route.xml");
+    }
+
+    /**
+     * Tests writing various GPX 1.1 routes. This test creates programmatically the same features than
+     * the ones found in {@code 1.1/route.xml}, then compare the written XML file with the expected file.
+     *
+     * @throws Exception if an error occurred while writing the XML data.
+     */
+    @Test
+    @DependsOnMethod("testWayPoints110")
+    public void testRoutes110() throws Exception {
+        testFeatures(Store.V1_1, Type.ROUTE, "1.1/route.xml");
+    }
+
+    /**
+     * Tests writing various GPX 1.0 tracks. This test creates programmatically the same features than
+     * the ones found in {@code 1.0/track.xml}, then compare the written XML file with the expected file.
+     *
+     * @throws Exception if an error occurred while writing the XML data.
+     */
+    @Test
+    @DependsOnMethod("testRoutes100")
+    public void testTracks100() throws Exception {
+        testFeatures(Store.V1_0, Type.TRACK, "1.0/track.xml");
+    }
+
+    /**
+     * Tests writing various GPX 1.1 tracks. This test creates programmatically the same features than
+     * the ones found in {@code 1.1/track.xml}, then compare the written XML file with the expected file.
+     *
+     * @throws Exception if an error occurred while writing the XML data.
+     */
+    @Test
+    @DependsOnMethod("testRoutes110")
+    public void testTracks110() throws Exception {
+        testFeatures(Store.V1_1, Type.TRACK, "1.1/track.xml");
+    }
+
+    /**
+     * The kind of feature to write.
+     */
+    private enum Type {
+        WAY_POINT, ROUTE, TRACK
+    }
+
+    /**
+     * Implementation of way points, routes and tracks test methods.
+     *
+     * @param version   either {@link Store#V1_0} or {@link Store#V1_1}.
+     * @param type      the kind of feature to test: way point, route or track.
+     * @param expected  name of a test file containing the expected XML result.
+     */
+    private void testFeatures(final Version version, final Type type, final String expected) throws Exception {
         final Types types = Types.DEFAULT;
+        /*
+         * Way Points as defined in "waypoint.xml" test file.
+         * Appear also in "route.xml" and "track.xml" files.
+         */
+        final Feature point1 = types.wayPoint.newInstance();
+        point1.setPropertyValue("@geometry",     new Point(15, 10));
+        point1.setPropertyValue("time",          Instant.parse("2010-01-10T00:00:00Z"));
+        point1.setPropertyValue("name",          "first point");
+        point1.setPropertyValue("cmt",           "first comment");
+        point1.setPropertyValue("desc",          "first description");
+        point1.setPropertyValue("src",           "first source");
+        point1.setPropertyValue("sym",           "first symbol");
+        point1.setPropertyValue("type",          "first type");
+        point1.setPropertyValue("ele",           140.0);
+        point1.setPropertyValue("magvar",        35.0);
+        point1.setPropertyValue("geoidheight",   112.32);
+        point1.setPropertyValue("sat",           11);
+        point1.setPropertyValue("hdop",          15.15);
+        point1.setPropertyValue("vdop",          14.14);
+        point1.setPropertyValue("pdop",          13.13);
+        point1.setPropertyValue("ageofdgpsdata", 55.55);
+        point1.setPropertyValue("dgpsid",        256);
+        point1.setPropertyValue("fix",           Fix.NONE);
+        point1.setPropertyValue("link",          Arrays.asList(new Link(new URI("http://first-address1.org")),
+                                                               new Link(new URI("http://first-address2.org")),
+                                                               new Link(new URI("http://first-address3.org"))));
+        final Feature point3 = types.wayPoint.newInstance();
+        point3.setPropertyValue("@geometry",     new Point(35, 30));
+        point3.setPropertyValue("time",          Instant.parse("2010-01-30T00:00:00Z"));
+        point3.setPropertyValue("name",          "third point");
+        point3.setPropertyValue("cmt",           "third comment");
+        point3.setPropertyValue("desc",          "third description");
+        point3.setPropertyValue("src",           "third source");
+        point3.setPropertyValue("sym",           "third symbol");
+        point3.setPropertyValue("type",          "third type");
+        point3.setPropertyValue("ele",           150.0);
+        point3.setPropertyValue("magvar",        25.0);
+        point3.setPropertyValue("geoidheight",   142.32);
+        point3.setPropertyValue("sat",           35);
+        point3.setPropertyValue("hdop",          35.15);
+        point3.setPropertyValue("vdop",          34.14);
+        point3.setPropertyValue("pdop",          33.13);
+        point3.setPropertyValue("ageofdgpsdata", 85.55);
+        point3.setPropertyValue("dgpsid",        456);
+        point3.setPropertyValue("fix",           Fix.THREE_DIMENSIONAL);
+        point3.setPropertyValue("link",          Arrays.asList(new Link(new URI("http://third-address1.org")),
+                                                               new Link(new URI("http://third-address2.org"))));
+        final Feature point2 = types.wayPoint.newInstance();
+        point2.setPropertyValue("@geometry", new Point(25, 20));
+        final List<Feature> wayPoints = Arrays.asList(point1, point2, point3);
+        final List<Feature> features;
+        switch (type) {
+            case WAY_POINT: {
+                features = wayPoints;
+                break;
+            }
+            case ROUTE: {
+                final Feature route1 = types.route.newInstance();
+                route1.setPropertyValue("name",   "Route name");
+                route1.setPropertyValue("cmt",    "Route comment");
+                route1.setPropertyValue("desc",   "Route description");
+                route1.setPropertyValue("src",    "Route source");
+                route1.setPropertyValue("type",   "Route type");
+                route1.setPropertyValue("number", 7);
+                route1.setPropertyValue("rtept",  wayPoints);
+                route1.setPropertyValue("link",   Arrays.asList(new Link(new URI("http://route-address1.org")),
+                                                                new Link(new URI("http://route-address2.org")),
+                                                                new Link(new URI("http://route-address3.org"))));
+                final Feature route2 = types.route.newInstance();
+                features = Arrays.asList(route1, route2);
+                break;
+            }
+            case TRACK: {
+                final Feature seg1 = types.trackSegment.newInstance();
+                final Feature seg2 = types.trackSegment.newInstance();
+                seg1.setPropertyValue("trkpt", wayPoints);
 
-        // -- Way Points ----------------------------------------------------
-        Feature point1 = types.wayPoint.newInstance();
-        point1.setPropertyValue("@identifier", 1);
-        point1.setPropertyValue("@geometry", new Point(-10, 10));
-        point1.setPropertyValue("ele", 15.6);
-        point1.setPropertyValue("time", LocalDate.now());
-        point1.setPropertyValue("magvar", 31.7);
-        point1.setPropertyValue("geoidheight", 45.1);
-        point1.setPropertyValue("name", "fds");
-        point1.setPropertyValue("cmt", "fdrt");
-        point1.setPropertyValue("desc", "ffe");
-        point1.setPropertyValue("src", "aaz");
-        point1.setPropertyValue("link", new Link(new URI("http://test.com")));
-        point1.setPropertyValue("sym", "fdsg");
-        point1.setPropertyValue("type", "klj");
-        point1.setPropertyValue("fix", Fix.NONE);
-        point1.setPropertyValue("sat", 12);
-        point1.setPropertyValue("hdop", 45.2);
-        point1.setPropertyValue("vdop", 16.7);
-        point1.setPropertyValue("pdop", 14.3);
-        point1.setPropertyValue("ageofdgpsdata", 78.9);
-        point1.setPropertyValue("dgpsid", 6);
-
-        Feature point2 = types.wayPoint.newInstance();
-        point2.setPropertyValue("@identifier", 2);
-        point2.setPropertyValue("@geometry", new Point(-15, 15));
-        point2.setPropertyValue("ele", 15.6);
-        point2.setPropertyValue("time", LocalDate.now());
-        point2.setPropertyValue("magvar", 31.7);
-        point2.setPropertyValue("geoidheight", 45.1);
-        point2.setPropertyValue("name", "fds");
-        point2.setPropertyValue("cmt", "fdrt");
-        point2.setPropertyValue("desc", "ffe");
-        point2.setPropertyValue("src", "aaz");
-        point2.setPropertyValue("link", new Link(new URI("http://test.com")));
-        point2.setPropertyValue("sym", "fdsg");
-        point2.setPropertyValue("type", "klj");
-        point2.setPropertyValue("fix", Fix.NONE);
-        point2.setPropertyValue("sat", 12);
-        point2.setPropertyValue("hdop", 45.2);
-        point2.setPropertyValue("vdop", 16.7);
-        point2.setPropertyValue("pdop", 14.3);
-        point2.setPropertyValue("ageofdgpsdata", 78.9);
-        point2.setPropertyValue("dgpsid", 6);
-
-        Feature point3 = types.wayPoint.newInstance();
-        point3.setPropertyValue("@identifier", 3);
-        point3.setPropertyValue("@geometry", new Point(-20, 20));
-        point3.setPropertyValue("ele", 15.6);
-        point3.setPropertyValue("time", LocalDate.now());
-        point3.setPropertyValue("magvar", 31.7);
-        point3.setPropertyValue("geoidheight", 45.1);
-        point3.setPropertyValue("name", "fds");
-        point3.setPropertyValue("cmt", "fdrt");
-        point3.setPropertyValue("desc", "ffe");
-        point3.setPropertyValue("src", "aaz");
-        point3.setPropertyValue("link", new Link(new URI("http://test.com")));
-        point3.setPropertyValue("sym", "fdsg");
-        point3.setPropertyValue("type", "klj");
-        point3.setPropertyValue("fix", Fix.NONE);
-        point3.setPropertyValue("sat", 12);
-        point3.setPropertyValue("hdop", 45.2);
-        point3.setPropertyValue("vdop", 16.7);
-        point3.setPropertyValue("pdop", 14.3);
-        point3.setPropertyValue("ageofdgpsdata", 78.9);
-        point3.setPropertyValue("dgpsid", 6);
-
-        final List<Feature> wayPoints = new ArrayList<>();
-        wayPoints.add(point1);
-        wayPoints.add(point2);
-        wayPoints.add(point3);
-
-        // -- Routes --------------------------------------------------------
-        final Feature route1 = types.route.newInstance();
-        route1.setPropertyValue("@identifier", 1);
-        route1.setPropertyValue("name", "tt");
-        route1.setPropertyValue("cmt", "cc");
-        route1.setPropertyValue("desc", "des");
-        route1.setPropertyValue("src", "src");
-        route1.setPropertyValue("link", new Link(new URI("http://test.com")));
-        route1.setPropertyValue("number", 15);
-        route1.setPropertyValue("type", "test");
-        route1.setPropertyValue("rtept", wayPoints);
-        final Feature route2 = types.route.newInstance();
-        route2.setPropertyValue("@identifier", 2);
-        route2.setPropertyValue("name", "tt2");
-        route2.setPropertyValue("cmt", "cc2");
-        route2.setPropertyValue("desc", "des2");
-        route2.setPropertyValue("src", "src2");
-        route2.setPropertyValue("link", new Link(new URI("http://test2.com")));
-        route2.setPropertyValue("number", 15);
-        route2.setPropertyValue("type", "test2");
-        route2.setPropertyValue("rtept", wayPoints);
-
-        final List<Feature> routes = new ArrayList<>();
-        routes.add(route1);
-        routes.add(route2);
-
-        //tracks ---------------------------------------------------------------
-        final List<Feature> segments = new ArrayList<>();
-        final Feature seg1 = types.trackSegment.newInstance();
-        seg1.setPropertyValue("@identifier", 1);
-        seg1.setPropertyValue("trkpt", wayPoints);
-        final Feature seg2 = types.trackSegment.newInstance();
-        seg2.setPropertyValue("@identifier", 2);
-        seg2.setPropertyValue("trkpt", wayPoints);
-        final Feature seg3 = types.trackSegment.newInstance();
-        seg3.setPropertyValue("@identifier", 3);
-        seg3.setPropertyValue("trkpt", wayPoints);
-
-        final Feature track1 = types.track.newInstance();
-        track1.setPropertyValue("@identifier", 1);
-        track1.setPropertyValue("name", "tc");
-        track1.setPropertyValue("cmt", "cc");
-        track1.setPropertyValue("desc", "des");
-        track1.setPropertyValue("src", "src");
-        track1.setPropertyValue("link", new Link(new URI("http://test4.com")));
-        track1.setPropertyValue("number", 15);
-        track1.setPropertyValue("type", "test");
-        track1.setPropertyValue("trkseg", segments);
-        final Feature track2 = types.track.newInstance();
-        track2.setPropertyValue("@identifier", 2);
-        track2.setPropertyValue("name", "tc2");
-        track2.setPropertyValue("cmt", "cc2");
-        track2.setPropertyValue("desc", "des2");
-        track2.setPropertyValue("src", "src2");
-        track2.setPropertyValue("link", new Link(new URI("http://test5.com")));
-        track2.setPropertyValue("number", 15);
-        track2.setPropertyValue("type", "test2");
-        track2.setPropertyValue("trkseg", segments);
-
-        final List<Feature> tracks = new ArrayList<>();
-        tracks.add(track1);
-        tracks.add(track2);
-
-        try (Store store = create()) {
-            store.write(null, Stream.concat(Stream.concat(wayPoints.stream(), routes.stream()), tracks.stream()));
-
-            // Re-read the data we just wrote.
-            // testing on toString since JTS geometry always fail on equals method.
-            final Iterator<Feature> it = store.getFeatures().iterator();
-            assertEquals(point1.toString(), it.next().toString());
-            assertEquals(point2.toString(), it.next().toString());
-            assertEquals(point3.toString(), it.next().toString());
-            assertEquals(route1.toString(), it.next().toString());
-            assertEquals(route2.toString(), it.next().toString());
-            assertEquals(track1.toString(), it.next().toString());
-            assertEquals(track2.toString(), it.next().toString());
-            assertFalse(it.hasNext());
-            assertEquals(Store.V1_1, store.getVersion());
+                final Feature track1 = types.track.newInstance();
+                track1.setPropertyValue("name",   "Track name");
+                track1.setPropertyValue("cmt",    "Track comment");
+                track1.setPropertyValue("desc",   "Track description");
+                track1.setPropertyValue("src",    "Track source");
+                track1.setPropertyValue("type",   "Track type");
+                track1.setPropertyValue("number", 7);
+                track1.setPropertyValue("trkseg", Arrays.asList(seg1, seg2));
+                track1.setPropertyValue("link",   Arrays.asList(new Link(new URI("http://track-address1.org")),
+                                                                new Link(new URI("http://track-address2.org")),
+                                                                new Link(new URI("http://track-address3.org"))));
+                final Feature track2 = types.track.newInstance();
+                features = Arrays.asList(track1, track2);
+                break;
+            }
+            default: throw new AssertionError(type);
         }
+        /*
+         * Add minimalist metadata and marshal.
+         */
+        final Bounds bounds = new Bounds();
+        bounds.westBoundLongitude = -20;
+        bounds.eastBoundLongitude =  30;
+        bounds.southBoundLatitude =  10;
+        bounds.northBoundLatitude =  40;
+        final Metadata metadata = new Metadata();
+        metadata.bounds = bounds;
+        metadata.creator = "DataProducer";
+        try (final Store store = create()) {
+            store.version = version;
+            store.write(metadata, features.stream());
+        }
+        assertXmlEquals(WriterTest.class.getResourceAsStream(expected), toString(),
+                        "xmlns:xsi", "xsi:schemaLocation", "xsi:type");
     }
 }
