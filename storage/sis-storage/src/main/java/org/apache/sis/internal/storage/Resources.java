@@ -67,6 +67,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ExcessiveStringSize_3 = 0;
 
         /**
+         * The “{0}” data store does not accept features of type “{1}”.
+         */
+        public static final short IllegalFeatureType_2 = 6;
+
+        /**
          * Components of the “{0}” name are inconsistent with those of the name that was added.
          */
         public static final short InconsistentNameComponents_1 = 4;

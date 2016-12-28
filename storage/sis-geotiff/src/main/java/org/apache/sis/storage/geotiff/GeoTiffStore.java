@@ -33,6 +33,7 @@ import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 
@@ -54,7 +55,7 @@ public class GeoTiffStore extends DataStore {
     final Charset encoding;
 
     /**
-     * The GeoTIFF reader implementation, or {@code null} if none.
+     * The GeoTIFF reader implementation, or {@code null} if the store has been closed.
      */
     private Reader reader;
 
@@ -102,6 +103,7 @@ public class GeoTiffStore extends DataStore {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
+            final Reader reader = reader();
             final MetadataBuilder builder = reader.metadata;
             try {
                 builder.setFormat("GeoTIFF");
@@ -125,6 +127,17 @@ public class GeoTiffStore extends DataStore {
             }
         }
         return metadata;
+    }
+
+    /**
+     * Returns the reader if it is not closed, or thrown an exception otherwise.
+     */
+    private Reader reader() throws DataStoreException {
+        final Reader r = reader;
+        if (r == null) {
+            throw new DataStoreClosedException(errors().getString(Errors.Keys.ClosedReader_1, "GeoTIFF"));
+        }
+        return r;
     }
 
     /**

@@ -18,6 +18,7 @@ package org.apache.sis.internal.gpx;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.xml.GeographicEnvelope;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 
 
 /**
@@ -62,6 +63,27 @@ public final class Bounds extends GeographicEnvelope {
      * Creates an initially empty bounds.
      */
     public Bounds() {
+    }
+
+    /**
+     * Copies properties from the given ISO 19115 metadata.
+     */
+    private Bounds(final GeographicBoundingBox box) {
+        westBoundLongitude = box.getWestBoundLongitude();
+        eastBoundLongitude = box.getEastBoundLongitude();
+        northBoundLatitude = box.getNorthBoundLatitude();
+        southBoundLatitude = box.getSouthBoundLatitude();
+    }
+
+    /**
+     * Returns the given ISO 19115 metadata as a {@code Bounds} instance.
+     * This method copies the data only if needed.
+     *
+     * @param  box  the ISO 19115 metadata, or {@code null}.
+     * @return the GPX metadata, or {@code null}.
+     */
+    public static Bounds castOrCopy(final GeographicBoundingBox box) {
+        return (box == null || box instanceof Bounds) ? (Bounds) box : new Bounds(box);
     }
 
     /**

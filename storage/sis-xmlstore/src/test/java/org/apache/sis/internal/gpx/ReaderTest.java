@@ -26,6 +26,7 @@ import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
@@ -48,6 +49,7 @@ import org.opengis.feature.Feature;
  * @version 0.8
  * @module
  */
+@DependsOn(MetadataTest.class)
 public final strictfp class ReaderTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.

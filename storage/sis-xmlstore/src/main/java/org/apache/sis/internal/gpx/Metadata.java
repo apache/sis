@@ -46,6 +46,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
+import org.apache.sis.metadata.iso.extent.Extents;
 
 
 /**
@@ -72,6 +73,7 @@ import org.apache.sis.metadata.iso.identification.DefaultKeywords;
  * the ISO 19115 metadata model and can be ignored if the user only wants to manipulate the GPX model.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
@@ -161,33 +163,40 @@ public final class Metadata extends SimpleMetadata {
 
     /**
      * Copies properties from the given ISO 19115 metadata.
+     * If a property has more than one value, only the first one will be retained
+     * (except for links and keywords where multi-values are allowed).
      */
-    private Metadata(final org.opengis.metadata.Metadata md, final Locale locale) {
+    Metadata(final org.opengis.metadata.Metadata md, final Locale locale) {
         for (final Identification id : md.getIdentificationInfo()) {
-            final Citation c = id.getCitation();
-            if (c != null) {
+            /*
+             * identificationInfo.citation.title                    →   name
+             * identificationInfo.citation.date.date                →   time
+             * identificationInfo.citation.onlineResource.name      →   link.text
+             * identificationInfo.citation.onlineResource.linkage   →   link.uri
+             * identificationInfo.abstract                          →   description
+             */
+            final Citation ci = id.getCitation();
+            if (ci != null) {
                 if (name == null) {
-                    name = Types.toString(c.getTitle(), locale);
+                    name = Types.toString(ci.getTitle(), locale);
                 }
                 if (time == null) {
-                    for (final CitationDate d : c.getDates()) {
+                    for (final CitationDate d : ci.getDates()) {
                         time = d.getDate();
                         if (time != null) break;
                     }
                 }
-                for (final OnlineResource r : c.getOnlineResources()) {
-                    final Link link = Link.castOrCopy(r, locale);
-                    if (link != null) {
-                        if (links == null) {
-                            links = new ArrayList<>();
-                        }
-                        links.add(link);
-                    }
+                for (final OnlineResource r : ci.getOnlineResources()) {
+                    links = addIfNonNull(links, Link.castOrCopy(r, locale));
                 }
             }
             if (description == null) {
                 description = Types.toString(id.getAbstract(), locale);
             }
+            /*
+             * identificationInfo.pointOfContact.party.name   →   creator        if role is ORIGINATOR
+             * identificationInfo.pointOfContact.party.name   →   author.name    if role is AUTHOR
+             */
             for (final Responsibility r : id.getPointOfContacts()) {
                 final Person p = Person.castOrCopy(r, locale);
                 if (p != null) {
@@ -200,23 +209,34 @@ public final class Metadata extends SimpleMetadata {
                     }
                 }
             }
+            /*
+             * identificationInfo.resourceConstraints.responsibleParty.party.name        →   copyright.author
+             * identificationInfo.resourceConstraints.reference.date.date                →   copyright.year
+             * identificationInfo.resourceConstraints.reference.onlineResource.linkage   →   copyright.license
+             */
             if (copyright == null) {
-                for (final Constraints cr : id.getResourceConstraints()) {
-                    if (cr instanceof LegalConstraints) {
-                        copyright = Copyright.castOrCopy((LegalConstraints) cr, locale);
+                for (final Constraints c : id.getResourceConstraints()) {
+                    if (c instanceof LegalConstraints) {
+                        copyright = Copyright.castOrCopy((LegalConstraints) c, locale);
                         if (copyright != null) break;
                     }
                 }
             }
+            /*
+             * identificationInfo.descriptiveKeywords.keyword   →   keywords
+             */
             for (final Keywords k : id.getDescriptiveKeywords()) {
-                for (final InternationalString kw : k.getKeywords()) {
-                    final String s = Types.toString(kw, locale);
-                    if (s != null) {
-                        if (keywords == null) {
-                            keywords = new ArrayList<>();
-                        }
-                        keywords.add(s);
-                    }
+                for (final InternationalString word : k.getKeywords()) {
+                    keywords = addIfNonNull(keywords, Types.toString(word, locale));
+                }
+            }
+            /*
+             * identificationInfo.extent.geographicElement   →   bounds
+             */
+            if (bounds == null) {
+                for (final Extent e : id.getExtents()) {
+                    bounds = Bounds.castOrCopy(Extents.getGeographicBoundingBox(e));
+                    if (bounds != null) break;
                 }
             }
         }
@@ -431,5 +451,24 @@ public final class Metadata extends SimpleMetadata {
             }
             table.nextLine();
         }
+    }
+
+    /**
+     * Adds the given element to the given list if non null, or do nothing otherwise.
+     * This is a convenience method for storing {@code <link>} elements in way points,
+     * routes or tracks among others.
+     *
+     * @param  list     the list where to add the element, or {@code null} if not yet created.
+     * @param  element  the element to add, or {@code null} if none.
+     * @return the list where the element has been added.
+     */
+    static <T> List<T> addIfNonNull(List<T> list, final T element) {
+        if (element != null) {
+            if (list == null) {
+                list = new ArrayList<>(4);         // Small capacity since there is usually few elements.
+            }
+            list.add(element);
+        }
+        return list;
     }
 }

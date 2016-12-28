@@ -299,25 +299,6 @@ parse:  while (reader.hasNext()) {
     }
 
     /**
-     * Adds the given element to the given list if non null, or do nothing otherwise.
-     * This is a convenience method for storing {@code <link>} elements in way points,
-     * routes or tracks (not in metadata).
-     *
-     * @param  links    the list where to add the element, or {@code null} if not yet created.
-     * @param  element  the element to add, or {@code null} if none.
-     * @return the list where the element has been added.
-     */
-    private static List<Link> addIfNonNull(List<Link> links, final Link element) {
-        if (element != null) {
-            if (links == null) {
-                links = new ArrayList<>(3);         // Small capacity since there is usually only one link.
-            }
-            links.add(element);
-        }
-        return links;
-    }
-
-    /**
      * Returns the metadata (ISO 19115 compatible), or {@code null} if none.
      * This method can return a non-null value only if {@code initialize(true)}
      * has been invoked before this method.
@@ -460,8 +441,8 @@ parse:  while (reader.hasNext()) {
                         case Tags.SATELITTES:       // Fallthrough to getElementAsInteger()
                         case Tags.DGPS_ID:          value = getElementAsInteger(); break;
                         case Tags.FIX:              value = Fix.fromGPX(getElementText()); break;
-                        case Tags.LINK:             links = addIfNonNull(links, unmarshal(Link.class)); continue;
-                        case Tags.URL:              links = addIfNonNull(links, Link.valueOf(getElementAsURI())); continue;
+                        case Tags.LINK:             links = Metadata.addIfNonNull(links, unmarshal(Link.class)); continue;
+                        case Tags.URL:              links = Metadata.addIfNonNull(links, Link.valueOf(getElementAsURI())); continue;
                         default: {
                             if (name.equals(tagName)) {
                                 throw new DataStoreContentException(nestedElement(name));
@@ -515,8 +496,8 @@ parse:  while (reader.hasNext()) {
                         case Tags.SOURCE:      // ︙
                         case Tags.TYPE:        value = getElementText(); break;
                         case Tags.NUMBER:      value = getElementAsInteger(); break;
-                        case Tags.LINK:        links = addIfNonNull(links, unmarshal(Link.class)); continue;
-                        case Tags.URL:         links = addIfNonNull(links, Link.valueOf(getElementAsURI())); continue;
+                        case Tags.LINK:        links = Metadata.addIfNonNull(links, unmarshal(Link.class)); continue;
+                        case Tags.URL:         links = Metadata.addIfNonNull(links, Link.valueOf(getElementAsURI())); continue;
                         case Tags.ROUTES:      throw new DataStoreContentException(nestedElement(name));
                         case Tags.ROUTE_POINTS: {
                             if (wayPoints == null) wayPoints = new ArrayList<>(8);
@@ -614,8 +595,8 @@ parse:  while (reader.hasNext()) {
                         case Tags.SOURCE:       // ︙
                         case Tags.TYPE:         value = getElementText(); break;
                         case Tags.NUMBER:       value = getElementAsInteger(); break;
-                        case Tags.LINK:         links = addIfNonNull(links, unmarshal(Link.class)); continue;
-                        case Tags.URL:          links = addIfNonNull(links, Link.valueOf(getElementAsURI())); continue;
+                        case Tags.LINK:         links = Metadata.addIfNonNull(links, unmarshal(Link.class)); continue;
+                        case Tags.URL:          links = Metadata.addIfNonNull(links, Link.valueOf(getElementAsURI())); continue;
                         case Tags.TRACKS:       throw new DataStoreContentException(nestedElement(name));
                         case Tags.TRACK_SEGMENTS: {
                             if (segments == null) segments = new ArrayList<>(8);
