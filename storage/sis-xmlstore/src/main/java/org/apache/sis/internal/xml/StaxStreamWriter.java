@@ -299,7 +299,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
         final QName qn;
         XMLStreamWriter out = writer;
         if (hideNS != null) {
-            out = new DefaultNamespaceStreamWriter(out, hideNS);
+            out = new NamespaceEraser(out, hideNS);
             qn  = new QName(hideNS, name);
         } else {
             qn  = new QName(name);
