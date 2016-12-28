@@ -18,6 +18,7 @@ package org.apache.sis.internal.gpx;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Locale;
 import java.util.Objects;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -27,6 +28,7 @@ import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -125,6 +127,26 @@ public final class Link implements OnlineResource {
                 Context.warningOccured(context, Link.class, "afterUnmarshal", e, true);
             }
         }
+    }
+
+    /**
+     * Copies properties from the given ISO 19115 metadata.
+     */
+    private Link(final OnlineResource r, final Locale locale) {
+        uri  = r.getLinkage();
+        text = Types.toString(r.getName(), locale);
+    }
+
+    /**
+     * Returns the given ISO 19115 metadata as a {@code Link} instance.
+     * This method copies the data only if needed.
+     *
+     * @param  r       the ISO 19115 metadata, or {@code null}.
+     * @param  locale  the locale to use for localized strings.
+     * @return the GPX metadata, or {@code null}.
+     */
+    public static Link castOrCopy(final OnlineResource r, final Locale locale) {
+        return (r == null || r instanceof Link) ? (Link) r : new Link(r, locale);
     }
 
     /**

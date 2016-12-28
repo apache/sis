@@ -180,8 +180,7 @@ public final class Store extends StaxDataStore {
     public synchronized void write(final Metadata metadata, final Stream<? extends Feature> features)
             throws DataStoreException
     {
-        // TODO: convert the metadata if needed.
-        try (final Writer writer = new Writer(this, (org.apache.sis.internal.gpx.Metadata) metadata)) {
+        try (final Writer writer = new Writer(this, org.apache.sis.internal.gpx.Metadata.castOrCopy(metadata, locale))) {
             writer.writeStartDocument();
             if (features != null) {
                 features.forEachOrdered(writer);

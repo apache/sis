@@ -158,9 +158,9 @@ public final strictfp class WriterTest extends TestCase {
         metadata.keywords    = Arrays.asList("sample", "metadata");
         metadata.bounds      = bounds;
         metadata.time        = date("2010-03-01 00:00:00");
-        metadata.links.add(new Link(new URI("http://first-address.org")));
-        metadata.links.add(new Link(new URI("http://second-address.org")));
-        metadata.links.add(new Link(new URI("http://third-address.org")));
+        metadata.links       = Arrays.asList(new Link(new URI("http://first-address.org")),
+                                             new Link(new URI("http://second-address.org")),
+                                             new Link(new URI("http://third-address.org")));
         metadata.links.get(2).type = "website";
         metadata.links.get(0).text = "first";
 

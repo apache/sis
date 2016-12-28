@@ -283,7 +283,11 @@ parse:  while (reader.hasNext()) {
      * This is a convenience method for GPX 1.0 metadata parsing.
      */
     private Link link() {
-        final List<Link> links = metadata().links;
+        final Metadata metadata = metadata();
+        List<Link> links = metadata.links;
+        if (links == null) {
+            metadata.links = links = new ArrayList<>();
+        }
         final Link first;
         if (links.isEmpty()) {
             first = new Link();
