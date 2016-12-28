@@ -23,6 +23,7 @@ import javax.xml.bind.JAXBException;
 import com.esri.core.geometry.Point;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.IllegalFeatureTypeException;
 import org.apache.sis.internal.xml.StaxStreamWriter;
 import org.apache.sis.util.Version;
 
@@ -155,7 +156,7 @@ final class Writer extends StaxStreamWriter {
             } else {
                 final boolean isRoute = types.route.isAssignableFrom(type);
                 if (!isRoute && !types.track.isAssignableFrom(type)) {
-                    throw new DataStoreException();     // TODO: provide message.
+                    throw new IllegalFeatureTypeException(owner.getLocale(), owner.getFormatName(), type.getName());
                 }
                 writer.writeStartElement(isRoute ? Tags.ROUTES : Tags.TRACKS);
                 writeSingleValue(Tags.NAME,        feature.getPropertyValue(Tags.NAME));

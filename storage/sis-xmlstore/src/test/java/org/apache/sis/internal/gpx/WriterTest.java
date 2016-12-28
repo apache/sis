@@ -28,17 +28,16 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Debug;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.test.TestUtilities.date;
 
 // Branch-dependent imports
 import java.time.Instant;
-import org.apache.sis.test.DependsOnMethod;
 import org.opengis.feature.Feature;
 
 
@@ -53,7 +52,7 @@ import org.opengis.feature.Feature;
  * @version 0.8
  * @module
  */
-@DependsOn(ReaderTest.class)
+@DependsOn({MetadataTest.class, ReaderTest.class})
 public final strictfp class WriterTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
@@ -133,37 +132,7 @@ public final strictfp class WriterTest extends TestCase {
      * @param expected  name of a test file containing the expected XML result.
      */
     private void testMetadata(final Version version, final String expected) throws Exception {
-        final Person person = new Person();
-        person.name  = "Jean-Pierre";
-        person.email = "jean.pierre@test.com";
-        person.link  = new Link(new URI("http://someone-site.org"));
-
-        final Copyright copyright = new Copyright();
-        copyright.author  = "Apache";
-        copyright.year    = 2004;
-        copyright.license = new URI("http://www.apache.org/licenses/LICENSE-2.0");
-
-        final Bounds bounds = new Bounds();
-        bounds.westBoundLongitude = -20;
-        bounds.eastBoundLongitude =  30;
-        bounds.southBoundLatitude =  10;
-        bounds.northBoundLatitude =  40;
-
-        final Metadata metadata = new Metadata();
-        metadata.name        = "Sample";
-        metadata.description = "GPX test file";
-        metadata.author      = person;
-        metadata.creator     = "DataProducer";
-        metadata.copyright   = copyright;
-        metadata.keywords    = Arrays.asList("sample", "metadata");
-        metadata.bounds      = bounds;
-        metadata.time        = date("2010-03-01 00:00:00");
-        metadata.links       = Arrays.asList(new Link(new URI("http://first-address.org")),
-                                             new Link(new URI("http://second-address.org")),
-                                             new Link(new URI("http://third-address.org")));
-        metadata.links.get(2).type = "website";
-        metadata.links.get(0).text = "first";
-
+        final Metadata metadata = MetadataTest.create();
         try (Store store = create()) {
             store.setVersion(version);
             store.write(metadata, null);
