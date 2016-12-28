@@ -63,16 +63,6 @@ public final class StoreProvider extends StaxDataStoreProvider {
     }
 
     /**
-     * Returns the namespace URI of GPX 1.1 file format.
-     *
-     * @return GPX 1.1 namespace.
-     */
-    @Override
-    protected String getDefaultNamespace() {
-        return Tags.NAMESPACE_V11;
-    }
-
-    /**
      * Returns the JAXB context for the data store. This method is invoked at most once.
      *
      * @return the JAXB context.

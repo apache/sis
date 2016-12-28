@@ -31,7 +31,7 @@ import org.apache.sis.internal.util.StreamWriterDelegate;
  * @version 0.8
  * @module
  */
-final class DefaultNamespaceStreamWriter extends StreamWriterDelegate {
+final class NamespaceEraser extends StreamWriterDelegate {
     /**
      * The default namespace.
      */
@@ -40,7 +40,7 @@ final class DefaultNamespaceStreamWriter extends StreamWriterDelegate {
     /**
      * Creates a new filter for the given default namespace.
      */
-    DefaultNamespaceStreamWriter(final XMLStreamWriter out, final String namespaceURI) {
+    NamespaceEraser(final XMLStreamWriter out, final String namespaceURI) {
         super(out);
         defaultNamespace = namespaceURI;
     }
