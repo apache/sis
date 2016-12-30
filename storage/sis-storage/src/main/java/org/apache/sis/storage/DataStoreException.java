@@ -49,22 +49,26 @@ public class DataStoreException extends Exception implements LocalizedException 
     private static final long serialVersionUID = -1778987176103191950L;
 
     /**
-     * The resources key as one of the {@code Resources.Keys} constant, or 0 if none.
+     * The resources key as one of the {@link Resources.Keys} constant, or 0 if none.
+     *
+     * <p>This field is not serialized because key values sometime change between different SIS versions.
+     * The deserialized value will be 0, which will cause this {@code DataStoreException} to fallback on
+     * {@code super.getMessage()}.</p>
      */
-    private final short key;
+    private final transient short key;
 
     /**
-     * The arguments for the localization message, or {@code null} if none.
+     * The parameters for the localization message, or {@code null} if none.
      */
-    private final Object[] arguments;
+    private final transient Object[] parameters;
 
     /**
      * Creates an exception with no cause and no details message.
      */
     public DataStoreException() {
         super();
-        key       = 0;
-        arguments = null;
+        key        = 0;
+        parameters = null;
     }
 
     /**
@@ -74,8 +78,8 @@ public class DataStoreException extends Exception implements LocalizedException 
      */
     public DataStoreException(final String message) {
         super(message);
-        key       = 0;
-        arguments = null;
+        key        = 0;
+        parameters = null;
     }
 
     /**
@@ -85,8 +89,8 @@ public class DataStoreException extends Exception implements LocalizedException 
      */
     public DataStoreException(final Throwable cause) {
         super(cause);
-        key       = 0;
-        arguments = null;
+        key        = 0;
+        parameters = null;
     }
 
     /**
@@ -97,8 +101,8 @@ public class DataStoreException extends Exception implements LocalizedException 
      */
     public DataStoreException(final String message, final Throwable cause) {
         super(message, cause);
-        key       = 0;
-        arguments = null;
+        key        = 0;
+        parameters = null;
     }
 
     /**
@@ -138,8 +142,8 @@ public class DataStoreException extends Exception implements LocalizedException 
      */
     DataStoreException(final Locale locale, final short key, final Object... parameters) {
         super(Resources.forLocale(locale).getString(key, parameters));
-        this.key       = key;
-        this.arguments = parameters;
+        this.key        = key;
+        this.parameters = parameters;
     }
 
     /**
@@ -149,7 +153,7 @@ public class DataStoreException extends Exception implements LocalizedException 
      */
     @Override
     public String getMessage() {
-        return (key != 0) ? Resources.format(key, arguments) : super.getMessage();
+        return (key != 0) ? Resources.format(key, parameters) : super.getMessage();
     }
 
     /**
@@ -188,7 +192,7 @@ public class DataStoreException extends Exception implements LocalizedException 
      */
     @Override
     public InternationalString getInternationalMessage() {
-        return (key != 0) ? Resources.formatInternational(key, arguments) : null;
+        return (key != 0) ? Resources.formatInternational(key, parameters) : null;
     }
 
     /**

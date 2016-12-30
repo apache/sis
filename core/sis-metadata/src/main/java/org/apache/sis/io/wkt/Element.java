@@ -381,7 +381,7 @@ final class Element implements Serializable {
      * @return the exception to be thrown.
      */
     final ParseException parseFailed(final Exception cause) {
-        return (ParseException) new LocalizedParseException(locale, Errors.Keys.ErrorIn_2,
+        return new LocalizedParseException(locale, Errors.Keys.ErrorIn_2,
                 new String[] {keyword, Exceptions.getLocalizedMessage(cause, locale)}, offset).initCause(cause);
     }
 

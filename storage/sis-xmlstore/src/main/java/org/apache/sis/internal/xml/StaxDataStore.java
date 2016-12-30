@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.charset.Charset;
+import java.nio.file.StandardOpenOption;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLReporter;
 import javax.xml.stream.XMLInputFactory;
@@ -356,7 +357,7 @@ public abstract class StaxDataStore extends FeatureStore {
     {
         Object input = storage;
         if (input == null) {
-            throw new DataStoreClosedException(getLocale(), false, getFormatName());
+            throw new DataStoreClosedException(getLocale(), getFormatName(), StandardOpenOption.READ);
         }
         /*
          * If the storage given by the user was not one of InputStream, Reader or other type recognized
@@ -367,7 +368,7 @@ public abstract class StaxDataStore extends FeatureStore {
         if (type == null) {
             type = InputType.STREAM;
             if ((input = stream) == null) {
-                throw new UnsupportedStorageException(getLocale(), false, getFormatName(), storage);
+                throw new UnsupportedStorageException(getLocale(), getFormatName(), storage, StandardOpenOption.READ);
             }
         }
         /*
@@ -421,7 +422,7 @@ reset:  switch (state) {
     {
         Object output = storage;
         if (output == null) {
-            throw new DataStoreClosedException(getLocale(), true, getFormatName());
+            throw new DataStoreClosedException(getLocale(), getFormatName(), StandardOpenOption.WRITE);
         }
         /*
          * If the storage given by the user was not one of OutputStream, Writer or other type recognized
@@ -431,7 +432,7 @@ reset:  switch (state) {
         OutputType type = storageToWriter;
         if (type == null) {
             // TODO
-            throw new UnsupportedStorageException(getLocale(), true, getFormatName(), storage);
+            throw new UnsupportedStorageException(getLocale(), getFormatName(), storage, StandardOpenOption.WRITE);
         }
         final XMLStreamWriter writer = type.create(this, output);
         target.stream = stream;

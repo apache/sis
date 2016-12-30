@@ -668,8 +668,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     warning(parent, element, Errors.formatInternational(Errors.Keys.UnexpectedScaleFactorForUnit_2, verify, factor), null);
                 }
             } catch (IncommensurableException e) {
-                throw (ParseException) new LocalizedParseException(errorLocale,
-                        Errors.Keys.InconsistentUnitsForCS_1, new Object[] {verify}, element.offset).initCause(e);
+                throw new LocalizedParseException(errorLocale, Errors.Keys.InconsistentUnitsForCS_1,
+                        new Object[] {verify}, element.offset).initCause(e);
             }
         }
         return unit;

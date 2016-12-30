@@ -248,8 +248,8 @@ class MathTransformParser extends AbstractParser {
         try {
             return parseUnit(name);
         } catch (ParserException e) {
-            throw (ParseException) new LocalizedParseException(errorLocale,
-                    Errors.Keys.UnknownUnit_1, new Object[] {name}, element.offset).initCause(e);
+            throw new LocalizedParseException(errorLocale, Errors.Keys.UnknownUnit_1,
+                    new Object[] {name}, element.offset).initCause(e);
         }
     }
 
@@ -311,7 +311,7 @@ class MathTransformParser extends AbstractParser {
                 param.close(ignoredElements);
             }
         } catch (ParameterNotFoundException e) {
-            throw (ParseException) new LocalizedParseException(errorLocale, Errors.Keys.UnexpectedParameter_1,
+            throw new LocalizedParseException(errorLocale, Errors.Keys.UnexpectedParameter_1,
                     new String[] {e.getParameterName()}, param.offset).initCause(e);
         } catch (InvalidParameterValueException e) {
             throw (ParseException) new ParseException(e.getLocalizedMessage(), param.offset).initCause(e);

@@ -17,8 +17,10 @@
 package org.apache.sis.storage;
 
 import java.util.Locale;
+import java.nio.file.OpenOption;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.IOUtilities;
 
 
 /**
@@ -85,17 +87,20 @@ public class UnsupportedStorageException extends DataStoreException {
 
     /**
      * Creates a localized exception for an invalid input or output object given to a data store.
+     * Arguments given to this constructor are hints for building an error message.
      *
      * @param locale   the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.
-     * @param writer   {@code false} if a read operation was attempted, or {@code true} if a write operation was attempted.
      * @param format   short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
      * @param storage  the invalid input or output object.
+     * @param options  the option used for opening the file, or {@code null} or empty if unknown.
+     *                 This method looks in particular for {@link java.nio.file.StandardOpenOption#READ} and
+     *                 {@code WRITE} options for inferring if the data store was to be used as a reader or as a writer.
      *
      * @since 0.8
      */
-    public UnsupportedStorageException(final Locale locale, final boolean writer, final String format, final Object storage) {
-        super(locale, writer ? Resources.Keys.IllegalOutputTypeForWriter_2
-                             : Resources.Keys.IllegalInputTypeForReader_2,
+    public UnsupportedStorageException(final Locale locale, final String format, final Object storage, final OpenOption... options) {
+        super(locale, IOUtilities.isWrite(options) ? Resources.Keys.IllegalOutputTypeForWriter_2
+                                                   : Resources.Keys.IllegalInputTypeForReader_2,
                       format, Classes.getClass(storage));
     }
 }

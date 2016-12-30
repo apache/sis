@@ -121,9 +121,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
              * 'getAngleFormat()' implementation. The getMessage() method uses the system locale,
              * which is what we actually want.
              */
-            NumberFormatException e = new NumberFormatException(exception.getMessage());
-            e.initCause(exception);
-            throw e;
+            throw (NumberFormatException) new NumberFormatException(exception.getMessage()).initCause(exception);
         }
         final Class<?> type = angle.getClass();
         if (type == Angle.class || getClass().isAssignableFrom(type)) {

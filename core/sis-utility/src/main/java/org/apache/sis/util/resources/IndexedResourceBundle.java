@@ -304,11 +304,9 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                         record.setMessage(exception.getMessage());              // For administrator, use system locale.
                         record.setThrown (exception);
                         Logging.log(IndexedResourceBundle.class, methodName, record);
-                        final MissingResourceException error = new MissingResourceException(
+                        throw (MissingResourceException) new MissingResourceException(
                                 Exceptions.getLocalizedMessage(exception, locale),   // For users, use requested locale.
-                                baseName, key);
-                        error.initCause(exception);
-                        throw error;
+                                baseName, key).initCause(exception);
                     }
                     /*
                      * Now, logs the message. This message is provided only in English.

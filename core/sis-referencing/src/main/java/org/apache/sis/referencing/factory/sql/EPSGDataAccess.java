@@ -726,10 +726,8 @@ addURIs:    for (int i=0; ; i++) {
             try {
                 primaryKeys[i] = Integer.parseInt(code);
             } catch (NumberFormatException e) {
-                final NoSuchAuthorityCodeException ne = new NoSuchAuthorityCodeException(error().getString(
-                        Errors.Keys.IllegalIdentifierForCodespace_2, Constants.EPSG, code), Constants.EPSG, code);
-                ne.initCause(e);
-                throw ne;
+                throw (NoSuchAuthorityCodeException) new NoSuchAuthorityCodeException(error().getString(
+                        Errors.Keys.IllegalIdentifierForCodespace_2, Constants.EPSG, code), Constants.EPSG, code).initCause(e);
             }
         }
         return primaryKeys;
@@ -2643,10 +2641,8 @@ next:               while (r.next()) {
                      * Callers can use this information in order to determine if they should try the next coordinate
                      * operation or propagate the exception.
                      */
-                    final NoSuchIdentifierException e = new NoSuchIdentifierException(error()
-                            .getString(Errors.Keys.CanNotSetParameterValue_1, name), name);
-                    e.initCause(exception);
-                    throw e;
+                    throw (NoSuchIdentifierException) new NoSuchIdentifierException(error().getString(
+                            Errors.Keys.CanNotSetParameterValue_1, name), name).initCause(exception);
                 }
                 try {
                     if (reference != null) {

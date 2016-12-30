@@ -116,9 +116,7 @@ final class Loader extends ResourceBundle.Control {
         try {
             return (ResourceBundle) classe.getDeclaredConstructor(URL.class).newInstance(resources);
         } catch (NoSuchMethodException | InvocationTargetException e) {
-            InstantiationException exception = new InstantiationException(e.toString());
-            exception.initCause(e);
-            throw exception;
+            throw (InstantiationException) new InstantiationException(e.toString()).initCause(e);
         }
     }
 }

@@ -60,7 +60,7 @@ import org.apache.sis.internal.system.Modules;
  *     }
  * }
  *
- * @param <T> The type of option values.
+ * @param  <T>  the type of option values.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
