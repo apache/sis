@@ -16,6 +16,10 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Locale;
+import org.apache.sis.util.Classes;
+import org.apache.sis.internal.storage.Resources;
+
 
 /**
  * Thrown when no {@link DataStoreProvider} is found for a given storage object.
@@ -24,7 +28,7 @@ package org.apache.sis.storage;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public class UnsupportedStorageException extends DataStoreException {
@@ -66,5 +70,32 @@ public class UnsupportedStorageException extends DataStoreException {
      */
     public UnsupportedStorageException(final String message, final Throwable cause) {
         super(message, cause);
+    }
+
+    /**
+     * Creates a new exception which will format a localized message in the given locale.
+     *
+     * @param locale      the locale for the message to be returned by {@link #getLocalizedMessage()}.
+     * @param key         one of {@link Resources.Keys} constants.
+     * @param parameters  parameters to use for formatting the messages.
+     */
+    UnsupportedStorageException(final Locale locale, final short key, final Object... parameters) {
+        super(locale, key, parameters);
+    }
+
+    /**
+     * Creates a localized exception for an invalid input or output object given to a data store.
+     *
+     * @param locale   the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.
+     * @param writer   {@code false} if a read operation was attempted, or {@code true} if a write operation was attempted.
+     * @param format   short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
+     * @param storage  the invalid input or output object.
+     *
+     * @since 0.8
+     */
+    public UnsupportedStorageException(final Locale locale, final boolean writer, final String format, final Object storage) {
+        super(locale, writer ? Resources.Keys.IllegalOutputTypeForWriter_2
+                             : Resources.Keys.IllegalInputTypeForReader_2,
+                      format, Classes.getClass(storage));
     }
 }

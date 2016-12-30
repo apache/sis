@@ -191,7 +191,7 @@ public final class Store extends StaxDataStore {
             if (cause instanceof DataStoreException) {
                 throw (DataStoreException) cause;
             }
-            throw new DataStoreException(e.getMessage(), cause);
+            throw new DataStoreException(e.getLocalizedMessage(), cause);
         } catch (Exception e) {
             if (e instanceof UncheckedIOException) {
                 e = ((UncheckedIOException) e).getCause();

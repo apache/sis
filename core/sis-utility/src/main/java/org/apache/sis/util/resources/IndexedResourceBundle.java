@@ -283,7 +283,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                      * into an error record. Note that the message must be logged outside
                      * the synchronized block, otherwise there is dead locks!
                      */
-                    final Locale    locale     = getLocale(); // Sometime null with IBM's JDK.
+                    final Locale    locale     = getLocale();                         // Sometime null with IBM's JDK.
                     final String    baseName   = getClass().getCanonicalName();
                     final String    methodName = (key != null) ? "getObject" : "getKeys";
                     final LogRecord record     = new LogRecord(Level.FINER, "Loaded resources for {0} from bundle \"{1}\".");
@@ -301,11 +301,11 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                         }
                     } catch (IOException exception) {
                         record.setLevel  (Level.WARNING);
-                        record.setMessage(exception.getMessage()); // For administrator, use system locale.
+                        record.setMessage(exception.getMessage());              // For administrator, use system locale.
                         record.setThrown (exception);
                         Logging.log(IndexedResourceBundle.class, methodName, record);
                         final MissingResourceException error = new MissingResourceException(
-                                Exceptions.getLocalizedMessage(exception, locale), // For users, use requested locale.
+                                Exceptions.getLocalizedMessage(exception, locale),   // For users, use requested locale.
                                 baseName, key);
                         error.initCause(exception);
                         throw error;
@@ -359,7 +359,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
             } catch (ReflectiveOperationException e) {
                 e.addSuppressed(exception);
                 Logging.recoverableException(Logging.getLogger(Loggers.LOCALIZATION), getClass(), "handleGetObject", e);
-                return null; // This is okay as of 'handleGetObject' contract.
+                return null;                // This is okay as of 'handleGetObject' contract.
             }
         }
         return (keyID >= 0 && keyID < values.length) ? values[keyID] : null;

@@ -19,8 +19,6 @@ package org.apache.sis.storage.netcdf;
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.Classes;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
@@ -89,8 +87,7 @@ public class NetcdfStore extends DataStore {
             throw new DataStoreException(e);
         }
         if (decoder == null) {
-            throw new UnsupportedStorageException(errors().getString(Errors.Keys.IllegalInputTypeForReader_2,
-                    "NetCDF", Classes.getClass(connector.getStorage())));
+            throw new UnsupportedStorageException(super.getLocale(), false, "NetCDF", connector.getStorage());
         }
     }
 
@@ -148,14 +145,6 @@ public class NetcdfStore extends DataStore {
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
-    }
-
-    /**
-     * Returns the error resources in the current locale.
-     */
-    private Errors errors() {
-        // Must use "super" because NetcdfStore construction may not be finished.
-        return Errors.getResources(super.getLocale());
     }
 
     /**

@@ -19,15 +19,16 @@ package org.apache.sis.internal.util;
 import java.util.Locale;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.Localized;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.LocalizedException;
 
 
 /**
- * A {@link ParseException} in which {@link #getLocalizedMessage()} returns the message in the
- * parser locale. This exception contains the error message in two languages:
+ * A {@link ParseException} in which {@link #getLocalizedMessage()} returns the message in the parser locale.
+ * This exception contains the error message in two languages:
  *
  * <ul>
  *   <li>{@link ParseException#getMessage()} returns the message in the default locale.</li>
@@ -40,19 +41,14 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
-public final class LocalizedParseException extends ParseException implements LocalizedException, Localized {
+public final class LocalizedParseException extends ParseException implements LocalizedException {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -1467571540435486742L;
-
-    /**
-     * The locale to use for formatting the localized error message, or {@code null} for the default.
-     */
-    private final Locale locale;
 
     /**
      * The resources key as one of the {@code Errors.Keys} constant.
@@ -65,8 +61,8 @@ public final class LocalizedParseException extends ParseException implements Loc
     private final Object[] arguments;
 
     /**
-     * Constructs a {@code ParseException} with a message formatted from the given resource key
-     * and message arguments. This is the most generic constructor.
+     * Constructs a {@code ParseException} with a message formatted from the given resource key and message arguments.
+     * This is the most generic constructor.
      *
      * @param  locale       the locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
      * @param  key          the resource key as one of the {@code Errors.Keys} constant.
@@ -74,16 +70,15 @@ public final class LocalizedParseException extends ParseException implements Loc
      * @param  errorOffset  the position where the error is found while parsing.
      */
     public LocalizedParseException(final Locale locale, final short key, final Object[] arguments, final int errorOffset) {
-        super(Errors.format(key, arguments), errorOffset);
-        this.locale    = locale;
+        super(Errors.getResources(locale).getString(key, arguments), errorOffset);
         this.arguments = arguments;
         this.key       = key;
     }
 
     /**
-     * Constructs a {@code ParseException} with a message formatted from the given resource key
-     * and unparsable string. This convenience constructor fetches the word starting at the error
-     * index, and uses that word as the single argument associated to the resource key.
+     * Constructs a {@code ParseException} with a message formatted from the given resource key and unparsable string.
+     * This convenience constructor fetches the word starting at the error index,
+     * and uses that word as the single argument associated to the resource key.
      *
      * @param  locale       the locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
      * @param  key          the resource key as one of the {@code Errors.Keys} constant.
@@ -95,9 +90,9 @@ public final class LocalizedParseException extends ParseException implements Loc
     }
 
     /**
-     * Creates a {@link ParseException} with a localized message built from the given parsing
-     * information. This convenience constructor creates a message of the kind <cite>"Can not
-     * parse string "text" as an object of type 'type'"</cite>.
+     * Creates a {@link ParseException} with a localized message built from the given parsing information.
+     * This convenience constructor creates a message of the kind <cite>"Can not parse string "text" as an
+     * object of type 'type'"</cite>.
      *
      * @param  locale  the locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
      * @param  type    the type of objects parsed by the {@link java.text.Format}.
@@ -170,26 +165,32 @@ public final class LocalizedParseException extends ParseException implements Loc
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the exception message in the default locale, typically for system administrator.
+     *
+     * @return the message of this exception.
      */
     @Override
-    public Locale getLocale() {
-        return (locale != null) ? locale : Locale.getDefault();
+    public String getMessage() {
+        return Errors.format(key, arguments);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a localized version of the exception message, typically for final user.
+     *
+     * @return the localized message of this exception.
      */
     @Override
     public String getLocalizedMessage() {
-        return Errors.getResources(locale).getString(key, arguments);
+        return super.getMessage();
     }
 
     /**
-     * {@inheritDoc}
+     * Return the message in various locales.
+     *
+     * @return the exception message.
      */
     @Override
-    public String getLocalizedMessage(final Locale locale) {
-        return Errors.getResources(locale).getString(key, arguments);
+    public InternationalString getInternationalMessage() {
+        return Errors.formatInternational(key, arguments);
     }
 }

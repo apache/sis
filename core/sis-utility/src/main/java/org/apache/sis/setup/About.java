@@ -164,7 +164,7 @@ public enum About {
      *     return configuration(EnumSet.allOf(About.class), null, null);
      * }
      *
-     * @return Configuration information, as a tree for grouping some configuration by sections.
+     * @return configuration information, as a tree for grouping some configuration by sections.
      */
     public static TreeTable configuration() {
         return configuration(EnumSet.allOf(About.class), null, null);
@@ -173,10 +173,10 @@ public enum About {
     /**
      * Returns a subset of the information about the current Apache SIS running environment.
      *
-     * @param  sections The section for which information are desired.
-     * @param  locale   The locale to use for formatting the texts in the tree, or {@code null} for the default.
-     * @param  timezone The timezone to use for formatting the dates, or {@code null} for the default.
-     * @return Configuration information, as a tree for grouping some configuration by sections.
+     * @param  sections  the section for which information are desired.
+     * @param  locale    the locale to use for formatting the texts in the tree, or {@code null} for the default.
+     * @param  timezone  the timezone to use for formatting the dates, or {@code null} for the default.
+     * @return configuration information, as a tree for grouping some configuration by sections.
      */
     public static TreeTable configuration(final Set<About> sections, Locale locale, final TimeZone timezone) {
         ArgumentChecks.ensureNonNull("sections", sections);
@@ -499,9 +499,9 @@ pathTree:   for (int j=0; ; j++) {
      * Returns a map of all JAR files or class directories found in the given paths,
      * associated to a description obtained from their {@code META-INF/MANIFEST.MF}.
      *
-     * @param  paths         The paths using the {@link File#pathSeparatorChar} separator.
-     * @param  asDirectories {@code true} if the paths are directories, or {@code false} for JAR files.
-     * @return The paths, or {@code null} if none.
+     * @param  paths          the paths using the {@link File#pathSeparatorChar} separator.
+     * @param  asDirectories  {@code true} if the paths are directories, or {@code false} for JAR files.
+     * @return the paths, or {@code null} if none.
      */
     private static Map<File,CharSequence> classpath(final String paths, final boolean asDirectories) {
         final Map<File,CharSequence> files = new LinkedHashMap<>();
@@ -520,10 +520,10 @@ pathTree:   for (int j=0; ; j++) {
      *       a {@code MANIFEST.MF} attribute using space as the path separator.</li>
      * </ul>
      *
-     * @param  paths         The paths using the separator described above.
-     * @param  directory     The directory of {@code MANIFEST.MF} classpath, or {@code null}.
-     * @param  asDirectories {@code true} if the paths are directories, or {@code false} for JAR files.
-     * @param  files         Where to add the paths.
+     * @param  paths          the paths using the separator described above.
+     * @param  directory      the directory of {@code MANIFEST.MF} classpath, or {@code null}.
+     * @param  asDirectories  {@code true} if the paths are directories, or {@code false} for JAR files.
+     * @param  files          where to add the paths.
      * @return {@code true} if the given map has been changed as a result of this method call.
      */
     private static boolean classpath(final String paths, final File directory,
@@ -650,9 +650,9 @@ pathTree:   for (int j=0; ; j++) {
      * In particular, note that this implementation assumes that children collections are {@link List} (this is
      * guaranteed for {@link DefaultTreeTable.Node} implementations).</p>
      *
-     * @param  node The root of the node to simplify.
-     * @param  skip {@code true} for disabling concatenation of root node.
-     * @return The root of the simplified tree. May be the given {@code node} or a child.
+     * @param  node  the root of the node to simplify.
+     * @param  skip  {@code true} for disabling concatenation of root node.
+     * @return the root of the simplified tree. May be the given {@code node} or a child.
      */
     private static TreeTable.Node concatenateSingletons(final TreeTable.Node node, final boolean skip) {
         // DefaultTreeTable.Node instances are known to handle their children in a List.
@@ -679,10 +679,10 @@ pathTree:   for (int j=0; ; j++) {
      * Concatenates the given strings in the format "main (complement)".
      * Any of the given strings can be null.
      *
-     * @param  main        The main string to show first, or {@code null}.
-     * @param  complement  The string to show after the main one, or {@code null}.
-     * @param  parenthesis {@code true} for writing the complement between parenthesis, or {@code null}.
-     * @return The concatenated string, or {@code null} if all components are null.
+     * @param  main         the main string to show first, or {@code null}.
+     * @param  complement   the string to show after the main one, or {@code null}.
+     * @param  parenthesis  {@code true} for writing the complement between parenthesis, or {@code null}.
+     * @return the concatenated string, or {@code null} if all components are null.
      */
     private static CharSequence concatenate(final CharSequence main, final CharSequence complement, final boolean parenthesis) {
         if (main != null && main.length() != 0) {
@@ -725,10 +725,10 @@ pathTree:   for (int j=0; ; j++) {
      * Formats the given value preceded by a plus or minus sign.
      * This method is used for formatting timezone offset.
      *
-     * @param df     The {@link DateFormat} to use for formatting the offset.
-     * @param offset The offset to format, as a positive or negative value.
-     * @param buffer The buffer where to format the offset.
-     * @return       The given buffer, returned for convenience.
+     * @param  df      the {@link DateFormat} to use for formatting the offset.
+     * @param  offset  the offset to format, as a positive or negative value.
+     * @param  buffer  the buffer where to format the offset.
+     * @return the given buffer, returned for convenience.
      */
     private static StringBuffer format(final Format df, final int offset, final StringBuffer buffer) {
         return df.format(Math.abs(offset), buffer.append(offset < 0 ? '-' : '+').append(' '), new FieldPosition(0));
@@ -747,9 +747,9 @@ pathTree:   for (int j=0; ; j++) {
      * Returns the given file relative to the given root, or {@code null} if the root is not
      * a parent of that file.
      *
-     * @param  root The root directory (typically Java home or user home directory).
-     * @param  file The file to make relative to the root.
-     * @return The file relative to the given root, or {@code null} if none.
+     * @param  root  the root directory (typically Java home or user home directory).
+     * @param  file  the file to make relative to the root.
+     * @return the file relative to the given root, or {@code null} if none.
      */
     private static File relativize(final File root, final File file) {
         File parent = file.getParentFile();

@@ -212,7 +212,7 @@ search:         while (!deferred.isEmpty() && connector.prefetch()) {
             }
         }
         if (open && selected == null) {
-            throw new UnsupportedStorageException(Resources.format(Resources.Keys.UnknownFormatFor_1, connector.getStorageName()));
+            throw new UnsupportedStorageException(null, Resources.Keys.UnknownFormatFor_1, connector.getStorageName());
         }
         return selected;
     }

@@ -61,15 +61,50 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Can not read “{1}” as a file in the {0} format.
+         */
+        public static final short CanNotReadFile_2 = 7;
+
+        /**
+         * Can not read line {2} of “{1}” as part of a file in the {0} format.
+         */
+        public static final short CanNotReadFile_3 = 8;
+
+        /**
+         * Can not read line {2} (after column {3}) of “{1}” as part of a file in the {0} format.
+         */
+        public static final short CanNotReadFile_4 = 9;
+
+        /**
+         * This {0} reader is closed.
+         */
+        public static final short ClosedReader_1 = 10;
+
+        /**
+         * This {0} writer is closed.
+         */
+        public static final short ClosedWriter_1 = 11;
+
+        /**
          * Character string in the “{0}” file is too long. The string has {2} characters while the
          * limit is {1}.
          */
         public static final short ExcessiveStringSize_3 = 0;
 
         /**
-         * The “{0}” data store does not accept features of type “{1}”.
+         * The {0} data store does not accept features of type “{1}”.
          */
         public static final short IllegalFeatureType_2 = 6;
+
+        /**
+         * The {0} reader does not accept inputs of type ‘{1}’.
+         */
+        public static final short IllegalInputTypeForReader_2 = 12;
+
+        /**
+         * The {0} writer does not accept outputs of type ‘{1}’.
+         */
+        public static final short IllegalOutputTypeForWriter_2 = 13;
 
         /**
          * Components of the “{0}” name are inconsistent with those of the name that was added.

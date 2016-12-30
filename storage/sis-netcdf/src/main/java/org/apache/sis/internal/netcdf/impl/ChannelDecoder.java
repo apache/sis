@@ -253,7 +253,7 @@ public final class ChannelDecoder extends Decoder {
         VariableInfo[]     variables  = null;
         Map<String,Object> attributes = null;
         for (int i=0; i<3; i++) {
-            final long tn = input.readLong(); // Combination of tag and nelems
+            final long tn = input.readLong();                   // Combination of tag and nelems
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
                 final int nelems = (int) tn;
@@ -266,7 +266,7 @@ public final class ChannelDecoder extends Decoder {
                         default:        throw malformedHeader();
                     }
                 } catch (InvalidParameterCardinalityException e) {
-                    throw new DataStoreContentException(e.getLocalizedMessage());
+                    throw new DataStoreContentException(e.getLocalizedMessage(), e);
                 }
             }
         }
@@ -316,7 +316,7 @@ public final class ChannelDecoder extends Decoder {
      * that the file should be a NetCDF one, but we found some inconsistency or unknown tags.
      */
     private DataStoreException malformedHeader() {
-        return new DataStoreContentException(errors().getString(Errors.Keys.CanNotParseFile_2, "NetCDF", getFilename()));
+        return new DataStoreContentException(listeners.getLocale(), "NetCDF", getFilename(), null);
     }
 
     /**
@@ -541,9 +541,7 @@ public final class ChannelDecoder extends Decoder {
                     varDims[i] = allDimensions[input.readInt()];
                 }
             } catch (IndexOutOfBoundsException cause) {
-                final DataStoreException e = malformedHeader();
-                e.initCause(cause);
-                throw e;
+                throw malformedHeader().initCause(cause);
             }
             /*
              * Following block is almost a copy-and-paste of similar block in the contructor,

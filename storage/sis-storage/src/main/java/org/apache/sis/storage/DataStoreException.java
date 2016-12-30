@@ -17,11 +17,24 @@
 package org.apache.sis.storage;
 
 import java.util.Locale;
+import org.opengis.util.InternationalString;
+import org.apache.sis.util.LocalizedException;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.storage.IOUtilities;
+import org.apache.sis.util.Workaround;
 
 
 /**
  * Thrown when a {@link DataStore} can not complete a read or write operation.
+ *
+ * <div class="section">Localization</div>
+ * The {@link #getMessage()} and {@link #getLocalizedMessage()} methods return the same message,
+ * but sometime in different languages. The general policy is that {@link #getMessage()} returns
+ * the message in the JVM {@linkplain Locale#getDefault() default locale} while {@link #getLocalizedMessage()}
+ * returns the message in the locale specified by the last call to {@link DataStore#setLocale(Locale)}.
+ * In a client-server architecture, the former is typically the locale of the system administrator
+ * while the later is presumably the locale of the client connected to the server.
+ * However this policy is applied on a <em>best-effort</em> basis only.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -29,16 +42,11 @@ import org.apache.sis.internal.storage.Resources;
  * @version 0.8
  * @module
  */
-public class DataStoreException extends Exception {
+public class DataStoreException extends Exception implements LocalizedException {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -1778987176103191950L;
-
-    /**
-     * The locale to use for formatting the localized error message, or {@code null} for the default.
-     */
-    private final Locale locale;
 
     /**
      * The resources key as one of the {@code Resources.Keys} constant, or 0 if none.
@@ -55,7 +63,6 @@ public class DataStoreException extends Exception {
      */
     public DataStoreException() {
         super();
-        locale    = null;
         key       = 0;
         arguments = null;
     }
@@ -63,11 +70,10 @@ public class DataStoreException extends Exception {
     /**
      * Creates an exception with the specified details message.
      *
-     * @param message  the detail message.
+     * @param message  the detail message in the default locale.
      */
     public DataStoreException(final String message) {
         super(message);
-        locale    = null;
         key       = 0;
         arguments = null;
     }
@@ -79,7 +85,6 @@ public class DataStoreException extends Exception {
      */
     public DataStoreException(final Throwable cause) {
         super(cause);
-        locale    = null;
         key       = 0;
         arguments = null;
     }
@@ -87,28 +92,64 @@ public class DataStoreException extends Exception {
     /**
      * Creates an exception with the specified details message and cause.
      *
-     * @param message  the detail message.
+     * @param message  the detail message in the default locale.
      * @param cause    the cause for this exception.
      */
     public DataStoreException(final String message, final Throwable cause) {
         super(message, cause);
-        locale    = null;
         key       = 0;
         arguments = null;
     }
 
     /**
+     * Creates a localized exception with a message saying that the given store can not be processed.
+     * Location in the file where the error occurred while be fetched from the given {@code store}
+     * argument if possible, for example by invoking the {@link java.io.LineNumberReader#getLineNumber()}
+     * or {@link javax.xml.stream.XMLStreamReader#getLocation()} method.
+     * If The given {@code store} argument is not one of the recognized types, then it is ignored.
+     *
+     * @param locale    the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.
+     * @param format    short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
+     * @param filename  name of the file or data store where the error occurred.
+     * @param store     the input or output object from which to get the current position, or {@code null} if none.
+     *                  This can be a {@link LineNumberReader} or {@link XMLStreamReader} for example.
+     *
+     * @since 0.8
+     */
+    public DataStoreException(final Locale locale, final String format, final String filename, final Object store) {
+        this(locale, IOUtilities.errorMessageParameters(format, filename, store));
+    }
+
+    /**
+     * Workaround for RFE #4093999
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.8")
+    private DataStoreException(final Locale locale, final Object[] params) {
+        this(locale, IOUtilities.errorMessageKey(params), params);
+    }
+
+    /**
      * Creates a new exception which will format a localized message in the given locale.
      *
-     * @param locale     the locale for the message to be returned by {@link #getLocalizedMessage()}.
-     * @param key        one of {@link Resources.Keys} constants.
-     * @param arguments  arguments to use for formatting the messages.
+     * @param locale      the locale for the message to be returned by {@link #getLocalizedMessage()}.
+     * @param key         one of {@link Resources.Keys} constants.
+     * @param parameters  parameters to use for formatting the messages.
      */
-    DataStoreException(final Locale locale, final short key, final Object... arguments) {
-        super(Resources.format(key, arguments));
-        this.locale    = locale;
+    DataStoreException(final Locale locale, final short key, final Object... parameters) {
+        super(Resources.forLocale(locale).getString(key, parameters));
         this.key       = key;
-        this.arguments = arguments;
+        this.arguments = parameters;
+    }
+
+    /**
+     * Returns the exception message in the default locale, typically for system administrator.
+     *
+     * @return the message of this exception.
+     */
+    @Override
+    public String getMessage() {
+        return (key != 0) ? Resources.format(key, arguments) : super.getMessage();
     }
 
     /**
@@ -125,9 +166,6 @@ public class DataStoreException extends Exception {
      *
      * In a client-server architecture, the former is often the locale on the <em>server</em> side while the later
      * is the locale on the <em>client</em> side if that information has been provided to the {@link DataStore}.
-     * {@code getMessage()} is targeted to the developer would will analyze the stack trace while
-     * {@code getLocalizedMessage()} is targeted to the final user would may receive the error message
-     * without stack trace.
      *
      * @return the localized message of this exception.
      *
@@ -137,9 +175,30 @@ public class DataStoreException extends Exception {
      */
     @Override
     public String getLocalizedMessage() {
-        if (key != 0) {
-            return Resources.forLocale(locale).getString(key, arguments);
-        }
-        return super.getLocalizedMessage();
+        return super.getMessage();
+    }
+
+    /**
+     * If this exception is capable to return the message in various locales, returns that message.
+     * Otherwise returns {@code null}.
+     *
+     * @return the exception message, or {@code null} if this exception can not produce international message.
+     *
+     * @since 0.8
+     */
+    @Override
+    public InternationalString getInternationalMessage() {
+        return (key != 0) ? Resources.formatInternational(key, arguments) : null;
+    }
+
+    /**
+     * Initializes the <i>cause</i> of this throwable to the specified value.
+     *
+     * @param  cause  the cause saved for later retrieval by the {@link #getCause()} method.
+     * @return a reference to this {@code DataStoreException} instance.
+     */
+    @Override
+    public DataStoreException initCause(final Throwable cause) {
+        return (DataStoreException) super.initCause(cause);
     }
 }
