@@ -344,9 +344,7 @@ public final class StandardDateFormat extends DateFormat {
         try {
             return toDate(format.parse(text));
         } catch (DateTimeException | ArithmeticException e) {
-            ParseException p = new ParseException(e.getLocalizedMessage(), getErrorIndex(e, null));
-            p.initCause(e);
-            throw p;
+            throw (ParseException) new ParseException(e.getLocalizedMessage(), getErrorIndex(e, null)).initCause(e);
         }
     }
 

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.logging.LogRecord;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.StandardOpenOption;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -80,7 +81,8 @@ public class GeoTiffStore extends DataStore {
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
         final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
         if (input == null) {
-            throw new UnsupportedStorageException(super.getLocale(), false, "TIFF", connector.getStorage());
+            throw new UnsupportedStorageException(super.getLocale(), "TIFF",
+                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
         connector.closeAllExcept(input);
         try {
@@ -133,7 +135,7 @@ public class GeoTiffStore extends DataStore {
     private Reader reader() throws DataStoreException {
         final Reader r = reader;
         if (r == null) {
-            throw new DataStoreClosedException(getLocale(), false, "GeoTIFF");
+            throw new DataStoreClosedException(getLocale(), "GeoTIFF", StandardOpenOption.READ);
         }
         return r;
     }

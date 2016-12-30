@@ -17,6 +17,8 @@
 package org.apache.sis.storage;
 
 import java.util.Locale;
+import java.nio.file.OpenOption;
+import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.internal.storage.Resources;
 
 
@@ -55,14 +57,17 @@ public class DataStoreClosedException extends DataStoreException {
 
     /**
      * Creates a localized exception for a reader or writer which has been closed.
+     * Arguments given to this constructor are hints for building an error message.
      *
-     * @param locale  the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.
-     * @param writer  {@code false} if a read operation was attempted, or {@code true} if a write operation was attempted.
-     * @param format  short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
+     * @param locale   the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.
+     * @param format   short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
+     * @param options  the option used for opening the file, or {@code null} or empty if unknown.
+     *                 This method looks in particular for {@link java.nio.file.StandardOpenOption#READ} and
+     *                 {@code WRITE} options for inferring if the data store was used as a reader or as a writer.
      *
      * @since 0.8
      */
-    public DataStoreClosedException(final Locale locale, final boolean writer, final String format) {
-        super(locale, writer ? Resources.Keys.ClosedWriter_1 : Resources.Keys.ClosedReader_1, format);
+    public DataStoreClosedException(final Locale locale, final String format, final OpenOption... options) {
+        super(locale, IOUtilities.isWrite(options) ? Resources.Keys.ClosedWriter_1 : Resources.Keys.ClosedReader_1, format);
     }
 }

@@ -25,6 +25,7 @@ import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.metadata.ModifiableMetadata;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import ucar.nc2.constants.CDM;
@@ -87,7 +88,8 @@ public class NetcdfStore extends DataStore {
             throw new DataStoreException(e);
         }
         if (decoder == null) {
-            throw new UnsupportedStorageException(super.getLocale(), false, "NetCDF", connector.getStorage());
+            throw new UnsupportedStorageException(super.getLocale(), "NetCDF",
+                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }
 

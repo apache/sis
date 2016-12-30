@@ -724,10 +724,8 @@ public class RangeFormat extends Format {
             failure = e;
         }
         final int errorIndex = pos.getErrorIndex();
-        final ParseException e = new ParseException(Errors.format(Errors.Keys.UnparsableStringForClass_3,
-                elementType, source, CharSequences.token(source, errorIndex)), errorIndex);
-        e.initCause(failure);
-        throw e;
+        throw (ParseException) new ParseException(Errors.format(Errors.Keys.UnparsableStringForClass_3,
+                elementType, source, CharSequences.token(source, errorIndex)), errorIndex).initCause(failure);
     }
 
     /**

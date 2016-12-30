@@ -260,10 +260,8 @@ public final class IOUtilities extends Static {
              * Occurs only if the URL is not compliant with RFC 2396. Otherwise every URL
              * should succeed, so a failure can actually be considered as a malformed URL.
              */
-            final MalformedURLException e = new MalformedURLException(Exceptions.formatChainedMessages(
-                    null, Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", path), cause));
-            e.initCause(cause);
-            throw e;
+            throw (MalformedURLException) new MalformedURLException(Exceptions.formatChainedMessages(null,
+                    Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", path), cause)).initCause(cause);
         }
     }
 
@@ -555,6 +553,41 @@ public final class IOUtilities extends Static {
      */
     private static void recoverableException(final Exception warning) {
         Logging.recoverableException(Logging.getLogger(Modules.STORAGE), IOUtilities.class, "open", warning);
+    }
+
+    /**
+     * Returns {@code true} if the given options would open a file mostly for writing.
+     * This method returns {@code true} if the following conditions are true:
+     *
+     * <ul>
+     *   <li>The array contains {@link StandardOpenOption#WRITE}.</li>
+     *   <li>The array does not contain {@link StandardOpenOption#READ}, unless the array contains also
+     *       {@link StandardOpenOption#CREATE_NEW} or {@link StandardOpenOption#TRUNCATE_EXISTING} in which
+     *       case the {@code READ} option is ignored (because the caller would have no data to read).</li>
+     * </ul>
+     *
+     * @param  options  the open options to check, or {@code null} if none.
+     * @return {@code true} if a file opened with the given options would be mostly for write operations.
+     *
+     * @since 0.8
+     */
+    public static boolean isWrite(final OpenOption[] options) {
+        boolean isRead   = false;
+        boolean isWrite  = false;
+        boolean truncate = false;
+        if (options != null) {
+            for (final OpenOption op : options) {
+                if (op instanceof StandardOpenOption) {
+                    switch ((StandardOpenOption) op) {
+                        case READ:              isRead   = true; break;
+                        case WRITE:             isWrite  = true; break;
+                        case CREATE_NEW:
+                        case TRUNCATE_EXISTING: truncate = true; break;
+                    }
+                }
+            }
+        }
+        return isWrite & (!isRead | truncate);
     }
 
     /**
