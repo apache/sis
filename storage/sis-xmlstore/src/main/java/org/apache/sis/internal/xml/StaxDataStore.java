@@ -43,7 +43,6 @@ import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Classes;
 
 
 /**
@@ -357,7 +356,7 @@ public abstract class StaxDataStore extends FeatureStore {
     {
         Object input = storage;
         if (input == null) {
-            throw new DataStoreClosedException(errors().getString(Errors.Keys.ClosedReader_1, getFormatName()));
+            throw new DataStoreClosedException(getLocale(), false, getFormatName());
         }
         /*
          * If the storage given by the user was not one of InputStream, Reader or other type recognized
@@ -368,8 +367,7 @@ public abstract class StaxDataStore extends FeatureStore {
         if (type == null) {
             type = InputType.STREAM;
             if ((input = stream) == null) {
-                throw new UnsupportedStorageException(errors().getString(Errors.Keys.IllegalInputTypeForReader_2,
-                        getFormatName(), Classes.getClass(storage)));
+                throw new UnsupportedStorageException(getLocale(), false, getFormatName(), storage);
             }
         }
         /*
@@ -423,7 +421,7 @@ reset:  switch (state) {
     {
         Object output = storage;
         if (output == null) {
-            throw new DataStoreClosedException(errors().getString(Errors.Keys.ClosedWriter_1, getFormatName()));
+            throw new DataStoreClosedException(getLocale(), true, getFormatName());
         }
         /*
          * If the storage given by the user was not one of OutputStream, Writer or other type recognized
@@ -433,8 +431,7 @@ reset:  switch (state) {
         OutputType type = storageToWriter;
         if (type == null) {
             // TODO
-            throw new UnsupportedStorageException(errors().getString(Errors.Keys.IllegalOutputTypeForWriter_2,
-                    getFormatName(), Classes.getClass(storage)));
+            throw new UnsupportedStorageException(getLocale(), true, getFormatName(), storage);
         }
         final XMLStreamWriter writer = type.create(this, output);
         target.stream = stream;

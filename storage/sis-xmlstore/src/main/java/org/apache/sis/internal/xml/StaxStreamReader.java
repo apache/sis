@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.EOFException;
 import java.net.URISyntaxException;
 import javax.xml.namespace.QName;
-import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -523,16 +522,8 @@ parse:  switch (value.length()) {
      * @return a localized error message for a file that can not be parsed.
      */
     protected final String canNotParseFile() {
-        final int line, column;
-        if (reader != null) {
-            final Location location = reader.getLocation();
-            line   = location.getLineNumber()   + 1;
-            column = location.getColumnNumber() + 1;
-        } else {
-            line   = 0;
-            column = 0;
-        }
-        return IOUtilities.canNotParseFile(errors(), owner.getFormatName(), owner.name, line, column);
+        final Object[] parameters = IOUtilities.errorMessageParameters(owner.getFormatName(), owner.name, reader);
+        return errors().getString(IOUtilities.errorMessageKey(parameters), parameters);
     }
 
     /**

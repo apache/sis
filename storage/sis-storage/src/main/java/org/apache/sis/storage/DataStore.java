@@ -99,7 +99,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
 
     /**
      * The locale to use for formatting warnings and other messages. This locale if for user interfaces
-     * only - it has no effect on the data to be read or written from/to the data store.
+     * only – it has no effect on the data to be read or written from/to the data store.
      *
      * <p>The default value is the {@linkplain Locale#getDefault() system default locale}.</p>
      */

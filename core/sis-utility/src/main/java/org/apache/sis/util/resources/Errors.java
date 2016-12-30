@@ -116,16 +116,6 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotParseFile_2 = 9;
 
         /**
-         * Can not parse line {2} of “{1}” as part of a file in the {0} format.
-         */
-        public static final short CanNotParseFile_3 = 168;
-
-        /**
-         * Can not parse line {2} (after column {3}) of “{1}” as part of a file in the {0} format.
-         */
-        public static final short CanNotParseFile_4 = 169;
-
-        /**
          * Can not read property “{1}” in file “{0}”.
          */
         public static final short CanNotReadPropertyInFile_2 = 10;
@@ -158,32 +148,22 @@ public final class Errors extends IndexedResourceBundle {
         /**
          * Can not write “{1}” as a file in the {0} format.
          */
-        public static final short CanNotWriteFile_2 = 171;
+        public static final short CanNotWriteFile_2 = 16;
 
         /**
          * Circular reference.
          */
-        public static final short CircularReference = 16;
+        public static final short CircularReference = 17;
 
         /**
          * Class ‘{0}’ is not final.
          */
-        public static final short ClassNotFinal_1 = 17;
+        public static final short ClassNotFinal_1 = 18;
 
         /**
          * Can not clone an object of type ‘{0}’.
          */
-        public static final short CloneNotSupported_1 = 18;
-
-        /**
-         * This {0} reader is closed.
-         */
-        public static final short ClosedReader_1 = 19;
-
-        /**
-         * This {0} writer is closed.
-         */
-        public static final short ClosedWriter_1 = 166;
+        public static final short CloneNotSupported_1 = 19;
 
         /**
          * Database error while creating a ‘{0}’ object for the “{1}” identifier.
@@ -353,70 +333,60 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalIdentifierForCodespace_2 = 52;
 
         /**
-         * The {0} reader does not accept inputs of type ‘{1}’.
-         */
-        public static final short IllegalInputTypeForReader_2 = 53;
-
-        /**
          * The “{0}” language is not recognized.
          */
-        public static final short IllegalLanguageCode_1 = 54;
+        public static final short IllegalLanguageCode_1 = 53;
 
         /**
          * Member “{0}” can not be associated to type “{1}”.
          */
-        public static final short IllegalMemberType_2 = 55;
+        public static final short IllegalMemberType_2 = 54;
 
         /**
          * Option ‘{0}’ can not take the “{1}” value.
          */
-        public static final short IllegalOptionValue_2 = 56;
+        public static final short IllegalOptionValue_2 = 55;
 
         /**
          * The [{0} … {1}] range of ordinate values is not valid for the “{2}” axis.
          */
-        public static final short IllegalOrdinateRange_3 = 57;
-
-        /**
-         * The {0} writer does not accept outputs of type ‘{1}’.
-         */
-        public static final short IllegalOutputTypeForWriter_2 = 165;
+        public static final short IllegalOrdinateRange_3 = 56;
 
         /**
          * Property “{0}” does not accept instances of ‘{1}’.
          */
-        public static final short IllegalPropertyValueClass_2 = 58;
+        public static final short IllegalPropertyValueClass_2 = 57;
 
         /**
          * Expected an instance of ‘{1}’ for the “{0}” property, but got an instance of ‘{2}’.
          */
-        public static final short IllegalPropertyValueClass_3 = 59;
+        public static final short IllegalPropertyValueClass_3 = 58;
 
         /**
          * Range [{0} … {1}] is not valid.
          */
-        public static final short IllegalRange_2 = 60;
+        public static final short IllegalRange_2 = 59;
 
         /**
          * Value {1} for “{0}” is not a valid Unicode code point.
          */
-        public static final short IllegalUnicodeCodePoint_2 = 61;
+        public static final short IllegalUnicodeCodePoint_2 = 60;
 
         /**
          * Can not use the “{1}” format with “{0}”.
          */
-        public static final short IncompatibleFormat_2 = 62;
+        public static final short IncompatibleFormat_2 = 61;
 
         /**
          * Property “{0}” has an incompatible value.
          */
-        public static final short IncompatiblePropertyValue_1 = 63;
+        public static final short IncompatiblePropertyValue_1 = 62;
 
         /**
          * The “{0}” unit of measurement has dimension of ‘{1}’ ({2}). It is incompatible with
          * dimension of ‘{3}’ ({4}).
          */
-        public static final short IncompatibleUnitDimension_5 = 163;
+        public static final short IncompatibleUnitDimension_5 = 63;
 
         /**
          * Unit “{0}” is incompatible with current value.
@@ -527,408 +497,408 @@ public final class Errors extends IndexedResourceBundle {
         /**
          * JAXB context has not been specified.
          */
-        public static final short MissingJAXBContext = 170;
+        public static final short MissingJAXBContext = 85;
 
         /**
          * This operation requires the “{0}” module.
          */
-        public static final short MissingRequiredModule_1 = 85;
+        public static final short MissingRequiredModule_1 = 86;
 
         /**
          * Missing value for “{0}” option.
          */
-        public static final short MissingValueForOption_1 = 86;
+        public static final short MissingValueForOption_1 = 87;
 
         /**
          * Missing value for “{0}” property.
          */
-        public static final short MissingValueForProperty_1 = 87;
+        public static final short MissingValueForProperty_1 = 88;
 
         /**
          * Missing value in the “{0}” column.
          */
-        public static final short MissingValueInColumn_1 = 88;
+        public static final short MissingValueInColumn_1 = 89;
 
         /**
          * Options “{0}” and “{1}” are mutually exclusive.
          */
-        public static final short MutuallyExclusiveOptions_2 = 89;
+        public static final short MutuallyExclusiveOptions_2 = 90;
 
         /**
          * Argument ‘{0}’ shall not be negative. The given value was {1}.
          */
-        public static final short NegativeArgument_2 = 90;
+        public static final short NegativeArgument_2 = 91;
 
         /**
          * Can not create a “{0}” array of negative length.
          */
-        public static final short NegativeArrayLength_1 = 91;
+        public static final short NegativeArrayLength_1 = 92;
 
         /**
          * Nested “{0}” elements are not allowed.
          */
-        public static final short NestedElementNotAllowed_1 = 167;
+        public static final short NestedElementNotAllowed_1 = 93;
 
         /**
          * No value is associated to “{0}”.
          */
-        public static final short NoSuchValue_1 = 92;
+        public static final short NoSuchValue_1 = 94;
 
         /**
          * Node “{0}” can not be a child of itself.
          */
-        public static final short NodeChildOfItself_1 = 93;
+        public static final short NodeChildOfItself_1 = 95;
 
         /**
          * Node “{0}” already has another parent.
          */
-        public static final short NodeHasAnotherParent_1 = 94;
+        public static final short NodeHasAnotherParent_1 = 96;
 
         /**
          * Node “{0}” has no parent.
          */
-        public static final short NodeHasNoParent_1 = 95;
+        public static final short NodeHasNoParent_1 = 97;
 
         /**
          * Node “{0}” is a leaf.
          */
-        public static final short NodeIsLeaf_1 = 96;
+        public static final short NodeIsLeaf_1 = 98;
 
         /**
          * “{0}” is not an angular unit.
          */
-        public static final short NonAngularUnit_1 = 97;
+        public static final short NonAngularUnit_1 = 99;
 
         /**
          * Missing a ‘{1}’ parenthesis in “{0}”.
          */
-        public static final short NonEquilibratedParenthesis_2 = 98;
+        public static final short NonEquilibratedParenthesis_2 = 100;
 
         /**
          * Conversion is not invertible.
          */
-        public static final short NonInvertibleConversion = 99;
+        public static final short NonInvertibleConversion = 101;
 
         /**
          * “{0}” is not a linear unit.
          */
-        public static final short NonLinearUnit_1 = 100;
+        public static final short NonLinearUnit_1 = 102;
 
         /**
          * The scale of measurement for “{0}” unit is not a ratio scale.
          */
-        public static final short NonRatioUnit_1 = 162;
+        public static final short NonRatioUnit_1 = 103;
 
         /**
          * “{0}” is not a scale unit.
          */
-        public static final short NonScaleUnit_1 = 101;
+        public static final short NonScaleUnit_1 = 104;
 
         /**
          * “{0}” is not a fundamental or derived unit.
          */
-        public static final short NonSystemUnit_1 = 161;
+        public static final short NonSystemUnit_1 = 105;
 
         /**
          * “{0}” is not a time unit.
          */
-        public static final short NonTemporalUnit_1 = 102;
+        public static final short NonTemporalUnit_1 = 106;
 
         /**
          * No element for the “{0}” identifier, or the identifier is a forward reference.
          */
-        public static final short NotABackwardReference_1 = 103;
+        public static final short NotABackwardReference_1 = 107;
 
         /**
          * “{0}” is not a key-value pair.
          */
-        public static final short NotAKeyValuePair_1 = 104;
+        public static final short NotAKeyValuePair_1 = 108;
 
         /**
          * Argument ‘{0}’ shall not be NaN (Not-a-Number).
          */
-        public static final short NotANumber_1 = 105;
+        public static final short NotANumber_1 = 109;
 
         /**
          * Class ‘{0}’ is not a primitive type wrapper.
          */
-        public static final short NotAPrimitiveWrapper_1 = 106;
+        public static final short NotAPrimitiveWrapper_1 = 110;
 
         /**
          * Text “{0}” is not a Unicode identifier.
          */
-        public static final short NotAUnicodeIdentifier_1 = 107;
+        public static final short NotAUnicodeIdentifier_1 = 111;
 
         /**
          * Argument ‘{0}’ shall not be null.
          */
-        public static final short NullArgument_1 = 108;
+        public static final short NullArgument_1 = 112;
 
         /**
          * ‘{0}’ collection does not accept null elements.
          */
-        public static final short NullCollectionElement_1 = 109;
+        public static final short NullCollectionElement_1 = 113;
 
         /**
          * Null key is not allowed in this dictionary.
          */
-        public static final short NullMapKey = 110;
+        public static final short NullMapKey = 114;
 
         /**
          * Null values are not allowed in this dictionary.
          */
-        public static final short NullMapValue = 111;
+        public static final short NullMapValue = 115;
 
         /**
          * Unexpected null value in record “{2}” for the column “{1}” in table “{0}”.
          */
-        public static final short NullValueInTable_3 = 112;
+        public static final short NullValueInTable_3 = 116;
 
         /**
          * Array length is {0}, while we expected an even length.
          */
-        public static final short OddArrayLength_1 = 113;
+        public static final short OddArrayLength_1 = 117;
 
         /**
          * Coordinate is outside the domain of validity.
          */
-        public static final short OutsideDomainOfValidity = 114;
+        public static final short OutsideDomainOfValidity = 118;
 
         /**
          * No property named “{1}” has been found in “{0}”.
          */
-        public static final short PropertyNotFound_2 = 115;
+        public static final short PropertyNotFound_2 = 119;
 
         /**
          * Record “{1}” is already defined in schema “{0}”.
          */
-        public static final short RecordAlreadyDefined_2 = 116;
+        public static final short RecordAlreadyDefined_2 = 120;
 
         /**
          * No record found in “{0}” table for “{1}” key.
          */
-        public static final short RecordNotFound_2 = 164;
+        public static final short RecordNotFound_2 = 121;
 
         /**
          * Recursive call while creating an object for the “{0}” key.
          */
-        public static final short RecursiveCreateCallForKey_1 = 117;
+        public static final short RecursiveCreateCallForKey_1 = 122;
 
         /**
          * A decimal separator is required.
          */
-        public static final short RequireDecimalSeparator = 118;
+        public static final short RequireDecimalSeparator = 123;
 
         /**
          * Thread “{0}” seems stalled.
          */
-        public static final short StalledThread_1 = 119;
+        public static final short StalledThread_1 = 124;
 
         /**
          * Table “{0}” has not been found.
          */
-        public static final short TableNotFound_1 = 120;
+        public static final short TableNotFound_1 = 125;
 
         /**
          * Expected at least {0} argument{0,choice,1#|2#s}, but got {1}.
          */
-        public static final short TooFewArguments_2 = 121;
+        public static final short TooFewArguments_2 = 126;
 
         /**
          * Too few occurrences of “{1}”. Expected at least {0} of them.
          */
-        public static final short TooFewOccurrences_2 = 122;
+        public static final short TooFewOccurrences_2 = 127;
 
         /**
          * Expected at most {0} argument{0,choice,1#|2#s}, but got {1}.
          */
-        public static final short TooManyArguments_2 = 123;
+        public static final short TooManyArguments_2 = 128;
 
         /**
          * Too many occurrences of “{1}”. The maximum is {0}.
          */
-        public static final short TooManyOccurrences_2 = 124;
+        public static final short TooManyOccurrences_2 = 129;
 
         /**
          * Tree depth exceeds the maximum.
          */
-        public static final short TreeDepthExceedsMaximum = 125;
+        public static final short TreeDepthExceedsMaximum = 130;
 
         /**
          * Ordering between “{0}” and “{1}” elements is undefined.
          */
-        public static final short UndefinedOrderingForElements_2 = 126;
+        public static final short UndefinedOrderingForElements_2 = 131;
 
         /**
          * Expected an array of length {0}, but got {1}.
          */
-        public static final short UnexpectedArrayLength_2 = 127;
+        public static final short UnexpectedArrayLength_2 = 132;
 
         /**
          * Unexpected change in ‘{0}’.
          */
-        public static final short UnexpectedChange_1 = 128;
+        public static final short UnexpectedChange_1 = 133;
 
         /**
          * The “{1}” characters after “{0}” were unexpected.
          */
-        public static final short UnexpectedCharactersAfter_2 = 129;
+        public static final short UnexpectedCharactersAfter_2 = 134;
 
         /**
          * Text for ‘{0}’ was expected to {1,choice,0#begin|1#end} with “{2}”, but found “{3}”.
          */
-        public static final short UnexpectedCharactersAtBound_4 = 130;
+        public static final short UnexpectedCharactersAtBound_4 = 135;
 
         /**
          * Unexpected end of file while reading “{0}”.
          */
-        public static final short UnexpectedEndOfFile_1 = 131;
+        public static final short UnexpectedEndOfFile_1 = 136;
 
         /**
          * More characters were expected at the end of “{0}”.
          */
-        public static final short UnexpectedEndOfString_1 = 132;
+        public static final short UnexpectedEndOfString_1 = 137;
 
         /**
          * File “{1}” seems to be encoded in an other format than {0}.
          */
-        public static final short UnexpectedFileFormat_2 = 133;
+        public static final short UnexpectedFileFormat_2 = 138;
 
         /**
          * Parameter “{0}” was not expected.
          */
-        public static final short UnexpectedParameter_1 = 134;
+        public static final short UnexpectedParameter_1 = 139;
 
         /**
          * Property “{1}” was not expected in “{0}”.
          */
-        public static final short UnexpectedProperty_2 = 135;
+        public static final short UnexpectedProperty_2 = 140;
 
         /**
          * Unexpected scale factor {1} for unit of measurement “{0}”.
          */
-        public static final short UnexpectedScaleFactorForUnit_2 = 136;
+        public static final short UnexpectedScaleFactorForUnit_2 = 141;
 
         /**
          * Expected “{0}” to reference an instance of ‘{1}’, but found an instance of ‘{2}’.
          */
-        public static final short UnexpectedTypeForReference_3 = 137;
+        public static final short UnexpectedTypeForReference_3 = 142;
 
         /**
          * Unexpected value “{1}” in “{0}” element.
          */
-        public static final short UnexpectedValueInElement_2 = 138;
+        public static final short UnexpectedValueInElement_2 = 143;
 
         /**
          * Command “{0}” is not recognized.
          */
-        public static final short UnknownCommand_1 = 139;
+        public static final short UnknownCommand_1 = 144;
 
         /**
          * “{1}” is not a known or supported value for the ‘{0}’ enumeration.
          */
-        public static final short UnknownEnumValue_2 = 140;
+        public static final short UnknownEnumValue_2 = 145;
 
         /**
          * Keyword “{0}” is unknown.
          */
-        public static final short UnknownKeyword_1 = 141;
+        public static final short UnknownKeyword_1 = 146;
 
         /**
          * Option “{0}” is not recognized.
          */
-        public static final short UnknownOption_1 = 142;
+        public static final short UnknownOption_1 = 147;
 
         /**
          * Type ‘{0}’ is unknown in this context.
          */
-        public static final short UnknownType_1 = 143;
+        public static final short UnknownType_1 = 148;
 
         /**
          * Unit “{0}” is not recognized.
          */
-        public static final short UnknownUnit_1 = 144;
+        public static final short UnknownUnit_1 = 149;
 
         /**
          * The cell at column “{1}” of row “{0}” is unmodifiable.
          */
-        public static final short UnmodifiableCellValue_2 = 145;
+        public static final short UnmodifiableCellValue_2 = 150;
 
         /**
          * This metadata is not modifiable.
          */
-        public static final short UnmodifiableMetadata = 146;
+        public static final short UnmodifiableMetadata = 151;
 
         /**
          * This instance of ‘{0}’ is not modifiable.
          */
-        public static final short UnmodifiableObject_1 = 147;
+        public static final short UnmodifiableObject_1 = 152;
 
         /**
          * Text “{1}” can not be parsed as an object of type ‘{0}’.
          */
-        public static final short UnparsableStringForClass_2 = 148;
+        public static final short UnparsableStringForClass_2 = 153;
 
         /**
          * Text “{1}” can not be parsed as an object of type ‘{0}’, because of the “{2}” characters.
          */
-        public static final short UnparsableStringForClass_3 = 149;
+        public static final short UnparsableStringForClass_3 = 154;
 
         /**
          * Can not parse “{1}” in element “{0}”.
          */
-        public static final short UnparsableStringInElement_2 = 150;
+        public static final short UnparsableStringInElement_2 = 155;
 
         /**
          * Coordinate reference system has not been specified.
          */
-        public static final short UnspecifiedCRS = 151;
+        public static final short UnspecifiedCRS = 156;
 
         /**
          * No format is specified for objects of class ‘{0}’.
          */
-        public static final short UnspecifiedFormatForClass_1 = 152;
+        public static final short UnspecifiedFormatForClass_1 = 157;
 
         /**
          * Version {1} of {0} format is not supported.
          */
-        public static final short UnsupportedFormatVersion_2 = 153;
+        public static final short UnsupportedFormatVersion_2 = 158;
 
         /**
          * Can not handle this instance of ‘{0}’ because arbitrary implementations are not yet
          * supported.
          */
-        public static final short UnsupportedImplementation_1 = 154;
+        public static final short UnsupportedImplementation_1 = 159;
 
         /**
          * The “{0}” interpolation is unsupported.
          */
-        public static final short UnsupportedInterpolation_1 = 155;
+        public static final short UnsupportedInterpolation_1 = 160;
 
         /**
          * The ‘{0}’ operation is unsupported.
          */
-        public static final short UnsupportedOperation_1 = 156;
+        public static final short UnsupportedOperation_1 = 161;
 
         /**
          * The ‘{0}’ type is unsupported.
          */
-        public static final short UnsupportedType_1 = 157;
+        public static final short UnsupportedType_1 = 162;
 
         /**
          * A value is already defined for “{0}”.
          */
-        public static final short ValueAlreadyDefined_1 = 158;
+        public static final short ValueAlreadyDefined_1 = 163;
 
         /**
          * Value ‘{0}’ = {1} is invalid. Expected a number greater than 0.
          */
-        public static final short ValueNotGreaterThanZero_2 = 159;
+        public static final short ValueNotGreaterThanZero_2 = 164;
 
         /**
          * Value ‘{0}’ = {3} is invalid. Expected a value in the [{1} … {2}] range.
          */
-        public static final short ValueOutOfRange_4 = 160;
+        public static final short ValueOutOfRange_4 = 165;
     }
 
     /**

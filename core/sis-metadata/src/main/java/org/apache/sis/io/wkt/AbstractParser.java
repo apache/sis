@@ -218,7 +218,7 @@ abstract class AbstractParser implements Parser {
             if (cause instanceof FactoryException) {
                 throw (FactoryException) cause;
             }
-            throw new FactoryException(exception.getMessage(), exception);
+            throw new FactoryException(exception.getLocalizedMessage(), exception);
         }
         final Warnings warnings = getAndClearWarnings(value);
         if (warnings != null) {

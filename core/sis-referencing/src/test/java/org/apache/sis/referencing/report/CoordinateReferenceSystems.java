@@ -689,7 +689,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
             row.remark = "Projected";
             ((ByName) row).setup(CommonCRS.WGS84.datum(), unusedDatumMapping);
         } else {
-            row.remark = exception.getMessage();
+            row.remark = exception.getLocalizedMessage();
             ((ByName) row).setup(null, unusedDatumMapping);
         }
         return row;

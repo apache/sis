@@ -181,8 +181,9 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
                 characteristics = newCharacteristicsMap();
                 characteristics.values().addAll(Arrays.asList(characterizedBy));
             }
-        } catch (RuntimeException e) { // At least ClassCastException, NullPointerException, IllegalArgumentException and IllegalStateException.
-            throw (IOException) new InvalidObjectException(e.getMessage()).initCause(e);
+        } catch (RuntimeException e) {
+            // At least ClassCastException, NullPointerException, IllegalArgumentException and IllegalStateException.
+            throw (IOException) new InvalidObjectException(e.getLocalizedMessage()).initCause(e);
         }
     }
 

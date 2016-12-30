@@ -241,11 +241,11 @@ public final class Store extends FeatureStore {
             }
             source.reset();
         } catch (IOException e) {
-            throw new DataStoreException(canNotParseFile(), e);
+            throw new DataStoreException(getLocale(), "CSV", filename, source).initCause(e);
         } catch (FactoryException e) {
-            throw new DataStoreReferencingException(canNotParseFile(), e);
+            throw new DataStoreReferencingException(getLocale(), "CSV", filename, source).initCause(e);
         } catch (IllegalArgumentException | DateTimeException e) {
-            throw new DataStoreContentException(canNotParseFile(), e);
+            throw new DataStoreContentException(getLocale(), "CSV", filename, source).initCause(e);
         }
         this.encoding    = connector.getOption(OptionKey.ENCODING);
         this.envelope    = envelope;
@@ -285,7 +285,7 @@ public final class Store extends FeatureStore {
                     case 2: if (element.length() == 2 && Character.toUpperCase(element.charAt(1)) == 'D') {
                                 spatialDimensionCount = element.charAt(0) - '0';
                                 if (spatialDimensionCount < 2 || spatialDimensionCount > 3) {
-                                    throw new DataStoreContentException(errors().getString(
+                                    throw new DataStoreReferencingException(errors().getString(
                                         Errors.Keys.IllegalCoordinateSystem_1, element));
                                 }
                                 continue;
@@ -307,7 +307,7 @@ public final class Store extends FeatureStore {
                                 case "hour":     timeUnit = Units.HOUR;   continue;
                                 case "day":      timeUnit = Units.DAY;    continue;
                                 case "absolute": isTimeAbsolute = true;   continue;
-                                default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnknownUnit_1, element));
+                                default: throw new DataStoreReferencingException(errors().getString(Errors.Keys.UnknownUnit_1, element));
                             }
                 }
                 // If we reach this point, there is some remaining unknown elements. Ignore them.
@@ -370,7 +370,7 @@ public final class Store extends FeatureStore {
         if ((dim = lowerCorner.length) != spatialDimensionCount ||
             (dim = upperCorner.length) != spatialDimensionCount)
         {
-            throw new DataStoreContentException(errors().getString(
+            throw new DataStoreReferencingException(errors().getString(
                     Errors.Keys.MismatchedDimension_2, dim, spatialDimensionCount));
         }
         for (int i=0; i<spatialDimensionCount; i++) {
@@ -503,7 +503,7 @@ public final class Store extends FeatureStore {
             try {
                 builder.addExtent(envelope);
             } catch (TransformException e) {
-                throw new DataStoreReferencingException(canNotParseFile(), e);
+                throw new DataStoreReferencingException(getLocale(), "CSV", filename, source).initCause(e);
             } catch (UnsupportedOperationException e) {
                 // Failed to set the temporal components if the sis-temporal module was
                 // not on the classpath, but the other dimensions still have been set.
@@ -769,7 +769,8 @@ public final class Store extends FeatureStore {
      * The error message will contain the line number if available.
      */
     final String canNotParseFile() {
-        return IOUtilities.canNotParseFile(errors(), "CSV", filename, source);
+        final Object[] parameters = IOUtilities.errorMessageParameters("CSV", filename, source);
+        return errors().getString(IOUtilities.errorMessageKey(parameters), parameters);
     }
 
     /**

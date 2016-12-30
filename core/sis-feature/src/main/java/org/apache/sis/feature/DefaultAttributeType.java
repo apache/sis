@@ -224,8 +224,9 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
             if (characterizedBy != null) {
                 characteristics = CharacteristicTypeMap.create(this, characterizedBy);
             }
-        } catch (RuntimeException e) { // At least ClassCastException, NullPointerException and IllegalArgumentException.
-            throw (IOException) new InvalidObjectException(e.getMessage()).initCause(e);
+        } catch (RuntimeException e) {
+            // At least ClassCastException, NullPointerException and IllegalArgumentException.
+            throw (IOException) new InvalidObjectException(e.getLocalizedMessage()).initCause(e);
         }
     }
 

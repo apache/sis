@@ -35,7 +35,6 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Classes;
 
 
 /**
@@ -81,8 +80,7 @@ public class GeoTiffStore extends DataStore {
         this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
         final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
         if (input == null) {
-            throw new UnsupportedStorageException(errors().getString(Errors.Keys.IllegalInputTypeForReader_2,
-                    "TIFF", Classes.getClass(connector.getStorage())));
+            throw new UnsupportedStorageException(super.getLocale(), false, "TIFF", connector.getStorage());
         }
         connector.closeAllExcept(input);
         try {
@@ -123,7 +121,7 @@ public class GeoTiffStore extends DataStore {
             } catch (IOException e) {
                 throw new DataStoreException(errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
             } catch (FactoryException | ArithmeticException e) {
-                throw new DataStoreContentException(reader.canNotDecode(), e);
+                throw new DataStoreContentException(getLocale(), "TIFF", reader.input.filename, null).initCause(e);
             }
         }
         return metadata;
@@ -135,7 +133,7 @@ public class GeoTiffStore extends DataStore {
     private Reader reader() throws DataStoreException {
         final Reader r = reader;
         if (r == null) {
-            throw new DataStoreClosedException(errors().getString(Errors.Keys.ClosedReader_1, "GeoTIFF"));
+            throw new DataStoreClosedException(getLocale(), false, "GeoTIFF");
         }
         return r;
     }
@@ -160,8 +158,7 @@ public class GeoTiffStore extends DataStore {
      * Returns the error resources in the current locale.
      */
     final Errors errors() {
-        // Must use "super" because GeoTiffStore construction may not be finished.
-        return Errors.getResources(super.getLocale());
+        return Errors.getResources(getLocale());
     }
 
     /**

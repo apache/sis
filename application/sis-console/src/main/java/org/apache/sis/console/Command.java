@@ -128,9 +128,9 @@ public final class Command {
      * Creates a new command for the given arguments. The first value in the given array which is
      * not an option is taken as the command name. All other values are options or filenames.
      *
-     * @param  args The command-line arguments.
-     * @throws InvalidCommandException If an invalid command has been given.
-     * @throws InvalidOptionException If the given arguments contain an invalid option.
+     * @param  args  the command-line arguments.
+     * @throws InvalidCommandException if an invalid command has been given.
+     * @throws InvalidOptionException if the given arguments contain an invalid option.
      */
     protected Command(final String[] args) throws InvalidCommandException, InvalidOptionException {
         int commandIndex = -1;
@@ -176,7 +176,7 @@ public final class Command {
      * by the {@link #exitCodeFor(Throwable)} method.
      *
      * @return 0 on success, or an exit code if the command failed for a reason other than a Java exception.
-     * @throws Exception If an error occurred during the command execution. This is typically, but not limited, to
+     * @throws Exception if an error occurred during the command execution. This is typically, but not limited, to
      *         {@link IOException}, {@link SQLException}, {@link DataStoreException} or {@link TransformException}.
      */
     public int run() throws Exception {
@@ -199,8 +199,8 @@ public final class Command {
      * {@linkplain Throwable#getCause() causes} until an exception matching a {@code *_EXIT_CODE}
      * constant is found.
      *
-     * @param  cause The exception for which to get the exit code.
-     * @return The exit code as one of the {@code *_EXIT_CODE} constant, or {@link #OTHER_ERROR_EXIT_CODE} if unknown.
+     * @param  cause  the exception for which to get the exit code.
+     * @return the exit code as one of the {@code *_EXIT_CODE} constant, or {@link #OTHER_ERROR_EXIT_CODE} if unknown.
      */
     public static int exitCodeFor(Throwable cause) {
         while (cause != null) {
@@ -217,7 +217,7 @@ public final class Command {
      * Prints the message of the given exception. This method is invoked only when the error occurred before
      * the {@link CommandRunner} has been built, otherwise the {@link CommandRunner#err} printer shall be used.
      *
-     * @param args The command line arguments, used only for detecting if the {@code --debug} option was present.
+     * @param  args  the command line arguments, used only for detecting if the {@code --debug} option was present.
      */
     private static void error(final String[] args, final Exception e) {
         final boolean debug = ArraysExt.containsIgnoreCase(args, Option.PREFIX + "debug");
@@ -245,7 +245,7 @@ public final class Command {
     /**
      * Prints the information to the standard output stream.
      *
-     * @param args Command-line options.
+     * @param  args  command-line options.
      */
     public static void main(final String[] args) {
         /*
