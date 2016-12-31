@@ -35,7 +35,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.util.LocalizedParseException;
 
 import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
 
@@ -232,7 +231,7 @@ final class Element implements Serializable {
                 if (fragment == null) {
                     position.setIndex(offset);
                     position.setErrorIndex(lower);
-                    throw new LocalizedParseException(locale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
+                    throw new UnparsableObjectException(locale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
                 }
                 if (fragment.list != null) {
                     fragment = new Element(fragment);
@@ -381,7 +380,7 @@ final class Element implements Serializable {
      * @return the exception to be thrown.
      */
     final ParseException parseFailed(final Exception cause) {
-        return new LocalizedParseException(locale, Errors.Keys.ErrorIn_2,
+        return new UnparsableObjectException(locale, Errors.Keys.ErrorIn_2,
                 new String[] {keyword, Exceptions.getLocalizedMessage(cause, locale)}, offset).initCause(cause);
     }
 
@@ -408,7 +407,7 @@ final class Element implements Serializable {
             arguments = new CharSequence[] {keyword, CharSequences.token(text, errorIndex)};
         }
         position.setIndex(offset);
-        return new LocalizedParseException(locale, errorKey, arguments, errorIndex);
+        return new UnparsableObjectException(locale, errorKey, arguments, errorIndex);
     }
 
     /**
@@ -422,7 +421,7 @@ final class Element implements Serializable {
         position.setIndex(offset);
         position.setErrorIndex(errorIndex);
         final StringBuilder buffer = new StringBuilder(2).appendCodePoint(c);
-        return new LocalizedParseException(locale, Errors.Keys.MissingCharacterInElement_2,
+        return new UnparsableObjectException(locale, Errors.Keys.MissingCharacterInElement_2,
                 new CharSequence[] {keyword, buffer}, errorIndex);
     }
 
@@ -436,7 +435,7 @@ final class Element implements Serializable {
         if (keyword != null) {
             error += keyword.length();
         }
-        return new LocalizedParseException(locale, Errors.Keys.MissingComponentInElement_2,
+        return new UnparsableObjectException(locale, Errors.Keys.MissingComponentInElement_2,
                 new String[] {keyword, key}, error);
     }
 
@@ -465,7 +464,7 @@ final class Element implements Serializable {
             res  = Errors.Keys.MissingComponentInElement_2;
             args = new String[] {keyword, expected};
         }
-        return new LocalizedParseException(locale, res, args, offset);
+        return new UnparsableObjectException(locale, res, args, offset);
     }
 
     /**
@@ -489,7 +488,7 @@ final class Element implements Serializable {
             key   = Errors.Keys.IllegalCoordinateSystem_1;
             value = cs.getName().getCode();
         }
-        return new LocalizedParseException(locale, key, new String[] {value}, offset);
+        return new UnparsableObjectException(locale, key, new String[] {value}, offset);
     }
 
 
@@ -570,7 +569,7 @@ final class Element implements Serializable {
                 iterator.remove();
                 final Number number = (Number) object;
                 if (number instanceof Float || number instanceof Double) {
-                    throw new LocalizedParseException(locale, Errors.Keys.UnparsableStringForClass_2,
+                    throw new UnparsableObjectException(locale, Errors.Keys.UnparsableStringForClass_2,
                             new Object[] {Integer.class, number}, offset);
                 }
                 return number.intValue();
@@ -758,7 +757,7 @@ final class Element implements Serializable {
                 if (value instanceof Element) {
                     CollectionsExt.addToMultiValuesMap(ignoredElements, ((Element) value).keyword, keyword);
                 } else {
-                    throw new LocalizedParseException(locale, Errors.Keys.UnexpectedValueInElement_2,
+                    throw new UnparsableObjectException(locale, Errors.Keys.UnexpectedValueInElement_2,
                             new Object[] {keyword, value}, offset + keyword.length());
                 }
             }
