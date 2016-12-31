@@ -16,9 +16,8 @@
  */
 package org.apache.sis.feature;
 
-import java.util.Locale;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.LocalizedException;
+import org.apache.sis.util.LocalizedException;
 
 
 /**
@@ -30,7 +29,7 @@ import org.apache.sis.internal.util.LocalizedException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see Features#validate(Feature)
@@ -57,14 +56,12 @@ final class InvalidFeatureException extends IllegalArgumentException implements 
     }
 
     /**
-     * Returns the message localized in the given language, or in a default language if the requested
-     * localization is not available.
+     * Return the message in various locales.
      *
-     * @param  locale  the desired language.
-     * @return the message in the given locale, or in a default locale if the requested localization is not available.
+     * @return the exception message.
      */
     @Override
-    public String getLocalizedMessage(final Locale locale) {
-        return message.toString(locale);
+    public InternationalString getInternationalMessage() {
+        return message;
     }
 }

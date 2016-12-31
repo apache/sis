@@ -177,8 +177,8 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     /**
      * Accepts all {@code "*.properties"} files.
      *
-     * @param directory The directory.
-     * @param name The file name.
+     * @param  directory  the directory.
+     * @param  name       the file name.
      * @return {@code true} if the given file is a property file.
      */
     @Override
@@ -205,8 +205,8 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      *   <li>{@code "Messages.properties"}</li>
      * </ul>
      *
-     * @param  resourcesToProcess The files to filter. This array will be overwritten in-place.
-     * @return Number of valid elements in the {@code resourcesToProcess} after this method completion.
+     * @param  resourcesToProcess  the files to filter. This array will be overwritten in-place.
+     * @return number of valid elements in the {@code resourcesToProcess} after this method completion.
      */
     static int filterLanguages(final File[] resourcesToProcess) {
         int count = 0;
@@ -236,9 +236,9 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      * Converts the given property files into Java source file, provided that the later exists.
      * The given array is overwritten in place.
      *
-     * @param  resourcesToProcess The filtered resource files, as returned by {@link #filterLanguages(File[])}.
-     * @param  count Number of valid elements in {@code resourcesToProcess}.
-     * @return Number of valid elements after this method completion.
+     * @param  resourcesToProcess  the filtered resource files, as returned by {@link #filterLanguages(File[])}.
+     * @param  count  number of valid elements in {@code resourcesToProcess}.
+     * @return number of valid elements after this method completion.
      */
     private static int toJavaSourceFiles(final File[] resourcesToProcess, final int count) {
         int n = 0;
@@ -259,7 +259,7 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      * A resource compiler that delegates the messages to the Mojo logger.
      */
     private final class Compiler extends IndexedResourceCompiler {
-        public Compiler(File[] resourcesToProcess) {
+        Compiler(File[] resourcesToProcess) {
             super(javaDirectoryFile, outputDirectory, resourcesToProcess);
         }
 

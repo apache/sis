@@ -125,8 +125,8 @@ abstract strictfp class HTMLGenerator implements Closeable {
     /**
      * Escapes the {@code &}, {@code <} and {@code >} characters.
      *
-     * @param  text The text to escape, or {@code null}.
-     * @return The escaped text, or {@code null} if the given text was null.
+     * @param  text  the text to escape, or {@code null}.
+     * @return the escaped text, or {@code null} if the given text was null.
      */
     static CharSequence escape(CharSequence text) {
         text = CharSequences.replace(text, "&", "&amp;");
@@ -150,8 +150,8 @@ abstract strictfp class HTMLGenerator implements Closeable {
     /**
      * Opens a new HTML tag and increase the indentation.
      *
-     * @param  tag The HTML tag without brackets (e.g. {@code "h2"}).
-     * @return The value to give to {@link #closeTags(int)} for closing the tags.
+     * @param  tag  the HTML tag without brackets (e.g. {@code "h2"}).
+     * @return the value to give to {@link #closeTags(int)} for closing the tags.
      * @throws IOException if an error occurred while writing to the file.
      */
     final int openTag(final String tag) throws IOException {
@@ -169,7 +169,7 @@ abstract strictfp class HTMLGenerator implements Closeable {
     /**
      * Closes the last HTML tag if it is equals to the given element, and opens a new tag on the same line.
      *
-     * @param  tag The HTML tag without brackets (e.g. {@code "h2"}).
+     * @param  tag  the HTML tag without brackets (e.g. {@code "h2"}).
      * @throws IOException if an error occurred while writing to the file.
      */
     final void reopenTag(final String tag) throws IOException {
@@ -190,7 +190,7 @@ abstract strictfp class HTMLGenerator implements Closeable {
     /**
      * Closes the HTML tag identified by the given number, together will all child tags.
      *
-     * @param  openedTag The value returned by the {@link #openTag(String)} matching the tag to close.
+     * @param  openedTag  the value returned by the {@link #openTag(String)} matching the tag to close.
      * @throws IOException if an error occurred while writing to the file.
      */
     final void closeTags(final int openedTag) throws IOException {
@@ -209,8 +209,8 @@ abstract strictfp class HTMLGenerator implements Closeable {
      * The {@code &}, {@code <} and {@code >} characters are <strong>not</strong> escaped.
      * For escaping those characters, invoke <code>println(tag, {@linkplain #escape(CharSequence) escape}(value))</code>.
      *
-     * @param  tag The HTML tag without brackets (e.g. {@code "h1"}).
-     * @param  value The text to write, or {@code null} for none.
+     * @param  tag    the HTML tag without brackets (e.g. {@code "h1"}).
+     * @param  value  the text to write, or {@code null} for none.
      * @throws IOException if an error occurred while writing to the file.
      */
     final void println(final String tag, final CharSequence value) throws IOException {
@@ -233,7 +233,7 @@ abstract strictfp class HTMLGenerator implements Closeable {
      * The {@code &}, {@code <} and {@code >} characters are <strong>not</strong> escaped.
      * For escaping those characters, invoke <code>println({@linkplain #escape(CharSequence) escape}(value))</code>.
      *
-     * @param  value The text to write, or {@code null} if none.
+     * @param  value  the text to write, or {@code null} if none.
      * @throws IOException if an error occurred while writing to the file.
      */
     final void println(final CharSequence value) throws IOException {
@@ -258,8 +258,8 @@ abstract strictfp class HTMLGenerator implements Closeable {
     /**
      * Returns the localized version of the given string, or {@code null} if none.
      *
-     * @param  text The text to localize, or {@code null}.
-     * @return The localized test, or {@code null}.
+     * @param  text  the text to localize, or {@code null}.
+     * @return the localized test, or {@code null}.
      *
      * @see #LOCALE
      */
@@ -270,7 +270,7 @@ abstract strictfp class HTMLGenerator implements Closeable {
     /**
      * Returns {@code true} if the given object is deprecated.
      *
-     * @param  object The object to test.
+     * @param  object  the object to test.
      * @return {@code true} if the given object is deprecated.
      */
     static boolean isDeprecated(final Object object) {

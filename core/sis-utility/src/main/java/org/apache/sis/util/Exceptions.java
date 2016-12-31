@@ -20,10 +20,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.sql.SQLException;
-import org.apache.sis.internal.util.LocalizedException;
-
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Vocabulary;
-import static org.apache.sis.util.CharSequences.trimWhitespaces;
 
 
 /**
@@ -31,7 +29,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class Exceptions extends Static {
@@ -44,21 +42,43 @@ public final class Exceptions extends Static {
     /**
      * Returns the message of the given exception, localized in the given locale if possible.
      * Some exceptions created by SIS can format a message in different locales. This method
-     * will return such localized message if possible, or fallback on the standard
-     * {@link Throwable#getLocalizedMessage()} method otherwise. Note that by default,
-     * {@code getLocalizedMessage()} itself fallback on {@link Throwable#getMessage()}.
+     * returns such localized message if possible, or fallback on the standard JDK methods otherwise.
+     * More specifically:
      *
-     * @param  exception The exception from which to get the localize message, or {@code null}.
-     * @param  locale    The locale for the message, or {@code null} for the default locale.
-     * @return The message in the given locale if possible, or {@code null} if the {@code exception}
-     *         argument was {@code null} or the exception does not contain a message.
+     * <ul>
+     *   <li>If the given {@code exception} is null, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given {@code locale} is null, then this method returns {@link Exception#getMessage()}.
+     *       This is consistent with the {@link Localized} policy saying that null locale stands for "unlocalized"
+     *       message (usually in English) or message in the JVM {@linkplain Locale#getDefault() default locale}.</li>
+     *   <li>Otherwise if the given {@code exception} is an instance of {@link LocalizedException} providing
+     *       a non-null {@linkplain LocalizedException#getInternationalMessage() international message},
+     *       then this method returns the result of {@link InternationalString#toString(Locale)}.</li>
+     *   <li>Otherwise this method returns {@link Exception#getLocalizedMessage()}.</li>
+     * </ul>
+     *
+     * @param  exception  the exception from which to get the localize message, or {@code null}.
+     * @param  locale     the preferred locale for the message, or {@code null} for the JVM default locale.
+     *                    This locale is honored on a <cite>best-effort</cite> basis only.
+     * @return the message in the given locale if possible, or {@code null} if the {@code exception}
+     *         argument was {@code null} or if the exception does not contain a message.
+     *
+     * @see LocalizedException#getLocalizedMessage()
      */
     public static String getLocalizedMessage(final Throwable exception, final Locale locale) {
         if (exception == null) {
             return null;
         }
-        if (locale != null && exception instanceof LocalizedException) {
-            return ((LocalizedException) exception).getLocalizedMessage(locale);
+        if (locale == null) {
+            return exception.getMessage();      // See the policy documented in LocalizedException.getMessage()
+        }
+        if (exception instanceof LocalizedException) {
+            final InternationalString i18n = ((LocalizedException) exception).getInternationalMessage();
+            if (i18n != null) {
+                final String message = i18n.toString(locale);
+                if (message != null) {
+                    return message;
+                }
+            }
         }
         return exception.getLocalizedMessage();
     }
@@ -75,20 +95,20 @@ public final class Exceptions extends Static {
      * exception class does not provide such constructor, then the given exception is returned
      * unchanged.</p>
      *
-     * @param <T>       The type of the exception.
-     * @param exception The exception to copy with a different message.
-     * @param message   The message to set in the exception to be returned.
-     * @param append    If {@code true}, the existing message in the original exception (if any)
-     *                  will be happened after the provided message.
-     * @return A new exception with the given message, or the given exception if the exception
+     * @param <T>        the type of the exception.
+     * @param exception  the exception to copy with a different message.
+     * @param message    the message to set in the exception to be returned.
+     * @param append     if {@code true}, the existing message in the original exception (if any)
+     *                   will be happened after the provided message.
+     * @return a new exception with the given message, or the given exception if the exception
      *         class does not provide public {@code Exception(String)} constructor.
      */
     @SuppressWarnings("unchecked")
     public static <T extends Throwable> T setMessage(final T exception, String message, final boolean append) {
         if (append) {
-            final String em = trimWhitespaces(exception.getLocalizedMessage());
+            final String em = CharSequences.trimWhitespaces(exception.getLocalizedMessage());
             if (em != null && !em.isEmpty()) {
-                final StringBuilder buffer = new StringBuilder(trimWhitespaces(message));
+                final StringBuilder buffer = new StringBuilder(CharSequences.trimWhitespaces(message));
                 final int length = buffer.length();
                 if (length != 0 && Character.isLetterOrDigit(buffer.charAt(length-1))) {
                     buffer.append(". ");
@@ -108,7 +128,7 @@ public final class Exceptions extends Static {
 
     /**
      * Returns a string which contain the given message on the first line, followed by the
-     * {@linkplain Throwable#getLocalizedMessage() localized message} of the given exception
+     * {@linkplain #getLocalizedMessage(Throwable, Locale) localized message} of the given exception
      * on the next line. If the exception has a {@linkplain Throwable#getCause() causes}, then
      * the class name and the localized message of the cause are formatted on the next line
      * and the process is repeated for the whole cause chain, omitting duplicated messages.
@@ -118,36 +138,38 @@ public final class Exceptions extends Static {
      *
      * <p>This method does not format the stack trace.</p>
      *
-     * @param  locale The preferred locale for the exception message, or {@code null}.
-     * @param  header The message to insert on the first line, or {@code null} if none.
-     * @param  cause  The exception, or {@code null} if none.
-     * @return The formatted message, or {@code null} if both the header was {@code null}
+     * @param  locale  the preferred locale for the exception message, or {@code null}.
+     * @param  header  the message to insert on the first line, or {@code null} if none.
+     * @param  cause   the exception, or {@code null} if none.
+     * @return the formatted message, or {@code null} if both the header was {@code null}
      *         and no exception provide a message.
      */
-    public static String formatChainedMessages(final Locale locale, String header, Throwable cause) {
+    public static String formatChainedMessages(final Locale locale, final String header, Throwable cause) {
         final List<String> previousLines = new ArrayList<>();
-        final String lineSeparator = System.lineSeparator();
         StringBuilder buffer = null;
         Vocabulary resources = null;
         while (cause != null) {
-            final String message = trimWhitespaces(getLocalizedMessage(cause, locale));
+            final String message = CharSequences.trimWhitespaces(getLocalizedMessage(cause, locale));
             if (message != null && !message.isEmpty()) {
                 if (buffer == null) {
                     buffer = new StringBuilder(128);
-                    header = trimWhitespaces(header);
-                    if (header != null && !header.isEmpty()) {
-                        buffer.append(header);
+                    if (header != null) {
+                        final int length = CharSequences.skipTrailingWhitespaces(header, 0, header.length());
+                        if (length > 0) {
+                            buffer.append(header, 0, length);
+                        }
                         previousLines.add(header);
                     }
                 }
                 if (!contains(previousLines, message)) {
                     previousLines.add(message);
                     if (buffer.length() != 0) {
-                        buffer.append(lineSeparator);
                         if (resources == null) {
                             resources = Vocabulary.getResources(locale);
                         }
-                        buffer.append(resources.getString(Vocabulary.Keys.CausedBy_1, cause.getClass())).append(": ");
+                        buffer.append(System.lineSeparator())
+                              .append(resources.getString(Vocabulary.Keys.CausedBy_1, cause.getClass()))
+                              .append(": ");
                     }
                     buffer.append(message);
                 }
@@ -161,17 +183,14 @@ public final class Exceptions extends Static {
             }
             cause = cause.getCause();
         }
-        if (buffer != null) {
-            header = buffer.toString();
-        }
-        return header;
+        return (buffer != null) ? buffer.toString() : header;
     }
 
     /**
      * Returns {@code true} if a previous line contains the given exception message.
      */
     private static boolean contains(final List<String> previousLines, final String message) {
-        for (int i=previousLines.size(); --i>=0;) {
+        for (int i = previousLines.size(); --i >= 0;) {
             if (previousLines.get(i).contains(message)) {
                 return true;
             }

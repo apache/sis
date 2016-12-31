@@ -70,9 +70,7 @@ class FormatField extends Format.Field {
         try {
             return type.cast(type.getField(getName()).get(null));
         } catch (Exception cause) {                                 // Many exceptions, including unchecked ones.
-            InvalidObjectException e = new InvalidObjectException(cause.toString());
-            e.initCause(cause);
-            throw e;
+            throw (InvalidObjectException) new InvalidObjectException(cause.toString()).initCause(cause);
         }
     }
 }

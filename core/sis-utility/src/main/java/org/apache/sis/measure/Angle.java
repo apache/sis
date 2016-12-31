@@ -88,7 +88,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**
      * Constructs a new angle with the specified value in decimal degrees.
      *
-     * @param θ Angle in decimal degrees.
+     * @param  θ  angle in decimal degrees.
      */
     public Angle(final double θ) {
         this.θ = θ;
@@ -103,16 +103,16 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
      * locale. Developers should consider using {@link AngleFormat} for end-user applications
      * instead than this constructor.</p>
      *
-     * @param  string A string to be converted to an {@code Angle}.
+     * @param  text  a string to be converted to an {@code Angle}.
      * @throws NumberFormatException if the string does not contain a parsable angle.
      *
      * @see AngleFormat#parse(String)
      */
-    public Angle(final String string) throws NumberFormatException {
+    public Angle(final String text) throws NumberFormatException {
         final Object angle;
         try {
             synchronized (Angle.class) {
-                angle = getAngleFormat().parseObject(string);
+                angle = getAngleFormat().parseObject(text);
             }
         } catch (ParseException exception) {
             /*
@@ -121,22 +121,20 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
              * 'getAngleFormat()' implementation. The getMessage() method uses the system locale,
              * which is what we actually want.
              */
-            NumberFormatException e = new NumberFormatException(exception.getMessage());
-            e.initCause(exception);
-            throw e;
+            throw (NumberFormatException) new NumberFormatException(exception.getMessage()).initCause(exception);
         }
         final Class<?> type = angle.getClass();
         if (type == Angle.class || getClass().isAssignableFrom(type)) {
             this.θ = ((Angle) angle).θ;
         } else {
-            throw new NumberFormatException(string);
+            throw new NumberFormatException(text);
         }
     }
 
     /**
      * Returns the angle value in decimal degrees.
      *
-     * @return The angle value in decimal degrees.
+     * @return the angle value in decimal degrees.
      */
     public double degrees() {
         return θ;
@@ -145,7 +143,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**
      * Returns the angle value in radians.
      *
-     * @return The angle value in radians.
+     * @return the angle value in radians.
      */
     public double radians() {
         return Math.toRadians(θ);
@@ -163,7 +161,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**
      * Compares the specified object with this angle for equality.
      *
-     * @param object The object to compare with this angle for equality.
+     * @param  object  the object to compare with this angle for equality.
      * @return {@code true} if the given object is equal to this angle.
      */
     @Override
@@ -181,7 +179,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
      * Compares two {@code Angle} objects numerically. The comparison
      * is done as if by the {@link Double#compare(double, double)} method.
      *
-     * @param that The angle to compare with this object for order.
+     * @param  that  the angle to compare with this object for order.
      * @return -1 if this angle is smaller than the given one, +1 if greater or 0 if equals.
      */
     @Override
@@ -217,11 +215,11 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         double m = Math.abs(θ);
-        final boolean isSmall = m <= (1 / 3600E+3); // 1E-3 arc-second.
+        final boolean isSmall = m <= (1 / 3600E+3);                     // 1E-3 arc-second.
         if (isSmall || m > maximum()) {
             final char h = hemisphere(isNegative(θ));
             if (h == 0) {
-                m = θ;  // Restore the sign.
+                m = θ;                                                  // Restore the sign.
             }
             char symbol = '°';
             if (isSmall) {
@@ -273,10 +271,10 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
      *   <li>Otherwise the precision, if positive, is given to {@link AngleFormat#setMaximumWidth(int)}.</li>
      * </ul>
      *
-     * @param formatter The formatter in which to format this angle.
-     * @param flags     {@link FormattableFlags#LEFT_JUSTIFY} for left alignment, or 0 for right alignment.
-     * @param width     Minimal number of characters to write, padding with {@code ' '} if necessary.
-     * @param precision Maximal number of characters to write, or -1 if no limit.
+     * @param  formatter  the formatter in which to format this angle.
+     * @param  flags      {@link FormattableFlags#LEFT_JUSTIFY} for left alignment, or 0 for right alignment.
+     * @param  width      minimal number of characters to write, padding with {@code ' '} if necessary.
+     * @param  precision  maximal number of characters to write, or -1 if no limit.
      */
     @Override
     public void formatTo(final Formatter formatter, final int flags, final int width, final int precision) {
@@ -285,7 +283,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
             value = "";
         } else {
             final char h;
-            int w = precision; // To be decremented only if we may truncate and an hemisphere symbol exist.
+            int w = precision;      // To be decremented only if we may truncate and an hemisphere symbol exist.
             if (w > 0 && (h = hemisphere(isNegative(θ))) != 0 && --w == 0) {
                 value = Character.toString(h);
             } else {

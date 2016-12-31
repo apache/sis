@@ -72,7 +72,8 @@ public class ProjectionException extends TransformException {
      * @param  cause  the cause, or {@code null} if none.
      */
     public ProjectionException(final Throwable cause) {
-        super(cause.getLocalizedMessage(), cause);
+        // Reproduce the behavior of standard Throwable(Throwable) constructor.
+        super((cause != null) ? cause.toString() : null, cause);
     }
 
     /**
