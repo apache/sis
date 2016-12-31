@@ -33,9 +33,9 @@ import java.text.ParseException;
 import java.text.ParsePosition;
 import javax.measure.Unit;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.internal.util.LocalizedParseException;
 
 
 /**
@@ -297,11 +297,17 @@ public class RangeFormat extends Format {
     private transient Map<Unit<?>,Boolean> insertSpaceBeforeUnit;
 
     /**
+     * The locale for error message, or {@code null} for the default.
+     */
+    private Locale locale;
+
+    /**
      * Creates a new format for parsing and formatting {@linkplain NumberRange number ranges}
      * using the {@linkplain Locale#getDefault() default locale}.
      */
     public RangeFormat() {
         this(Locale.getDefault(Locale.Category.FORMAT));
+        locale = Locale.getDefault(Locale.Category.DISPLAY);
     }
 
     /**
@@ -336,6 +342,7 @@ public class RangeFormat extends Format {
      * @throws IllegalArgumentException if the given type is not recognized by this constructor.
      */
     public RangeFormat(final Locale locale, final Class<?> elementType) throws IllegalArgumentException {
+        this.locale      = locale;
         this.elementType = elementType;
         if (Angle.class.isAssignableFrom(elementType)) {
             elementFormat = AngleFormat.getInstance(locale);
@@ -723,9 +730,7 @@ public class RangeFormat extends Format {
         } catch (UnconvertibleObjectException e) {
             failure = e;
         }
-        final int errorIndex = pos.getErrorIndex();
-        throw (ParseException) new ParseException(Errors.format(Errors.Keys.UnparsableStringForClass_3,
-                elementType, source, CharSequences.token(source, errorIndex)), errorIndex).initCause(failure);
+        throw new LocalizedParseException(locale, elementType, source, pos).initCause(failure);
     }
 
     /**
