@@ -169,9 +169,7 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
         try {
             key = getKeyConstants().getKeyValue(in.readUTF());
         } catch (ReflectiveOperationException cause) {
-            InvalidObjectException e = new InvalidObjectException(cause.toString());
-            e.initCause(cause);
-            throw e;
+            throw (InvalidObjectException) new InvalidObjectException(cause.toString()).initCause(cause);
         }
     }
 }

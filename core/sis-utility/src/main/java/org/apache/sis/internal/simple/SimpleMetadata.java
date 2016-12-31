@@ -114,7 +114,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Locale> getLanguages() {
-        return Collections.emptySet();
+        return Collections.emptySet();                  // We use 'Set' because we handle 'Locale' like a CodeList.
     }
 
     /**
@@ -132,7 +132,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     @Override
     @Deprecated
     public Collection<Locale> getLocales() {
-        return Collections.emptySet();
+        return Collections.emptySet();                  // We use 'Set' because we handle 'Locale' like a CodeList.
     }
 
     /**
@@ -141,7 +141,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Charset> getCharacterSets() {
-        return Collections.emptySet();
+        return Collections.emptySet();                  // We use 'Set' because we handle 'Charset' like a CodeList.
     }
 
     /**
@@ -226,7 +226,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Responsibility> getContacts() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -234,7 +234,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<CitationDate> getDateInfo() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -271,7 +271,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Citation> getMetadataStandards() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -279,7 +279,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Citation> getMetadataProfiles() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -287,7 +287,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Citation> getAlternativeMetadataReferences() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -295,7 +295,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<OnlineResource> getMetadataLinkages() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -313,7 +313,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<SpatialRepresentation> getSpatialRepresentationInfo() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -321,7 +321,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<ReferenceSystem> getReferenceSystemInfo() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -329,7 +329,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<MetadataExtensionInformation> getMetadataExtensionInfo() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -358,7 +358,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<ContentInformation> getContentInfo() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -366,7 +366,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Distribution> getDistributionInfo() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -374,7 +374,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<DataQuality> getDataQualityInfo() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -382,7 +382,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<PortrayalCatalogueReference> getPortrayalCatalogueInfo() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -390,7 +390,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Constraints> getMetadataConstraints() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -398,7 +398,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<ApplicationSchemaInformation> getApplicationSchemaInfo() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -406,7 +406,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<AcquisitionInformation> getAcquisitionInformation() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -422,7 +422,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Lineage> getResourceLineages() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
 
@@ -464,7 +464,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<InternationalString> getCredits() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -473,7 +473,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Progress> getStatus() {
-        return Collections.emptySet();
+        return Collections.emptySet();              // We use 'Set' because 'Progress' is a CodeList.
     }
 
     /**
@@ -482,7 +482,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Responsibility> getPointOfContacts() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -502,7 +502,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Resolution> getSpatialResolutions() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -511,7 +511,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Duration> getTemporalResolutions() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -531,7 +531,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Extent> getExtents() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -540,7 +540,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Citation> getAdditionalDocumentations() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -558,7 +558,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<MaintenanceInformation> getResourceMaintenances() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -567,7 +567,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<BrowseGraphic> getGraphicOverviews() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -576,7 +576,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Format> getResourceFormats() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -585,7 +585,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Keywords> getDescriptiveKeywords() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -595,7 +595,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Usage> getResourceSpecificUsages() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -604,7 +604,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Constraints> getResourceConstraints() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -613,7 +613,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<AssociatedResource> getAssociatedResources() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -622,7 +622,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     @Override
     @Deprecated
     public Collection<AggregateInformation> getAggregationInfo() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -664,7 +664,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<InternationalString> getAlternateTitles() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -673,7 +673,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<CitationDate> getDates() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -700,7 +700,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Identifier> getIdentifiers() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -710,7 +710,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<Responsibility> getCitedResponsibleParties() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -739,7 +739,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<InternationalString> getOtherCitationDetails() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -775,7 +775,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<OnlineResource> getOnlineResources() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 
     /**
@@ -784,6 +784,6 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<BrowseGraphic> getGraphics() {
-        return Collections.emptySet();
+        return Collections.emptyList();
     }
 }

@@ -363,10 +363,10 @@ public final class Logging extends Static {
          *
          * The message is fetched using Exception.getMessage() instead than getLocalizedMessage()
          * because in a client-server architecture, we want the locale on the server-side instead
-         * than the locale on the client side.
+         * than the locale on the client side. See LocalizedException policy.
          */
         final StringBuilder buffer = new StringBuilder(256).append(Classes.getShortClassName(error));
-        String message = error.getMessage();                    // Targeted to system administrators.
+        String message = error.getMessage();        // Targeted to system administrators (see above).
         if (message != null) {
             buffer.append(": ").append(message);
         }

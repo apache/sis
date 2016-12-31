@@ -1022,10 +1022,8 @@ class PropertyAccessor {
                     }
                     elements[i] = ((ObjectConverter) converter).apply(value);
                 } catch (UnconvertibleObjectException cause) {
-                    final ClassCastException e = new ClassCastException(Errors.format(
-                            Errors.Keys.IllegalClass_2, targetType, sourceType));
-                    e.initCause(cause);
-                    throw e;
+                    throw (ClassCastException) new ClassCastException(Errors.format(
+                            Errors.Keys.IllegalClass_2, targetType, sourceType)).initCause(cause);
                 }
             }
         }

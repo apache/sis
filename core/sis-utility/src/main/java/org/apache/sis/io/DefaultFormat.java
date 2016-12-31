@@ -115,9 +115,7 @@ final class DefaultFormat extends Format {
         try {
             return valueOf(source);
         } catch (NumberFormatException cause) {
-            ParseException e = new LocalizedParseException(null, type, source, null);
-            e.initCause(cause);
-            throw e;
+            throw new LocalizedParseException(null, type, source, null).initCause(cause);
         }
     }
 

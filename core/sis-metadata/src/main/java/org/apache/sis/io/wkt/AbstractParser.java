@@ -34,7 +34,6 @@ import javax.measure.format.ParserException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
@@ -218,7 +217,7 @@ abstract class AbstractParser implements Parser {
             if (cause instanceof FactoryException) {
                 throw (FactoryException) cause;
             }
-            throw new FactoryException(exception.getMessage(), exception);
+            throw new FactoryException(exception.getLocalizedMessage(), exception);
         }
         final Warnings warnings = getAndClearWarnings(value);
         if (warnings != null) {
@@ -273,7 +272,7 @@ abstract class AbstractParser implements Parser {
             fragment = fragments.get(id);
             if (fragment == null) {
                 position.setErrorIndex(lower);
-                throw new LocalizedParseException(errorLocale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
+                throw new UnparsableObjectException(errorLocale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
             }
             position.setIndex(upper);
             fragment = new Element(fragment);

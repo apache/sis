@@ -62,96 +62,96 @@ public final class Resources extends IndexedResourceBundle {
         /**
          * Feature type ‘{0}’ is abstract.
          */
-        public static final short AbstractFeatureType_1 = 0;
+        public static final short AbstractFeatureType_1 = 1;
 
         /**
          * Can not assign characteristics to the “{0}” property.
          */
-        public static final short CanNotAssignCharacteristics_1 = 1;
+        public static final short CanNotAssignCharacteristics_1 = 2;
 
         /**
          * Property “{0}” is not a type that can be instantiated.
          */
-        public static final short CanNotInstantiateProperty_1 = 2;
+        public static final short CanNotInstantiateProperty_1 = 3;
 
         /**
          * Can not set a value of type ‘{1}’ to characteristic “{0}”.
          */
-        public static final short CanNotSetCharacteristics_2 = 3;
+        public static final short CanNotSetCharacteristics_2 = 4;
 
         /**
          * Type of the “{0}” property does not allow to set a value.
          */
-        public static final short CanNotSetPropertyValue_1 = 4;
+        public static final short CanNotSetPropertyValue_1 = 5;
 
         /**
          * Characteristics “{1}” already exists in attribute “{0}”.
          */
-        public static final short CharacteristicsAlreadyExists_2 = 5;
+        public static final short CharacteristicsAlreadyExists_2 = 6;
 
         /**
          * No characteristics named “{1}” has been found in “{0}” attribute.
          */
-        public static final short CharacteristicsNotFound_2 = 6;
+        public static final short CharacteristicsNotFound_2 = 7;
 
         /**
          * Operation “{0}” requires a “{1}” property, but no such property has been found in “{2}”.
          */
-        public static final short DependencyNotFound_3 = 7;
+        public static final short DependencyNotFound_3 = 8;
 
         /**
          * Association “{0}” does not accept features of type ‘{2}’. Expected an instance of ‘{1}’ or
          * derived type.
          */
-        public static final short IllegalFeatureType_3 = 8;
+        public static final short IllegalFeatureType_3 = 9;
 
         /**
          * Type or result of “{0}” property can not be ‘{1}’ for this operation.
          */
-        public static final short IllegalPropertyType_2 = 9;
+        public static final short IllegalPropertyType_2 = 10;
 
         /**
          * Property “{0}” does not accept values of type ‘{2}’. Expected an instance of ‘{1}’ or
          * derived type.
          */
-        public static final short IllegalPropertyValueClass_3 = 10;
+        public static final short IllegalPropertyValueClass_3 = 11;
 
         /**
          * Mismatched type for “{0}” property.
          */
-        public static final short MismatchedPropertyType_1 = 11;
+        public static final short MismatchedPropertyType_1 = 12;
 
         /**
          * An attribute for ‘{1}’ values where expected, but the “{0}” attribute specifies values of
          * type ‘{2}’.
          */
-        public static final short MismatchedValueClass_3 = 12;
+        public static final short MismatchedValueClass_3 = 13;
 
         /**
          * Property “{0}” contains more than one value.
          */
-        public static final short NotASingleton_1 = 13;
+        public static final short NotASingleton_1 = 14;
 
         /**
          * Property “{1}” already exists in feature “{0}”.
          */
-        public static final short PropertyAlreadyExists_2 = 14;
+        public static final short PropertyAlreadyExists_2 = 15;
 
         /**
          * No property named “{1}” has been found in “{0}” feature.
          */
-        public static final short PropertyNotFound_2 = 15;
+        public static final short PropertyNotFound_2 = 16;
 
         /**
          * The “{1}” value given to “{0}” property should be separable in {2} components, but we got
          * {3}.
          */
-        public static final short UnexpectedNumberOfComponents_4 = 16;
+        public static final short UnexpectedNumberOfComponents_4 = 17;
 
         /**
          * Feature named “{0}” has not yet been resolved.
          */
-        public static final short UnresolvedFeatureName_1 = 17;
+        public static final short UnresolvedFeatureName_1 = 18;
     }
 
     /**

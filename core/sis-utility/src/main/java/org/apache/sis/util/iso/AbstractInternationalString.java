@@ -79,7 +79,7 @@ public abstract class AbstractInternationalString implements InternationalString
      * Returns the length of the string in the {@linkplain Locale#getDefault() default locale}.
      * This is the length of the string returned by {@link #toString()}.
      *
-     * @return Length of the string in the default locale.
+     * @return length of the string in the default locale.
      */
     @Override
     public int length() {
@@ -90,8 +90,8 @@ public abstract class AbstractInternationalString implements InternationalString
      * Returns the character of the string in the {@linkplain Locale#getDefault() default locale}
      * at the specified index. This is a character of the string returned by {@link #toString()}.
      *
-     * @param  index The index of the character.
-     * @return The character at the specified index.
+     * @param  index  the index of the character.
+     * @return the character at the specified index.
      * @throws IndexOutOfBoundsException if the specified index is out of bounds.
      */
     @Override
@@ -104,9 +104,9 @@ public abstract class AbstractInternationalString implements InternationalString
      * The subsequence is a {@link String} object starting with the character value at the specified
      * index and ending with the character value at index {@code end - 1}.
      *
-     * @param   start The start index, inclusive.
-     * @param   end   The end index, exclusive.
-     * @return  The specified subsequence.
+     * @param   start  the start index, inclusive.
+     * @param   end    the end index, exclusive.
+     * @return  the specified subsequence.
      * @throws  IndexOutOfBoundsException if {@code start} or {@code end} is out of range.
      */
     @Override
@@ -134,8 +134,8 @@ public abstract class AbstractInternationalString implements InternationalString
      * other subclasses will take {@code null} as a synonymous of the root locale. In order to
      * ensure determinist behavior, client code are encouraged to specify only non-null values.
      *
-     * @param  locale The desired locale for the string to be returned.
-     * @return The string in the given locale if available, or in an
+     * @param  locale  the desired locale for the string to be returned.
+     * @return the string in the given locale if available, or in an
      *         implementation-dependent fallback locale otherwise.
      *
      * @see Locale#getDefault()
@@ -151,7 +151,7 @@ public abstract class AbstractInternationalString implements InternationalString
      * <p>All methods from {@link CharSequence} operate on this string.
      * This string is also used as the criterion for {@linkplain Comparable natural ordering}.</p>
      *
-     * @return The string in the default locale.
+     * @return the string in the default locale.
      */
     @Override
     public synchronized String toString() {
@@ -174,11 +174,11 @@ public abstract class AbstractInternationalString implements InternationalString
      * {@linkplain #toString(Locale) toString}(formatter.{@linkplain Formatter#locale()})
      * </code></blockquote>
      *
-     * @param formatter The formatter to use for formatting this string.
-     * @param flags     A bitmask of {@link FormattableFlags} values.
-     * @param width     The minimum number of characters, or -1 if none.
-     * @param precision The maximum number of characters (before expanding to the {@code width}),
-     *                  or -1 for no restriction.
+     * @param formatter  the formatter to use for formatting this string.
+     * @param flags      a bitmask of {@link FormattableFlags} values.
+     * @param width      the minimum number of characters, or -1 if none.
+     * @param precision  the maximum number of characters (before expanding to the {@code width}),
+     *                   or -1 for no restriction.
      */
     @Override
     public void formatTo(final Formatter formatter, final int flags, final int width, final int precision) {
@@ -190,9 +190,9 @@ public abstract class AbstractInternationalString implements InternationalString
      * the string in the {@linkplain Locale#getDefault() default locale}, as returned
      * by {@link #toString()}.
      *
-     * @param  object The string to compare with this string.
-     * @return A negative number if this string is before the given string, a positive
-     *         number if after, or 0 if equals.
+     * @param  object  the string to compare with this string.
+     * @return a negative number if this string is before the given string,
+     *         a positive number if after, or 0 if equals.
      */
     @Override
     public int compareTo(final InternationalString object) {

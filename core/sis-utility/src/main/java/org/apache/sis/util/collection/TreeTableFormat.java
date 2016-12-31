@@ -167,9 +167,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     /**
      * Creates a new tree table format.
      *
-     * @param locale   The locale to use for numbers, dates and angles formatting,
-     *                 or {@code null} for the {@linkplain Locale#ROOT root locale}.
-     * @param timezone The timezone, or {@code null} for UTC.
+     * @param locale    the locale to use for numbers, dates and angles formatting,
+     *                  or {@code null} for the {@linkplain Locale#ROOT root locale}.
+     * @param timezone  the timezone, or {@code null} for UTC.
      */
     public TreeTableFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
@@ -212,7 +212,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      *   <li>On formatting, {@linkplain TreeTable#getColumns() all <code>TreeTable</code> columns}.</li>
      * </ul>
      *
-     * @return The table columns to parse and format, or {@code null} for the default.
+     * @return the table columns to parse and format, or {@code null} for the default.
      */
     public TableColumn<?>[] getColumns() {
         return (columnIndices != null) ? DefaultTreeTable.getColumns(columnIndices) : null;
@@ -222,8 +222,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * Sets the table columns to parse and format. A {@code null} value means to use the default
      * list of columns, as defined in the {@link #getColumns()} method.
      *
-     * @param  columns The table columns to parse and format, or {@code null} for the default.
-     * @throws IllegalArgumentException If the given array is empty, contains a null element
+     * @param  columns  the table columns to parse and format, or {@code null} for the default.
+     * @throws IllegalArgumentException if the given array is empty, contains a null element
      *         or a duplicated value.
      */
     public void setColumns(final TableColumn<?>... columns) throws IllegalArgumentException {
@@ -241,7 +241,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * Returns the number of spaces to add on the left margin for each indentation level.
      * The default value is 4.
      *
-     * @return The current indentation.
+     * @return the current indentation.
      */
     public int getIndentation() {
         return indentation;
@@ -252,8 +252,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * If the new indentation is smaller than the {@linkplain #getVerticalLinePosition()
      * vertical line position}, then the later is also set to the given indentation value.
      *
-     * @param  indentation The new indentation.
-     * @throws IllegalArgumentException If the given value is negative.
+     * @param  indentation  the new indentation.
+     * @throws IllegalArgumentException if the given value is negative.
      */
     public void setIndentation(final int indentation) throws IllegalArgumentException {
         ArgumentChecks.ensurePositive("indentation", indentation);
@@ -269,7 +269,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * The default value is 2, which means that the vertical line is drawn below the third
      * letter of the root label.
      *
-     * @return The current vertical line position.
+     * @return the current vertical line position.
      */
     public int getVerticalLinePosition() {
         return verticalLinePosition;
@@ -279,8 +279,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * Sets the position of the vertical line, relative to the position of the root label.
      * The given value can not be greater than the {@linkplain #getIndentation() indentation}.
      *
-     * @param  verticalLinePosition The new vertical line position.
-     * @throws IllegalArgumentException If the given value is negative or greater than the indentation.
+     * @param  verticalLinePosition  the new vertical line position.
+     * @throws IllegalArgumentException if the given value is negative or greater than the indentation.
      */
     public void setVerticalLinePosition(final int verticalLinePosition) throws IllegalArgumentException {
         ArgumentChecks.ensureBetween("verticalLinePosition", 0, indentation, verticalLinePosition);
@@ -300,9 +300,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * The returned array may contain {@code null} elements, which means that the values
      * in that column can be stored as {@code String}s.
      *
-     * @param  mandatoy {@code true} if an exception shall be thrown for unrecognized types,
-     *         or {@code false} for storing a {@code null} value in the array instead.
-     * @throws IllegalStateException If {@code mandatory} is {@code true} and a column
+     * @param  mandatoy  {@code true} if an exception shall be thrown for unrecognized types, or
+     *                   {@code false} for storing a {@code null} value in the array instead.
+     * @throws IllegalStateException if {@code mandatory} is {@code true} and a column
      *         contains values of an unsupported type.
      */
     final Format[] getFormats(final TableColumn<?>[] columns, final boolean mandatory) throws IllegalStateException {
@@ -341,10 +341,10 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      *   <li>Parsing stops at first empty line (ignoring whitespaces), or at the end of the given text.</li>
      * </ul>
      *
-     * @param  text The character sequence for the tree to parse.
-     * @param  pos  The position where to start the parsing.
-     * @return The parsed tree, or {@code null} if the given character sequence can not be parsed.
-     * @throws ParseException If an error occurred while parsing a node value.
+     * @param  text  the character sequence for the tree to parse.
+     * @param  pos   the position where to start the parsing.
+     * @return the parsed tree, or {@code null} if the given character sequence can not be parsed.
+     * @throws ParseException if an error occurred while parsing a node value.
      */
     @Override
     @SuppressWarnings("null")
@@ -365,7 +365,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             while (endOfLine > indexOfLineStart) {
                 final int c = text.charAt(endOfLine-1);
                 if (c != '\r' && c != '\n') break;
-                endOfLine--; // Skip trailing '\r' and '\n'.
+                endOfLine--;                                    // Skip trailing '\r' and '\n'.
             }
             /*
              * Skip leading spaces using Character.isSpaceChar(…) instead than isWhitespace(…)
@@ -373,7 +373,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
              * need to consider line feeds since they were handled by the lines just above.
              */
             boolean hasChar = false;
-            int i; // The indentation of current line.
+            int i;                                              // The indentation of current line.
             for (i=indexOfLineStart; i<endOfLine;) {
                 final int c = Character.codePointAt(text, i);
                 if (!Character.isSpaceChar(c)) {
@@ -385,7 +385,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 i += Character.charCount(c);
             }
             if (!hasChar) {
-                break; // The line contains only whitespaces.
+                break;                                          // The line contains only whitespaces.
             }
             /*
              * Go back to the fist non-space character (should be '─'). We do that in case the
@@ -480,12 +480,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * Parses the given string using a format appropriate for the type of values in
      * the given column, and stores the value in the given node.
      *
-     * @param  V        The type of values in the given column.
-     * @param  node     The node in which to set the value.
-     * @param  column   The column in which to set the value.
-     * @param  format   The format to use for parsing the value, or {@code null}.
-     * @param  text     The textual representation of the value.
-     * @throws ParseException If an error occurred while parsing.
+     * @param  V        the type of values in the given column.
+     * @param  node     the node in which to set the value.
+     * @param  column   the column in which to set the value.
+     * @param  format   the format to use for parsing the value, or {@code null}.
+     * @param  text     the textual representation of the value.
+     * @throws ParseException if an error occurred while parsing.
      */
     private <V> void parseValue(final TreeTable.Node node, final TableColumn<V> column,
             final Format format, final String text) throws ParseException
@@ -607,9 +607,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         /**
          * Creates a new instance which will write to the given appendable.
          *
-         * @param out           Where to format the tree.
-         * @param column        The columns of the tree table to format.
-         * @param parentObjects An initially empty {@link IdentityHashMap}.
+         * @param  out            where to format the tree.
+         * @param  column         the columns of the tree table to format.
+         * @param  parentObjects  an initially empty {@link IdentityHashMap}.
          */
         Writer(final Appendable out, final TableColumn<?>[] columns, final Map<Object,Object> parentObjects) {
             super(columns.length >= 2 ? new TableAppender(out, "") : out);
@@ -646,13 +646,13 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         /**
          * Appends a textual representation of the given value.
          *
-         * @param  value     The value to format (may be {@code null}).
-         * @param  recursive {@code true} if this method is invoking itself for writing collection values.
+         * @param  value      the value to format (may be {@code null}).
+         * @param  recursive  {@code true} if this method is invoking itself for writing collection values.
          */
         private void formatValue(final Object value, final boolean recursive) throws IOException {
             final CharSequence text;
             if (value == null) {
-                text = " "; // String for missing value.
+                text = " ";                                             // String for missing value.
             } else if (columnFormat != null) {
                 if (columnFormat instanceof CompoundFormat<?>) {
                     formatValue((CompoundFormat<?>) columnFormat, value);
@@ -741,8 +741,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
          * Appends the string representation of the given node and all its children.
          * This method invokes itself recursively.
          *
-         * @param node  The node to format.
-         * @param level Indentation level. The first level is 0.
+         * @param  node   the node to format.
+         * @param  level  indentation level. The first level is 0.
          */
         final void format(final TreeTable.Node node, final int level) throws IOException {
             for (int i=0; i<level; i++) {
@@ -812,9 +812,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * representation of the {@linkplain TreeTable.Node#getValue(TableColumn) value in that column}
      * using the formatter obtained by a call to {@link #getFormat(Class)}.
      *
-     * @param  tree        The tree to format.
-     * @param  toAppendTo  Where to format the tree.
-     * @throws IOException If an error occurred while writing to the given appendable.
+     * @param  tree        the tree to format.
+     * @param  toAppendTo  where to format the tree.
+     * @throws IOException if an error occurred while writing to the given appendable.
      *
      * @see TreeTables#toString(TreeTable)
      */

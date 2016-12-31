@@ -18,6 +18,7 @@ package org.apache.sis.test;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
@@ -35,9 +36,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**

@@ -45,7 +45,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.util.LocalizedParseException;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
@@ -687,7 +686,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             final Element element = new Element(parser(), wkt, pos, sharedValues);
             final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length());
             if (index < wkt.length()) {
-                throw new LocalizedParseException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
+                throw new UnparsableObjectException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
                         new Object[] {name + " = " + element.keyword + "[…]", CharSequences.token(wkt, index)}, index);
             }
             // 'fragments' map has been created by 'parser()'.

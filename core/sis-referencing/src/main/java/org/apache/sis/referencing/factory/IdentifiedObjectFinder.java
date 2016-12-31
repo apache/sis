@@ -562,7 +562,11 @@ public class IdentifiedObjectFinder {
      * Invoked when an exception occurred during the creation of a candidate from a code.
      */
     private static void exceptionOccurred(final FactoryException exception) {
-        final LogRecord record = new LogRecord(Level.FINER, exception.getLocalizedMessage());
+        /*
+         * use 'getMessage()' instead of 'getLocalizedMessage()' for
+         * giving preference to the locale of system administrator.
+         */
+        final LogRecord record = new LogRecord(Level.FINER, exception.getMessage());
         record.setLoggerName(Loggers.CRS_FACTORY);
         Logging.log(IdentifiedObjectFinder.class, "find", record);
     }

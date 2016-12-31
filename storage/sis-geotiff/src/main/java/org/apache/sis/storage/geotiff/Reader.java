@@ -198,13 +198,6 @@ final class Reader extends GeoTIFF {
     }
 
     /**
-     * Returns a default message for parsing error.
-     */
-    final String canNotDecode() {
-        return errors().getString(Errors.Keys.CanNotParseFile_2, "TIFF", input.filename);
-    }
-
-    /**
      * Reads the {@code int} or {@code long} value (depending if the file is
      * a standard of big TIFF) at the current {@linkplain #input} position.
      *
@@ -218,7 +211,7 @@ final class Reader extends GeoTIFF {
         if (pointer >= 0) {
             return pointer;
         }
-        throw new DataStoreContentException(canNotDecode());
+        throw new DataStoreContentException(owner.getLocale(), "TIFF", input.filename, null);
     }
 
     /**
@@ -235,7 +228,7 @@ final class Reader extends GeoTIFF {
         if (entry >= 0) {
             return entry;
         }
-        throw new DataStoreContentException(canNotDecode());
+        throw new DataStoreContentException(owner.getLocale(), "TIFF", input.filename, null);
     }
 
     /**

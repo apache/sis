@@ -70,7 +70,6 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
-import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.CharSequences;
@@ -668,8 +667,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     warning(parent, element, Errors.formatInternational(Errors.Keys.UnexpectedScaleFactorForUnit_2, verify, factor), null);
                 }
             } catch (IncommensurableException e) {
-                throw (ParseException) new LocalizedParseException(errorLocale,
-                        Errors.Keys.InconsistentUnitsForCS_1, new Object[] {verify}, element.offset).initCause(e);
+                throw new UnparsableObjectException(errorLocale, Errors.Keys.InconsistentUnitsForCS_1,
+                        new Object[] {verify}, element.offset).initCause(e);
             }
         }
         return unit;
@@ -736,7 +735,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 csProperties = new HashMap<>(parseMetadataAndClose(element, "CS", null));
                 if (expected != null) {
                     if (!expected.equalsIgnoreCase(type)) {
-                        throw new LocalizedParseException(errorLocale, Errors.Keys.UnexpectedValueInElement_2,
+                        throw new UnparsableObjectException(errorLocale, Errors.Keys.UnexpectedValueInElement_2,
                                 new String[] {WKTKeywords.CS, type}, element.offset);
                     }
                 }
@@ -750,7 +749,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                         key = Errors.Keys.ExcessiveNumberOfDimensions_1;
                         args = new Object[] {dimension};
                     }
-                    throw new LocalizedParseException(errorLocale, key, args, element.offset);
+                    throw new UnparsableObjectException(errorLocale, key, args, element.offset);
                 }
                 type = type.equalsIgnoreCase(WKTKeywords.Cartesian) ?
                        WKTKeywords.Cartesian : type.toLowerCase(symbols.getLocale());
@@ -993,7 +992,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 return referencing.createAbstractCS(csProperties, axes);
             }
         }
-        throw new LocalizedParseException(errorLocale, (axes.length > dimension)
+        throw new UnparsableObjectException(errorLocale, (axes.length > dimension)
                 ? Errors.Keys.TooManyOccurrences_2 : Errors.Keys.TooFewOccurrences_2,
                 new Object[] {dimension, WKTKeywords.Axis}, parent.offset);
     }
@@ -1106,7 +1105,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             throw element.parseFailed(exception);
         }
         if (axisOrder.put(axis, n) != null) {   // Opportunist check, effective for instances created by SIS factory.
-            throw new LocalizedParseException(errorLocale, Errors.Keys.DuplicatedElement_1,
+            throw new UnparsableObjectException(errorLocale, Errors.Keys.DuplicatedElement_1,
                     new Object[] {WKTKeywords.Axis + "[“" + name + "”]"}, element.offset);
         }
         return axis;
@@ -2100,7 +2099,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final String    name   = element.pullString("name");
         final SingleCRS geoCRS = parseGeodeticCRS(MANDATORY, element, 2, WKTKeywords.ellipsoidal);
         if (!(geoCRS instanceof GeographicCRS)) {
-            throw new LocalizedParseException(errorLocale, Errors.Keys.IllegalCRSType_1,
+            throw new UnparsableObjectException(errorLocale, Errors.Keys.IllegalCRSType_1,
                     new Object[] {geoCRS.getClass()}, element.offset);
         }
         /*
@@ -2209,7 +2208,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final OperationMethod           method  = getOperationMethod();
         final CoordinateReferenceSystem baseCRS = parseCoordinateReferenceSystem(element, true);
         if (!(baseCRS instanceof SingleCRS)) {
-            throw new LocalizedParseException(errorLocale, Errors.Keys.UnexpectedValueInElement_2,
+            throw new UnparsableObjectException(errorLocale, Errors.Keys.UnexpectedValueInElement_2,
                     new Object[] {WKTKeywords.Fitted_CS, baseCRS.getClass()}, element.offset);
         }
         /*

@@ -80,7 +80,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * However, implementors are encouraged to wrap in {@linkplain java.util.Collections#unmodifiableSet unmodifiable set}
  * if they intend to cache {@code IdentifiedObjectSet} instances.
  *
- * @param <T> The type of objects to be included in this set.
+ * @param  <T>  the type of objects to be included in this set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -128,8 +128,8 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * to {@link #addAuthorityCode(String)} for deferred {@code IdentifiedObject} creation,
      * or to {@link #add(IdentifiedObject)} for already instantiated objects.
      *
-     * @param factory The factory to use for deferred {@code IdentifiedObject} instances creation.
-     * @param type The type of objects included in this set.
+     * @param  factory  the factory to use for deferred {@code IdentifiedObject} instances creation.
+     * @param  type     the type of objects included in this set.
      */
     public IdentifiedObjectSet(final AuthorityFactory factory, final Class<T> type) {
         ArgumentChecks.ensureNonNull("factory", factory);
@@ -143,7 +143,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * Returns the locale to use for error messages and warnings.
      * The default implementation inherits the {@link #factory} locale, if any.
      *
-     * @return The locale, or {@code null} if not explicitly defined.
+     * @return the locale, or {@code null} if not explicitly defined.
      */
     @Override
     public Locale getLocale() {
@@ -153,7 +153,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
     /**
      * Returns the type of {@code IdentifiedObject} included in this set.
      *
-     * @return The type of {@code IdentifiedObject} included in this set.
+     * @return the type of {@code IdentifiedObject} included in this set.
      */
     @Override
     public Class<T> getElementType() {
@@ -175,7 +175,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * Returns the number of objects available in this set. Note that this number may decrease
      * during the iteration process if the creation of some {@code IdentifiedObject}s failed.
      *
-     * @return The number of objects available in this set.
+     * @return the number of objects available in this set.
      */
     @Override
     public int size() {
@@ -188,7 +188,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * Returns the authority codes of all {@code IdentifiedObject}s contained in this collection, in insertion order.
      * This method does not trig the {@linkplain #createObject(String) creation} of any object.
      *
-     * @return The authority codes in iteration order.
+     * @return the authority codes in iteration order.
      */
     public String[] getAuthorityCodes() {
         return codes().clone();
@@ -220,7 +220,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * the ones in the array returned by {@link #getAuthorityCodes()} but in a different order, then this method
      * just sets the new ordering.</div>
      *
-     * @param codes The authority codes of identified objects to store in this set.
+     * @param  codes the authority codes of identified objects to store in this set.
      *
      * @see #addAuthorityCode(String)
      */
@@ -241,7 +241,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * will instantiate an {@code IdentifiedObject} for the given code only when first needed.
      * Otherwise this collection is unchanged.
      *
-     * @param  code The code authority code of the {@code IdentifiedObject} to include in this set.
+     * @param  code  the code authority code of the {@code IdentifiedObject} to include in this set.
      */
     public void addAuthorityCode(final String code) {
         synchronized (objects) {
@@ -257,7 +257,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * If this collection already contains an object using the same authority code than the given object,
      * then the old object is replaced by the new one regardless of whether the objects themselves are equal or not.
      *
-     * @param object The object to add to the set.
+     * @param  object  the object to add to the set.
      * @return {@code true} if this set changed as a result of this call.
      *
      * @see #getAuthorityCode(IdentifiedObject)
@@ -336,7 +336,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
     /**
      * Returns {@code true} if this collection contains the specified {@code IdentifiedObject}.
      *
-     * @param  object The {@code IdentifiedObject} to test for presence in this set.
+     * @param  object  the {@code IdentifiedObject} to test for presence in this set.
      * @return {@code true} if the given object is presents in this set.
      */
     @Override
@@ -347,7 +347,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
     /**
      * Removes the object for the given code.
      *
-     * @param code The code of the object to remove.
+     * @param  code  the code of the object to remove.
      */
     final void removeAuthorityCode(final String code) {
         synchronized (objects) {
@@ -359,7 +359,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
     /**
      * Removes the specified {@code IdentifiedObject} from this collection, if it is present.
      *
-     * @param  object The {@code IdentifiedObject} to remove from this set.
+     * @param  object  the {@code IdentifiedObject} to remove from this set.
      * @return {@code true} if this set changed as a result of this call.
      */
     @Override
@@ -381,7 +381,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
     /**
      * Removes from this collection all of its elements that are contained in the specified collection.
      *
-     * @param  collection The {@code IdentifiedObject}s to remove from this set.
+     * @param  collection  the {@code IdentifiedObject}s to remove from this set.
      * @return {@code true} if this set changed as a result of this call.
      */
     @Override
@@ -401,7 +401,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * <p>This iterator is <strong>not</strong> thread safe – iteration should be done in a single thread.
      * However the iterator is robust to concurrent changes in {@code IdentifiedObjectSet} during iteration.</p>
      *
-     * @return An iterator over all {@code IdentifiedObject} instances in this set, in insertion order.
+     * @return an iterator over all {@code IdentifiedObject} instances in this set, in insertion order.
      * @throws BackingStoreException if an error occurred while creating the iterator.
      */
     @Override
@@ -480,8 +480,8 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * {@link FactoryException} (except the ones accepted as {@linkplain #isRecoverableFailure recoverable failures})
      * are thrown as if they were never wrapped into {@link BackingStoreException}.
      *
-     * @param n The number of object to resolve. If this number is equals or greater than {@link #size()}, then
-     *          this method ensures that all {@code IdentifiedObject} instances in this collection are created.
+     * @param  n  the number of object to resolve. If this number is equals or greater than {@link #size()}, then
+     *            this method ensures that all {@code IdentifiedObject} instances in this collection are created.
      * @throws FactoryException if an {@linkplain #createObject(String) object creation} failed.
      */
     public void resolve(int n) throws FactoryException {
@@ -511,8 +511,8 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      *
      * Subclasses may override this method if they want to use a different identifiers.
      *
-     * @param  object The object for which to get the authority code.
-     * @return The authority code of the given identified object.
+     * @param  object  the object for which to get the authority code.
+     * @return the authority code of the given identified object.
      */
     protected String getAuthorityCode(final T object) {
         final Identifier id = IdentifiedObjects.getIdentifier(object, factory.getAuthority());
@@ -523,9 +523,9 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * Creates an object for the specified authority code.
      * This method is invoked during the iteration process if an object was not already created.
      *
-     * @param  code The code for which to create the identified object.
-     * @return The identified object created from the given code.
-     * @throws FactoryException If the object creation failed.
+     * @param  code  the code for which to create the identified object.
+     * @return the identified object created from the given code.
+     * @throws FactoryException if the object creation failed.
      */
     protected T createObject(final String code) throws FactoryException {
         return type.cast(proxy.createFromAPI(factory, code));
@@ -550,7 +550,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      *   <li>Otherwise returns {@code false}.</li>
      * </ul>
      *
-     * @param  exception The exception that occurred while creating an object.
+     * @param  exception  the exception that occurred while creating an object.
      * @return {@code true} if the given exception should be considered recoverable,
      *         or {@code false} if it should be considered fatal.
      */
@@ -569,7 +569,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
         final StringBuilder trace = new StringBuilder(180);
         while (cause != null) {
             trace.append(lineSeparator).append("  • ").append(Classes.getShortClassName(cause));
-            final String message = cause.getLocalizedMessage();
+            final String message = cause.getMessage();      // Prefer the local of system administrator.
             if (message != null) {
                 trace.append(": ").append(message);
             }

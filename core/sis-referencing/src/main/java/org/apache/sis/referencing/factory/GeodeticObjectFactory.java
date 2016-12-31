@@ -254,7 +254,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         if (properties == null || properties.isEmpty()) {
             properties = Collections.emptyMap();
         } else {
-            properties = CollectionsExt.compact(new HashMap<String,Object>(properties));
+            properties = CollectionsExt.compact(new HashMap<>(properties));
         }
         defaultProperties = properties;
         pool = new WeakHashSet<>(AbstractIdentifiedObject.class);
@@ -1645,7 +1645,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
             Throwable cause = e.getCause();
             while (cause != null) {
                 if (cause instanceof ParameterNotFoundException) {
-                    throw new InvalidGeodeticParameterException(e.getMessage(), cause);     // More accurate exception.
+                    throw new InvalidGeodeticParameterException(e.getLocalizedMessage(), cause);
                 }
                 cause = cause.getCause();
             }

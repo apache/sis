@@ -98,9 +98,8 @@ final class Verifier {
      * {@linkplain ParameterDescriptor#getValidValues() set of valid values}.
      * If the value fails any of those tests, then an exception is thrown.
      *
-     * @param  <T> The type of parameter value. The given {@code value} should typically be an instance of this class.
-     *             This is not required by this method signature but is checked by this method implementation.
-     *
+     * @param  <T>         the type of parameter value. The given {@code value} should typically be an instance of this class.
+     *                     This is not required by this method signature but is checked by this method implementation.
      * @param  descriptor  the parameter descriptor to check against.
      * @param  value       the value to check, or {@code null}.
      * @param  unit        the unit of the value to check, or {@code null}.
