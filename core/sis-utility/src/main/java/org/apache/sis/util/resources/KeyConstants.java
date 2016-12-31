@@ -42,8 +42,8 @@ public class KeyConstants {
     private final Class<?> keysClass;
 
     /**
-     * The key names. This is usually not needed, but may be created from the {@code Keys}
-     * inner class in some occasions.
+     * The key names in the exact same order than {@link IndexedResourceBundle#values}.
+     * This is usually not needed, but may be created from the {@code Keys} inner class in some occasions.
      *
      * @see #getKeyNames()
      * @see #getKeyName(short)
@@ -80,7 +80,7 @@ public class KeyConstants {
                 names = new String[fields.length];
                 for (final Field field : fields) {
                     if (Modifier.isStatic(field.getModifiers()) && field.getType() == Short.TYPE) {
-                        final int index = Short.toUnsignedInt((Short) field.get(null));
+                        final int index = Short.toUnsignedInt((Short) field.get(null)) - IndexedResourceBundle.FIRST;
                         if (index >= length) {
                             length = index + 1;
                             if (length > names.length) {
@@ -105,9 +105,9 @@ public class KeyConstants {
      * our {@link IndexedResourceBundle#handleGetObject(String)} implementation.
      */
     final String getKeyName(final short index) {
-        final int i = Short.toUnsignedInt(index);
+        final int i = Short.toUnsignedInt(index) - IndexedResourceBundle.FIRST;
         final String[] keys = getKeyNames();
-        if (i < keys.length) {
+        if (i >= 0 && i < keys.length) {
             final String key = keys[i];
             if (key != null) {
                 return key;

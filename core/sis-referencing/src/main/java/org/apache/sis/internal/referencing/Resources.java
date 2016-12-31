@@ -65,131 +65,131 @@ public final class Resources extends IndexedResourceBundle {
          * Ambiguity between inverse flattening and semi minor axis length for “{0}”. Using inverse
          * flattening.
          */
-        public static final short AmbiguousEllipsoid_1 = 0;
+        public static final short AmbiguousEllipsoid_1 = 1;
 
         /**
          * Can not compute the coordinate operation derivative.
          */
-        public static final short CanNotComputeDerivative = 14;
+        public static final short CanNotComputeDerivative = 2;
 
         /**
          * Can not concatenate transforms “{0}” and “{1}”.
          */
-        public static final short CanNotConcatenateTransforms_2 = 15;
+        public static final short CanNotConcatenateTransforms_2 = 3;
 
         /**
          * Can not create an object of group “{1}” as an instance of class ‘{0}’.
          */
-        public static final short CanNotCreateObjectAsInstanceOf_2 = 57;
+        public static final short CanNotCreateObjectAsInstanceOf_2 = 4;
 
         /**
          * Can not instantiate geodetic object for “{0}”.
          */
-        public static final short CanNotInstantiateGeodeticObject_1 = 58;
+        public static final short CanNotInstantiateGeodeticObject_1 = 5;
 
         /**
          * Can not map an axis from the specified coordinate system to the “{0}” direction.
          */
-        public static final short CanNotMapAxisToDirection_1 = 16;
+        public static final short CanNotMapAxisToDirection_1 = 6;
 
         /**
          * Target dimension {0} depends on excluded source dimensions.
          */
-        public static final short CanNotSeparateTargetDimension_1 = 17;
+        public static final short CanNotSeparateTargetDimension_1 = 7;
 
         /**
          * Can not transform envelope to a geodetic reference system.
          */
-        public static final short CanNotTransformEnvelopeToGeodetic = 18;
+        public static final short CanNotTransformEnvelopeToGeodetic = 8;
 
         /**
          * Can not use the {0} geodetic parameters: {1}
          */
-        public static final short CanNotUseGeodeticParameters_2 = 19;
+        public static final short CanNotUseGeodeticParameters_2 = 9;
 
         /**
          * Axis directions {0} and {1} are colinear.
          */
-        public static final short ColinearAxisDirections_2 = 20;
+        public static final short ColinearAxisDirections_2 = 10;
 
         /**
          * This result indicates if a datum shift method has been applied.
          */
-        public static final short ConformanceMeansDatumShift = 1;
+        public static final short ConformanceMeansDatumShift = 11;
 
         /**
          * This parameter is shown for completeness, but should never have a value different than {0}
          * for this projection.
          */
-        public static final short ConstantProjParameterValue_1 = 2;
+        public static final short ConstantProjParameterValue_1 = 12;
 
         /**
          * Coordinate conversion of transformation from system “{0}” to “{1}” has not been found.
          */
-        public static final short CoordinateOperationNotFound_2 = 21;
+        public static final short CoordinateOperationNotFound_2 = 13;
 
         /**
          * Origin of temporal datum shall be a date.
          */
-        public static final short DatumOriginShallBeDate = 22;
+        public static final short DatumOriginShallBeDate = 14;
 
         /**
          * Code “{0}” is deprecated and replaced by code {1}. Reason is: {2}
          */
-        public static final short DeprecatedCode_3 = 3;
+        public static final short DeprecatedCode_3 = 15;
 
         /**
          * Name or alias for parameter “{0}” at index {1} conflict with name “{2}” at index {3}.
          */
-        public static final short DuplicatedParameterName_4 = 59;
+        public static final short DuplicatedParameterName_4 = 16;
 
         /**
          * There is no factory for version {1} of “{0}” authority. Fallback on default version for
          * objects creation.
          */
-        public static final short FallbackDefaultFactoryVersion_2 = 4;
+        public static final short FallbackDefaultFactoryVersion_2 = 17;
 
         /**
          * {0} geodetic dataset version {1} on “{2}” version {3}.
          */
-        public static final short GeodeticDataBase_4 = 5;
+        public static final short GeodeticDataBase_4 = 18;
 
         /**
          * More than one service provider of type ‘{0}’ are declared for “{1}”. Only the first provider
          * (an instance of ‘{2}’) will be used.
          */
-        public static final short IgnoredServiceProvider_3 = 6;
+        public static final short IgnoredServiceProvider_3 = 19;
 
         /**
          * Coordinate system of class ‘{0}’ can not have axis in the {1} direction.
          */
-        public static final short IllegalAxisDirection_2 = 23;
+        public static final short IllegalAxisDirection_2 = 20;
 
         /**
          * Dimensions of “{0}” operation can not be ({1} → {2}).
          */
-        public static final short IllegalOperationDimension_3 = 24;
+        public static final short IllegalOperationDimension_3 = 21;
 
         /**
          * This operation can not be applied to values of class ‘{0}’.
          */
-        public static final short IllegalOperationForValueClass_1 = 25;
+        public static final short IllegalOperationForValueClass_1 = 22;
 
         /**
          * Parameter “{0}” can not be of type ‘{1}’.
          */
-        public static final short IllegalParameterType_2 = 60;
+        public static final short IllegalParameterType_2 = 23;
 
         /**
          * Parameter “{0}” does not accept values of ‘{2}’ type. Expected an instance of ‘{1}’ or
          * derived type.
          */
-        public static final short IllegalParameterValueClass_3 = 61;
+        public static final short IllegalParameterValueClass_3 = 24;
 
         /**
          * Parameter “{0}” can not take the “{1}” value.
          */
-        public static final short IllegalParameterValue_2 = 62;
+        public static final short IllegalParameterValue_2 = 25;
 
         /**
          * Unit of measurement “{1}” is not valid for “{0}” values.
@@ -209,217 +209,217 @@ public final class Resources extends IndexedResourceBundle {
         /**
          * Inverse operation uses this parameter value with opposite sign.
          */
-        public static final short InverseOperationUsesOppositeSign = 7;
+        public static final short InverseOperationUsesOppositeSign = 29;
 
         /**
          * Inverse operation uses the same parameter value.
          */
-        public static final short InverseOperationUsesSameSign = 8;
+        public static final short InverseOperationUsesSameSign = 30;
 
         /**
          * Latitudes {0} and {1} are opposite.
          */
-        public static final short LatitudesAreOpposite_2 = 29;
+        public static final short LatitudesAreOpposite_2 = 31;
 
         /**
          * Loading datum shift file “{0}”.
          */
-        public static final short LoadingDatumShiftFile_1 = 9;
+        public static final short LoadingDatumShiftFile_1 = 32;
 
         /**
          * The “{1}” parameter could have been omitted. But it has been given a value of {2} which does
          * not match the definition of the “{0}” ellipsoid.
          */
-        public static final short MismatchedEllipsoidAxisLength_3 = 10;
+        public static final short MismatchedEllipsoidAxisLength_3 = 33;
 
         /**
          * No coordinate operation from “{0}” to “{1}” because of mismatched factories.
          */
-        public static final short MismatchedOperationFactories_2 = 11;
+        public static final short MismatchedOperationFactories_2 = 34;
 
         /**
          * Mismatched descriptor for “{0}” parameter.
          */
-        public static final short MismatchedParameterDescriptor_1 = 63;
+        public static final short MismatchedParameterDescriptor_1 = 35;
 
         /**
          * Expected the “{0}” prime meridian but found “{1}”.
          */
-        public static final short MismatchedPrimeMeridian_2 = 30;
+        public static final short MismatchedPrimeMeridian_2 = 36;
 
         /**
          * The transform has {2} {0,choice,0#source|1#target} dimension{2,choice,1#|2#s}, while {1} was
          * expected.
          */
-        public static final short MismatchedTransformDimension_3 = 31;
+        public static final short MismatchedTransformDimension_3 = 37;
 
         /**
          * Despite its name, this parameter is effectively “{0}”.
          */
-        public static final short MisnamedParameter_1 = 12;
+        public static final short MisnamedParameter_1 = 38;
 
         /**
          * No authority was specified for code “{0}”. The expected syntax is “AUTHORITY:CODE”.
          */
-        public static final short MissingAuthority_1 = 32;
+        public static final short MissingAuthority_1 = 39;
 
         /**
          * No horizontal dimension found in “{0}”.
          */
-        public static final short MissingHorizontalDimension_1 = 33;
+        public static final short MissingHorizontalDimension_1 = 40;
 
         /**
          * Not enough dimension in ‘MathTransform’ input or output coordinates for the interpolation
          * points.
          */
-        public static final short MissingInterpolationOrdinates = 34;
+        public static final short MissingInterpolationOrdinates = 41;
 
         /**
          * No spatial or temporal dimension found in “{0}”
          */
-        public static final short MissingSpatioTemporalDimension_1 = 35;
+        public static final short MissingSpatioTemporalDimension_1 = 42;
 
         /**
          * No temporal dimension found in “{0}”
          */
-        public static final short MissingTemporalDimension_1 = 36;
+        public static final short MissingTemporalDimension_1 = 43;
 
         /**
          * Missing value for “{0}” parameter.
          */
-        public static final short MissingValueForParameter_1 = 64;
+        public static final short MissingValueForParameter_1 = 44;
 
         /**
          * No vertical dimension found in “{0}”
          */
-        public static final short MissingVerticalDimension_1 = 37;
+        public static final short MissingVerticalDimension_1 = 45;
 
         /**
          * No convergence.
          */
-        public static final short NoConvergence = 38;
+        public static final short NoConvergence = 46;
 
         /**
          * No convergence for points {0} and {1}.
          */
-        public static final short NoConvergenceForPoints_2 = 39;
+        public static final short NoConvergenceForPoints_2 = 47;
 
         /**
          * No ‘{1}’ object found for code “{2}”. However only a subset of the {0} geodetic dataset has
          * been queried. See {3} for instruction about how to install the full {0} database.
          */
-        public static final short NoSuchAuthorityCodeInSubset_4 = 69;
+        public static final short NoSuchAuthorityCodeInSubset_4 = 48;
 
         /**
          * No ‘{1}’ object found for code “{2}” in the “{0}” geodetic dataset.
          */
-        public static final short NoSuchAuthorityCode_3 = 40;
+        public static final short NoSuchAuthorityCode_3 = 49;
 
         /**
          * No operation method found for name or identifier “{0}”.
          */
-        public static final short NoSuchOperationMethod_1 = 41;
+        public static final short NoSuchOperationMethod_1 = 50;
 
         /**
          * Non invertible {0}×{1} matrix.
          */
-        public static final short NonInvertibleMatrix_2 = 42;
+        public static final short NonInvertibleMatrix_2 = 51;
 
         /**
          * Can not invert the “{0}” operation.
          */
-        public static final short NonInvertibleOperation_1 = 43;
+        public static final short NonInvertibleOperation_1 = 52;
 
         /**
          * Transform is not invertible.
          */
-        public static final short NonInvertibleTransform = 44;
+        public static final short NonInvertibleTransform = 53;
 
         /**
          * Unit conversion from “{0}” to “{1}” is non-linear.
          */
-        public static final short NonLinearUnitConversion_2 = 45;
+        public static final short NonLinearUnitConversion_2 = 54;
 
         /**
          * The “{0}” sequence is not monotonic.
          */
-        public static final short NonMonotonicSequence_1 = 46;
+        public static final short NonMonotonicSequence_1 = 55;
 
         /**
          * Axis directions {0} and {1} are not perpendicular.
          */
-        public static final short NonPerpendicularDirections_2 = 47;
+        public static final short NonPerpendicularDirections_2 = 56;
 
         /**
          * Scale is not uniform.
          */
-        public static final short NonUniformScale = 48;
+        public static final short NonUniformScale = 57;
 
         /**
          * Matrix is not skew-symmetric.
          */
-        public static final short NotASkewSymmetricMatrix = 49;
+        public static final short NotASkewSymmetricMatrix = 58;
 
         /**
          * Transform is not affine.
          */
-        public static final short NotAnAffineTransform = 50;
+        public static final short NotAnAffineTransform = 59;
 
         /**
          * This parameter borrowed from the “{0}” projection is not formally a parameter of this
          * projection.
          */
-        public static final short NotFormalProjectionParameter_1 = 13;
+        public static final short NotFormalProjectionParameter_1 = 60;
 
         /**
          * No parameter named “{1}” has been found in “{0}”.
          */
-        public static final short ParameterNotFound_2 = 65;
+        public static final short ParameterNotFound_2 = 61;
 
         /**
          * Recursive call while creating an object of type ‘{0}’ for code “{1}”.
          */
-        public static final short RecursiveCreateCallForCode_2 = 66;
+        public static final short RecursiveCreateCallForCode_2 = 62;
 
         /**
          * Matrix is singular.
          */
-        public static final short SingularMatrix = 51;
+        public static final short SingularMatrix = 63;
 
         /**
          * Unexpected dimension for a coordinate system of type ‘{0}’.
          */
-        public static final short UnexpectedDimensionForCS_1 = 52;
+        public static final short UnexpectedDimensionForCS_1 = 64;
 
         /**
          * Parameter “{0}” does not expect unit.
          */
-        public static final short UnitlessParameter_1 = 67;
+        public static final short UnitlessParameter_1 = 65;
 
         /**
          * Authority “{0}” is unknown.
          */
-        public static final short UnknownAuthority_1 = 53;
+        public static final short UnknownAuthority_1 = 66;
 
         /**
          * Axis direction “{0}” is unknown.
          */
-        public static final short UnknownAxisDirection_1 = 54;
+        public static final short UnknownAxisDirection_1 = 67;
 
         /**
          * This affine transform is unmodifiable.
          */
-        public static final short UnmodifiableAffineTransform = 55;
+        public static final short UnmodifiableAffineTransform = 68;
 
         /**
          * Dimensions have not been specified.
          */
-        public static final short UnspecifiedDimensions = 56;
+        public static final short UnspecifiedDimensions = 69;
 
         /**
          * Parameter values have not been specified.
          */
-        public static final short UnspecifiedParameterValues = 68;
+        public static final short UnspecifiedParameterValues = 70;
     }
 
     /**
