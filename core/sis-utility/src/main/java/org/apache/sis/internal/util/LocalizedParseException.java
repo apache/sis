@@ -80,20 +80,6 @@ public final class LocalizedParseException extends ParseException implements Loc
     }
 
     /**
-     * Constructs a {@code ParseException} with a message formatted from the given resource key and unparsable string.
-     * This convenience constructor fetches the word starting at the error index,
-     * and uses that word as the single argument associated to the resource key.
-     *
-     * @param  locale       the locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
-     * @param  key          the resource key as one of the {@code Errors.Keys} constant.
-     * @param  text         the full text that {@code Format} failed to parse.
-     * @param  errorOffset  the position where the error is found while parsing.
-     */
-    public LocalizedParseException(final Locale locale, final short key, final CharSequence text, final int errorOffset) {
-        this(locale, key, new Object[] {CharSequences.token(text, errorOffset)}, errorOffset);
-    }
-
-    /**
      * Creates a {@link ParseException} with a localized message built from the given parsing information.
      * This convenience constructor creates a message of the kind <cite>"Can not parse string "text" as an
      * object of type 'type'"</cite>.
@@ -144,8 +130,8 @@ public final class LocalizedParseException extends ParseException implements Loc
         if (errorOffset >= text.length()) {
             return new Object[] {text};
         }
-        text = text.subSequence(offset, text.length());
         final CharSequence erroneous = CharSequences.token(text, errorOffset);
+        text = text.subSequence(offset, text.length());
         if (erroneous.length() == 0) {
             return new Object[] {type, text};
         }
