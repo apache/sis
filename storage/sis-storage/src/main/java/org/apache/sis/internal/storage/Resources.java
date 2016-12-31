@@ -63,73 +63,73 @@ public final class Resources extends IndexedResourceBundle {
         /**
          * Can not read “{1}” as a file in the {0} format.
          */
-        public static final short CanNotReadFile_2 = 7;
+        public static final short CanNotReadFile_2 = 1;
 
         /**
          * Can not read line {2} of “{1}” as part of a file in the {0} format.
          */
-        public static final short CanNotReadFile_3 = 8;
+        public static final short CanNotReadFile_3 = 2;
 
         /**
          * Can not read line {2} (after column {3}) of “{1}” as part of a file in the {0} format.
          */
-        public static final short CanNotReadFile_4 = 9;
+        public static final short CanNotReadFile_4 = 3;
 
         /**
          * This {0} reader is closed.
          */
-        public static final short ClosedReader_1 = 10;
+        public static final short ClosedReader_1 = 4;
 
         /**
          * This {0} writer is closed.
          */
-        public static final short ClosedWriter_1 = 11;
+        public static final short ClosedWriter_1 = 5;
 
         /**
          * Character string in the “{0}” file is too long. The string has {2} characters while the
          * limit is {1}.
          */
-        public static final short ExcessiveStringSize_3 = 0;
+        public static final short ExcessiveStringSize_3 = 6;
 
         /**
          * The {0} data store does not accept features of type “{1}”.
          */
-        public static final short IllegalFeatureType_2 = 6;
+        public static final short IllegalFeatureType_2 = 7;
 
         /**
          * The {0} reader does not accept inputs of type ‘{1}’.
          */
-        public static final short IllegalInputTypeForReader_2 = 12;
+        public static final short IllegalInputTypeForReader_2 = 8;
 
         /**
          * The {0} writer does not accept outputs of type ‘{1}’.
          */
-        public static final short IllegalOutputTypeForWriter_2 = 13;
+        public static final short IllegalOutputTypeForWriter_2 = 9;
 
         /**
          * Components of the “{0}” name are inconsistent with those of the name that was added.
          */
-        public static final short InconsistentNameComponents_1 = 4;
+        public static final short InconsistentNameComponents_1 = 10;
 
         /**
          * Missing scheme in “{0}” URI.
          */
-        public static final short MissingSchemeInURI_1 = 1;
+        public static final short MissingSchemeInURI_1 = 11;
 
         /**
          * Processing executed on {0}.
          */
-        public static final short ProcessingExecutedOn_1 = 5;
+        public static final short ProcessingExecutedOn_1 = 12;
 
         /**
          * Can not move backward in the “{0}” stream.
          */
-        public static final short StreamIsForwardOnly_1 = 2;
+        public static final short StreamIsForwardOnly_1 = 13;
 
         /**
          * Format of “{0}” is not recognized.
          */
-        public static final short UnknownFormatFor_1 = 3;
+        public static final short UnknownFormatFor_1 = 14;
     }
 
     /**
