@@ -61,8 +61,8 @@ public final class ServicesForUtility extends MetadataServices {
     /**
      * Returns the constant defined in the {@link Citations} class for the given name.
      *
-     * @param  name The name of one of the citation constants defined in the {@code Citations} class.
-     * @return The requested citation, or {@code null} if there is no constant for the given name.
+     * @param  name  the name of one of the citation constants defined in the {@code Citations} class.
+     * @return the requested citation, or {@code null} if there is no constant for the given name.
      */
     @Override
     public CitationConstant getCitationConstant(final String name) {
@@ -73,8 +73,8 @@ public final class ServicesForUtility extends MetadataServices {
     /**
      * Returns the build-in citation for the given primary key, or {@code null}.
      *
-     * @param  key The primary key of the desired citation.
-     * @return The requested citation, or {@code null} if unknown.
+     * @param  key  the primary key of the desired citation.
+     * @return the requested citation, or {@code null} if unknown.
      *
      * @todo The content is hard-coded for now. But the plan for a future version is to fetch richer information
      *       from a database, including for example the responsible party and the URL. However that method would
@@ -219,9 +219,9 @@ public final class ServicesForUtility extends MetadataServices {
      * Returns information about the Apache SIS configuration.
      * See super-class for a list of keys.
      *
-     * @param  key A key identifying the information to return.
-     * @param  locale Language to use if possible.
-     * @return The information, or {@code null} if none.
+     * @param  key     a key identifying the information to return.
+     * @param  locale  language to use if possible.
+     * @return the information, or {@code null} if none.
      */
     @Override
     public String getInformation(final String key, final Locale locale) {

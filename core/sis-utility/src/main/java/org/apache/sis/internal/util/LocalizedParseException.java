@@ -19,15 +19,16 @@ package org.apache.sis.internal.util;
 import java.util.Locale;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.Localized;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.LocalizedException;
 
 
 /**
- * A {@link ParseException} in which {@link #getLocalizedMessage()} returns the message in the
- * parser locale. This exception contains the error message in two languages:
+ * A {@link ParseException} in which {@link #getLocalizedMessage()} returns the message in the parser locale.
+ * This exception contains the error message in two languages:
  *
  * <ul>
  *   <li>{@link ParseException#getMessage()} returns the message in the default locale.</li>
@@ -40,64 +41,48 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
-public final class LocalizedParseException extends ParseException implements LocalizedException, Localized {
+public final class LocalizedParseException extends ParseException implements LocalizedException {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -1467571540435486742L;
 
     /**
-     * The locale to use for formatting the localized error message, or {@code null} for the default.
+     * The resources key as one of the {@link Errors.Keys} constant, or 0 if none.
+     *
+     * <p>This field is not serialized because key values sometime change between different SIS versions.
+     * The deserialized value will be 0, which will cause this {@code LocalizedParseException} to fallback
+     * on {@code super.getMessage()}.</p>
      */
-    private final Locale locale;
+    private transient final short key;
 
     /**
-     * The resources key as one of the {@code Errors.Keys} constant.
+     * The parameters for the localization message.
      */
-    private final short key;
+    private transient final Object[] parameters;
 
     /**
-     * The arguments for the localization message.
-     */
-    private final Object[] arguments;
-
-    /**
-     * Constructs a {@code ParseException} with a message formatted from the given resource key
-     * and message arguments. This is the most generic constructor.
+     * Constructs a {@code ParseException} with a message formatted from the given resource key and message parameters.
+     * This is the most generic constructor.
      *
      * @param  locale       the locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
      * @param  key          the resource key as one of the {@code Errors.Keys} constant.
-     * @param  arguments    the values to be given to {@link Errors#getString(short, Object)}.
+     * @param  parameters   the values to be given to {@link Errors#getString(short, Object)}.
      * @param  errorOffset  the position where the error is found while parsing.
      */
-    public LocalizedParseException(final Locale locale, final short key, final Object[] arguments, final int errorOffset) {
-        super(Errors.format(key, arguments), errorOffset);
-        this.locale    = locale;
-        this.arguments = arguments;
-        this.key       = key;
+    public LocalizedParseException(final Locale locale, final short key, final Object[] parameters, final int errorOffset) {
+        super(Errors.getResources(locale).getString(key, parameters), errorOffset);
+        this.parameters = parameters;
+        this.key        = key;
     }
 
     /**
-     * Constructs a {@code ParseException} with a message formatted from the given resource key
-     * and unparsable string. This convenience constructor fetches the word starting at the error
-     * index, and uses that word as the single argument associated to the resource key.
-     *
-     * @param  locale       the locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
-     * @param  key          the resource key as one of the {@code Errors.Keys} constant.
-     * @param  text         the full text that {@code Format} failed to parse.
-     * @param  errorOffset  the position where the error is found while parsing.
-     */
-    public LocalizedParseException(final Locale locale, final short key, final CharSequence text, final int errorOffset) {
-        this(locale, key, new Object[] {CharSequences.token(text, errorOffset)}, errorOffset);
-    }
-
-    /**
-     * Creates a {@link ParseException} with a localized message built from the given parsing
-     * information. This convenience constructor creates a message of the kind <cite>"Can not
-     * parse string "text" as an object of type 'type'"</cite>.
+     * Creates a {@link ParseException} with a localized message built from the given parsing information.
+     * This convenience constructor creates a message of the kind <cite>"Can not parse string "text" as an
+     * object of type 'type'"</cite>.
      *
      * @param  locale  the locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
      * @param  type    the type of objects parsed by the {@link java.text.Format}.
@@ -114,20 +99,20 @@ public final class LocalizedParseException extends ParseException implements Loc
      * Workaround for RFE #4093999
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="1.8")
     private LocalizedParseException(final Locale locale, final Class<?> type,
             final CharSequence text, final int offset, final int errorOffset)
     {
-        this(locale, arguments(type, text, offset, Math.max(offset, errorOffset)), errorOffset);
+        this(locale, parameters(type, text, offset, Math.max(offset, errorOffset)), errorOffset);
     }
 
     /**
      * Workaround for RFE #4093999
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
-    private LocalizedParseException(final Locale locale, final Object[] arguments, final int errorOffset) {
-        this(locale, key(arguments), arguments, errorOffset);
+    @Workaround(library="JDK", version="1.8")
+    private LocalizedParseException(final Locale locale, final Object[] parameters, final int errorOffset) {
+        this(locale, key(parameters), parameters, errorOffset);
     }
 
     /**
@@ -138,15 +123,15 @@ public final class LocalizedParseException extends ParseException implements Loc
      * @param  text         the text that {@code Format} failed to parse.
      * @param  offset       index of the first character to parse in {@code text}.
      * @param  errorOffset  the position where the error is found while parsing.
-     * @return the {@code arguments} value to give to the constructor.
+     * @return the {@code parameters} value to give to the constructor.
      */
-    @Workaround(library="JDK", version="1.7")
-    private static Object[] arguments(final Class<?> type, CharSequence text, final int offset, final int errorOffset) {
+    @Workaround(library="JDK", version="1.8")
+    private static Object[] parameters(final Class<?> type, CharSequence text, final int offset, final int errorOffset) {
         if (errorOffset >= text.length()) {
             return new Object[] {text};
         }
-        text = text.subSequence(offset, text.length());
         final CharSequence erroneous = CharSequences.token(text, errorOffset);
+        text = text.subSequence(offset, text.length());
         if (erroneous.length() == 0) {
             return new Object[] {type, text};
         }
@@ -157,10 +142,10 @@ public final class LocalizedParseException extends ParseException implements Loc
      * Workaround for RFE #4093999
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
-    private static short key(final Object[] arguments) {
+    @Workaround(library="JDK", version="1.8")
+    private static short key(final Object[] parameters) {
         final short key;
-        switch (arguments.length) {
+        switch (parameters.length) {
             case 1: key = Errors.Keys.UnexpectedEndOfString_1;    break;
             case 2: key = Errors.Keys.UnparsableStringForClass_2; break;
             case 3: key = Errors.Keys.UnparsableStringForClass_3; break;
@@ -170,26 +155,44 @@ public final class LocalizedParseException extends ParseException implements Loc
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the exception message in the default locale, typically for system administrator.
+     *
+     * @return the message of this exception.
      */
     @Override
-    public Locale getLocale() {
-        return (locale != null) ? locale : Locale.getDefault();
+    public String getMessage() {
+        return (key != 0) ? Errors.format(key, parameters) : super.getMessage();
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a localized version of the exception message, typically for final user.
+     *
+     * @return the localized message of this exception.
      */
     @Override
     public String getLocalizedMessage() {
-        return Errors.getResources(locale).getString(key, arguments);
+        return super.getMessage();
     }
 
     /**
-     * {@inheritDoc}
+     * If this exception is capable to return the message in various locales, returns that message.
+     * Otherwise returns {@code null}.
+     *
+     * @return the exception message, or {@code null} if this exception can not produce international message.
      */
     @Override
-    public String getLocalizedMessage(final Locale locale) {
-        return Errors.getResources(locale).getString(key, arguments);
+    public InternationalString getInternationalMessage() {
+        return (key != 0) ? Errors.formatInternational(key, parameters) : null;
+    }
+
+    /**
+     * Initializes the <i>cause</i> of this throwable to the specified value.
+     *
+     * @param  cause  the cause saved for later retrieval by the {@link #getCause()} method.
+     * @return a reference to this {@code LocalizedParseException} instance.
+     */
+    @Override
+    public LocalizedParseException initCause(final Throwable cause) {
+        return (LocalizedParseException) super.initCause(cause);
     }
 }

@@ -49,7 +49,7 @@ public class InvalidMetadataException extends IllegalStateException {
      * @since 0.8
      */
     public InvalidMetadataException(final Throwable cause) {
-        super(cause.getLocalizedMessage(), cause);
+        super(cause);
     }
 
     /**

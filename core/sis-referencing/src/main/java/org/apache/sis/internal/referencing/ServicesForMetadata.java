@@ -142,11 +142,11 @@ public final class ServicesForMetadata extends ReferencingServices {
      * the horizontal extent. If the {@code crs} argument is null, then it is caller's responsibility
      * to ensure that the given envelope is two-dimensional.
      *
-     * @param  envelope The source envelope.
-     * @param  target The target bounding box.
-     * @param  crs The envelope CRS, or {@code null} if unknown.
-     * @param  normalizedCRS The horizontal component of the given CRS, or null if the {@code crs} argument is null.
-     * @throws TransformException If the given envelope can not be transformed.
+     * @param  envelope       the source envelope.
+     * @param  target         the target bounding box.
+     * @param  crs            the envelope CRS, or {@code null} if unknown.
+     * @param  normalizedCRS  the horizontal component of the given CRS, or null if the {@code crs} argument is null.
+     * @throws TransformException if the given envelope can not be transformed.
      */
     private void setGeographicExtent(Envelope envelope, final DefaultGeographicBoundingBox target,
             final CoordinateReferenceSystem crs, final GeographicCRS normalizedCRS) throws TransformException
@@ -190,10 +190,10 @@ public final class ServicesForMetadata extends ReferencingServices {
      * If the {@code crs} argument is null, then it is caller's responsibility to ensure
      * that the given envelope is one-dimensional.
      *
-     * @param  envelope    The source envelope.
-     * @param  target      The target vertical extent.
-     * @param  crs         The envelope CRS, or {@code null} if unknown.
-     * @param  verticalCRS The vertical component of the given CRS, or null if the {@code crs} argument is null.
+     * @param  envelope     the source envelope.
+     * @param  target       the target vertical extent.
+     * @param  crs          the envelope CRS, or {@code null} if unknown.
+     * @param  verticalCRS  the vertical component of the given CRS, or null if the {@code crs} argument is null.
      */
     private static void setVerticalExtent(final Envelope envelope, final DefaultVerticalExtent target,
             final CoordinateReferenceSystem crs, final VerticalCRS verticalCRS)
@@ -213,11 +213,11 @@ public final class ServicesForMetadata extends ReferencingServices {
     /**
      * Implementation of the public {@code setBounds} methods for the temporal extent.
      *
-     * @param  envelope    The source envelope.
-     * @param  target      The target temporal extent.
-     * @param  crs         The envelope CRS (mandatory, can not be {@code null}).
-     * @param  verticalCRS The temporal component of the given CRS (mandatory).
-     * @throws UnsupportedOperationException If no implementation of {@code TemporalFactory} has been found
+     * @param  envelope     the source envelope.
+     * @param  target       the target temporal extent.
+     * @param  crs          the envelope CRS (mandatory, can not be {@code null}).
+     * @param  verticalCRS  the temporal component of the given CRS (mandatory).
+     * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
      *         on the classpath.
      */
     private static void setTemporalExtent(final Envelope envelope, final DefaultTemporalExtent target,
@@ -236,9 +236,9 @@ public final class ServicesForMetadata extends ReferencingServices {
      * to a geographic CRS (without datum shift if possible). Otherwise, the envelope is assumed already
      * in a geographic CRS using (<var>longitude</var>, <var>latitude</var>) axis order.
      *
-     * @param  envelope The source envelope.
-     * @param  target The target bounding box where to store envelope information.
-     * @throws TransformException If the given envelope can not be transformed.
+     * @param  envelope  the source envelope.
+     * @param  target    the target bounding box where to store envelope information.
+     * @throws TransformException if the given envelope can not be transformed.
      */
     @Override
     public void setBounds(Envelope envelope, final DefaultGeographicBoundingBox target) throws TransformException {
@@ -258,9 +258,9 @@ public final class ServicesForMetadata extends ReferencingServices {
      * Sets a vertical extent with the value inferred from the given envelope.
      * Only the vertical ordinates are extracted; all other ordinates are ignored.
      *
-     * @param  envelope The source envelope.
-     * @param  target The target vertical extent where to store envelope information.
-     * @throws TransformException If no vertical component can be extracted from the given envelope.
+     * @param  envelope  the source envelope.
+     * @param  target    the target vertical extent where to store envelope information.
+     * @throws TransformException if no vertical component can be extracted from the given envelope.
      */
     @Override
     public void setBounds(final Envelope envelope, final DefaultVerticalExtent target) throws TransformException {
@@ -276,9 +276,9 @@ public final class ServicesForMetadata extends ReferencingServices {
      * Sets a temporal extent with the value inferred from the given envelope.
      * Only the vertical ordinates are extracted; all other ordinates are ignored.
      *
-     * @param  envelope The source envelope.
-     * @param  target The target temporal extent where to store envelope information.
-     * @throws TransformException If no temporal component can be extracted from the given envelope.
+     * @param  envelope  the source envelope.
+     * @param  target    the target temporal extent where to store envelope information.
+     * @throws TransformException if no temporal component can be extracted from the given envelope.
      */
     @Override
     public void setBounds(final Envelope envelope, final DefaultTemporalExtent target) throws TransformException {
@@ -295,9 +295,9 @@ public final class ServicesForMetadata extends ReferencingServices {
      * If the given {@code target} has more geographic or vertical extents than needed (0 or 1), then the
      * extraneous extents are removed.
      *
-     * @param  envelope The source envelope.
-     * @param  target The target spatio-temporal extent where to store envelope information.
-     * @throws TransformException If no temporal component can be extracted from the given envelope.
+     * @param  envelope  the source envelope.
+     * @param  target    the target spatiotemporal extent where to store envelope information.
+     * @throws TransformException if no temporal component can be extracted from the given envelope.
      */
     @Override
     public void setBounds(final Envelope envelope, final DefaultSpatialTemporalExtent target) throws TransformException {
@@ -362,9 +362,9 @@ public final class ServicesForMetadata extends ReferencingServices {
     /**
      * Initializes a horizontal, vertical and temporal extent with the values inferred from the given envelope.
      *
-     * @param  envelope The source envelope.
-     * @param  target The target extent where to store envelope information.
-     * @throws TransformException If a coordinate transformation was required and failed.
+     * @param  envelope  the source envelope.
+     * @param  target    the target extent where to store envelope information.
+     * @throws TransformException if a coordinate transformation was required and failed.
      */
     @Override
     public void addElements(final Envelope envelope, final DefaultExtent target) throws TransformException {
@@ -405,8 +405,8 @@ public final class ServicesForMetadata extends ReferencingServices {
     /**
      * Returns a fully implemented parameter descriptor.
      *
-     * @param  parameter A partially implemented parameter descriptor, or {@code null}.
-     * @return A fully implemented parameter descriptor, or {@code null} if the given argument was null.
+     * @param  parameter  a partially implemented parameter descriptor, or {@code null}.
+     * @return a fully implemented parameter descriptor, or {@code null} if the given argument was null.
      */
     @Override
     public ParameterDescriptor<?> toImplementation(final ParameterDescriptor<?> parameter) {
@@ -416,8 +416,8 @@ public final class ServicesForMetadata extends ReferencingServices {
     /**
      * Converts the given object in a {@code FormattableObject} instance.
      *
-     * @param  object The object to wrap.
-     * @return The given object converted to a {@code FormattableObject} instance.
+     * @param  object  the object to wrap.
+     * @return the given object converted to a {@code FormattableObject} instance.
      */
     @Override
     public FormattableObject toFormattableObject(final IdentifiedObject object) {
@@ -429,9 +429,9 @@ public final class ServicesForMetadata extends ReferencingServices {
      * object is not already an instance of {@code FormattableObject} before to invoke this method. This method
      * returns {@code null} if it can not convert the object.
      *
-     * @param  object The object to wrap.
-     * @param  internal {@code true} if the formatting convention is {@code Convention.INTERNAL}.
-     * @return The given object converted to a {@code FormattableObject} instance, or {@code null}.
+     * @param  object    the object to wrap.
+     * @param  internal  {@code true} if the formatting convention is {@code Convention.INTERNAL}.
+     * @return the given object converted to a {@code FormattableObject} instance, or {@code null}.
      *
      * @since 0.6
      */
@@ -471,7 +471,7 @@ public final class ServicesForMetadata extends ReferencingServices {
     /**
      * Returns a coordinate reference system for heights above the mean seal level.
      *
-     * @return The "Mean Seal Level (MSL) height" coordinate reference system.
+     * @return the "Mean Seal Level (MSL) height" coordinate reference system.
      *
      * @since 0.6
      */
@@ -483,7 +483,7 @@ public final class ServicesForMetadata extends ReferencingServices {
     /**
      * Returns the Greenwich prime meridian.
      *
-     * @return The Greenwich prime meridian.
+     * @return the Greenwich prime meridian.
      *
      * @since 0.6
      */
@@ -495,8 +495,8 @@ public final class ServicesForMetadata extends ReferencingServices {
     /**
      * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
      *
-     * @param  linearUnit The unit of measurement for the geocentric CRS axes.
-     * @return The coordinate system for a geocentric CRS with axes using the given unit of measurement.
+     * @param  linearUnit  the unit of measurement for the geocentric CRS axes.
+     * @return the coordinate system for a geocentric CRS with axes using the given unit of measurement.
      *
      * @since 0.6
      */
@@ -509,8 +509,8 @@ public final class ServicesForMetadata extends ReferencingServices {
      * Converts a geocentric coordinate system from the legacy WKT 1 to the current ISO 19111 standard.
      * This method replaces the (Other, East, North) directions by (Geocentric X, Geocentric Y, Geocentric Z).
      *
-     * @param  cs The geocentric coordinate system to upgrade.
-     * @return The upgraded coordinate system, or {@code cs} if there is no change to apply.
+     * @param  cs  the geocentric coordinate system to upgrade.
+     * @return the upgraded coordinate system, or {@code cs} if there is no change to apply.
      *
      * @since 0.6
      */
@@ -524,9 +524,9 @@ public final class ServicesForMetadata extends ReferencingServices {
      * since that legacy format did not specified any information about the coordinate system in use.
      * This method should not need to be invoked for parsing WKT version 2.
      *
-     * @param  properties The coordinate system name, and optionally other properties.
-     * @param  axes The axes of the unknown coordinate system.
-     * @return An "abstract" coordinate system using the given axes.
+     * @param  properties  the coordinate system name, and optionally other properties.
+     * @param  axes        the axes of the unknown coordinate system.
+     * @return an "abstract" coordinate system using the given axes.
      *
      * @since 0.6
      */
@@ -541,12 +541,12 @@ public final class ServicesForMetadata extends ReferencingServices {
      * Note that this method is needed only for WKT 1 parsing, since WKT provides enough information for using
      * the standard factories.
      *
-     * @param  properties    The properties to be given to the {@code DerivedCRS} and {@code Conversion} objects.
-     * @param  baseCRS       Coordinate reference system to base the derived CRS on.
-     * @param  method        The coordinate operation method (mandatory in all cases).
-     * @param  baseToDerived Transform from positions in the base CRS to positions in this target CRS.
-     * @param  derivedCS     The coordinate system for the derived CRS.
-     * @return The newly created derived CRS, potentially implementing an additional CRS interface.
+     * @param  properties     the properties to be given to the {@code DerivedCRS} and {@code Conversion} objects.
+     * @param  baseCRS        coordinate reference system to base the derived CRS on.
+     * @param  method         the coordinate operation method (mandatory in all cases).
+     * @param  baseToDerived  transform from positions in the base CRS to positions in this target CRS.
+     * @param  derivedCS      the coordinate system for the derived CRS.
+     * @return the newly created derived CRS, potentially implementing an additional CRS interface.
      *
      * @since 0.6
      */
@@ -564,10 +564,10 @@ public final class ServicesForMetadata extends ReferencingServices {
      * Returns an axis direction from a pole along a meridian.
      * The given meridian is usually, but not necessarily, relative to the Greenwich meridian.
      *
-     * @param  baseDirection The base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
-     * @param  meridian The meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
+     * @param  baseDirection  the base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
+     * @param  meridian       the meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
      *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
-     * @return The axis direction along the given meridian.
+     * @return the axis direction along the given meridian.
      *
      * @since 0.6
      */
@@ -579,8 +579,8 @@ public final class ServicesForMetadata extends ReferencingServices {
     /**
      * Creates the {@code TOWGS84} element during parsing of a WKT version 1.
      *
-     * @param  values The 7 Bursa-Wolf parameter values.
-     * @return The {@link BursaWolfParameters}.
+     * @param  values  the 7 Bursa-Wolf parameter values.
+     * @return the {@link BursaWolfParameters}.
      *
      * @since 0.6
      */
@@ -595,13 +595,13 @@ public final class ServicesForMetadata extends ReferencingServices {
      * Creates a single operation from the given properties.
      * This method is provided here because not yet available in GeoAPI interfaces.
      *
-     * @param  properties The properties to be given to the identified object.
-     * @param  sourceCRS  The source CRS.
-     * @param  targetCRS  The target CRS.
-     * @param  interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
-     * @param  method     The coordinate operation method (mandatory in all cases).
-     * @param  factory    The factory to use.
-     * @return The coordinate operation created from the given arguments.
+     * @param  properties        the properties to be given to the identified object.
+     * @param  sourceCRS         the source CRS.
+     * @param  targetCRS         the target CRS.
+     * @param  interpolationCRS  the CRS of additional coordinates needed for the operation, or {@code null} if none.
+     * @param  method            the coordinate operation method (mandatory in all cases).
+     * @param  factory           the factory to use.
+     * @return the coordinate operation created from the given arguments.
      * @throws FactoryException if the object creation failed.
      *
      * @since 0.6
@@ -629,11 +629,11 @@ public final class ServicesForMetadata extends ReferencingServices {
      * If the given properties are empty and the {@code mtFactory} is the system default, then this method
      * returns the system default {@code CoordinateOperationFactory} instead of creating a new one.
      *
-     * @param  properties The default properties.
-     * @param  mtFactory  The math transform factory to use.
-     * @param  crsFactory The factory to use if the operation factory needs to create CRS for intermediate steps.
-     * @param  csFactory  The factory to use if the operation factory needs to create CS for intermediate steps.
-     * @return The coordinate operation factory to use.
+     * @param  properties  the default properties.
+     * @param  mtFactory   the math transform factory to use.
+     * @param  crsFactory  the factory to use if the operation factory needs to create CRS for intermediate steps.
+     * @param  csFactory   the factory to use if the operation factory needs to create CS for intermediate steps.
+     * @return the coordinate operation factory to use.
      *
      * @since 0.7
      */
@@ -660,8 +660,8 @@ public final class ServicesForMetadata extends ReferencingServices {
     /**
      * Returns the properties of the given object.
      *
-     * @param  object The object from which to get the properties.
-     * @return The properties of the given object.
+     * @param  object  the object from which to get the properties.
+     * @return the properties of the given object.
      *
      * @since 0.6
      */
@@ -674,8 +674,8 @@ public final class ServicesForMetadata extends ReferencingServices {
      * Returns {@code true} if the {@linkplain AbstractIdentifiedObject#getName() primary name} or an aliases
      * of the given object matches the given name.
      *
-     * @param  object The object for which to check the name or alias.
-     * @param  name The name to compare with the object name or aliases.
+     * @param  object  the object for which to check the name or alias.
+     * @param  name    the name to compare with the object name or aliases.
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
      *
      * @since 0.6
@@ -689,9 +689,9 @@ public final class ServicesForMetadata extends ReferencingServices {
      * Returns information about the Apache SIS configuration.
      * See super-class for a list of keys.
      *
-     * @param  key A key identifying the information to return.
-     * @param  locale Language to use if possible.
-     * @return The information, or {@code null} if none.
+     * @param  key     a key identifying the information to return.
+     * @param  locale  language to use if possible.
+     * @return the information, or {@code null} if none.
      */
     @Override
     public String getInformation(final String key, final Locale locale) {

@@ -99,7 +99,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
 
     /**
      * The locale to use for formatting warnings and other messages. This locale if for user interfaces
-     * only - it has no effect on the data to be read or written from/to the data store.
+     * only – it has no effect on the data to be read or written from/to the data store.
      *
      * <p>The default value is the {@linkplain Locale#getDefault() system default locale}.</p>
      */
@@ -110,8 +110,16 @@ public abstract class DataStore implements Localized, AutoCloseable {
 
     /**
      * Sets the locale to use for formatting warnings and other messages.
+     * In a client-server architecture, it should be the locale on the <em>client</em> side.
+     *
+     * <p>This locale is used on a <cite>best-effort</cite> basis; whether messages will honor this locale or not
+     * depends on the code that logged warnings or threw exceptions. In Apache SIS implementation, this locale has
+     * better chances to be honored by the {@link DataStoreException#getLocalizedMessage()} method rather than
+     * {@code getMessage()}. See {@code getLocalizedMessage()} javadoc for more information.</p>
      *
      * @param locale  the new locale to use.
+     *
+     * @see DataStoreException#getLocalizedMessage()
      */
     public synchronized void setLocale(final Locale locale) {
         ArgumentChecks.ensureNonNull("locale", locale);

@@ -61,17 +61,17 @@ public final class Resources extends IndexedResourceBundle {
         /**
          * Dimension “{2}” declared by attribute “{1}” is not found in the “{0}” file.
          */
-        public static final short DimensionNotFound_3 = 0;
+        public static final short DimensionNotFound_3 = 1;
 
         /**
          * Variable “{1}” in file “{0}” has a dimension “{3}” while we expected “{2}”.
          */
-        public static final short UnexpectedDimensionForVariable_4 = 1;
+        public static final short UnexpectedDimensionForVariable_4 = 2;
 
         /**
          * Variable “{1}” is not found in the “{0}” file.
          */
-        public static final short VariableNotFound_2 = 2;
+        public static final short VariableNotFound_2 = 3;
     }
 
     /**
