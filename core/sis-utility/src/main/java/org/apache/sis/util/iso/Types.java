@@ -96,7 +96,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class Types extends Static {
@@ -797,5 +797,19 @@ public final class Types extends Static {
             copy[i] = toInternationalString(strings[i]);
         }
         return copy;
+    }
+
+    /**
+     * Returns the given international string in the given locale, or {@code null} if the given string is null.
+     * If the given locale is {@code null}, then the {@code i18n} default locale is used.
+     *
+     * @param  i18n    the international string to get as a localized string, or {@code null} if none.
+     * @param  locale  the desired locale, or {@code null} for the {@code i18n} default locale.
+     * @return the localized string, or {@code null} if {@code i18n} is {@code null}.
+     *
+     * @since 0.8
+     */
+    public static String toString(final InternationalString i18n, final Locale locale) {
+        return (i18n == null) ? null : (locale == null) ? i18n.toString() : i18n.toString(locale);
     }
 }

@@ -147,9 +147,9 @@ public final class Warnings implements Localized, Serializable {
     /**
      * Creates a new object for declaring warnings.
      *
-     * @param locale The locale for reporting warning messages.
-     * @param isParsing {@code false} if formatting, or {@code true} if parsing.
-     * @param ignoredElements The {@link Parser#ignoredElements} map, or an empty map (can not be null).
+     * @param locale           the locale for reporting warning messages.
+     * @param isParsing        {@code false} if formatting, or {@code true} if parsing.
+     * @param ignoredElements  the {@link Parser#ignoredElements} map, or an empty map (can not be null).
      */
     Warnings(final Locale locale, final boolean isParsing, final Map<String, List<String>> ignoredElements) {
         this.errorLocale     = locale;
@@ -176,11 +176,11 @@ public final class Warnings implements Localized, Serializable {
     /**
      * Adds a warning. At least one of {@code message} or {@code cause} shall be non-null.
      *
-     * @param message The message, or {@code null}.
-     * @param cause   The exception that caused the warning, or {@code null}
-     * @param source  The location of the exception, or {@code null}. If non-null, then {@code source[0]} shall be
-     *                the keyword of the WKT element where the exception occurred, and {@code source[1]} the keyword
-     *                of the parent of {@code source[0]}.
+     * @param message  the message, or {@code null}.
+     * @param cause    the exception that caused the warning, or {@code null}
+     * @param source   the location of the exception, or {@code null}. If non-null, then {@code source[0]} shall be
+     *                 the keyword of the WKT element where the exception occurred, and {@code source[1]} the keyword
+     *                 of the parent of {@code source[0]}.
      */
     final void add(final InternationalString message, final Exception cause, final String[] source) {
         assert (message != null) || (cause != null);
@@ -215,7 +215,7 @@ public final class Warnings implements Localized, Serializable {
      * This is not necessarily the same locale than the one used for parsing and formatting dates and numbers
      * in the WKT.
      *
-     * @return The locale or warning messages are reported.
+     * @return the locale or warning messages are reported.
      */
     @Override
     public Locale getLocale() {
@@ -228,7 +228,7 @@ public final class Warnings implements Localized, Serializable {
      * then this method returns the value of {@code IdentifiedObject.getName().getCode()}.
      * Otherwise this method returns a simple class name.
      *
-     * @return The name of the root element, or {@code null} if unknown.
+     * @return the name of the root element, or {@code null} if unknown.
      */
     public String getRootElement() {
         return root;
@@ -237,7 +237,7 @@ public final class Warnings implements Localized, Serializable {
     /**
      * Returns the number of warning messages.
      *
-     * @return The number of warning messages.
+     * @return the number of warning messages.
      */
     public final int getNumMessages() {
         return (messages != null) ? messages.size() / 2 : 0;
@@ -247,7 +247,7 @@ public final class Warnings implements Localized, Serializable {
      * Returns a warning message.
      *
      * @param  index 0 for the first warning, 1 for the second warning, <i>etc.</i> until {@link #getNumMessages()} - 1.
-     * @return The <var>i</var>-th warning message.
+     * @return the <var>i</var>-th warning message.
      */
     public String getMessage(int index) {
         ArgumentChecks.ensureValidIndex(getNumMessages(), index);
@@ -257,7 +257,7 @@ public final class Warnings implements Localized, Serializable {
             return i18n.toString(errorLocale);
         } else {
             final Exception cause = (Exception) messages.get(index + 1);
-            final String[] sources = exceptionSources.get(cause);   // See comment in 'toString(Locale)'.
+            final String[] sources = exceptionSources.get(cause);           // See comment in 'toString(Locale)'.
             if (sources != null) {
                 return Errors.getResources(errorLocale).getString(Errors.Keys.UnparsableStringInElement_2, sources);
             } else {
@@ -269,8 +269,8 @@ public final class Warnings implements Localized, Serializable {
     /**
      * Returns the exception which was the cause of the message at the given index, or {@code null} if none.
      *
-     * @param  index The value given to {@link #getMessage(int)}.
-     * @return The exception which was the cause of the warning message, or {@code null} if none.
+     * @param  index  the value given to {@link #getMessage(int)}.
+     * @return the exception which was the cause of the warning message, or {@code null} if none.
      */
     public Exception getException(final int index) {
         ArgumentChecks.ensureValidIndex(getNumMessages(), index);
@@ -281,7 +281,7 @@ public final class Warnings implements Localized, Serializable {
      * Returns the non-fatal exceptions that occurred during the parsing or formatting.
      * If no exception occurred, returns an empty set.
      *
-     * @return The non-fatal exceptions that occurred.
+     * @return the non-fatal exceptions that occurred.
      */
     public Set<Exception> getExceptions() {
         return (exceptionSources != null) ? exceptionSources.keySet() : Collections.<Exception>emptySet();
@@ -297,8 +297,8 @@ public final class Warnings implements Localized, Serializable {
      * but with path elements stored in reverse order.
      * </div>
      *
-     * @param  ex The exception for which to get the source.
-     * @return The keywords of the WKT element where the given exception occurred, or {@code null} if unknown.
+     * @param  ex  the exception for which to get the source.
+     * @return the keywords of the WKT element where the given exception occurred, or {@code null} if unknown.
      */
     public String[] getExceptionSource(final Exception ex) {
         return (exceptionSources != null) ? exceptionSources.get(ex) : null;
@@ -307,7 +307,7 @@ public final class Warnings implements Localized, Serializable {
     /**
      * Returns the keywords of all unknown elements found during the WKT parsing.
      *
-     * @return The keywords of unknown WKT elements, or an empty set if none.
+     * @return the keywords of unknown WKT elements, or an empty set if none.
      */
     public Set<String> getUnknownElements() {
         return ignoredElements.keySet();
@@ -320,8 +320,8 @@ public final class Warnings implements Localized, Serializable {
      *
      * <p>The returned collection elements are in no particular order.</p>
      *
-     * @param element The keyword of the unknown element.
-     * @return The keywords of elements where the given unknown element was found.
+     * @param  element  the keyword of the unknown element.
+     * @return the keywords of elements where the given unknown element was found.
      */
     public Collection<String> getUnknownElementLocations(final String element) {
         return ignoredElements.get(element);
@@ -332,7 +332,7 @@ public final class Warnings implements Localized, Serializable {
      * The locale used by this method is given by {@link #getLocale()}.
      * This is usually the locale given to the {@link WKTFormat} constructor.
      *
-     * @return A string representation of the warning messages.
+     * @return a string representation of the warning messages.
      */
     @Override
     public String toString() {
@@ -343,8 +343,8 @@ public final class Warnings implements Localized, Serializable {
      * Returns a string representation of the warning messages in the given locale.
      * This method formats the warnings in a bullet list.
      *
-     * @param  locale The locale to use for formatting warning messages.
-     * @return A string representation of the warning messages.
+     * @param  locale  the locale to use for formatting warning messages.
+     * @return a string representation of the warning messages.
      */
     public String toString(final Locale locale) {
         final StringBuilder buffer = new StringBuilder(250);

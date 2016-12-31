@@ -27,7 +27,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.io.Reader;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -43,6 +42,8 @@ import java.nio.file.StandardOpenOption;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamReader;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
@@ -259,10 +260,8 @@ public final class IOUtilities extends Static {
              * Occurs only if the URL is not compliant with RFC 2396. Otherwise every URL
              * should succeed, so a failure can actually be considered as a malformed URL.
              */
-            final MalformedURLException e = new MalformedURLException(Exceptions.formatChainedMessages(
-                    null, Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", path), cause));
-            e.initCause(cause);
-            throw e;
+            throw (MalformedURLException) new MalformedURLException(Exceptions.formatChainedMessages(null,
+                    Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", path), cause)).initCause(cause);
         }
     }
 
@@ -557,21 +556,77 @@ public final class IOUtilities extends Static {
     }
 
     /**
-     * Returns an error message a file that can not be parsed because of an error at the given location.
+     * Returns {@code true} if the given options would open a file mostly for writing.
+     * This method returns {@code true} if the following conditions are true:
      *
-     * @param  errors    the resource bundle to use for creating the message.
+     * <ul>
+     *   <li>The array contains {@link StandardOpenOption#WRITE}.</li>
+     *   <li>The array does not contain {@link StandardOpenOption#READ}, unless the array contains also
+     *       {@link StandardOpenOption#CREATE_NEW} or {@link StandardOpenOption#TRUNCATE_EXISTING} in which
+     *       case the {@code READ} option is ignored (because the caller would have no data to read).</li>
+     * </ul>
+     *
+     * @param  options  the open options to check, or {@code null} if none.
+     * @return {@code true} if a file opened with the given options would be mostly for write operations.
+     *
+     * @since 0.8
+     */
+    public static boolean isWrite(final OpenOption[] options) {
+        boolean isRead   = false;
+        boolean isWrite  = false;
+        boolean truncate = false;
+        if (options != null) {
+            for (final OpenOption op : options) {
+                if (op instanceof StandardOpenOption) {
+                    switch ((StandardOpenOption) op) {
+                        case READ:              isRead   = true; break;
+                        case WRITE:             isWrite  = true; break;
+                        case CREATE_NEW:
+                        case TRUNCATE_EXISTING: truncate = true; break;
+                    }
+                }
+            }
+        }
+        return isWrite & (!isRead | truncate);
+    }
+
+    /**
+     * Returns the {@link Resources.Keys} value together with the parameters given by {@code errorMessageParameters(…)}.
+     *
+     * @param   parameters  the result of {@code errorMessageParameters(…)} method call.
+     * @return  the {@link Resources.Keys} value to use for formatting the error message.
+     *
+     * @since 0.8
+     */
+    public static short errorMessageKey(final Object[] parameters) {
+        return (parameters.length == 2) ? Resources.Keys.CanNotReadFile_2 :
+               (parameters.length == 3) ? Resources.Keys.CanNotReadFile_3 :
+                                          Resources.Keys.CanNotReadFile_4;
+    }
+
+    /**
+     * Returns the parameters for an error message saying that an error occurred while processing a file.
+     * This method uses the information provided by methods like {@link LineNumberReader#getLineNumber()}
+     * or {@link XMLStreamReader#getLocation()} if the given {@code store} is one of the supported types.
+     *
      * @param  format    abbreviation of the file format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
-     * @param  filename  name of the file being parsed.
-     * @param  line      1-based line number where the error occurred, or 0 if unknown.
-     * @param  column    1-based column number where the error occurred, or 0 if unknown.
-     * @return a localized error message for a file that can not be parsed.
+     * @param  filename  name of the file or the data store.
+     * @param  store     the input or output object, or {@code null}.
+     * @return the parameters for a localized error message for a file that can not be processed.
      *
      * @since 0.8
      */
     @SuppressWarnings("fallthrough")
-    public static String canNotParseFile(final Errors errors, final String format,
-            final String filename, final int line, final int column)
-    {
+    public static Object[] errorMessageParameters(final String format, final String filename, final Object store) {
+        int line   = 0;
+        int column = 0;
+        if (store instanceof XMLStreamReader) {
+            final Location location = ((XMLStreamReader) store).getLocation();
+            line   = location.getLineNumber()   + 1;
+            column = location.getColumnNumber() + 1;
+        } else if (store instanceof LineNumberReader) {
+            line = ((LineNumberReader) store).getLineNumber();
+        }
         final Object[] params = new Object[(line == 0) ? 2 : (column == 0) ? 3 : 4];
         switch (params.length) {
             default: // Fallthrough everywhere
@@ -581,27 +636,6 @@ public final class IOUtilities extends Static {
             case 1:  params[0] = format;
             case 0:  break;
         }
-        return errors.getString((line   == 0) ? Errors.Keys.CanNotParseFile_2 :
-                                (column == 0) ? Errors.Keys.CanNotParseFile_3 :
-                                                Errors.Keys.CanNotParseFile_4, params);
-    }
-
-    /**
-     * Returns an error message a file that can not be parsed because of an error at the current line.
-     * This method uses the {@link LineNumberReader#getLineNumber()} value if the given {@code input}
-     * is an instance of {@link LineNumberReader}.
-     *
-     * @param  errors    the resource bundle to use for creating the message.
-     * @param  format    abbreviation of the file format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
-     * @param  filename  name of the file being parsed.
-     * @param  input     the reader, preferably as an instance of {@link LineNumberReader}.
-     * @return a localized error message for a file that can not be parsed.
-     *
-     * @since 0.8
-     */
-    @SuppressWarnings("fallthrough")
-    public static String canNotParseFile(final Errors errors, final String format, final String filename, final Reader input) {
-        return canNotParseFile(errors, format, filename,
-                (input instanceof LineNumberReader) ? ((LineNumberReader) input).getLineNumber() : 0, 0);
+        return params;
     }
 }

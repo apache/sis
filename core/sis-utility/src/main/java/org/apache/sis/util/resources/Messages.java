@@ -58,161 +58,161 @@ public final class Messages extends IndexedResourceBundle {
         /**
          * {0} “{1}” is already registered. The second instance will be ignored.
          */
-        public static final short AlreadyRegistered_2 = 0;
+        public static final short AlreadyRegistered_2 = 1;
 
         /**
          * Can not create the {0} schema in database.
          */
-        public static final short CanNotCreateSchema_1 = 1;
+        public static final short CanNotCreateSchema_1 = 2;
 
         /**
          * Can not instantiate the object of type ‘{0}’ identified by “{1}”. Reason is:{2}
          */
-        public static final short CanNotInstantiateForIdentifier_3 = 2;
+        public static final short CanNotInstantiateForIdentifier_3 = 3;
 
         /**
          * Changed the container capacity from {0} to {1} elements.
          */
-        public static final short ChangedContainerCapacity_2 = 3;
+        public static final short ChangedContainerCapacity_2 = 4;
 
         /**
          * Configuration of “{0}” received on {1} in {2} seconds.
          */
-        public static final short ConfigurationOf_3 = 4;
+        public static final short ConfigurationOf_3 = 5;
 
         /**
          * Connected to geospatial database on “{0}”.
          */
-        public static final short ConnectedToGeospatialDatabase_1 = 30;
+        public static final short ConnectedToGeospatialDatabase_1 = 6;
 
         /**
          * Created an instance of ‘{0}’ from the “{1}” identifier in {2} seconds.
          */
-        public static final short CreateDurationFromIdentifier_3 = 5;
+        public static final short CreateDurationFromIdentifier_3 = 7;
 
         /**
          * Created an instance of ‘{0}’ in {1} seconds.
          */
-        public static final short CreateDuration_2 = 6;
+        public static final short CreateDuration_2 = 8;
 
         /**
          * Created an instance of ‘{0}’ named “{1}” with the “{2}” identifier.
          */
-        public static final short CreatedIdentifiedObject_3 = 7;
+        public static final short CreatedIdentifiedObject_3 = 9;
 
         /**
          * Created an instance of ‘{0}’ named “{1}”.
          */
-        public static final short CreatedNamedObject_2 = 8;
+        public static final short CreatedNamedObject_2 = 10;
 
         /**
          * Creating {0} schema in the “{1}” database.
          */
-        public static final short CreatingSchema_2 = 9;
+        public static final short CreatingSchema_2 = 11;
 
         /**
          * The {0} environment variable is defined, but the given “{1}” value is not an existing
          * directory.
          */
-        public static final short DataDirectoryDoesNotExist_2 = 10;
+        public static final short DataDirectoryDoesNotExist_2 = 12;
 
         /**
          * Apache SIS is not authorized to access the “{1}” sub-directory in the directory given by the
          * {0} environment variable.
          */
-        public static final short DataDirectoryNotAccessible_2 = 11;
+        public static final short DataDirectoryNotAccessible_2 = 13;
 
         /**
          * Apache SIS is not authorized to read information given by the “{0}” environment variable.
          */
-        public static final short DataDirectoryNotAuthorized_1 = 12;
+        public static final short DataDirectoryNotAuthorized_1 = 14;
 
         /**
          * The “{1}” directory specified by the {0} environment variable exists but is not readable.
          */
-        public static final short DataDirectoryNotReadable_2 = 13;
+        public static final short DataDirectoryNotReadable_2 = 15;
 
         /**
          * The “{0}” environment variable is not set.
          */
-        public static final short DataDirectoryNotSpecified_1 = 14;
+        public static final short DataDirectoryNotSpecified_1 = 16;
 
         /**
          * Apache SIS can not write in the “{1}” directory given by the {0} environment variable.
          */
-        public static final short DataDirectoryNotWritable_2 = 15;
+        public static final short DataDirectoryNotWritable_2 = 17;
 
         /**
          * Environment variable {0} specifies the “{1}” data directory.
          */
-        public static final short DataDirectory_2 = 16;
+        public static final short DataDirectory_2 = 18;
 
         /**
          * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
          * mutually exclusive.
          */
-        public static final short DiscardedExclusiveProperty_2 = 17;
+        public static final short DiscardedExclusiveProperty_2 = 19;
 
         /**
          * Ignored properties after the first occurrence of ‘{0}’.
          */
-        public static final short IgnoredPropertiesAfterFirst_1 = 18;
+        public static final short IgnoredPropertiesAfterFirst_1 = 20;
 
         /**
          * Ignored property associated to ‘{0}’.
          */
-        public static final short IgnoredPropertyAssociatedTo_1 = 19;
+        public static final short IgnoredPropertyAssociatedTo_1 = 21;
 
         /**
          * Parsing of “{0}” done, but some elements were ignored.
          */
-        public static final short IncompleteParsing_1 = 20;
+        public static final short IncompleteParsing_1 = 22;
 
         /**
          * Inserted {0} records in {1} seconds.
          */
-        public static final short InsertDuration_2 = 21;
+        public static final short InsertDuration_2 = 23;
 
         /**
          * No object associated to the “{0}” JNDI name.
          */
-        public static final short JNDINotSpecified_1 = 22;
+        public static final short JNDINotSpecified_1 = 24;
 
         /**
          * Text were discarded for some locales.
          */
-        public static final short LocalesDiscarded = 23;
+        public static final short LocalesDiscarded = 25;
 
         /**
          * This “{0}” formatting is a departure from standard format.
          */
-        public static final short NonConformFormatting_1 = 24;
+        public static final short NonConformFormatting_1 = 26;
 
         /**
          * Optional module “{0}” requested but not found.
          */
-        public static final short OptionalModuleNotFound_1 = 25;
+        public static final short OptionalModuleNotFound_1 = 27;
 
         /**
          * Property “{0}” is hidden by “{1}”.
          */
-        public static final short PropertyHiddenBy_2 = 26;
+        public static final short PropertyHiddenBy_2 = 28;
 
         /**
          * The text contains unknown elements:
          */
-        public static final short UnknownElementsInText = 27;
+        public static final short UnknownElementsInText = 29;
 
         /**
          * Loading of “{0}” done, but some records were ignored because of unrecognized keywords: {1}
          */
-        public static final short UnknownKeywordInRecord_2 = 28;
+        public static final short UnknownKeywordInRecord_2 = 30;
 
         /**
          * Can not parse “{1}” as an instance of ‘{0}’. The value is stored as plain text instead, but
          * will be ignored by some processing.
          */
-        public static final short UnparsableValueStoredAsText_2 = 29;
+        public static final short UnparsableValueStoredAsText_2 = 31;
     }
 
     /**

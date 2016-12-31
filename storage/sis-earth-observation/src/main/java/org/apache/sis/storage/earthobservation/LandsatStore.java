@@ -27,8 +27,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Classes;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.Debug;
 
 
@@ -96,8 +95,8 @@ public class LandsatStore extends DataStore {
         source = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(source);
         if (source == null) {
-            throw new UnsupportedStorageException(errors().getString(Errors.Keys.IllegalInputTypeForReader_2,
-                    "Landsat", Classes.getClass(connector.getStorage())));
+            throw new UnsupportedStorageException(super.getLocale(), "Landsat",
+                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }
 
@@ -134,14 +133,6 @@ public class LandsatStore extends DataStore {
     @Override
     public synchronized void close() throws DataStoreException {
         metadata = null;
-    }
-
-    /**
-     * Returns the error resources in the current locale.
-     */
-    private Errors errors() {
-        // Must use "super" because LandsatStore construction may not be finished.
-        return Errors.getResources(super.getLocale());
     }
 
     /**

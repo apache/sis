@@ -186,7 +186,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      * {@link CRS#getAuthorityFactory(String)}, which is the public facade for {@link #EPSG()}.
      */
     private static void log(final Exception e, final boolean isWarning) {
-        String message = e.getLocalizedMessage();
+        String message = e.getMessage();        // Prefer the locale of system administrator.
         if (message == null) {
             message = e.toString();
         }
