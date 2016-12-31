@@ -91,10 +91,11 @@ public class UnsupportedStorageException extends DataStoreException {
      *
      * @param locale   the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.
      * @param format   short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
-     * @param storage  the invalid input or output object.
+     * @param storage  the invalid input or output object. This is typically {@link StorageConnector#getStorage()}.
      * @param options  the option used for opening the file, or {@code null} or empty if unknown.
      *                 This method looks in particular for {@link java.nio.file.StandardOpenOption#READ} and
      *                 {@code WRITE} options for inferring if the data store was to be used as a reader or as a writer.
+     *                 Those options can be obtained by {@code StorageConnector.getOption(OptionKey.OPEN_OPTIONS)}.
      *
      * @since 0.8
      */

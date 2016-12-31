@@ -55,20 +55,18 @@ public class DataStoreException extends Exception implements LocalizedException 
      * The deserialized value will be 0, which will cause this {@code DataStoreException} to fallback on
      * {@code super.getMessage()}.</p>
      */
-    private final transient short key;
+    private transient short key;
 
     /**
      * The parameters for the localization message, or {@code null} if none.
      */
-    private final transient Object[] parameters;
+    private transient Object[] parameters;
 
     /**
      * Creates an exception with no cause and no details message.
      */
     public DataStoreException() {
         super();
-        key        = 0;
-        parameters = null;
     }
 
     /**
@@ -78,8 +76,6 @@ public class DataStoreException extends Exception implements LocalizedException 
      */
     public DataStoreException(final String message) {
         super(message);
-        key        = 0;
-        parameters = null;
     }
 
     /**
@@ -89,8 +85,6 @@ public class DataStoreException extends Exception implements LocalizedException 
      */
     public DataStoreException(final Throwable cause) {
         super(cause);
-        key        = 0;
-        parameters = null;
     }
 
     /**
@@ -101,8 +95,6 @@ public class DataStoreException extends Exception implements LocalizedException 
      */
     public DataStoreException(final String message, final Throwable cause) {
         super(message, cause);
-        key        = 0;
-        parameters = null;
     }
 
     /**
@@ -110,7 +102,7 @@ public class DataStoreException extends Exception implements LocalizedException 
      * Location in the file where the error occurred while be fetched from the given {@code store}
      * argument if possible, for example by invoking the {@link java.io.LineNumberReader#getLineNumber()}
      * or {@link javax.xml.stream.XMLStreamReader#getLocation()} method.
-     * If The given {@code store} argument is not one of the recognized types, then it is ignored.
+     * If the given {@code store} argument is not one of the recognized types, then it is ignored.
      *
      * @param locale    the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.
      * @param format    short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).
@@ -200,6 +192,8 @@ public class DataStoreException extends Exception implements LocalizedException 
      *
      * @param  cause  the cause saved for later retrieval by the {@link #getCause()} method.
      * @return a reference to this {@code DataStoreException} instance.
+     *
+     * @since 0.8
      */
     @Override
     public DataStoreException initCause(final Throwable cause) {

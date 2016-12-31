@@ -39,7 +39,6 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
@@ -248,7 +247,7 @@ class MathTransformParser extends AbstractParser {
         try {
             return parseUnit(name);
         } catch (ParserException e) {
-            throw new LocalizedParseException(errorLocale, Errors.Keys.UnknownUnit_1,
+            throw new UnparsableObjectException(errorLocale, Errors.Keys.UnknownUnit_1,
                     new Object[] {name}, element.offset).initCause(e);
         }
     }
@@ -311,7 +310,7 @@ class MathTransformParser extends AbstractParser {
                 param.close(ignoredElements);
             }
         } catch (ParameterNotFoundException e) {
-            throw new LocalizedParseException(errorLocale, Errors.Keys.UnexpectedParameter_1,
+            throw new UnparsableObjectException(errorLocale, Errors.Keys.UnexpectedParameter_1,
                     new String[] {e.getParameterName()}, param.offset).initCause(e);
         } catch (InvalidParameterValueException e) {
             throw (ParseException) new ParseException(e.getLocalizedMessage(), param.offset).initCause(e);
