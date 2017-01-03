@@ -187,7 +187,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
                 e = ((UncheckedIOException) e).getCause();
             }
             throw new BackingStoreException(errors().getString(Errors.Keys.CanNotWriteFile_2,
-                                                               owner.getFormatName(), owner.name), e);
+                    owner.getFormatName(), owner.getDisplayName()), e);
         }
     }
 

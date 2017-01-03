@@ -249,7 +249,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
         }
         if (!isNamespace.test(reader.getNamespaceURI()) || !localName.equals(reader.getLocalName())) {
             throw new DataStoreContentException(errors().getString(
-                    Errors.Keys.UnexpectedFileFormat_2, owner.getFormatName(), owner.name));
+                    Errors.Keys.UnexpectedFileFormat_2, owner.getFormatName(), owner.getDisplayName()));
         }
     }
 
@@ -511,7 +511,7 @@ parse:  switch (value.length()) {
      * @return a localized error message for end of file error.
      */
     protected final String endOfFile() {
-        return errors().getString(Errors.Keys.UnexpectedEndOfFile_1, owner.name);
+        return errors().getString(Errors.Keys.UnexpectedEndOfFile_1, owner.getDisplayName());
     }
 
     /**
@@ -522,7 +522,7 @@ parse:  switch (value.length()) {
      * @return a localized error message for a file that can not be parsed.
      */
     protected final String canNotParseFile() {
-        final Object[] parameters = IOUtilities.errorMessageParameters(owner.getFormatName(), owner.name, reader);
+        final Object[] parameters = IOUtilities.errorMessageParameters(owner.getFormatName(), owner.getDisplayName(), reader);
         return errors().getString(IOUtilities.errorMessageKey(parameters), parameters);
     }
 
