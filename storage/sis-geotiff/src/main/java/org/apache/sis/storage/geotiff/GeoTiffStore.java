@@ -110,7 +110,7 @@ public class GeoTiffStore extends DataStore {
             } catch (MetadataStoreException e) {
                 warning(null, e);
             }
-            builder.add(encoding);
+            builder.add(encoding, MetadataBuilder.Scope.METADATA);
             builder.add(ScopeCode.COVERAGE);
             final Locale locale = getLocale();
             int n = 0;

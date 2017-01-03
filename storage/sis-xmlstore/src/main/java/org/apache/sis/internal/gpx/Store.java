@@ -81,6 +81,13 @@ public final class Store extends StaxDataStore {
     private Reader reader;
 
     /**
+     * The {@link org.opengis.feature.FeatureType} for routes, tracks, way points, <i>etc</i>.
+     * Currently always {@link Types#DEFAULT}, but we use a field for keeping {@code Reader}
+     * and {@code Writer} ready to handle profiles or extensions.
+     */
+    final Types types;
+
+    /**
      * Creates a new GPX store from the given file, URL or stream object.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
@@ -91,6 +98,7 @@ public final class Store extends StaxDataStore {
      */
     public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
+        types = Types.DEFAULT;
     }
 
     /**
@@ -157,8 +165,8 @@ public final class Store extends StaxDataStore {
      * @throws IllegalNameException if the given name was not found or is ambiguous.
      */
     @Override
-    public FeatureType getFeatureType(String name) throws IllegalNameException {
-        throw new UnsupportedOperationException();  // TODO
+    public FeatureType getFeatureType(final String name) throws IllegalNameException {
+        return types.names.get(this, name);
     }
 
     /**

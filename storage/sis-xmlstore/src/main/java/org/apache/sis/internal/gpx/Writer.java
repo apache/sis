@@ -43,13 +43,6 @@ import org.opengis.feature.FeatureType;
  */
 final class Writer extends StaxStreamWriter {
     /**
-     * The {@link org.opengis.feature.FeatureType} for routes, tracks, way points, <i>etc</i>.
-     * Currently always {@link Types#DEFAULT}, but we use a field for keeping {@code Writer}
-     * ready to handle profiles or extensions.
-     */
-    private final Types types;
-
-    /**
      * The GPX file version: 0 for GPX 1.0 or 1 for GPX 1.1.
      */
     private final int version;
@@ -72,7 +65,6 @@ final class Writer extends StaxStreamWriter {
             throws DataStoreException, XMLStreamException, IOException
     {
         super(owner);
-        types = Types.DEFAULT;
         this.metadata = metadata;
         final Version ver = owner.version;
         if (ver != null && ver.compareTo(Store.V1_0, 2) <= 0) {
@@ -150,6 +142,7 @@ final class Writer extends StaxStreamWriter {
     @Override
     public void write(final Feature feature) throws DataStoreException, XMLStreamException, JAXBException {
         if (feature != null) {
+            final Types types = ((Store) owner).types;
             final FeatureType type = feature.getType();
             if (types.wayPoint.isAssignableFrom(type)) {
                 writeWayPoint(feature, Tags.WAY_POINT);
