@@ -62,13 +62,6 @@ import org.opengis.feature.Feature;
  */
 final class Reader extends StaxStreamReader {
     /**
-     * The {@link org.opengis.feature.FeatureType} for routes, tracks, way points, <i>etc</i>.
-     * Currently always {@link Types#DEFAULT}, but we use a field for keeping {@code Reader}
-     * ready to handle profiles or extensions.
-     */
-    private final Types types;
-
-    /**
      * The namespace, which should be either {@link Tags#NAMESPACE_V10} or {@link Tags#NAMESPACE_V11}.
      * We store this information for identifying the closing {@code <gpx>} tag.
      */
@@ -108,7 +101,6 @@ final class Reader extends StaxStreamReader {
      */
     public Reader(final Store owner) throws DataStoreException, XMLStreamException, IOException {
         super(owner);
-        types = Types.DEFAULT;
     }
 
     /**
@@ -410,7 +402,7 @@ parse:  while (reader.hasNext()) {
             throw new DataStoreContentException(errors().getString(Errors.Keys.MandatoryAttribute_2,
                     (lat == null) ? Attributes.LATITUDE : Attributes.LONGITUDE, tagName));
         }
-        final Feature feature = types.wayPoint.newInstance();
+        final Feature feature = ((Store) owner).types.wayPoint.newInstance();
         feature.setPropertyValue("@identifier", index);
         feature.setPropertyValue("@geometry", new Point(parseDouble(lon), parseDouble(lat)));
         List<Link> links = null;
@@ -475,7 +467,7 @@ parse:  while (reader.hasNext()) {
      */
     private Feature parseRoute(final int index) throws Exception {
         assert reader.isStartElement() && Tags.ROUTES.equals(reader.getLocalName());
-        final Feature feature = types.route.newInstance();
+        final Feature feature = ((Store) owner).types.route.newInstance();
         feature.setPropertyValue("@identifier", index);
         List<Feature> wayPoints = null;
         List<Link> links = null;
@@ -531,7 +523,7 @@ parse:  while (reader.hasNext()) {
      */
     private Feature parseTrackSegment(final int index) throws Exception {
         assert reader.isStartElement() && Tags.TRACK_SEGMENTS.equals(reader.getLocalName());
-        final Feature feature = types.trackSegment.newInstance();
+        final Feature feature = ((Store) owner).types.trackSegment.newInstance();
         feature.setPropertyValue("@identifier", index);
         List<Feature> wayPoints = null;
         while (true) {
@@ -574,7 +566,7 @@ parse:  while (reader.hasNext()) {
      */
     private Feature parseTrack(final int index) throws Exception {
         assert reader.isStartElement() && Tags.TRACKS.equals(reader.getLocalName());
-        final Feature feature = types.track.newInstance();
+        final Feature feature = ((Store) owner).types.track.newInstance();
         feature.setPropertyValue("@identifier", index);
         List<Feature> segments = null;
         List<Link> links = null;

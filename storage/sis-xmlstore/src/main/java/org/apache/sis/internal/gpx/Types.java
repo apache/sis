@@ -19,24 +19,28 @@ package org.apache.sis.internal.gpx;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
-import java.time.temporal.Temporal;
 import com.esri.core.geometry.Point;
 import org.opengis.util.LocalName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.storage.gps.Fix;
+import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.storage.FeatureCatalogBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.Static;
 
 // Branch-dependent imports
+import java.time.temporal.Temporal;
+import org.apache.sis.storage.IllegalNameException;
 import org.opengis.feature.FeatureType;
 
 
@@ -52,14 +56,9 @@ import org.opengis.feature.FeatureType;
  */
 final class Types extends Static {
     /**
-     * Waypoint GPX feature type.
+     * Way point GPX feature type.
      */
     final FeatureType wayPoint;
-
-    /**
-     * Track GPX feature type.
-     */
-    final FeatureType track;
 
     /**
      * Route GPX feature type.
@@ -67,9 +66,25 @@ final class Types extends Static {
     final FeatureType route;
 
     /**
+     * Track GPX feature type.
+     */
+    final FeatureType track;
+
+    /**
      * Track segment GPX feature type.
      */
     final FeatureType trackSegment;
+
+    /**
+     * The metadata to use as a template, including the list of feature types.
+     */
+    private final Metadata metadata;
+
+    /**
+     * Binding from names to feature type instances.
+     * Shall not be modified after construction.
+     */
+    final FeatureNaming<FeatureType> names;
 
     /**
      * A system-wide instance for {@code FeatureType} instances created using the {@link DefaultNameFactory}.
@@ -79,7 +94,7 @@ final class Types extends Static {
     static {
         try {
             DEFAULT = new Types(DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class), null);
-        } catch (FactoryException e) {
+        } catch (FactoryException | IllegalNameException e) {
             throw new AssertionError(e);        // Should never happen with DefaultNameFactory implementation.
         }
     }
@@ -91,7 +106,7 @@ final class Types extends Static {
      * @param  locale    the locale to use for formatting error messages, or {@code null} for the default locale.
      * @throws FactoryException if an error occurred while creating an "envelope bounds" operation.
      */
-    Types(final NameFactory factory, final Locale locale) throws FactoryException {
+    Types(final NameFactory factory, final Locale locale) throws FactoryException, IllegalNameException {
         final LocalName     geomName = AttributeConvention.GEOMETRY_PROPERTY;
         final Map<String,?> geomInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, geomName);
         final Map<String,?> envpInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY);
@@ -249,5 +264,12 @@ final class Types extends Static {
         builder.addProperty(route.getProperty(Tags.TYPE));
         builder.addAssociation(trackSegment).setName(Tags.TRACK_SEGMENTS).setMaximumOccurs(Integer.MAX_VALUE);
         track = builder.build();
+
+        final FeatureCatalogBuilder fc = new FeatureCatalogBuilder(null);
+        fc.define(wayPoint);
+        fc.define(route);
+        fc.define(track);
+        metadata = fc.build(true);
+        names = fc.features;
     }
 }
