@@ -44,6 +44,9 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see org.apache.sis.storage.FeatureNaming
+ * @see org.apache.sis.feature.DefaultFeatureType
  */
 @XmlType(name = "MD_FeatureTypeInfo", propOrder = {
     "featureTypeName",
