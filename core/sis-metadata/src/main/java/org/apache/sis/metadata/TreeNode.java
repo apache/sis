@@ -144,8 +144,8 @@ class TreeNode implements Node {
     /**
      * Creates the root node of a new metadata tree table.
      *
-     * @param  table    The table which is creating this root node.
-     * @param  metadata The root metadata object (can not be null).
+     * @param  table     the table which is creating this root node.
+     * @param  metadata  the root metadata object (can not be null).
      */
     TreeNode(final TreeTableView table, final Object metadata) {
         this.table    = table;
@@ -158,8 +158,8 @@ class TreeNode implements Node {
      * This constructor is for the {@link Element} subclass only.
      * Callers must invoke {@link #init()} after construction.
      *
-     * @param  parent   The parent of this node.
-     * @param  metadata The metadata object for which this node will be a value.
+     * @param  parent    the parent of this node.
+     * @param  metadata  the metadata object for which this node will be a value.
      */
     TreeNode(final TreeNode parent, final Object metadata) {
         this.table    = parent.table;
@@ -241,7 +241,7 @@ class TreeNode implements Node {
     /**
      * Sets the metadata value for this node. Subclasses must override this method.
      *
-     * @throws UnsupportedOperationException If the metadata value is not writable.
+     * @throws UnsupportedOperationException if the metadata value is not writable.
      */
     void setUserObject(final Object value) throws UnsupportedOperationException {
         throw new UnsupportedOperationException(unmodifiableCellValue(TableColumn.VALUE));
@@ -286,10 +286,10 @@ class TreeNode implements Node {
          * Creates a new child for a property of the given metadata at the given index.
          * Callers must invoke {@link #init()} after construction.
          *
-         * @param  parent      The parent of this node.
-         * @param  metadata    The metadata object for which this node will be a value.
-         * @param  accessor    Accessor to use for fetching the name, type and value.
-         * @param  indexInData Index to be given to the accessor of fetching the value.
+         * @param  parent       the parent of this node.
+         * @param  metadata     the metadata object for which this node will be a value.
+         * @param  accessor     accessor to use for fetching the name, type and value.
+         * @param  indexInData  index to be given to the accessor of fetching the value.
          */
         Element(final TreeNode parent, final Object metadata,
                 final PropertyAccessor accessor, final int indexInData)
@@ -376,11 +376,11 @@ class TreeNode implements Node {
          * Creates a new node for the given collection element.
          * Callers must invoke {@link #init()} after construction.
          *
-         * @param  parent      The parent of this node.
-         * @param  metadata    The metadata object for which this node will be a value.
-         * @param  accessor    Accessor to use for fetching the name, type and collection.
-         * @param  indexInData Index to be given to the accessor of fetching the collection.
-         * @param  indexInList Index of the element in the collection, in iteration order.
+         * @param  parent       the parent of this node.
+         * @param  metadata     the metadata object for which this node will be a value.
+         * @param  accessor     accessor to use for fetching the name, type and collection.
+         * @param  indexInData  index to be given to the accessor of fetching the collection.
+         * @param  indexInList  index of the element in the collection, in iteration order.
          */
         CollectionElement(final TreeNode parent, final Object metadata,
                 final PropertyAccessor accessor, final int indexInData, final int indexInList)
@@ -520,6 +520,7 @@ class TreeNode implements Node {
      * Only metadata object can have children.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final Collection<Node> getChildren() {
         /*
          * 'children' is set to LEAF if an only if the node *can not* have children,
@@ -574,7 +575,7 @@ class TreeNode implements Node {
      * Do not keep a reference to the returned node for a long time, since it is only
      * a proxy toward the real node to be created once the identifier is known.
      *
-     * @throws UnsupportedOperationException If this node {@linkplain #isLeaf() is a leaf}.
+     * @throws UnsupportedOperationException if this node {@linkplain #isLeaf() is a leaf}.
      */
     @Override
     public final Node newChild() throws UnsupportedOperationException {
@@ -699,7 +700,7 @@ class TreeNode implements Node {
         if (column == TableColumn.VALUE) {
             if (isLeaf()) {
                 value = cachedValue;
-                cachedValue = null; // Use the cached value only once after iteration.
+                cachedValue = null;                 // Use the cached value only once after iteration.
                 if (value == null) {
                     value = getUserObject();
                 }
@@ -772,8 +773,7 @@ class TreeNode implements Node {
     }
 
     /**
-     * Implementation of {@link #toString()} appending the string representation
-     * in the given buffer.
+     * Implementation of {@link #toString()} appending the string representation in the given buffer.
      */
     final void toString(final StringBuilder buffer) {
         appendIdentifier(buffer.append("Node["));

@@ -16,12 +16,14 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Collection;
+
 
 /**
  * A container that ensures that all elements are assignable to a given base type.
- * Checked containers are usually {@link java.util.Collection}, but not always.
+ * Checked containers are usually {@link Collection}, but not always.
  *
- * @param <E> The base type of elements in the container.
+ * @param  <E>  the base type of elements in the container.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
@@ -32,7 +34,7 @@ public interface CheckedContainer<E> {
     /**
      * Returns the base type of all elements in this container.
      *
-     * @return The element type.
+     * @return the element type.
      */
     Class<E> getElementType();
 }
