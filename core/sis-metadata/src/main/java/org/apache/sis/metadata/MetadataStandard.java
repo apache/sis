@@ -194,9 +194,9 @@ public class MetadataStandard implements Serializable {
      * <div class="note"><b>Example:</b>: For the ISO 19115 standard reflected by GeoAPI interfaces,
      * {@code interfacePackage} shall be the {@link org.opengis.metadata} package.</div>
      *
-     * @param citation         Bibliographical reference to the international standard.
-     * @param interfacePackage The root package for metadata interfaces.
-     * @param dependencies     The dependencies to other metadata standards.
+     * @param  citation          bibliographical reference to the international standard.
+     * @param  interfacePackage  the root package for metadata interfaces.
+     * @param  dependencies      the dependencies to other metadata standards.
      */
     public MetadataStandard(final Citation citation, final Package interfacePackage, MetadataStandard... dependencies) {
         ensureNonNull("citation",         citation);
@@ -204,7 +204,7 @@ public class MetadataStandard implements Serializable {
         ensureNonNull("dependencies",     dependencies);
         this.citation         = citation;
         this.interfacePackage = interfacePackage.getName() + '.';
-        this.accessors        = new ConcurrentHashMap<>(); // Also defined in readObject(…)
+        this.accessors        = new ConcurrentHashMap<>();                          // Also defined in readObject(…)
         if (dependencies.length == 0) {
             this.dependencies = null;
         } else {
@@ -219,15 +219,15 @@ public class MetadataStandard implements Serializable {
      * Creates a new instance working on implementation of interfaces defined in the
      * specified package. This constructor is used only for the pre-defined constants.
      *
-     * @param citation         Bibliographical reference to the international standard.
-     * @param interfacePackage The root package for metadata interfaces.
-     * @param dependencies     The dependencies to other metadata standards, or {@code null} if none.
+     * @param  citation          bibliographical reference to the international standard.
+     * @param  interfacePackage  the root package for metadata interfaces.
+     * @param  dependencies      the dependencies to other metadata standards, or {@code null} if none.
      */
     MetadataStandard(final String citation, final String interfacePackage, final MetadataStandard[] dependencies) {
         this.citation         = new SimpleCitation(citation);
         this.interfacePackage = interfacePackage;
         this.accessors        = new ConcurrentHashMap<>();
-        this.dependencies     = dependencies; // No clone, since this constructor is for internal use only.
+        this.dependencies     = dependencies;               // No clone, since this constructor is for internal use only.
     }
 
     /**
@@ -235,7 +235,7 @@ public class MetadataStandard implements Serializable {
      * This method verifies if the class is a member of the package given at construction time or
      * a sub-package. This method does not verify if the type is supported by a dependency.
      *
-     * @param  classname The name of the type to verify.
+     * @param  classname  the name of the type to verify.
      * @return {@code true} if the given type is supported by this standard.
      */
     final boolean isSupported(final String classname) {
@@ -251,8 +251,8 @@ public class MetadataStandard implements Serializable {
      * <p>The current implementation recognizes only the standards defined by the public static
      * constants defined in this class. A future SIS version may recognize user-defined constants.</p>
      *
-     * @param  type The metadata standard interface, or an implementation class.
-     * @return The metadata standard for the given type, or {@code null} if not found.
+     * @param  type  the metadata standard interface, or an implementation class.
+     * @return the metadata standard for the given type, or {@code null} if not found.
      */
     public static MetadataStandard forClass(final Class<?> type) {
         String classname = type.getName();
@@ -286,7 +286,7 @@ public class MetadataStandard implements Serializable {
      * Returns a bibliographical reference to the international standard.
      * The default implementation return the citation given at construction time.
      *
-     * @return Bibliographical reference to the international standard.
+     * @return bibliographical reference to the international standard.
      */
     public Citation getCitation() {
         return citation;
@@ -302,12 +302,11 @@ public class MetadataStandard implements Serializable {
      *   <li>The value of {@link #getImplementation(Class)} after check for non-null value.</li>
      * </ul>
      *
-     * @param  implementation The implementation class.
-     * @param  mandatory Whether this method shall throw an exception or return {@code null}
+     * @param  implementation  the implementation class.
+     * @param  mandatory  whether this method shall throw an exception or return {@code null}
      *         if no accessor is found for the given implementation class.
-     * @return The accessor for the given implementation, or {@code null} if the given class does
-     *         not implement a metadata interface of the expected package and {@code mandatory}
-     *         is {@code false}.
+     * @return the accessor for the given implementation, or {@code null} if the given class does not
+     *         implement a metadata interface of the expected package and {@code mandatory} is {@code false}.
      * @throws ClassCastException if the specified class does not implement a metadata interface
      *         of the expected package and {@code mandatory} is {@code true}.
      */
@@ -326,7 +325,7 @@ public class MetadataStandard implements Serializable {
          */
         final Class<?> type;
         if (value instanceof Class<?>) {
-            type = (Class<?>) value; // Stored result of previous call to findInterface(…).
+            type = (Class<?>) value;                            // Stored result of previous call to findInterface(…).
             assert type == findInterface(implementation) : implementation;
         } else {
             /*
@@ -341,7 +340,7 @@ public class MetadataStandard implements Serializable {
                     for (final MetadataStandard dependency : dependencies) {
                         final PropertyAccessor accessor = dependency.getAccessor(implementation, false);
                         if (accessor != null) {
-                            accessors.put(implementation, accessor); // Ok to overwrite existing instance here.
+                            accessors.put(implementation, accessor);        // Ok to overwrite existing instance here.
                             return accessor;
                         }
                     }
@@ -375,7 +374,7 @@ public class MetadataStandard implements Serializable {
      * If this method returns {@code true}, then invoking {@link #getInterface(Class)} is guaranteed to succeed
      * without throwing an exception.
      *
-     * @param  type The implementation class (can be {@code null}).
+     * @param  type  the implementation class (can be {@code null}).
      * @return {@code true} if the given class is an interface of this standard,
      *         or implements an interface of this standard.
      */
@@ -425,8 +424,8 @@ public class MetadataStandard implements Serializable {
      *
      * <p>This method ignores dependencies. Fallback on metadata standard dependencies shall be done by the caller.</p>
      *
-     * @param  type The standard interface or the implementation class.
-     * @return The single interface, or {@code null} if none where found.
+     * @param  type  the standard interface or the implementation class.
+     * @return the single interface, or {@code null} if none where found.
      */
     private Class<?> findInterface(final Class<?> type) {
         if (type != null) {
@@ -507,11 +506,10 @@ public class MetadataStandard implements Serializable {
      * The standard package is usually made of interfaces and code lists only, but this is
      * not verified by this method.</div>
      *
-     * @param  <T>  The compile-time {@code type}.
-     * @param  type The implementation class.
-     * @return The interface implemented by the given implementation class.
-     * @throws ClassCastException if the specified implementation class does
-     *         not implement an interface of this standard.
+     * @param  <T>   the compile-time {@code type}.
+     * @param  type  the implementation class.
+     * @return the interface implemented by the given implementation class.
+     * @throws ClassCastException if the specified implementation class does not implement an interface of this standard.
      *
      * @see AbstractMetadata#getInterface()
      */
@@ -551,9 +549,9 @@ public class MetadataStandard implements Serializable {
      * The default implementation returns {@code null} if every cases. Subclasses shall
      * override this method in order to map GeoAPI interfaces to their implementation.
      *
-     * @param  <T>  The compile-time {@code type}.
-     * @param  type The interface, typically from the {@code org.opengis.metadata} package.
-     * @return The implementation class, or {@code null} if none.
+     * @param  <T>   the compile-time {@code type}.
+     * @param  type  the interface, typically from the {@code org.opengis.metadata} package.
+     * @return the implementation class, or {@code null} if none.
      */
     public <T> Class<? extends T> getImplementation(final Class<T> type) {
         return null;
@@ -574,7 +572,7 @@ public class MetadataStandard implements Serializable {
      *   MetadataStandard standard = MetadataStandard.ISO_19115;
      *   Map<String, String> names = standard.asNameMap(Citation.class, UML_IDENTIFIER, JAVABEANS_PROPERTY);
      *   String value = names.get("alternateTitle");
-     *   System.out.println(value); // alternateTitles
+     *   System.out.println(value);                   // alternateTitles
      * }
      * </div>
      *
@@ -582,10 +580,10 @@ public class MetadataStandard implements Serializable {
      * No matter the key name policy, the {@code key} argument given to any {@link Map} method can be any of the
      * above-cited forms of property names.
      *
-     * @param  type        The interface or implementation class of a metadata.
-     * @param  keyPolicy   Determines the string representation of map keys.
-     * @param  valuePolicy Determines the string representation of map values.
-     * @return The names of all properties defined by the given metadata type.
+     * @param  type         the interface or implementation class of a metadata.
+     * @param  keyPolicy    determines the string representation of map keys.
+     * @param  valuePolicy  determines the string representation of map values.
+     * @return the names of all properties defined by the given metadata type.
      * @throws ClassCastException if the specified interface or implementation class does
      *         not extend or implement a metadata interface of the expected package.
      */
@@ -616,14 +614,14 @@ public class MetadataStandard implements Serializable {
      *   MetadataStandard  standard = MetadataStandard.ISO_19115;
      *   Map<String,Class<?>> types = standard.asTypeMap(Citation.class, UML_IDENTIFIER, ELEMENT_TYPE);
      *   Class<?> value = types.get("alternateTitle");
-     *   System.out.println(value);  // class org.opengis.util.InternationalString
+     *   System.out.println(value);                       // class org.opengis.util.InternationalString
      * }
      *
-     * @param  type        The interface or implementation class of a metadata.
-     * @param  keyPolicy   Determines the string representation of map keys.
-     * @param  valuePolicy Whether the values shall be property types, the element types
+     * @param  type         the interface or implementation class of a metadata.
+     * @param  keyPolicy    determines the string representation of map keys.
+     * @param  valuePolicy  whether the values shall be property types, the element types
      *         (same as property types except for collections) or the declaring interface or class.
-     * @return The types or declaring type of all properties defined in the given metadata type.
+     * @return the types or declaring type of all properties defined in the given metadata type.
      * @throws ClassCastException if the specified interface or implementation class does
      *         not extend or implement a metadata interface of the expected package.
      */
@@ -677,11 +675,10 @@ public class MetadataStandard implements Serializable {
      *   <li>{@link org.apache.sis.measure.NumberRange} if the valid values are constrained to some specific range.</li>
      * </ul>
      *
-     * @param  type      The metadata interface or implementation class.
-     * @param  keyPolicy Determines the string representation of map keys.
-     * @return Information about all properties defined in the given metadata type.
-     * @throws ClassCastException if the given type doesn't implement a metadata
-     *         interface of the expected package.
+     * @param  type       the metadata interface or implementation class.
+     * @param  keyPolicy  determines the string representation of map keys.
+     * @return information about all properties defined in the given metadata type.
+     * @throws ClassCastException if the given type does not implement a metadata interface of the expected package.
      *
      * @see org.apache.sis.metadata.iso.DefaultExtendedElementInformation
      */
@@ -730,13 +727,11 @@ public class MetadataStandard implements Serializable {
      * values, then make sure that the given value is a collection when the associated metadata property expects
      * such collection.
      *
-     * @param  metadata The metadata object to view as a map.
-     * @param  keyPolicy Determines the string representation of map keys.
-     * @param  valuePolicy Whether the entries having null value or empty collection shall be
-     *         included in the map.
-     * @return A map view over the metadata object.
-     * @throws ClassCastException if the metadata object doesn't implement a metadata
-     *         interface of the expected package.
+     * @param  metadata     the metadata object to view as a map.
+     * @param  keyPolicy    determines the string representation of map keys.
+     * @param  valuePolicy  whether the entries having null value or empty collection shall be included in the map.
+     * @return a map view over the metadata object.
+     * @throws ClassCastException if the metadata object does not implement a metadata interface of the expected package.
      *
      * @see AbstractMetadata#asMap()
      */
@@ -804,12 +799,10 @@ public class MetadataStandard implements Serializable {
      * Note that whether the child appears as effectively removed from the node or just cleared
      * (i.e. associated to a null value) depends on the {@code valuePolicy} argument.
      *
-     * @param  metadata The metadata object to view as a tree table.
-     * @param  valuePolicy Whether the property having null value or empty collection shall be
-     *         included in the tree.
-     * @return A tree table representation of the specified metadata.
-     * @throws ClassCastException if the metadata object doesn't implement a metadata
-     *         interface of the expected package.
+     * @param  metadata     the metadata object to view as a tree table.
+     * @param  valuePolicy  whether the property having null value or empty collection shall be included in the tree.
+     * @return a tree table representation of the specified metadata.
+     * @throws ClassCastException if the metadata object does not implement a metadata interface of the expected package.
      *
      * @see AbstractMetadata#asTreeTable()
      */
@@ -848,12 +841,12 @@ public class MetadataStandard implements Serializable {
      * delegate their work to this {@code standard.equals(…)} method, as {@link AbstractMetadata} does.
      * In the later case, the final result is a deep comparison.
      *
-     * @param metadata1 The first metadata object to compare.
-     * @param metadata2 The second metadata object to compare.
-     * @param mode      The strictness level of the comparison.
+     * @param  metadata1  the first metadata object to compare.
+     * @param  metadata2  the second metadata object to compare.
+     * @param  mode       the strictness level of the comparison.
      * @return {@code true} if the given metadata objects are equals.
-     * @throws ClassCastException if at least one metadata object don't
-     *         implements a metadata interface of the expected package.
+     * @throws ClassCastException if at least one metadata object does not
+     *         implement a metadata interface of the expected package.
      *
      * @see AbstractMetadata#equals(Object, ComparisonMode)
      */
@@ -919,10 +912,9 @@ public class MetadataStandard implements Serializable {
      * This is a similar contract than {@link java.util.Set#hashCode()} (except for the interface)
      * and ensures that the hash code value is insensitive to the ordering of properties.
      *
-     * @param  metadata The metadata object to compute hash code.
-     * @return A hash code value for the specified metadata, or 0 if the given metadata is null.
-     * @throws ClassCastException if the metadata object doesn't implement a metadata
-     *         interface of the expected package.
+     * @param  metadata  the metadata object to compute hash code.
+     * @return a hash code value for the specified metadata, or 0 if the given metadata is null.
+     * @throws ClassCastException if the metadata object does not implement a metadata interface of the expected package.
      *
      * @see AbstractMetadata#hashCode()
      */
@@ -971,16 +963,16 @@ public class MetadataStandard implements Serializable {
             field.setAccessible(true);
             field.set(this, new ConcurrentHashMap<>());
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e); // Should never happen (tested by MetadataStandardTest).
+            throw new AssertionError(e);                // Should never happen (tested by MetadataStandardTest).
         }
     }
 
     /**
      * Invoked during deserialization for restoring the transient fields.
      *
-     * @param  in The input stream from which to deserialize a metadata standard.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize a metadata standard.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
