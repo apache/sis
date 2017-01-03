@@ -166,6 +166,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CloneNotSupported_1 = 20;
 
         /**
+         * Cross references are not supported.
+         */
+        public static final short CrossReferencesNotSupported = 167;
+
+        /**
          * Database error while creating a ‘{0}’ object for the “{1}” identifier.
          */
         public static final short DatabaseError_2 = 21;
