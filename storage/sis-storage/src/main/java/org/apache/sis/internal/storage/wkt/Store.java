@@ -58,11 +58,6 @@ final class Store extends DataStore {
     private static final int SIZE_LIMIT = 1000000;
 
     /**
-     * The file name.
-     */
-    private final String name;
-
-    /**
      * The reader, set by the constructor and cleared when no longer needed.
      */
     private Reader source;
@@ -88,11 +83,10 @@ final class Store extends DataStore {
     public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         objects = new ArrayList<>();
-        name    = connector.getStorageName();
         source  = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(source);
         if (source == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, name));
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
         }
     }
 
@@ -115,7 +109,7 @@ final class Store extends DataStore {
                     if ((length += n) >= buffer.length) {
                         if (n >= SIZE_LIMIT) {
                             throw new DataStoreContentException(Resources.format(
-                                    Resources.Keys.ExcessiveStringSize_3, name, SIZE_LIMIT, n));
+                                    Resources.Keys.ExcessiveStringSize_3, getDisplayName(), SIZE_LIMIT, n));
                         }
                         buffer = Arrays.copyOf(buffer, n << 1);
                     }
@@ -138,9 +132,9 @@ final class Store extends DataStore {
                 }
             } while (pos.getIndex() < wkt.length());
         } catch (ParseException e) {
-            throw new DataStoreContentException(getLocale(), "WKT", name, in).initCause(e);
+            throw new DataStoreContentException(getLocale(), "WKT", getDisplayName(), in).initCause(e);
         } catch (IOException e) {
-            throw new DataStoreException(getLocale(), "WKT", name, in).initCause(e);
+            throw new DataStoreException(getLocale(), "WKT", getDisplayName(), in).initCause(e);
         }
     }
 

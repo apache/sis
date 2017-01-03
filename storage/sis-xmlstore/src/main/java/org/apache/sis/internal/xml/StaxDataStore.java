@@ -43,7 +43,6 @@ import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.util.logging.WarningListener;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -56,11 +55,6 @@ import org.apache.sis.util.resources.Errors;
  * @module
  */
 public abstract class StaxDataStore extends FeatureStore {
-    /**
-     * The store name (typically filename) for formatting error messages.
-     */
-    protected final String name;
-
     /**
      * The locale to use for locale-sensitive data (<strong>not</strong> for logging or warning messages),
      * or {@code null} if unspecified.
@@ -175,7 +169,6 @@ public abstract class StaxDataStore extends FeatureStore {
      */
     protected StaxDataStore(final StaxDataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        name            = connector.getStorageName();
         storage         = connector.getStorage();
         locale          = connector.getOption(OptionKey.LOCALE);
         timezone        = connector.getOption(OptionKey.TIMEZONE);
@@ -453,13 +446,6 @@ reset:  switch (state) {
             return false;
         }
         return true;
-    }
-
-    /**
-     * Returns the error resources in the current locale.
-     */
-    private Errors errors() {
-        return Errors.getResources(getLocale());
     }
 
     /**

@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.time.Instant;
 import com.esri.core.geometry.Point;
+import com.esri.core.geometry.Polyline;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.StorageConnector;
@@ -301,6 +302,11 @@ public final strictfp class ReaderTest extends TestCase {
         verifyPoint((Feature) points.get(1), 1, v11);
         verifyPoint((Feature) points.get(2), 2, v11);
 
+        final Polyline p = (Polyline) f.getPropertyValue("@geometry");
+        assertEquals("pointCount", 3, p.getPointCount());
+        assertEquals("point(0)", new Point(15, 10), p.getPoint(0));
+        assertEquals("point(1)", new Point(25, 20), p.getPoint(1));
+        assertEquals("point(2)", new Point(35, 30), p.getPoint(2));
         assertEnvelopeEquals(15, 35, 10, 30, (Envelope) f.getPropertyValue("@envelope"));
     }
 
@@ -395,6 +401,12 @@ public final strictfp class ReaderTest extends TestCase {
         verifyPoint((Feature) points.get(1), 1, v11);
         verifyPoint((Feature) points.get(2), 2, v11);
         assertTrue(((Collection<?>) seg2.getPropertyValue("trkpt")).isEmpty());
+
+        final Polyline p = (Polyline) f.getPropertyValue("@geometry");
+        assertEquals("pointCount", 3, p.getPointCount());
+        assertEquals("point(0)", new Point(15, 10), p.getPoint(0));
+        assertEquals("point(1)", new Point(25, 20), p.getPoint(1));
+        assertEquals("point(2)", new Point(35, 30), p.getPoint(2));
         assertEnvelopeEquals(15, 35, 10, 30, (Envelope) f.getPropertyValue("@envelope"));
     }
 

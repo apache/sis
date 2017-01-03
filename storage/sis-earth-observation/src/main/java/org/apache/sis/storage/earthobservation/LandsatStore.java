@@ -66,11 +66,6 @@ import org.apache.sis.util.Debug;
  */
 public class LandsatStore extends DataStore {
     /**
-     * The file name.
-     */
-    private final String name;
-
-    /**
      * The reader, or {@code null} if closed.
      */
     private Reader source;
@@ -91,7 +86,6 @@ public class LandsatStore extends DataStore {
      */
     public LandsatStore(final LandsatStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        name = connector.getStorageName();
         source = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(source);
         if (source == null) {
@@ -113,7 +107,7 @@ public class LandsatStore extends DataStore {
         if (metadata == null && source != null) try {
             try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
                 source = null;      // Will be closed at the end of this try-catch block.
-                final LandsatReader parser = new LandsatReader(name, listeners);
+                final LandsatReader parser = new LandsatReader(getDisplayName(), listeners);
                 parser.read(reader);
                 metadata = parser.getMetadata();
             }
@@ -144,6 +138,6 @@ public class LandsatStore extends DataStore {
     @Debug
     @Override
     public String toString() {
-        return getClass().getSimpleName() + '[' + name + ']';
+        return getClass().getSimpleName() + '[' + getDisplayName() + ']';
     }
 }

@@ -24,6 +24,7 @@ import org.apache.sis.internal.xml.StaxDataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
@@ -34,6 +35,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.io.UncheckedIOException;
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 
 
 /**
@@ -144,6 +146,19 @@ public final class Store extends StaxDataStore {
             throw new DataStoreContentException(e);
         }
         return metadata;
+    }
+
+    /**
+     * Returns the feature type for the given name. The {@code name} argument should be the result of calling
+     * {@link org.opengis.util.GenericName#toString()} on the name of one of the feature types in this data store.
+     *
+     * @param  name  the name or alias of the feature type to get.
+     * @return the feature type of the given name or alias (never {@code null}).
+     * @throws IllegalNameException if the given name was not found or is ambiguous.
+     */
+    @Override
+    public FeatureType getFeatureType(String name) throws IllegalNameException {
+        throw new UnsupportedOperationException();  // TODO
     }
 
     /**

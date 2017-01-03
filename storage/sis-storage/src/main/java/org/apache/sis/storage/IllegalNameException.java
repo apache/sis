@@ -16,6 +16,10 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Locale;
+import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.util.resources.Vocabulary;
+
 
 /**
  * Thrown when an invalid name is used for identifying a coverage, a feature or other kind of element in a data store.
@@ -69,5 +73,28 @@ public class IllegalNameException extends DataStoreException {
      */
     public IllegalNameException(final String message, final Throwable cause) {
         super(message, cause);
+    }
+
+    /**
+     * Creates a new exception with a message saying that the feature of the given name has not been found.
+     *
+     * @param locale   the locale for the message to be returned by {@link #getLocalizedMessage()}.
+     * @param store    name of the data store for which the feature has not been found, or {@code null} if unknown.
+     * @param feature  name of the feature that has not been found.
+     */
+    public IllegalNameException(final Locale locale, final String store, final String feature) {
+        super(locale, Resources.Keys.FeatureNotFound_2, (store != null) ? store
+                : Vocabulary.formatInternational(Vocabulary.Keys.Unnamed), feature);
+    }
+
+    /**
+     * Creates a new exception which will format a localized message in the given locale.
+     *
+     * @param locale      the locale for the message to be returned by {@link #getLocalizedMessage()}.
+     * @param key         one of {@link Resources.Keys} constants.
+     * @param parameters  parameters to use for formatting the messages.
+     */
+    IllegalNameException(final Locale locale, final short key, final Object... parameters) {
+        super(locale, key, parameters);
     }
 }
