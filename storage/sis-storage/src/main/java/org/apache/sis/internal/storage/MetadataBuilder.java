@@ -85,6 +85,7 @@ import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Branch-dependent imports
+import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.internal.jdk8.LocalDate;
 import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.feature.DefaultFeatureType;
@@ -715,7 +716,9 @@ public class MetadataBuilder {
         ArgumentChecks.ensureNonNull("scope", scope);
         if (encoding != null) {
             // No need to use 'addIfNotPresent(…)' because Charset collection is a Set by default.
-            if (scope != Scope.DATA) metadata().getCharacterSets().add(encoding);
+            if (scope != Scope.DATA)           metadata().getCharacterSets().add(encoding);
+            if (scope != Scope.METADATA) identification().getCharacterSets().add(
+                    Types.forCodeName(CharacterSet.class, encoding.toString(), true));
         }
     }
 
