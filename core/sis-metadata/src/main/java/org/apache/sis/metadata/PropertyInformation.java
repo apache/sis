@@ -117,13 +117,13 @@ final class PropertyInformation<E> extends SimpleIdentifier
     /**
      * Creates a new {@code PropertyInformation} instance from the annotations on the given getter method.
      *
-     * @param  standard    The international standard that define the property, or {@code null} if none.
-     * @param  property    The property name as defined by the international {@code standard}.
-     * @param  getter      The getter method defined in the interface.
-     * @param  elementType The value type, either the method return type if not a collection,
-     *                     or the type of elements in the collection otherwise.
-     * @param  range       The range of valid values, or {@code null} if none. This information is associated to the
-     *                     implementation method rather than the interface one, because it is specific to SIS.
+     * @param  standard     the international standard that define the property, or {@code null} if none.
+     * @param  property     the property name as defined by the international {@code standard}.
+     * @param  getter       the getter method defined in the interface.
+     * @param  elementType  the value type, either the method return type if not a collection,
+     *                      or the type of elements in the collection otherwise.
+     * @param  range        the range of valid values, or {@code null} if none. This information is associated to the
+     *                      implementation method rather than the interface one, because it is specific to SIS.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     PropertyInformation(final Citation standard, final String property, final Method getter,
@@ -348,7 +348,7 @@ final class PropertyInformation<E> extends SimpleIdentifier
     /**
      * Compares the given object with this element information for equality.
      *
-     * @param  obj The object to compare with this element information for equality.
+     * @param  obj  the object to compare with this element information for equality.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -378,8 +378,7 @@ final class PropertyInformation<E> extends SimpleIdentifier
     }
 
     /**
-     * Invoked by {@link #toString()} in order to append additional information
-     * after the identifier.
+     * Invoked by {@link #toString()} in order to append additional information after the identifier.
      */
     @Override
     protected void appendToString(final StringBuilder buffer) {

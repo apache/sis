@@ -278,6 +278,28 @@ public final class JDK8 {
     }
 
     /**
+     * Same as {@link #putIfAbsent(Map, Object, Object)} but using a more conservative strategy
+     * (actually the same one than the default JDK8 implementation). This method is preferred
+     * when the {@code put(…)} operation may have significant side-effect.
+     *
+     * @param  <K>    the type of keys.
+     * @param  <V>    the type of values.
+     * @param  map    the map where to store the value.
+     * @param  key    the key for the value to store.
+     * @param  value  the value to store.
+     * @return the previous value, or {@code null} if none.
+     *
+     * @since 0.8
+     */
+    public static <K,V> V putIfAbsentConservative(final Map<K,V> map, final K key, final V value) {
+        V previous = map.get(key);
+        if (previous == null) {
+            previous = map.put(key, value);
+        }
+        return previous;
+    }
+
+    /**
      * Removes the entry for the given key, provided that it is currently mapped to the given value.
      *
      * @param  <K>    the type of keys.

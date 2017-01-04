@@ -446,7 +446,7 @@ final class LandsatReader {
             case "ORIGIN": {
                 final Matcher m = CREDIT.matcher(value);
                 if (m.find()) {
-                    metadata.newParty(MetadataBuilder.ORGANISATION);
+                    metadata.newParty(MetadataBuilder.PartyType.ORGANISATION);
                     metadata.addAuthor(value.substring(m.end()));
                 }
                 metadata.addCredits(value);
@@ -889,7 +889,7 @@ final class LandsatReader {
      * @throws FactoryException if an error occurred while creating the Coordinate Reference System.
      */
     final Metadata getMetadata() throws FactoryException {
-        metadata.add(Locale.ENGLISH);
+        metadata.add(Locale.ENGLISH, MetadataBuilder.Scope.METADATA);
         metadata.add(ScopeCode.COVERAGE);
         try {
             flushSceneTime();

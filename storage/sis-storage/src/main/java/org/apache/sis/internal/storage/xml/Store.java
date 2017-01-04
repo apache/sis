@@ -57,11 +57,6 @@ import static java.util.Collections.singleton;
  */
 final class Store extends DataStore {
     /**
-     * The file name.
-     */
-    private final String name;
-
-    /**
      * The input stream or reader, set by the constructor and cleared when no longer needed.
      */
     private StreamSource source;
@@ -86,7 +81,6 @@ final class Store extends DataStore {
      */
     public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        name = connector.getStorageName();
         final InputStream in = connector.getStorageAs(InputStream.class);
         if (in != null) {
             source = new StreamSource(in);
@@ -99,7 +93,7 @@ final class Store extends DataStore {
         final Closeable c = input(source);
         connector.closeAllExcept(c);
         if (c == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, name));
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
         }
     }
 
@@ -154,7 +148,7 @@ final class Store extends DataStore {
                 in.close();
             }
         } catch (JAXBException | IOException e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, name), e);
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, getDisplayName()), e);
         }
     }
 

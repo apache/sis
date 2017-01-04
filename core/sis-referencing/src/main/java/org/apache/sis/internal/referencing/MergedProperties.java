@@ -52,8 +52,8 @@ public class MergedProperties extends AbstractMap<String,Object> {
     /**
      * Creates a new map which will merge the given properties on the fly.
      *
-     * @param properties The user-supplied properties.
-     * @param defaultProperties Fallback for values not found in {@code properties}.
+     * @param properties         the user-supplied properties.
+     * @param defaultProperties  fallback for values not found in {@code properties}.
      */
     public MergedProperties(final Map<String,?> properties, final Map<String,?> defaultProperties) {
         this.properties = properties;
@@ -64,7 +64,7 @@ public class MergedProperties extends AbstractMap<String,Object> {
      * Returns an iterator over the user-supplied properties together with
      * the default properties which were not specified in the user's ones.
      *
-     * @return Iterator over merged properties.
+     * @return iterator over merged properties.
      */
     @Override
     protected EntryIterator<String,Object> entryIterator() {
@@ -81,8 +81,8 @@ public class MergedProperties extends AbstractMap<String,Object> {
      * then by looking in the default properties if no value were specified in the user map.
      * If there is no default value, invokes {@link #invisibleEntry(Object)} in last resort.
      *
-     * @param  key The key for which to get the value.
-     * @return The value associated to the given key, or {@code null} if none.
+     * @param  key  the key for which to get the value.
+     * @return the value associated to the given key, or {@code null} if none.
      */
     @Override
     public Object get(final Object key) {
@@ -106,8 +106,8 @@ public class MergedProperties extends AbstractMap<String,Object> {
      * of derived or projected CRS (because of the way we implemented derived CRS). But this is somewhat specific to
      * SIS, so we do no want to expose this implementation details.</div>
      *
-     * @param  key The key for which to get the value.
-     * @return The value associated to the given key, or {@code null} if none.
+     * @param  key  the key for which to get the value.
+     * @return the value associated to the given key, or {@code null} if none.
      */
     protected Object invisibleEntry(final Object key) {
         return null;

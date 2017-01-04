@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.nio.charset.Charset;
+import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
@@ -76,6 +77,7 @@ import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Types;
 
@@ -101,24 +103,6 @@ import org.opengis.feature.FeatureType;
  * @module
  */
 public class MetadataBuilder {
-    /**
-     * Instructs {@link #newParty(byte)} that the next party to create should be an instance of
-     * {@link DefaultIndividual}.
-     *
-     * @see #partyType
-     * @see #newParty(byte)
-     */
-    public static final byte INDIVIDUAL = 1;
-
-    /**
-     * Instructs {@link #newParty(byte)} that the next party to create should be an instance of
-     * {@link DefaultOrganisation}.
-     *
-     * @see #partyType
-     * @see #newParty(byte)
-     */
-    public static final byte ORGANISATION = 2;
-
     /**
      * The metadata created by this reader, or {@code null} if none.
      */
@@ -216,14 +200,10 @@ public class MetadataBuilder {
 
     /**
      * Whether the next party to create should be an instance of {@link DefaultIndividual} or {@link DefaultOrganisation}.
-     * Value can be {@link #INDIVIDUAL}, {@link #ORGANISATION} or 0 if unknown, in which case an {@link AbstractParty}
-     * will be created.
      *
-     * @see #INDIVIDUAL
-     * @see #ORGANISATION
-     * @see #newParty(byte)
+     * @see #newParty(PartyType)
      */
-    private byte partyType;
+    private PartyType partyType = PartyType.UNKNOWN;
 
     /**
      * {@code true} if the next {@code CoverageDescription} to create will be a description of measurements
@@ -265,6 +245,28 @@ public class MetadataBuilder {
     }
 
     /**
+     * The type of party to create (individual, organization or unknown).
+     */
+    public static enum PartyType {
+        /**
+         * Instructs {@link #newParty(PartyType)} that the next party to create should be an instance of
+         * {@link DefaultIndividual}.
+         */
+        INDIVIDUAL,
+
+        /**
+         * Instructs {@link #newParty(PartyType)} that the next party to create should be an instance of
+         * {@link DefaultOrganisation}.
+         */
+        ORGANISATION,
+
+        /**
+         * Instructs {@link #newParty(PartyType)} that the next party to create if of unknown type.
+         */
+        UNKNOWN
+    }
+
+    /**
      * Commits all pending information under the "responsible party" node (author, address, <i>etc</i>).
      * If there is no pending party information, then invoking this method has no effect
      * except setting the {@code type} flag.
@@ -273,9 +275,10 @@ public class MetadataBuilder {
      * <p>This method does not need to be invoked unless a new "responsible party" node,
      * separated from the previous one, is desired.</p>
      *
-     * @param  type  {@link #INDIVIDUAL}, {@link #ORGANISATION} or 0 if unknown.
+     * @param  type  whether the party to create is an individual or an organization.
      */
-    public final void newParty(final byte type) {
+    public final void newParty(final PartyType type) {
+        ArgumentChecks.ensureNonNull("type", type);
         if (party != null) {
             addIfNotPresent(responsibility().getParties(), party);
             party = null;
@@ -295,7 +298,7 @@ public class MetadataBuilder {
         /*
          * Construction shall be ordered from children to parents.
          */
-        newParty((byte) 0);
+        newParty(PartyType.UNKNOWN);
         if (responsibility != null) {
             addIfNotPresent(citation().getCitedResponsibleParties(), responsibility);
             responsibility = null;
@@ -485,9 +488,10 @@ public class MetadataBuilder {
     private AbstractParty party() {
         if (party == null) {
             switch (partyType) {
+                case UNKNOWN:      party = new AbstractParty();       break;
                 case INDIVIDUAL:   party = new DefaultIndividual();   break;
                 case ORGANISATION: party = new DefaultOrganisation(); break;
-                default:           party = new AbstractParty();       break;
+                default:           throw new AssertionError(partyType);
             }
         }
         return party;
@@ -654,32 +658,64 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a language used for documenting metadata.
-     * Storage location is:
-     *
-     * <pre>metadata/language</pre>
-     *
-     * @param  language  a language used for documenting metadata.
+     * Specify if an information apply to data, to metadata or to both.
      */
-    public final void add(final Locale language) {
+    public static enum Scope {
+        /**
+         * Information applies only to data.
+         */
+        DATA,
+
+        /**
+         * Information applies only to metadata.
+         */
+        METADATA,
+
+        /**
+         * Information applies to both data and metadata.
+         */
+        ALL
+    }
+
+    /**
+     * Adds a language used for documenting data and/or metadata.
+     * Storage locations are:
+     *
+     * <table class="compact" summary="Storage locations.">
+     * <tr><td>Metadata</td> <td>{@code metadata/language}</td></tr>
+     * <tr><td>Data</td>     <td>{@code metadata/identificationInfo/language}</td></tr>
+     * </table>
+     *
+     * @param  language  a language used for documenting data and/or metadata.
+     * @param  scope     whether the language applies to data, to metadata or to both.
+     */
+    public final void add(final Locale language, final Scope scope) {
+        ArgumentChecks.ensureNonNull("scope", scope);
         if (language != null) {
             // No need to use 'addIfNotPresent(…)' because Locale collection is a Set by default.
-            metadata().getLanguages().add(language);
+            if (scope != Scope.DATA)           metadata().getLanguages().add(language);
+            if (scope != Scope.METADATA) identification().getLanguages().add(language);
         }
     }
 
     /**
-     * Adds the given character encoding to the metadata.
-     * Storage location is:
+     * Adds a character set used for encoding the data and/or metadata.
+     * Storage locations are:
      *
-     * <pre>metadata/characterSet</pre>
+     * <table class="compact" summary="Storage locations.">
+     * <tr><td>Metadata</td> <td>{@code metadata/characterSet}</td></tr>
+     * <tr><td>Data</td>     <td>{@code metadata/identificationInfo/characterSet}</td></tr>
+     * </table>
      *
-     * @param  encoding  the character encoding to add.
+     * @param  encoding  the character set used for encoding data and/or metadata.
+     * @param  scope     whether the encoding applies to data, to metadata or to both.
      */
-    public final void add(final Charset encoding) {
+    public final void add(final Charset encoding, final Scope scope) {
+        ArgumentChecks.ensureNonNull("scope", scope);
         if (encoding != null) {
             // No need to use 'addIfNotPresent(…)' because Charset collection is a Set by default.
-            metadata().getCharacterSets().add(encoding);
+            if (scope != Scope.DATA)           metadata().getCharacterSets().add(encoding);
+            if (scope != Scope.METADATA) identification().getCharacterSets().add(encoding);
         }
     }
 
@@ -704,17 +740,29 @@ public class MetadataBuilder {
      *
      * <pre>metadata/contentInfo/featureTypes/featureTypeName</pre>
      *
+     * This method returns the feature name for more convenient chaining with
+     * {@link org.apache.sis.storage.FeatureNaming#add FeatureNaming.add(…)}.
+     * Note that the {@link FeatureCatalogBuilder} subclasses can also be used for that chaining.
+     *
      * @param  type         the feature type to add, or {@code null}.
-     * @param  occurrences  number of instances of the given features, or {@code null} if unknown.
+     * @param  occurrences  number of instances of the given feature type, or {@code null} if unknown.
+     * @return the name of the added feature, or {@code null} if none.
+     *
+     * @see FeatureCatalogBuilder#define(FeatureType)
      */
-    public final void add(final FeatureType type, final Integer occurrences) {
+    public final GenericName add(final FeatureType type, final Integer occurrences) {
         if (type != null) {
-            final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(type.getName());
-            if (occurrences != null) {
-                info.setFeatureInstanceCount(shared(occurrences));
+            final GenericName name = type.getName();
+            if (name != null) {
+                final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(name);
+                if (occurrences != null) {
+                    info.setFeatureInstanceCount(shared(occurrences));
+                }
+                addIfNotPresent(featureDescription().getFeatureTypeInfo(), info);
+                return name;
             }
-            addIfNotPresent(featureDescription().getFeatureTypeInfo(), info);
         }
+        return null;
     }
 
     /**
@@ -1565,7 +1613,7 @@ parse:      for (int i = 0; i < length;) {
      * If {@code freeze} is {@code true}, then the returned metadata instance can not be modified.
      *
      * @param  freeze  {@code true} if this method should {@linkplain DefaultMetadata#freeze() freeze}
-     *         the metadata instance before to return it.
+     *                 the metadata instance before to return it.
      * @return the metadata, or {@code null} if none.
      */
     public final DefaultMetadata build(final boolean freeze) {

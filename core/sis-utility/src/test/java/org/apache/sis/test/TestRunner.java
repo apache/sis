@@ -178,8 +178,8 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     /**
      * Creates a new test runner for the given class.
      *
-     * @param  testClass The class to run.
-     * @throws InitializationError If the test class is malformed.
+     * @param  testClass  the class to run.
+     * @throws InitializationError if the test class is malformed.
      */
     public TestRunner(final Class<?> testClass) throws InitializationError {
         super(testClass);
@@ -190,7 +190,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * verification documented in {@link BlockJUnit4ClassRunner#validateTestMethods(List)},
      * then ensures that all {@link DependsOnMethod} annotations refer to an existing method.
      *
-     * @param errors The list where to report any problem found.
+     * @param  errors  the list where to report any problem found.
      */
     @Override
     protected void validateTestMethods(final List<Throwable> errors) {
@@ -217,7 +217,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     /**
      * Returns the test methods to be executed, with dependencies sorted before dependant tests.
      *
-     * @return The test method to be executed in dependencies order.
+     * @return the test methods to be executed in dependencies order.
      */
     @Override
     public List<FrameworkMethod> getChildren() {
@@ -227,7 +227,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     /**
      * Returns the test methods to be executed, with dependencies sorted before dependant tests.
      *
-     * @return The test method to be executed in dependencies order.
+     * @return the test methods to be executed in dependencies order.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private FrameworkMethod[] getFilteredChildren() {
@@ -244,7 +244,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * conform to the sorter specification, since this method will ensure that dependencies
      * are still sorted before dependant tests.
      *
-     * @param sorter The sorter to use for sorting tests.
+     * @param  sorter  the sorter to use for sorting tests.
      */
     @Override
     public void sort(final Sorter sorter) {
@@ -265,7 +265,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     /**
      * Sorts the given array of methods in dependencies order.
      *
-     * @param methods The methods to sort.
+     * @param  methods  the methods to sort.
      */
     private static void sortDependantTestsLast(final FrameworkMethod[] methods) {
         final Set<String> dependencies = new HashSet<>();
@@ -302,8 +302,8 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     /**
      * Removes tests that don't pass the parameter {@code filter}.
      *
-     * @param  filter The filter to apply.
-     * @throws NoTestsRemainException If all tests are filtered out.
+     * @param  filter  the filter to apply.
+     * @throws NoTestsRemainException if all tests are filtered out.
      */
     @Override
     public void filter(final Filter filter) throws NoTestsRemainException {
@@ -329,8 +329,8 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * Returns the {@link Statement} which will execute all the tests in the class given
      * to the {@linkplain #TestRunner(Class) constructor}.
      *
-     * @param  notifier The object to notify about test results.
-     * @return The statement to execute for running the tests.
+     * @param  notifier  the object to notify about test results.
+     * @return the statement to execute for running the tests.
      */
     @Override
     protected Statement childrenInvoker(final RunNotifier notifier) {
@@ -353,8 +353,8 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * Before to delegate to the {@linkplain BlockJUnit4ClassRunner#runChild default implementation},
      * check if a dependency of the given method failed. In such case, the test will be ignored.
      *
-     * @param method   The test method to execute.
-     * @param notifier The object to notify about test results.
+     * @param  method    the test method to execute.
+     * @param  notifier  the object to notify about test results.
      */
     @Override
     protected void runChild(final FrameworkMethod method, final RunNotifier notifier) {
@@ -381,7 +381,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * Declares that the given method failed.
      * Other methods depending on this method will be ignored.
      *
-     * @param methodName The name of the method that failed.
+     * @param  methodName the name of the method that failed.
      */
     final void addDependencyFailure(final String methodName) {
         if (methodDependencyFailures == null) {

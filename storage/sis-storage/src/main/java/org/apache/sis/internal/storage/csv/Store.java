@@ -51,6 +51,7 @@ import org.apache.sis.internal.storage.FeatureStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
@@ -117,11 +118,6 @@ public final class Store extends FeatureStore {
     private static final String TYPE_PREFIX = "xsd:";
 
     /**
-     * The file name, used for reporting error messages.
-     */
-    private final String filename;
-
-    /**
      * The reader, set by the constructor and cleared when no longer needed.
      */
     private BufferedReader source;
@@ -183,11 +179,10 @@ public final class Store extends FeatureStore {
      */
     public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        filename = connector.getStorageName();
         final Reader r = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(r);
         if (r == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, filename));
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
         }
         source = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
         GeneralEnvelope envelope    = null;
@@ -240,11 +235,11 @@ public final class Store extends FeatureStore {
             }
             source.reset();
         } catch (IOException e) {
-            throw new DataStoreException(getLocale(), "CSV", filename, source).initCause(e);
+            throw new DataStoreException(getLocale(), "CSV", super.getDisplayName(), source).initCause(e);
         } catch (FactoryException e) {
-            throw new DataStoreReferencingException(getLocale(), "CSV", filename, source).initCause(e);
+            throw new DataStoreReferencingException(getLocale(), "CSV", super.getDisplayName(), source).initCause(e);
         } catch (IllegalArgumentException | DateTimeException e) {
-            throw new DataStoreContentException(getLocale(), "CSV", filename, source).initCause(e);
+            throw new DataStoreContentException(getLocale(), "CSV", super.getDisplayName(), source).initCause(e);
         }
         this.encoding    = connector.getOption(OptionKey.ENCODING);
         this.envelope    = envelope;
@@ -447,7 +442,7 @@ public final class Store extends FeatureStore {
             }
             properties.add(createProperty(name, type, minOccurrence));
         }
-        String name = filename;
+        String name = super.getDisplayName();
         final int s = name.lastIndexOf('.');
         if (s > 0) {                            // Exclude 0 because shall not be the first character.
             name = name.substring(0, s);
@@ -497,12 +492,12 @@ public final class Store extends FeatureStore {
             } catch (MetadataStoreException e) {
                 listeners.warning(null, e);
             }
-            builder.add(encoding);
+            builder.add(encoding, MetadataBuilder.Scope.ALL);
             builder.add(ScopeCode.DATASET);
             try {
                 builder.addExtent(envelope);
             } catch (TransformException e) {
-                throw new DataStoreReferencingException(getLocale(), "CSV", filename, source).initCause(e);
+                throw new DataStoreReferencingException(getLocale(), "CSV", getDisplayName(), source).initCause(e);
             } catch (UnsupportedOperationException e) {
                 // Failed to set the temporal components if the sis-temporal module was
                 // not on the classpath, but the other dimensions still have been set.
@@ -512,6 +507,31 @@ public final class Store extends FeatureStore {
             metadata = builder.build(true);
         }
         return metadata;
+    }
+
+    /**
+     * Returns the feature type for the given name. The {@code name} argument should be the
+     * value specified at the following path (only one such value exists for a CSV data store):
+     *
+     * <blockquote>
+     * {@link #getMetadata()} /
+     * {@link org.apache.sis.metadata.iso.DefaultMetadata#getContentInfo() contentInfo} /
+     * {@link org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription#getFeatureTypeInfo() featureTypes} /
+     * {@link org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo#getFeatureTypeName() featureTypeName}
+     * </blockquote>
+     *
+     * @param  name  the name of the feature type to get.
+     * @return the feature type of the given name (never {@code null}).
+     * @throws IllegalNameException if the given name was not found.
+     *
+     * @since 0.8
+     */
+    @Override
+    public FeatureType getFeatureType(String name) throws IllegalNameException {
+        if (featureType.getName().toString().equals(name)) {
+            return featureType;
+        }
+        throw new IllegalNameException(getLocale(), getDisplayName(), name);
     }
 
     /**
@@ -768,7 +788,7 @@ public final class Store extends FeatureStore {
      * The error message will contain the line number if available.
      */
     final String canNotParseFile() {
-        final Object[] parameters = IOUtilities.errorMessageParameters("CSV", filename, source);
+        final Object[] parameters = IOUtilities.errorMessageParameters("CSV", getDisplayName(), source);
         return errors().getString(IOUtilities.errorMessageKey(parameters), parameters);
     }
 

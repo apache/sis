@@ -19,10 +19,12 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.IllegalNameException;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.Stream;
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 
 
 /**
@@ -49,9 +51,38 @@ public abstract class FeatureStore extends DataStore {
     }
 
     /**
-     * Returns the stream of features.
+     * Returns the feature type for the given name. The {@code name} argument should be the result of calling
+     * {@link org.opengis.util.GenericName#toString()} on the name of one of the feature types in this data store.
+     * The list of feature type names can be obtained from the {@linkplain #getMetadata() metadata} like below:
      *
-     * @return a stream over all features in the file.
+     * {@preformat java
+     *     for (ContentInformation c : metadata.getContentInfo()) {
+     *         if (c instanceof FeatureCatalogueDescription) {
+     *             for (FeatureTypeInfo info : ((FeatureCatalogueDescription) c).getFeatureTypeInfo()) {
+     *                 GenericName name = info.getFeatureTypeName();
+     *                 // ... add the name to some list ...
+     *             }
+     *         }
+     *     }
+     * }
+     *
+     * Implementation may also accept aliases for convenience. For example if the full name of a feature type
+     * is {@code "foo:bar"}, then this method may accept {@code "bar"} as a synonymous of {@code "foo:bar"}
+     * provided that it does not introduce ambiguity.
+     *
+     * @param  name  the name or alias of the feature type to get.
+     * @return the feature type of the given name or alias (never {@code null}).
+     * @throws IllegalNameException if the given name was not found or is ambiguous.
+     * @throws DataStoreException if another kind of error occurred while searching for feature types.
+     */
+    public abstract FeatureType getFeatureType(String name) throws DataStoreException;
+
+    /**
+     * Returns the stream of all features found in the data store.
+     * If a checked exception occurs during consumption of the returned stream, that exception will
+     * be wrapped in a unchecked {@link org.apache.sis.util.collection.BackingStoreException}.
+     *
+     * @return a stream over all features in the data store.
      * @throws DataStoreException if an error occurred while creating the feature stream.
      */
     public abstract Stream<Feature> getFeatures() throws DataStoreException;
