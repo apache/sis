@@ -28,6 +28,7 @@ import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
+import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 
@@ -38,14 +39,19 @@ import org.apache.sis.util.Classes;
  * value from the <var>source</var> metadata, the merge operation is defined as below:
  *
  * <ul>
- *   <li>If the target metadata does not have a non-null and non-empty value for the same property, then reference
- *       to the value from the source metadata is stored <cite>as-is</cite> in the target metadata.</li>
+ *   <li>If the target metadata does not have a non-null and non-empty value for the same property, then the
+ *     reference to the value from the source metadata is stored <cite>as-is</cite> in the target metadata.</li>
  *   <li>Otherwise if the target value is a collection, then:
  *     <ul>
- *       <li>Each element of the source collection which is an instance of a
- *           {@linkplain MetadataStandard#getInterface(Class) standard type}
- *           assignable to the type of an element of the target collection, this {@code merge(…)}
- *           method will be invoked recursively for that pair of source and target elements.</li>
+ *       <li>For each element of the source collection, a corresponding element of the target collection is searched.
+ *         A pair of source and target elements is established if the pair meet all of the following conditions:
+ *         <ul>
+ *           <li>The {@linkplain MetadataStandard#getInterface(Class) standard type} of the source element
+ *               is assignable to the type of the target element.</li>
+ *           <li>There is no conflict, i.e. no property value that are not collection and not equal.</li>
+ *         </ul>
+ *         If such pair is found, then the merge operation if performed recursively
+ *         for that pair of source and target elements.</li>
  *       <li>All other source elements will be added as new elements in the target collection.</li>
  *     </ul>
  *   </li>
@@ -100,18 +106,31 @@ public class Merger {
      * Merges the data from the given source into the given target.
      * See class javadoc for a description of the merge process.
      *
-     * <p>Note that this method will be invoked recursively for all child properties to merge.</p>
-     *
-     * @param  source  the source metadata to merge into the target. This metadata will not be modified.
-     * @param  target  the target metadata where to merge values.
-     * @return {@code true} if the merge has been performed, or {@code false} if the {@code target} type
-     *         is not compatible with the {@code source} type.
+     * @param  source  the source metadata to merge into the target. Will never be modified.
+     * @param  target  the target metadata where to merge values. Will be modified as a result of this call.
      * @throws ClassCastException if the source and target are not instances of the same metadata standard.
-     * @throws InvalidMetadataException if a property of the {@code target} metadata is not specialized
-     *         enough for holding a {@code source} property value.
-     * @throws IllegalArgumentException if this method detects a cross-reference between source and target.
+     * @throws InvalidMetadataException if the {@code target} metadata can not hold all {@code source} properties,
+     *         for example because the source class is a more specialized type than the target class.
+     * @throws IllegalArgumentException if this method detects a cross-reference between source and target metadata.
      */
-    public boolean merge(final Object source, final ModifiableMetadata target) {
+    public final void merge(final Object source, final ModifiableMetadata target) {
+        if (!merge(source, target, false)) {
+            throw new InvalidMetadataException(errors().getString(Errors.Keys.IllegalArgumentClass_3, "target",
+                    target.getStandard().getInterface(source.getClass()), Classes.getClass(target)));
+        }
+    }
+
+    /**
+     * Implementation of {@link #merge(Object, ModifiableMetadata)} method,
+     * to be invoked recursively for all child properties to merge.
+     *
+     * @param  dryRun  {@code true} for executing the merge operation in "dry run" mode instead than performing the
+     *                 actual merge. This mode is used for verifying if there is a merge conflict before to perform
+     *                 the actual operation.
+     * @return {@code true} if the merge operation is valid, or {@code false} if the given arguments are valid
+     *         metadata but the merge operation can nevertheless not be executed because it could cause data lost.
+     */
+    private boolean merge(final Object source, final ModifiableMetadata target, final boolean dryRun) {
         /*
          * Verify if the given source can be merged with the target. If this is not the case, action
          * taken will depend on the caller: it may either skips the value or throws an exception.
@@ -125,24 +144,25 @@ public class Merger {
          * we are going to merge those two metadata and verify that we are not in an infinite loop.
          * We will also verify that the target metadata does not contain a source, or vis-versa.
          */
-        final Boolean sourceDone = done.put(source, Boolean.FALSE);
-        final Boolean targetDone = done.put(target, Boolean.TRUE);
-        if (sourceDone != null || targetDone != null) {
-            if (Boolean.FALSE.equals(sourceDone) && Boolean.TRUE.equals(targetDone)) {
-                /*
-                 * At least, the 'source' and 'target' status are consistent. Pretend that we have already
-                 * merged those metadata since actually the merge operation is probably underway by the caller.
-                 */
-                return true;
-            } else {
-                throw new IllegalArgumentException(errors().getString(Errors.Keys.CrossReferencesNotSupported));
+        {   // For keeping 'sourceDone' and 'targetDone' more local.
+            final Boolean sourceDone = done.put(source, Boolean.FALSE);
+            final Boolean targetDone = done.put(target, Boolean.TRUE);
+            if (sourceDone != null || targetDone != null) {
+                if (Boolean.FALSE.equals(sourceDone) && Boolean.TRUE.equals(targetDone)) {
+                    /*
+                     * At least, the 'source' and 'target' status are consistent. Pretend that we have already
+                     * merged those metadata since actually the merge operation is probably underway by the caller.
+                     */
+                    return true;
+                } else {
+                    throw new IllegalArgumentException(errors().getString(Errors.Keys.CrossReferencesNotSupported));
+                }
             }
         }
         /*
          * Get views of metadata as maps. Those maps are live: write operations
          * on those maps will be reflected on the metadata objects and conversely.
          */
-        Map<String, Class<?>>    typeMap   = null;
         final Map<String,Object> targetMap = target.asMap();
         final Map<String,Object> sourceMap;
         if (source instanceof AbstractMetadata) {
@@ -154,13 +174,16 @@ public class Merger {
          * Iterate on source values in order to find the objects that need to be copied or merged.
          * If the value does not exist in the target map, then it can be copied directly.
          */
+        boolean success = true;
         for (final Map.Entry<String,Object> entry : sourceMap.entrySet()) {
             final String propertyName = entry.getKey();
             final Object sourceValue  = entry.getValue();
-            final Object targetValue  = targetMap.putIfAbsent(propertyName, sourceValue);
+            final Object targetValue  = dryRun ? targetMap.get(propertyName)
+                                               : targetMap.putIfAbsent(propertyName, sourceValue);
             if (targetValue != null) {
                 if (targetValue instanceof ModifiableMetadata) {
-                    if (!merge(sourceValue, (ModifiableMetadata) targetValue)) {
+                    success = merge(sourceValue, (ModifiableMetadata) targetValue, dryRun);
+                    if (!success) {
                         /*
                          * This exception may happen if the source is a subclass of the target. This is the converse
                          * of what we usually have in Java (we can assign a sub-type to a more generic Java variable)
@@ -168,23 +191,34 @@ public class Merger {
                          * from the source to the target. We do not use ClassCastException type in the hope to reduce
                          * confusion.
                          */
+                        if (dryRun) break;
                         throw new InvalidMetadataException(errors().getString(Errors.Keys.IllegalPropertyValueClass_3,
                                 name(target, propertyName), ((ModifiableMetadata) targetValue).getInterface(),
                                 Classes.getClass(sourceValue)));
                     }
                 } else if (targetValue instanceof Collection<?>) {
                     /*
+                     * If the merge is executed in dry run, there is no need to verify the collection elements since
+                     * in case of conflict, it is always possible to append the source values as new elements at the
+                     * end of the collection.
+                     */
+                    if (dryRun) continue;
+                    /*
                      * If the target value is a collection, then the source value should be a collection too
                      * (otherwise the two objects would not be implementing the same standard, in which case
                      * a ClassCastException is conform to this method contract). The loop tries to merge the
                      * source elements to target elements that are specialized enough.
                      */
+                    final Collection<?> targetList = (Collection<?>) targetValue;
                     final Collection<?> sourceList = new LinkedList<>((Collection<?>) sourceValue);
-                    for (final Object element : (Collection<?>) targetValue) {
+                    for (final Object element : targetList) {
                         if (element instanceof ModifiableMetadata) {
                             final Iterator<?> it = sourceList.iterator();
                             while (it.hasNext()) {
-                                if (merge(it.next(), (ModifiableMetadata) element)) {
+                                final Object value = it.next();
+                                if (merge(value, (ModifiableMetadata) element, true) &&
+                                    merge(value, (ModifiableMetadata) element, false))
+                                {
                                     it.remove();
                                     break;          // Merge at most one source element to each target element.
                                 }
@@ -194,21 +228,38 @@ public class Merger {
                     /*
                      * Add remaining elements one-by-one. In such case, the Apache SIS metadata implementation
                      * shall add the elements to the collection instead than replacing the whole collection by
-                     * a singleton. As a partial safety check, we verify that the collection instance does not
-                     * change.
+                     * a singleton. As a partial safety check, we verify that the collection instance contains
+                     * all the previous values.
                      */
                     for (final Object element : sourceList) {
-                        if (targetMap.put(propertyName, element) != targetValue) {
-                            throw new InvalidMetadataException(errors().getString(
-                                    Errors.Keys.UnsupportedImplementation_1, Classes.getShortClassName(targetValue)));
+                        final Object old = targetMap.put(propertyName, element);
+                        if (old instanceof Collection<?>) {
+                            final Collection<?> oldList = (Collection<?>) old;
+                            if (oldList.size() <= targetList.size()) {
+                                // Above was only a cheap check based on collection size only.
+                                // Below is a more expansive check if assertions are enabled.
+                                assert targetList.containsAll(oldList) : propertyName;
+                                continue;
+                            }
                         }
+                        throw new InvalidMetadataException(errors().getString(
+                                Errors.Keys.UnsupportedImplementation_1, Classes.getShortClassName(targetList)));
                     }
                 } else {
-                    unmerged(target, propertyName, sourceValue, targetValue);
+                    success = targetValue.equals(sourceValue);
+                    if (!success) {
+                        if (dryRun) break;
+                        unmerged(target, propertyName, sourceValue, targetValue);
+                    }
                 }
             }
         }
-        return true;
+        if (dryRun) {
+            if (!Boolean.FALSE.equals(done.remove(source)) || !Boolean.TRUE.equals(done.remove(target))) {
+                throw new CorruptedObjectException();           // Should never happen.
+            }
+        }
+        return success;
     }
 
     /**

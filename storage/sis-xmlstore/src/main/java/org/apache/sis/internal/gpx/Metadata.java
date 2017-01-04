@@ -37,6 +37,7 @@ import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.metadata.identification.Identification;
+import org.opengis.metadata.content.ContentInformation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 
@@ -154,6 +155,15 @@ public final class Metadata extends SimpleMetadata {
      */
     @XmlElement(name = Tags.BOUNDS)
     public Bounds bounds;
+
+    /**
+     * Names of features types available for the GPX format, or null if none.
+     * This field is not part of metadata described in GPX file; it is rather a hard-coded value shared by all
+     * GPX files. Users could however filter the list of features, for example with only routes and no tracks.
+     *
+     * @see #getContentInfo()
+     */
+    public Collection<ContentInformation> features;
 
     /**
      * Creates an initially empty metadata object.
@@ -351,6 +361,16 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<OnlineResource> getOnlineResources() {
         return (links != null) ? Collections.unmodifiableList(links) : super.getOnlineResources();
+    }
+
+    /**
+     * Information about the feature and coverage characteristics.
+     *
+     * @return information about the feature characteristics.
+     */
+    @Override
+    public Collection<ContentInformation> getContentInfo() {
+        return (features != null) ? features : Collections.emptyList();
     }
 
     /**

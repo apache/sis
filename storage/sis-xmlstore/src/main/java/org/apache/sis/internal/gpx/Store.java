@@ -145,9 +145,9 @@ public final class Store extends StaxDataStore {
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (!initialized) try {
             initialized = true;
-            reader = new Reader(this);
-            version = reader.initialize(true);
-            metadata = reader.getMetadata();
+            reader      = new Reader(this);
+            version     = reader.initialize(true);
+            metadata    = reader.getMetadata();
         } catch (XMLStreamException | IOException | JAXBException e) {
             throw new DataStoreException(e);
         } catch (URISyntaxException | RuntimeException e) {

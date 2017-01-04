@@ -233,14 +233,17 @@ parse:  while (reader.hasNext()) {
                     /*
                      * Reminder: END_ELEMENT events are skipped by getElementText(), getElementAsFoo()
                      * and unmarshal(…) methods. There is only the enclosing <gpx> tag to check here.
+                     * If that end tag is found, we skip the metadata().features = … line since there
+                     * is no feature in that file.
                      */
                     if (isEndGPX()) {
-                        break parse;
+                        return version;
                     }
                     break;
                 }
             }
         }
+        metadata().features = ((Store) owner).types.metadata;
         return version;
     }
 

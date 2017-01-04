@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.gpx;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -23,8 +24,8 @@ import com.esri.core.geometry.Point;
 import org.opengis.util.LocalName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
-import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.OnlineResource;
+import org.opengis.metadata.content.ContentInformation;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.referencing.CommonCRS;
@@ -76,9 +77,11 @@ final class Types extends Static {
     final FeatureType trackSegment;
 
     /**
-     * The metadata to use as a template, including the list of feature types.
+     * The list of feature types to be given to GPC metadata objects.
+     *
+     * @see Metadata#features
      */
-    private final Metadata metadata;
+    final Collection<ContentInformation> metadata;
 
     /**
      * Binding from names to feature type instances.
@@ -266,10 +269,10 @@ final class Types extends Static {
         track = builder.build();
 
         final FeatureCatalogBuilder fc = new FeatureCatalogBuilder(null);
-        fc.define(wayPoint);
         fc.define(route);
         fc.define(track);
-        metadata = fc.build(true);
+        fc.define(wayPoint);
+        metadata = fc.build(true).getContentInfo();
         names = fc.features;
     }
 }
