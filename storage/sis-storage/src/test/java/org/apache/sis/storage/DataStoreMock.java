@@ -14,27 +14,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.collection;
+package org.apache.sis.storage;
 
-import java.util.Collection;
+import org.opengis.metadata.Metadata;
 
 
 /**
- * A container that ensures that all elements are assignable to a given base type.
- * Checked containers are usually {@link Collection}, but not always.
+ * A dummy data store
  *
- * @param  <E>  the base type of elements in the container.
- *
- * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
- * @version 0.3
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.8
+ * @version 0.8
  * @module
  */
-public interface CheckedContainer<E> {
+final strictfp class DataStoreMock extends DataStore {
     /**
-     * Returns the base type of all elements in this container.
-     *
-     * @return the element type.
+     * The display name.
      */
-    Class<E> getElementType();
+    private final String name;
+
+    /**
+     * Creates a new data store mock with the given display name.
+     */
+    DataStoreMock(final String name) {
+        this.name = name;
+    }
+
+    /**
+     * Returns the display name specified at construction time.
+     */
+    @Override
+    public String getDisplayName() {
+        return name;
+    }
+
+    @Override
+    public Metadata getMetadata() {
+        return null;
+    }
+
+    @Override
+    public void close() {
+    }
 }

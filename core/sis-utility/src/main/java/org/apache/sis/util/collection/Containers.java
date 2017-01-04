@@ -54,7 +54,7 @@ public final class Containers extends Static {
      * pattern. In such cases, null collections (i.e. collections not yet instantiated) are typically
      * considered as {@linkplain Collection#isEmpty() empty}.</p>
      *
-     * @param collection The collection to test, or {@code null}.
+     * @param  collection the collection to test, or {@code null}.
      * @return {@code true} if the given collection is null or empty, or {@code false} otherwise.
      */
     public static boolean isNullOrEmpty(final Collection<?> collection) {
@@ -70,7 +70,7 @@ public final class Containers extends Static {
      * pattern. In such cases, null maps (i.e. maps not yet instantiated) are typically considered
      * as {@linkplain Map#isEmpty() empty}.</p>
      *
-     * @param map The map to test, or {@code null}.
+     * @param  map  the map to test, or {@code null}.
      * @return {@code true} if the given map is null or empty, or {@code false} otherwise.
      */
     public static boolean isNullOrEmpty(final Map<?,?> map) {
@@ -87,9 +87,9 @@ public final class Containers extends Static {
      * Because arrays in the Java language are covariant (at the contrary of collections),
      * the list type have to be {@code <? extends E>} instead than {@code <E>}.</p>
      *
-     * @param  <E> The base type of elements in the list.
-     * @param  array The array to wrap, or {@code null} if none.
-     * @return The given array wrapped in an unmodifiable list, or {@code null} if the given array was null.
+     * @param  <E>    the base type of elements in the list.
+     * @param  array  the array to wrap, or {@code null} if none.
+     * @return the given array wrapped in an unmodifiable list, or {@code null} if the given array was null.
      *
      * @see java.util.Arrays#asList(Object[])
      */
@@ -109,12 +109,12 @@ public final class Containers extends Static {
      * Because arrays in the Java language are covariant (at the contrary of collections),
      * the list type have to be {@code <? extends E>} instead than {@code <E>}.</p>
      *
-     * @param  <E>   The type of elements in the list.
-     * @param  array The array to wrap (can not be null).
-     * @param  lower Low endpoint (inclusive) of the sublist.
-     * @param  upper High endpoint (exclusive) of the sublist.
-     * @return The given array wrapped in an unmodifiable list.
-     * @throws IndexOutOfBoundsException If the lower or upper value are out of bounds.
+     * @param  <E>    the type of elements in the list.
+     * @param  array  the array to wrap (can not be null).
+     * @param  lower  low endpoint (inclusive) of the sublist.
+     * @param  upper  high endpoint (exclusive) of the sublist.
+     * @return the given array wrapped in an unmodifiable list.
+     * @throws IndexOutOfBoundsException if the lower or upper value are out of bounds.
      */
     public static <E> List<? extends E> unmodifiableList(final E[] array, final int lower, final int upper) {
         ArgumentChecks.ensureNonNull("array", array);
@@ -145,11 +145,11 @@ public final class Containers extends Static {
      * The returned set is not synchronized by itself, but is nevertheless thread-safe if the
      * given set (including its iterator) and converter are thread-safe.</p>
      *
-     * @param  <S>       The type of elements in the storage (original) set.
-     * @param  <E>       The type of elements in the derived set.
-     * @param  storage   The storage set containing the original elements, or {@code null}.
-     * @param  converter The converter from the elements in the storage set to the elements in the derived set.
-     * @return A view over the {@code storage} set containing all elements converted by the given converter,
+     * @param  <S>        the type of elements in the storage (original) set.
+     * @param  <E>        the type of elements in the derived set.
+     * @param  storage    the storage set containing the original elements, or {@code null}.
+     * @param  converter  the converter from the elements in the storage set to the elements in the derived set.
+     * @return a view over the {@code storage} set containing all elements converted by the given converter,
      *         or {@code null} if {@code storage} was null.
      *
      * @see org.apache.sis.util.ObjectConverters#derivedSet(Set, ObjectConverter)
@@ -187,14 +187,14 @@ public final class Containers extends Static {
      * is not a {@code Collection} sub-type, but the derived map {@linkplain Map#keySet() key set} and
      * {@linkplain Map#entrySet() entry set} do.</p>
      *
-     * @param <SK>         The type of keys   in the storage map.
-     * @param <SV>         The type of values in the storage map.
-     * @param <K>          The type of keys   in the derived map.
-     * @param <V>          The type of values in the derived map.
-     * @param storage      The storage map containing the original entries, or {@code null}.
-     * @param keyConverter The converter from the keys in the storage map to the keys in the derived map.
-     * @param valueConverter The converter from the values in the storage map to the values in the derived map.
-     * @return A view over the {@code storage} map containing all entries converted by the given converters,
+     * @param  <SK>            the type of keys   in the storage map.
+     * @param  <SV>            the type of values in the storage map.
+     * @param  <K>             the type of keys   in the derived map.
+     * @param  <V>             the type of values in the derived map.
+     * @param  storage         the storage map containing the original entries, or {@code null}.
+     * @param  keyConverter    the converter from the keys in the storage map to the keys in the derived map.
+     * @param  valueConverter  the converter from the values in the storage map to the values in the derived map.
+     * @return a view over the {@code storage} map containing all entries converted by the given converters,
      *         or {@code null} if {@code storage} was null.
      *
      * @see org.apache.sis.util.ObjectConverters#derivedMap(Map, ObjectConverter, ObjectConverter)
@@ -224,12 +224,12 @@ public final class Containers extends Static {
      * kinds, as in the {@link org.apache.sis.referencing.AbstractIdentifiedObject#AbstractIdentifiedObject(Map)
      * AbstractIdentifiedObject} constructor.</p>
      *
-     * @param  <T>        The compile-time value of the {@code type} argument.
-     * @param  properties The map of properties from which to get a value, or {@code null} if none.
-     * @param  key        The key of the property value to return. Can be {@code null} if the map supports null key.
-     * @param  type       The expected type of the property value. Can not be null.
-     * @return The property value for the given key casted to the given type, or {@code null} if none.
-     * @throws IllegalArgumentException If a non-null property value exists for the given key but can
+     * @param  <T>         the compile-time value of the {@code type} argument.
+     * @param  properties  the map of properties from which to get a value, or {@code null} if none.
+     * @param  key         the key of the property value to return. Can be {@code null} if the map supports null key.
+     * @param  type        the expected type of the property value. Can not be null.
+     * @return the property value for the given key casted to the given type, or {@code null} if none.
+     * @throws IllegalArgumentException if a non-null property value exists for the given key but can
      *         not be casted to the given type.
      *
      * @see ArgumentChecks#ensureCanCast(String, Class, Object)
@@ -258,8 +258,8 @@ public final class Containers extends Static {
      * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.
      * However it is not needed for {@link java.util.IdentityHashMap}.</p>
      *
-     * @param count The number of elements to be put into the hash map or hash set.
-     * @return The minimal initial capacity to be given to the hash map constructor.
+     * @param  count  the number of elements to be put into the hash map or hash set.
+     * @return the minimal initial capacity to be given to the hash map constructor.
      */
     public static int hashMapCapacity(final int count) {
         int r = count >>> 2;

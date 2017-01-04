@@ -51,6 +51,14 @@ public abstract class DataStore implements Localized, AutoCloseable {
     protected final DataStoreProvider provider;
 
     /**
+     * The store name (typically filename) for formatting error messages, or {@code null} if unknown.
+     * Shall <strong>not</strong> be used as an identifier.
+     *
+     * @see #getDisplayName()
+     */
+    private final String name;
+
+    /**
      * The locale to use for formatting warnings.
      * This is not the locale for formatting data in the storage.
      *
@@ -69,6 +77,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
      */
     protected DataStore() {
         provider  = null;
+        name      = null;
         locale    = Locale.getDefault(Locale.Category.DISPLAY);
         listeners = new WarningListeners<>(this);
     }
@@ -87,14 +96,41 @@ public abstract class DataStore implements Localized, AutoCloseable {
     protected DataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         ArgumentChecks.ensureNonNull("connector", connector);
         this.provider  = provider;
+        this.name      = connector.getStorageName();
         this.locale    = Locale.getDefault(Locale.Category.DISPLAY);
         this.listeners = new WarningListeners<>(this);
         /*
-         * A future version could fetch some information from the StorageConnector.
-         * For now we do not, not even OptionKey.LOCALE because we are not talking
-         * about the same locale (the one in this DataStore is for warning messages,
-         * not for data).
+         * Above locale is NOT OptionKey.LOCALE because we are not talking about the same locale.
+         * The one in this DataStore is for warning and exception messages, not for parsing data.
          */
+    }
+
+    /**
+     * Returns a short name or label for this data store.
+     * The returned name can be used in user interfaces or in error messages.
+     * It may be a title in natural language, but should be relatively short.
+     * The name may be localized in the language specified by the value of {@link #getLocale()}
+     * if this data store is capable to produce a name in various languages.
+     *
+     * <p>This name should not be used as an identifier since there is no guarantee that the name
+     * is unique among data stores, and no guarantee that the name is the same in all locales.
+     * The name may also contain any Unicode characters, including characters usually not allowed
+     * in identifiers like white spaces.</p>
+     *
+     * <p>This method should never throw an exception since it may be invoked for producing error
+     * messages, in which case throwing an exception here would mask the original exception.</p>
+     *
+     * <p>Default implementation returns the {@link StorageConnector#getStorageName()} value,
+     * or {@code null} if this data store has been created by the no-argument constructor.
+     * Note that this default value may change in any future SIS version. Subclasses should
+     * override this method if they can provide a better name.</p>
+     *
+     * @return a short name of label for this data store, or {@code null} if unknown.
+     *
+     * @since 0.8
+     */
+    public String getDisplayName() {
+        return name;
     }
 
     /**

@@ -61,6 +61,12 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Name “{3}” is ambiguous because it can be understood as either “{1}” or “{2}” in the context
+         * of “{0}” data.
+         */
+        public static final short AmbiguousName_4 = 15;
+
+        /**
          * Can not read “{1}” as a file in the {0} format.
          */
         public static final short CanNotReadFile_2 = 1;
@@ -92,6 +98,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ExcessiveStringSize_3 = 6;
 
         /**
+         * A feature named “{1}” is already present in the “{0}” data store.
+         */
+        public static final short FeatureAlreadyPresent_2 = 16;
+
+        /**
+         * Feature “{1}” has not been found in the “{0}” data store.
+         */
+        public static final short FeatureNotFound_2 = 17;
+
+        /**
          * The {0} data store does not accept features of type “{1}”.
          */
         public static final short IllegalFeatureType_2 = 7;
@@ -107,9 +123,10 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalOutputTypeForWriter_2 = 9;
 
         /**
-         * Components of the “{0}” name are inconsistent with those of the name that was added.
+         * Components of the “{1}” name are inconsistent with those of the name previously binded in
+         * “{0}” data store.
          */
-        public static final short InconsistentNameComponents_1 = 10;
+        public static final short InconsistentNameComponents_2 = 10;
 
         /**
          * Missing scheme in “{0}” URI.

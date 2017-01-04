@@ -79,8 +79,8 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
      *   <li>Otherwise, the object is assumed immutable and returned unchanged.</li>
      * </ul>
      *
-     * @param  object The object to convert in an immutable one.
-     * @return A presumed immutable view of the specified object.
+     * @param  object  the object to convert in an immutable one.
+     * @return a presumed immutable view of the specified object.
      */
     @Override
     public Object clone(final Object object) throws CloneNotSupportedException {
