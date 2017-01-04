@@ -75,9 +75,9 @@ public final class ObjectConverters extends Static {
     /**
      * Returns an identity converter for objects of the given type.
      *
-     * @param  <T>  The object type.
-     * @param  type The object type.
-     * @return An identity converter for objects of the given type.
+     * @param  <T>   the object type.
+     * @param  type  the object type.
+     * @return an identity converter for objects of the given type.
      */
     public static <T> ObjectConverter<T,T> identity(final Class<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
@@ -87,11 +87,11 @@ public final class ObjectConverters extends Static {
     /**
      * Returns a converter for the specified source and target classes.
      *
-     * @param  <S> The source class.
-     * @param  <T> The target class.
-     * @param  source The source class.
-     * @param  target The target class, or {@code Object.class} for any.
-     * @return The converter from the specified source class to the target class.
+     * @param  <S>     the source class.
+     * @param  <T>     the target class.
+     * @param  source  the source class.
+     * @param  target  the target class, or {@code Object.class} for any.
+     * @return the converter from the specified source class to the target class.
      * @throws UnconvertibleObjectException if no converter is found.
      */
     public static <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> source, final Class<T> target)
@@ -108,10 +108,10 @@ public final class ObjectConverters extends Static {
      * consider invoking {@link #find(Class, Class)} instead in order to reuse the same converter
      * for all values to convert.
      *
-     * @param  <T>    The type of the {@code target} class.
-     * @param  value  The value to convert, or {@code null}.
-     * @param  target The target class.
-     * @return The converted value (may be {@code null}).
+     * @param  <T>     the type of the {@code target} class.
+     * @param  value   the value to convert, or {@code null}.
+     * @param  target  the target class.
+     * @return the converted value (may be {@code null}).
      * @throws UnconvertibleObjectException if the given value can not be converted.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -132,13 +132,12 @@ public final class ObjectConverters extends Static {
      * {@link Containers#derivedSet Containers.derivedSet(…)}.
      * See the javadoc of the above method for more information.
      *
-     * @param  <S>       The type of elements in the storage (original) set.
-     * @param  <E>       The type of elements in the derived set.
-     * @param  storage   The storage set containing the original elements, or {@code null}.
-     * @param  converter The converter from the elements in the storage set to the elements
-     *                   in the derived set.
-     * @return A view over the {@code storage} set containing all elements converted by the given
-     *         converter, or {@code null} if {@code storage} was null.
+     * @param  <S>        the type of elements in the storage (original) set.
+     * @param  <E>        the type of elements in the derived set.
+     * @param  storage    the storage set containing the original elements, or {@code null}.
+     * @param  converter  the converter from the elements in the storage set to the elements in the derived set.
+     * @return a view over the {@code storage} set containing all elements converted by the given converter, or
+     *         {@code null} if {@code storage} was null.
      *
      * @see Containers#derivedSet(Set, ObjectConverter)
      */
@@ -155,15 +154,15 @@ public final class ObjectConverters extends Static {
      * {@link Containers#derivedMap Containers.derivedMap(…)}.
      * See the javadoc of the above method for more information.
      *
-     * @param <SK>         The type of keys   in the storage map.
-     * @param <SV>         The type of values in the storage map.
-     * @param <K>          The type of keys   in the derived map.
-     * @param <V>          The type of values in the derived map.
-     * @param storage      The storage map containing the original entries, or {@code null}.
-     * @param keyConverter The converter from the keys in the storage map to the keys in the derived map.
-     * @param valueConverter The converter from the values in the storage map to the values in the derived map.
-     * @return A view over the {@code storage} map containing all entries converted by the given
-     *         converters, or {@code null} if {@code storage} was null.
+     * @param  <SK>            the type of keys   in the storage map.
+     * @param  <SV>            the type of values in the storage map.
+     * @param  <K>             the type of keys   in the derived map.
+     * @param  <V>             the type of values in the derived map.
+     * @param  storage         the storage map containing the original entries, or {@code null}.
+     * @param  keyConverter    the converter from the keys in the storage map to the keys in the derived map.
+     * @param  valueConverter  the converter from the values in the storage map to the values in the derived map.
+     * @return a view over the {@code storage} map containing all entries converted by the given converters, or
+     *         {@code null} if {@code storage} was null.
      *
      * @see Containers#derivedMap(Map, ObjectConverter, ObjectConverter)
      */
@@ -183,13 +182,13 @@ public final class ObjectConverters extends Static {
      * {@link Containers#derivedMap Containers.derivedMap(…)}.
      * See the javadoc of the above method for more information.
      *
-     * @param <SK>         The type of keys   in the storage map.
-     * @param <K>          The type of keys   in the derived map.
-     * @param <V>          The type of values in the storage and derived map.
-     * @param storage      The storage map containing the original entries, or {@code null}.
-     * @param keyConverter The converter from the keys in the storage map to the keys in the derived map.
-     * @param valueType    The type of values in the storage and derived map.
-     * @return A view over the {@code storage} map containing all entries with the keys converted
+     * @param  <SK>          the type of keys   in the storage map.
+     * @param  <K>           the type of keys   in the derived map.
+     * @param  <V>           the type of values in the storage and derived map.
+     * @param  storage       the storage map containing the original entries, or {@code null}.
+     * @param  keyConverter  the converter from the keys in the storage map to the keys in the derived map.
+     * @param  valueType     the type of values in the storage and derived map.
+     * @return a view over the {@code storage} map containing all entries with the keys converted
      *         by the given converter, or {@code null} if {@code storage} was null.
      *
      * @see Containers#derivedMap(Map, ObjectConverter, ObjectConverter)
@@ -211,14 +210,14 @@ public final class ObjectConverters extends Static {
      * {@link Containers#derivedMap Containers.derivedMap(…)}.
      * See the javadoc of the above method for more information.
      *
-     * @param <K>          The type of keys in the storage and derived map.
-     * @param <SV>         The type of values in the storage map.
-     * @param <V>          The type of values in the derived map.
-     * @param storage      The storage map containing the original entries, or {@code null}.
-     * @param keyType      The type of keys in the storage and derived map.
-     * @param valueConverter The converter from the values in the storage map to the values in the derived map.
-     * @return A view over the {@code storage} map containing all entries with the values converted
-     *         by the given converter, or {@code null} if {@code storage} was null.
+     * @param  <K>             the type of keys in the storage and derived map.
+     * @param  <SV>            the type of values in the storage map.
+     * @param  <V>             the type of values in the derived map.
+     * @param  storage         the storage map containing the original entries, or {@code null}.
+     * @param  keyType         the type of keys in the storage and derived map.
+     * @param  valueConverter  the converter from the values in the storage map to the values in the derived map.
+     * @return a view over the {@code storage} map containing all entries with the values converted by the given
+     *         converter, or {@code null} if {@code storage} was null.
      *
      * @see Containers#derivedMap(Map, ObjectConverter, ObjectConverter)
      */
