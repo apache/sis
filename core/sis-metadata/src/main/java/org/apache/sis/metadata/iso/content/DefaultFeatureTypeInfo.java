@@ -57,6 +57,9 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see org.apache.sis.storage.FeatureNaming
+ * @see org.apache.sis.feature.DefaultFeatureType
  */
 @XmlType(name = "MD_FeatureTypeInfo", propOrder = {
     "featureTypeName",

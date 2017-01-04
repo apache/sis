@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -38,9 +39,6 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.ArgumentChecks;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -91,6 +89,10 @@ import java.util.Objects;
  * @since   0.4
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.metadata.iso.DefaultIdentifier
+ * @see org.apache.sis.util.iso.AbstractName
+ * @see AbstractIdentifiedObject#getName()
  */
 public class NamedIdentifier extends ImmutableIdentifier implements GenericName {
     /**
@@ -118,7 +120,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * {@link #tip()}, {@link #head()}, {@link #scope()} and similar methods will delegate
      * to that name.</p>
      *
-     * @param identifier The identifier to copy.
+     * @param  identifier  the identifier to copy.
      */
     public NamedIdentifier(final ReferenceIdentifier identifier) {
         super(identifier);
@@ -133,7 +135,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * (code, codespace and authority) from the given name. Calls to name-related methods like {@link #tip()},
      * {@link #head()} and {@link #scope()} will delegate to the given name.
      *
-     * @param name The name to wrap.
+     * @param  name  the name to wrap.
      */
     public NamedIdentifier(final GenericName name) {
         super(name instanceof ReferenceIdentifier ? (ReferenceIdentifier) name : new NameToIdentifier(name));
@@ -197,7 +199,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * are optional. If a {@code "name"} property is provided, then calls to name-related methods like
      * {@link #tip()}, {@link #head()} and {@link #scope()} will delegate to the given name.
      *
-     * @param  properties The properties to be given to this identifier.
+     * @param  properties  the properties to be given to this identifier.
      * @throws InvalidParameterValueException if a property has an invalid value.
      * @throws IllegalArgumentException if a property is invalid for some other reason.
      */
@@ -216,17 +218,17 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * string will be used for the {@link #getName() name} property.</p>
      *
      * @param authority
-     *          Organization or party responsible for definition and maintenance of the code
-     *          space or code, or {@code null} if not available.
+     *          organization or party responsible for definition and maintenance of the code space or code,
+     *          or {@code null} if not available.
      * @param code
-     *          Identifier code or name, optionally from a controlled list or pattern defined by
-     *          the authority. The code can not be null.
+     *          identifier code or name, optionally from a controlled list or pattern defined by the authority.
+     *          The code can not be null.
      */
     public NamedIdentifier(final Citation authority, final CharSequence code) {
         super(authority, Citations.getCodeSpace(authority), toString(code));
         if (code instanceof InternationalString) {
             name = createName(authority, super.getCodeSpace(), code);
-            isNameSupplied = true;      // Because 'code' is an international string.
+            isNameSupplied = true;                              // Because 'code' is an international string.
         }
     }
 
@@ -239,19 +241,19 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * string will be used for the {@link #getName() name} property.</p>
      *
      * @param authority
-     *          Organization or party responsible for definition and maintenance of the code
-     *          space or code, or {@code null} if not available.
+     *          organization or party responsible for definition and maintenance of the code space or code,
+     *          or {@code null} if not available.
      * @param codeSpace
-     *          Name or identifier of the person or organization responsible for namespace, or
-     *          {@code null} if not available. This is often an abbreviation of the authority name.
+     *          name or identifier of the person or organization responsible for namespace, or {@code null}
+     *          if not available. This is often an abbreviation of the authority name.
      * @param code
-     *          Identifier code or name, optionally from a controlled list or pattern defined by
-     *          a code space. The code can not be null.
+     *          identifier code or name, optionally from a controlled list or pattern defined by a code space.
+     *          The code can not be null.
      * @param version
-     *          The version of the associated code space or code as specified by the code authority,
+     *          the version of the associated code space or code as specified by the code authority,
      *          or {@code null} if none.
      * @param description
-     *          Natural language description of the meaning of the code value, or {@code null} if none.
+     *          natural language description of the meaning of the code value, or {@code null} if none.
      */
     public NamedIdentifier(final Citation authority, final String codeSpace, final CharSequence code,
             final String version, final InternationalString description)
@@ -259,7 +261,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
         super(authority, codeSpace, toString(code), version, description);
         if (code instanceof InternationalString) {
             name = createName(authority, codeSpace, code);
-            isNameSupplied = true;      // Because 'code' is an international string.
+            isNameSupplied = true;                              // Because 'code' is an international string.
         }
     }
 
@@ -305,10 +307,10 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     /**
      * Constructs a generic name from the specified authority and code.
      *
-     * @param  authority The authority, or {@code null} if none.
-     * @param  codeSpace The code space, or {@code null} if none.
-     * @param  code      The code.
-     * @return A new generic name for the given authority and code.
+     * @param  authority  the authority, or {@code null} if none.
+     * @param  codeSpace  the code space, or {@code null} if none.
+     * @param  code       the code.
+     * @return a new generic name for the given authority and code.
      * @category Generic name
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-197">SIS-197</a>
@@ -329,7 +331,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * The last element in the sequence of {@linkplain #getParsedNames() parsed names}.
      * By default, this is the same value than the {@linkplain #getCode() code} provided as a local name.
      *
-     * @return The last element in the list of {@linkplain #getParsedNames() parsed names}.
+     * @return the last element in the list of {@linkplain #getParsedNames() parsed names}.
      *
      * @see #getCode()
      */
@@ -342,7 +344,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * Returns the first element in the sequence of {@linkplain #getParsedNames() parsed names}.
      * By default, this is the same value than the {@linkplain #getCodeSpace() code space} provided as a local name.
      *
-     * @return The first element in the list of {@linkplain #getParsedNames() parsed names}.
+     * @return the first element in the list of {@linkplain #getParsedNames() parsed names}.
      *
      * @see #scope()
      * @see #getCodeSpace()
@@ -359,7 +361,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * @see #head()
      * @see #getAuthority()
      *
-     * @return The scope of this name.
+     * @return the scope of this name.
      */
     @Override
     public NameSpace scope() {
@@ -369,7 +371,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     /**
      * Returns the depth of this name within the namespace hierarchy.
      *
-     * @return The depth of this name.
+     * @return the depth of this name.
      */
     @Override
     public int depth() {
@@ -381,7 +383,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * The length of this sequence is the {@linkplain #depth() depth}.
      * It does not include the {@linkplain #scope() scope}.
      *
-     * @return The local names making this generic name, without the {@linkplain #scope() scope}.
+     * @return the local names making this generic name, without the {@linkplain #scope() scope}.
      *         Shall never be {@code null} neither empty.
      */
     @Override
@@ -404,7 +406,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     /**
      * Returns a view of this name as a fully-qualified name.
      *
-     * @return The fully-qualified name (never {@code null}).
+     * @return the fully-qualified name (never {@code null}).
      */
     @Override
     public GenericName toFullyQualifiedName() {
@@ -418,7 +420,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * If no international string is available, then this method returns an implementation mapping
      * to {@code toString()} for all locales.
      *
-     * @return A localizable string representation of this name.
+     * @return a localizable string representation of this name.
      */
     @Override
     public InternationalString toInternationalString() {
@@ -430,7 +432,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * is local-independent. It contains all elements listed by {@link #getParsedNames()}
      * separated by a namespace-dependent character (usually {@code :} or {@code /}).
      *
-     * @return A local-independent string representation of this generic name.
+     * @return a local-independent string representation of this generic name.
      *
      * @see IdentifiedObjects#toString(Identifier)
      */
@@ -444,7 +446,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * zero, or a positive integer as this name lexicographically precedes, is equal to,
      * or follows the specified object.
      *
-     * @param object The object to compare with.
+     * @param  object  the object to compare with.
      * @return -1 if this identifier precedes the given object, +1 if it follows it.
      */
     @Override
@@ -455,7 +457,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     /**
      * Compares this identifier with the specified object for equality.
      *
-     * @param object The object to compare with this name.
+     * @param  object  the object to compare with this name.
      * @return {@code true} if the given object is equal to this name.
      */
     @Override
@@ -489,8 +491,8 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * Invoked on serialization for writing the {@linkplain #name} if it was supplied by the user.
      * Otherwise, we will let {@link #getName()} recompute the name only when needed.
      *
-     * @param  out The output stream where to serialize this named identifier.
-     * @throws IOException If an I/O error occurred while writing.
+     * @param  out  the output stream where to serialize this named identifier.
+     * @throws IOException if an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -501,9 +503,9 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * Invoked on deserialization for reading the name written by {@link #writeObject(ObjectOutputStream)},
      * if any.
      *
-     * @param  in The input stream from which to deserialize a named identifier.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize a named identifier.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

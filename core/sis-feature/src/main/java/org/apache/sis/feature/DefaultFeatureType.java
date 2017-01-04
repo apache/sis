@@ -101,6 +101,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @see DefaultAttributeType
  * @see DefaultAssociationRole
  * @see AbstractFeature
+ * @see org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo
+ * @see org.apache.sis.storage.FeatureNaming
  */
 public class DefaultFeatureType extends AbstractIdentifiedType implements FeatureType {
     /**

@@ -43,10 +43,10 @@ final class SpecialCases extends PropertyAccessor {
     /**
      * Creates a new property accessor for the specified metadata implementation.
      *
-     * @param  standard The standard which define the {@code type} interface.
-     * @param  type The interface implemented by the metadata, which must be
-     *         the value returned by {@link #getStandardType(Class, String)}.
-     * @param  implementation The class of metadata implementations, or {@code type} if none.
+     * @param  standard        the standard which define the {@code type} interface.
+     * @param  type            the interface implemented by the metadata, which must be
+     *                         the value returned by {@link #getStandardType(Class, String)}.
+     * @param  implementation  the class of metadata implementations, or {@code type} if none.
      */
     SpecialCases(final Citation standard, final Class<?> type, final Class<?> implementation) {
         super(standard, type, implementation);
@@ -60,7 +60,7 @@ final class SpecialCases extends PropertyAccessor {
     /**
      * Returns {@code true} if the given class is a special case handled by the {@link SpecialCases} class.
      *
-     * @param  type The interface implemented by the metadata.
+     * @param  type  the interface implemented by the metadata.
      * @return {@code true} if the given type is a special case.
      */
     static boolean isSpecialCase(final Class<?> type) {

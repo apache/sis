@@ -29,7 +29,7 @@ import org.apache.sis.util.collection.CheckedContainer;
 /**
  * Static methods for object comparisons in different ways (deeply, approximatively, <i>etc</i>).
  *
- * @author Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
@@ -220,8 +220,7 @@ public final class Utilities extends Static {
     }
 
     /**
-     * Compares two collections. Order are significant, unless both collections implement the
-     * {@link Set} interface.
+     * Compares two collections. Order are significant, unless both collections implement the {@link Set} interface.
      */
     private static boolean equals(final Iterable<?> object1, final Iterable<?> object2, final ComparisonMode mode) {
         final Iterator<?> it1 = object1.iterator();
@@ -284,7 +283,7 @@ public final class Utilities extends Static {
      * Returns an assertion error message for mismatched types.
      *
      * @param  expected  the expected type.
-     * @param  actual  the actual object (not its type).
+     * @param  actual    the actual object (not its type).
      * @return the error message to use in assertions.
      */
     private static String mismatchedType(final Class<?> expected, final Object actual) {

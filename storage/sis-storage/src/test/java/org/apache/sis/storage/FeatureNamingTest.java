@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.storage;
 
 import org.opengis.util.GenericName;
-import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.iso.Names;
@@ -27,14 +26,14 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link GenericNameMap}.
+ * Tests {@link FeatureNaming}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-public final strictfp class GenericNameMapTest extends TestCase {
+public final strictfp class FeatureNamingTest extends TestCase {
     /**
      * Name for the tests.
      */
@@ -43,51 +42,54 @@ public final strictfp class GenericNameMapTest extends TestCase {
     /**
      * Creates a new test case.
      */
-    public GenericNameMapTest() {
+    public FeatureNamingTest() {
         A      = Names.parseGenericName(null, null, "myNS:A");
         B      = Names.createLocalName (null, null, "B");
         otherA = Names.parseGenericName(null, null, "other:A");
     }
 
     /**
-     * Tests {@link GenericNameMap#add(GenericName, Object)} followed by {@link GenericNameMap#get(String)}
+     * Tests {@link FeatureNaming#add(GenericName, Object)} followed by {@link FeatureNaming#get(String)}
      * in a simple case where there is no ambiguity.
      *
      * @throws IllegalNameException if an unexpected error occurred while adding or getting an element.
      */
     @Test
     public void testSimple() throws IllegalNameException {
-        final GenericNameMap<Integer> map = new GenericNameMap<>();
-        map.add(A, 1);
-        map.add(B, 2);
-        assertEquals("A", Integer.valueOf(1), map.get("myNS:A"));
-        assertEquals("A", Integer.valueOf(1), map.get("A"));
-        assertEquals("B", Integer.valueOf(2), map.get("B"));
+        final DataStoreMock store = new DataStoreMock("testDataStore");
+        final FeatureNaming<Integer> map = new FeatureNaming<>();
+        map.add(store, A, 1);
+        map.add(store, B, 2);
+        assertEquals("A", Integer.valueOf(1), map.get(store, "myNS:A"));
+        assertEquals("A", Integer.valueOf(1), map.get(store, "A"));
+        assertEquals("B", Integer.valueOf(2), map.get(store, "B"));
         /*
          * Above code tested normal usage. Now test error conditions.
          * First, searching a non-existent entry should raise an exception.
          */
         try {
-            map.get("C");
+            map.get(store, "C");
             fail("Should not find a non-existent entry.");
         } catch (IllegalNameException e) {
             // This is the expected exception.
             final String message = e.getMessage();
             assertTrue(message, message.contains("C"));
+            assertTrue(message, message.contains("testDataStore"));
         }
         /*
          * Attempt to overwrite an existing entry should raise an exception
          * without modifying the existing value.
          */
         try {
-            map.add(B, 3);
+            map.add(store, B, 3);
             fail("Should not overwrite an existing entry.");
         } catch (IllegalNameException e) {
             // This is the expected exception.
             final String message = e.getMessage();
             assertTrue(message, message.contains("B"));
         }
-        assertEquals("Existing value should not have been modified.", Integer.valueOf(2), map.get("B"));
+        assertEquals("Existing value should not have been modified.",
+                     Integer.valueOf(2), map.get(store, "B"));
     }
 
     /**
@@ -98,25 +100,27 @@ public final strictfp class GenericNameMapTest extends TestCase {
     @Test
     @DependsOnMethod("testSimple")
     public void testAmbiguity() throws IllegalNameException {
-        final GenericNameMap<Integer> map = new GenericNameMap<>();
-        map.add(A, 1);
-        map.add(B, 2);
-        map.add(otherA, 3);
-        assertEquals("A",      Integer.valueOf(1), map.get("myNS:A"));
-        assertEquals("B",      Integer.valueOf(2), map.get("B"));
-        assertEquals("otherA", Integer.valueOf(3), map.get("other:A"));
+        final DataStoreMock store = new DataStoreMock("testDataStore");
+        final FeatureNaming<Integer> map = new FeatureNaming<>();
+        map.add(store, A, 1);
+        map.add(store, B, 2);
+        map.add(store, otherA, 3);
+        assertEquals("A",      Integer.valueOf(1), map.get(store, "myNS:A"));
+        assertEquals("B",      Integer.valueOf(2), map.get(store, "B"));
+        assertEquals("otherA", Integer.valueOf(3), map.get(store, "other:A"));
         /*
          * Attempt to query using only the "A" value was used to succeed in 'testSimple()' but
          * should now fail because this shortcut could apply to "other:A" as well as "myNS:A".
          */
         try {
-            map.get("A");
+            map.get(store, "A");
             fail("Should not find an ambiguous entry.");
         } catch (IllegalNameException e) {
             // This is the expected exception.
             final String message = e.getMessage();
             assertTrue(message, message.contains("myNS:A"));
             assertTrue(message, message.contains("other:A"));
+            assertTrue(message, message.contains("testDataStore"));
         }
     }
 
@@ -128,30 +132,32 @@ public final strictfp class GenericNameMapTest extends TestCase {
     @Test
     @DependsOnMethod("testAmbiguity")
     public void testRemove() throws IllegalNameException {
-        final GenericNameMap<Integer> map = new GenericNameMap<>();
-        map.add(A, 1);
-        map.add(B, 2);
-        map.add(otherA, 3);
+        final DataStoreMock store = new DataStoreMock("testDataStore");
+        final FeatureNaming<Integer> map = new FeatureNaming<>();
+        map.add(store, A, 1);
+        map.add(store, B, 2);
+        map.add(store, otherA, 3);
         /*
          * Verify that "myNS:A" exists before the removal, then does not exist anymore after the removal.
          */
-        assertEquals("otherA", Integer.valueOf(3), map.get("other:A"));
-        assertEquals("myNS:A", Integer.valueOf(1), map.get("myNS:A"));
-        assertTrue("remove", map.remove(A));
+        assertEquals("otherA", Integer.valueOf(3), map.get(store, "other:A"));
+        assertEquals("myNS:A", Integer.valueOf(1), map.get(store, "myNS:A"));
+        assertTrue("remove", map.remove(store, A));
         try {
-            map.get("myNS:A");
+            map.get(store, "myNS:A");
             fail("Should not find a non-existent entry.");
         } catch (IllegalNameException e) {
             // This is the expected exception.
             final String message = e.getMessage();
             assertTrue(message, message.contains("myNS:A"));
+            assertTrue(message, message.contains("testDataStore"));
         }
         /*
          * The "A" shortcut should not be ambiguous anymore at this point since we removed the other name
          * ("myNS:A") which was causing the ambiguity;
          */
-        assertEquals("A",      Integer.valueOf(3), map.get("A"));
-        assertEquals("B",      Integer.valueOf(2), map.get("B"));
-        assertEquals("otherA", Integer.valueOf(3), map.get("other:A"));
+        assertEquals("A",      Integer.valueOf(3), map.get(store, "A"));
+        assertEquals("B",      Integer.valueOf(2), map.get(store, "B"));
+        assertEquals("otherA", Integer.valueOf(3), map.get(store, "other:A"));
     }
 }
