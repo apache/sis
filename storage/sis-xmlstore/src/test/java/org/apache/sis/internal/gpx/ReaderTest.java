@@ -23,6 +23,7 @@ import java.time.Instant;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -35,9 +36,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
+import org.opengis.metadata.content.FeatureTypeInfo;
 
 
 /**
@@ -180,10 +183,16 @@ public final strictfp class ReaderTest extends TestCase {
                      assertStringEquals("first",                     md.links.get(0).text);
             case 0:  break;
         }
+        /*
+         * In the particular case of "metadata.xml" test files, there is no route, track or way points
+         * after the metadata. Consequently the GPX reader should not declare any list of features.
+         */
+        assertTrue("contentInfo", md.getContentInfo().isEmpty());
     }
 
     /**
-     * Verifies that the given metadata contains only bounds information.
+     * Verifies that the given metadata contains only bounds information
+     * and the hard-coded list of feature types.
      */
     private static void verifyAlmostEmptyMetadata(final Metadata md) {
         assertNull("name",                  md.name);
@@ -194,6 +203,17 @@ public final strictfp class ReaderTest extends TestCase {
         assertNull("author",                md.author);
         assertNull("copyright",             md.copyright);
         assertNull("links",                 md.links);
+        /*
+         * Verifies the list of feature types declared in the given metadata. Those features
+         * are not listed in GPX files; they are rather hard-coded in Types.metadata constant.
+         */
+        final FeatureCatalogueDescription content = (FeatureCatalogueDescription) getSingleton(md.getContentInfo());
+        assertTrue("isIncludedWithDataset", content.isIncludedWithDataset());
+        final Iterator<? extends FeatureTypeInfo> it = content.getFeatureTypeInfo().iterator();
+        assertStringEquals("Route",    it.next().getFeatureTypeName().tip());
+        assertStringEquals("Track",    it.next().getFeatureTypeName().tip());
+        assertStringEquals("WayPoint", it.next().getFeatureTypeName().tip());
+        assertFalse(it.hasNext());
     }
 
     /**
