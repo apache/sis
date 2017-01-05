@@ -37,6 +37,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.internal.storage.ChannelFactory;
 import org.apache.sis.internal.storage.FeatureStore;
 import org.apache.sis.internal.storage.Markable;
 import org.apache.sis.internal.util.AbstractMap;
@@ -46,7 +47,7 @@ import org.apache.sis.util.logging.WarningListener;
 
 
 /**
- * Base class of XML data stores based on the STAX framework.
+ * Base class of XML data stores based on the StAX framework.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -78,7 +79,7 @@ public abstract class StaxDataStore extends FeatureStore {
     protected final Charset encoding;
 
     /**
-     * Configuration information for JAXB (un)marshaller (actually the SIS wrappers) or for the STAX factories.
+     * Configuration information for JAXB (un)marshaller (actually the SIS wrappers) or for the StAX factories.
      * This object is a read-only map which may contain the following entries:
      *
      * <ul>
@@ -87,7 +88,7 @@ public abstract class StaxDataStore extends FeatureStore {
      * </ul>
      *
      * In addition, the {@link Config} class also implements various listener interfaces to be given to
-     * JAXB (un)marshallers (actually the SIS wrappers) and STAX factories configuration.
+     * JAXB (un)marshallers (actually the SIS wrappers) and StAX factories configuration.
      *
      * @see OptionKey#LOCALE
      * @see OptionKey#TIMEZONE
@@ -97,7 +98,7 @@ public abstract class StaxDataStore extends FeatureStore {
     /**
      * The storage object given by the user. May be {@link Path}, {@link java.net.URL}, {@link InputStream},
      * {@link java.io.OutputStream}, {@link java.io.Reader}, {@link java.io.Writer}, {@link XMLStreamReader},
-     * {@link XMLStreamWriter}, {@link org.w3c.dom.Node} or some other types that the STAX framework can handle.
+     * {@link XMLStreamWriter}, {@link org.w3c.dom.Node} or some other types that the StAX framework can handle.
      *
      * <p>A {@code null} value means that this datastore has been {@linkplain #close() closed}.</p>
      *
@@ -110,6 +111,10 @@ public abstract class StaxDataStore extends FeatureStore {
      * This is often the same reference than {@link #storage} if the later is closeable, but not always.
      * For example if {@code storage} is a {@link java.nio.file.Path}, then {@code stream} will be some
      * stream or channel opened for that path.
+     *
+     * <p>This reference should never be changed until the data store is closed. In particular, this field
+     * should <strong>not</strong> be set to the value of {@link ChannelFactory#inputStream()} because the
+     * later does not create the same kind of input stream than {@link StorageConnector}.</p>
      *
      * @see #close()
      */
@@ -135,18 +140,24 @@ public abstract class StaxDataStore extends FeatureStore {
     private final OutputType storageToWriter;
 
     /**
-     * The STAX readers factory, created when first needed.
+     * The StAX readers factory, created when first needed.
      *
      * @see #inputFactory()
      */
     private XMLInputFactory inputFactory;
 
     /**
-     * The STAX writers factory, created when first needed.
+     * The StAX writers factory, created when first needed.
      *
      * @see #outputFactory()
      */
     private XMLOutputFactory outputFactory;
+
+    /**
+     * Object to use for creating new input streams if we need to read the same data more than once.
+     * This field is {@code null} if we can not re-open new input streams.
+     */
+    private final ChannelFactory channelFactory;
 
     /**
      * Whether the {@linkplain #stream} is currently in use by a {@link StaxStreamReader}.
@@ -210,11 +221,12 @@ public abstract class StaxDataStore extends FeatureStore {
         } else {
             streamPosition = -1;
         }
+        channelFactory = connector.getStorageAs(ChannelFactory.class);              // Must be last.
     }
 
     /**
      * Holds information that can be used for (un)marshallers configuration, and opportunistically
-     * implement various listeners used by JAXB (actually the SIS wrappers) or STAX.
+     * implement various listeners used by JAXB (actually the SIS wrappers) or StAX.
      */
     private final class Config extends AbstractMap<String,Object> implements XMLReporter, WarningListener<Object> {
         /**
@@ -251,7 +263,7 @@ public abstract class StaxDataStore extends FeatureStore {
         }
 
         /**
-         * Forwards STAX warnings to {@link DataStore} listeners.
+         * Forwards StAX warnings to {@link DataStore} listeners.
          * This method is invoked by {@link XMLStreamReader} when needed.
          *
          * @param message    the message to put in a logging record.
@@ -303,7 +315,7 @@ public abstract class StaxDataStore extends FeatureStore {
     public abstract String getFormatName();
 
     /**
-     * Returns the factory for STAX readers. The same instance is returned for all {@code StaxDataStore} lifetime.
+     * Returns the factory for StAX readers. The same instance is returned for all {@code StaxDataStore} lifetime.
      * Warnings emitted by readers created by this factory will be forwarded to the {@link #listeners}.
      *
      * <p>This method is indirectly invoked by {@link #createReader(StaxStreamReader)},
@@ -319,7 +331,7 @@ public abstract class StaxDataStore extends FeatureStore {
     }
 
     /**
-     * Returns the factory for STAX writers. The same instance is returned for all {@code StaxDataStore} lifetime.
+     * Returns the factory for StAX writers. The same instance is returned for all {@code StaxDataStore} lifetime.
      *
      * <p>This method is indirectly invoked by {@link #createWriter(StaxStreamWriter)},
      * through a call to {@link OutputType#create(StaxDataStore, Object)}.</p>
@@ -373,6 +385,7 @@ reset:  switch (state) {
             default: {
                 throw new AssertionError(state);
             }
+            case READY: break;                  // Stream already at the data start; nothing to do.
             case FINISHED: {
                 if (streamPosition >= 0) {
                     final Markable m = (Markable) input;
@@ -386,11 +399,21 @@ reset:  switch (state) {
                 }
                 // Failed to reset the stream - fallthrough.
             }
+            /*
+             * If the input stream is in use, or if we finished to use it but were unable to reset its position,
+             * then we need to create a new input stream (except if the input was a DOM in memory, which we can
+             * share).
+             */
             case IN_USE: {
-                // TODO: create a new stream here if we can.
-                throw new DataStoreException("Can not read twice.");
+                if (type == InputType.NODE) break;
+                if (channelFactory == null) {
+                    throw new DataStoreException("Can not read twice.");
+                }
+                final InputStream in = channelFactory.inputStream();
+                final XMLStreamReader reader = InputType.STREAM.create(this, in);
+                target.stream = in;
+                return reader;
             }
-            case READY: break;                      // Stream already at the data start; nothing to do.
         }
         final XMLStreamReader reader = type.create(this, input);
         target.stream = stream;
