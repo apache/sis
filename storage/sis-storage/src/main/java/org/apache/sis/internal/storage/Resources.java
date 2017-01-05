@@ -144,6 +144,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short StreamIsForwardOnly_1 = 13;
 
         /**
+         * Stream can be read only once.
+         */
+        public static final short StreamIsReadOnce = 18;
+
+        /**
          * Format of “{0}” is not recognized.
          */
         public static final short UnknownFormatFor_1 = 14;
