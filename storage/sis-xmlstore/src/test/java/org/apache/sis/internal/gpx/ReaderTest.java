@@ -39,6 +39,7 @@ import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports
+import java.util.stream.Stream;
 import org.opengis.feature.Feature;
 import org.opengis.metadata.content.FeatureTypeInfo;
 
@@ -213,7 +214,7 @@ public final strictfp class ReaderTest extends TestCase {
         assertStringEquals("Route",    it.next().getFeatureTypeName().tip());
         assertStringEquals("Track",    it.next().getFeatureTypeName().tip());
         assertStringEquals("WayPoint", it.next().getFeatureTypeName().tip());
-        assertFalse(it.hasNext());
+        assertFalse("hasNext", it.hasNext());
     }
 
     /**
@@ -227,11 +228,13 @@ public final strictfp class ReaderTest extends TestCase {
         try (final Store reader = create("1.0/waypoint.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", Store.V1_0, reader.getVersion());
-            final Iterator<Feature> it = reader.getFeatures().iterator();
-            verifyPoint(it.next(), 0, false);
-            verifyPoint(it.next(), 1, false);
-            verifyPoint(it.next(), 2, false);
-            assertFalse(it.hasNext());
+            try (final Stream<Feature> features = reader.getFeatures()) {
+                final Iterator<Feature> it = features.iterator();
+                verifyPoint(it.next(), 0, false);
+                verifyPoint(it.next(), 1, false);
+                verifyPoint(it.next(), 2, false);
+                assertFalse("hasNext", it.hasNext());
+            }
         }
     }
 
@@ -246,11 +249,13 @@ public final strictfp class ReaderTest extends TestCase {
         try (final Store reader = create("1.1/waypoint.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", Store.V1_1, reader.getVersion());
-            final Iterator<Feature> it = reader.getFeatures().iterator();
-            verifyPoint(it.next(), 0, true);
-            verifyPoint(it.next(), 1, true);
-            verifyPoint(it.next(), 2, true);
-            assertFalse(it.hasNext());
+            try (final Stream<Feature> features = reader.getFeatures()) {
+                final Iterator<Feature> it = features.iterator();
+                verifyPoint(it.next(), 0, true);
+                verifyPoint(it.next(), 1, true);
+                verifyPoint(it.next(), 2, true);
+                assertFalse("hasNext", it.hasNext());
+            }
         }
     }
 
@@ -265,10 +270,12 @@ public final strictfp class ReaderTest extends TestCase {
         try (final Store reader = create("1.0/route.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", Store.V1_0, reader.getVersion());
-            final Iterator<Feature> it = reader.getFeatures().iterator();
-            verifyRoute(it.next(), false, 1);
-            verifyEmpty(it.next(), "rtept");
-            assertFalse(it.hasNext());
+            try (final Stream<Feature> features = reader.getFeatures()) {
+                final Iterator<Feature> it = features.iterator();
+                verifyRoute(it.next(), false, 1);
+                verifyEmpty(it.next(), "rtept");
+                assertFalse("hasNext", it.hasNext());
+            }
         }
     }
 
@@ -283,10 +290,20 @@ public final strictfp class ReaderTest extends TestCase {
         try (final Store reader = create("1.1/route.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", Store.V1_1, reader.getVersion());
-            final Iterator<Feature> it = reader.getFeatures().iterator();
+            verifyRoute110(reader);
+        }
+    }
+
+    /**
+     * Verifies the routes of GPX {@code "1.1/route.xml"} test file.
+     * This verification is shared by {@link #testRoute110()} and {@link #testSequentialReads()}.
+     */
+    private static void verifyRoute110(final Store reader) throws DataStoreException {
+        try (final Stream<Feature> features = reader.getFeatures()) {
+            final Iterator<Feature> it = features.iterator();
             verifyRoute(it.next(), true, 3);
             verifyEmpty(it.next(), "rtept");
-            assertFalse(it.hasNext());
+            assertFalse("hasNext", it.hasNext());
         }
     }
 
@@ -360,10 +377,12 @@ public final strictfp class ReaderTest extends TestCase {
         try (final Store reader = create("1.0/track.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", Store.V1_0, reader.getVersion());
-            final Iterator<Feature> it = reader.getFeatures().iterator();
-            verifyTrack(it.next(), false, 1);
-            verifyEmpty(it.next(), "trkseg");
-            assertFalse(it.hasNext());
+            try (final Stream<Feature> features = reader.getFeatures()) {
+                final Iterator<Feature> it = features.iterator();
+                verifyTrack(it.next(), false, 1);
+                verifyEmpty(it.next(), "trkseg");
+                assertFalse("hasNext", it.hasNext());
+            }
         }
     }
 
@@ -378,10 +397,12 @@ public final strictfp class ReaderTest extends TestCase {
         try (final Store reader = create("1.1/track.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
             assertEquals("version", Store.V1_1, reader.getVersion());
-            final Iterator<Feature> it = reader.getFeatures().iterator();
-            verifyTrack(it.next(), true, 3);
-            verifyEmpty(it.next(), "trkseg");
-            assertFalse(it.hasNext());
+            try (final Stream<Feature> features = reader.getFeatures()) {
+                final Iterator<Feature> it = features.iterator();
+                verifyTrack(it.next(), true, 3);
+                verifyEmpty(it.next(), "trkseg");
+                assertFalse("hasNext", it.hasNext());
+            }
         }
     }
 
@@ -527,6 +548,74 @@ public final strictfp class ReaderTest extends TestCase {
                 fail("unexpected index:" + index);
                 break;
             }
+        }
+    }
+
+    /**
+     * Creates a data store for the {@code "1.1/route.xml"} test files using its URL instead than the input stream.
+     * Using the URL makes easier for the data store to read the same data more than once.
+     */
+    private static Store createFromURL() throws DataStoreException {
+        return new Store(provider, new StorageConnector(ReaderTest.class.getResource("1.1/route.xml")));
+    }
+
+    /**
+     * Tests reading the same data more than once. For this test, the XML resource needs to be obtained
+     * as a URL instead than as an input stream.  But Apache SIS implementation will still tries to use
+     * mark/reset instead than re-opening a new stream if it can.
+     *
+     * @throws DataStoreException if reader failed to be created or failed at reading.
+     */
+    @Test
+    @DependsOnMethod("testRoute110")
+    public void testSequentialReads() throws DataStoreException {
+        final Metadata md;
+        try (final Store reader = createFromURL()) {
+            verifyRoute110(reader);
+            /*
+             * Ask for metadata only after a first read, for testing the way the store manages readers.
+             * The new 'getFeatures()' call should reuse the reader created by 'getMetadata()' - this
+             * can be verified by stepping in the code with a debugger.
+             */
+            md = (Metadata) reader.getMetadata();
+            verifyRoute110(reader);
+            /*
+             * One more check.
+             */
+            assertSame("metadata", md, reader.getMetadata());
+            verifyRoute110(reader);
+        }
+        verifyAlmostEmptyMetadata(md);
+    }
+
+    /**
+     * Tests reading the same data more than once without waiting
+     * that the previous iterator finishes its iteration.
+     *
+     * @throws DataStoreException if reader failed to be created or failed at reading.
+     */
+    @Test
+    @DependsOnMethod("testSequentialReads")
+    public void testConcurrentReads() throws DataStoreException {
+        try (final Store reader = createFromURL()) {
+            final Stream<Feature>   f1 = reader.getFeatures();
+            final Iterator<Feature> i1 = f1.iterator();
+            verifyRoute(i1.next(), true, 3);
+            final Stream<Feature>   f2 = reader.getFeatures();
+            final Iterator<Feature> i2 = f2.iterator();
+            verifyEmpty(i1.next(), "rtept");
+            final Stream<Feature>   f3 = reader.getFeatures();
+            final Iterator<Feature> i3 = f3.iterator();
+            verifyRoute(i2.next(), true, 3);
+            verifyRoute(i3.next(), true, 3);
+            verifyEmpty(i3.next(), "rtept");
+            verifyEmpty(i2.next(), "rtept");
+            assertFalse("hasNext", i3.hasNext());
+            assertFalse("hasNext", i1.hasNext());
+            assertFalse("hasNext", i2.hasNext());
+            f2.close();
+            f1.close();
+            f3.close();
         }
     }
 }
