@@ -98,7 +98,7 @@ abstract class StaxStreamIO implements AutoCloseable {
     public void close() throws Exception {
         final AutoCloseable s = stream;
         stream = null;
-        if (owner.canClose(s)) {
+        if (s != null && owner.canClose(s)) {
             s.close();
         }
     }

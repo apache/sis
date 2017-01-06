@@ -42,6 +42,7 @@ import org.apache.sis.internal.storage.FeatureStore;
 import org.apache.sis.internal.storage.Markable;
 import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.storage.DataStoreClosedException;
+import org.apache.sis.storage.ForwardOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.util.logging.WarningListener;
 
@@ -204,6 +205,7 @@ public abstract class StaxDataStore extends FeatureStore {
         if (stream == null && storage instanceof AutoCloseable) {
             stream = (AutoCloseable) storage;
         }
+        channelFactory = connector.getStorageAs(ChannelFactory.class);  // Must be last before 'closeAllExcept'.
         connector.closeAllExcept(stream);
         /*
          * If possible, remember the position where data begin in the stream in order to allow reading
@@ -221,7 +223,6 @@ public abstract class StaxDataStore extends FeatureStore {
         } else {
             streamPosition = -1;
         }
-        channelFactory = connector.getStorageAs(ChannelFactory.class);              // Must be last.
     }
 
     /**
@@ -369,32 +370,34 @@ public abstract class StaxDataStore extends FeatureStore {
          * by InputType, then maybe that storage was a Path, File or URL, in which case the constructor
          * should have opened an InputStream for it. If not, then this was an unsupported storage type.
          */
+        AutoCloseable opened = stream;
         InputType type = storageToReader;
         if (type == null) {
-            type = InputType.STREAM;
-            if ((input = stream) == null) {
-                throw new UnsupportedStorageException(getLocale(), getFormatName(), storage, StandardOpenOption.READ);
+            if (opened == null) {
+                throw new UnsupportedStorageException(getLocale(), getFormatName(), input, StandardOpenOption.READ);
             }
+            input = opened;
+            type  = InputType.STREAM;
         }
         /*
          * If the stream has already been used by a previous read operation, then we need to rewind
          * it to the start position determined at construction time. It the stream does not support
          * mark, then we can not re-read the data.
          */
-reset:  switch (state) {
-            default: {
-                throw new AssertionError(state);
-            }
+        switch (state) {
+            default: throw new AssertionError(state);
             case READY: break;                  // Stream already at the data start; nothing to do.
             case FINISHED: {
                 if (streamPosition >= 0) {
-                    final Markable m = (Markable) input;
+                    final Markable m = (Markable) opened;
                     long p;
-                    while ((p = m.getStreamPosition()) >= streamPosition) {
-                        if (p == streamPosition) {
-                            break reset;
-                        }
+                    do {
                         m.reset();
+                        p = m.getStreamPosition();
+                    } while (p > streamPosition);
+                    if (p == streamPosition) {
+                        m.mark();
+                        break;
                     }
                 }
                 // Failed to reset the stream - fallthrough.
@@ -402,21 +405,20 @@ reset:  switch (state) {
             /*
              * If the input stream is in use, or if we finished to use it but were unable to reset its position,
              * then we need to create a new input stream (except if the input was a DOM in memory, which we can
-             * share).
+             * share). The 'target' StaxStreamReader will be in charge of closing that stream.
              */
             case IN_USE: {
                 if (type == InputType.NODE) break;
                 if (channelFactory == null) {
-                    throw new DataStoreException("Can not read twice.");
+                    throw new ForwardOnlyStorageException(getLocale());
                 }
-                final InputStream in = channelFactory.inputStream();
-                final XMLStreamReader reader = InputType.STREAM.create(this, in);
-                target.stream = in;
-                return reader;
+                input = opened = channelFactory.inputStream();
+                type  = InputType.STREAM;
+                break;
             }
         }
         final XMLStreamReader reader = type.create(this, input);
-        target.stream = stream;
+        target.stream = opened;
         state = IN_USE;
         return reader;
     }
@@ -464,7 +466,7 @@ reset:  switch (state) {
      * @return whether the caller should invoke {@code finished.close()}.
      */
     final synchronized boolean canClose(final AutoCloseable finished) {
-        if (finished != null && stream == finished) {
+        if (finished == stream) {
             state = FINISHED;
             return false;
         }
