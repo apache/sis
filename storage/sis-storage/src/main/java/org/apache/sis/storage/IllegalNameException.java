@@ -44,7 +44,6 @@ public class IllegalNameException extends DataStoreException {
      * Creates an exception with no cause and no details message.
      */
     public IllegalNameException() {
-        super();
     }
 
     /**

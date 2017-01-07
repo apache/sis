@@ -45,6 +45,7 @@ import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.internal.storage.ChannelFactory;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.ChannelImageInputStream;
+import org.apache.sis.internal.storage.InputStreamAdapter;
 import org.apache.sis.setup.OptionKey;
 
 
@@ -418,7 +419,7 @@ public class StorageConnector implements Serializable {
         final Object value;
         try {
             value = createView(type);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | DataStoreException e) {
             throw e;
         } catch (Exception e) {
             throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, getStorageName()), e);
@@ -467,7 +468,8 @@ public class StorageConnector implements Serializable {
 
         ChannelDataInput asDataInput = null;
         if (factory != null) {
-            final ReadableByteChannel channel = factory.reader();
+            final String name = getStorageName();
+            final ReadableByteChannel channel = factory.reader(name);
             addViewToClose(channel, storage);
             ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);
             if (buffer == null) {
@@ -475,7 +477,6 @@ public class StorageConnector implements Serializable {
                 // TODO: we do not create direct buffer yet, but this is something
                 // we may want to consider in a future SIS version.
             }
-            final String name = getStorageName();
             if (asImageInputStream) {
                 asDataInput = new ChannelImageInputStream(name, channel, buffer, false);
             } else {

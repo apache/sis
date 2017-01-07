@@ -23,7 +23,9 @@ import java.util.Collections;
 import java.util.Arrays;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -35,8 +37,10 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Modules;
@@ -74,14 +78,17 @@ public abstract class ChannelFactory {
     }
 
     /**
-     * Returns a byte channel factory from the given input, or {@code null} if the input is of unknown type.
+     * Returns a byte channel factory from the given input or output,
+     * or {@code null} if the input is of unknown type.
      * More specifically:
      *
      * <ul>
-     *   <li>If the given input is {@code null}, then this method returns {@code null}.</li>
-     *   <li>If the given input is a {@link ReadableByteChannel} or an {@link InputStream},
+     *   <li>If the given storage is {@code null}, then this method returns {@code null}.</li>
+     *   <li>If the given storage is a {@link ReadableByteChannel} or an {@link InputStream},
      *       then the factory will return that input directly or indirectly as a wrapper.</li>
-     *   <li>If the given input if a {@link Path}, {@link File}, {@link URL}, {@link URI}
+     *   <li>If the given storage is a {@link WritableByteChannel} or an {@link OutputStream},
+     *       then the factory will return that output directly or indirectly as a wrapper.</li>
+     *   <li>If the given storage if a {@link Path}, {@link File}, {@link URL}, {@link URI}
      *       or {@link CharSequence}, then the factory will open new channels on demand.</li>
      * </ul>
      *
@@ -98,7 +105,7 @@ public abstract class ChannelFactory {
      * would alter significatively the channel behavior depending on whether we have been able to
      * honor the options or not.</p>
      *
-     * @param  input     the file to open, or {@code null}.
+     * @param  storage   the stream or the file to open, or {@code null}.
      * @param  encoding  if the input is an encoded URL, the character encoding (normally {@code "UTF-8"}).
      *                   If the URL is not encoded, then {@code null}. This argument is ignored if the given
      *                   input does not need to be converted from URL to {@code File}.
@@ -106,7 +113,7 @@ public abstract class ChannelFactory {
      * @return the channel factory for the given input, or {@code null} if the given input is of unknown type.
      * @throws IOException if an error occurred while processing the given input.
      */
-    public static ChannelFactory prepare(Object input, final String encoding, OpenOption... options) throws IOException {
+    public static ChannelFactory prepare(Object storage, final String encoding, OpenOption... options) throws IOException {
         /*
          * Unconditionally verify the options, even if we may not use them.
          */
@@ -127,18 +134,20 @@ public abstract class ChannelFactory {
          * to its getChannel() method, but only if the input stream type is exactly FileInputStream, not a subtype.
          * If Apache SIS defines its own FileInputStream subclass someday, we may need to add a special case here.
          */
-        if (input instanceof ReadableByteChannel) {
-            return new Stream((ReadableByteChannel) input);
-        } else if (input instanceof InputStream) {
-            return new Stream(Channels.newChannel((InputStream) input));
+        if (storage instanceof ReadableByteChannel || storage instanceof WritableByteChannel) {
+            return new Stream((Channel) storage);
+        } else if (storage instanceof InputStream) {
+            return new Stream(Channels.newChannel((InputStream) storage));
+//      } else if (storage instanceof OutputStream) {
+//          return new Stream(Channels.newChannel((OutputStream) storage));
         }
         /*
          * In the following cases, we will try hard to convert to Path objects before to fallback
          * on File, URL or URI, because only Path instances allow us to use the given OpenOptions.
          */
-        if (input instanceof URL) {
+        if (storage instanceof URL) {
             try {
-                input = IOUtilities.toPath((URL) input, encoding);
+                storage = IOUtilities.toPath((URL) storage, encoding);
             } catch (IOException e) {
                 /*
                  * This is normal if the URL uses HTTP or FTP protocol for instance. Log the exception at FINE
@@ -146,13 +155,13 @@ public abstract class ChannelFactory {
                  */
                 recoverableException(e);
             }
-        } else if (input instanceof URI) {
+        } else if (storage instanceof URI) {
             /*
              * If the user gave us a URI, try to convert to a Path before to fallback to URL, in order to be
              * able to use the given OpenOptions.  Note that the conversion to Path is likely to fail if the
              * URL uses HTTP or FTP protocols, because JDK7 does not provide file systems for them by default.
              */
-            final URI uri = (URI) input;
+            final URI uri = (URI) storage;
             if (!uri.isAbsolute()) {
                 /*
                  * All methods invoked in this block throws IllegalArgumentException if the URI has no scheme,
@@ -160,10 +169,10 @@ public abstract class ChannelFactory {
                  */
                 throw new IOException(Resources.format(Resources.Keys.MissingSchemeInURI_1, uri));
             } else try {
-                input = Paths.get(uri);
+                storage = Paths.get(uri);
             } catch (IllegalArgumentException | FileSystemNotFoundException e) {
                 try {
-                    input = uri.toURL();
+                    storage = uri.toURL();
                 } catch (MalformedURLException ioe) {
                     ioe.addSuppressed(e);
                     throw ioe;
@@ -176,18 +185,18 @@ public abstract class ChannelFactory {
                 recoverableException(e);
             }
         } else {
-            if (input instanceof CharSequence) {    // Needs to be before the check for File or URL.
-                input = IOUtilities.toFileOrURL(input.toString(), encoding);
+            if (storage instanceof CharSequence) {    // Needs to be before the check for File or URL.
+                storage = IOUtilities.toFileOrURL(storage.toString(), encoding);
             }
             /*
              * If the input is a File or a CharSequence that we have been able to convert to a File,
              * try to convert to a Path in order to be able to use the OpenOptions. Only if we fail
              * to convert to a Path (which is unlikely), we will use directly the File.
              */
-            if (input instanceof File) {
-                final File file = (File) input;
+            if (storage instanceof File) {
+                final File file = (File) storage;
                 try {
-                    input = file.toPath();
+                    storage = file.toPath();
                 } catch (final InvalidPathException e) {
                     /*
                      * Unlikely to happen. But if it happens anyway, try to open the channel in a
@@ -202,18 +211,24 @@ public abstract class ChannelFactory {
          * to convert it to a Path, or a URI, File or CharSequence input converted to URL. Do not
          * try to convert the URL to a Path, because this has already been tried before this point.
          */
-        if (input instanceof URL) {
-            final URL file = (URL) input;
+        if (storage instanceof URL) {
+            final URL file = (URL) storage;
             return new ChannelFactory() {
-                @Override public ReadableByteChannel reader() throws IOException {
+                @Override public ReadableByteChannel reader(String filename) throws IOException {
                     return Channels.newChannel(file.openStream());
+                }
+                @Override public WritableByteChannel writer(String filename) throws IOException {
+                    return Channels.newChannel(file.openConnection().getOutputStream());
                 }
             };
         }
-        if (input instanceof Path) {
-            final Path path = (Path) input;
+        if (storage instanceof Path) {
+            final Path path = (Path) storage;
             return new ChannelFactory() {
-                @Override public ReadableByteChannel reader() throws IOException {
+                @Override public ReadableByteChannel reader(String filename) throws IOException {
+                    return Files.newByteChannel(path, optionSet);
+                }
+                @Override public WritableByteChannel writer(String filename) throws IOException {
                     return Files.newByteChannel(path, optionSet);
                 }
             };
@@ -223,7 +238,7 @@ public abstract class ChannelFactory {
 
     /**
      * Returns {@code true} if this factory is capable to create another reader. This method returns {@code false}
-     * if this factory is capable to create only one channel and {@link #reader()} has already been invoked.
+     * if this factory is capable to create only one channel and {@link #reader(String)} has already been invoked.
      *
      * @return whether {@link #reader()} can be invoked.
      */
@@ -232,25 +247,50 @@ public abstract class ChannelFactory {
     }
 
     /**
-     * Returns the channel as an input stream. The returned stream is <strong>not</strong> buffered;
+     * Returns the readable channel as an input stream. The returned stream is <strong>not</strong> buffered;
      * it is caller's responsibility to wrap the stream in a {@link java.io.BufferedInputStream} if desired.
      *
+     * @param  filename  data store name to report in case of failure.
      * @return the input stream.
      * @throws IOException if the input stream or its underlying byte channel can not be created.
      */
-    public InputStream inputStream() throws IOException {
-        return Channels.newInputStream(reader());
+    public InputStream inputStream(final String filename) throws IOException {
+        return Channels.newInputStream(reader(filename));
+    }
+
+    /**
+     * Returns the writable channel as an output stream. The returned stream is <strong>not</strong> buffered;
+     * it is caller's responsibility to wrap the stream in a {@link java.io.BufferedOutputStream} if desired.
+     *
+     * @param  filename  data store name to report in case of failure.
+     * @return the output stream.
+     * @throws IOException if the output stream or its underlying byte channel can not be created.
+     */
+    public OutputStream outputStream(final String filename) throws IOException {
+        return Channels.newOutputStream(writer(filename));
     }
 
     /**
      * Returns a byte channel from the input given to the {@link #prepare prepare(…)} method.
      * If the channel has already been created and this method can not create it twice, then
-     * this method throw an exception.
+     * this method throws an exception.
      *
+     * @param  filename  data store name to report in case of failure.
      * @return the channel for the given input.
      * @throws IOException if an error occurred while opening the channel.
      */
-    public abstract ReadableByteChannel reader() throws IOException;
+    public abstract ReadableByteChannel reader(String filename) throws IOException;
+
+    /**
+     * Returns a byte channel from the output given to the {@link #prepare prepare(…)} method.
+     * If the channel has already been created and this method can not create it twice, then
+     * this method throws an exception.
+     *
+     * @param  filename  data store name to report in case of failure.
+     * @return the channel for the given output.
+     * @throws IOException if an error occurred while opening the channel.
+     */
+    public abstract WritableByteChannel writer(String filename) throws IOException;
 
     /**
      * A factory that returns an existing channel <cite>as-is</cite>.
@@ -260,35 +300,49 @@ public abstract class ChannelFactory {
         /**
          * The channel, or {@code null} if it has already been returned.
          */
-        private ReadableByteChannel input;
+        private Channel channel;
 
         /**
          * Creates a new factory for the given channel, which will be returned only once.
          */
-        Stream(final ReadableByteChannel input) {
-            this.input = input;
+        Stream(final Channel input) {
+            this.channel = input;
         }
 
         /**
-         * Returns whether {@link #reader()} can be invoked.
+         * Returns whether {@link #reader(String)} or {@link #writer(String)} can be invoked.
          */
         @Override
         public boolean canOpen() {
-            return input != null;
+            return channel != null;
         }
 
         /**
-         * Returns the channel on the first invocation or
+         * Returns the readable channel on the first invocation or
          * throws an exception on all subsequent invocations.
          */
         @Override
-        public ReadableByteChannel reader() throws IOException {
-            final ReadableByteChannel in = input;
-            if (in != null) {
-                input = null;
-                return in;
+        public ReadableByteChannel reader(final String filename) throws IOException {
+            final Channel in = channel;
+            if (in instanceof ReadableByteChannel) {
+                channel = null;
+                return (ReadableByteChannel) in;
             }
-            throw new IOException(Resources.format(Resources.Keys.StreamIsReadOnce));
+            throw new IOException(Resources.format(Resources.Keys.StreamIsReadOnce_1, filename));
+        }
+
+        /**
+         * Returns the writable channel on the first invocation or
+         * throws an exception on all subsequent invocations.
+         */
+        @Override
+        public WritableByteChannel writer(final String filename) throws IOException {
+            final Channel in = channel;
+            if (in instanceof WritableByteChannel) {
+                channel = null;
+                return (WritableByteChannel) in;
+            }
+            throw new IOException(Resources.format(Resources.Keys.StreamIsWriteOnce_1, filename));
         }
     }
 
@@ -326,7 +380,7 @@ public abstract class ChannelFactory {
          * {@link File} to a {@link Path}. On all subsequent invocations, the file is opened silently.</p>
          */
         @Override
-        public FileInputStream inputStream() throws IOException {
+        public FileInputStream inputStream(String filename) throws IOException {
             final FileInputStream in;
             try {
                 in = new FileInputStream(file);
@@ -342,19 +396,59 @@ public abstract class ChannelFactory {
              * But the exception was nevertheless unexpected, so log its stack trace in order
              * to allow the developer to check if there is something wrong.
              */
+            warning();
+            return in;
+        }
+
+        /**
+         * Opens a new output stream for the file given at construction time.
+         * The returned stream is <strong>not</strong> buffered.
+         *
+         * <p>On the first invocation, this method reports a warning about the failure to convert the
+         * {@link File} to a {@link Path}. On all subsequent invocations, the file is opened silently.</p>
+         */
+        @Override
+        public FileOutputStream outputStream(String filename) throws IOException {
+            final FileOutputStream out;
+            try {
+                out = new FileOutputStream(file);
+            } catch (IOException ioe) {
+                if (cause != null) {
+                    ioe.addSuppressed(cause);
+                    cause = null;
+                }
+                throw ioe;
+            }
+            warning();
+            return out;
+        }
+
+        /**
+         * Invoked when we have been able to create a channel, but maybe not with the given {@link OpenOption}s.
+         * Since the exception was nevertheless unexpected, log its stack trace in order to allow the developer
+         * to check if there is something wrong.
+         */
+        private void warning() {
             if (cause != null) {
                 Logging.unexpectedException(Logging.getLogger(Modules.STORAGE), ChannelFactory.class, "prepare", cause);
                 cause = null;
             }
-            return in;
         }
 
         /**
          * Opens a new channel for the file given at construction time.
          */
         @Override
-        public ReadableByteChannel reader() throws IOException {
-            return inputStream().getChannel();
+        public ReadableByteChannel reader(String filename) throws IOException {
+            return inputStream(filename).getChannel();
+        }
+
+        /**
+         * Opens a new channel for the file given at construction time.
+         */
+        @Override
+        public WritableByteChannel writer(String filename) throws IOException {
+            return outputStream(filename).getChannel();
         }
     }
 

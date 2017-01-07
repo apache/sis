@@ -41,6 +41,8 @@ import org.apache.sis.internal.storage.ChannelFactory;
 import org.apache.sis.internal.storage.FeatureStore;
 import org.apache.sis.internal.storage.Markable;
 import org.apache.sis.internal.util.AbstractMap;
+import org.apache.sis.storage.ConcurrentReadException;
+import org.apache.sis.storage.ConcurrentWriteException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.ForwardOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
@@ -113,9 +115,12 @@ public abstract class StaxDataStore extends FeatureStore {
      * For example if {@code storage} is a {@link java.nio.file.Path}, then {@code stream} will be some
      * stream or channel opened for that path.
      *
-     * <p>This reference should never be changed until the data store is closed. In particular, this field
-     * should <strong>not</strong> be set to the value of {@link ChannelFactory#inputStream()} because the
-     * later does not create the same kind of input stream than {@link StorageConnector}.</p>
+     * <p>We keep this reference as long as possible in order to use {@link #mark()} and {@link #reset()}
+     * instead than creating new streams for re-reading the data.  If we can not reset the stream but can
+     * create a new one, then this field will become a reference to the new stream. This change should be
+     * done only in last resort, when there is no way to reuse the existing stream.  This is because the
+     * streams created by {@link ChannelFactory#inputStream()} are not of the same kind than the streams
+     * created by {@link StorageConnector}.</p>
      *
      * @see #close()
      */
@@ -125,8 +130,11 @@ public abstract class StaxDataStore extends FeatureStore {
      * Position of the first byte to read in the {@linkplain #stream}, or a negative value if unknown.
      * If the position is positive, then the stream should have been {@linkplain Markable#mark() marked}
      * at that position by the constructor.
+     *
+     * @see #mark()
+     * @see #reset()
      */
-    private final long streamPosition;
+    private long streamPosition;
 
     /**
      * The function in charge of producing a {@link XMLStreamReader} from the {@link #storage} or {@link #stream}.
@@ -161,15 +169,15 @@ public abstract class StaxDataStore extends FeatureStore {
     private final ChannelFactory channelFactory;
 
     /**
-     * Whether the {@linkplain #stream} is currently in use by a {@link StaxStreamReader}.
-     * Value can be one of {@link #READY}, {@link #IN_USE} or {@link #FINISHED} constants.
+     * Whether the {@linkplain #stream} is currently in use by a {@link StaxStreamIO}. Value can be
+     * one of {@link #START}, {@link #READING}, {@link #WRITING} or {@link #FINISHED} constants.
      */
     private byte state;
 
     /**
      * Possible states for the {@link #state} field.
      */
-    private static final byte READY = 0, IN_USE = 1, FINISHED = 2;
+    private static final byte START = 0, READING = 1, WRITING = 2, FINISHED = 3;
 
     /**
      * Creates a new data store.
@@ -214,15 +222,47 @@ public abstract class StaxDataStore extends FeatureStore {
          * other code will set their own mark (which could cause our reset() call to move to the wrong
          * position).
          */
-        if (stream instanceof Markable) try {
+        try {
+            mark();
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+    }
+
+    /**
+     * Marks the current stream position. This method shall be invoked either at construction time,
+     * or after a new stream has been created.
+     */
+    private void mark() throws IOException {
+        streamPosition = -1;
+        if (stream instanceof Markable) {
             final Markable m = (Markable) stream;
             streamPosition = m.getStreamPosition();
             m.mark();
-        } catch (IOException e) {
-            throw new DataStoreException(e);
-        } else {
-            streamPosition = -1;
         }
+    }
+
+    /**
+     * Resets the stream position to the mark created at construction time, then marks again the stream
+     * for allowing future resets.
+     *
+     * @return {@code true} of success, or {@code false} if the stream can not be reset.
+     * @throws IOException if an error occurred while reseting the stream.
+     */
+    private boolean reset() throws IOException {
+        if (streamPosition >= 0) {
+            final Markable m = (Markable) stream;
+            long p;
+            do {
+                m.reset();
+                p = m.getStreamPosition();
+            } while (p > streamPosition);
+            if (p == streamPosition) {
+                m.mark();
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -356,11 +396,10 @@ public abstract class StaxDataStore extends FeatureStore {
      * @throws DataStoreException if the input type is not recognized or the data store is closed.
      * @throws XMLStreamException if an error occurred while opening the XML file.
      * @throws IOException if an error occurred while preparing the input stream.
+     * @throws Exception if another kind of error occurred while closing a previous stream.
      */
     @SuppressWarnings("fallthrough")
-    final synchronized XMLStreamReader createReader(final StaxStreamReader target)
-            throws DataStoreException, XMLStreamException, IOException
-    {
+    final synchronized XMLStreamReader createReader(final StaxStreamReader target) throws Exception {
         Object input = storage;
         if (input == null) {
             throw new DataStoreClosedException(getLocale(), getFormatName(), StandardOpenOption.READ);
@@ -369,6 +408,8 @@ public abstract class StaxDataStore extends FeatureStore {
          * If the storage given by the user was not one of InputStream, Reader or other type recognized
          * by InputType, then maybe that storage was a Path, File or URL, in which case the constructor
          * should have opened an InputStream for it. If not, then this was an unsupported storage type.
+         * Note that we may have a null 'storageToReader' but a non-null 'storageToWriter', which is why
+         * the UnsupportedStorageException has not been thrown at StaxDataStore construction time.
          */
         AutoCloseable opened = stream;
         InputType type = storageToReader;
@@ -385,41 +426,41 @@ public abstract class StaxDataStore extends FeatureStore {
          * mark, then we can not re-read the data.
          */
         switch (state) {
-            default: throw new AssertionError(state);
-            case READY: break;                  // Stream already at the data start; nothing to do.
+            default:        throw new AssertionError(state);
+            case WRITING:   throw new ConcurrentWriteException(getLocale(), getDisplayName());
+            case START:     break;         // Stream already at the data start; nothing to do.
             case FINISHED: {
-                if (streamPosition >= 0) {
-                    final Markable m = (Markable) opened;
-                    long p;
-                    do {
-                        m.reset();
-                        p = m.getStreamPosition();
-                    } while (p > streamPosition);
-                    if (p == streamPosition) {
-                        m.mark();
-                        break;
-                    }
+                if (reset()) break;
+                if (opened != null) {
+                    stream = null;         // Cleared first in case of error during 'close()' call.
+                    opened.close();
+                    opened = null;
                 }
-                // Failed to reset the stream - fallthrough.
+                // Fall through
             }
-            /*
-             * If the input stream is in use, or if we finished to use it but were unable to reset its position,
-             * then we need to create a new input stream (except if the input was a DOM in memory, which we can
-             * share). The 'target' StaxStreamReader will be in charge of closing that stream.
-             */
-            case IN_USE: {
+            case READING: {
+                /*
+                 * If the input stream is in use, or if we finished to use it but were unable to reset its position,
+                 * then we need to create a new input stream (except if the input was a DOM in memory, which we can
+                 * share). The 'target' StaxStreamReader will be in charge of closing that stream.
+                 */
                 if (type == InputType.NODE) break;
+                final String name = getDisplayName();
                 if (channelFactory == null) {
-                    throw new ForwardOnlyStorageException(getLocale());
+                    throw new ForwardOnlyStorageException(getLocale(), name, StandardOpenOption.READ);
                 }
-                input = opened = channelFactory.inputStream();
                 type  = InputType.STREAM;
+                input = opened = channelFactory.inputStream(name);
+                if (stream == null) {
+                    stream = opened;
+                    mark();
+                }
                 break;
             }
         }
         final XMLStreamReader reader = type.create(this, input);
         target.stream = opened;
-        state = IN_USE;
+        state = READING;
         return reader;
     }
 
@@ -442,18 +483,36 @@ public abstract class StaxDataStore extends FeatureStore {
         if (output == null) {
             throw new DataStoreClosedException(getLocale(), getFormatName(), StandardOpenOption.WRITE);
         }
+        switch (state) {
+            default:        throw new AssertionError(state);
+            case READING:   throw new ConcurrentReadException (getLocale(), getDisplayName());
+            case WRITING:   throw new ConcurrentWriteException(getLocale(), getDisplayName());
+            case START:     break;         // Stream already at the data start; nothing to do.
+            case FINISHED:  {
+                if (reset()) break;
+                throw new ForwardOnlyStorageException(getLocale(), getDisplayName(), StandardOpenOption.WRITE);
+            }
+        }
         /*
          * If the storage given by the user was not one of OutputStream, Writer or other type recognized
          * by OutputType, then maybe that storage was a Path, File or URL, in which case the constructor
-         * should have opened an InputStream for it. If not, then this was an unsupported storage type.
+         * should have opened an InputStream (not an OutputStream) for it.
          */
+        AutoCloseable opened = stream;
         OutputType type = storageToWriter;
         if (type == null) {
-            // TODO
-            throw new UnsupportedStorageException(getLocale(), getFormatName(), storage, StandardOpenOption.WRITE);
+            opened = OutputType.fromInput(opened);
+            if (opened == null) {
+                throw new UnsupportedStorageException(getLocale(), getFormatName(), output, StandardOpenOption.WRITE);
+            }
+            type = OutputType.STREAM;
+            output = opened;
+            stream = opened;
+            mark();
         }
         final XMLStreamWriter writer = type.create(this, output);
-        target.stream = stream;
+        target.stream = opened;
+        state = WRITING;
         return writer;
     }
 

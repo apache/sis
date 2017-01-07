@@ -66,7 +66,6 @@ public class DataStoreException extends Exception implements LocalizedException 
      * Creates an exception with no cause and no details message.
      */
     public DataStoreException() {
-        super();
     }
 
     /**

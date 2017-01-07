@@ -17,7 +17,14 @@
 package org.apache.sis.internal.xml;
 
 import java.io.Writer;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.OutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.nio.channels.WritableByteChannel;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
@@ -28,6 +35,10 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stax.StAXResult;
 import org.xml.sax.ContentHandler;
 import org.w3c.dom.Node;
+import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.ChannelImageOutputStream;
+import org.apache.sis.internal.storage.InputStreamAdapter;
+import org.apache.sis.internal.storage.OutputStreamAdapter;
 
 
 /**
@@ -46,7 +57,7 @@ enum OutputType {
      * The output is already an instance of {@link XMLStreamWriter}.
      * That output is returned directly.
      */
-    STAX(XMLStreamWriter.class) {
+    STAX(XMLStreamWriter.class, InputType.STAX) {
         @Override XMLStreamWriter create(StaxDataStore ds, Object s) {
             return (XMLStreamWriter) s;
         }
@@ -56,27 +67,39 @@ enum OutputType {
      * The output is an instance of Java I/O {@link OutputStream}.
      * Encoding depends on the {@linkplain StaxDataStore#encoding data store character encoding}.
      */
-    STREAM(OutputStream.class) {
+    STREAM(OutputStream.class, InputType.STREAM) {
         @Override XMLStreamWriter create(StaxDataStore ds, Object s) throws XMLStreamException {
             final XMLOutputFactory f = ds.outputFactory();
             return (ds.encoding != null) ? f.createXMLStreamWriter((OutputStream) s, ds.encoding.name())
                                          : f.createXMLStreamWriter((OutputStream) s);
+        }
+        @Override Object toReader(final Object s) {
+            if (s instanceof ByteArrayOutputStream) {
+                return new ByteArrayInputStream(((ByteArrayOutputStream) s).toByteArray());
+            }
+            return super.toReader(s);
         }
     },
 
     /**
      * The output is an instance of Java I/O {@link Writer}.
      */
-    CHARACTERS(Writer.class) {
+    CHARACTERS(Writer.class, InputType.CHARACTERS) {
         @Override XMLStreamWriter create(StaxDataStore ds, Object s) throws XMLStreamException {
             return ds.outputFactory().createXMLStreamWriter((Writer) s);
+        }
+        @Override Object toReader(final Object s) {
+            if (s instanceof StringWriter) {
+                return new StringReader(s.toString());
+            }
+            return super.toReader(s);
         }
     },
 
     /**
      * The output is an instance of XML {@link Result}, which is itself a wrapper around another kind of result.
      */
-    SOURCE(Result.class) {
+    RESULT(Result.class, InputType.SOURCE) {
         @Override XMLStreamWriter create(StaxDataStore ds, Object s) throws XMLStreamException {
             return ds.outputFactory().createXMLStreamWriter((Result) s);
         }
@@ -85,16 +108,19 @@ enum OutputType {
     /**
      * The output is an instance of DOM {@link Node}.
      */
-    NODE(Node.class) {
+    NODE(Node.class, InputType.NODE) {
         @Override XMLStreamWriter create(StaxDataStore ds, Object s) throws XMLStreamException {
             return ds.outputFactory().createXMLStreamWriter(new DOMResult((Node) s));
+        }
+        @Override Object toReader(final Object s) {
+            return s;
         }
     },
 
     /**
      * The output is an instance of SAX {@link ContentHandler}.
      */
-    SAX(ContentHandler.class) {
+    SAX(ContentHandler.class, InputType.SAX) {
         @Override XMLStreamWriter create(StaxDataStore ds, Object s) throws XMLStreamException {
             return ds.outputFactory().createXMLStreamWriter(new SAXResult((ContentHandler) s));
         }
@@ -103,7 +129,7 @@ enum OutputType {
     /**
      * The output is an instance of STAX {@link XMLEventWriter}.
      */
-    EVENT(XMLEventWriter.class) {
+    EVENT(XMLEventWriter.class, InputType.EVENT) {
         @Override XMLStreamWriter create(StaxDataStore ds, Object s) throws XMLStreamException {
             return ds.outputFactory().createXMLStreamWriter(new StAXResult((XMLEventWriter) s));
         }
@@ -115,9 +141,15 @@ enum OutputType {
     private final Class<?> outputType;
 
     /**
+     * The input type from the same framework (StAX, DOM, <i>etc</i>) than this output type.
+     */
+    final InputType inputType;
+
+    /**
      * Creates a new enumeration for the given type of output.
      */
-    private OutputType(final Class<?> outputType) {
+    private OutputType(final Class<?> outputType, final InputType inputType) {
+        this.inputType  = inputType;
         this.outputType = outputType;
     }
 
@@ -130,6 +162,38 @@ enum OutputType {
      * @throws XMLStreamException if the XML writer creation failed.
      */
     abstract XMLStreamWriter create(StaxDataStore ds, Object s) throws XMLStreamException;
+
+    /**
+     * Returns a reader for the data written by the given writer, or {@code null} if we can not read the data.
+     * The returned input can be used by {@link #inputType}.
+     *
+     * @param  s  the output from which to get the data that we wrote.
+     * @return the input for the data written by the given stream, or {@code null} if none.
+     */
+    Object toReader(final Object s) {
+        return null;
+    }
+
+    /**
+     * Converts the given stream, usually (but not necessarily) an input stream, to an output stream.
+     * It is caller's responsibility to reset the stream position to the beginning of file before to
+     * invoke this method.
+     */
+    static OutputStream fromInput(AutoCloseable stream) throws IOException {
+        if (stream instanceof OutputStream) {
+            return (OutputStream) stream;
+        }
+        if (stream instanceof InputStreamAdapter) {
+            stream = ((InputStreamAdapter) stream).input;
+        }
+        if (stream instanceof ChannelDataInput) {
+            final ChannelDataInput c = (ChannelDataInput) stream;
+            if (c.channel instanceof WritableByteChannel) {
+                stream = new ChannelImageOutputStream(c.filename, (WritableByteChannel) c.channel, c.buffer);
+            }
+        }
+        return (stream instanceof DataOutput) ? new OutputStreamAdapter((DataOutput) stream) : null;
+    }
 
     /**
      * Returns a {@code WriterFactory} for the given output type. The {@code type} argument given to this method

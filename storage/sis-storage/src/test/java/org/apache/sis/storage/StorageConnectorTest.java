@@ -28,6 +28,7 @@ import java.sql.Connection;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.ChannelImageInputStream;
+import org.apache.sis.internal.storage.InputStreamAdapter;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -300,7 +301,7 @@ public final strictfp class StorageConnectorTest extends TestCase {
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link Connection} type.
      *
      * @throws DataStoreException if an error occurred while using the storage connector.
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen.
      */
     public void testGetAsConnection() throws DataStoreException, IOException {
         final StorageConnector connection = create(false);
