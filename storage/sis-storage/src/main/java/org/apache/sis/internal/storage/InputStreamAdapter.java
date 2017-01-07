@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage;
+package org.apache.sis.internal.storage;
 
 import java.io.InputStream;
 import java.io.IOException;
 import javax.imageio.stream.ImageInputStream;
-import org.apache.sis.internal.storage.Markable;
 
 
 /**
@@ -29,23 +28,30 @@ import org.apache.sis.internal.storage.Markable;
  * @since   0.4
  * @version 0.8
  * @module
+ *
+ * @see OutputStreamAdapter
  */
-final class InputStreamAdapter extends InputStream implements Markable {
+public final class InputStreamAdapter extends InputStream implements Markable {
     /**
-     * The data input stream.
+     * The underlying data input stream. In principle, public access to this field breaks encapsulation.
+     * But since {@code InputStreamAdapter} does not hold any state and just forwards every method calls
+     * to that {@code ImageInputStream}, using on object or the other does not make a difference.
      */
-    final ImageInputStream input;
+    public final ImageInputStream input;
 
     /**
      * Constructs a new input stream.
+     *
+     * @param input  the stream to wrap.
      */
-    InputStreamAdapter(final ImageInputStream input) {
+    public InputStreamAdapter(final ImageInputStream input) {
         this.input = input;
     }
 
     /**
      * Reads the next byte of data from the input stream.
      *
+     * @return the next byte, or -1 if the end of the stream is reached.
      * @throws IOException if an I/O error occurs.
      */
     @Override
@@ -56,6 +62,7 @@ final class InputStreamAdapter extends InputStream implements Markable {
     /**
      * Reads some number of bytes from the input stream.
      *
+     * @return total number of bytes read, or -1 if the end of the stream has been reached.
      * @throws IOException if an I/O error occurs.
      */
     @Override
@@ -66,6 +73,7 @@ final class InputStreamAdapter extends InputStream implements Markable {
     /**
      * Reads up to {@code len} bytes of data from the input stream.
      *
+     * @return total number of bytes read, or -1 if the end of the stream has been reached.
      * @throws IOException if an I/O error occurs.
      */
     @Override
@@ -76,6 +84,7 @@ final class InputStreamAdapter extends InputStream implements Markable {
     /**
      * Skips over and discards {@code n} bytes of data from this input stream.
      *
+     * @return total number of bytes skipped.
      * @throws IOException if an I/O error occurs.
      */
     @Override
@@ -86,7 +95,7 @@ final class InputStreamAdapter extends InputStream implements Markable {
     /**
      * Returns always {@code true}, since marks support is mandatory in image input stream.
      *
-     * @throws IOException if an I/O error occurs.
+     * @return {@code true}.
      */
     @Override
     public boolean markSupported() {
@@ -97,7 +106,6 @@ final class InputStreamAdapter extends InputStream implements Markable {
      * Marks the current position in this input stream.
      *
      * @param  readlimit ignored.
-     * @throws IOException if an I/O error occurs.
      */
     @Override
     public void mark(final int readlimit) {
@@ -106,8 +114,6 @@ final class InputStreamAdapter extends InputStream implements Markable {
 
     /**
      * Marks the current position in this input stream.
-     *
-     * @throws IOException if an I/O error occurs.
      */
     @Override
     public void mark() {

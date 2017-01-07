@@ -16,10 +16,7 @@
  */
 package org.apache.sis.internal.gpx;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
-import javax.xml.bind.JAXBException;
-import javax.xml.stream.XMLStreamException;
 import org.apache.sis.internal.xml.StaxDataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -148,10 +145,12 @@ public final class Store extends StaxDataStore {
             reader      = new Reader(this);
             version     = reader.initialize(true);
             metadata    = reader.getMetadata();
-        } catch (XMLStreamException | IOException | JAXBException e) {
-            throw new DataStoreException(e);
+        } catch (DataStoreException e) {
+            throw e;
         } catch (URISyntaxException | RuntimeException e) {
             throw new DataStoreContentException(e);
+        } catch (Exception e) {
+            throw new DataStoreException(e);
         }
         return metadata;
     }
@@ -182,10 +181,12 @@ public final class Store extends StaxDataStore {
         if (r == null) try {
             r = new Reader(this);
             version = r.initialize(false);
-        } catch (XMLStreamException | IOException | JAXBException e) {
-            throw new DataStoreException(e);
+        } catch (DataStoreException e) {
+            throw e;
         } catch (URISyntaxException | RuntimeException e) {
             throw new DataStoreContentException(e);
+        } catch (Exception e) {
+            throw new DataStoreException(e);
         }
         final Stream<Feature> features = StreamSupport.stream(r, false);
         return features.onClose(r);

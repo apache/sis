@@ -127,9 +127,10 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @throws DataStoreException if the input type is not recognized or the data store is closed.
      * @throws XMLStreamException if an error occurred while opening the XML file.
      * @throws IOException if an error occurred while preparing the input stream.
+     * @throws Exception if another kind of error occurred while closing a previous stream.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    protected StaxStreamReader(final StaxDataStore owner) throws DataStoreException, XMLStreamException, IOException {
+    protected StaxStreamReader(final StaxDataStore owner) throws Exception {
         super(owner);
         reader = owner.createReader(this);      // Okay because will not store the 'this' reference.
     }

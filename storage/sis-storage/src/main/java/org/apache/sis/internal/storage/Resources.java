@@ -92,6 +92,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ClosedWriter_1 = 5;
 
         /**
+         * One or more read operations are in progress in the “{0}” data store.
+         */
+        public static final short ConcurrentRead_1 = 19;
+
+        /**
+         * A write operation is in progress in the “{0}” data store.
+         */
+        public static final short ConcurrentWrite_1 = 20;
+
+        /**
          * Character string in the “{0}” file is too long. The string has {2} characters while the
          * limit is {1}.
          */
@@ -144,9 +154,14 @@ public final class Resources extends IndexedResourceBundle {
         public static final short StreamIsForwardOnly_1 = 13;
 
         /**
-         * Stream can be read only once.
+         * The “{0}” data store can be read only once.
          */
-        public static final short StreamIsReadOnce = 18;
+        public static final short StreamIsReadOnce_1 = 18;
+
+        /**
+         * Can not modify previously written data in “{0}”.
+         */
+        public static final short StreamIsWriteOnce_1 = 21;
 
         /**
          * Format of “{0}” is not recognized.

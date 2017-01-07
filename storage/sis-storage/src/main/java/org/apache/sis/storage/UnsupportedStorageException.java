@@ -43,7 +43,6 @@ public class UnsupportedStorageException extends DataStoreException {
      * Creates an exception with no cause and no details message.
      */
     public UnsupportedStorageException() {
-        super();
     }
 
     /**
