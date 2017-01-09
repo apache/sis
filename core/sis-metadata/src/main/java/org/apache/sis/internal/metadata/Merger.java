@@ -51,7 +51,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  *         <ul>
  *           <li>The {@linkplain MetadataStandard#getInterface(Class) standard type} of the source element
  *               is assignable to the type of the target element.</li>
- *           <li>There is no conflict, i.e. no property value that are not collection and not equal.</li>
+ *           <li>There is no conflict, i.e. no property value that are not collection and not equal
+ *               (note: this condition is disabled if {@link #avoidConflicts} is {@code false}).</li>
  *         </ul>
  *         If such pair is found, then the merge operation if performed recursively
  *         for that pair of source and target elements.</li>
@@ -79,6 +80,14 @@ public class Merger {
      * The locale to use for formatting error messages, or {@code null} for the default locale.
      */
     protected final Locale locale;
+
+    /**
+     * {@code true} for performing a greater effort of avoiding merge conflicts.
+     * The default value is {@code false}, which may cause {@link #unmerged unmerged(…)} to be invoked in
+     * situation where it could have been avoided. Setting this value to {@code true} increase the chances
+     * of merge success at the expense of more computations.
+     */
+    public boolean avoidConflicts;
 
     /**
      * Creates a new merger.
@@ -219,11 +228,16 @@ public class Merger {
                             final Iterator<?> it = sourceList.iterator();
                             while (it.hasNext()) {
                                 final Object value = it.next();
-                                if (merge(value, (ModifiableMetadata) element, true) &&
-                                    merge(value, (ModifiableMetadata) element, false))
-                                {
-                                    it.remove();
-                                    break;          // Merge at most one source element to each target element.
+                                if (!avoidConflicts || merge(value, (ModifiableMetadata) element, true)) {
+                                    /*
+                                     * If enabled, above 'merge' call verified that the merge can be done, including
+                                     * by recursive checks in all children. The intend is to have a "all or nothing"
+                                     * behavior, before the 'merge' call below starts to modify the values.
+                                     */
+                                    if (merge(value, (ModifiableMetadata) element, false)) {
+                                        it.remove();
+                                        break;          // Merge at most one source element to each target element.
+                                    }
                                 }
                             }
                         }
@@ -269,6 +283,9 @@ public class Merger {
      * Invoked when a metadata value can not be merged.
      * The default implementation throws an {@link InvalidMetadataException}.
      * Subclasses can override this method if they want to perform a different processing.
+     *
+     * <p><b>Tip:</b> to reduce the risks that this method is invoked, consider setting the
+     * {@link #avoidConflicts} flag to {@code true} before invoking {@link #merge merge(…)}.</p>
      *
      * @param target        the metadata instance in which the value should have been written.
      * @param propertyName  the name of the property to write.

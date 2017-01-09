@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.io;
 
 import java.util.Arrays;
 import java.io.Flushable;
@@ -29,6 +29,7 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import org.apache.sis.internal.storage.Resources;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 

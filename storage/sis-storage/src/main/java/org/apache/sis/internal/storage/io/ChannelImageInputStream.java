@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.io;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -24,6 +24,9 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -192,7 +195,7 @@ loop:   while ((c = read()) >= 0) {
      */
     @Override
     public final int read() throws IOException {
-        return hasRemaining() ? buffer.get() & 0xFF : -1;
+        return hasRemaining() ? JDK8.toUnsignedInt(buffer.get()) : -1;
     }
 
     /**

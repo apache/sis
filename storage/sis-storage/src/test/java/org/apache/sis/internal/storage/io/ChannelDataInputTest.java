@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.io;
 
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -51,7 +51,7 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
      * We allocate a small buffer for the {@code ChannelDataInput} in order to force frequent
      * interactions between the buffer and the channel.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testAllReadMethods() throws IOException {
@@ -136,7 +136,7 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
     /**
      * Tests the {@link ChannelDataInput#readString(int, String)} method.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testReadString() throws IOException {
@@ -154,13 +154,13 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
      * Tests {@link ChannelDataInput#seek(long)} on a channel that do not implement
      * {@link java.nio.channels.SeekableByteChannel}.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testSeekOnForwardOnlyChannel() throws IOException {
         int length = random.nextInt(2048) + 1024;
         final byte[] array = createRandomArray(length);
-        length -= (Long.SIZE / Byte.SIZE); // Safety against buffer underflow.
+        length -= (Long.SIZE / Byte.SIZE);                      // Safety against buffer underflow.
         final ByteBuffer buffer = ByteBuffer.wrap(array);
         final ChannelDataInput input = new ChannelDataInput("testSeekOnForwardOnlyChannel",
                 new DripByteChannel(array, random, 1, 2048),
@@ -177,7 +177,7 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
     /**
      * Tests {@link ChannelDataInput#prefetch()}.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testPrefetch() throws IOException {
