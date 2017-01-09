@@ -42,7 +42,7 @@ import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.NamedElement;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.internal.netcdf.Resources;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.storage.DataStoreException;

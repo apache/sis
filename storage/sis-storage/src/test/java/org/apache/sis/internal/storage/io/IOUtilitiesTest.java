@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.io;
 
 import java.net.URL;
 import java.io.File;
@@ -43,8 +43,8 @@ public final strictfp class IOUtilitiesTest extends TestCase {
     /**
      * Tests {@link IOUtilities#filename(Object)}.
      *
-     * @throws URISyntaxException Should never happen.
-     * @throws MalformedURLException Should never happen.
+     * @throws URISyntaxException if a URI can not be parsed.
+     * @throws MalformedURLException if a URL can not be parsed.
      */
     @Test
     public void testFilename() throws URISyntaxException, MalformedURLException {
@@ -59,8 +59,8 @@ public final strictfp class IOUtilitiesTest extends TestCase {
     /**
      * Tests {@link IOUtilities#extension(Object)}.
      *
-     * @throws URISyntaxException Should never happen.
-     * @throws MalformedURLException Should never happen.
+     * @throws URISyntaxException if a URI can not be parsed.
+     * @throws MalformedURLException if a URL can not be parsed.
      */
     @Test
     @DependsOnMethod("testFilename")
@@ -79,8 +79,8 @@ public final strictfp class IOUtilitiesTest extends TestCase {
      * Tests again {@link IOUtilities#filename(Object)} and {@link IOUtilities#extension(Object)}, but with a URI
      * that point to a JAR entry. Such URI are opaque, in which case {@link URI#getPath()} returns {@code null}.
      *
-     * @throws URISyntaxException Should never happen.
-     * @throws MalformedURLException Should never happen.
+     * @throws URISyntaxException if a URI can not be parsed.
+     * @throws MalformedURLException if a URL can not be parsed.
      */
     @Test
     @DependsOnMethod({"testFilename", "testExtension"})
@@ -98,8 +98,8 @@ public final strictfp class IOUtilitiesTest extends TestCase {
     /**
      * Tests {@link IOUtilities#toString(Object)}.
      *
-     * @throws URISyntaxException Should never happen.
-     * @throws MalformedURLException Should never happen.
+     * @throws URISyntaxException if a URI can not be parsed.
+     * @throws MalformedURLException if a URL can not be parsed.
      */
     @Test
     public void testToString() throws URISyntaxException, MalformedURLException {
@@ -123,8 +123,8 @@ public final strictfp class IOUtilitiesTest extends TestCase {
     /**
      * Tests {@link IOUtilities#toURI(URL, String)}.
      *
-     * @throws IOException Should not happen.
-     * @throws URISyntaxException Should not happen.
+     * @throws IOException if a URL can not be parsed.
+     * @throws URISyntaxException if a URI can not be parsed.
      */
     @Test
     @DependsOnMethod("testEncodeURI")
@@ -148,7 +148,7 @@ public final strictfp class IOUtilitiesTest extends TestCase {
      * (e.g. {@code "file:///C:/some/path/Map.png"}), since the result is different on Windows or
      * Unix platforms.
      *
-     * @throws IOException Should not happen.
+     * @throws IOException if a URL can not be parsed.
      */
     @Test
     @DependsOnMethod("testToURI")
@@ -159,7 +159,7 @@ public final strictfp class IOUtilitiesTest extends TestCase {
     /**
      * Same test than {@link #testToFile()}, but using the UTF-8 encoding.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException if a URL can not be parsed.
      */
     @Test
     @DependsOnMethod("testToFile")
@@ -171,9 +171,9 @@ public final strictfp class IOUtilitiesTest extends TestCase {
      * Implementation of {@link #testToFile()} using the given encoding.
      * If the encoding is null, then the {@code URLDecoder} will not be used.
      *
-     * @param  encoding The encoding, or {@code null} if none.
-     * @param  plus The representation for the {@code '+'} sign.
-     * @throws IOException Should not happen.
+     * @param  encoding  the encoding, or {@code null} if none.
+     * @param  plus      the representation for the {@code '+'} sign.
+     * @throws IOException if a URL can not be parsed.
      */
     private void testToFile(final String encoding, final String plus) throws IOException {
         assertEquals("Unix absolute path.", new File("/Users/name/Map.png"),
@@ -187,7 +187,7 @@ public final strictfp class IOUtilitiesTest extends TestCase {
     /**
      * Tests {@link IOUtilities#toFileOrURL(String, String)}.
      *
-     * @throws IOException Should not happen.
+     * @throws IOException if a URL can not be parsed.
      */
     @Test
     @DependsOnMethod("testToFileFromUTF8")

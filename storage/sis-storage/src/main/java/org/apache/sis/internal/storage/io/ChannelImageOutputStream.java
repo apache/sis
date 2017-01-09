@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.io;
 
 import java.io.Closeable;
 import java.io.DataOutput;
@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.WritableByteChannel;
 import javax.imageio.stream.ImageOutputStream;
+import org.apache.sis.internal.storage.Resources;
 
 
 /**
