@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.nio.file.OpenOption;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.storage.IOUtilities;
+import org.apache.sis.internal.storage.io.IOUtilities;
 
 
 /**
@@ -43,7 +43,6 @@ public class UnsupportedStorageException extends DataStoreException {
      * Creates an exception with no cause and no details message.
      */
     public UnsupportedStorageException() {
-        super();
     }
 
     /**

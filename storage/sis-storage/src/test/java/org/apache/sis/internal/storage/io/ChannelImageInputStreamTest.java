@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.io;
 
 import java.util.Arrays;
 import java.nio.ByteOrder;
@@ -56,7 +56,7 @@ public final strictfp class ChannelImageInputStreamTest extends ChannelDataTestC
      * We will allocate a small buffer for the {@code ChannelImageInputStream} in order to force
      * frequent interactions between the buffer and the channel.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testWithRandomData() throws IOException {

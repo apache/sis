@@ -30,7 +30,7 @@ import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.internal.geotiff.Resources;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.MetadataBuilder;
