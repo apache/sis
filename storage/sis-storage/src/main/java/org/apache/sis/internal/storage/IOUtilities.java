@@ -19,19 +19,25 @@ package org.apache.sis.internal.storage;
 import java.util.Locale;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.charset.StandardCharsets;
+import javax.imageio.stream.ImageInputStream;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamReader;
 import org.apache.sis.util.CharSequences;
@@ -382,6 +388,102 @@ public final class IOUtilities extends Static {
          * If a URI is needed, callers should use toURI(url, encoding).
          */
         return url;
+    }
+
+    /**
+     * Converts the given output stream to an input stream. It is caller's responsibility to flush
+     * the stream and reset its position to the beginning of file before to invoke this method.
+     * The data read by the input stream will be the data that have been written in the output stream
+     * before this method is invoked.
+     *
+     * <p>The given output stream should not be used anymore after this method invocation, but should
+     * not be closed neither since the returned input stream may be backed by the same channel.</p>
+     *
+     * @param  stream  the input or output stream to converts to an {@code InputStream}.
+     * @return the input stream, or {@code null} if the given stream can not be converted.
+     * @throws IOException if an error occurred during input stream creation.
+     *
+     * @since 0.8
+     */
+    public static InputStream toInputStream(AutoCloseable stream) throws IOException {
+        if (stream != null) {
+            if (stream instanceof InputStream) {
+                return (InputStream) stream;
+            }
+            if (stream instanceof OutputStreamAdapter) {
+                stream = ((OutputStreamAdapter) stream).output;
+            }
+            if (stream instanceof ChannelDataOutput) {
+                final ChannelDataOutput c = (ChannelDataOutput) stream;
+                if (c.channel instanceof ReadableByteChannel) {
+                    stream = new ChannelImageInputStream(c.filename, (ReadableByteChannel) c.channel, c.buffer, true);
+                }
+            }
+            if (stream instanceof ImageInputStream) {
+                return new InputStreamAdapter((ImageInputStream) stream);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Converts the given input stream to an output stream. It is caller's responsibility to reset
+     * the stream position to the beginning of file before to invoke this method. The data written
+     * by the output stream will overwrite the previous data, but the caller may need to
+     * {@linkplain #truncate truncate} the output stream after he finished to write in it.
+     *
+     * <p>The given input stream should not be used anymore after this method invocation, but should
+     * not be closed neither since the returned output stream may be backed by the same channel.</p>
+     *
+     * @param  stream  the input or output stream to converts to an {@code OutputStream}.
+     * @return the output stream, or {@code null} if the given stream can not be converted.
+     * @throws IOException if an error occurred during output stream creation.
+     *
+     * @since 0.8
+     */
+    public static OutputStream toOutputStream(AutoCloseable stream) throws IOException {
+        if (stream != null) {
+            if (stream instanceof OutputStream) {
+                return (OutputStream) stream;
+            }
+            if (stream instanceof InputStreamAdapter) {
+                stream = ((InputStreamAdapter) stream).input;
+            }
+            if (stream instanceof ChannelDataInput) {
+                final ChannelDataInput c = (ChannelDataInput) stream;
+                if (c.channel instanceof WritableByteChannel) {
+                    stream = new ChannelImageOutputStream(c.filename, (WritableByteChannel) c.channel, c.buffer);
+                }
+            }
+            if (stream instanceof ChannelImageOutputStream) {
+                return new OutputStreamAdapter((ChannelImageOutputStream) stream);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Truncates the given output stream at its current position.
+     * This method works with Apache SIS implementations backed (sometime indirectly) by {@link SeekableByteChannel}.
+     * Callers may need to {@linkplain java.io.Flushable#flush() flush} the stream before to invoke this method.
+     *
+     * @param  stream  the output stream or writable channel to truncate.
+     * @return whether this method has been able to truncate the given stream.
+     * @throws IOException if an error occurred while truncating the stream.
+     */
+    public static boolean truncate(AutoCloseable stream) throws IOException {
+        if (stream instanceof OutputStreamAdapter) {
+            stream = ((OutputStreamAdapter) stream).output;
+        }
+        if (stream instanceof ChannelDataOutput) {
+            stream = ((ChannelDataOutput) stream).channel;
+        }
+        if (stream instanceof SeekableByteChannel) {
+            final SeekableByteChannel s = (SeekableByteChannel) stream;
+            s.truncate(s.position());
+            return true;
+        }
+        return false;
     }
 
     /**

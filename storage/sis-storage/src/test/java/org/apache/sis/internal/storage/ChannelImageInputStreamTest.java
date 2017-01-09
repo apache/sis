@@ -56,7 +56,7 @@ public final strictfp class ChannelImageInputStreamTest extends ChannelDataTestC
      * We will allocate a small buffer for the {@code ChannelImageInputStream} in order to force
      * frequent interactions between the buffer and the channel.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testWithRandomData() throws IOException {

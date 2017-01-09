@@ -29,6 +29,7 @@ import org.apache.sis.util.Version;
 import org.apache.sis.util.Debug;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
@@ -105,7 +106,7 @@ public final strictfp class WriterTest extends TestCase {
 
     /**
      * Test writing GPX 1.0 metadata. This test creates programmatically the same metadata than the ones
-     * found in {@code 1.0/metadata.xml} file, then compare the written XML file with the expected file.
+     * found in {@code 1.0/metadata.xml} file, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
      */
@@ -116,7 +117,7 @@ public final strictfp class WriterTest extends TestCase {
 
     /**
      * Test writing GPX 1.1 metadata. This test creates programmatically the same metadata than the ones
-     * found in {@code 1.1/metadata.xml} file, then compare the written XML file with the expected file.
+     * found in {@code 1.1/metadata.xml} file, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
      */
@@ -144,7 +145,7 @@ public final strictfp class WriterTest extends TestCase {
 
     /**
      * Tests writing various GPX 1.0 way points. This test creates programmatically the same features than
-     * the ones found in {@code 1.0/waypoint.xml}, then compare the written XML file with the expected file.
+     * the ones found in {@code 1.0/waypoint.xml}, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
      */
@@ -156,7 +157,7 @@ public final strictfp class WriterTest extends TestCase {
 
     /**
      * Tests writing various GPX 1.1 way points. This test creates programmatically the same features than
-     * the ones found in {@code 1.1/waypoint.xml}, then compare the written XML file with the expected file.
+     * the ones found in {@code 1.1/waypoint.xml}, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
      */
@@ -168,7 +169,7 @@ public final strictfp class WriterTest extends TestCase {
 
     /**
      * Tests writing various GPX 1.0 routes. This test creates programmatically the same features than
-     * the ones found in {@code 1.0/route.xml}, then compare the written XML file with the expected file.
+     * the ones found in {@code 1.0/route.xml}, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
      */
@@ -180,7 +181,7 @@ public final strictfp class WriterTest extends TestCase {
 
     /**
      * Tests writing various GPX 1.1 routes. This test creates programmatically the same features than
-     * the ones found in {@code 1.1/route.xml}, then compare the written XML file with the expected file.
+     * the ones found in {@code 1.1/route.xml}, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
      */
@@ -192,7 +193,7 @@ public final strictfp class WriterTest extends TestCase {
 
     /**
      * Tests writing various GPX 1.0 tracks. This test creates programmatically the same features than
-     * the ones found in {@code 1.0/track.xml}, then compare the written XML file with the expected file.
+     * the ones found in {@code 1.0/track.xml}, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
      */
@@ -204,7 +205,7 @@ public final strictfp class WriterTest extends TestCase {
 
     /**
      * Tests writing various GPX 1.1 tracks. This test creates programmatically the same features than
-     * the ones found in {@code 1.1/track.xml}, then compare the written XML file with the expected file.
+     * the ones found in {@code 1.1/track.xml}, then compares the written XML file with the expected file.
      *
      * @throws Exception if an error occurred while writing the XML data.
      */
@@ -229,6 +230,21 @@ public final strictfp class WriterTest extends TestCase {
      * @param expected  name of a test file containing the expected XML result.
      */
     private void testFeatures(final Version version, final Type type, final String expected) throws Exception {
+        try (final Store store = create()) {
+            store.version = version;
+            testFeatures(store, type);
+        }
+        assertXmlEquals(WriterTest.class.getResourceAsStream(expected), toString(),
+                        "xmlns:xsi", "xsi:schemaLocation", "xsi:type");
+    }
+
+    /**
+     * Writes way points, routes or tracks in the given store.
+     *
+     * @param store  the store where to write.
+     * @param type   the kind of feature to write: way point, route or track.
+     */
+    private void testFeatures(final Store store, final Type type) throws Exception {
         final Types types = Types.DEFAULT;
         /*
          * Way Points as defined in "waypoint.xml" test file.
@@ -335,11 +351,37 @@ public final strictfp class WriterTest extends TestCase {
         final Metadata metadata = new Metadata();
         metadata.bounds = bounds;
         metadata.creator = "DataProducer";
-        try (final Store store = create()) {
-            store.version = version;
-            store.write(metadata, features.stream());
+        store.write(metadata, features.stream());
+    }
+
+    /**
+     * Tests coexistence of read and write operations by first reading part of a file,
+     * then switching in write mode.
+     *
+     * @throws Exception if an error occurred while creating the temporary test file,
+     *         the test data or performing data store operation.
+     */
+    @Test
+    @DependsOnMethod("testRoutes110")
+    public void testInputReplacement() throws Exception {
+        try (final Store store = new Store(provider, new StorageConnector(
+                TestUtilities.createTemporaryFile(ReaderTest.class, "1.1/metadata.xml"))))
+        {
+            /*
+             * Read part of the file. We verify its content as a matter of principle,
+             * but the main purpose of following code is to advance in the stream.
+             */
+            ReaderTest.verifyMetadata((Metadata) store.getMetadata(), 3);
+            assertEquals("version", Store.V1_1, store.getVersion());
+            /*
+             * Replace the metadata content by route content. The data store should rewind
+             * to the begining of the file and replace the input stream by an output stream.
+             */
+            testFeatures(store, Type.ROUTE);
+            /*
+             * Following should revert the output stream back to an input stream and rewind again.
+             */
+            ReaderTest.verifyRoute110(store);
         }
-        assertXmlEquals(WriterTest.class.getResourceAsStream(expected), toString(),
-                        "xmlns:xsi", "xsi:schemaLocation", "xsi:type");
     }
 }

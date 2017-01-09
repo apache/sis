@@ -18,13 +18,10 @@ package org.apache.sis.internal.storage;
 
 import java.io.OutputStream;
 import java.io.IOException;
-import java.io.DataOutput;
-import java.io.Flushable;
-import java.io.Closeable;
 
 
 /**
- * Wraps a {@link DataOutput} as a standard {@link OutputStream}.
+ * Wraps a {@link ChannelDataOutput} as a standard {@link OutputStream}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
@@ -33,20 +30,23 @@ import java.io.Closeable;
  *
  * @see InputStreamAdapter
  */
-public final class OutputStreamAdapter extends OutputStream {
+final class OutputStreamAdapter extends OutputStream implements Markable {
     /**
      * The underlying data output stream. In principle, public access to this field breaks encapsulation.
      * But since {@code OutputStreamAdapter} does not hold any state and just forwards every method calls
-     * to that {@code DataOutput}, using on object or the other does not make a difference.
+     * to that {@code ChannelDataOutput}, using on object or the other does not make a difference.
+     *
+     * @todo to be replaced by a reference to {@link javax.imageio.stream.ImageOutputStream} if the
+     *       {@link ChannelImageOutputStream} class implements that interface in a future version.
      */
-    public final DataOutput output;
+    final ChannelImageOutputStream output;
 
     /**
      * Constructs a new output stream.
      *
      * @param output  the stream to wrap.
      */
-    public OutputStreamAdapter(final DataOutput output) {
+    OutputStreamAdapter(final ChannelImageOutputStream output) {
         this.output = output;
     }
 
@@ -86,15 +86,42 @@ public final class OutputStreamAdapter extends OutputStream {
     }
 
     /**
+     * Marks the current position in this output stream.
+     */
+    @Override
+    public void mark() {
+        output.mark();
+    }
+
+    /**
+     * Repositions this stream to the position at the time the {@code mark} method was last called.
+     *
+     * @throws IOException if an I/O error occurs.
+     */
+    @Override
+    public void reset() throws IOException {
+        output.reset();
+    }
+
+    /**
+     * Returns the current byte position of the stream.
+     *
+     * @return the position of the stream.
+     * @throws IOException if the position can not be obtained.
+     */
+    @Override
+    public long getStreamPosition() throws IOException {
+        return output.getStreamPosition();
+    }
+
+    /**
      * Forces any buffered output bytes to be written out.
      *
      * @throws IOException if an I/O error occurs.
      */
     @Override
     public void flush() throws IOException {
-        if (output instanceof Flushable) {
-            ((Flushable) output).flush();
-        }
+        output.flush();
     }
 
     /**
@@ -104,8 +131,6 @@ public final class OutputStreamAdapter extends OutputStream {
      */
     @Override
     public void close() throws IOException {
-        if (output instanceof Closeable) {
-            ((Closeable) output).close();
-        }
+        output.close();
     }
 }

@@ -166,7 +166,7 @@ public final strictfp class ReaderTest extends TestCase {
      * This method verifies only the values that are common to both GPX 1.0 and GPX 1.1 test files.
      */
     @SuppressWarnings("fallthrough")
-    private static void verifyMetadata(final Metadata md, final int numLinks) {
+    static void verifyMetadata(final Metadata md, final int numLinks) {
         assertEquals      ("name",         "Sample",                            md.name);
         assertEquals      ("description",  "GPX test file",                     md.description);
         assertEquals      ("time",         date("2010-03-01 00:00:00"),         md.time);
@@ -298,7 +298,7 @@ public final strictfp class ReaderTest extends TestCase {
      * Verifies the routes of GPX {@code "1.1/route.xml"} test file.
      * This verification is shared by {@link #testRoute110()} and {@link #testSequentialReads()}.
      */
-    private static void verifyRoute110(final Store reader) throws DataStoreException {
+    static void verifyRoute110(final Store reader) throws DataStoreException {
         try (final Stream<Feature> features = reader.getFeatures()) {
             final Iterator<Feature> it = features.iterator();
             verifyRoute(it.next(), true, 3);
@@ -552,6 +552,20 @@ public final strictfp class ReaderTest extends TestCase {
     }
 
     /**
+     * Tests parsing of GPX version 1.1.0 route without reading the metadata before it.
+     * The reader is expected to skip metadata without unmarshalling them.
+     *
+     * @throws DataStoreException if reader failed to be created or failed at reading.
+     */
+    @Test
+    @DependsOnMethod("testRoute110")
+    public void testRouteSkipMetadata() throws DataStoreException {
+        try (final Store reader = create("1.1/route.xml")) {
+            verifyRoute110(reader);
+        }
+    }
+
+    /**
      * Creates a data store for the {@code "1.1/route.xml"} test files using its URL instead than the input stream.
      * Using the URL makes easier for the data store to read the same data more than once.
      */
@@ -567,7 +581,7 @@ public final strictfp class ReaderTest extends TestCase {
      * @throws DataStoreException if reader failed to be created or failed at reading.
      */
     @Test
-    @DependsOnMethod("testRoute110")
+    @DependsOnMethod("testRouteSkipMetadata")
     public void testSequentialReads() throws DataStoreException {
         final Metadata md;
         try (final Store reader = createFromURL()) {

@@ -464,7 +464,7 @@ public class StorageConnector implements Serializable {
          * URL, URI, File, Path or other types that may be added in future SIS versions.
          */
         final ChannelFactory factory = ChannelFactory.prepare(storage,
-                getOption(OptionKey.URL_ENCODING), getOption(OptionKey.OPEN_OPTIONS));
+                getOption(OptionKey.URL_ENCODING), false, getOption(OptionKey.OPEN_OPTIONS));
 
         ChannelDataInput asDataInput = null;
         if (factory != null) {

@@ -45,6 +45,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * @param input  the stream to wrap.
      */
     public InputStreamAdapter(final ImageInputStream input) {
+        assert !(input instanceof InputStream);
         this.input = input;
     }
 

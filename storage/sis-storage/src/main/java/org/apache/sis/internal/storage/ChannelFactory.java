@@ -79,14 +79,15 @@ public abstract class ChannelFactory {
 
     /**
      * Returns a byte channel factory from the given input or output,
-     * or {@code null} if the input is of unknown type.
+     * or {@code null} if the given input/output is of unknown type.
      * More specifically:
      *
      * <ul>
      *   <li>If the given storage is {@code null}, then this method returns {@code null}.</li>
      *   <li>If the given storage is a {@link ReadableByteChannel} or an {@link InputStream},
      *       then the factory will return that input directly or indirectly as a wrapper.</li>
-     *   <li>If the given storage is a {@link WritableByteChannel} or an {@link OutputStream},
+     *   <li>If the given storage is a {@link WritableByteChannel} or an {@link OutputStream}
+     *       and the {@code allowWriteOnly} argument is {@code true},
      *       then the factory will return that output directly or indirectly as a wrapper.</li>
      *   <li>If the given storage if a {@link Path}, {@link File}, {@link URL}, {@link URI}
      *       or {@link CharSequence}, then the factory will open new channels on demand.</li>
@@ -98,24 +99,29 @@ public abstract class ChannelFactory {
      * This is because the channel may be opened by {@link URL#openStream()}, in which case the
      * options are ignored.
      *
-     * <p>The following options are illegal and will cause an exception to be thrown if provided:
+     * <p>The following options are illegal for read operations and will cause an exception to be
+     * thrown if provided while {@code allowWriteOnly} is {@code false}:
      * {@code APPEND}, {@code TRUNCATE_EXISTING}, {@code DELETE_ON_CLOSE}. We reject those options
      * because this method is primarily designed for readable channels, with optional data edition.
      * Since the write option is not guaranteed to be honored, we have to reject the options that
      * would alter significatively the channel behavior depending on whether we have been able to
      * honor the options or not.</p>
      *
-     * @param  storage   the stream or the file to open, or {@code null}.
-     * @param  encoding  if the input is an encoded URL, the character encoding (normally {@code "UTF-8"}).
-     *                   If the URL is not encoded, then {@code null}. This argument is ignored if the given
-     *                   input does not need to be converted from URL to {@code File}.
-     * @param  options   the options to use for creating a new byte channel. Can be null or empty for read-only.
+     * @param  storage         the stream or the file to open, or {@code null}.
+     * @param  encoding        if the input is an encoded URL, the character encoding (normally {@code "UTF-8"}).
+     *                         If the URL is not encoded, then {@code null}. This argument is ignored if the given
+     *                         input does not need to be converted from URL to {@code File}.
+     * @param  allowWriteOnly  whether to allow wrapping {@link WritableByteChannel} and {@link OutputStream}.
+     * @param  options         the options to use for creating a new byte channel. Can be null or empty for read-only.
      * @return the channel factory for the given input, or {@code null} if the given input is of unknown type.
      * @throws IOException if an error occurred while processing the given input.
      */
-    public static ChannelFactory prepare(Object storage, final String encoding, OpenOption... options) throws IOException {
+    public static ChannelFactory prepare(Object storage, final String encoding,
+            final boolean allowWriteOnly, OpenOption... options) throws IOException
+    {
         /*
-         * Unconditionally verify the options, even if we may not use them.
+         * Unconditionally verify the options (unless 'allowWriteOnly' is true),
+         * even if we may not use them.
          */
         final Set<OpenOption> optionSet;
         if (options == null || options.length == 0) {
@@ -123,7 +129,7 @@ public abstract class ChannelFactory {
         } else {
             optionSet = new HashSet<>(Arrays.asList(options));
             optionSet.add(StandardOpenOption.READ);
-            if (optionSet.removeAll(ILLEGAL_OPTIONS)) {
+            if (!allowWriteOnly && optionSet.removeAll(ILLEGAL_OPTIONS)) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2,
                         "options", Arrays.toString(options)));
             }
@@ -134,12 +140,12 @@ public abstract class ChannelFactory {
          * to its getChannel() method, but only if the input stream type is exactly FileInputStream, not a subtype.
          * If Apache SIS defines its own FileInputStream subclass someday, we may need to add a special case here.
          */
-        if (storage instanceof ReadableByteChannel || storage instanceof WritableByteChannel) {
+        if (storage instanceof ReadableByteChannel || (allowWriteOnly && storage instanceof WritableByteChannel)) {
             return new Stream((Channel) storage);
         } else if (storage instanceof InputStream) {
             return new Stream(Channels.newChannel((InputStream) storage));
-//      } else if (storage instanceof OutputStream) {
-//          return new Stream(Channels.newChannel((OutputStream) storage));
+        } else if (allowWriteOnly && storage instanceof OutputStream) {
+            return new Stream(Channels.newChannel((OutputStream) storage));
         }
         /*
          * In the following cases, we will try hard to convert to Path objects before to fallback

@@ -89,7 +89,7 @@ public final strictfp class StorageConnectorTest extends TestCase {
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link String} type.
      *
      * @throws DataStoreException if an error occurred while using the storage connector.
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we do not open any file.
      */
     @Test
     public void testGetAsString() throws DataStoreException, IOException {
@@ -202,11 +202,12 @@ public final strictfp class StorageConnectorTest extends TestCase {
         assertNotSame(connection.getStorage(), in);
         assertSame("Expected cached value.", in, connection.getStorageAs(InputStream.class));
         assertInstanceOf("Expected Channel backend", InputStreamAdapter.class, in);
-        assertInstanceOf("Expected Channel backend", ChannelImageInputStream.class, ((InputStreamAdapter) in).input);
-        assertSame(((InputStreamAdapter) in).input, connection.getStorageAs(DataInput.class));
-        assertSame(((InputStreamAdapter) in).input, connection.getStorageAs(ImageInputStream.class));
+        final ImageInputStream input = ((InputStreamAdapter) in).input;
+        assertInstanceOf("Expected Channel backend", ChannelImageInputStream.class, input);
+        assertSame(input, connection.getStorageAs(DataInput.class));
+        assertSame(input, connection.getStorageAs(ImageInputStream.class));
 
-        final ReadableByteChannel channel = ((ChannelImageInputStream) ((InputStreamAdapter) in).input).channel;
+        final ReadableByteChannel channel = ((ChannelImageInputStream) input).channel;
         assertTrue(channel.isOpen());
         connection.closeAllExcept(null);
         assertFalse(channel.isOpen());
@@ -286,7 +287,7 @@ public final strictfp class StorageConnectorTest extends TestCase {
     public void testGetAsTemporaryByteBuffer() throws DataStoreException, IOException {
         StorageConnector connection = create(true);
         final DataInput in = ImageIO.createImageInputStream(connection.getStorage());
-        assertNotNull("ImageIO.createImageInputStream(InputStream)", in); // Sanity check.
+        assertNotNull("ImageIO.createImageInputStream(InputStream)", in);                   // Sanity check.
         connection = new StorageConnector(in);
         assertSame(in, connection.getStorageAs(DataInput.class));
 
@@ -301,7 +302,7 @@ public final strictfp class StorageConnectorTest extends TestCase {
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link Connection} type.
      *
      * @throws DataStoreException if an error occurred while using the storage connector.
-     * @throws IOException should never happen.
+     * @throws IOException should never happen since we do not open any file.
      */
     public void testGetAsConnection() throws DataStoreException, IOException {
         final StorageConnector connection = create(false);

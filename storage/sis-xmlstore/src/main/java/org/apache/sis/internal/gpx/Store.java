@@ -204,12 +204,27 @@ public final class Store extends StaxDataStore {
     public synchronized void write(final Metadata metadata, final Stream<? extends Feature> features)
             throws DataStoreException
     {
-        try (final Writer writer = new Writer(this, org.apache.sis.internal.gpx.Metadata.castOrCopy(metadata, locale))) {
-            writer.writeStartDocument();
-            if (features != null) {
-                features.forEachOrdered(writer);
+        try {
+            /*
+             * If we created a reader for reading metadata, we need to close that reader now otherwise the call
+             * to 'new Writer(…)' will fail.  Note that if that reader was in use by someone else, the 'reader'
+             * field would be null and the 'new Writer(…)' call should detect that a reader is in use somewhere.
+             */
+            final Reader r = reader;
+            if (r != null) {
+                reader = null;
+                r.close();
             }
-            writer.writeEndDocument();
+            /*
+             * Get the writer if no read or other write operation is in progress, then write the data.
+             */
+            try (final Writer writer = new Writer(this, org.apache.sis.internal.gpx.Metadata.castOrCopy(metadata, locale))) {
+                writer.writeStartDocument();
+                if (features != null) {
+                    features.forEachOrdered(writer);
+                }
+                writer.writeEndDocument();
+            }
         } catch (BackingStoreException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof DataStoreException) {
