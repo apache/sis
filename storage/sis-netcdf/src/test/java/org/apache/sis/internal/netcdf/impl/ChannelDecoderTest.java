@@ -23,7 +23,7 @@ import java.nio.channels.Channels;
 import org.apache.sis.internal.netcdf.IOTestCase;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DecoderTest;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
 

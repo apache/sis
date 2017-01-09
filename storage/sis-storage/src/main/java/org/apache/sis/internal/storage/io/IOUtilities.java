@@ -14,42 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.io;
 
-import java.util.Set;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Collections;
-import java.util.Arrays;
 import java.util.Locale;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.charset.StandardCharsets;
+import javax.imageio.stream.ImageInputStream;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamReader;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.storage.Resources;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -68,12 +66,6 @@ import org.apache.sis.internal.system.Modules;
  * @module
  */
 public final class IOUtilities extends Static {
-    /**
-     * Options to be rejected by {@link #open(Object, String, OpenOption[])} for safety reasons.
-     */
-    private static final Set<StandardOpenOption> ILLEGAL_OPTIONS = EnumSet.of(
-            StandardOpenOption.APPEND, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.DELETE_ON_CLOSE);
-
     /**
      * Do not allow instantiation of this class.
      */
@@ -207,7 +199,7 @@ public final class IOUtilities extends Static {
                 }
                 for (final byte b : path.substring(i, i+n).getBytes(StandardCharsets.UTF_8)) {
                     buffer.append('%');
-                    final String hex = Integer.toHexString(b & 0xFF).toUpperCase(Locale.ROOT);
+                    final String hex = Integer.toHexString(JDK8.toUnsignedInt(b)).toUpperCase(Locale.ROOT);
                     if (hex.length() < 2) {
                         buffer.append('0');
                     }
@@ -403,156 +395,99 @@ public final class IOUtilities extends Static {
     }
 
     /**
-     * Returns a byte channel from the given input, or {@code null} if the input is of unknown type.
-     * More specifically:
+     * Converts the given output stream to an input stream. It is caller's responsibility to flush
+     * the stream and reset its position to the beginning of file before to invoke this method.
+     * The data read by the input stream will be the data that have been written in the output stream
+     * before this method is invoked.
      *
-     * <ul>
-     *   <li>If the given input is {@code null}, then this method returns {@code null}.</li>
-     *   <li>If the given input is a {@link ReadableByteChannel} or an {@link InputStream},
-     *       then it is returned directly, or indirectly as a wrapper.</li>
-     *   <li>If the given input if a {@link Path}, {@link File}, {@link URL}, {@link URI}
-     *       or {@link CharSequence}, then a new channel is opened.</li>
-     * </ul>
+     * <p>The given output stream should not be used anymore after this method invocation, but should
+     * not be closed neither since the returned input stream may be backed by the same channel.</p>
      *
-     * The given options are used for opening the channel on a <em>best effort basis</em>.
-     * In particular, even if the caller provided the {@code WRITE} option, he still needs
-     * to verify if the returned channel implements {@link java.nio.channels.WritableByteChannel}.
-     * This is because the channel may be opened by {@link URL#openStream()}, in which case the
-     * options are ignored.
+     * @param  stream  the input or output stream to converts to an {@code InputStream}.
+     * @return the input stream, or {@code null} if the given stream can not be converted.
+     * @throws IOException if an error occurred during input stream creation.
      *
-     * <p>The following options are illegal and will cause an exception to be thrown if provided:
-     * {@code APPEND}, {@code TRUNCATE_EXISTING}, {@code DELETE_ON_CLOSE}. We reject those options
-     * because this method is primarily designed for readable channels, with optional data edition.
-     * Since the write option is not guaranteed to be honored, we have to reject the options that
-     * would alter significatively the channel behavior depending on whether we have been able to
-     * honor the options or not.</p>
-     *
-     * @param  input     the file to open, or {@code null}.
-     * @param  encoding  if the input is an encoded URL, the character encoding (normally {@code "UTF-8"}).
-     *                   If the URL is not encoded, then {@code null}. This argument is ignored if the given
-     *                   input does not need to be converted from URL to {@code File}.
-     * @param  options   the options to use for creating a new byte channel. Can be null or empty for read-only.
-     * @return the channel for the given input, or {@code null} if the given input is of unknown type.
-     * @throws IOException if an error occurred while opening the given file.
+     * @since 0.8
      */
-    public static ReadableByteChannel open(Object input, final String encoding, OpenOption... options) throws IOException {
-        /*
-         * Unconditionally verify the options, even if we may not use them.
-         */
-        final Set<OpenOption> optionSet;
-        if (options == null || options.length == 0) {
-            optionSet = Collections.<OpenOption>singleton(StandardOpenOption.READ);
-        } else {
-            optionSet = new HashSet<>(Arrays.asList(options));
-            optionSet.add(StandardOpenOption.READ);
-            if (optionSet.removeAll(ILLEGAL_OPTIONS)) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2,
-                        "options", Arrays.toString(options)));
+    public static InputStream toInputStream(AutoCloseable stream) throws IOException {
+        if (stream != null) {
+            if (stream instanceof InputStream) {
+                return (InputStream) stream;
             }
-        }
-        /*
-         * Check for inputs that are already readable channels or input streams. We perform an explicit check
-         * for FileInputStream even if  Channels.newChannel(InputStream)  does this check implicitly, because
-         * Channels.newChannel(…) restricts itself to the exact FileInputStream class while we want to invoke
-         * getChannel() for any subclasses.
-         */
-        if (input instanceof ReadableByteChannel) {
-            return (ReadableByteChannel) input;
-        }
-        if (input instanceof InputStream) {
-            if (input instanceof FileInputStream) {
-                return ((FileInputStream) input).getChannel();
+            if (stream instanceof OutputStreamAdapter) {
+                stream = ((OutputStreamAdapter) stream).output;
             }
-            return Channels.newChannel((InputStream) input);
-        }
-        /*
-         * In the following cases, we will try hard to convert to Path objects before to fallback
-         * on File, URL or URI, because only Path instances allow us to use the given OpenOptions.
-         */
-        if (input instanceof URL) {
-            try {
-                input = toPath((URL) input, encoding);
-            } catch (IOException e) {
-                // This is normal if the URL uses HTTP or FTP protocol for instance.
-                // Log the exception at FINE level without stack trace. We will open
-                // the channel later using the URL instead than using the Path.
-                recoverableException(e);
-            }
-        } else if (input instanceof URI) {
-            /*
-             * If the user gave us a URI, try to convert to a Path before to fallback to URL, in order to be
-             * able to use the given OpenOptions.  Note that the conversion to Path is likely to fail if the
-             * URL uses HTTP or FTP protocols, because JDK7 does not provide file systems for them by default.
-             */
-            final URI uri = (URI) input;
-            if (!uri.isAbsolute()) {
-                // All methods invoked in this block throws IllegalArgumentException if the URI has no scheme,
-                // so we are better to check now and provide a more appropriate exception for this method.
-                throw new IOException(Resources.format(Resources.Keys.MissingSchemeInURI_1, uri));
-            } else try {
-                input = Paths.get(uri);
-            } catch (IllegalArgumentException | FileSystemNotFoundException e) {
-                try {
-                    input = uri.toURL();
-                } catch (MalformedURLException ioe) {
-                    ioe.addSuppressed(e);
-                    throw ioe;
-                }
-                // We have been able to convert to URL, but the given OpenOptions may not be used.
-                // Log the exception at FINE level without stack trace, because the exception is
-                // probably a normal behavior in this context.
-                recoverableException(e);
-            }
-        } else {
-            if (input instanceof CharSequence) { // Needs to be before the check for File or URL.
-                input = toFileOrURL(input.toString(), encoding);
-            }
-            /*
-             * If the input is a File or a CharSequence that we have been able to convert to a File,
-             * try to convert to a Path in order to be able to use the OpenOptions. Only if we fail
-             * to convert to a Path (which is unlikely), we will use directly the File.
-             */
-            if (input instanceof File) {
-                try {
-                    input = ((File) input).toPath();
-                } catch (InvalidPathException e) {
-                    // Unlikely to happen. But if it happens anyway, try to open the channel in a
-                    // way less surprising for the user (closer to the object he has specified).
-                    final ReadableByteChannel channel;
-                    try {
-                        channel = new FileInputStream((File) input).getChannel();
-                    } catch (IOException ioe) {
-                        ioe.addSuppressed(e);
-                        throw ioe;
-                    }
-                    // We have been able to create a channel, maybe not with the given OpenOptions.
-                    // But the exception was nevertheless unexpected, so log its stack trace in order
-                    // to allow the developer to check if there is something wrong.
-                    Logging.unexpectedException(Logging.getLogger(Modules.STORAGE), IOUtilities.class, "open", e);
-                    return channel;
+            if (stream instanceof ChannelDataOutput) {
+                final ChannelDataOutput c = (ChannelDataOutput) stream;
+                if (c.channel instanceof ReadableByteChannel) {
+                    stream = new ChannelImageInputStream(c.filename, (ReadableByteChannel) c.channel, c.buffer, true);
                 }
             }
-        }
-        /*
-         * One last check for URL. The URL may be either the given input if we have not been able
-         * to convert it to a Path, or a URI, File or CharSequence input converted to URL. Do not
-         * try to convert the URL to a Path, because this has already been tried before this point.
-         */
-        if (input instanceof URL) {
-            return Channels.newChannel(((URL) input).openStream());
-        }
-        if (input instanceof Path) {
-            return Files.newByteChannel((Path) input, optionSet);
+            if (stream instanceof ImageInputStream) {
+                return new InputStreamAdapter((ImageInputStream) stream);
+            }
         }
         return null;
     }
 
     /**
-     * Invoked for reporting exceptions that may be normal behavior. This method logs
-     * the exception at {@link java.util.logging.Level#FINE} without stack trace.
+     * Converts the given input stream to an output stream. It is caller's responsibility to reset
+     * the stream position to the beginning of file before to invoke this method. The data written
+     * by the output stream will overwrite the previous data, but the caller may need to
+     * {@linkplain #truncate truncate} the output stream after he finished to write in it.
+     *
+     * <p>The given input stream should not be used anymore after this method invocation, but should
+     * not be closed neither since the returned output stream may be backed by the same channel.</p>
+     *
+     * @param  stream  the input or output stream to converts to an {@code OutputStream}.
+     * @return the output stream, or {@code null} if the given stream can not be converted.
+     * @throws IOException if an error occurred during output stream creation.
+     *
+     * @since 0.8
      */
-    private static void recoverableException(final Exception warning) {
-        Logging.recoverableException(Logging.getLogger(Modules.STORAGE), IOUtilities.class, "open", warning);
+    public static OutputStream toOutputStream(AutoCloseable stream) throws IOException {
+        if (stream != null) {
+            if (stream instanceof OutputStream) {
+                return (OutputStream) stream;
+            }
+            if (stream instanceof InputStreamAdapter) {
+                stream = ((InputStreamAdapter) stream).input;
+            }
+            if (stream instanceof ChannelDataInput) {
+                final ChannelDataInput c = (ChannelDataInput) stream;
+                if (c.channel instanceof WritableByteChannel) {
+                    stream = new ChannelImageOutputStream(c.filename, (WritableByteChannel) c.channel, c.buffer);
+                }
+            }
+            if (stream instanceof ChannelImageOutputStream) {
+                return new OutputStreamAdapter((ChannelImageOutputStream) stream);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Truncates the given output stream at its current position.
+     * This method works with Apache SIS implementations backed (sometime indirectly) by {@link SeekableByteChannel}.
+     * Callers may need to {@linkplain java.io.Flushable#flush() flush} the stream before to invoke this method.
+     *
+     * @param  stream  the output stream or writable channel to truncate.
+     * @return whether this method has been able to truncate the given stream.
+     * @throws IOException if an error occurred while truncating the stream.
+     */
+    public static boolean truncate(AutoCloseable stream) throws IOException {
+        if (stream instanceof OutputStreamAdapter) {
+            stream = ((OutputStreamAdapter) stream).output;
+        }
+        if (stream instanceof ChannelDataOutput) {
+            stream = ((ChannelDataOutput) stream).channel;
+        }
+        if (stream instanceof SeekableByteChannel) {
+            final SeekableByteChannel s = (SeekableByteChannel) stream;
+            s.truncate(s.position());
+            return true;
+        }
+        return false;
     }
 
     /**

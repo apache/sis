@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.io;
 
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
@@ -144,7 +144,7 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
     @DependsOnMethod("testMarkAndReset")
     public void testFlushBefore() throws IOException {
         final int N = 50; // Number of long values to write.
-        initialize("testFlushBefore", N * (Long.SIZE / Byte.SIZE), 200);
+        initialize("testFlushBefore", N*(Long.SIZE / Byte.SIZE), 200);
         final ImageOutputStream referenceStream = (ImageOutputStream) this.referenceStream;
         for (int i=0; i<N; i++) {
             switch (i) {

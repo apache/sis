@@ -27,7 +27,7 @@ import java.nio.ByteOrder;
 import java.text.ParseException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.util.resources.Errors;

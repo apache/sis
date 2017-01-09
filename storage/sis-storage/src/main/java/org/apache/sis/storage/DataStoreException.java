@@ -20,7 +20,7 @@ import java.util.Locale;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.LocalizedException;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.storage.IOUtilities;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.util.Workaround;
 
 
@@ -66,7 +66,6 @@ public class DataStoreException extends Exception implements LocalizedException 
      * Creates an exception with no cause and no details message.
      */
     public DataStoreException() {
-        super();
     }
 
     /**

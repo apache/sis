@@ -19,7 +19,7 @@ package org.apache.sis.storage.geotiff;
 import java.util.Arrays;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.Vector;

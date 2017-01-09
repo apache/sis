@@ -41,9 +41,11 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.storage.IOUtilities;
-import org.apache.sis.internal.storage.ChannelDataInput;
-import org.apache.sis.internal.storage.ChannelImageInputStream;
+import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.internal.storage.io.ChannelFactory;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelImageInputStream;
+import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.setup.OptionKey;
 
 
@@ -73,7 +75,7 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 public class StorageConnector implements Serializable {
@@ -397,6 +399,12 @@ public class StorageConnector implements Serializable {
             } else if (type == ChannelDataInput.class) {                // Undocumented case (SIS internal)
                 createChannelDataInput(false);
                 done = true;
+            } else if (type == ChannelFactory.class) {                  // Undocumented case (SIS internal)
+                /*
+                 * ChannelFactory may have been created as a side effect of creating a ReadableByteChannel.
+                 * Caller should have asked for another type (e.g. InputStream) before to ask for this type.
+                 */
+                done = true;
             }
         } catch (IOException e) {
             throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, getStorageName()), e);
@@ -411,7 +419,7 @@ public class StorageConnector implements Serializable {
         final Object value;
         try {
             value = createView(type);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | DataStoreException e) {
             throw e;
         } catch (Exception e) {
             throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, getStorageName()), e);
@@ -455,11 +463,13 @@ public class StorageConnector implements Serializable {
          * Following method call recognizes ReadableByteChannel, InputStream (with special case for FileInputStream),
          * URL, URI, File, Path or other types that may be added in future SIS versions.
          */
-        final ReadableByteChannel channel = IOUtilities.open(storage,
-                getOption(OptionKey.URL_ENCODING), getOption(OptionKey.OPEN_OPTIONS));
+        final ChannelFactory factory = ChannelFactory.prepare(storage,
+                getOption(OptionKey.URL_ENCODING), false, getOption(OptionKey.OPEN_OPTIONS));
 
         ChannelDataInput asDataInput = null;
-        if (channel != null) {
+        if (factory != null) {
+            final String name = getStorageName();
+            final ReadableByteChannel channel = factory.reader(name);
             addViewToClose(channel, storage);
             ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);
             if (buffer == null) {
@@ -467,13 +477,19 @@ public class StorageConnector implements Serializable {
                 // TODO: we do not create direct buffer yet, but this is something
                 // we may want to consider in a future SIS version.
             }
-            final String name = getStorageName();
             if (asImageInputStream) {
                 asDataInput = new ChannelImageInputStream(name, channel, buffer, false);
             } else {
                 asDataInput = new ChannelDataInput(name, channel, buffer, false);
             }
             addViewToClose(asDataInput, channel);
+            /*
+             * Following is an undocumented mechanism for allowing some Apache SIS implementations of DataStore
+             * to re-open the same channel or input stream another time, typically for re-reading the same data.
+             */
+            if (factory.canOpen()) {
+                addView(ChannelFactory.class, factory);
+            }
         }
         addView(ChannelDataInput.class, asDataInput);
     }

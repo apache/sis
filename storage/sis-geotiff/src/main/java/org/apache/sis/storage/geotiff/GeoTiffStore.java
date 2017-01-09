@@ -31,7 +31,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;

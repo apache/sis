@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.io;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.InvalidMarkException;
 import java.nio.channels.Channel;
 import java.nio.channels.SeekableByteChannel;
-import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
