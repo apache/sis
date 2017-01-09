@@ -37,7 +37,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.storage.IOUtilities;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.collection.BackingStoreException;

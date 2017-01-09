@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.nio.file.OpenOption;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.storage.IOUtilities;
+import org.apache.sis.internal.storage.io.IOUtilities;
 
 
 /**
