@@ -257,7 +257,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     /**
      * Skips all remaining elements until we reach the end of the given tag.
      * Nested tags of the same name, if any, are also skipped.
-     * After this method invocation, the current event is {@link #END_DOCUMENT}.
+     * After this method invocation, the current event is {@link #END_ELEMENT}.
      *
      * @param  tagName name of the tag to close.
      * @throws EOFException if end tag could not be found.
@@ -447,6 +447,9 @@ parse:  switch (value.length()) {
 
     /**
      * Delegates to JAXB the unmarshalling of a part of XML document, starting from the current element (inclusive).
+     * This method assumes that the reader is on {@link #START_ELEMENT}. After this method invocation, the reader
+     * will be on the event <strong>after</strong> {@link #END_ELEMENT}; this implies that the caller will need to
+     * invoke {@link XMLStreamReader#getEventType()} instead of {@link XMLStreamReader#next()}.
      *
      * @param  <T>   compile-time value of the {@code type} argument.
      * @param  type  expected type of the object to unmarshal.

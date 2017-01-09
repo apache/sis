@@ -22,9 +22,7 @@ import java.io.StringWriter;
 import java.io.OutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.nio.channels.WritableByteChannel;
+import java.io.Closeable;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
@@ -35,10 +33,6 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stax.StAXResult;
 import org.xml.sax.ContentHandler;
 import org.w3c.dom.Node;
-import org.apache.sis.internal.storage.ChannelDataInput;
-import org.apache.sis.internal.storage.ChannelImageOutputStream;
-import org.apache.sis.internal.storage.InputStreamAdapter;
-import org.apache.sis.internal.storage.OutputStreamAdapter;
 
 
 /**
@@ -73,11 +67,11 @@ enum OutputType {
             return (ds.encoding != null) ? f.createXMLStreamWriter((OutputStream) s, ds.encoding.name())
                                          : f.createXMLStreamWriter((OutputStream) s);
         }
-        @Override Object toReader(final Object s) {
+        @Override Closeable snapshot(final Object s) {
             if (s instanceof ByteArrayOutputStream) {
                 return new ByteArrayInputStream(((ByteArrayOutputStream) s).toByteArray());
             }
-            return super.toReader(s);
+            return super.snapshot(s);
         }
     },
 
@@ -88,11 +82,11 @@ enum OutputType {
         @Override XMLStreamWriter create(StaxDataStore ds, Object s) throws XMLStreamException {
             return ds.outputFactory().createXMLStreamWriter((Writer) s);
         }
-        @Override Object toReader(final Object s) {
+        @Override Closeable snapshot(final Object s) {
             if (s instanceof StringWriter) {
                 return new StringReader(s.toString());
             }
-            return super.toReader(s);
+            return super.snapshot(s);
         }
     },
 
@@ -111,9 +105,6 @@ enum OutputType {
     NODE(Node.class, InputType.NODE) {
         @Override XMLStreamWriter create(StaxDataStore ds, Object s) throws XMLStreamException {
             return ds.outputFactory().createXMLStreamWriter(new DOMResult((Node) s));
-        }
-        @Override Object toReader(final Object s) {
-            return s;
         }
     },
 
@@ -165,34 +156,18 @@ enum OutputType {
 
     /**
      * Returns a reader for the data written by the given writer, or {@code null} if we can not read the data.
-     * The returned input can be used by {@link #inputType}.
+     * If non-null, the value returned by this method is a snapshot of the given stream content, i.e. changes
+     * in the output stream will not affect the returned input stream or reader. In particular, contrarily to
+     * {@link org.apache.sis.internal.storage.IOUtilities#toInputStream(AutoCloseable)} this method does not
+     * invalidate the output stream.
+     *
+     * <p>The returned input can be used by {@link #inputType}.</p>
      *
      * @param  s  the output from which to get the data that we wrote.
      * @return the input for the data written by the given stream, or {@code null} if none.
      */
-    Object toReader(final Object s) {
+    Closeable snapshot(final Object s) {
         return null;
-    }
-
-    /**
-     * Converts the given stream, usually (but not necessarily) an input stream, to an output stream.
-     * It is caller's responsibility to reset the stream position to the beginning of file before to
-     * invoke this method.
-     */
-    static OutputStream fromInput(AutoCloseable stream) throws IOException {
-        if (stream instanceof OutputStream) {
-            return (OutputStream) stream;
-        }
-        if (stream instanceof InputStreamAdapter) {
-            stream = ((InputStreamAdapter) stream).input;
-        }
-        if (stream instanceof ChannelDataInput) {
-            final ChannelDataInput c = (ChannelDataInput) stream;
-            if (c.channel instanceof WritableByteChannel) {
-                stream = new ChannelImageOutputStream(c.filename, (WritableByteChannel) c.channel, c.buffer);
-            }
-        }
-        return (stream instanceof DataOutput) ? new OutputStreamAdapter((DataOutput) stream) : null;
     }
 
     /**

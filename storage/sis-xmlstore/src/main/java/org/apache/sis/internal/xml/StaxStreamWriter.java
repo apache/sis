@@ -27,6 +27,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 
@@ -323,7 +324,8 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
             marshaller = null;
             getMarshallerPool().recycle(m);
         }
-        writer.close();
+        writer.close();                         // Implies a call to stream.flush().
+        IOUtilities.truncate(stream);
         super.close();
     }
 }

@@ -72,10 +72,10 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     /**
      * Initializes all non-final fields before to execute a test.
      *
-     * @param  testName     The name of the test method to be executed.
-     * @param  streamLength Length of stream to create.
-     * @param  bufferLength Length of the {@code ByteBuffer} to use for the tests.
-     * @throws IOException Should never happen.
+     * @param  testName      the name of the test method to be executed.
+     * @param  streamLength  length of stream to create.
+     * @param  bufferLength  length of the {@code ByteBuffer} to use for the tests.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     void initialize(final String testName, final int streamLength, final int bufferLength) throws IOException {
         expectedData             = new ByteArrayOutputStream(streamLength);
@@ -104,7 +104,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
      * We allocate a small buffer for the {@code ChannelDataOutput} in order to force frequent
      * interactions between the buffer and the channel.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testAllWriteMethods() throws IOException {
@@ -127,7 +127,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     /**
      * Tests write operations followed by seek operations.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     @DependsOnMethod("testAllWriteMethods")
@@ -153,7 +153,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     /**
      * Tests seeking ahead of buffer capacity.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     @DependsOnMethod("testWriteAndSeek")
@@ -177,7 +177,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
             testedStream.writeLong(v);
         }
         assertEquals("getStreamPosition()", 24, testedStream.getStreamPosition());
-        testedStream.seek(40); // Move 2 long ahead. Space shall be filled by 0.
+        testedStream.seek(40);                          // Move 2 long ahead. Space shall be filled by 0.
         referenceStream.writeLong(0);
         referenceStream.writeLong(0);
         final long v = random.nextLong();
@@ -190,7 +190,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
      * Tests the argument checks performed by various methods. For example this method
      * tests {@link ChannelDataOutput#seek(long)} with an invalid seek position.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testArgumentChecks() throws IOException {
@@ -236,7 +236,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     /**
      * Writes the same random data in both {@link #testedStream} and {@link #referenceStream}.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     private void writeInStreams() throws IOException {
         transferRandomData(testedStream, testedStreamBackingArray.length - ARRAY_MAX_LENGTH,

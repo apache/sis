@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -39,6 +40,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.internal.storage.ChannelFactory;
 import org.apache.sis.internal.storage.FeatureStore;
+import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.internal.storage.Markable;
 import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.storage.ConcurrentReadException;
@@ -259,6 +261,7 @@ public abstract class StaxDataStore extends FeatureStore {
             } while (p > streamPosition);
             if (p == streamPosition) {
                 m.mark();
+                state = START;
                 return true;
             }
         }
@@ -400,43 +403,29 @@ public abstract class StaxDataStore extends FeatureStore {
      */
     @SuppressWarnings("fallthrough")
     final synchronized XMLStreamReader createReader(final StaxStreamReader target) throws Exception {
-        Object input = storage;
-        if (input == null) {
+        Object inputOrFile = storage;
+        if (inputOrFile == null) {
             throw new DataStoreClosedException(getLocale(), getFormatName(), StandardOpenOption.READ);
         }
-        /*
-         * If the storage given by the user was not one of InputStream, Reader or other type recognized
-         * by InputType, then maybe that storage was a Path, File or URL, in which case the constructor
-         * should have opened an InputStream for it. If not, then this was an unsupported storage type.
-         * Note that we may have a null 'storageToReader' but a non-null 'storageToWriter', which is why
-         * the UnsupportedStorageException has not been thrown at StaxDataStore construction time.
-         */
-        AutoCloseable opened = stream;
+        AutoCloseable input = stream;
         InputType type = storageToReader;
-        if (type == null) {
-            if (opened == null) {
-                throw new UnsupportedStorageException(getLocale(), getFormatName(), input, StandardOpenOption.READ);
-            }
-            input = opened;
-            type  = InputType.STREAM;
-        }
         /*
          * If the stream has already been used by a previous read operation, then we need to rewind
          * it to the start position determined at construction time. It the stream does not support
-         * mark, then we can not re-read the data.
+         * mark, then we can not re-read the data unless we know how to create new input streams.
          */
         switch (state) {
-            default:        throw new AssertionError(state);
-            case WRITING:   throw new ConcurrentWriteException(getLocale(), getDisplayName());
-            case START:     break;         // Stream already at the data start; nothing to do.
+            default:       throw new AssertionError(state);
+            case WRITING:  throw new ConcurrentWriteException(getLocale(), getDisplayName());
+            case START:    break;         // Stream already at the data start; nothing to do.
             case FINISHED: {
-                if (reset()) break;
-                if (opened != null) {
-                    stream = null;         // Cleared first in case of error during 'close()' call.
-                    opened.close();
-                    opened = null;
+                if (reset()) break;       // If we can reuse existing stream, nothing more to do.
+                if (input != null) {
+                    stream = null;        // Cleared first in case of error during 'close()' call.
+                    input.close();
+                    input = null;
                 }
-                // Fall through
+                // Fall through for trying to create a new input stream.
             }
             case READING: {
                 /*
@@ -444,22 +433,60 @@ public abstract class StaxDataStore extends FeatureStore {
                  * then we need to create a new input stream (except if the input was a DOM in memory, which we can
                  * share). The 'target' StaxStreamReader will be in charge of closing that stream.
                  */
-                if (type == InputType.NODE) break;
-                final String name = getDisplayName();
-                if (channelFactory == null) {
-                    throw new ForwardOnlyStorageException(getLocale(), name, StandardOpenOption.READ);
-                }
-                type  = InputType.STREAM;
-                input = opened = channelFactory.inputStream(name);
-                if (stream == null) {
-                    stream = opened;
-                    mark();
+                if (type != InputType.NODE) {
+                    final String name = getDisplayName();
+                    if (channelFactory == null) {
+                        throw new ForwardOnlyStorageException(getLocale(), name, StandardOpenOption.READ);
+                    }
+                    inputOrFile = input = channelFactory.inputStream(name);
+                    type = InputType.STREAM;
+                    if (stream == null) {
+                        stream = input;
+                        state  = START;
+                        mark();
+                    }
                 }
                 break;
             }
         }
-        final XMLStreamReader reader = type.create(this, input);
-        target.stream = opened;
+        /*
+         * At this point we verified there is no write operation in progress and that the input stream (if not null)
+         * is available for our use. Now we need to build a XMLStreamReader from that input. This is InputType work,
+         * but that type may be null if the storage given by the user was not an InputStream, Reader or other types
+         * recognized by InputType. In such case there is two possibilities:
+         *
+         *   - It may be an OutputStream, Writer or other types recognized by OutputType.
+         *   - It may be a Path, File, URL or URI, which are intentionally not handled by Input/OutputType.
+         */
+        if (type == null) {
+            if (storageToWriter != null) {
+                final Closeable snapshot = storageToWriter.snapshot(inputOrFile);
+                if (snapshot != null) {
+                    // Do not set state to READING since the input in this block is a copy of data.
+                    final XMLStreamReader reader = storageToWriter.inputType.create(this, snapshot);
+                    target.stream = snapshot;
+                    return reader;
+                }
+            }
+            /*
+             * Maybe that storage was a Path, File or URL, in which case the constructor should have opened an
+             * InputStream for it. If not, then this was an unsupported storage type. However the input stream
+             * may have been converted to an output stream during a write operation, in which case we need to
+             * convert it back to an input stream.
+             */
+            type  = InputType.STREAM;
+            input = IOUtilities.toInputStream(input);
+            if (input == null) {
+                throw new UnsupportedStorageException(getLocale(), getFormatName(), storage, StandardOpenOption.READ);
+            }
+            inputOrFile = input;
+            if (input != stream) {
+                stream = input;
+                mark();
+            }
+        }
+        final XMLStreamReader reader = type.create(this, inputOrFile);
+        target.stream = input;
         state = READING;
         return reader;
     }
@@ -479,16 +506,16 @@ public abstract class StaxDataStore extends FeatureStore {
     final synchronized XMLStreamWriter createWriter(final StaxStreamWriter target)
             throws DataStoreException, XMLStreamException, IOException
     {
-        Object output = storage;
-        if (output == null) {
+        Object outputOrFile = storage;
+        if (outputOrFile == null) {
             throw new DataStoreClosedException(getLocale(), getFormatName(), StandardOpenOption.WRITE);
         }
         switch (state) {
-            default:        throw new AssertionError(state);
-            case READING:   throw new ConcurrentReadException (getLocale(), getDisplayName());
-            case WRITING:   throw new ConcurrentWriteException(getLocale(), getDisplayName());
-            case START:     break;         // Stream already at the data start; nothing to do.
-            case FINISHED:  {
+            default:       throw new AssertionError(state);
+            case READING:  throw new ConcurrentReadException (getLocale(), getDisplayName());
+            case WRITING:  throw new ConcurrentWriteException(getLocale(), getDisplayName());
+            case START:    break;         // Stream already at the data start; nothing to do.
+            case FINISHED: {
                 if (reset()) break;
                 throw new ForwardOnlyStorageException(getLocale(), getDisplayName(), StandardOpenOption.WRITE);
             }
@@ -496,22 +523,25 @@ public abstract class StaxDataStore extends FeatureStore {
         /*
          * If the storage given by the user was not one of OutputStream, Writer or other type recognized
          * by OutputType, then maybe that storage was a Path, File or URL, in which case the constructor
-         * should have opened an InputStream (not an OutputStream) for it.
+         * should have opened an InputStream (not an OutputStream) for it. In some cases (e.g. reading a
+         * channel opened on a file), the input stream can be converted to an output stream.
          */
-        AutoCloseable opened = stream;
+        AutoCloseable output = stream;
         OutputType type = storageToWriter;
         if (type == null) {
-            opened = OutputType.fromInput(opened);
-            if (opened == null) {
-                throw new UnsupportedStorageException(getLocale(), getFormatName(), output, StandardOpenOption.WRITE);
+            type   = OutputType.STREAM;
+            output = IOUtilities.toOutputStream(output);
+            if (output == null) {
+                throw new UnsupportedStorageException(getLocale(), getFormatName(), storage, StandardOpenOption.WRITE);
             }
-            type = OutputType.STREAM;
-            output = opened;
-            stream = opened;
-            mark();
+            outputOrFile = output;
+            if (output != stream) {
+                stream = output;
+                mark();
+            }
         }
-        final XMLStreamWriter writer = type.create(this, output);
-        target.stream = opened;
+        final XMLStreamWriter writer = type.create(this, outputOrFile);
+        target.stream = output;
         state = WRITING;
         return writer;
     }

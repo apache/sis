@@ -51,7 +51,7 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
      * We allocate a small buffer for the {@code ChannelDataInput} in order to force frequent
      * interactions between the buffer and the channel.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testAllReadMethods() throws IOException {
@@ -136,7 +136,7 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
     /**
      * Tests the {@link ChannelDataInput#readString(int, String)} method.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testReadString() throws IOException {
@@ -154,7 +154,7 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
      * Tests {@link ChannelDataInput#seek(long)} on a channel that do not implement
      * {@link java.nio.channels.SeekableByteChannel}.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testSeekOnForwardOnlyChannel() throws IOException {
@@ -177,7 +177,7 @@ public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
     /**
      * Tests {@link ChannelDataInput#prefetch()}.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testPrefetch() throws IOException {
