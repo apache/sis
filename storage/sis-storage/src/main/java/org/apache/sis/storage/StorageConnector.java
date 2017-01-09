@@ -41,11 +41,11 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.storage.IOUtilities;
-import org.apache.sis.internal.storage.ChannelFactory;
-import org.apache.sis.internal.storage.ChannelDataInput;
-import org.apache.sis.internal.storage.ChannelImageInputStream;
-import org.apache.sis.internal.storage.InputStreamAdapter;
+import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.internal.storage.io.ChannelFactory;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelImageInputStream;
+import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.setup.OptionKey;
 
 

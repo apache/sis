@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.storage.io;
 
 import java.util.Set;
 import java.util.EnumSet;
@@ -44,6 +44,7 @@ import java.nio.channels.WritableByteChannel;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.storage.Resources;
 
 
 /**

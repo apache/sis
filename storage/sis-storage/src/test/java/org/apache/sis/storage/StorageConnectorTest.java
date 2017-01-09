@@ -26,9 +26,9 @@ import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.sql.Connection;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.internal.storage.ChannelDataInput;
-import org.apache.sis.internal.storage.ChannelImageInputStream;
-import org.apache.sis.internal.storage.InputStreamAdapter;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelImageInputStream;
+import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -46,7 +46,7 @@ import static org.opengis.test.Assert.*;
  * @module
  */
 @SuppressWarnings("OverlyStrongTypeCast")
-@DependsOn(org.apache.sis.internal.storage.ChannelImageInputStreamTest.class)
+@DependsOn(org.apache.sis.internal.storage.io.ChannelImageInputStreamTest.class)
 public final strictfp class StorageConnectorTest extends TestCase {
     /**
      * The magic number of Java class files, used for verifying the content of our test file.
