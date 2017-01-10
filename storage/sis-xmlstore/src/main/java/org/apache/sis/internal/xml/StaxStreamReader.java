@@ -113,6 +113,13 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     protected final XMLStreamReader reader;
 
     /**
+     * {@code true} if the {@link #reader} already moved to the next element. This happen if {@link #unmarshal(Class)}
+     * has been invoked. In such case, the next call to {@link XMLStreamReader#next()} needs to be replaced by a call
+     * to {@link XMLStreamReader#getEventType()}.
+     */
+    private boolean isNextDone;
+
+    /**
      * The unmarshaller reserved to this reader usage,
      * created only when first needed and kept until this reader is closed.
      *
@@ -257,13 +264,17 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     /**
      * Skips all remaining elements until we reach the end of the given tag.
      * Nested tags of the same name, if any, are also skipped.
-     * After this method invocation, the current event is {@link #END_ELEMENT}.
+     *
+     * <p>The current event when this method is invoked must be {@link #START_ELEMENT}.
+     * After this method invocation, the current event will be {@link #END_ELEMENT}.</p>
      *
      * @param  tagName name of the tag to close.
      * @throws EOFException if end tag could not be found.
      * @throws XMLStreamException if an error occurred while reading the XML stream.
      */
     protected final void skipUntilEnd(final QName tagName) throws EOFException, XMLStreamException {
+        assert reader.getEventType() == START_ELEMENT;
+        isNextDone = false;
         int nested = 0;
         while (reader.hasNext()) {
             switch (reader.next()) {
@@ -285,8 +296,26 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
     }
 
     /**
+     * Gets next parsing event. This method should be used instead of {@link XMLStreamReader#next()}
+     * when the {@code while (next())} loop may contain call to the {@link #unmarshal(Class)} method.
+     *
+     * @return one of the {@link XMLStreamConstants}.
+     * @throws XMLStreamException if an error occurred while fetching the next event.
+     */
+    protected final int next() throws XMLStreamException {
+        if (!isNextDone) {
+            return reader.next();       // This is the usual case.
+        }
+        isNextDone = false;
+        return reader.getEventType();
+    }
+
+    /**
      * Returns the current value of {@link XMLStreamReader#getElementText()},
      * or {@code null} if that value is null or empty.
+     *
+     * <p>The current event when this method is invoked must be {@link #START_ELEMENT}.
+     * After this method invocation, the current event will be {@link #END_ELEMENT}.</p>
      *
      * @return the current text element, or {@code null} if empty.
      * @throws XMLStreamException if a text element can not be returned.
@@ -471,6 +500,7 @@ parse:  switch (value.length()) {
         unmarshaller = null;
         final JAXBElement<T> element = m.unmarshal(reader, type);
         unmarshaller = m;                                           // Allow reuse or recycling only on success.
+        isNextDone = true;
         return element.getValue();
     }
 

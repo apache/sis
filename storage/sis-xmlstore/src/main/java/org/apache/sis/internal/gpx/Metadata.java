@@ -38,16 +38,17 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.content.ContentInformation;
+import org.opengis.metadata.distribution.Format;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.iso.Types;
 
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.internal.simple.SimpleMetadata;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -80,6 +81,15 @@ import org.apache.sis.metadata.iso.extent.Extents;
  * @module
  */
 public final class Metadata extends SimpleMetadata {
+    /**
+     * The data store that created this metadata, or {@code null} if none. This information is used for fetching
+     * information that are constants for all GPX files, for example the feature types and the format description.
+     *
+     * <p>This field needs to be set after construction. It can not be set at construction time because JAXB needs
+     * to invoke a no-argument constructor.</p>
+     */
+    Store store;
+
     /**
      * The creator of the GPX file. The creator is a property of the GPX node;
      * it is not part of the content marshalled in a GPX {@code <metadata>} element.
@@ -155,15 +165,6 @@ public final class Metadata extends SimpleMetadata {
      */
     @XmlElement(name = Tags.BOUNDS)
     public Bounds bounds;
-
-    /**
-     * Names of features types available for the GPX format, or null if none.
-     * This field is not part of metadata described in GPX file; it is rather a hard-coded value shared by all
-     * GPX files. Users could however filter the list of features, for example with only routes and no tracks.
-     *
-     * @see #getContentInfo()
-     */
-    public Collection<ContentInformation> features;
 
     /**
      * Creates an initially empty metadata object.
@@ -364,13 +365,32 @@ public final class Metadata extends SimpleMetadata {
     }
 
     /**
-     * Information about the feature and coverage characteristics.
+     * Names of features types available for the GPX format, or an empty list if none.
+     * This property is not part of metadata described in GPX file; it is rather a hard-coded value shared by all
+     * GPX files. Users could however filter the list of features, for example with only routes and no tracks.
      *
      * @return information about the feature characteristics.
      */
     @Override
     public Collection<ContentInformation> getContentInfo() {
-        return (features != null) ? features : Collections.emptyList();
+        return (store != null) ? store.types.metadata : super.getContentInfo();
+    }
+
+    /**
+     * Description of the format of the resource(s).
+     * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return description of the format of the resource(s).
+     */
+    @Override
+    public synchronized Collection<Format> getResourceFormats() {
+        if (store != null) {
+            final Format f = store.getFormat();
+            if (f != null) {
+                return Collections.singletonList(f);
+            }
+        }
+        return super.getResourceFormats();
     }
 
     /**

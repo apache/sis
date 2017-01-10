@@ -16,13 +16,13 @@
  */
 
 /**
- * {@link org.apache.sis.storage.DataStore} implementation for XML files.
- * The kind of objects recognized by this package is listed in the
+ * {@link org.apache.sis.storage.DataStore} implementation for XML files that can be unmarshalled by the
+ * {@link org.apache.sis.xml.XML} class. The kind of objects recognized by this package is listed in the
  * {@link org.apache.sis.internal.storage.xml.Store} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 package org.apache.sis.internal.storage.xml;

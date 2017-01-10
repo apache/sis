@@ -17,12 +17,10 @@
 package org.apache.sis.internal.storage.xml;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Arrays;
 import java.io.IOException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ProbeResult;
-import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -38,7 +36,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 abstract class MimeTypeDetector {
@@ -46,13 +44,7 @@ abstract class MimeTypeDetector {
      * The mapping from XML namespace to MIME type.
      * This map shall be read-only, since we do not synchronize it.
      */
-    private static final Map<String,String> TYPES = new HashMap<>();
-    static {
-        TYPES.put(Namespaces.GML, "application/gml+xml");
-        TYPES.put(Namespaces.GMD, "application/vnd.iso.19139+xml");
-        TYPES.put(Namespaces.CSW, "application/vnd.ogc.csw_xml");
-        // More types to be added in future versions.
-    }
+    private final Map<String,String> types;
 
     /**
      * The {@code "xmlns"} string as a sequence of bytes.
@@ -86,8 +78,11 @@ abstract class MimeTypeDetector {
 
     /**
      * Creates a new instance.
+     *
+     * @param  types  the mapping from XML namespaces to MIME type.
      */
-    MimeTypeDetector() {
+    MimeTypeDetector(final Map<String,String> types) {
+        this.types = types;
     }
 
     /**
@@ -114,7 +109,7 @@ abstract class MimeTypeDetector {
      * Skips all bytes or characters up to {@code search}, then returns the character after it.
      * Characters inside quotes will be ignored.
      *
-     * @param  search the byte or character to skip.
+     * @param  search  the byte or character to skip.
      * @return the byte or character after {@code search}, or -1 on EOF.
      * @throws IOException if an error occurred while reading the bytes or characters.
      */
@@ -255,7 +250,7 @@ abstract class MimeTypeDetector {
         /*
          * Done reading the "xmlns" attribute value.
          */
-        return TYPES.get(new String(buffer, 0, length, "US-ASCII"));
+        return types.get(new String(buffer, 0, length, "US-ASCII"));
     }
 
     /**
