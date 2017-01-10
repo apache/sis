@@ -186,7 +186,7 @@ final class Reader extends StaxStreamReader {
          *     more elaborated than what it was in the previous version. We will use JAXB for parsing them.
          */
 parse:  while (reader.hasNext()) {
-            switch (reader.next()) {
+            switch (next()) {
                 case START_ELEMENT: {
                     /*
                      * GPX 1.0 and 1.1 metadata should not be mixed. However the following code will work even
@@ -232,19 +232,20 @@ parse:  while (reader.hasNext()) {
                 }
                 case END_ELEMENT: {
                     /*
-                     * Reminder: END_ELEMENT events are skipped by getElementText(), getElementAsFoo()
-                     * and unmarshal(…) methods. There is only the enclosing <gpx> tag to check here.
-                     * If that end tag is found, we skip the metadata().features = … line since there
-                     * is no feature in that file.
+                     * Reminder: calling next() after getElementText(), getElementAsFoo() and unmarshal(…) methods
+                     * moves the reader after the END_ELEMENT event. Consequently there is only the enclosing <gpx>
+                     * tag to check here.
                      */
                     if (isEndGPX()) {
-                        return version;
+                        break parse;
                     }
                     break;
                 }
             }
         }
-        metadata().features = ((Store) owner).types.metadata;
+        if (readMetadata) {
+            metadata().store = (Store) owner;
+        }
         return version;
     }
 
@@ -411,13 +412,12 @@ parse:  while (reader.hasNext()) {
         feature.setPropertyValue("@identifier", index);
         feature.setPropertyValue("@geometry", new Point(parseDouble(lon), parseDouble(lat)));
         List<Link> links = null;
-        int event = reader.next();
         while (true) {
             /*
              * We do not need to check 'reader.hasNext()' in above loop
              * since this check is done by the END_DOCUMENT case below.
              */
-            switch (event) {
+            switch (next()) {
                 case START_ELEMENT: {
                     final Object value;
                     final String name = reader.getLocalName();
@@ -439,19 +439,16 @@ parse:  while (reader.hasNext()) {
                         case Tags.SATELITTES:       // Fallthrough to getElementAsInteger()
                         case Tags.DGPS_ID:          value = getElementAsInteger(); break;
                         case Tags.FIX:              value = Fix.fromGPX(getElementText()); break;
-                        case Tags.LINK:             links = Metadata.addIfNonNull(links, unmarshal(Link.class)); event = reader.getEventType(); continue;
-                        case Tags.URL:              links = Metadata.addIfNonNull(links, Link.valueOf(getElementAsURI())); event = reader.next(); continue;
+                        case Tags.LINK:             links = Metadata.addIfNonNull(links, unmarshal(Link.class)); continue;
+                        case Tags.URL:              links = Metadata.addIfNonNull(links, Link.valueOf(getElementAsURI())); continue;
                         default: {
                             if (name.equals(tagName)) {
                                 throw new DataStoreContentException(nestedElement(name));
                             }
-                            value = null;
-                            break;
+                            continue;
                         }
                     }
-                    if (value != null) {
-                        feature.setPropertyValue(name, value);
-                    }
+                    feature.setPropertyValue(name, value);
                     break;
                 }
                 case END_ELEMENT: {
@@ -465,7 +462,6 @@ parse:  while (reader.hasNext()) {
                     throw new EOFException(endOfFile());
                 }
             }
-            event = reader.next();
         }
     }
 
@@ -481,37 +477,33 @@ parse:  while (reader.hasNext()) {
         feature.setPropertyValue("@identifier", index);
         List<Feature> wayPoints = null;
         List<Link> links = null;
-        int event = reader.next();
         while (true) {
             /*
              * We do not need to check 'reader.hasNext()' in above loop
              * since this check is done by the END_DOCUMENT case below.
              */
-            switch (event) {
+            switch (next()) {
                 case START_ELEMENT: {
                     final Object value;
                     final String name = reader.getLocalName();
                     switch (isGPX() ? name : "") {
-                        default:               value = null; break;
+                        default: continue;
                         case Tags.NAME:        // Fallthrough to getElementText()
                         case Tags.COMMENT:     // ︙
                         case Tags.DESCRIPTION: // ︙
                         case Tags.SOURCE:      // ︙
                         case Tags.TYPE:        value = getElementText(); break;
                         case Tags.NUMBER:      value = getElementAsInteger(); break;
-                        case Tags.LINK:        links = Metadata.addIfNonNull(links, unmarshal(Link.class)); event = reader.getEventType(); continue;
-                        case Tags.URL:         links = Metadata.addIfNonNull(links, Link.valueOf(getElementAsURI())); event = reader.next(); continue;
+                        case Tags.LINK:        links = Metadata.addIfNonNull(links, unmarshal(Link.class)); continue;
+                        case Tags.URL:         links = Metadata.addIfNonNull(links, Link.valueOf(getElementAsURI())); continue;
                         case Tags.ROUTES:      throw new DataStoreContentException(nestedElement(name));
                         case Tags.ROUTE_POINTS: {
                             if (wayPoints == null) wayPoints = new ArrayList<>(8);
                             wayPoints.add(parseWayPoint(wayPoints.size() + 1));
-                            event = reader.next();
                             continue;
                         }
                     }
-                    if (value != null) {
-                        feature.setPropertyValue(name, value);
-                    }
+                    feature.setPropertyValue(name, value);
                     break;
                 }
                 case END_ELEMENT: {
@@ -526,7 +518,6 @@ parse:  while (reader.hasNext()) {
                     throw new EOFException(endOfFile());
                 }
             }
-            event = reader.next();
         }
     }
 
@@ -585,37 +576,33 @@ parse:  while (reader.hasNext()) {
         feature.setPropertyValue("@identifier", index);
         List<Feature> segments = null;
         List<Link> links = null;
-        int event = reader.next();
         while (true) {
             /*
              * We do not need to check 'reader.hasNext()' in above loop
              * since this check is done by the END_DOCUMENT case below.
              */
-            switch (event) {
+            switch (next()) {
                 case START_ELEMENT: {
                     final Object value;
                     final String name = reader.getLocalName();
                     switch (isGPX() ? name : "") {
-                        default:                value = null; break;
+                        default: continue;
                         case Tags.NAME:         // Fallthrough to getElementText()
                         case Tags.COMMENT:      // ︙
                         case Tags.DESCRIPTION:  // ︙
                         case Tags.SOURCE:       // ︙
                         case Tags.TYPE:         value = getElementText(); break;
                         case Tags.NUMBER:       value = getElementAsInteger(); break;
-                        case Tags.LINK:         links = Metadata.addIfNonNull(links, unmarshal(Link.class)); event = reader.getEventType(); continue;
-                        case Tags.URL:          links = Metadata.addIfNonNull(links, Link.valueOf(getElementAsURI())); event = reader.next(); continue;
+                        case Tags.LINK:         links = Metadata.addIfNonNull(links, unmarshal(Link.class)); continue;
+                        case Tags.URL:          links = Metadata.addIfNonNull(links, Link.valueOf(getElementAsURI())); continue;
                         case Tags.TRACKS:       throw new DataStoreContentException(nestedElement(name));
                         case Tags.TRACK_SEGMENTS: {
                             if (segments == null) segments = new ArrayList<>(8);
                             segments.add(parseTrackSegment(segments.size() + 1));
-                            event = reader.next();
                             continue;
                         }
                     }
-                    if (value != null) {
-                        feature.setPropertyValue(name, value);
-                    }
+                    feature.setPropertyValue(name, value);
                     break;
                 }
                 case END_ELEMENT: {
@@ -630,7 +617,6 @@ parse:  while (reader.hasNext()) {
                     throw new EOFException(endOfFile());
                 }
             }
-            event = reader.next();
         }
     }
 }

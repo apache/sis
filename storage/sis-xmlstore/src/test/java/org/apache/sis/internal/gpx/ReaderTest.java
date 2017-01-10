@@ -184,11 +184,6 @@ public final strictfp class ReaderTest extends TestCase {
                      assertStringEquals("first",                     md.links.get(0).text);
             case 0:  break;
         }
-        /*
-         * In the particular case of "metadata.xml" test files, there is no route, track or way points
-         * after the metadata. Consequently the GPX reader should not declare any list of features.
-         */
-        assertTrue("contentInfo", md.getContentInfo().isEmpty());
     }
 
     /**

@@ -18,7 +18,7 @@ package org.apache.sis.internal.xml;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.internal.storage.xml.AbstractProvider;
 import org.apache.sis.xml.MarshallerPool;
 
 
@@ -31,7 +31,7 @@ import org.apache.sis.xml.MarshallerPool;
  * @version 0.8
  * @module
  */
-public abstract class StaxDataStoreProvider extends DataStoreProvider {
+public abstract class StaxDataStoreProvider extends AbstractProvider {
     /**
      * Pool of JAXB marshallers shared by all data stores created by this provider.
      * This pool is created only when first needed; it will never be instantiated
@@ -40,9 +40,13 @@ public abstract class StaxDataStoreProvider extends DataStoreProvider {
     private volatile MarshallerPool jaxb;
 
     /**
-     * Creates a new provider.
+     * Creates a new provider. Subclasses shall populate the {@link #types} map with a mapping
+     * from their namespace to the MIME type to declare.
+     *
+     * @param  initialCapacity  initial capacity of the hash map to create.
      */
-    protected StaxDataStoreProvider() {
+    protected StaxDataStoreProvider(final int initialCapacity) {
+        super(initialCapacity);
     }
 
     /**

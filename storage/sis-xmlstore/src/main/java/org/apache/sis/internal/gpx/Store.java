@@ -17,15 +17,19 @@
 package org.apache.sis.internal.gpx;
 
 import java.net.URISyntaxException;
+import org.opengis.metadata.Metadata;
+import org.opengis.metadata.distribution.Format;
 import org.apache.sis.internal.xml.StaxDataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.ConcurrentReadException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
-import org.opengis.metadata.Metadata;
+import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.metadata.sql.MetadataStoreException;
 
 // Branch-dependent imports
 import java.util.stream.Stream;
@@ -59,12 +63,6 @@ public final class Store extends StaxDataStore {
      * Version of the GPX file, or {@code null} if unknown.
      */
     Version version;
-
-    /**
-     * {@code true} if the {@linkplain #metadata} field has been initialized.
-     * Note that metadata after initialization may still be {@code null}.
-     */
-    private boolean initialized;
 
     /**
      * The metadata, or {@code null} if not yet parsed.
@@ -109,6 +107,18 @@ public final class Store extends StaxDataStore {
     }
 
     /**
+     * Returns a more complete description of the GPX format, or {@code null} if not available.
+     */
+    final Format getFormat() {
+        try {
+            return MetadataSource.getProvided().lookup(Format.class, "GPX");
+        } catch (MetadataStoreException e) {
+            listeners.warning(null, e);
+        }
+        return null;
+    }
+
+    /**
      * Returns the GPX file version.
      *
      * @return the GPX file version, or {@code null} if none.
@@ -140,8 +150,7 @@ public final class Store extends StaxDataStore {
      */
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
-        if (!initialized) try {
-            initialized = true;
+        if (metadata == null) try {
             reader      = new Reader(this);
             version     = reader.initialize(true);
             metadata    = reader.getMetadata();
@@ -197,9 +206,8 @@ public final class Store extends StaxDataStore {
      *
      * @param  metadata  the metadata to write, or {@code null} if none.
      * @param  features  the features to write, or {@code null} if none.
+     * @throws ConcurrentReadException if the {@code features} stream was provided by this data store.
      * @throws DataStoreException if an error occurred while writing the data.
-     *
-     * @todo verify that the given stream is not connected to this GPX file.
      */
     public synchronized void write(final Metadata metadata, final Stream<? extends Feature> features)
             throws DataStoreException

@@ -36,7 +36,7 @@ import org.apache.sis.util.Version;
  * @version 0.8
  * @module
  */
-public class StoreProvider extends DataStoreProvider {
+public final class StoreProvider extends DataStoreProvider {
     /**
      * The {@value} MIME type.
      */

@@ -20,7 +20,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.xml.StaxDataStoreProvider;
 
@@ -40,14 +39,9 @@ public final class StoreProvider extends StaxDataStoreProvider {
      * Creates a new GPX store provider.
      */
     public StoreProvider() {
-    }
-
-    /**
-     * TODO
-     */
-    @Override
-    public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        super(4);
+        types.put(Tags.NAMESPACE_V10, "application/gpx+xml");
+        types.put(Tags.NAMESPACE_V11, "application/gpx+xml");
     }
 
     /**
