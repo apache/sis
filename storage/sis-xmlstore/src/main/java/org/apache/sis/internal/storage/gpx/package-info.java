@@ -68,7 +68,7 @@
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapter(UniversalTimeAdapter.class)
-package org.apache.sis.internal.gpx;
+package org.apache.sis.internal.storage.gpx;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;

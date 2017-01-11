@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.gpx;
+package org.apache.sis.internal.storage.gpx;
 
 import java.net.URISyntaxException;
 import org.opengis.metadata.Metadata;
@@ -226,7 +226,7 @@ public final class Store extends StaxDataStore {
             /*
              * Get the writer if no read or other write operation is in progress, then write the data.
              */
-            try (final Writer writer = new Writer(this, org.apache.sis.internal.gpx.Metadata.castOrCopy(metadata, locale))) {
+            try (final Writer writer = new Writer(this, org.apache.sis.internal.storage.gpx.Metadata.castOrCopy(metadata, locale))) {
                 writer.writeStartDocument();
                 if (features != null) {
                     features.forEachOrdered(writer);
