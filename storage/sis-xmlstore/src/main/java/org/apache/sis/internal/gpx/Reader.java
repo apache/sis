@@ -29,7 +29,7 @@ import com.esri.core.geometry.Point;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.internal.xml.StaxStreamReader;
+import org.apache.sis.internal.storage.xml.stream.StaxStreamReader;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Version;
