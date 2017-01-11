@@ -56,7 +56,7 @@ public final strictfp class MetadataMock extends SimpleMetadata {
      * Creates an initially empty metadata with the given language.
      * Callers are free to assign new value to the {@link #language} field directly.
      *
-     * @param language The initial {@link #language} value (can be {@code null}).
+     * @param  language  the initial {@link #language} value (can be {@code null}).
      */
     public MetadataMock(final Locale language) {
         this.language = language;
