@@ -21,7 +21,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.internal.xml.StaxDataStoreProvider;
+import org.apache.sis.internal.storage.xml.stream.StaxDataStoreProvider;
 
 
 /**

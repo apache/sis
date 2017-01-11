@@ -17,8 +17,8 @@
 package org.apache.sis.internal.gpx;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import org.apache.sis.internal.xml.GeographicEnvelope;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.internal.storage.xml.GeographicEnvelope;
 
 
 /**

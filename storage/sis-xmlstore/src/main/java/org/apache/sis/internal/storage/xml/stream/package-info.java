@@ -28,4 +28,4 @@
  * @version 0.8
  * @module
  */
-package org.apache.sis.internal.xml;
+package org.apache.sis.internal.storage.xml.stream;

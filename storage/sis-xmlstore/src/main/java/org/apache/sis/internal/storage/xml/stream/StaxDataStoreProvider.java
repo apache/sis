@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.xml;
+package org.apache.sis.internal.storage.xml.stream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import org.apache.sis.internal.storage.xml.AbstractProvider;
 import org.apache.sis.xml.MarshallerPool;
+import org.apache.sis.internal.storage.xml.AbstractProvider;
 
 
 /**
