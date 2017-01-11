@@ -549,7 +549,7 @@ public final class Store extends FeatureStore {
     /**
      * Implementation of the iterator returned by {@link #getFeatures()}.
      */
-    private final class Iter extends Spliterator<Feature> {
+    private final class Iter implements Spliterator<Feature> {
         /**
          * Converters from string representations to the values to store in the {@link #values} array.
          */
