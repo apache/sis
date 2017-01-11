@@ -14,20 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jdk8;
-
 
 /**
- * Placeholder for the {@link java.util.function.Predicate} interface.
+ * Helper classes for reading and writing XML documents using StAX (Streaming API for XML).
+ * This package uses the <cite>cursor API</cite> through {@link javax.xml.stream.XMLStreamReader}
+ * and {@link javax.xml.stream.XMLStreamWriter} interfaces.
+ * Implementations can optionally use JAXB for some specific elements,
+ * typically for metadata before the stream of features.
  *
- * @param  <T>  the type of input.
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.8
+ * @version 0.8
+ * @module
  */
-public interface Predicate<T> {
-    /**
-     * Evaluates the conditions on the given value.
-     *
-     * @param  value  the value to test.
-     * @return the predicate result for the given value.
-     */
-    boolean test(T value);
-}
+package org.apache.sis.internal.storage.xml.stream;

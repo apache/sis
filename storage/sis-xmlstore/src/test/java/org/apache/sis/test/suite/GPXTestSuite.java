@@ -14,20 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jdk8;
+package org.apache.sis.test.suite;
+
+import org.apache.sis.test.TestSuite;
+import org.junit.runners.Suite;
+import org.junit.BeforeClass;
 
 
 /**
- * Placeholder for the {@link java.util.function.Predicate} interface.
- *
- * @param  <T>  the type of input.
+ * All tests from the {@code sis-xmlstore} module, in approximative dependency order.
  */
-public interface Predicate<T> {
+@Suite.SuiteClasses({
+    org.apache.sis.internal.storage.gpx.MetadataTest.class,
+    org.apache.sis.internal.storage.gpx.ReaderTest.class,
+    org.apache.sis.internal.storage.gpx.WriterTest.class
+})
+public final strictfp class GPXTestSuite extends TestSuite {
     /**
-     * Evaluates the conditions on the given value.
-     *
-     * @param  value  the value to test.
-     * @return the predicate result for the given value.
+     * Verifies the list of tests before to run the suite.
+     * See {@link #verifyTestList(Class, Class[])} for more information.
      */
-    boolean test(T value);
+    @BeforeClass
+    public static void verifyTestList() {
+        assertNoMissingTest(GPXTestSuite.class);
+        verifyTestList(GPXTestSuite.class);
+    }
 }

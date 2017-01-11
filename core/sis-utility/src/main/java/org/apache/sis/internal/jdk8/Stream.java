@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.jdk8;
 
+import java.util.List;
+import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -25,17 +27,48 @@ import java.util.NoSuchElementException;
  *
  * @param <T> type of values on which to iterate.
  */
-public class Stream<T> {
+public final class Stream<T> implements AutoCloseable {
     /**
      * The iterator wrapped by this stream.
      */
     private final Spliterator<T> it;
 
     /**
+     * The handles to execute when this stream is closed.
+     */
+    private final List<Runnable> closeHandlers = new LinkedList<>();
+
+    /**
      * Wraps the given iterator.
      */
     Stream(final Spliterator<T> it) {
         this.it = it;
+    }
+
+    /**
+     * Note a JDK method - provided as a placeholder for {@code Collection.stream()}.
+     *
+     * @param  <T>  the type of objects in the collection.
+     * @param  c    the collection from which to get the stream.
+     * @return a stream over the given collection.
+     */
+    public static <T> Stream<T> create(final Iterable<T> c) {
+        if (c != null) {
+            return StreamSupport.stream(new IteratorSpliterator<>(c.iterator()), false);
+        }
+        return null;
+    }
+
+    /**
+     * Performs an action for each element of this stream.
+     *
+     * @param  action  a non-interfering action to perform on the elements.
+     */
+    public void forEachOrdered(final Consumer<? super T> action) {
+        final Iterator<T> it = iterator();
+        while (it.hasNext()) {
+            action.accept(it.next());
+        }
     }
 
     /**
@@ -87,6 +120,27 @@ public class Stream<T> {
         /** Unsupported operation. */
         @Override public void remove() {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    /**
+     * Returns an equivalent stream with an additional close handler.
+     *
+     * @param  handler  a task to execute when the stream is closed.
+     * @return a stream with a handler that is run if the stream is closed.
+     */
+    public Stream<T> onClose(final Runnable handler) {
+        closeHandlers.add(handler);
+        return this;
+    }
+
+    /**
+     * Closes this stream.
+     */
+    @Override
+    public void close() {
+        for (final Runnable handler : closeHandlers) {
+            handler.run();
         }
     }
 }
