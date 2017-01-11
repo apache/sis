@@ -24,6 +24,8 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static java.util.Collections.singletonMap;
+import static org.apache.sis.xml.Namespaces.GMD;
 import static org.junit.Assert.*;
 
 
@@ -40,14 +42,14 @@ public final strictfp class MimeTypeDetectorTest extends TestCase {
      * Tests a XML file in the {@value org.apache.sis.xml.Namespaces#GMD} namespace
      * read from a hard-coded string.
      *
-     * @throws IOException should never happen.
+     * @throws IOException if an error occurred while reading the bytes or characters.
      */
     @Test
     public void testGMDFromString() throws IOException {
         final StringReader in = new StringReader(StoreTest.XML);
         assertEquals('<', in.read());
         assertEquals('?', in.read());
-        final MimeTypeDetector detector = new MimeTypeDetector() {
+        final MimeTypeDetector detector = new MimeTypeDetector(singletonMap(GMD, "application/vnd.iso.19139+xml")) {
             @Override int read() throws IOException {
                 return in.read();
             }
@@ -68,7 +70,7 @@ public final strictfp class MimeTypeDetectorTest extends TestCase {
         final InputStream in = DefaultExtentTest.getResource("Extent.xml").openStream();
         assertEquals('<', in.read());
         assertEquals('?', in.read());
-        final MimeTypeDetector detector = new MimeTypeDetector() {
+        final MimeTypeDetector detector = new MimeTypeDetector(singletonMap(GMD, "application/vnd.iso.19139+xml")) {
             @Override int read() throws IOException {
                 return in.read();
             }
