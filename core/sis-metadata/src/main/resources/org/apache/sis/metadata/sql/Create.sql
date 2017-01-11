@@ -119,11 +119,13 @@ INSERT INTO metadata."CI_Citation" (ID, "alternateTitle", "title") VALUES
   ('NetCDF',  'NetCDF',  'NetCDF Classic and 64-bit Offset Format'),
   ('PNG',     'PNG',     'PNG (Portable Network Graphics) Specification'),
   ('CSV',     'CSV',     'Common Format and MIME Type for Comma-Separated Values (CSV) Files'),
-  ('CSV-MF',  'CSV',     'OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)');
+  ('CSV-MF',  'CSV',     'OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)'),
+  ('GPX',     'GPX',     'GPS Exchange Format');
 
 INSERT INTO metadata."MD_Format" (ID, "name", "specification") VALUES
   ('GeoTIFF', 'GeoTIFF', 'GeoTIFF Coverage Encoding Profile'),
   ('NetCDF',  'NetCDF',  'NetCDF Classic and 64-bit Offset Format'),
   ('PNG',     'PNG',     'PNG (Portable Network Graphics) Specification'),
   ('CSV',     'CSV',     'Common Format and MIME Type for Comma-Separated Values (CSV) Files'),
-  ('CSV-MF',  'CSV',     'OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)');
+  ('CSV-MF',  'CSV',     'OGC Moving Features Encoding Extension: Simple Comma-Separated Values (CSV)'),
+  ('GPX',     'GPX',     'GPS Exchange Format');

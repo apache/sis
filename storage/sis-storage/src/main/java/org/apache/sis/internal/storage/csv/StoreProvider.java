@@ -37,7 +37,7 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  * @version 0.8
  * @module
  */
-public class StoreProvider extends DataStoreProvider {
+public final class StoreProvider extends DataStoreProvider {
     /**
      * The object to use for verifying if the first keyword is the expected one.
      */
