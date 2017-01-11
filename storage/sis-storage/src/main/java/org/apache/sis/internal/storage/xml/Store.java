@@ -63,7 +63,7 @@ final class Store extends DataStore {
 
     /**
      * The unmarshalled object, initialized only when first needed.
-     * May still {@code null} if the unmarshalling failed.
+     * May still be {@code null} if the unmarshalling failed.
      */
     private Object object;
 
