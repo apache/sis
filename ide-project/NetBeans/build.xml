@@ -211,6 +211,10 @@
         <include name="**/*.laa"/>
         <include name="**/*.loa"/>
       </fileset>
+      <fileset dir="${project.root}/storage/sis-xmlstore/src/test/resources">
+        <include name="**/*.gpx"/>
+        <include name="**/*.xml"/>
+      </fileset>
       <fileset dir="${project.root}/storage/sis-earth-observation/src/test/resources">
         <include name="**/*.txt"/>
       </fileset>

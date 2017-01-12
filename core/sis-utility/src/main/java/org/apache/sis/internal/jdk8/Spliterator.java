@@ -22,11 +22,21 @@ package org.apache.sis.internal.jdk8;
  *
  * @param <T> type of values on which to iterate.
  */
-public abstract class Spliterator<T> {
+public abstract interface Spliterator<T> {
+    /**
+     * Flag for iterators that return the values in some specified order.
+     */
+    public static final int ORDERED = 0x10;
+
     /**
      * Flag for iterators that do not return null values.
      */
     public static final int NONNULL = 0x100;
+
+    /**
+     * Flag telling that no element addition, replacement or removal will happen during iteration.
+     */
+    public static final int IMMUTABLE  = 0x400;
 
     /**
      * Performs the given action on it on the next element, if it exists.
@@ -41,10 +51,7 @@ public abstract class Spliterator<T> {
      *
      * @param  action  the action to execute.
      */
-    @SuppressWarnings("empty-statement")
-    public void forEachRemaining(Consumer<? super T> action) {
-        while (tryAdvance(action));
-    }
+    public abstract void forEachRemaining(Consumer<? super T> action);
 
     /**
      * Partitions this iterator if possible.

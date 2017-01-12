@@ -14,20 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jdk8;
 
 
 /**
- * Placeholder for the {@link java.util.function.Predicate} interface.
+ * Structures related to Global Positioning System (GPS).
  *
- * @param  <T>  the type of input.
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.8
+ * @version 0.8
+ * @module
  */
-public interface Predicate<T> {
-    /**
-     * Evaluates the conditions on the given value.
-     *
-     * @param  value  the value to test.
-     * @return the predicate result for the given value.
-     */
-    boolean test(T value);
-}
+package org.apache.sis.storage.gps;

@@ -40,6 +40,18 @@ public final class Instant extends Temporal {
     }
 
     /**
+     * Not a JDK method - used as a replacement of {@code Date.toInstant()}.
+     *
+     * @param  date  the date to convert, or {@code null}.
+     * @return the date as an instant, or {@code null}.
+     *
+     * @see #toDate()
+     */
+    public static Instant create(final Date date) {
+        return (date != null) ? new Instant(date.getTime()) : null;
+    }
+
+    /**
      * Parses the given text.
      *
      * @param  text  the text to parse.
@@ -81,6 +93,8 @@ public final class Instant extends Temporal {
      * Not a JDK method - used as a replacement of {@code Date.from(Instant)}.
      *
      * @return this instant as a legacy date object.
+     *
+     * @see #create(Date)
      */
     public Date toDate() {
         return new Date(millis);
@@ -94,5 +108,15 @@ public final class Instant extends Temporal {
      */
     public Instant plusNanos(final long n) {
         return (n == 0) ? this : new Instant(JDK8.addExact(millis, n/1000000));
+    }
+
+    /**
+     * Returns this instant in XML format.
+     *
+     * @return string representation of this instant.
+     */
+    @Override
+    public String toString() {
+        return JDK8.printDateTime(toDate());
     }
 }
