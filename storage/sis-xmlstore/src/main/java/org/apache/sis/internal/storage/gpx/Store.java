@@ -28,8 +28,9 @@ import org.apache.sis.internal.storage.xml.stream.StaxDataStore;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
-import org.apache.sis.metadata.sql.MetadataSource;
-import org.apache.sis.metadata.sql.MetadataStoreException;
+import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 
 // Branch-dependent imports
 import java.util.stream.Stream;
@@ -97,25 +98,23 @@ public final class Store extends StaxDataStore {
     }
 
     /**
-     * Returns the short name (abbreviation) of the format being read or written.
+     * Returns a more complete description of the GPX format.
+     * The format will be part of the metadata returned by {@link #getMetadata()}.
      *
-     * @return {@code "GPX"}.
-     */
-    @Override
-    public String getFormatName() {
-        return "GPX";
-    }
-
-    /**
-     * Returns a more complete description of the GPX format, or {@code null} if not available.
+     * @see StoreProvider#getFormat()
+     * @see org.apache.sis.internal.storage.gpx.Metadata#getResourceFormats()
      */
     final Format getFormat() {
-        try {
-            return MetadataSource.getProvided().lookup(Format.class, "GPX");
-        } catch (MetadataStoreException e) {
-            listeners.warning(null, e);
+        assert Thread.holdsLock(this);
+        Format format = ((StoreProvider) provider).getFormat(listeners);
+        if (version != null) {
+            final DefaultFormat df = new DefaultFormat(format);
+            final DefaultCitation citation = new DefaultCitation(df.getFormatSpecificationCitation());
+            citation.setEdition(new SimpleInternationalString(version.toString()));
+            df.setFormatSpecificationCitation(citation);
+            format = df;
         }
-        return null;
+        return format;
     }
 
     /**
