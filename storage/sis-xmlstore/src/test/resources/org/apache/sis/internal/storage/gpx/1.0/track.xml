@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<gpx xmlns              = "http://www.topografix.com/GPX/1/0" version = "1.0" creator = "DataProducer"
+     xsi:schemaLocation = "http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd"
+     xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance">
+
+  <bounds minlat="10" minlon="-20" maxlat="40" maxlon="30"/>
+
+  <trk>
+    <name>Track name</name>
+    <cmt>Track comment</cmt>
+    <desc>Track description</desc>
+    <src>Track source</src>
+    <url>http://track-address1.org</url>
+    <number>7</number>
+
+    <trkseg>
+      <trkpt lat="10" lon="15">
+        <ele>140</ele>
+        <time>2010-01-10T00:00:00Z</time>
+        <magvar>35</magvar>
+        <geoidheight>112.32</geoidheight>
+        <name>first point</name>
+        <cmt>first comment</cmt>
+        <desc>first description</desc>
+        <src>first source</src>
+        <url>http://first-address1.org</url>
+        <sym>first symbol</sym>
+        <type>first type</type>
+        <fix>none</fix>
+        <sat>11</sat>
+        <hdop>15.15</hdop>
+        <vdop>14.14</vdop>
+        <pdop>13.13</pdop>
+        <ageofdgpsdata>55.55</ageofdgpsdata>
+        <dgpsid>256</dgpsid>
+      </trkpt>
+      <trkpt lat="20" lon="25" />
+      <trkpt lat="30" lon="35">
+        <ele>150</ele>
+        <time>2010-01-30T00:00:00Z</time>
+        <magvar>25</magvar>
+        <geoidheight>142.32</geoidheight>
+        <name>third point</name>
+        <cmt>third comment</cmt>
+        <desc>third description</desc>
+        <src>third source</src>
+        <url>http://third-address1.org</url>
+        <sym>third symbol</sym>
+        <type>third type</type>
+        <fix>3d</fix>
+        <sat>35</sat>
+        <hdop>35.15</hdop>
+        <vdop>34.14</vdop>
+        <pdop>33.13</pdop>
+        <ageofdgpsdata>85.55</ageofdgpsdata>
+        <dgpsid>456</dgpsid>
+      </trkpt>
+    </trkseg>
+    <trkseg>        <!-- Intentional empty element for test purpose. -->
+    </trkseg>
+  </trk>
+  <trk>             <!-- Intentional empty element for test purpose. -->
+  </trk>
+</gpx>
