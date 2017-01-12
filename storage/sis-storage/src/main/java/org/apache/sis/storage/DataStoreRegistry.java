@@ -18,10 +18,13 @@ package org.apache.sis.storage;
 
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import org.opengis.metadata.distribution.Format;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -50,6 +53,11 @@ final class DataStoreRegistry {
      * be protected in a synchronized block.
      */
     private final ServiceLoader<DataStoreProvider> loader;
+
+    /**
+     * Immutable set of available formats, created when first needed.
+     */
+    private Collection<Format> formats;
 
     /**
      * Creates a new registry which will look for data stores accessible to the default class loader.
@@ -215,5 +223,38 @@ search:         while (!deferred.isEmpty() && connector.prefetch()) {
             throw new UnsupportedStorageException(null, Resources.Keys.UnknownFormatFor_1, connector.getStorageName());
         }
         return selected;
+    }
+
+    /**
+     * Returns the list of data formats available at this method invocation time.
+     * More data may be added later if new modules are added on the classpath.
+     *
+     * @return descriptions of available data formats.
+     *
+     * @since 0.8
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Collection<Format> formats() {
+        synchronized (loader) {
+            if (formats == null) {
+                final Iterator<DataStoreProvider> providers = loader.iterator();
+                formats = new LazySet<>(new Iterator<Format>() {
+                    @Override public boolean hasNext() {
+                        synchronized (loader) {
+                            return providers.hasNext();
+                        }
+                    }
+
+                    @Override public Format next() {
+                        final DataStoreProvider provider;
+                        synchronized (loader) {
+                            provider = providers.next();
+                        }
+                        return provider.getFormat();
+                    }
+                });
+            }
+            return formats;
+        }
     }
 }

@@ -123,6 +123,16 @@ public class LandsatStoreProvider extends DataStoreProvider {
     }
 
     /**
+     * Returns a generic name for this data store, used mostly in warnings or error messages.
+     *
+     * @return a short name or abbreviation for the data format.
+     */
+    @Override
+    public String getShortName() {
+        return "Landsat";
+    }
+
+    /**
      * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by {@link LandsatStore}.
      * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed, only
      * that there appears to be a reasonable chance of success based on a brief inspection of the storage header.

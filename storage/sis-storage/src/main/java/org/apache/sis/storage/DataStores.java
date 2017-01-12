@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Collection;
+import org.opengis.metadata.distribution.Format;
 import org.apache.sis.util.Static;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
@@ -28,7 +30,7 @@ import org.apache.sis.internal.system.SystemListener;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public final class DataStores extends Static {
@@ -109,5 +111,17 @@ public final class DataStores extends Static {
      */
     public static DataStore open(final Object storage) throws UnsupportedStorageException, DataStoreException {
         return registry().open(storage);
+    }
+
+    /**
+     * Returns the set of data formats available at this method invocation time.
+     * More data may be added later if new modules are added on the classpath.
+     *
+     * @return descriptions of available data formats.
+     *
+     * @since 0.8
+     */
+    public static Collection<Format> formats() {
+        return registry().formats();
     }
 }

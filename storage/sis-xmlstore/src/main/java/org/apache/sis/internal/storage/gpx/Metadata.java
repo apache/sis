@@ -169,6 +169,13 @@ public final class Metadata extends SimpleMetadata {
     public Bounds bounds;
 
     /**
+     * The format returned by {@link #getResourceFormats()}, created when first needed.
+     *
+     * @see #getResourceFormats()
+     */
+    private Format format;
+
+    /**
      * Creates an initially empty metadata object.
      */
     public Metadata() {
@@ -375,6 +382,7 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<ContentInformation> getContentInfo() {
+        final Store store = this.store;
         return (store != null) ? store.types.metadata : super.getContentInfo();
     }
 
@@ -385,12 +393,16 @@ public final class Metadata extends SimpleMetadata {
      * @return description of the format of the resource(s).
      */
     @Override
-    public synchronized Collection<Format> getResourceFormats() {
+    public Collection<Format> getResourceFormats() {
+        final Store store = this.store;
         if (store != null) {
-            final Format f = store.getFormat();
-            if (f != null) {
-                return Collections.singletonList(f);
+            Format f;
+            synchronized (store) {
+                if ((f = format) == null) {
+                    format = f = store.getFormat();
+                }
             }
+            return Collections.singletonList(f);
         }
         return super.getResourceFormats();
     }

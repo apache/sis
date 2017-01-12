@@ -39,7 +39,7 @@ public final class StoreProvider extends StaxDataStoreProvider {
      * Creates a new GPX store provider.
      */
     public StoreProvider() {
-        super(4);
+        super("GPX", 4);
         types.put(Tags.NAMESPACE_V10, "application/gpx+xml");
         types.put(Tags.NAMESPACE_V11, "application/gpx+xml");
     }

@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Date;
@@ -37,9 +38,12 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.DateFormat;
 import java.text.FieldPosition;
+import java.nio.file.Path;
 import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
@@ -62,9 +66,6 @@ import static org.apache.sis.util.collection.TableColumn.NAME;
 import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 
-// Branch-dependent imports
-import java.nio.file.Path;
-
 
 /**
  * Provides information about the Apache SIS running environment.
@@ -83,7 +84,7 @@ import java.nio.file.Path;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public enum About {
@@ -95,6 +96,7 @@ public enum About {
      *   <li>Apache SIS version</li>
      *   <li>Java runtime version and vendor</li>
      *   <li>Operation system name and version</li>
+     *   <li>EPSG geodetic dataset in use</li>
      * </ul>
      */
     VERSIONS(Vocabulary.Keys.Versions),
@@ -111,6 +113,18 @@ public enum About {
      * </ul>
      */
     LOCALIZATION(Vocabulary.Keys.Localization),
+
+    /**
+     * Information about available plugins.
+     * This section includes:
+     *
+     * <ul>
+     *   <li>List of data store implementations</li>
+     * </ul>
+     *
+     * @since 0.8
+     */
+    PLUGINS(Vocabulary.Keys.Plugins),
 
     /**
      * Information about logging.
@@ -312,6 +326,28 @@ fill:   for (int i=0; ; i++) {
                     break;
                 }
                 case 9: {
+                    newSection = PLUGINS;
+                    if (sections.contains(PLUGINS)) try {
+                        final Collection<?> formats = (Collection<?>) Class.forName("org.apache.sis.storage.DataStores")
+                                                          .getMethod("formats", (Class[]) null).invoke((Object[]) null);
+                        final int count = formats.size();
+                        children = new String[count * 2];
+                        final String read = resources.getString(Vocabulary.Keys.Read);
+                        int j = 0;
+                        for (final Object f : formats) {
+                            children[j++] = read;
+                            children[j++] = titleAndName(((org.opengis.metadata.distribution.Format) f).getFormatSpecificationCitation(), locale);
+                        }
+                        value = resources.getString(Vocabulary.Keys.EntryCount_1, count);
+                    } catch (ClassNotFoundException e) {
+                        // sis-storage module not in the classpath - ignore.
+                    } catch (ReflectiveOperationException e) {
+                        value = e.toString();
+                    }
+                    nameKey = Vocabulary.Keys.DataFormats;
+                    break;
+                }
+                case 10: {
                     newSection = LOGGING;
                     if (sections.contains(LOGGING)) {
                         nameKey = Vocabulary.Keys.Implementation;
@@ -320,7 +356,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 10: {
+                case 11: {
                     if (sections.contains(LOGGING)) {
                         nameKey = Vocabulary.Keys.Level;
                         final Level level = Logging.getLogger("").getLevel();   // Root logger level.
@@ -337,7 +373,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 11: {
+                case 12: {
                     newSection = PATHS;
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.UserHome;
@@ -345,14 +381,14 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 12: {
+                case 13: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.CurrentDirectory;
                         value = getProperty("user.dir");
                     }
                     break;
                 }
-                case 13: {
+                case 14: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.DataDirectory;
                         try {
@@ -373,28 +409,28 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 14: {
+                case 15: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.DataBase;
                         value = MetadataServices.getInstance().getInformation("DataSource", locale);
                     }
                     break;
                 }
-                case 15: {
+                case 16: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.TemporaryFiles;
                         value = getProperty("java.io.tmpdir");
                     }
                     break;
                 }
-                case 16: {
+                case 17: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.JavaHome;
                         value = javaHome = getProperty("java.home");
                     }
                     break;
                 }
-                case 17: {
+                case 18: {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.JavaExtensions;
@@ -402,7 +438,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 18: {
+                case 19: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
                         value = classpath(getProperty("java.class.path"), false);
@@ -448,8 +484,7 @@ fill:   for (int i=0; ; i++) {
              * Special case for values of kind Map<File,String>.
              * They are extension paths or application class paths.
              */
-            @SuppressWarnings("unchecked")
-            final Map<File,String> paths = (Map<File,String>) value;
+            final Map<?,?> paths = (Map<?,?>) value;
 pathTree:   for (int j=0; ; j++) {
                 TreeTable.Node directory = null;
                 final String home;
@@ -466,9 +501,9 @@ pathTree:   for (int j=0; ; j++) {
                     continue;
                 }
                 final File homeDirectory = home.isEmpty() ? null : new File(home);
-                for (final Iterator<Map.Entry<File,String>> it=paths.entrySet().iterator(); it.hasNext();) {
-                    final Map.Entry<File,String> entry = it.next();
-                    File file = entry.getKey();
+                for (final Iterator<? extends Map.Entry<?,?>> it=paths.entrySet().iterator(); it.hasNext();) {
+                    final Map.Entry<?,?> entry = it.next();
+                    File file = (File) entry.getKey();
                     if (homeDirectory != null) {
                         file = relativize(homeDirectory, file);
                         if (file == null) continue;
@@ -477,9 +512,9 @@ pathTree:   for (int j=0; ; j++) {
                         directory = node.newChild();
                         directory.setValue(NAME, parenthesis(resources.getString(homeKey)));
                     }
-                    CharSequence title = entry.getValue();
+                    CharSequence title = (CharSequence) entry.getValue();
                     if (title == null || title.length() == 0) {
-                        title = parenthesis(resources.getString(entry.getKey().isDirectory() ?
+                        title = parenthesis(resources.getString(file.isDirectory() ?
                                 Vocabulary.Keys.Directory : Vocabulary.Keys.Untitled).toLowerCase(locale));
                     }
                     TreeTables.nodeForPath(directory, NAME, file).setValue(VALUE_AS_TEXT, title);
@@ -493,6 +528,33 @@ pathTree:   for (int j=0; ; j++) {
         }
         TreeTables.replaceCharSequences(table, locale);
         return table;
+    }
+
+    /**
+     * Returns the title or alternate title of the given citation, or "untitled" if none.
+     *
+     * @param  pt  {@code true} for preferring the title over alternate titles, or {@code false} for the opposite.
+     */
+    private static InternationalString title(final Citation ci, final boolean pt) {
+        final InternationalString title = ci.getTitle();
+        if (pt && title != null) return title;
+        for (final InternationalString t : ci.getAlternateTitles()) {
+            if (t != null) return t;
+        }
+        if (title != null) return title;
+        return Vocabulary.formatInternational(Vocabulary.Keys.Untitled);
+    }
+
+    /**
+     * Returns the title together with the abbreviation in parenthesis, if it exists and is different than the title.
+     */
+    private static String titleAndName(final Citation ci, final Locale locale) {
+        String title = title(ci, true).toString(locale);
+        final String abbreviation = title(ci, false).toString(locale);
+        if (!abbreviation.equals(title)) {
+            title = title + " (" + abbreviation + ')';
+        }
+        return title;
     }
 
     /**
