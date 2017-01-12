@@ -17,6 +17,7 @@
 package org.apache.sis.console;
 
 import java.net.URL;
+import org.apache.sis.internal.storage.gpx.MetadataTest;
 import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -30,7 +31,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 @DependsOn(CommandRunnerTest.class)
@@ -38,7 +39,7 @@ public final strictfp class MimeTypeCommandTest extends TestCase {
     /**
      * Tests the sub-command on a metadata file.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred while reading the test file.
      */
     @Test
     public void testWithMetadataXML() throws Exception {
@@ -47,6 +48,21 @@ public final strictfp class MimeTypeCommandTest extends TestCase {
         final MimeTypeCommand test = new MimeTypeCommand(0, CommandRunner.TEST, url.toString());
         test.run();
         final String output = test.outputBuffer.toString().trim();
-        assertTrue(output, output.endsWith("org/apache/sis/metadata/iso/extent/Extent.xml: application/vnd.iso.19139+xml"));
+        assertTrue(output, output.endsWith("Extent.xml: application/vnd.iso.19139+xml"));
+    }
+
+    /**
+     * Tests the sub-command on a GPX file.
+     *
+     * @throws Exception if an error occurred while reading the test file.
+     */
+    @Test
+    public void testWithMetadataGPX() throws Exception {
+        final URL url = MetadataTest.class.getResource("1.1/metadata.xml");
+        assertNotNull("1.1/metadata.xml", url);
+        final MimeTypeCommand test = new MimeTypeCommand(0, CommandRunner.TEST, url.toString());
+        test.run();
+        final String output = test.outputBuffer.toString().trim();
+        assertTrue(output, output.endsWith("metadata.xml: application/gpx+xml"));
     }
 }

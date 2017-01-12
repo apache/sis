@@ -31,7 +31,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.extent.Extent;
@@ -49,6 +48,9 @@ import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
+
+// Branch-dependent imports
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**

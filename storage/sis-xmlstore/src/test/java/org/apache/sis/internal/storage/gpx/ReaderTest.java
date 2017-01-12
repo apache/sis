@@ -19,7 +19,6 @@ package org.apache.sis.internal.storage.gpx;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.time.Instant;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import org.opengis.geometry.Envelope;
@@ -39,6 +38,7 @@ import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports
+import java.time.Instant;
 import java.util.stream.Stream;
 import org.opengis.feature.Feature;
 import org.opengis.metadata.content.FeatureTypeInfo;
