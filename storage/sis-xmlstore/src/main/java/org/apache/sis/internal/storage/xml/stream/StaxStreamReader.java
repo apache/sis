@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
-import java.util.function.Predicate;
 import java.util.NoSuchElementException;
 import java.net.URI;
 import java.io.IOException;
@@ -46,6 +45,7 @@ import org.apache.sis.util.resources.Errors;
 // Branch-dependent imports
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.time.temporal.Temporal;
 import java.time.format.DateTimeParseException;
 import org.opengis.feature.Feature;

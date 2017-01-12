@@ -25,14 +25,16 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.Party;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Telephone;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
+
+// Branch-dependent imports
+import org.opengis.metadata.citation.Party;
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**
