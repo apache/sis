@@ -22,10 +22,10 @@ import java.io.Reader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.internal.storage.DocumentedStoreProvider;
 
 
 /**
@@ -38,7 +38,7 @@ import org.apache.sis.storage.ProbeResult;
  * @version 0.8
  * @module
  */
-public abstract class AbstractProvider extends DataStoreProvider {
+public abstract class AbstractProvider extends DocumentedStoreProvider {
     /**
      * The {@value} MIME type, used only if {@link #probeContent(StorageConnector)} can not determine
      * a more accurate type.
@@ -73,9 +73,11 @@ public abstract class AbstractProvider extends DataStoreProvider {
      * Creates a new provider. Subclasses shall populate the {@link #types} map with a mapping
      * from their namespace to the MIME type to declare.
      *
+     * @param  name  the primary key to use for searching in the {@code MD_Format} table, or {@code null} if none.
      * @param  initialCapacity  initial capacity of the hash map to create.
      */
-    protected AbstractProvider(final int initialCapacity) {
+    protected AbstractProvider(final String name, final int initialCapacity) {
+        super(name);
         types = new HashMap<>(initialCapacity);
     }
 

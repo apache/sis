@@ -24,6 +24,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.Capability;
 
 
 /**
@@ -41,6 +43,7 @@ import org.apache.sis.storage.StorageConnector;
  *
  * @see GeoTiffStore
  */
+@Capabilities(Capability.READ)
 public class GeoTiffStoreProvider extends DataStoreProvider {
     /**
      * The MIME type for GeoTIFF files.
@@ -56,6 +59,16 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
      * Creates a new provider.
      */
     public GeoTiffStoreProvider() {
+    }
+
+    /**
+     * Returns a generic name for this data store, used mostly in warnings or error messages.
+     *
+     * @return a short name or abbreviation for the data format.
+     */
+    @Override
+    public String getShortName() {
+        return "GeoTIFF";
     }
 
     /**

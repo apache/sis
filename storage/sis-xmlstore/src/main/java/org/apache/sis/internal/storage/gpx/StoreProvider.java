@@ -21,6 +21,8 @@ import javax.xml.bind.JAXBException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.xml.stream.StaxDataStoreProvider;
 
 
@@ -34,12 +36,13 @@ import org.apache.sis.internal.storage.xml.stream.StaxDataStoreProvider;
  * @version 0.8
  * @module
  */
+@Capabilities({Capability.READ, Capability.WRITE})
 public final class StoreProvider extends StaxDataStoreProvider {
     /**
      * Creates a new GPX store provider.
      */
     public StoreProvider() {
-        super(4);
+        super("GPX", 4);
         types.put(Tags.NAMESPACE_V10, "application/gpx+xml");
         types.put(Tags.NAMESPACE_V11, "application/gpx+xml");
     }
