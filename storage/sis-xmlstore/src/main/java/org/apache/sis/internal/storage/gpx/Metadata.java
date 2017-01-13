@@ -31,7 +31,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.extent.Extent;
@@ -51,6 +50,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
+import org.opengis.metadata.citation.Responsibility;
 import org.apache.sis.internal.jdk8.Instant;
 
 
@@ -168,6 +168,13 @@ public final class Metadata extends SimpleMetadata {
      */
     @XmlElement(name = Tags.BOUNDS)
     public Bounds bounds;
+
+    /**
+     * The format returned by {@link #getResourceFormats()}, created when first needed.
+     *
+     * @see #getResourceFormats()
+     */
+    private Format format;
 
     /**
      * Creates an initially empty metadata object.
@@ -376,6 +383,7 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<ContentInformation> getContentInfo() {
+        final Store store = this.store;
         return (store != null) ? store.types.metadata : super.getContentInfo();
     }
 
@@ -386,12 +394,16 @@ public final class Metadata extends SimpleMetadata {
      * @return description of the format of the resource(s).
      */
     @Override
-    public synchronized Collection<Format> getResourceFormats() {
+    public Collection<Format> getResourceFormats() {
+        final Store store = this.store;
         if (store != null) {
-            final Format f = store.getFormat();
-            if (f != null) {
-                return Collections.singletonList(f);
+            Format f;
+            synchronized (store) {
+                if ((f = format) == null) {
+                    format = f = store.getFormat();
+                }
             }
+            return Collections.singletonList(f);
         }
         return super.getResourceFormats();
     }

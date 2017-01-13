@@ -24,6 +24,8 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.util.Version;
 
@@ -36,6 +38,7 @@ import org.apache.sis.util.Version;
  * @version 0.8
  * @module
  */
+@Capabilities(Capability.READ)
 public final class StoreProvider extends DataStoreProvider {
     /**
      * The {@value} MIME type.
@@ -140,6 +143,16 @@ public final class StoreProvider extends DataStoreProvider {
      * Creates a new provider.
      */
     public StoreProvider() {
+    }
+
+    /**
+     * Returns a generic name for this data store, used mostly in warnings or error messages.
+     *
+     * @return a short name or abbreviation for the data format.
+     */
+    @Override
+    public String getShortName() {
+        return "WKT";
     }
 
     /**
