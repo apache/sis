@@ -355,8 +355,12 @@ public abstract class StaxDataStore extends FeatureStore {
      * This is used for error messages.
      *
      * @return short name of format being read or written.
+     *
+     * @see StaxDataStoreProvider#getShortName()
      */
-    public abstract String getFormatName();
+    public final String getFormatName() {
+        return provider.getShortName();
+    }
 
     /**
      * Returns the factory for StAX readers. The same instance is returned for all {@code StaxDataStore} lifetime.

@@ -31,20 +31,22 @@ import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.constraint.LegalConstraints;
-import org.opengis.metadata.constraint.Releasability;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.BrowseGraphic;
-import org.opengis.metadata.maintenance.Scope;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
+
+// Branch-dependent imports
+import org.opengis.metadata.citation.Party;
+import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.constraint.Releasability;
+import org.opengis.metadata.maintenance.Scope;
 
 
 /**

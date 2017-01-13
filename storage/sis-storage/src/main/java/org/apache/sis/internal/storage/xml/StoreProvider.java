@@ -20,6 +20,8 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.Capability;
 
 
 /**
@@ -30,16 +32,27 @@ import org.apache.sis.storage.StorageConnector;
  * @version 0.8
  * @module
  */
+@Capabilities(Capability.READ)
 public final class StoreProvider extends AbstractProvider {
     /**
      * Creates a new provider.
      */
     public StoreProvider() {
-        super(8);
+        super(null, 8);
         types.put(Namespaces.GML, "application/gml+xml");
         types.put(Namespaces.GMD, "application/vnd.iso.19139+xml");
         types.put(Namespaces.CSW, "application/vnd.ogc.csw_xml");
         // More types to be added in future versions.
+    }
+
+    /**
+     * Returns a generic name for this data store, used mostly in warnings or error messages.
+     *
+     * @return a short name or abbreviation for the data format.
+     */
+    @Override
+    public String getShortName() {
+        return "XML";
     }
 
     /**
