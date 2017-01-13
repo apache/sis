@@ -177,6 +177,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short DataDirectory = 24;
 
         /**
+         * Data formats
+         */
+        public static final short DataFormats = 119;
+
+        /**
          * Datum
          */
         public static final short Datum = 25;
@@ -260,6 +265,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Ellipsoidal height
          */
         public static final short EllipsoidalHeight = 41;
+
+        /**
+         * {0} entr{0,choice,0#y|2#ies}
+         */
+        public static final short EntryCount_1 = 121;
 
         /**
          * Geocentric
@@ -482,14 +492,29 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Others = 85;
 
         /**
+         * {0} ({1})
+         */
+        public static final short Parenthesis_2 = 126;
+
+        /**
          * Paths
          */
         public static final short Paths = 86;
 
         /**
+         * Plug-ins
+         */
+        public static final short Plugins = 120;
+
+        /**
          * “{0}”
          */
         public static final short Quoted_1 = 87;
+
+        /**
+         * Read
+         */
+        public static final short Read = 122;
 
         /**
          * Remarks
@@ -515,6 +540,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Scale
          */
         public static final short Scale = 92;
+
+        /**
+         * {0}/{1}
+         */
+        public static final short SlashSeparatedList_2 = 124;
 
         /**
          * Source
@@ -592,6 +622,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Units = 107;
 
         /**
+         * Unknown
+         */
+        public static final short Unknown = 125;
+
+        /**
          * Unnamed
          */
         public static final short Unnamed = 108;
@@ -645,6 +680,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * World
          */
         public static final short World = 118;
+
+        /**
+         * Write
+         */
+        public static final short Write = 123;
     }
 
     /**
