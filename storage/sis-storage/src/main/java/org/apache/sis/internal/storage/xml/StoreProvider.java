@@ -20,6 +20,8 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.Capability;
 
 
 /**
@@ -30,6 +32,7 @@ import org.apache.sis.storage.StorageConnector;
  * @version 0.8
  * @module
  */
+@Capabilities(Capability.READ)
 public final class StoreProvider extends AbstractProvider {
     /**
      * Creates a new provider.
