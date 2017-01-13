@@ -28,6 +28,8 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.storage.DataStore;
@@ -53,11 +55,12 @@ import org.apache.sis.util.Version;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  *
  * @see NetcdfStore
  */
+@Capabilities(Capability.READ)
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The MIME type for NetCDF files.

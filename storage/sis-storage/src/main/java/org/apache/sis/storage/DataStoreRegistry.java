@@ -21,7 +21,6 @@ import java.util.LinkedList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.ServiceLoader;
-import org.opengis.metadata.distribution.Format;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.LazySet;
@@ -55,11 +54,6 @@ final class DataStoreRegistry {
     private final ServiceLoader<DataStoreProvider> loader;
 
     /**
-     * Immutable set of available formats, created when first needed.
-     */
-    private Collection<Format> formats;
-
-    /**
      * Creates a new registry which will look for data stores accessible to the default class loader.
      * The default is the current thread {@linkplain Thread#getContextClassLoader() context class loader},
      * provided that it can access at least the Apache SIS stores.
@@ -76,6 +70,33 @@ final class DataStoreRegistry {
     public DataStoreRegistry(final ClassLoader loader) {
         ArgumentChecks.ensureNonNull("loader", loader);
         this.loader = ServiceLoader.load(DataStoreProvider.class, loader);
+    }
+
+    /**
+     * Returns the list of data store providers available at this method invocation time.
+     * More providers may be added later if new modules are added on the classpath.
+     *
+     * @return descriptions of available data stores.
+     *
+     * @since 0.8
+     */
+    public Collection<DataStoreProvider> providers() {
+        synchronized (loader) {
+            final Iterator<DataStoreProvider> providers = loader.iterator();
+            return new LazySet<>(new Iterator<DataStoreProvider>() {
+                @Override public boolean hasNext() {
+                    synchronized (loader) {
+                        return providers.hasNext();
+                    }
+                }
+
+                @Override public DataStoreProvider next() {
+                    synchronized (loader) {
+                        return providers.next();
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -223,38 +244,5 @@ search:         while (!deferred.isEmpty() && connector.prefetch()) {
             throw new UnsupportedStorageException(null, Resources.Keys.UnknownFormatFor_1, connector.getStorageName());
         }
         return selected;
-    }
-
-    /**
-     * Returns the list of data formats available at this method invocation time.
-     * More data may be added later if new modules are added on the classpath.
-     *
-     * @return descriptions of available data formats.
-     *
-     * @since 0.8
-     */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Collection<Format> formats() {
-        synchronized (loader) {
-            if (formats == null) {
-                final Iterator<DataStoreProvider> providers = loader.iterator();
-                formats = new LazySet<>(new Iterator<Format>() {
-                    @Override public boolean hasNext() {
-                        synchronized (loader) {
-                            return providers.hasNext();
-                        }
-                    }
-
-                    @Override public Format next() {
-                        final DataStoreProvider provider;
-                        synchronized (loader) {
-                            provider = providers.next();
-                        }
-                        return provider.getFormat();
-                    }
-                });
-            }
-            return formats;
-        }
     }
 }
