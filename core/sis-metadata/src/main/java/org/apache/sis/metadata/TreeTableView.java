@@ -46,14 +46,14 @@ import org.apache.sis.internal.system.Semaphores;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  */
 final class TreeTableView implements TreeTable, Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 6320615192545089879L;
+    private static final long serialVersionUID = 3911016927808764394L;
 
     /**
      * The columns to be returned by {@link #getColumns()}.
@@ -94,14 +94,17 @@ final class TreeTableView implements TreeTable, Serializable {
     /**
      * Creates a tree table for the specified metadata object.
      *
-     * @param standard    The metadata standard implemented by the given metadata.
-     * @param metadata    The metadata object to wrap.
-     * @param valuePolicy The behavior of this map toward null or empty values.
+     * @param  standard     the metadata standard implemented by the given metadata.
+     * @param  metadata     the metadata object to wrap.
+     * @param  baseType     base type of {@code metadata} interfaces to take in account.
+     * @param  valuePolicy  the behavior of this map toward null or empty values.
      */
-    TreeTableView(final MetadataStandard standard, final Object metadata, final ValueExistencePolicy valuePolicy) {
+    TreeTableView(final MetadataStandard standard, final Object metadata,
+            final Class<?> baseType, final ValueExistencePolicy valuePolicy)
+    {
         this.standard    = standard;
         this.valuePolicy = valuePolicy;
-        this.root = new TreeNode(this, metadata);
+        this.root = new TreeNode(this, metadata, baseType);
     }
 
     /**
@@ -128,7 +131,7 @@ final class TreeTableView implements TreeTable, Serializable {
      * developers are encouraged to create and configure their own {@link TreeTableFormat}
      * instance.
      *
-     * @return A string representation of this tree table.
+     * @return a string representation of this tree table.
      */
     @Override
     public String toString() {
@@ -160,23 +163,25 @@ final class TreeTableView implements TreeTable, Serializable {
     /**
      * Invoked on serialization. Write the metadata object instead of the {@linkplain #root} node.
      *
-     * @param  out The output stream where to serialize this object.
-     * @throws IOException If an I/O error occurred while writing.
+     * @param  out  the output stream where to serialize this object.
+     * @throws IOException if an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
+        out.writeObject(root.baseType);
         out.writeObject(root.metadata);
     }
 
     /**
      * Invoked on deserialization. Recreate the {@linkplain #root} node from the metadata object.
      *
-     * @param  in The input stream from which to deserialize an object.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize an object.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        root = new TreeNode(this, in.readObject());
+        final Class<?> baseType = (Class<?>) in.readObject();
+        root = new TreeNode(this, in.readObject(), baseType);
     }
 }

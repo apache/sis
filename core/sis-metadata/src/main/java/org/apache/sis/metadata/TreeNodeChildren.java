@@ -47,7 +47,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
@@ -106,9 +106,9 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     /**
      * Creates a collection of children for the specified metadata.
      *
-     * @param parent   The parent for which this node is an element.
-     * @param metadata The metadata object for which property values will be the elements of this collection.
-     * @param accessor The accessor to use for accessing the property names, types and values of the metadata object.
+     * @param  parent    the parent for which this node is an element.
+     * @param  metadata  the metadata object for which property values will be the elements of this collection.
+     * @param  accessor  the accessor to use for accessing the property names, types and values of the metadata object.
      */
     TreeNodeChildren(final TreeNode parent, final Object metadata, final PropertyAccessor accessor) {
         this.parent   = parent;
@@ -132,7 +132,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * Passing null avoid the type check and is safe at least with SIS implementation. We may revisit
      * later if this appears to be a problem with other implementations.
      *
-     * @param index The index in the accessor (<em>not</em> the index in this collection).
+     * @param  index  the index in the accessor (<em>not</em> the index in this collection).
      */
     final void clearAt(final int index) {
         accessor.set(index, metadata, null, PropertyAccessor.RETURN_NULL);
@@ -142,8 +142,8 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * Returns the value at the given index. The given {@code index} is relative to
      * the {@link #accessor} indexing, <strong>not</strong> to this collection.
      *
-     * @param  index The index in the accessor (<em>not</em> the index in this collection).
-     * @return The value at the given index. May be {@code null} or a collection.
+     * @param  index  the index in the accessor (<em>not</em> the index in this collection).
+     * @return the value at the given index. May be {@code null} or a collection.
      */
     final Object valueAt(final int index) {
         return accessor.get(index, metadata);
@@ -158,7 +158,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * We do not test {@code (value instanceof Collection)} because the value could be any user's implementation.
      * Nothing prevent users from implementing the collection interface even for singleton elements if they wish.</div>
      *
-     * @param  index The index in the accessor (<em>not</em> the index in this collection).
+     * @param  index  the index in the accessor (<em>not</em> the index in this collection).
      * @return {@code true} if the value at the given index is a collection.
      */
     final boolean isCollection(final int index) {
@@ -169,7 +169,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * Returns {@code true} if the give value shall be skipped by the iterators,
      * according the value policy.
      *
-     * @param  value The value to test.
+     * @param  value  the value to test.
      * @return {@code true} if the given value shall be skipped by the iterators.
      */
     final boolean isSkipped(final Object value) {
@@ -183,10 +183,10 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * <p>This method does not check if the child at the given index should be skipped.
      * It is caller responsibility to do such verification before this method call.</p>
      *
-     * @param  index The index in the accessor (<em>not</em> the index in this collection).
-     * @param  subIndex If the property at {@link #index} is a collection, the index in that
+     * @param  index     the index in the accessor (<em>not</em> the index in this collection).
+     * @param  subIndex  if the property at {@link #index} is a collection, the index in that
      *         collection (<em>not</em> the index in <em>this</em> collection). Otherwise -1.
-     * @return The node to be returned by public API.
+     * @return the node to be returned by public API.
      */
     final TreeNode childAt(final int index, final int subIndex) {
         TreeNode node = children[index];
@@ -198,7 +198,6 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
              */
             if (node == null || ((TreeNode.CollectionElement) node).indexInList != subIndex) {
                 node = new TreeNode.CollectionElement(parent, metadata, accessor, index, subIndex);
-                node.init();
             }
         } else {
             /*
@@ -208,7 +207,6 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
              */
             if (node == null) {
                 node = new TreeNode.Element(parent, metadata, accessor, index);
-                node.init();
             }
         }
         children[index] = node;
@@ -481,7 +479,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * <p>This method does not iterate explicitly through the children list, because adding a metadata
      * object implicitly adds all its children.</p>
      *
-     * @param  node The node from which to get the values.
+     * @param  node  the node from which to get the values.
      * @return {@code true} if the metadata changed as a result of this method call.
      * @throws NullPointerException if the given node is null.
      * @throws IllegalArgumentException if this list does not have a property for the node identifier.
@@ -504,8 +502,8 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * Implementation of {@link #add(TreeTable.Node)}, also invoked by {@link TreeNode.NewChild}.
      * This method will attempt to convert the given {@code value} to the expected type.
      *
-     * @param  index The index in the accessor (<em>not</em> the index in this collection).
-     * @param  value The property value to add.
+     * @param  index  the index in the accessor (<em>not</em> the index in this collection).
+     * @param  value  the property value to add.
      * @return {@code true} if the metadata changed as a result of this method call.
      */
     final boolean add(final int index, final Object value) throws IllegalStateException {
