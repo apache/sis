@@ -541,7 +541,7 @@ public class MetadataSource implements AutoCloseable {
      *         of the expected package.
      */
     private Map<String,Object> asMap(final Object metadata) throws ClassCastException {
-        return standard.asValueMap(metadata, KeyNamePolicy.UML_IDENTIFIER, ValueExistencePolicy.ALL);
+        return standard.asValueMap(metadata, null, KeyNamePolicy.UML_IDENTIFIER, ValueExistencePolicy.ALL);
     }
 
     /**
