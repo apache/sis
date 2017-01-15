@@ -180,7 +180,7 @@ public class Merger {
         if (source instanceof AbstractMetadata) {
             sourceMap = ((AbstractMetadata) source).asMap();          // Gives to subclasses a chance to override.
         } else {
-            sourceMap = standard.asValueMap(source, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
+            sourceMap = standard.asValueMap(source, null, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
         }
         /*
          * Iterate on source values in order to find the objects that need to be copied or merged.

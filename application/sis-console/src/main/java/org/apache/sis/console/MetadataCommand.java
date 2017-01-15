@@ -51,7 +51,7 @@ import org.apache.sis.xml.XML;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 class MetadataCommand extends CommandRunner {
@@ -195,7 +195,9 @@ class MetadataCommand extends CommandRunner {
     final void format(final Object object) throws IOException, JAXBException {
         switch (outputFormat) {
             case TEXT: {
-                final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(object, ValueExistencePolicy.NON_EMPTY);
+                final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(object,
+                        (object instanceof Metadata) ? Metadata.class : null,
+                        ValueExistencePolicy.NON_EMPTY);
                 final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
                 tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
                 tf.format(tree, out);

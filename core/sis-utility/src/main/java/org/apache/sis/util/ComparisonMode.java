@@ -175,7 +175,7 @@ public enum ComparisonMode {
      * This method currently returns {@code true} for {@code IGNORE_METADATA}, {@code APPROXIMATIVE}
      * or {@code DEBUG} only, but this list may be extended in future SIS versions.
      *
-     * @return Whether this comparison ignore metadata.
+     * @return whether this comparison ignore metadata.
      *
      * @since 0.6
      */
@@ -188,7 +188,7 @@ public enum ComparisonMode {
      * This method currently returns {@code true} for {@code APPROXIMATIVE} or {@code DEBUG} only,
      * but this list may be extended in future SIS versions.
      *
-     * @return Whether this comparison uses a tolerance threshold.
+     * @return whether this comparison uses a tolerance threshold.
      *
      * @since 0.6
      */
@@ -202,9 +202,9 @@ public enum ComparisonMode {
      *
      * <p><b>Note:</b> this method never return the {@link #DEBUG} mode.</p>
      *
-     * @param  o1 The first object to compare, or {@code null}.
-     * @param  o2 The second object to compare, or {@code null}.
-     * @return The most suitable comparison mode, or {@code null} if the two given objects
+     * @param  o1  the first object to compare, or {@code null}.
+     * @param  o2  the second object to compare, or {@code null}.
+     * @return the most suitable comparison mode, or {@code null} if the two given objects
      *         are not equal according any mode in this enumeration.
      */
     public static ComparisonMode equalityLevel(final Object o1, Object o2) {

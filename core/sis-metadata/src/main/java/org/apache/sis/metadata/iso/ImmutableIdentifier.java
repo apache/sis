@@ -185,7 +185,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * Creates a new identifier from the specified one. This is a copy constructor which
      * get the code, codespace, authority and version from the given identifier.
      *
-     * @param identifier The identifier to copy.
+     * @param identifier  the identifier to copy.
      */
     public ImmutableIdentifier(final Identifier identifier) {
         ensureNonNull("identifier", identifier);
@@ -200,13 +200,10 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     /**
      * Creates a new identifier from the specified code and authority.
      *
-     * @param authority
-     *          The person or party responsible for maintenance of the namespace, or {@code null} if not available.
-     * @param codeSpace
-     *          Identifier or namespace in which the code is valid, or {@code null} if not available.
-     *          This is often an abbreviation of the authority name.
-     * @param code
-     *          Alphanumeric value identifying an instance in the namespace. The code can not be null.
+     * @param authority  the person or party responsible for maintenance of the namespace, or {@code null} if not available.
+     * @param codeSpace  identifier or namespace in which the code is valid, or {@code null} if not available.
+     *                   This is often an abbreviation of the authority name.
+     * @param code       alphanumeric value identifying an instance in the namespace. The code can not be null.
      */
     public ImmutableIdentifier(final Citation authority, final String codeSpace, final String code) {
         this(authority, codeSpace, code, null, null);
@@ -216,17 +213,12 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * Creates a new identifier from the specified code and authority,
      * with an optional version number and description.
      *
-     * @param authority
-     *          The person or party responsible for maintenance of the namespace, or {@code null} if not available.
-     * @param codeSpace
-     *          Identifier or namespace in which the code is valid, or {@code null} if not available.
-     *          This is often an abbreviation of the authority name.
-     * @param code
-     *          Alphanumeric value identifying an instance in the namespace. The code can not be null.
-     * @param version
-     *          The version identifier for the namespace as specified by the code authority, or {@code null} if none.
-     * @param description
-     *          Natural language description of the meaning of the code value, or {@code null} if none.
+     * @param authority    the person or party responsible for maintenance of the namespace, or {@code null} if not available.
+     * @param codeSpace    identifier or namespace in which the code is valid, or {@code null} if not available.
+     *                     This is often an abbreviation of the authority name.
+     * @param code         alphanumeric value identifying an instance in the namespace. The code can not be null.
+     * @param version      the version identifier for the namespace as specified by the code authority, or {@code null} if none.
+     * @param description  natural language description of the meaning of the code value, or {@code null} if none.
      */
     public ImmutableIdentifier(final Citation authority, final String codeSpace,
             final String code, final String version, final InternationalString description)
@@ -294,7 +286,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * After successful construction, {@code ImmutableIdentifier} instances do not keep the locale
      * since localizations are deferred to the {@link InternationalString#toString(Locale)} method.</p>
      *
-     * @param  properties The properties to be given to this identifier.
+     * @param  properties  the properties to be given to this identifier.
      * @throws IllegalArgumentException if a property has an illegal value.
      */
     public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
@@ -365,8 +357,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static ImmutableIdentifier castOrCopy(final Identifier object) {
@@ -381,7 +373,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * The organization's abbreviation is often the same than this identifier {@linkplain #getCodeSpace() code space},
      * but not necessarily.
      *
-     * @return The authority, or {@code null} if not available.
+     * @return the authority, or {@code null} if not available.
      */
     @Override
     public Citation getAuthority() {
@@ -393,7 +385,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *
      * <div class="note"><b>Example:</b> {@code "4326"}.</div>
      *
-     * @return Value identifying an instance in the namespace (never {@code null}).
+     * @return value identifying an instance in the namespace (never {@code null}).
      *
      * @see org.apache.sis.referencing.NamedIdentifier#tip()
      */
@@ -408,7 +400,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *
      * <div class="note"><b>Example:</b> {@code "EPSG"}.</div>
      *
-     * @return Identifier or namespace in which the code is valid, or {@code null} if not available.
+     * @return identifier or namespace in which the code is valid, or {@code null} if not available.
      *
      * @see org.apache.sis.referencing.NamedIdentifier#head()
      * @see org.apache.sis.referencing.NamedIdentifier#scope()
@@ -425,7 +417,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *
      * <div class="note"><b>Example:</b> the version of the underlying EPSG database.</div>
      *
-     * @return The version identifier for the namespace, or {@code null} if none.
+     * @return the version identifier for the namespace, or {@code null} if none.
      */
     @Override
     public String getVersion() {
@@ -437,7 +429,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *
      * <div class="note"><b>Example:</b> "World Geodetic System 1984".</div>
      *
-     * @return The natural language description, or {@code null} if none.
+     * @return the natural language description, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -464,7 +456,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     /**
      * Compares this object with the given one for equality.
      *
-     * @param object The object to compare with this identifier.
+     * @param  object  the object to compare with this identifier.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -487,7 +479,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * Formats this identifier as a <cite>Well Known Text</cite> {@code Id[…]} element.
      * See class javadoc for more information on the WKT format.
      *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "Id"} (WKT 2) or {@code "Authority"} (WKT 1).
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#33">WKT 2 specification §7.3.4</a>

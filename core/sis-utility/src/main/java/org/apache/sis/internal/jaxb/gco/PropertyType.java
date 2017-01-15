@@ -153,8 +153,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * Builds a {@code PropertyType} wrapper for the given primitive type wrapper.
      * This constructor checks for nil reasons only if {@code check} is {@code true}.
      *
-     * @param value The primitive type wrapper.
-     * @param mayBeNil {@code true} if we should check for nil reasons.
+     * @param  value     the primitive type wrapper.
+     * @param  mayBeNil  {@code true} if we should check for nil reasons.
      */
     PropertyType(final BoundType value, final boolean mayBeNil) {
         metadata = value;
@@ -172,7 +172,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * implements the {@link NilObject} or {@link IdentifiedObject} interface. If the object implements
      * both of them (should not happen, but we never know), then the identifiers will have precedence.
      *
-     * @param value The interface to wrap.
+     * @param  value  the interface to wrap.
      */
     protected PropertyType(final BoundType value) {
         /*
@@ -291,7 +291,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
         XLink xlink = ref.xlink;
         if (create && xlink == null) {
             ref.xlink = xlink = new XLink();
-            xlink.setType(XLink.Type.SIMPLE); // The "simple" type is fixed in the "gco" schema.
+            xlink.setType(XLink.Type.SIMPLE);           // The "simple" type is fixed in the "gco" schema.
         }
         return xlink;
     }
@@ -313,7 +313,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * non-null {@linkplaih #reference} exists, since in such case the object can
      * not be nil.
      *
-     * @param nilReason The new attribute value.
+     * @param nilReason the new attribute value.
      * @category gco:PropertyType
      */
     public final void setNilReason(final String nilReason) {
@@ -330,7 +330,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @return the current value, or {@code null} if none.
      * @category gco:ObjectReference
      */
-    @XmlAttribute(name = "uuidref")  // Defined in "gco" as unqualified attribute.
+    @XmlAttribute(name = "uuidref")                 // Defined in "gco" as unqualified attribute.
     public final String getUUIDREF() {
         final ObjectReference ref = reference(false);
         return (ref != null) ? toString(ref.uuid) : null;
@@ -339,8 +339,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     /**
      * Sets the {@code uuidref} attribute value.
      *
-     * @param  uuid The new attribute value.
-     * @throws IllegalArgumentException If the given UUID can not be parsed.
+     * @param  uuid  the new attribute value.
+     * @throws IllegalArgumentException if the given UUID can not be parsed.
      * @category gco:ObjectReference
      */
     public final void setUUIDREF(final String uuid) throws IllegalArgumentException {
@@ -381,8 +381,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     /**
      * Sets the {@code href} attribute value.
      *
-     * @param href The new attribute value.
-     * @throws URISyntaxException If th given string can not be parsed as a URI.
+     * @param  href  the new attribute value.
+     * @throws URISyntaxException if the given string can not be parsed as a URI.
      * @category xlink
      */
     public final void setHRef(final String href) throws URISyntaxException {
@@ -405,8 +405,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     /**
      * Sets the {@code role} attribute value.
      *
-     * @param role The new attribute value.
-     * @throws URISyntaxException If th given string can not be parsed as a URI.
+     * @param  role  the new attribute value.
+     * @throws URISyntaxException if the given string can not be parsed as a URI.
      * @category xlink
      */
     public final void setRole(final String role) throws URISyntaxException {
@@ -429,8 +429,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     /**
      * Sets the {@code arcrole} attribute value.
      *
-     * @param arcrole The new attribute value.
-     * @throws URISyntaxException If th given string can not be parsed as a URI.
+     * @param  arcrole  the new attribute value.
+     * @throws URISyntaxException if the given string can not be parsed as a URI.
      * @category xlink
      */
     public final void setArcRole(final String arcrole) throws URISyntaxException {
@@ -453,7 +453,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     /**
      * Sets the {@code title} attribute value.
      *
-     * @param title The new attribute value.
+     * @param  title  the new attribute value.
      * @category xlink
      */
     public final void setTitle(String title) {
@@ -486,7 +486,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     /**
      * Sets the {@code show} attribute value.
      *
-     * @param show The new attribute value.
+     * @param  show  the new attribute value.
      * @category xlink
      */
     public final void setShow(final XLink.Show show) {
@@ -516,7 +516,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     /**
      * Sets the {@code actuate} attribute value.
      *
-     * @param actuate The new attribute value.
+     * @param  actuate  the new attribute value.
      * @category xlink
      */
     public final void setActuate(final XLink.Actuate actuate) {
@@ -536,7 +536,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * a value from the object fields, because this method is invoked from
      * the constructor.
      *
-     * @return The bound type, which is typically the GeoAPI interface.
+     * @return the bound type, which is typically the GeoAPI interface.
      */
     protected abstract Class<BoundType> getBoundType();
 
@@ -545,8 +545,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * This method is invoked by {@link #marshal} after making sure that
      * {@code value} is not null.
      *
-     * @param value The GeoAPI interface to wrap.
-     * @return The adapter.
+     * @param  value  the GeoAPI interface to wrap.
+     * @return the adapter.
      */
     protected abstract ValueType wrap(final BoundType value);
 
@@ -555,8 +555,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * marshalled into an XML file or stream. JAXB calls automatically this method at
      * marshalling time.
      *
-     * @param value The bound type value, here the interface.
-     * @return The adapter for the given value.
+     * @param  value  the bound type value, here the interface.
+     * @return the adapter for the given value.
      */
     @Override
     public final ValueType marshal(final BoundType value) {
@@ -570,9 +570,9 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * Converts an adapter read from an XML stream to the GeoAPI interface which will
      * contains this value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  value The adapter for a metadata value.
-     * @return An instance of the GeoAPI interface which represents the metadata value.
-     * @throws URISyntaxException If a URI can not be parsed.
+     * @param  value  the adapter for a metadata value.
+     * @return an instance of the GeoAPI interface which represents the metadata value.
+     * @throws URISyntaxException if a URI can not be parsed.
      */
     @Override
     public final BoundType unmarshal(final ValueType value) throws URISyntaxException {
@@ -583,7 +583,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * If the {@linkplain #metadata} is still null, tries to resolve it using UUID, XLink
      * or NilReason information. This method is invoked at unmarshalling time.
      *
-     * @throws URISyntaxException If a nil reason is present and can not be parsed.
+     * @throws URISyntaxException if a nil reason is present and can not be parsed.
      */
     final BoundType resolve(final Context context) throws URISyntaxException {
         final ObjectReference ref = reference(false);
@@ -608,8 +608,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * This method is not invoked if the missing component is flagged as mandatory by GML,
      * but is not mandatory for SIS working.
      *
-     * @param  missing The name of the missing XML component.
-     * @throws IllegalArgumentException Always thrown.
+     * @param  missing  the name of the missing XML component.
+     * @throws IllegalArgumentException always thrown.
      *
      * @since 0.7
      */

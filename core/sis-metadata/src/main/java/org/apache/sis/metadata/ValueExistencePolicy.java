@@ -42,7 +42,7 @@ import org.apache.sis.xml.NilReason;
  * @version 0.4
  * @module
  *
- * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
+ * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
  */
 public enum ValueExistencePolicy {
     /**
