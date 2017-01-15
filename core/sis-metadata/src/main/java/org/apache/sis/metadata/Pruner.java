@@ -31,7 +31,7 @@ import static org.apache.sis.metadata.ValueExistencePolicy.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 final class Pruner {
@@ -57,14 +57,8 @@ final class Pruner {
      * Returns the metadata properties. When used for pruning empty values, the map needs to
      * include empty (but non-null) values in order to allow us to set them to {@code null}.
      */
-    private static Map<String, Object> asMap(final MetadataStandard standard, final Object metadata,
-            final boolean mandatory, final boolean prune)
-    {
-        final PropertyAccessor accessor = standard.getAccessor(metadata.getClass(), mandatory);
-        if (accessor != null) {
-            return new ValueMap(metadata, accessor, KeyNamePolicy.JAVABEANS_PROPERTY, prune ? NON_NULL : NON_EMPTY);
-        }
-        return null;
+    private static Map<String, Object> asMap(final Object metadata, final PropertyAccessor accessor, final boolean prune) {
+        return new ValueMap(metadata, accessor, KeyNamePolicy.JAVABEANS_PROPERTY, prune ? NON_NULL : NON_EMPTY);
     }
 
     /**
@@ -84,22 +78,27 @@ final class Pruner {
      * It creates a map of visited nodes when the iteration begin, and deletes that map when the
      * iteration ends.</p>
      *
-     * @param  metadata  The metadata object.
-     * @param  mandatory {@code true} if we shall throw an exception if {@code metadata} is not of the expected class.
-     * @param  prune     {@code true} for deleting empty entries.
+     * @param  metadata      the metadata object.
+     * @param  mandatory     {@code true} if we shall throw an exception if {@code metadata} is not of the expected class.
+     * @param  propertyType  if the given metadata is the return value of a property, the declared type of that property.
+     * @param  prune         {@code true} for deleting empty entries.
      * @return {@code true} if all metadata properties are null or empty.
      */
-    static boolean isEmpty(final AbstractMetadata metadata, final boolean mandatory, final boolean prune) {
-        final Map<String,Object> properties = asMap(metadata.getStandard(), metadata, mandatory, prune);
-        if (properties == null) {
-            return false; // For metadata of unknown class, conservatively assume non-empty.
+    static boolean isEmpty(final AbstractMetadata metadata, final Class<?> propertyType,
+            final boolean mandatory, final boolean prune)
+    {
+        final PropertyAccessor accessor = metadata.getStandard().getAccessor(
+                new CacheKey(metadata.getClass(), propertyType), mandatory);
+        if (accessor == null) {
+            return false;                       // For metadata of unknown class, conservatively assume non-empty.
         }
+        final Map<String,Object> properties = asMap(metadata, accessor, prune);
         final Map<Object,Boolean> tested = MAPS.get();
         if (!tested.isEmpty()) {
-            return isEmpty(properties, tested, prune);
+            return isEmpty(accessor, properties, tested, prune);
         } else try {
             tested.put(metadata, Boolean.FALSE);
-            return isEmpty(properties, tested, prune);
+            return isEmpty(accessor, properties, tested, prune);
         } finally {
             MAPS.remove();
             /*
@@ -115,12 +114,13 @@ final class Pruner {
      * child metadata and optionally removing empty ones. The map given in argument is a safety
      * guard against infinite recursivity.
      *
-     * @param  properties The metadata properties.
-     * @param  tested An initially singleton map, to be filled with tested metadata.
-     * @param  prune {@code true} for removing empty properties.
+     * @param  accessor    the accessor that provided the metadata {@code properties}.
+     * @param  properties  the metadata properties.
+     * @param  tested      an initially singleton map, to be filled with tested metadata.
+     * @param  prune       {@code true} for removing empty properties.
      * @return {@code true} if all metadata properties are null or empty.
      */
-    private static boolean isEmpty(final Map<String,Object> properties,
+    private static boolean isEmpty(final PropertyAccessor accessor, final Map<String,Object> properties,
             final Map<Object,Boolean> tested, final boolean prune)
     {
         boolean isEmpty = true;
@@ -139,11 +139,11 @@ final class Pruner {
              */
             final Boolean isEntryEmpty = tested.put(value, Boolean.FALSE);
             if (isEntryEmpty != null) {
-                if (isEntryEmpty) { // If a value was already set, restore the original value.
+                if (isEntryEmpty) {                     // If a value was already set, restore the original value.
                     tested.put(value, Boolean.TRUE);
                 } else {
                     isEmpty = false;
-                    if (!prune) break; // No need to continue if we are not pruning the metadata.
+                    if (!prune) break;                  // No need to continue if we are not pruning the metadata.
                 }
             } else {
                 /*
@@ -151,6 +151,7 @@ final class Pruner {
                  * be a data object or a collection. For convenience we will proceed as if we had only
                  * collections, wrapping data object in a singleton collection if necessary.
                  */
+                Class<?> elementType = null;                    // To be computed when first needed.
                 boolean allElementsAreEmpty = true;
                 final Collection<?> values = CollectionsExt.toCollection(value);
                 for (final Iterator<?> it = values.iterator(); it.hasNext();) {
@@ -175,9 +176,24 @@ final class Pruner {
                         } else if (!(element instanceof Enum<?>) && !(element instanceof CodeList<?>)) {
                             final MetadataStandard standard = MetadataStandard.forClass(element.getClass());
                             if (standard != null) {
-                                isEmptyElement = isEmpty(asMap(standard, element, false, prune), tested, prune);
-                                if (!isEmptyElement && element instanceof Emptiable) {
-                                    isEmptyElement = ((Emptiable) element).isEmpty();
+                                /*
+                                 * For implementation that are not subtype of AbstractMetadata but nevertheless
+                                 * implement some metadata interface, we will invoke recursively this method.
+                                 * But since a class may implement more than one interface, we need to get the
+                                 * type of the value returned by the getter method in order to take in account
+                                 * only that type.
+                                 */
+                                if (elementType == null) {
+                                    elementType = accessor.type(accessor.indexOf(entry.getKey(), false),
+                                                                TypeValuePolicy.ELEMENT_TYPE);
+                                }
+                                final PropertyAccessor elementAccessor = standard.getAccessor(
+                                        new CacheKey(element.getClass(), elementType), false);
+                                if (elementAccessor != null) {
+                                    isEmptyElement = isEmpty(elementAccessor, asMap(element, elementAccessor, prune), tested, prune);
+                                    if (!isEmptyElement && element instanceof Emptiable) {
+                                        isEmptyElement = ((Emptiable) element).isEmpty();
+                                    }
                                 }
                             } else if (isPrimitive(entry)) {
                                 if (value instanceof Number) {

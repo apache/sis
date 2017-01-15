@@ -20,6 +20,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -36,7 +37,7 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  */
 @DependsOn(TreeNodeTest.class)
@@ -45,7 +46,7 @@ public final strictfp class TreeTableViewTest extends TestCase {
      * Creates a table to be tested for the given value policy.
      */
     private static TreeTableView create(final ValueExistencePolicy valuePolicy) {
-        return new TreeTableView(MetadataStandard.ISO_19115, TreeNodeTest.metadataWithHierarchy(), valuePolicy);
+        return new TreeTableView(MetadataStandard.ISO_19115, TreeNodeTest.metadataWithHierarchy(), Citation.class, valuePolicy);
     }
 
     /**

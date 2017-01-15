@@ -72,13 +72,13 @@ public class ReferenceResolver {
      *       {@code false}, depending on the method return type.</li>
      * </ul>
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled, often as a GeoAPI interface.
-     * @param  identifiers An arbitrary amount of identifiers. For each identifier, the
-     *         {@linkplain Identifier#getAuthority() authority} is typically (but not
-     *         necessarily) one of the constants defined in {@link IdentifierSpace}.
-     * @return An object of the given type for the given identifiers, or {@code null} if none.
+     * @param  <T>          the compile-time type of the {@code type} argument.
+     * @param  context      context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type         the type of object to be unmarshalled, often as a GeoAPI interface.
+     * @param  identifiers  an arbitrary amount of identifiers. For each identifier,
+     *         the {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority() authority}
+     *         is typically (but not necessarily) one of the constants defined in {@link IdentifierSpace}.
+     * @return an object of the given type for the given identifiers, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     public <T> T newIdentifiedObject(final MarshalContext context, final Class<T> type, final Identifier... identifiers) {
@@ -94,11 +94,11 @@ public class ReferenceResolver {
      * Returns an object of the given type for the given {@code uuid} attribute, or {@code null} if none.
      * The default implementation returns {@code null} in all cases.
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled, often as a GeoAPI interface.
-     * @param  uuid The {@code uuid} attributes.
-     * @return An object of the given type for the given {@code uuid} attribute, or {@code null} if none.
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type     the type of object to be unmarshalled, often as a GeoAPI interface.
+     * @param  uuid     the {@code uuid} attributes.
+     * @return an object of the given type for the given {@code uuid} attribute, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     public <T> T resolve(final MarshalContext context, final Class<T> type, final UUID uuid) {
@@ -118,11 +118,11 @@ public class ReferenceResolver {
      *   <li>Otherwise returns {@code null}.</li>
      * </ul>
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled, often as a GeoAPI interface.
-     * @param  link    The {@code xlink} attributes.
-     * @return An object of the given type for the given {@code xlink} attribute, or {@code null} if none.
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type     the type of object to be unmarshalled, often as a GeoAPI interface.
+     * @param  link     the {@code xlink} attributes.
+     * @return an object of the given type for the given {@code xlink} attribute, or {@code null} if none.
      */
     public <T> T resolve(final MarshalContext context, final Class<T> type, final XLink link) {
         ensureNonNull("type",  type);
@@ -173,11 +173,11 @@ public class ReferenceResolver {
      * <p>The default implementation unconditionally returns {@code true}.
      * Subclasses can override this method if they want to filter which objects to declare by reference.</p>
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled, often as a GeoAPI interface.
-     * @param  object  The object to be marshalled.
-     * @param  id      The {@code gml:id} value of the object to be marshalled.
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type     the type of object to be unmarshalled, often as a GeoAPI interface.
+     * @param  object   the object to be marshalled.
+     * @param  id       the {@code gml:id} value of the object to be marshalled.
      * @return {@code true} if the marshaller can use the {@code xlink:href="#id"} attribute
      *         instead than marshalling the given object.
      *
@@ -202,11 +202,11 @@ public class ReferenceResolver {
      *
      * Subclasses can override this method if they know whether the receiver will be able to resolve the reference.
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled, often as a GeoAPI interface.
-     * @param  object  The object to be marshalled.
-     * @param  uuid    The unique identifier of the object to be marshalled.
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type     the type of object to be unmarshalled, often as a GeoAPI interface.
+     * @param  object   the object to be marshalled.
+     * @param  uuid     the unique identifier of the object to be marshalled.
      * @return {@code true} if the marshaller can use the {@code uuidref} attribute
      *         instead than marshalling the given object.
      */
@@ -229,11 +229,11 @@ public class ReferenceResolver {
      *
      * Subclasses can override this method if they know whether the receiver will be able to resolve the reference.
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled, often as a GeoAPI interface.
-     * @param  object  The object to be marshalled.
-     * @param  link    The reference of the object to be marshalled.
+     * @param  <T>      the compile-time type of the {@code type} argument.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type     the type of object to be unmarshalled, often as a GeoAPI interface.
+     * @param  object   the object to be marshalled.
+     * @param  link     the reference of the object to be marshalled.
      * @return {@code true} if the marshaller can use the {@code xlink:href} attribute
      *         instead than marshalling the given object.
      */
@@ -263,15 +263,14 @@ public class ReferenceResolver {
      * </td></tr>
      * </table>
      *
-     * Subclasses can override this method if they can provide a mapping from some text
-     * values to anchors.
+     * Subclasses can override this method if they can provide a mapping from some text values to anchors.
      *
-     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value   The value for which an anchor is requested. Often the same instance than {@code text},
-     *                 but can also be the {@link java.net.URI} or {@link java.util.Locale} instance for which
-     *                 {@code text} is a string representation.
-     * @param  text    The textual representation of the value for which to get the anchor.
-     * @return The anchor for the given text, or {@code null} if none.
+     * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value    the value for which an anchor is requested. Often the same instance than {@code text},
+     *                  but can also be the {@link java.net.URI} or {@link java.util.Locale} instance for which
+     *                  {@code text} is a string representation.
+     * @param  text     the textual representation of the value for which to get the anchor.
+     * @return the anchor for the given text, or {@code null} if none.
      */
     public XLink anchor(final MarshalContext context, final Object value, final CharSequence text) {
         return (text instanceof Anchor) ? (Anchor) text : null;

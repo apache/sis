@@ -64,8 +64,8 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
     /**
      * Creates a new test suite for the given types.
      *
-     * @param standard The standard implemented by the metadata objects to test.
-     * @param types The GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
+     * @param  standard  the standard implemented by the metadata objects to test.
+     * @param  types     the GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
     protected MetadataTestCase(final MetadataStandard standard, final Class<?>... types) {
         super(types);
@@ -92,8 +92,8 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      *
      * <p>The default implementation returns {@code true}.</p>
      *
-     * @param  impl     The implementation class.
-     * @param  property The name of the property to test.
+     * @param  impl      the implementation class.
+     * @param  property  the name of the property to test.
      * @return {@code true} if the given property is writable.
      */
     protected boolean isWritable(final Class<?> impl, final String property) {
@@ -108,9 +108,9 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      * <p>The returned value may be of an other type than the given one if the
      * {@code PropertyAccessor} converter method know how to convert that type.</p>
      *
-     * @param  property The name of the property for which to create a value.
-     * @param  type The type of value to create.
-     * @return The value of the given {@code type}, or of a type convertible to the given type.
+     * @param  property  the name of the property for which to create a value.
+     * @param  type      the type of value to create.
+     * @return the value of the given {@code type}, or of a type convertible to the given type.
      */
     protected Object valueFor(final String property, final Class<?> type) {
         if (CharSequence.class.isAssignableFrom(type)) {
@@ -176,7 +176,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      * Validates the given newly constructed metadata. The default implementation ensures that
      * {@link AbstractMetadata#isEmpty()} returns {@code true}.
      *
-     * @param metadata The metadata to validate.
+     * @param  metadata  the metadata to validate.
      */
     protected void validate(final AbstractMetadata metadata) {
         assertTrue("AbstractMetadata.isEmpty()", metadata.isEmpty());
@@ -184,7 +184,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
 
     /**
      * For every properties in every non-{@code Codelist} types listed in the {@link #types} array,
-     * test the property values. This method performs the tests documented in class javadoc.
+     * tests the property values. This method performs the tests documented in class javadoc.
      */
     @Test
     public void testPropertyValues() {

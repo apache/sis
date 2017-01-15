@@ -48,7 +48,7 @@ import static java.util.Collections.singleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  */
 @DependsOn(TreeNodeChildrenTest.class)
@@ -101,9 +101,11 @@ public final strictfp class TreeNodeTest extends TestCase {
     /**
      * Creates a node to be tested for the given metadata object and value policy.
      */
-    private static TreeNode create(final AbstractMetadata metadata, final ValueExistencePolicy valuePolicy) {
+    private static <T extends AbstractMetadata> TreeNode create(final T metadata,
+            final Class<? super T> baseType, final ValueExistencePolicy valuePolicy)
+    {
         final MetadataStandard  standard = MetadataStandard.ISO_19115;
-        final TreeTableView table = new TreeTableView(standard, metadata, valuePolicy);
+        final TreeTableView table = new TreeTableView(standard, metadata, baseType, valuePolicy);
         return (TreeNode) table.getRoot();
     }
 
@@ -113,10 +115,10 @@ public final strictfp class TreeNodeTest extends TestCase {
     @Test
     public void testRootNode() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithoutCollections();
-        final TreeNode node = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final TreeNode node = create(citation, Citation.class, ValueExistencePolicy.NON_EMPTY);
         assertEquals("getName()",        "Citation",     node.getName());
         assertEquals("getIdentifier()",  "CI_Citation",  node.getIdentifier());
-        assertEquals("getElementType()", Citation.class, node.getElementType());
+        assertEquals("baseType",         Citation.class, node.baseType);
         assertSame  ("getUserObject()",  citation,       node.getUserObject());
         assertFalse ("isWritable()",                     node.isWritable());
         assertNull  ("getParent()",                      node.getParent());
@@ -133,10 +135,10 @@ public final strictfp class TreeNodeTest extends TestCase {
      * Those names shall <em>not</em> contain numbering like <cite>"(1 of 2)"</cite>.
      */
     @Test
-    @DependsOnMethod("testRootNode") // Because tested more basic methods than 'getValue(TableColumn)'.
+    @DependsOnMethod("testRootNode")            // Because tested more basic methods than 'getValue(TableColumn)'.
     public void testGetNameForSingleton() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithSingletonInCollections();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
+        assertColumnContentEquals(create(citation, Citation.class, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
             "Citation",
               "Title",
               "Alternate title",
@@ -153,7 +155,7 @@ public final strictfp class TreeNodeTest extends TestCase {
     @DependsOnMethod("testGetNameForSingleton")
     public void testGetNameForMultiOccurrences() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithMultiOccurrences();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
+        assertColumnContentEquals(create(citation, Citation.class, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
             "Citation",
               "Title",
               "Alternate title (1 of 2)",
@@ -171,7 +173,7 @@ public final strictfp class TreeNodeTest extends TestCase {
     @DependsOnMethod("testGetNameForMultiOccurrences")
     public void testGetNameForHierarchy() {
         final DefaultCitation citation = metadataWithHierarchy();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
+        assertColumnContentEquals(create(citation, Citation.class, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
             "Citation",
               "Title",
               "Alternate title (1 of 2)",
@@ -200,10 +202,10 @@ public final strictfp class TreeNodeTest extends TestCase {
      * The repetition of the same identifier means that they shall be part of a collection.
      */
     @Test
-    @DependsOnMethod("testGetNameForMultiOccurrences") // Because similar to names, which were tested progressively.
+    @DependsOnMethod("testGetNameForMultiOccurrences")     // Because similar to names, which were tested progressively.
     public void testGetIdentifier() {
         final DefaultCitation citation = metadataWithHierarchy();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.IDENTIFIER,
+        assertColumnContentEquals(create(citation, Citation.class, ValueExistencePolicy.NON_EMPTY), TableColumn.IDENTIFIER,
             "CI_Citation",
               "title",
               "alternateTitle",
@@ -234,7 +236,7 @@ public final strictfp class TreeNodeTest extends TestCase {
         final Integer ZERO = 0;
         final Integer ONE  = 1;
         final DefaultCitation citation = metadataWithHierarchy();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.INDEX,
+        assertColumnContentEquals(create(citation, Citation.class, ValueExistencePolicy.NON_EMPTY), TableColumn.INDEX,
             null,           // CI_Citation
               null,         // title
               ZERO,         // alternateTitle
@@ -260,10 +262,10 @@ public final strictfp class TreeNodeTest extends TestCase {
      * Tests {@link TreeNode#getElementType()} on a metadata with a hierarchy.
      */
     @Test
-    @DependsOnMethod("testGetIdentifier") // Because if identifiers are wrong, we are looking at wrong properties.
+    @DependsOnMethod("testGetIdentifier")       // Because if identifiers are wrong, we are looking at wrong properties.
     public void testGetElementType() {
         final DefaultCitation citation = metadataWithHierarchy();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.TYPE,
+        assertColumnContentEquals(create(citation, Citation.class, ValueExistencePolicy.NON_EMPTY), TableColumn.TYPE,
             Citation.class,
               InternationalString.class,
               InternationalString.class,
@@ -289,10 +291,10 @@ public final strictfp class TreeNodeTest extends TestCase {
      * Tests {@link TreeNode#getValue(TableColumn)} for the value column.
      */
     @Test
-    @DependsOnMethod("testGetIdentifier") // Because if identifiers are wrong, we are looking at wrong properties.
+    @DependsOnMethod("testGetIdentifier")       // Because if identifiers are wrong, we are looking at wrong properties.
     public void testGetValue() {
         final DefaultCitation citation = metadataWithHierarchy();
-        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.VALUE,
+        assertColumnContentEquals(create(citation, Citation.class, ValueExistencePolicy.NON_EMPTY), TableColumn.VALUE,
             null, // Citation
               "Some title",
               "First alternate title",
@@ -321,7 +323,7 @@ public final strictfp class TreeNodeTest extends TestCase {
     @DependsOnMethod("testGetValue")
     public void testNewChild() {
         final DefaultCitation citation = metadataWithHierarchy();
-        final TreeNode node = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final TreeNode node = create(citation, Citation.class, ValueExistencePolicy.NON_EMPTY);
         /*
          * Ensure that we can not overwrite existing nodes.
          */
@@ -358,11 +360,11 @@ public final strictfp class TreeNodeTest extends TestCase {
      * on all children of that given. In the particular case of the {@link #NAME} method,
      * international strings are replaced by unlocalized strings before comparisons.
      *
-     * @param node     The node for which to test the children.
-     * @param column   The column from which to get a value.
-     * @param values   The expected values. The first value is the result of the getter method
-     *                 applied on the given node, and all other values are the result of the
-     *                 getter method applied on the children, in iteration order.
+     * @param  node     the node for which to test the children.
+     * @param  column   the column from which to get a value.
+     * @param  values   the expected values. The first value is the result of the getter method
+     *                  applied on the given node, and all other values are the result of the
+     *                  getter method applied on the children, in iteration order.
      */
     private static void assertColumnContentEquals(final TreeNode node,
             final TableColumn<?> column, final Object... values)
