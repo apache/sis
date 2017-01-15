@@ -53,7 +53,7 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
     /**
      * Creates a new map which will be a view over the given identifiers.
      *
-     * @param identifiers The identifiers to wrap in a map view.
+     * @param  identifiers  the identifiers to wrap in a map view.
      */
     public ModifiableIdentifierMap(final Collection<Identifier> identifiers) {
         super(identifiers);
@@ -66,8 +66,8 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
      * {@link URI}, and use the value associated to the {@code HREF} key only as a fallback when the string can not
      * be parsed.
      *
-     * @param  href The new value, or {@code null} for removing the value.
-     * @return The previous value, or {@code null} if none.
+     * @param  href  the new value, or {@code null} for removing the value.
+     * @return the previous value, or {@code null} if none.
      *
      * @see #getHRef()
      */
@@ -124,8 +124,8 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
      * Removes all identifiers associated with the given {@linkplain Identifier#getAuthority() authority}.
      * The default implementation delegates to {@link #put(Citation, String)} with a {@code null} value.
      *
-     * @param  authority The authority to search, which should be an instance of {@link Citation}.
-     * @return The code of the identifier for the given authority, or {@code null} if none.
+     * @param  authority  the authority to search, which should be an instance of {@link Citation}.
+     * @return the code of the identifier for the given authority, or {@code null} if none.
      */
     @Override
     public String remove(final Object authority) {
@@ -143,9 +143,9 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
      * associated to the {@code XLINK} key. Only if the given string can not be parsed, then the value is stored
      * <cite>as-is</cite> under the {@code HREF} key.</p>
      *
-     * @param  authority The authority for which to set the code.
-     * @param  code The new code for the given authority, or {@code null} for removing the entry.
-     * @return The previous code for the given authority, or {@code null} if none.
+     * @param  authority  the authority for which to set the code.
+     * @param  code  the new code for the given authority, or {@code null} for removing the entry.
+     * @return the previous code for the given authority, or {@code null} if none.
      */
     @Override
     public String put(final Citation authority, final String code) {
@@ -163,7 +163,7 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
                     } catch (URISyntaxException e) {
                         SpecializedIdentifier.parseFailure(context, code, URI.class, e);
                         discarded = setHRef(null);
-                        break;  // Fallback on generic code below.
+                        break;                          // Fallback on generic code below.
                     }
                 }
                 final Identifier identifier = getIdentifier(authority);
@@ -185,20 +185,24 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
         while (it.hasNext()) {
             final Identifier identifier = it.next();
             if (identifier == null) {
-                it.remove(); // Opportunist cleaning, but should not happen.
+                it.remove();                        // Opportunist cleaning, but should not happen.
             } else if (Objects.equals(authority, identifier.getAuthority())) {
                 if (code != null && identifier instanceof IdentifierMapEntry) {
                     return ((IdentifierMapEntry) identifier).setValue(code);
-                    // No need to suppress other occurrences of the key (if any)
-                    // because we made a replacement in the first entry, so the
-                    // new value will be visible by the getter methods.
+                    /*
+                     * No need to suppress other occurrences of the key (if any)
+                     * because we made a replacement in the first entry, so the
+                     * new value will be visible by the getter methods.
+                     */
                 }
                 if (previous == null) {
                     previous = identifier.getCode();
                 }
                 it.remove();
-                // Continue the iteration in order to remove all other occurrences,
-                // in order to ensure that the getter methods will see the new value.
+                /*
+                 * Continue the iteration in order to remove all other occurrences,
+                 * in order to ensure that the getter methods will see the new value.
+                 */
             }
         }
         if (code != null) {
@@ -217,10 +221,10 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
      * as the {@link XLink#getHRef()} property of the {@code XLink} associated to the {@code XLINK} key.
      * The previous {@code HREF} value, if any, is discarded.</p>
      *
-     * @param  <T> The identifier type.
-     * @param  authority The namespace with which the given identifier is to be associated.
-     * @param  value The identifier to be associated with the given namespace.
-     * @return The previous identifier associated with {@code authority}, or {@code null}
+     * @param  <T>        the identifier type.
+     * @param  authority  the namespace with which the given identifier is to be associated.
+     * @param  value      the identifier to be associated with the given namespace.
+     * @return the previous identifier associated with {@code authority}, or {@code null}
      *         if there was no mapping of the specialized type for {@code authority}.
      */
     @Override
@@ -236,10 +240,10 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
     /**
      * Sets the identifier associated with the given authority, without processing for special cases.
      *
-     * @param  <T> The identifier type.
-     * @param  authority The namespace with which the given identifier is to be associated.
-     * @param  value The identifier to be associated with the given namespace.
-     * @return The previous identifier associated with {@code authority}, or {@code null}
+     * @param  <T>        the identifier type.
+     * @param  authority  the namespace with which the given identifier is to be associated.
+     * @param  value      the identifier to be associated with the given namespace.
+     * @return the previous identifier associated with {@code authority}, or {@code null}
      *         if there was no mapping of the specialized type for {@code authority}.
      */
     private <T> T store(final IdentifierSpace<T> authority, final T value) {
@@ -260,14 +264,18 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
                     if (value != null) {
                         id.value = value;
                         return old;
-                        // No need to suppress other occurrences of the key (if any)
-                        // because we made a replacement in the first entry, so the
-                        // new value will be visible by the getter methods.
+                        /*
+                         * No need to suppress other occurrences of the key (if any)
+                         * because we made a replacement in the first entry, so the
+                         * new value will be visible by the getter methods.
+                         */
                     }
                 }
                 it.remove();
-                // Continue the iteration in order to remove all other occurrences,
-                // in order to ensure that the getter methods will see the new value.
+                /*
+                 * Continue the iteration in order to remove all other occurrences,
+                 * in order to ensure that the getter methods will see the new value.
+                 */
             }
         }
         if (value != null) {

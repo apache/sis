@@ -235,9 +235,9 @@ class PropertyAccessor {
     /**
      * Creates a new property accessor for the specified metadata implementation.
      *
-     * @param  standard       The standard which define the {@code type} interface.
-     * @param  type           The interface implemented by the metadata class.
-     * @param  implementation The class of metadata implementations, or {@code type} if none.
+     * @param  standard        the standard which define the {@code type} interface.
+     * @param  type            the interface implemented by the metadata class.
+     * @param  implementation  the class of metadata implementations, or {@code type} if none.
      */
     PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation) {
         assert type.isAssignableFrom(implementation) : implementation;
@@ -398,9 +398,9 @@ class PropertyAccessor {
      * Returns the getters. The returned array should never be modified,
      * since it may be shared among many instances of {@code PropertyAccessor}.
      *
-     * @param  type The metadata interface.
-     * @param  implementation The class of metadata implementations, or {@code type} if none.
-     * @return The getters declared in the given interface (never {@code null}).
+     * @param  type            the metadata interface.
+     * @param  implementation  the class of metadata implementations, or {@code type} if none.
+     * @return the getters declared in the given interface (never {@code null}).
      */
     private static Method[] getGetters(final Class<?> type, final Class<?> implementation) {
         /*
@@ -492,10 +492,10 @@ class PropertyAccessor {
      * Returns the index of the specified property, or -1 if none.
      * The search is case-insensitive.
      *
-     * @param  name The name of the property to search.
-     * @param  mandatory Whether this method shall throw an exception or return {@code -1}
+     * @param  name       the name of the property to search.
+     * @param  mandatory  whether this method shall throw an exception or return {@code -1}
      *         if the given name is not found.
-     * @return The index of the given name, or -1 if none and {@code mandatory} is {@code false}.
+     * @return the index of the given name, or -1 if none and {@code mandatory} is {@code false}.
      * @throws IllegalArgumentException if the name is not found and {@code mandatory} is {@code true}.
      */
     final int indexOf(final String name, final boolean mandatory) {
@@ -521,9 +521,9 @@ class PropertyAccessor {
     /**
      * Returns the name of the property at the given index, or {@code null} if none.
      *
-     * @param  index The index of the property for which to get the name.
-     * @param  keyPolicy The kind of name to return.
-     * @return The name of the given kind at the given index, or {@code null} if the index is out of bounds.
+     * @param  index      the index of the property for which to get the name.
+     * @param  keyPolicy  the kind of name to return.
+     * @return the name of the given kind at the given index, or {@code null} if the index is out of bounds.
      */
     @SuppressWarnings("fallthrough")
     @Workaround(library="JDK", version="1.7") // Actually apply to String.intern() below.
@@ -567,9 +567,9 @@ class PropertyAccessor {
      *   <li>If the property is a collection, then returns the type of collection elements.</li>
      * </ul>
      *
-     * @param  index The index of the property.
-     * @param  policy The kind of type to return.
-     * @return The type of property values, or {@code null} if unknown.
+     * @param  index   the index of the property.
+     * @param  policy  the kind of type to return.
+     * @return the type of property values, or {@code null} if unknown.
      */
     Class<?> type(final int index, final TypeValuePolicy policy) {
         if (index >= 0 && index < allCount) {
@@ -623,8 +623,8 @@ class PropertyAccessor {
      * Returns the information for the property at the given index.
      * The information are created when first needed.
      *
-     * @param  index The index of the property for which to get the information.
-     * @return The information for the property at the given index, or {@code null} if the index is out of bounds.
+     * @param  index  the index of the property for which to get the information.
+     * @return the information for the property at the given index, or {@code null} if the index is out of bounds.
      *
      * @see PropertyInformation
      */
@@ -646,8 +646,10 @@ class PropertyAccessor {
             try {
                 range = implementation.getMethod(getter.getName(), (Class<?>[]) null).getAnnotation(ValueRange.class);
             } catch (NoSuchMethodException error) {
-                // Should never happen, since the implementation class
-                // implements the interface where the getter come from.
+                /*
+                 * Should never happen, since the implementation class
+                 * implements the interface where the getter come from.
+                 */
                 throw new AssertionError(error);
             }
             information = new PropertyInformation<>(standard, name, getter, elementType, range);
@@ -669,10 +671,10 @@ class PropertyAccessor {
      * so it is safe to invoke this method even if {@link #indexOf(String, boolean)}
      * returned -1.
      *
-     * @param  index The index of the property for which to get a value.
-     * @param  metadata The metadata object to query.
-     * @return The value, or {@code null} if none or if the given is out of bounds.
-     * @throws BackingStoreException If the implementation threw a checked exception.
+     * @param  index     the index of the property for which to get a value.
+     * @param  metadata  the metadata object to query.
+     * @return the value, or {@code null} if none or if the given is out of bounds.
+     * @throws BackingStoreException if the implementation threw a checked exception.
      */
     Object get(final int index, final Object metadata) throws BackingStoreException {
         return (index >= 0 && index < allCount) ? get(getters[index], metadata) : null;
@@ -684,9 +686,9 @@ class PropertyAccessor {
      * However if a checked exception is throw anyway (maybe in user defined "standard"), it
      * will be wrapped in a {@link BackingStoreException}. Unchecked exceptions are propagated.
      *
-     * @param  method The method to use for the query.
-     * @param  metadata The metadata object to query.
-     * @throws BackingStoreException If the implementation threw a checked exception.
+     * @param  method    the method to use for the query.
+     * @param  metadata  the metadata object to query.
+     * @throws BackingStoreException if the implementation threw a checked exception.
      *
      * @see #set(Method, Object, Object[])
      */
@@ -735,12 +737,12 @@ class PropertyAccessor {
      * However the given value will be silently discarded, so index out-of-bounds shall be used only
      * in the context of {@code remove} operations (this is not verified).</p>
      *
-     * @param  index       The index of the property to set.
-     * @param  metadata    The metadata object on which to set the value.
-     * @param  value       The new value.
-     * @param  mode        Whether this method should first fetches the old value,
-     *                     as one of the {@code RETURN_*} constants.
-     * @return The old value, or {@code null} if {@code returnValue} was {@code RETURN_NULL}.
+     * @param  index     the index of the property to set.
+     * @param  metadata  the metadata object on which to set the value.
+     * @param  value     the new value.
+     * @param  mode      whether this method should first fetches the old value,
+     *                   as one of the {@code RETURN_*} constants.
+     * @return the old value, or {@code null} if {@code returnValue} was {@code RETURN_NULL}.
      * @throws UnmodifiableMetadataException if the property for the given key is read-only.
      * @throws ClassCastException if the given value is not of the expected type.
      * @throws BackingStoreException if the implementation threw a checked exception.
@@ -756,7 +758,7 @@ class PropertyAccessor {
             final Method setter = setters[index];
             if (setter != null) {
                 final Object oldValue;
-                final Object snapshot; // Copy of oldValue before modification.
+                final Object snapshot;                      // Copy of oldValue before modification.
                 switch (mode) {
                     case RETURN_NULL: {
                         oldValue = null;
@@ -822,10 +824,10 @@ class PropertyAccessor {
      * exception is throw anyway, then it will be wrapped in a {@link BackingStoreException}.
      * Unchecked exceptions are propagated.</p>
      *
-     * @param  setter    The method to use for setting the new value.
-     * @param  metadata  The metadata object to query.
-     * @param  newValues The argument to give to the method to be invoked.
-     * @throws BackingStoreException If the implementation threw a checked exception.
+     * @param  setter     the method to use for setting the new value.
+     * @param  metadata   the metadata object to query.
+     * @param  newValues  the argument to give to the method to be invoked.
+     * @throws BackingStoreException if the implementation threw a checked exception.
      *
      * @see #get(Method, Object)
      */
@@ -873,21 +875,21 @@ class PropertyAccessor {
      * those collections are live. However this method can be though as if the collections were
      * not live, since the caller will invoke the setter method with the collection anyway.
      *
-     * @param getter      The method to use for fetching the previous value.
-     * @param metadata    The metadata object to query and modify.
-     * @param oldValue    The value returned by {@code get(getter, metadata)}, or {@code null} if unknown.
-     *                    This parameter is only an optimization for avoiding to invoke the getter method
-     *                    twice if the value is already known.
-     * @param newValues   The argument to convert. The content of this array will be modified in-place.
-     *                    Current implementation requires an array of length 1, however this restriction
-     *                    may be relaxed in a future SIS version if needed.
-     * @param elementType The target type (if singleton) or the type of elements in the collection.
-     * @param append      If {@code true} and the value is a collection, then that collection will be added
-     *                    to any previously existing collection instead of replacing it.
-     * @return If the given value has been added to an existing collection, then whether that existing
+     * @param  getter       the method to use for fetching the previous value.
+     * @param  metadata     the metadata object to query and modify.
+     * @param  oldValue     the value returned by {@code get(getter, metadata)}, or {@code null} if unknown.
+     *                      This parameter is only an optimization for avoiding to invoke the getter method
+     *                      twice if the value is already known.
+     * @param  newValues    the argument to convert. The content of this array will be modified in-place.
+     *                      Current implementation requires an array of length 1, however this restriction
+     *                      may be relaxed in a future SIS version if needed.
+     * @param  elementType  the target type (if singleton) or the type of elements in the collection.
+     * @param  append       if {@code true} and the value is a collection, then that collection will be added
+     *                      to any previously existing collection instead of replacing it.
+     * @return if the given value has been added to an existing collection, then whether that existing
      *         collection has been modified as a result of this method call. Otherwise {@code null}.
      * @throws ClassCastException if the element of the {@code arguments} array is not of the expected type.
-     * @throws BackingStoreException If the implementation threw a checked exception.
+     * @throws BackingStoreException if the implementation threw a checked exception.
      */
     private Boolean convert(final Method getter, final Object metadata, Object oldValue, final Object[] newValues,
             Class<?> elementType, final boolean append) throws ClassCastException, BackingStoreException
@@ -914,16 +916,18 @@ class PropertyAccessor {
              */
             if (newValue instanceof Collection<?>) {
                 final Iterator<?> it = ((Collection<?>) newValue).iterator();
-                if (!it.hasNext()) { // If empty, process like null argument.
+                if (!it.hasNext()) {                            // If empty, process like null argument.
                     newValues[0] = null;
                     return null;
                 }
                 final Object next = it.next();
-                if (!it.hasNext()) { // Singleton
+                if (!it.hasNext()) {                            // Singleton
                     newValue = next;
                 }
-                // Other cases: let the collection unchanged. It is likely to
-                // cause an exception later. The message should be appropriate.
+                /*
+                 * Other cases: let the collection unchanged. It is likely to
+                 * cause an exception later. The message should be appropriate.
+                 */
             }
             targetType = Numbers.primitiveToWrapper(targetType);
         } else {
@@ -944,8 +948,8 @@ class PropertyAccessor {
              */
             final boolean isCollection = (newValue instanceof Collection<?>);
             final Object[] elements = isCollection ? ((Collection<?>) newValue).toArray() : new Object[] {newValue};
-            final List<Object> elementList = Arrays.asList(elements); // Converted later (see above comment).
-            newValue = elementList; // Still contains the same values, but now guaranteed to be a collection.
+            final List<Object> elementList = Arrays.asList(elements);         // Converted later (see above comment).
+            newValue = elementList;         // Still contains the same values, but now guaranteed to be a collection.
             Collection<?> addTo = null;
             if (!isCollection || append) {
                 if (oldValue == null) {
@@ -996,9 +1000,9 @@ class PropertyAccessor {
      * The array content is modified in-place. This method accepts an array instead than
      * a single value because the values to convert may be the content of a collection.
      *
-     * @param  elements   The array which contains element to convert.
-     * @param  targetType The base type of target elements.
-     * @throws ClassCastException If an element can't be converted.
+     * @param  elements    the array which contains element to convert.
+     * @param  targetType  the base type of target elements.
+     * @throws ClassCastException if an element can't be converted.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     private void convert(final Object[] elements, final Class<?> targetType) throws ClassCastException {
@@ -1010,10 +1014,12 @@ class PropertyAccessor {
                 final Class<?> sourceType = value.getClass();
                 if (!targetType.isAssignableFrom(sourceType)) try {
                     if (converter == null) {
-                        converter = lastConverter; // Volatile field - read only if needed.
+                        converter = lastConverter;              // Volatile field - read only if needed.
                     }
-                    // Require the exact same classes, not parent or subclass,
-                    // otherwise the converter could be stricter than necessary.
+                    /*
+                     * Require the exact same classes, not parent or subclass,
+                     * otherwise the converter could be stricter than necessary.
+                     */
                     if (converter == null || converter.getSourceClass() != sourceType
                                           || converter.getTargetClass() != targetType)
                     {
@@ -1028,7 +1034,7 @@ class PropertyAccessor {
             }
         }
         if (hasNewConverter) {
-            lastConverter = converter; // Volatile field - store only if needed.
+            lastConverter = converter;                          // Volatile field - store only if needed.
         }
     }
 
@@ -1044,9 +1050,9 @@ class PropertyAccessor {
      *                      properties returned by {@link Collection#size()}.</li>
      * </ul>
      *
-     * @param  mode Kinds of count, as described above.
-     * @param  valuePolicy The behavior of the count toward null or empty values.
-     * @throws BackingStoreException If the implementation threw a checked exception.
+     * @param  mode         kinds of count, as described above.
+     * @param  valuePolicy  the behavior of the count toward null or empty values.
+     * @throws BackingStoreException if the implementation threw a checked exception.
      *
      * @see #count()
      */
@@ -1058,7 +1064,8 @@ class PropertyAccessor {
             return count();
         }
         int count = 0;
-        for (int i=0; i<standardCount; i++) { // Use 'standardCount' instead of 'allCount' for ignoring deprecated methods.
+        // Use 'standardCount' instead of 'allCount' for ignoring deprecated methods.
+        for (int i=0; i<standardCount; i++) {
             final Object value = get(getters[i], metadata);
             if (!valuePolicy.isSkipped(value)) {
                 switch (mode) {
@@ -1070,8 +1077,10 @@ class PropertyAccessor {
                         break;
                     }
                     case COUNT_DEEP: {
-                        // Count always at least one element because if the user wanted to skip null or empty
-                        // collections, then 'valuePolicy.isSkipped(value)' above would have returned 'true'.
+                        /*
+                         * Count always at least one element because if the user wanted to skip null or empty
+                         * collections, then 'valuePolicy.isSkipped(value)' above would have returned 'true'.
+                         */
                         count += (value != null && isCollection(i)) ? Math.max(((Collection<?>) value).size(), 1) : 1;
                         break;
                     }
@@ -1088,10 +1097,10 @@ class PropertyAccessor {
      * method without explicit calls to this {@code accessor.equals(…)} method for children.
      * However the final result may still be a deep comparison.
      *
-     * @param  metadata1 The first metadata object to compare. This object determines the accessor.
-     * @param  metadata2 The second metadata object to compare.
-     * @param  mode      The strictness level of the comparison.
-     * @throws BackingStoreException If the implementation threw a checked exception.
+     * @param  metadata1  the first metadata object to compare. This object determines the accessor.
+     * @param  metadata2  the second metadata object to compare.
+     * @param  mode       the strictness level of the comparison.
+     * @throws BackingStoreException if the implementation threw a checked exception.
      *
      * @see MetadataStandard#equals(Object, Object, ComparisonMode)
      */
@@ -1105,8 +1114,10 @@ class PropertyAccessor {
             final Object value1 = get(method, metadata1);
             final Object value2 = get(method, metadata2);
             if (isNullOrEmpty(value1) && isNullOrEmpty(value2)) {
-                // Consider empty collections/arrays as equal to null.
-                // Empty strings are also considered equal to null (this is more questionable).
+                /*
+                 * Consider empty collections/arrays as equal to null.
+                 * Empty strings are also considered equal to null (this is more questionable).
+                 */
                 continue;
             }
             final boolean equals;
@@ -1140,7 +1151,7 @@ class PropertyAccessor {
      * Replaces every properties in the specified metadata by their
      * {@linkplain ModifiableMetadata#unmodifiable() unmodifiable variant}.
      *
-     * @throws BackingStoreException If the implementation threw a checked exception.
+     * @throws BackingStoreException if the implementation threw a checked exception.
      */
     final void freeze(final Object metadata) throws BackingStoreException {
         assert implementation.isInstance(metadata) : metadata;
@@ -1191,7 +1202,7 @@ class PropertyAccessor {
      * This is a similar contract than {@link java.util.Set#hashCode()} (except for the interface)
      * and ensures that the hash code value is insensitive to the ordering of properties.
      *
-     * @throws BackingStoreException If the implementation threw a checked exception.
+     * @throws BackingStoreException if the implementation threw a checked exception.
      */
     public int hashCode(final Object metadata) throws BackingStoreException {
         assert type.isInstance(metadata) : metadata;
