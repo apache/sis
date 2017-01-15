@@ -86,7 +86,7 @@ public final strictfp class ValueMapTest extends TestCase {
      * The citation instance is stored in the {@link #citation} field.
      * The title and author instances are stored in the {@link #title} and {@link #author} fields.
      *
-     * @return The map view of the citation create by this method.
+     * @return the map view of the citation create by this method.
      */
     private Map<String,Object> createCitation() {
         title    = new SimpleInternationalString("Undercurrent");
@@ -96,7 +96,7 @@ public final strictfp class ValueMapTest extends TestCase {
         citation.setCitedResponsibleParties(singleton(author));
         citation.setISBN("9782505004509");
         citation.setEdition(NilReason.UNKNOWN.createNilObject(InternationalString.class));
-        return MetadataStandard.ISO_19115.asValueMap(citation, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
+        return MetadataStandard.ISO_19115.asValueMap(citation, null, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
     }
 
     /**
@@ -157,7 +157,7 @@ public final strictfp class ValueMapTest extends TestCase {
     public void testEntrySetForNonNil() {
         final Map<String,Object> map = createCitation();
         final Map<String,Object> all = MetadataStandard.ISO_19115.asValueMap(citation,
-                KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_NIL);
+                null, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_NIL);
         assertFalse("Null values shall be excluded.", map.containsKey("alternateTitles"));
         assertTrue ("Null values shall be included.", all.containsKey("alternateTitles"));
         assertFalse("Nil objects shall be excluded.", map.containsKey("edition"));
@@ -186,7 +186,7 @@ public final strictfp class ValueMapTest extends TestCase {
     public void testEntrySetForNonNull() {
         final Map<String,Object> map = createCitation();
         final Map<String,Object> all = MetadataStandard.ISO_19115.asValueMap(citation,
-                KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_NULL);
+                null, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_NULL);
         assertFalse("Null values shall be excluded.", map.containsKey("alternateTitles"));
         assertTrue ("Null values shall be included.", all.containsKey("alternateTitles"));
         assertFalse("Nil objects shall be excluded.", map.containsKey("edition"));
@@ -216,7 +216,7 @@ public final strictfp class ValueMapTest extends TestCase {
     public void testEntrySetForAll() {
         final Map<String,Object> map = createCitation();
         final Map<String,Object> all = MetadataStandard.ISO_19115.asValueMap(citation,
-                KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.ALL);
+                null, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.ALL);
         assertFalse("Null values shall be excluded.", map.containsKey("alternateTitles"));
         assertTrue ("Null values shall be included.", all.containsKey("alternateTitles"));
         assertTrue ("'all' shall be a larger map than 'map'.", all.entrySet().containsAll(map.entrySet()));

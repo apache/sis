@@ -74,7 +74,7 @@ public interface TreeTable {
      * tree. However any {@link Node} instance can return {@code null} for a
      * particular column if the node doesn't have that column.
      *
-     * @return The union of all table columns in every tree node.
+     * @return the union of all table columns in every tree node.
      *
      * @see Node#getValue(TableColumn)
      * @see Node#setValue(TableColumn, Object)
@@ -84,7 +84,7 @@ public interface TreeTable {
     /**
      * Returns the root node of the tree.
      *
-     * @return The root node of the tree.
+     * @return the root node of the tree.
      */
     Node getRoot();
 
@@ -119,7 +119,7 @@ public interface TreeTable {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   0.3
-     * @version 0.3
+     * @version 0.8
      * @module
      */
     public static interface Node {
@@ -131,7 +131,7 @@ public interface TreeTable {
          * modifiable, then implementations are encouraged to update automatically the parent when a child
          * is <em>added to</em> or <em>removed from</em> that collection.</p>
          *
-         * @return The parent, or {@code null} if none.
+         * @return the parent, or {@code null} if none.
          * @category tree
          */
         Node getParent();
@@ -163,7 +163,7 @@ public interface TreeTable {
          * {@linkplain org.apache.sis.metadata.AbstractMetadata#asTreeTable() metadata tree table view},
          * compliance to the {@code List} contract is impractical or inefficient.
          *
-         * @return The children, or an empty collection if none.
+         * @return the children, or an empty collection if none.
          * @category tree
          */
         Collection<Node> getChildren();
@@ -174,17 +174,17 @@ public interface TreeTable {
          * the end of the collection, but this is not mandatory: implementations can add the child
          * at whatever position they see fit.
          *
-         * @return The new child.
-         * @throws UnsupportedOperationException If this node can not add new children.
+         * @return the new child.
+         * @throws UnsupportedOperationException if this node can not add new children.
          */
         Node newChild() throws UnsupportedOperationException;
 
         /**
          * Returns the value in the given column, or {@code null} if none.
          *
-         * @param  <V>    The base type of values in the given column.
-         * @param  column Identifier of the column from which to get the value.
-         * @return The value in the given column, or {@code null} if none.
+         * @param  <V>     the base type of values in the given column.
+         * @param  column  identifier of the column from which to get the value.
+         * @return the value in the given column, or {@code null} if none.
          *
          * @see TreeTable#getColumns()
          * @category table
@@ -196,11 +196,11 @@ public interface TreeTable {
          * The {@link #isEditable(TableColumn)} method can be invoked before this setter method
          * for determining if the given column is modifiable.
          *
-         * @param  <V>    The base type of values in the given column.
-         * @param  column Identifier of the column into which to set the value.
-         * @param  value  The value to set.
-         * @throws IllegalArgumentException If the given column is not a legal column for this node.
-         * @throws UnsupportedOperationException If values in the given column can not be modified.
+         * @param  <V>     the base type of values in the given column.
+         * @param  column  identifier of the column into which to set the value.
+         * @param  value   the value to set.
+         * @throws IllegalArgumentException if the given column is not a legal column for this node.
+         * @throws UnsupportedOperationException if values in the given column can not be modified.
          *
          * @see TreeTable#getColumns()
          * @see #isEditable(TableColumn)
@@ -213,7 +213,7 @@ public interface TreeTable {
          * column is not a legal column for this {@code Node} instance, then this method
          * returns {@code false}.
          *
-         * @param  column The column to query.
+         * @param  column  the column to query.
          * @return {@code true} if the given column is a legal column for this {@code Node}
          *         implementation and the corresponding value is editable, or {@code false}
          *         otherwise.
@@ -231,9 +231,112 @@ public interface TreeTable {
          * <var>longitude</var>) tuple, then a {@code TreeTable.Node} could be defined to have 3 columns for the
          * above 3 tuple components, and the user object could be the original {@code CityLocation} instance.</div>
          *
-         * @return Any object stored at this node by the user, or {@code null} if none.
+         * @return any object stored at this node by the user, or {@code null} if none.
          * @category tree
          */
         Object getUserObject();
+
+        /**
+         * Returns {@code true} if the given object is a node with the same content than this node.
+         * For this method, the meaning of <cite>same content</cite> is defined as below:
+         *
+         * <ul>
+         *   <li>The given object is also a {@code Node}.</li>
+         *   <li>The list returned by {@link TreeTable#getColumns()} is equals for both nodes.</li>
+         *   <li>The objects returned by {@link #getValue(TableColumn)} are equal for each column.</li>
+         *   <li>The list returned by {@linkplain #getChildren() children} is equals for both node.</li>
+         * </ul>
+         *
+         * The node returned by {@link #getParent()} shall <strong>not</strong> be taken in account.
+         * It is necessary to ignore the parent for consistency with {@linkplain DefaultTreeTable#clone() clone}
+         * and for avoiding infinite recursivity when comparing the children.
+         * A third reason is given in the <cite>purpose</cite> example below.
+         *
+         * <div class="note"><b>Purpose of this method: example with ISO metadata</b><br>
+         * Consider the following tree made of ISO 19115 metadata objects: a platform containing a list of instruments,
+         * and an instrument containing a reference to the platform on which the instrument is installed. In this example,
+         * nodes 2 and 4 contain a reference to the same {@code Platform} instance, so we have a cyclic graph:
+         *
+         * <table class="compact" summary="Metadata tree example">
+         * <tr><th>Node 1:</th><td>{@code  }{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}</td></tr>
+         * <tr><th>Node 2:</th><td>{@code   └─}{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform Platform}</td></tr>
+         * <tr><th>Node 3:</th><td>{@code      └─}{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument Instrument}</td></tr>
+         * <tr><th>Node 4:</th><td>{@code         └─}{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform Platform} (same instance than above)</td></tr>
+         * <tr><th>Node 5:</th><td>{@code            └─}<i>etc…</i></td></tr>
+         * </table>
+         *
+         * The {@link org.apache.sis.metadata.AbstractMetadata#asTreeTable()} method gives a view in which each node
+         * has its content fully generated from wrapped metadata object. Consequently a naive walk over the above tree
+         * causes an infinite loop with {@code TreeTable} generating nodes with identical content as we bounce between
+         * {@code Platform} and {@code Instrument} metadata objects. To break this loop, we need to know when the
+         * <em>content</em> of a node (in this example, the wrapped metadata object) has already been visited.
+         * The parent shall <strong>not</strong> be taken in account since node 2 and 4 have different parents
+         * despite having the same {@code Platform} content.
+         *
+         * <p>In this use case, the {@code Node.equals(Object)} implementation needs only to compare the wrapped
+         * metadata (usually given by the {@linkplain #getUserObject() user object}) since the node content,
+         * including the list of children, is fully determined by those metadata. An identity comparison
+         * (with {@code ==}) is sufficient for the purpose of avoiding infinite recursivity.</p></div>
+         *
+         * <div class="section">Flexibility in implementations</div>
+         * The above list specifies minimal conditions that must be true when two nodes are considered equal.
+         * Implementations should not relax those conditions, but are free to make them more restrictive.
+         * In particular, many implementations will require that the two nodes are instances of the same class.
+         * Some implementations may also perform identity comparisons (with the {@code ==} operator) between values
+         * instead than using {@link Object#equals(Object)}. This flexibility means that even if all above conditions
+         * are true, this is not a guarantee that this method will return {@code true}.
+         *
+         * <p>It is okay to <em>not</em> override this method at all since the identity comparison inherited from
+         * {@link Object#equals(Object)} is consistent with this method contract. Alternatively, {@code Node}
+         * implementations having a content fully determined by the wrapped {@linkplain #getUserObject() user
+         * object} need only the following implementation:</p>
+         *
+         * {@preformat java
+         *     &#64;Override
+         *     public boolean equals(Object obj) {
+         *         return (obj instanceof MyNode) && ((MyNode) obj).getUserObject() == getUserObject();
+         *     }
+         * }
+         *
+         * Implementation details may vary, for example in the way to compare {@code null} user objects or by invoking
+         * {@link Object#equals(Object)} instead than performing identity comparisons. Note however that since this
+         * method purpose is to detect cyclic graphs (see above example), user objects should be compared with
+         * {@code equals(Object)} only if their implementations are known to be safe against infinite recursivity.
+         *
+         * @param  other  the other object to compare with this node.
+         * @return whether the two objects are nodes with equal values and equal children, ignoring parents.
+         *
+         * @since 0.8
+         */
+        @Override
+        boolean equals(Object other);
+
+        /**
+         * Returns a hash code value consistent with the {@code equals(Object)} implementation for this node.
+         * If the {@link #equals(Object)} method has not been overridden, then this {@code hashCode()} method
+         * should not be overridden neither. Otherwise if this node content ({@linkplain #getValue values} and
+         * {@linkplain #getChildren() children}) is fully generated from the {@linkplain #getUserObject() user
+         * object}, then the {@code equals(…)} and {@code hashCode()} methods may be implemented like below:
+         *
+         * {@preformat java
+         *     &#64;Override
+         *     public boolean equals(Object obj) {
+         *         return (obj instanceof MyNode) && ((MyNode) obj).getUserObject() == getUserObject();
+         *     }
+         *
+         *     &#64;Override
+         *     public int hashCode() {
+         *         return System.identityHashCode(getUserObject());
+         *     }
+         * }
+         *
+         * Otherwise this method should compute a hash code based on values and children of this node, ignoring parent.
+         *
+         * @return a hash code for this node, potentially based on values and children but ignoring parent.
+         *
+         * @since 0.8
+         */
+        @Override
+        int hashCode();
     }
 }

@@ -23,7 +23,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
-import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
 import org.apache.sis.internal.simple.SimpleIdentifier;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -40,7 +39,7 @@ import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn(ValueMapTest.class)
@@ -153,9 +152,7 @@ public final strictfp class PrunerTest extends TestCase {
      * The cycle is between {@code platform.instrument} and {@code instrument.isMountedOn}.
      */
     private void createCyclicMetadata() {
-        final DefaultAcquisitionInformation acquisition = new DefaultAcquisitionInformation();
-        acquisition.setPlatforms(singleton(MetadataStandardTest.createCyclicMetadata()));
-        metadata.setAcquisitionInformation(singleton(acquisition));
+        metadata.setAcquisitionInformation(singleton(MetadataStandardTest.createCyclicMetadata()));
     }
 
     /**

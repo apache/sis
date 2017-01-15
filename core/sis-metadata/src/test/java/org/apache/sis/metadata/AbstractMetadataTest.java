@@ -29,7 +29,7 @@ import static org.apache.sis.test.TestUtilities.toTreeStructure;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 @DependsOn(MetadataStandardTest.class)
@@ -44,7 +44,7 @@ public final strictfp class AbstractMetadataTest extends TestCase {
     @Test
     public void testHashCodeOnCyclicMetadata() {
         final int code = MetadataStandardTest.createCyclicMetadata().hashCode();
-        assertEquals(code, MetadataStandardTest.createCyclicMetadata().hashCode());
+        assertEquals("hashCode", code, MetadataStandardTest.createCyclicMetadata().hashCode());
     }
 
     /**
@@ -54,29 +54,41 @@ public final strictfp class AbstractMetadataTest extends TestCase {
      *
      * <p>The tree formatted by this test is:</p>
      * {@preformat text
-     *     Platform
-     *       ├─Description……………………… A platform.
-     *       └─Instrument
-     *           ├─Type……………………………… An instrument type.
-     *           └─Mounted on
-     *             (cycle omitted)
+     *     Acquisition information
+     *       └─Platform
+     *           ├─Description………………………………… A platform.
+     *           └─Instrument
+     *               ├─Type………………………………………… An instrument type.
+     *               └─Mounted on
+     *                   ├─Description…………… A platform.
+     *                   └─Instrument
+     *                         (omitted cycle)
      * }
+     *
+     * Note that the cycle detection apparently happens too late since "A platform" has been repeated.
+     * This is because that same Platform instance appears in two different metadata property.  We do
+     * not stop the formatting on the same metadata instance - we also require that it appears in the
+     * same property - for allowing the complete formatting of objects that implement more than one
+     * metadata interface.
      */
     @Test
     public void testToStringOnCyclicMetadata() {
         final String text = MetadataStandardTest.createCyclicMetadata().toString();
         /*
-         * We can not perform a full comparison of the string, since it is locale-dependent.
-         * Compare only the tree structure. The full tree is English is shown in javadoc.
+         * We can not perform a full comparison of the string since it is locale-dependent.
+         * Compare only the tree structure. The full tree in English is shown in javadoc.
          */
-        assertTrue(text, text.startsWith("Platform"));
-        assertArrayEquals(new String[] {
-            "",
-            "  ├─",
-            "  └─",
-            "      ├─",
-            "      └─",
-            "        (",
+        assertTrue(text, text.startsWith("Acquisition information"));
+        assertArrayEquals("toTreeStructure", new String[] {
+            "",                             // Acquisition information
+            "  └─",                         // Platform
+            "      ├─",                     // Description
+            "      └─",                     // Instrument
+            "          ├─",                 // Type
+            "          └─",                 // Mounted on
+            "              ├─",             // Description
+            "              └─",             // Instrument
+            "                    (",        // Omitted cycle
             ""}, toTreeStructure(text));
     }
 }
