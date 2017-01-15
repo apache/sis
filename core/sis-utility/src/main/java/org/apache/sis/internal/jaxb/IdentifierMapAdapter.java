@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.AbstractMap;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -35,9 +36,6 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.internal.util.SetOfUnknownSize;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**

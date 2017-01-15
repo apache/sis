@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
@@ -32,9 +33,6 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -102,7 +100,7 @@ final class NilObjectHandler implements InvocationHandler {
                 return type;
             }
         }
-        throw new AssertionError(proxy); // Should not happen.
+        throw new AssertionError(proxy);                                // Should not happen.
     }
 
     /**
@@ -186,7 +184,7 @@ final class NilObjectHandler implements InvocationHandler {
             return attribute.equals(h.attribute);
         }
         switch (mode) {
-            case STRICT: return false; // The above test is the only relevant one for this mode.
+            case STRICT: return false;              // The above test is the only relevant one for this mode.
             case BY_CONTRACT: {
                 Object tx = attribute, ox = null;
                 if (tx instanceof IdentifierMapAdapter) {
@@ -223,10 +221,10 @@ final class NilObjectHandler implements InvocationHandler {
                 }
                 if (value != null) {
                     if ((value instanceof Collection<?>) && ((Collection<?>) value).isEmpty()) {
-                        continue; // Empty collection, which is consistent with this proxy behavior.
+                        continue;           // Empty collection, which is consistent with this proxy behavior.
                     }
                     if ((value instanceof Map<?,?>) && ((Map<?,?>) value).isEmpty()) {
-                        continue; // Empty collection, which is consistent with this proxy behavior.
+                        continue;           // Empty collection, which is consistent with this proxy behavior.
                     }
                     return false;
                 }

@@ -35,7 +35,7 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  * @version 0.3
  * @module
  *
- * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
+ * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
  */
 final class ValueMap extends PropertyMap<Object> {
     /**

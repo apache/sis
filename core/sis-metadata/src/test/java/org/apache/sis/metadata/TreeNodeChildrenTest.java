@@ -20,6 +20,7 @@ import java.util.Random;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -48,7 +49,7 @@ import static org.apache.sis.test.TestUtilities.createRandomNumberGenerator;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
@@ -117,9 +118,9 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
      */
     private static TreeNodeChildren create(final AbstractMetadata metadata, final ValueExistencePolicy valuePolicy) {
         final MetadataStandard standard = MetadataStandard.ISO_19115;
-        final TreeTableView    table    = new TreeTableView(standard, metadata, valuePolicy);
+        final TreeTableView    table    = new TreeTableView(standard, metadata, Metadata.class, valuePolicy);
         final TreeNode         node     = (TreeNode) table.getRoot();
-        final PropertyAccessor accessor = standard.getAccessor(metadata.getClass(), true);
+        final PropertyAccessor accessor = standard.getAccessor(new CacheKey(metadata.getClass()), true);
         return new TreeNodeChildren(node, metadata, accessor);
     }
 
@@ -199,9 +200,9 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
             "Some title",
             "First alternate title",
             "Second alternate title",
-            "Third alternate title",  // After addition
-            "New edition", // After "addition" (actually change).
-            "PresentationForm[IMAGE_DIGITAL]", // After addition
+            "Third alternate title",                // After addition
+            "New edition",                          // After "addition" (actually change).
+            "PresentationForm[IMAGE_DIGITAL]",      // After addition
             "PresentationForm[MAP_DIGITAL]",
             "PresentationForm[MAP_HARDCOPY]",
             "Some other details"
@@ -216,7 +217,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("edition"));
         }
-        citation.setEdition(null); // Clears so we are allowed to add.
+        citation.setEdition(null);                                                  // Clears so we are allowed to add.
         assertTrue("Setting a new value shall be a change.", children.add(toAdd));
 
         toAdd.setValue(TableColumn.IDENTIFIER, "presentationForm");
@@ -309,7 +310,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
             "PresentationForm[MAP_HARDCOPY]",
             null, // series
             "Some other details",
-//          null, // collective title  -- deprecated as of ISO 19115:2014.
+//          null, // collective title                       -- deprecated as of ISO 19115:2014.
             null, // ISBN
             null, // ISSN
             null, // onlineResources (collection)
@@ -351,8 +352,8 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
      * Asserts that all next elements traversed by the {@code actual} iterator are equal
      * to the next elements traversed by {@code expected}.
      *
-     * @param expected The iterator over expected values.
-     * @param actual   The iterator over actual values.
+     * @param  expected  the iterator over expected values.
+     * @param  actual    the iterator over actual values.
      */
     private static void assertAllNextEqual(final Iterator<?> expected, final Iterator<?> actual) {
         while (expected.hasNext()) {
@@ -367,19 +368,19 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
      * Elements are removed randomly until the collection is empty. After each removal,
      * the remaining elements are compared with the content of a standard Java collection.
      *
-     * @param random   A random number generator.
-     * @param children The collection from which to remove elements.
+     * @param  random    a random number generator.
+     * @param  children  the collection from which to remove elements.
      */
     private static void testRemove(final Random random, final TreeNodeChildren children) {
         final List<TreeTable.Node> reference = new ArrayList<>(children);
         assertFalse("The collection shall not be initially empty.", reference.isEmpty());
         do {
-            final Iterator<TreeTable.Node> rit = reference.iterator(); // The reference iterator.
-            final Iterator<TreeTable.Node> cit = children .iterator(); // The children iterator to be tested.
+            final Iterator<TreeTable.Node> rit = reference.iterator();      // The reference iterator.
+            final Iterator<TreeTable.Node> cit = children .iterator();      // The children iterator to be tested.
             while (rit.hasNext()) {
                 assertTrue(cit.hasNext());
                 assertSame(rit.next(), cit.next());
-                if (random.nextInt(3) == 0) { // Remove only 1/3 of entries on each pass.
+                if (random.nextInt(3) == 0) {                           // Remove only 1/3 of entries on each pass.
                     rit.remove();
                     cit.remove();
                     assertAllNextEqual(reference.iterator(), children.iterator());

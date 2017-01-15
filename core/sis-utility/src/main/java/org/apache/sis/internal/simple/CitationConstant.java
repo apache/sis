@@ -137,8 +137,10 @@ public class CitationConstant extends SimpleCitation {
                 if (c == null) {
                     c = MetadataServices.getInstance().createCitation(title);
                     if (c == null) {
-                        // 'sis-metadata' module not on the classpath (should be very rare)
-                        // or no citation defined for the given primary key.
+                        /*
+                         * 'sis-metadata' module not on the classpath (should be very rare)
+                         * or no citation defined for the given primary key.
+                         */
                         c = new SimpleCitation(title);
                     }
                     delegate = c;

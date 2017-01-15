@@ -21,8 +21,10 @@ import java.util.Collection;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.util.resources.Vocabulary;
-import org.opengis.metadata.citation.Citation;
+
+// Branch-dependent imports
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.citation.Citation;
 
 
 /**
@@ -95,10 +97,9 @@ public enum Capability {
              * Get a title for the format, followed by the short name between parenthesis
              * if it does not repeat the main title.
              */
-            final Citation spec = provider.getFormat().getFormatSpecificationCitation();
-            String title = title(spec, true).toString(locale);
-            final String abbreviation = title(spec, false).toString(locale);
-            if (!abbreviation.equals(title)) {
+            String title = title(provider.getFormat().getFormatSpecificationCitation()).toString(locale);
+            final String abbreviation = provider.getShortName();
+            if (abbreviation != null && !abbreviation.equals(title)) {
                 title = resources.getString(Vocabulary.Keys.Parenthesis_2, title, abbreviation);
             }
             list[i++] = capabilities;
@@ -109,16 +110,13 @@ public enum Capability {
 
     /**
      * Returns the title or alternate title of the given citation, or "untitled" if none.
-     *
-     * @param  preferTitle  {@code true} for preferring the title over alternate titles, or {@code false} for the opposite.
      */
-    private static InternationalString title(final Citation spec, final boolean preferTitle) {
-        final InternationalString title = spec.getTitle();
-        if (preferTitle && title != null) return title;
-        for (final InternationalString t : spec.getAlternateTitles()) {
+    private static InternationalString title(final Citation specification) {
+        final InternationalString title = specification.getTitle();
+        if (title != null) return title;
+        for (final InternationalString t : specification.getAlternateTitles()) {
             if (t != null) return t;
         }
-        if (title != null) return title;
         return Vocabulary.formatInternational(Vocabulary.Keys.Untitled);
     }
 }

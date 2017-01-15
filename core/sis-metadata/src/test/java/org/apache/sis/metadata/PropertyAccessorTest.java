@@ -111,8 +111,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      *
      * The tuples shall be ordered according the {@link PropertyComparator}.
      *
-     * @param accessor The accessor to test.
-     * @param expected The expected names and types as described above.
+     * @param  accessor  the accessor to test.
+     * @param  expected  the expected names and types as described above.
      *
      * @see PropertyAccessor#mapping
      */
@@ -229,9 +229,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the constructor with a method which override an other method with covariant
-     * return type. This test may need to be updated if a future GeoAPI release modifies
-     * the {@link GeographicCRS} interface.
+     * Tests the constructor with a method which override an other method with covariant return type.
+     * This test may need to be updated if a future GeoAPI release modifies the {@link GeographicCRS} interface.
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-205">GEOTK-205</a>
      */
@@ -264,8 +263,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the {@link PropertyAccessor#get(int, Object)} method on the {@link HardCodedCitations#ISO}
-     * constant. The metadata object read by this test is:
+     * Tests the {@link PropertyAccessor#get(int, Object)} method on the {@link HardCodedCitations#ISO} constant.
+     * The metadata object read by this test is:
      *
      * {@preformat text
      *   DefaultCitation
@@ -654,7 +653,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * Returns the code of the singleton identifier found in the given collection.
      * This method verifies that the object is of the expected type.
      *
-     * @param identifiers A singleton {@code Collection<Identifier>}.
+     * @param  identifiers  a singleton {@code Collection<Identifier>}.
      * @return {@link Identifier#getCode()}.
      */
     static String getSingletonCode(final Object identifiers) {

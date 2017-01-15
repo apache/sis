@@ -90,7 +90,7 @@ public interface IdentifiedObject {
      * Note that XML ID attribute are actually unique only in the scope of the XML document
      * being processed.
      *
-     * @return All identifiers associated to this object, or an empty collection if none.
+     * @return all identifiers associated to this object, or an empty collection if none.
      *
      * @see org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers()
      * @see org.apache.sis.metadata.iso.acquisition.DefaultObjective#getIdentifiers()
@@ -126,7 +126,7 @@ public interface IdentifiedObject {
      * The map supports {@link IdentifierMap#put(Object, Object) put} operations
      * if and only if this {@code IdentifiedObject} is modifiable.
      *
-     * @return The identifiers as a map of (<var>authority</var>, <var>code</var>) entries,
+     * @return the identifiers as a map of (<var>authority</var>, <var>code</var>) entries,
      *         or an empty map if none.
      */
     IdentifierMap getIdentifierMap();
