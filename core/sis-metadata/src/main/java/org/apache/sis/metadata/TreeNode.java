@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
 import org.apache.sis.util.Debug;
@@ -260,6 +261,26 @@ class TreeNode implements Node {
         return false;
     }
 
+    /**
+     * Returns {@code true} if the given object is of the same class than this node and contains a reference
+     * to the same metadata object. Since {@code TreeNode} generates all content from the wrapped metadata,
+     * this condition should ensure that two equal nodes have the same values and children.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        return (other != null) && other.getClass() == getClass()
+                && ((TreeNode) other).metadata == metadata
+                && ((TreeNode) other).baseType == baseType;
+    }
+
+    /**
+     * Returns a hash code value for this node.
+     */
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(metadata) ^ Objects.hashCode(baseType);
+    }
+
 
 
 
@@ -275,15 +296,13 @@ class TreeNode implements Node {
      */
     static class Element extends TreeNode {
         /**
-         * The accessor to use for fetching the property names, types and values from the
-         * {@link #metadata} object. Note that the value of this field is the same for all
-         * siblings.
+         * The accessor to use for fetching the property names, types and values from the {@link #metadata} object.
+         * Note that the reference stored in this field is the same for all siblings.
          */
         private final PropertyAccessor accessor;
 
         /**
-         * Index of the value in the {@link #metadata} object to be fetched with the
-         * {@link #accessor}.
+         * Index of the value in the {@link #metadata} object to be fetched with the {@link #accessor}.
          */
         private final int indexInData;
 
@@ -294,7 +313,7 @@ class TreeNode implements Node {
          * @param  parent       the parent of this node.
          * @param  metadata     the metadata object for which this node will be a value.
          * @param  accessor     accessor to use for fetching the name, type and value.
-         * @param  indexInData  index to be given to the accessor of fetching the value.
+         * @param  indexInData  index to be given to the accessor for fetching the value.
          */
         Element(final TreeNode parent, final Object metadata,
                 final PropertyAccessor accessor, final int indexInData)
@@ -354,6 +373,23 @@ class TreeNode implements Node {
         @Override
         final boolean isWritable() {
             return accessor.isWritable(indexInData);
+        }
+
+        /**
+         * Returns {@code true} if the value returned by {@link #getUserObject()}
+         * should be the same for both nodes.
+         */
+        @Override
+        public boolean equals(final Object other) {
+            return super.equals(other) && ((Element) other).indexInData == indexInData;
+        }
+
+        /**
+         * Returns a hash code value for this node.
+         */
+        @Override
+        public int hashCode() {
+            return super.hashCode() ^ (31 * indexInData);
         }
     }
 
@@ -442,7 +478,7 @@ class TreeNode implements Node {
                 }
                 final Iterator<?> it = values.iterator();
                 for (int i=0; i<indexInList; i++) {
-                    it.next(); // Inefficient way to move at the desired index, but hopefully rare.
+                    it.next();      // Inefficient way to move at the desired index, but hopefully rare.
                 }
                 return it.next();
             } catch (NullPointerException | IndexOutOfBoundsException | NoSuchElementException e) {
@@ -488,6 +524,23 @@ class TreeNode implements Node {
                 // Same rational than in the getUserObject() method.
                 throw new ConcurrentModificationException(e);
             }
+        }
+
+        /**
+         * Returns {@code true} if the value returned by {@link #getUserObject()}
+         * should be the same for both nodes.
+         */
+        @Override
+        public boolean equals(final Object other) {
+            return super.equals(other) && ((CollectionElement) other).indexInList == indexInList;
+        }
+
+        /**
+         * Returns a hash code value for this node.
+         */
+        @Override
+        public int hashCode() {
+            return super.hashCode() ^ indexInList;
         }
     }
 

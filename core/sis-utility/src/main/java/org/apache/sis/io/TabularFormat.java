@@ -65,10 +65,11 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.3
  * @module
  *
- * @param <T> The base type of objects parsed and formatted by this class.
+ * @param  <T>  the base type of objects parsed and formatted by this class.
  *
  * @see TableAppender
  */
+@SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.
 public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**
      * For cross-version compatibility.
@@ -120,17 +121,18 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
     private boolean isParsePatternDefined;
 
     /**
-     * The pattern used at parsing time for finding the column separators, or {@code null}
-     * if not yet constructed. This field is serialized because it may be a user-specified pattern.
+     * The pattern used at parsing time for finding the column separators, or {@code null} if not
+     * yet constructed. This field is serialized because it may be a user-specified pattern.
+     * The same {@code Pattern} instance can be safely shared by many {@code TabularFormat} instances.
      */
     private Pattern parsePattern;
 
     /**
      * Creates a new tabular format.
      *
-     * @param locale   The locale to use for numbers, dates and angles formatting,
-     *                 or {@code null} for the {@linkplain Locale#ROOT root locale}.
-     * @param timezone The timezone, or {@code null} for UTC.
+     * @param  locale    the locale to use for numbers, dates and angles formatting,
+     *                   or {@code null} for the {@linkplain Locale#ROOT root locale}.
+     * @param  timezone  the timezone, or {@code null} for UTC.
      */
     public TabularFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
@@ -143,7 +145,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**
      * Returns the current line separator. The default value is system-dependent.
      *
-     * @return The current line separator.
+     * @return the current line separator.
      */
     public String getLineSeparator() {
         return lineSeparator;
@@ -152,7 +154,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**
      * Sets the line separator. Can not be a null or empty string.
      *
-     * @param separator The new line separator.
+     * @param  separator  the new line separator.
      */
     public void setLineSeparator(final String separator) {
         ArgumentChecks.ensureNonEmpty("separator", separator);
@@ -164,7 +166,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      * only if more than one column is formatted. See {@link #setColumnSeparatorPattern(String)}
      * for a description of the pattern syntax.
      *
-     * @return The pattern of the current column separator.
+     * @return the pattern of the current column separator.
      */
     public String getColumnSeparatorPattern() {
         final StringBuilder buffer = new StringBuilder(8);
@@ -223,8 +225,8 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      * then insert a space"</cite>.
      * </div>
      *
-     * @param  pattern The pattern of the new column separator.
-     * @throws IllegalArgumentException If the given pattern is illegal.
+     * @param  pattern  the pattern of the new column separator.
+     * @throws IllegalArgumentException if the given pattern is illegal.
      */
     public void setColumnSeparatorPattern(final String pattern) throws IllegalArgumentException {
         ArgumentChecks.ensureNonEmpty("pattern", pattern);
@@ -238,9 +240,9 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
 scan:   for (int i=0; i<length; i++) {
             final char c = pattern.charAt(i);
             switch (c) {
-                case '\uFFFF': { // This "character" is reserved.
+                case '\uFFFF': {                        // This "character" is reserved.
                     prefix = null;
-                    break scan; // This will cause IllegalArgumentException to be thrown.
+                    break scan;                         // This will cause IllegalArgumentException to be thrown.
                 }
                 case '\\': {
                     if (i != separatorIndex) {
@@ -262,7 +264,7 @@ scan:   for (int i=0; i<length; i++) {
                     if (i != separatorIndex) {
                         if (separatorIndex >= 0) {
                             prefix = null;
-                            break scan; // This will cause IllegalArgumentException to be thrown.
+                            break scan;                 // This will cause IllegalArgumentException to be thrown.
                         }
                         separatorIndex = i+1;
                     }
@@ -312,8 +314,8 @@ scan:   for (int i=0; i<length; i++) {
      * Returns a matcher for the column separators in the given text.
      * This method is invoked by subclasses in their {@code parse(…)} implementations.
      *
-     * @param  text The text for which to get a matcher.
-     * @return A matcher for the column separators in the given text.
+     * @param  text  the text for which to get a matcher.
+     * @return a matcher for the column separators in the given text.
      */
     protected Matcher getColumnSeparatorMatcher(final CharSequence text) {
         if (parsePattern == null) {

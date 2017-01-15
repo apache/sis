@@ -29,6 +29,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
 import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
+import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
 import org.apache.sis.metadata.iso.quality.AbstractCompleteness;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -215,14 +216,16 @@ public final strictfp class MetadataStandardTest extends TestCase {
      * Creates a metadata object having a cyclic association. The cycle is between
      * {@code platform.instrument} and {@code instrument.isMountedOn}.
      */
-    static DefaultPlatform createCyclicMetadata() {
+    static DefaultAcquisitionInformation createCyclicMetadata() {
         final DefaultInstrument instrument = new DefaultInstrument();
         instrument.setType(new SimpleInternationalString("An instrument type."));
         final DefaultPlatform platform = new DefaultPlatform();
         platform.setDescription(new SimpleInternationalString("A platform."));
         instrument.setMountedOn(platform);
         platform.setInstruments(singleton(instrument));
-        return platform;
+        final DefaultAcquisitionInformation acquisition = new DefaultAcquisitionInformation();
+        acquisition.setPlatforms(singleton(platform));
+        return acquisition;
     }
 
     /**
@@ -233,12 +236,14 @@ public final strictfp class MetadataStandardTest extends TestCase {
     @Test
     @DependsOnMethod("testEquals")
     public void testEqualsOnCyclicMetadata() {
-        final DefaultPlatform p1 = createCyclicMetadata();
-        final DefaultPlatform p2 = createCyclicMetadata();
-        assertTrue(p1.equals(p2));
-        ((DefaultInstrument) getSingleton(p2.getInstruments()))
-                .setType(new SimpleInternationalString("An other instrument type."));
-        assertFalse(p1.equals(p2));
+        final DefaultAcquisitionInformation p1 = createCyclicMetadata();
+        final DefaultAcquisitionInformation p2 = createCyclicMetadata();
+        assertTrue("equals", p1.equals(p2));
+
+        final DefaultPlatform   platform   = (DefaultPlatform)   getSingleton(p2.getPlatforms());
+        final DefaultInstrument instrument = (DefaultInstrument) getSingleton(platform.getInstruments());
+        instrument.setType(new SimpleInternationalString("An other instrument type."));
+        assertFalse("equals", p1.equals(p2));
     }
 
     /**

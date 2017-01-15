@@ -19,6 +19,7 @@ package org.apache.sis.internal.util;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Objects;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
@@ -29,9 +30,6 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Static;
 
 import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -58,8 +56,8 @@ public final class Citations extends Static {
      * <p>This method can be used for identifying where in Apache SIS source code the relationship between
      * EPSG authority and IOGP code space is hard-coded.</p>
      *
-     * @param  codeSpace The identifier code space, or {@code null}.
-     * @param  code The identifier code, or {@code null}.
+     * @param  codeSpace  the identifier code space, or {@code null}.
+     * @param  code       the identifier code, or {@code null}.
      * @return {@code true} if the given identifier is {@code "IOGP:EPSG"}.
      *
      * @see org.apache.sis.metadata.iso.citation.Citations#EPSG
@@ -75,9 +73,9 @@ public final class Citations extends Static {
      * Returns the collection iterator, or {@code null} if the given collection is null
      * or empty. We use this method as a paranoiac safety against broken implementations.
      *
-     * @param  <E> The type of elements in the collection.
-     * @param  collection The collection from which to get the iterator, or {@code null}.
-     * @return The iterator over the given collection elements, or {@code null}.
+     * @param  <E>         the type of elements in the collection.
+     * @param  collection  the collection from which to get the iterator, or {@code null}.
+     * @return the iterator over the given collection elements, or {@code null}.
      */
     public static <E> Iterator<E> iterator(final Collection<E> collection) {
         return (collection != null && !collection.isEmpty()) ? collection.iterator() : null;
@@ -104,8 +102,8 @@ public final class Citations extends Static {
      * The method to be used consistently for comparing titles or identifiers in all {@code fooMathes(…)}
      * methods declared in this class.
      *
-     * @param  s1 The first characters sequence to compare, or {@code null}.
-     * @param  s2 The second characters sequence to compare, or {@code null}.
+     * @param  s1  the first characters sequence to compare, or {@code null}.
+     * @param  s2  the second characters sequence to compare, or {@code null}.
      * @return {@code true} if both arguments are {@code null} or if the two given texts are equal,
      *         ignoring case and any characters other than digits and letters.
      *
@@ -121,14 +119,14 @@ public final class Citations extends Static {
      * See {@link org.apache.sis.metadata.iso.citation.Citations#titleMatches(Citation, Citation)}
      * for the public documentation of this method.
      *
-     * @param  c1 The first citation to compare, or {@code null}.
-     * @param  c2 the second citation to compare, or {@code null}.
+     * @param  c1  the first citation to compare, or {@code null}.
+     * @param  c2  the second citation to compare, or {@code null}.
      * @return {@code true} if both arguments are non-null, and at least one title or alternate title matches.
      */
     public static boolean titleMatches(final Citation c1, final Citation c2) {
         if (c1 != null && c2 != null) {
             if (c1 == c2) {
-                return true; // Optimisation for a common case.
+                return true;                                                // Optimisation for a common case.
             }
             InternationalString candidate = c2.getTitle();
             Iterator<? extends InternationalString> iterator = null;
@@ -162,8 +160,8 @@ public final class Citations extends Static {
      * See {@link org.apache.sis.metadata.iso.citation.Citations#titleMatches(Citation, String)}
      * for the public documentation of this method.
      *
-     * @param  citation The citation to check for, or {@code null}.
-     * @param  title The title or alternate title to compare, or {@code null}.
+     * @param  citation  the citation to check for, or {@code null}.
+     * @param  title     the title or alternate title to compare, or {@code null}.
      * @return {@code true} if both arguments are non-null, and the title or an alternate
      *         title matches the given string.
      */
@@ -202,8 +200,8 @@ public final class Citations extends Static {
      * See {@link org.apache.sis.metadata.iso.citation.Citations#identifierMatches(Citation, Citation)}
      * for the public documentation of this method.
      *
-     * @param  c1 The first citation to compare, or {@code null}.
-     * @param  c2 the second citation to compare, or {@code null}.
+     * @param  c1  the first citation to compare, or {@code null}.
+     * @param  c2  the second citation to compare, or {@code null}.
      * @return {@code true} if both arguments are non-null, and at least one identifier matches.
      */
     public static boolean identifierMatches(Citation c1, Citation c2) {
@@ -242,9 +240,9 @@ public final class Citations extends Static {
      * See {@link org.apache.sis.metadata.iso.citation.Citations#identifierMatches(Citation, String)}
      * for the public documentation of this method.
      *
-     * @param  citation   The citation to check for, or {@code null}.
-     * @param  identifier The identifier to compare, or {@code null} if unknown.
-     * @param  code       Value of {@code identifier.getCode()}, or {@code null}.
+     * @param  citation    the citation to check for, or {@code null}.
+     * @param  identifier  the identifier to compare, or {@code null} if unknown.
+     * @param  code        value of {@code identifier.getCode()}, or {@code null}.
      * @return {@code true} if both arguments are non-null, and an identifier matches the given string.
      */
     public static boolean identifierMatches(final Citation citation, final Identifier identifier, final CharSequence code) {
@@ -277,9 +275,9 @@ public final class Citations extends Static {
      * If one of the authority is null, then the comparison fallback on the given {@code codeSpace}.
      * If the code spaces are also null, then this method conservatively returns {@code false}.
      *
-     * @param  identifier The identifier to compare.
-     * @param  authority  The desired authority, or {@code null}.
-     * @param  codeSpace  The desired code space or {@code null}, used as a fallback if an authority is null.
+     * @param  identifier  the identifier to compare.
+     * @param  authority   the desired authority, or {@code null}.
+     * @param  codeSpace   the desired code space or {@code null}, used as a fallback if an authority is null.
      * @return {@code true} if the authority or code space (as a fallback only) matches.
      */
     private static boolean authorityMatches(final Identifier identifier, final Citation authority, final String codeSpace) {
@@ -308,8 +306,8 @@ public final class Citations extends Static {
      * at least in the case of {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod operation methods} and
      * {@linkplain org.apache.sis.parameter.AbstractParameterDescriptor parameters}.</p>
      *
-     * @param  id1 The first collection of identifiers, or {@code null}.
-     * @param  id2 The second collection of identifiers, or {@code null}.
+     * @param  id1  the first collection of identifiers, or {@code null}.
+     * @param  id2  the second collection of identifiers, or {@code null}.
      * @return {@code TRUE} or {@code FALSE} on match or mismatch respectively, or {@code null} if this method
      *         can not determine if there is a match or mismatch.
      */
@@ -350,9 +348,9 @@ public final class Citations extends Static {
      *   <li>For assigning a value to a {@code codeSpace} field, use {@link #getUnicodeIdentifier(Citation)}.</li>
      * </ul>
      *
-     * @param  citation The citation for which to get the identifier, or {@code null}.
-     * @param  strict {@code true} for returning a non-null value only if the identifier is a valid Unicode identifier.
-     * @return A non-empty identifier for the given citation without leading or trailing whitespaces,
+     * @param  citation  the citation for which to get the identifier, or {@code null}.
+     * @param  strict    {@code true} for returning a non-null value only if the identifier is a valid Unicode identifier.
+     * @return a non-empty identifier for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not declare any identifier or title.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-201">SIS-201</a>
@@ -384,8 +382,10 @@ public final class Citations extends Static {
                                 if (!Character.isUnicodeIdentifierPart(c) &&
                                         (strict || (c != '.' && c != '-')))
                                 {
-                                    // Above special case for '.' and '-' characters is documented
-                                    // in the public Citations.getIdentifier(Citation) method.
+                                    /*
+                                     * Above special case for '.' and '-' characters is documented
+                                     * in the public Citations.getIdentifier(Citation) method.
+                                     */
                                     isUnicode = false;
                                     break;
                                 }
@@ -462,8 +462,8 @@ public final class Citations extends Static {
      * use {@code getIdentifier(citation, true)} instead, which will produce the same result but preserving the
      * ignorable characters, which can be useful for formatting purpose.
      *
-     * @param  citation The citation for which to get the Unicode identifier, or {@code null}.
-     * @return A non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
+     * @param  citation  the citation for which to get the Unicode identifier, or {@code null}.
+     * @return a non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
      *
      * @since 0.6
@@ -499,8 +499,10 @@ public final class Citations extends Static {
                             buffer.appendCodePoint(c);
                         }
                     }
-                    // No need to verify if the buffer is empty, because ignorable
-                    // characters are not legal Unicode identifier start.
+                    /*
+                     * No need to verify if the buffer is empty, because ignorable
+                     * characters are not legal Unicode identifier start.
+                     */
                     return buffer.toString();
                 }
                 i += n;
@@ -522,8 +524,8 @@ public final class Citations extends Static {
      * behavior of this method close to the behavior of {@link #getUnicodeIdentifier(Citation)}, which is the
      * method having a public facade.</p>
      *
-     * @param  citation The citation for which to infer the code space, or {@code null}.
-     * @return A non-empty code space for the given citation without leading or trailing whitespaces,
+     * @param  citation  the citation for which to infer the code space, or {@code null}.
+     * @return a non-empty code space for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
      *
      * @since 0.6

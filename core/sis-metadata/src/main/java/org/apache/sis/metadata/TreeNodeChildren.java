@@ -376,7 +376,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
                 }
                 subIterator = null;
                 subIndex = -1;
-                nextInAccessor++; // See the comment before nextInAccessor++ in the next() method.
+                nextInAccessor++;       // See the comment before nextInAccessor++ in the next() method.
             }
             /*
              * Search for the next property, which may be either a singleton or the first element
@@ -397,17 +397,21 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
                             subIterator = ((Iterable<?>) nextValue).iterator();
                         } else {
                             subIterator = Collections.emptyIterator();
-                            // Null collections are illegal (it shall be empty collections instead),
-                            // but we try to keep the iterator robut to ill-formed metadata, because
-                            // we want AbstractMetadata.toString() to work so we can spot problems.
+                            /*
+                             * Null collections are illegal (it shall be empty collections instead),
+                             * but we try to keep the iterator robut to ill-formed metadata, because
+                             * we want AbstractMetadata.toString() to work so we can spot problems.
+                             */
                         }
                         subIndex = 0;
                         if (subIterator.hasNext()) {
                             nextValue = subIterator.next();
                         } else {
                             nextValue = null;
-                            // Do not set 'childIterator' to null, since the above 'nextValue'
-                            // is considered as part of the child iteration.
+                            /*
+                             * Do not set 'childIterator' to null, since the above 'nextValue'
+                             * is considered as part of the child iteration.
+                             */
                         }
                     }
                     isNextVerified = true;

@@ -47,9 +47,9 @@ public interface IdentifierMap extends Map<Citation,String> {
      * or {@code null} if this map contains no mapping of the
      * specialized type for the namespace.
      *
-     * @param  <T> The identifier type.
-     * @param  authority The namespace whose associated identifier is to be returned.
-     * @return The identifier to which the given namespace is mapped, or
+     * @param  <T>        the identifier type.
+     * @param  authority  the namespace whose associated identifier is to be returned.
+     * @return the identifier to which the given namespace is mapped, or
      *         {@code null} if this map contains no mapping for the namespace.
      */
     <T> T getSpecialized(IdentifierSpace<T> authority);
@@ -59,12 +59,12 @@ public interface IdentifierMap extends Map<Citation,String> {
      * (optional operation). If the map previously contained a mapping for
      * the namespace, then the old value is replaced by the specified value.
      *
-     * @param  <T> The identifier type.
-     * @param  authority The namespace with which the given identifier is to be associated.
-     * @param  value The identifier to be associated with the given namespace.
-     * @return The previous identifier associated with {@code authority}, or {@code null}
+     * @param  <T>        the identifier type.
+     * @param  authority  the namespace with which the given identifier is to be associated.
+     * @param  value      the identifier to be associated with the given namespace.
+     * @return the previous identifier associated with {@code authority}, or {@code null}
      *         if there was no mapping of the specialized type for {@code authority}.
-     * @throws UnsupportedOperationException If the identifier map is unmodifiable.
+     * @throws UnsupportedOperationException if the identifier map is unmodifiable.
      */
     <T> T putSpecialized(IdentifierSpace<T> authority, T value) throws UnsupportedOperationException;
 }
