@@ -70,7 +70,7 @@ public abstract class TypeRegistration {
      * Adds to the given collection every types that should be given to
      * the initial JAXB context.
      *
-     * @param addTo The collection in which to add new types.
+     * @param  addTo  the collection in which to add new types.
      */
     public abstract void getTypes(final Collection<Class<?>> addTo);
 
@@ -82,7 +82,7 @@ public abstract class TypeRegistration {
      * <p>The list of classes is determined dynamically from the SIS modules found on
      * the classpath.</p>
      *
-     * @return The default set of classes to be bound to the {@code JAXBContext}.
+     * @return the default set of classes to be bound to the {@code JAXBContext}.
      */
     private static Class<?>[] defaultClassesToBeBound() {
         /*
@@ -103,8 +103,8 @@ public abstract class TypeRegistration {
      * Note that the {@code JAXBContext} class is thread safe, but the {@code Marshaller},
      * {@code Unmarshaller}, and {@code Validator} classes are not thread safe.
      *
-     * @return The shared JAXB context.
-     * @throws JAXBException If an error occurred while creating the JAXB context.
+     * @return the shared JAXB context.
+     * @throws JAXBException if an error occurred while creating the JAXB context.
      */
     public static synchronized JAXBContext getSharedContext() throws JAXBException {
         final Reference<JAXBContext> c = context;

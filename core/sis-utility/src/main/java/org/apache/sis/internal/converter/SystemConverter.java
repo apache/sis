@@ -32,8 +32,8 @@ import org.apache.sis.util.resources.Errors;
  * This base class is immutable, and thus inherently thread-safe. Subclasses should be immutable
  * and thread-safe too if they are intended to be cached in {@link ConverterRegistry}.
  *
- * @param <S> The base type of source objects.
- * @param <T> The base type of converted objects.
+ * @param  <S>  the base type of source objects.
+ * @param  <T>  the base type of converted objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3

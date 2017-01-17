@@ -33,6 +33,7 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.internal.util.SetOfUnknownSize;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
@@ -395,7 +396,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * @version 0.7
      * @module
      */
-    @SuppressWarnings("serial") // Not intended to be serialized.
+    @SuppressWarnings("serial")                 // Not intended to be serialized.
     private static final class Iter extends HashMap<Citation,Boolean> implements Iterator<Entry<Citation,String>> {
         /**
          * An iterator over the {@link IdentifierMapAdapter#identifiers} collection,
@@ -509,6 +510,24 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
             }
             it.remove();
             put(authority, Boolean.TRUE);
+        }
+
+        /**
+         * Iterators are not intended to be cloned.
+         */
+        @Override
+        @SuppressWarnings("CloneDoesntCallSuperClone")
+        public Object clone() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Returns the next value to be returned, for debugging purpose only.
+         */
+        @Debug
+        @Override
+        public String toString() {
+            return Utilities.toString(Iter.class, "next", next);
         }
     }
 
