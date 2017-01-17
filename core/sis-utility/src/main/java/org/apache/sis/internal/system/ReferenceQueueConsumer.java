@@ -65,8 +65,10 @@ public final class ReferenceQueueConsumer extends DaemonThread {
         synchronized (Threads.class) {
             final ReferenceQueueConsumer thread;
             Threads.lastCreatedDaemon = thread = new ReferenceQueueConsumer(Threads.lastCreatedDaemon);
-            // Call to Thread.start() must be outside the constructor
-            // (Reference: Goetz et al.: "Java Concurrency in Practice").
+            /*
+             * Call to Thread.start() must be outside the constructor
+             * (Reference: Goetz et al.: "Java Concurrency in Practice").
+             */
             thread.start();
         }
         if (Supervisor.ENABLED) {
@@ -120,8 +122,10 @@ public final class ReferenceQueueConsumer extends DaemonThread {
                     continue;
                 }
             } catch (InterruptedException exception) {
-                // Probably the 'killAll' method has been invoked.
-                // We need to test 'isKillRequested()' below.
+                /*
+                 * Probably the 'killAll' method has been invoked.
+                 * We need to test 'isKillRequested()' below.
+                 */
             } catch (Throwable exception) {
                 Logging.unexpectedException(Logging.getLogger(Loggers.SYSTEM), getClass(), "run", exception);
             }

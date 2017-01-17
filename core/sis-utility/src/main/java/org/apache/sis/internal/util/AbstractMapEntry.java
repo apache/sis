@@ -17,20 +17,18 @@
 package org.apache.sis.internal.util;
 
 import java.util.Map;
+import java.util.Objects;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
  * Provides default implementations of {@link #equals(Object)}, {@link #hashCode()} and {@link #toString()}
  * for a map entry.
  *
- * @param <K> The type of keys maintained by the map.
- * @param <V> The type of mapped values.
+ * @param  <K>  the type of keys maintained by the map.
+ * @param  <V>  the type of mapped values.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -49,8 +47,8 @@ public abstract class AbstractMapEntry<K,V> implements Map.Entry<K,V> {
      * The default implementation throws {@code UnsupportedOperationException}
      * for the convenience of unmodifiable map implementations.
      *
-     * @param  value The new value to be stored in this entry.
-     * @return The previous value (may be {@code null}).
+     * @param  value  the new value to be stored in this entry.
+     * @return the previous value (may be {@code null}).
      * @throws UnsupportedOperationException if this entry is unmodifiable.
      */
     @Override
@@ -62,7 +60,7 @@ public abstract class AbstractMapEntry<K,V> implements Map.Entry<K,V> {
      * Compares the specified object with this entry for equality.
      * Criterion are specified by the {@link Map.Entry} contract.
      *
-     * @param object The other object to compare with this entry.
+     * @param  object  the other object to compare with this entry.
      */
     @Override
     public boolean equals(final Object object) {
@@ -97,8 +95,8 @@ public abstract class AbstractMapEntry<K,V> implements Map.Entry<K,V> {
     /**
      * Returns only the first line of the string representation of the given value.
      *
-     * @param  value The value for which to get a string representation.
-     * @return The first line of the string representation of the given value.
+     * @param  value  the value for which to get a string representation.
+     * @return the first line of the string representation of the given value.
      */
     static String firstLine(final Object value) {
         String s = String.valueOf(value);

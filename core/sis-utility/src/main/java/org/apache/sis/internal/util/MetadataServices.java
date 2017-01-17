@@ -62,7 +62,7 @@ public class MetadataServices extends OptionalDependency {
     /**
      * Returns the singleton instance.
      *
-     * @return The singleton instance.
+     * @return the singleton instance.
      */
     @SuppressWarnings("DoubleCheckedLocking")
     public static MetadataServices getInstance() {
@@ -94,8 +94,8 @@ public class MetadataServices extends OptionalDependency {
      * for which the two citations of interest are {@code "ISBN"} (International Standard Book Number) and
      * {@code "ISSN"} (International Standard Serial Number) citation.
      *
-     * @param  name The name of one of the citation constants defined in the {@code Citations} class.
-     * @return The requested citation, or {@code null} if the {@code sis-metadata} module is not available.
+     * @param  name  the name of one of the citation constants defined in the {@code Citations} class.
+     * @return the requested citation, or {@code null} if the {@code sis-metadata} module is not available.
      */
     public CitationConstant getCitationConstant(final String name) {
         return null;
@@ -106,8 +106,8 @@ public class MetadataServices extends OptionalDependency {
      * The metadata module will search in a database for information like a descriptive
      * title, abbreviations, identifiers, URL to a web site, <i>etc</i>.
      *
-     * @param  key The primary key of the desired citation.
-     * @return The requested citation, or {@code null} if the {@code sis-metadata} module is not available.
+     * @param  key  the primary key of the desired citation.
+     * @return the requested citation, or {@code null} if the {@code sis-metadata} module is not available.
      */
     public Citation createCitation(final String key) {
         return null;
@@ -123,9 +123,9 @@ public class MetadataServices extends OptionalDependency {
      *   <li>{@code "DataSource"}: URL to the data source, or error message.</li>
      * </ul>
      *
-     * @param  key A key identifying the information to return.
-     * @param  locale Language to use if possible.
-     * @return The information, or {@code null} if none.
+     * @param  key     a key identifying the information to return.
+     * @param  locale  language to use if possible.
+     * @return the information, or {@code null} if none.
      *
      * @see org.apache.sis.internal.metadata.ReferencingServices#getInformation(String)
      */

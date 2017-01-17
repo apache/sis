@@ -143,8 +143,8 @@ public final class StandardDateFormat extends DateFormat {
      *   <li>Otherwise this method returns a {@link LocalDateTime} in the given timezone.</li>
      * </ul>
      *
-     * @param  date the date to convert, or {@code null}.
-     * @param  zone the timezone of the temporal object to obtain, or {@code null} for UTC.
+     * @param  date  the date to convert, or {@code null}.
+     * @param  zone  the timezone of the temporal object to obtain, or {@code null} for UTC.
      * @return the temporal object for the given date, or {@code null} if the given argument was null.
      */
     public static Temporal toHeuristicTemporal(final Date date, ZoneId zone) {
@@ -270,7 +270,7 @@ public final class StandardDateFormat extends DateFormat {
     /**
      * Sets the timezone.
      *
-     * @param zone the new timezone.
+     * @param  zone  the new timezone.
      */
     @Override
     public final void setTimeZone(final TimeZone zone) {
@@ -283,7 +283,7 @@ public final class StandardDateFormat extends DateFormat {
     /**
      * Overridden for compliance with {@code DateFormat} contract, but has no incidence on this format.
      *
-     * @param lenient value forwarded to {@link Calendar#setLenient(boolean)}.
+     * @param  lenient  value forwarded to {@link Calendar#setLenient(boolean)}.
      */
     @Override
     public final void setLenient(boolean lenient) {
@@ -374,7 +374,7 @@ public final class StandardDateFormat extends DateFormat {
     /**
      * Compares this format with the given object for equality.
      *
-     * @param  obj the object to compare with this format.
+     * @param  obj  the object to compare with this format.
      * @return if the two objects format in the same way.
      */
     @Override
