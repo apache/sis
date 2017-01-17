@@ -115,7 +115,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      *
      * @param  input    the reader created by SIS (<b>not</b> the reader given by the user).
      * @param  version  identify the namespace substitutions to perform.
-     * @return The unmarshalled object.
+     * @return the unmarshalled object.
      */
     private Object unmarshal(XMLStreamReader input, final FilterVersion version)
             throws XMLStreamException, JAXBException

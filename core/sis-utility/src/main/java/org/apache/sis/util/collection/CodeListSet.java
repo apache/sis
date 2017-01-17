@@ -112,8 +112,8 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * Creates an initially empty set for code lists of the given type.
      * The given {@code CodeList} type shall be final.
      *
-     * @param  elementType The type of code list elements to be included in this set.
-     * @throws IllegalArgumentException If the given class is not final.
+     * @param  elementType  the type of code list elements to be included in this set.
+     * @throws IllegalArgumentException if the given class is not final.
      */
     public CodeListSet(final Class<E> elementType) throws IllegalArgumentException {
         if (!Modifier.isFinal(elementType.getModifiers())) {
@@ -129,10 +129,10 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * list elements are created after the invocation of this {@code CodeListSet} constructor, then
      * those new elements will <em>not</em> be in this set.
      *
-     * @param  elementType The type of code list elements to be included in this set.
+     * @param  elementType  the type of code list elements to be included in this set.
      * @param  fill {@code true} for filling the set with all known elements of the given type,
      *         or {@code false} for leaving the set empty.
-     * @throws IllegalArgumentException If the given class is not final.
+     * @throws IllegalArgumentException if the given class is not final.
      */
     public CodeListSet(final Class<E> elementType, final boolean fill) throws IllegalArgumentException {
         this(elementType);
@@ -154,7 +154,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     /**
      * Returns the type of code list elements in this set.
      *
-     * @return The type of code list elements in this set.
+     * @return the type of code list elements in this set.
      */
     @Override
     public Class<E> getElementType() {
@@ -199,7 +199,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     /**
      * Returns the number of elements in this set.
      *
-     * @return The number of elements in this set.
+     * @return the number of elements in this set.
      */
     @Override
     public int size() {
@@ -214,7 +214,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     /**
      * Adds the specified code list element in this set.
      *
-     * @param  element The code list element to add in this set.
+     * @param  element  the code list element to add in this set.
      * @return {@code true} if this set has been modified as a consequence of this method call.
      */
     @Override
@@ -255,7 +255,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * This methods does nothing if the given argument is {@code null} or is
      * not an instance of the code list class specified at construction time.
      *
-     * @param  object The code list element to remove from this set.
+     * @param  object  the code list element to remove from this set.
      * @return {@code true} if this set has been modified as a consequence of this method call.
      */
     @Override
@@ -288,7 +288,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * This methods returns {@code false} if the given argument is {@code null} or
      * is not an instance of the code list class specified at construction time.
      *
-     * @param  object The element to test for presence in this set.
+     * @param  object  the element to test for presence in this set.
      * @return {@code true} if the given object is contained in this set.
      */
     @Override
@@ -310,7 +310,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     /**
      * Returns {@code true} if this set contains all the elements of the given collection.
      *
-     * @param  c The collection to be checked for containment in this set.
+     * @param  c  the collection to be checked for containment in this set.
      * @return {@code true} if this set contains all elements of the given collection.
      */
     @Override
@@ -345,14 +345,16 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     /**
      * Adds all elements of the given collection to this set.
      *
-     * @param  c The collection containing elements to be added to this set.
+     * @param  c  the collection containing elements to be added to this set.
      * @return {@code true} if this set changed as a result of this method call.
      */
     @Override
     public boolean addAll(final Collection<? extends E> c) throws IllegalArgumentException {
         if (c instanceof CodeListSet) {
             final CodeListSet<?> o = (CodeListSet<?>) c;
-            // Following assertion should be ensured by parameterized types.
+            /*
+             * Following assertion should be ensured by parameterized types.
+             */
             assert elementType.isAssignableFrom(o.elementType);
             boolean changed = (values != (values |= o.values));
             /*
@@ -391,7 +393,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     /**
      * Adds all elements of the given collection from this set.
      *
-     * @param  c The collection containing elements to be removed from this set.
+     * @param  c  the collection containing elements to be removed from this set.
      * @return {@code true} if this set changed as a result of this method call.
      */
     @Override
@@ -424,7 +426,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     /**
      * Retains only the elements of the given collection in this set.
      *
-     * @param  c The collection containing elements to retain in this set.
+     * @param  c  the collection containing elements to retain in this set.
      * @return {@code true} if this set changed as a result of this method call.
      */
     @Override
@@ -462,7 +464,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * this {@code CodeListSet} made after this method call will not affect the values
      * returned by the iterator.
      *
-     * @return An iterator over the elements in this set.
+     * @return an iterator over the elements in this set.
      */
     @Override
     public Iterator<E> iterator() {
@@ -542,7 +544,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     /**
      * Returns a new set of the same class containing the same elements than this set.
      *
-     * @return A clone of this set.
+     * @return a clone of this set.
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -551,7 +553,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
         try {
             clone = (CodeListSet<E>) super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e); // Should never happen, since we are cloneable.
+            throw new AssertionError(e);                // Should never happen, since we are cloneable.
         }
         final BitSet s = supplementary;
         if (s != null) {

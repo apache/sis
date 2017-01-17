@@ -713,8 +713,8 @@ public final class Numbers extends Static {
      * {@link #SHORT}, {@link #BYTE}, {@link #CHARACTER}, {@link #BOOLEAN}, or {@link #OTHER}
      * constants for the given type. This is a commodity for usage in {@code switch} statements.
      *
-     * @param type A type (usually either a primitive type or its wrapper).
-     * @return The constant for the given type, or {@link #OTHER} if unknown.
+     * @param  type  a type (usually either a primitive type or its wrapper).
+     * @return the constant for the given type, or {@link #OTHER} if unknown.
      */
     public static byte getEnumConstant(final Class<?> type) {
         final Numbers mapping = MAPPING.get(type);

@@ -121,9 +121,9 @@ public class DefaultRecordSchema implements RecordSchema {
     /**
      * Creates a new schema of the given name.
      *
-     * @param nameFactory The factory to use for creating names, or {@code null} for the default factory.
-     * @param parent      The parent namespace, or {@code null} if none.
-     * @param schemaName  The name of the new schema.
+     * @param nameFactory  the factory to use for creating names, or {@code null} for the default factory.
+     * @param parent       the parent namespace, or {@code null} if none.
+     * @param schemaName   the name of the new schema.
      */
     public DefaultRecordSchema(NameFactory nameFactory, final NameSpace parent, final CharSequence schemaName) {
         ArgumentChecks.ensureNonNull("schemaName", schemaName);
@@ -140,7 +140,7 @@ public class DefaultRecordSchema implements RecordSchema {
     /**
      * Returns the schema name.
      *
-     * @return The schema name.
+     * @return the schema name.
      */
     @Override
     public LocalName getSchemaName() {
@@ -151,10 +151,10 @@ public class DefaultRecordSchema implements RecordSchema {
      * Creates a new record type of the given name, which will contains the given members.
      * Members are declared in iteration order.
      *
-     * @param  typeName The record type name.
-     * @param  members  The name of each record member, together with the expected value types.
-     * @return A record type of the given name and members.
-     * @throws IllegalArgumentException If a record already exists for the given name but with different members.
+     * @param  typeName  the record type name.
+     * @param  members   the name of each record member, together with the expected value types.
+     * @return a record type of the given name and members.
+     * @throws IllegalArgumentException if a record already exists for the given name but with different members.
      */
     public RecordType createRecordType(final CharSequence typeName, final Map<CharSequence,Class<?>> members)
             throws IllegalArgumentException
@@ -180,15 +180,15 @@ public class DefaultRecordSchema implements RecordSchema {
         boolean hasNext;
         while ((hasNext = it1.hasNext()) == it2.hasNext()) {
             if (!hasNext) {
-                return record; // Finished comparison successfully.
+                return record;                                          // Finished comparison successfully.
             }
             final Map.Entry<CharSequence,Class<?>> e1 = it1.next();
             final Map.Entry<MemberName,Type> e2 = it2.next();
             if (!e2.getKey().tip().toString().equals(e1.toString())) {
-                break;      // Member names differ.
+                break;                                                  // Member names differ.
             }
             if (!((AttributeType) e2.getValue()).getValueClass().equals(e1.getValue())) {
-                break;      // Value classes differ.
+                break;                                                  // Value classes differ.
             }
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.RecordAlreadyDefined_2, getSchemaName(), typeName));
@@ -199,8 +199,8 @@ public class DefaultRecordSchema implements RecordSchema {
      * of OGC/ISO specification when possible, e.g. {@code "GCO:CharacterString"} for {@code java.lang.String}.
      * See <cite>Mapping Java classes to type names</cite> in {@link DefaultTypeName} javadoc for more information.
      *
-     * @param  valueClass The value class to represent as an attribute type.
-     * @return Attribute type for the given value class.
+     * @param  valueClass  the value class to represent as an attribute type.
+     * @return attribute type for the given value class.
      */
     final Type toAttributeType(final Class<?> valueClass) {
         if (!TypeNames.isValid(valueClass)) {
@@ -229,7 +229,7 @@ public class DefaultRecordSchema implements RecordSchema {
     /**
      * Returns the dictionary of all (<var>name</var>, <var>record type</var>) pairs in this schema.
      *
-     * @return All (<var>name</var>, <var>record type</var>) pairs in this schema.
+     * @return all (<var>name</var>, <var>record type</var>) pairs in this schema.
      */
     @Override
     public Map<TypeName, RecordType> getDescription() {
@@ -240,8 +240,8 @@ public class DefaultRecordSchema implements RecordSchema {
      * Returns the record type for the given name.
      * If the type name is not defined within this schema, then this method returns {@code null}.
      *
-     * @param  name The name of the type to lookup.
-     * @return The type for the given name, or {@code null} if none.
+     * @param  name  the name of the type to lookup.
+     * @return the type for the given name, or {@code null} if none.
      */
     @Override
     public RecordType locate(final TypeName name) {
