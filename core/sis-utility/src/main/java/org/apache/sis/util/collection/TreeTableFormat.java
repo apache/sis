@@ -47,6 +47,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.util.Acyclic;
 import org.apache.sis.internal.util.LocalizedParseException;
 
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
@@ -769,7 +770,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
              * a real check of values and children, which is a little bit costly and known to be unnecessary in that
              * particular case.
              */
-            final boolean omitCheck = (node.getClass() == DefaultTreeTable.Node.class);
+            final boolean omitCheck = node.getClass().isAnnotationPresent(Acyclic.class);
             if (omitCheck || recursivityGuard.add(node)) {
                 final Iterator<? extends TreeTable.Node> it = node.getChildren().iterator();
                 boolean hasNext = it.hasNext();

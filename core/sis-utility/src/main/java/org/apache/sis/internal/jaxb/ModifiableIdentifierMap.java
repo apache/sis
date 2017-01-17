@@ -17,6 +17,7 @@
 package org.apache.sis.internal.jaxb;
 
 import java.net.URI;
+import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
 import java.net.URISyntaxException;
@@ -26,9 +27,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.XLink;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
