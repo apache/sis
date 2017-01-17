@@ -159,7 +159,7 @@ public final class Locales extends Static {
      * ({@link #SIS}). In the later case, this method returns only the languages for which
      * localized resources are provided in the {@code org.apache.sis.util.resources} package.
      *
-     * @return The list of supported languages.
+     * @return the list of supported languages.
      */
     public Locale[] getAvailableLanguages() {
         if (this == ALL) {
@@ -176,7 +176,7 @@ public final class Locales extends Static {
      * ({@link #SIS}). In the later case, this method returns only the locales for which
      * localized resources are provided in the {@code org.apache.sis.util.resources} package.
      *
-     * @return The list of supported locales.
+     * @return the list of supported locales.
      */
     public Locale[] getAvailableLocales() {
         if (this == ALL) {
@@ -207,8 +207,8 @@ filter: for (final Locale locale : locales) {
      * The instances returned by this method have no {@linkplain Locale#getCountry() country}
      * and no {@linkplain Locale#getVariant() variant} information.
      *
-     * @param  locales The locales from which to get the languages.
-     * @return The languages, without country or variant information.
+     * @param  locales  the locales from which to get the languages.
+     * @return the languages, without country or variant information.
      */
     private static Locale[] getLanguages(final Locale... locales) {
         final Set<String> codes = new LinkedHashSet<>(hashMapCapacity(locales.length));
@@ -232,9 +232,9 @@ filter: for (final Locale locale : locales) {
      * and country codes use 2 or 3 letters. This method tries to convert 3-letters codes to 2-letters code on a
      * <cite>best effort</cite> basis.</p>
      *
-     * @param  code The language code, optionally followed by country code and variant.
-     * @return The language for the given code (never {@code null}).
-     * @throws IllformedLocaleException If the given code is not valid.
+     * @param  code  the language code, optionally followed by country code and variant.
+     * @return the language for the given code (never {@code null}).
+     * @throws IllformedLocaleException if the given code is not valid.
      *
      * @see Locale#forLanguageTag(String)
      */
@@ -253,10 +253,10 @@ filter: for (final Locale locale : locales) {
      * For example a dictionary may define the {@code "remarks"} property by values associated to the
      * {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.</div>
      *
-     * @param  code The language code, which may be followed by country code.
-     * @param  fromIndex Index of the first character to parse.
-     * @return The language for the given code (never {@code null}).
-     * @throws IllformedLocaleException If the given code is not valid.
+     * @param  code  the language code, which may be followed by country code.
+     * @param  fromIndex  index of the first character to parse.
+     * @return the language for the given code (never {@code null}).
+     * @throws IllformedLocaleException if the given code is not valid.
      *
      * @see Locale#forLanguageTag(String)
      * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
@@ -301,9 +301,9 @@ filter: for (final Locale locale : locales) {
      * Converts a 3-letters ISO code to a 2-letters one.
      * If the given code is not recognized, then this method returns {@code code} unmodified.
      *
-     * @param  code The 3-letters code.
-     * @param  type Either {@link #LANGUAGE} or {@link #COUNTRY}.
-     * @return The 2-letters code, or {@code null} if none.
+     * @param  code  the 3-letters code.
+     * @param  type  either {@link #LANGUAGE} or {@link #COUNTRY}.
+     * @return the 2-letters code, or {@code null} if none.
      */
     private static String toISO2(final String code, final short type) {
         final short alpha3 = toNumber(code, type);
@@ -330,9 +330,9 @@ filter: for (final Locale locale : locales) {
      * <p>This method does not use the sign bit. Callers can use it for differentiating language codes
      * from country codes, using the {@link #LANGUAGE} or {@link #COUNTRY} bit masks.</p>
      *
-     * @param  code The 1-, 2- or 3- letters alpha code to convert.
-     * @param  n Initial bit pattern, either {@link #LANGUAGE} or {@link #COUNTRY}.
-     * @return A number for the given code, or 0 if a non alpha characters were found.
+     * @param  code  the 1-, 2- or 3- letters alpha code to convert.
+     * @param  n     initial bit pattern, either {@link #LANGUAGE} or {@link #COUNTRY}.
+     * @return a number for the given code, or 0 if a non alpha characters were found.
      */
     private static short toNumber(final String code, short n) {
         final int length = code.length();
@@ -355,8 +355,8 @@ filter: for (final Locale locale : locales) {
      * Returns a unique instance of the given locale, if one is available.
      * Otherwise returns the {@code locale} unchanged.
      *
-     * @param  locale The locale to canonicalize.
-     * @return A unique instance of the given locale, or {@code locale} if the given locale is not cached.
+     * @param  locale  the locale to canonicalize.
+     * @return a unique instance of the given locale, or {@code locale} if the given locale is not cached.
      */
     public static Locale unique(final Locale locale) {
         final Locale candidate = POOL.get(locale);

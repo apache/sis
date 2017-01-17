@@ -78,7 +78,7 @@ public class CorruptedObjectException extends RuntimeException {
     /**
      * Constructs a new exception with the specified detail message.
      *
-     * @param message The detail message, or {@code null} if none.
+     * @param message  the detail message, or {@code null} if none.
      */
     public CorruptedObjectException(final String message) {
         super(message);
@@ -87,7 +87,7 @@ public class CorruptedObjectException extends RuntimeException {
     /**
      * Constructs a new exception with the name of the given object.
      *
-     * @param object The corrupted object, or {@code null} if unknown.
+     * @param  object  the corrupted object, or {@code null} if unknown.
      *
      * @since 0.6
      */

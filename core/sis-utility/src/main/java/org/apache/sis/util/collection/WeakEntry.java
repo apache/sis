@@ -164,7 +164,7 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
         for (WeakEntry<E> next : oldTable) {
             while (next != null) {
                 final WeakEntry<E> e = next;
-                next = next.next; // We keep 'next' right now because its value will change.
+                next = next.next;                           // We keep 'next' right now because its value will change.
                 final int index = e.hash % table.length;
                 e.next = table[index];
                 table[index] = e;

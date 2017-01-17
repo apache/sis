@@ -125,8 +125,10 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         if (columns.length == 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "columns"));
         }
-        // Copy the array for safety against user changes, and also for forcing the element type
-        // to TableColumn, not a subclass, because of the UnmodifiableArrayList.wrap(E[]) contract.
+        /*
+         * Copy the array for safety against user changes, and also for forcing the element type
+         * to TableColumn, not a subclass, because of the UnmodifiableArrayList.wrap(E[]) contract.
+         */
         columns = Arrays.copyOf(columns, columns.length, TableColumn[].class);
         this.columnIndices = createColumnIndices(columns);
         this.columns = UnmodifiableArrayList.wrap(columns);
@@ -529,7 +531,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * cast will need to be replaced by an "instanceof" check.
          */
         @Override
-        @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Returned list modifiable on intend.
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Returned list is modifiable on intend.
         public final List<TreeTable.Node> getChildren() {
             if (children == null) {
                 if (isLeaf()) {

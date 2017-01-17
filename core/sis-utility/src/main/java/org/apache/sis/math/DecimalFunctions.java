@@ -135,8 +135,8 @@ public final class DecimalFunctions extends Static {
      *   return Double.parseDouble(Float.toString(value));
      * }
      *
-     * @param  value The {@code float} value to convert as a {@code double}.
-     * @return The given value as a {@code double} with the extra decimal fraction digits set to zero.
+     * @param  value  the {@code float} value to convert as a {@code double}.
+     * @return the given value as a {@code double} with the extra decimal fraction digits set to zero.
      */
     public static double floatToDouble(final float value) {
         /*

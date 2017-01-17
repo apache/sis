@@ -17,6 +17,7 @@
 package org.apache.sis.util.collection;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Iterator;
 import java.util.AbstractSet;
 import java.lang.reflect.Array;
@@ -28,9 +29,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.NullArgumentException;
 
 import static org.apache.sis.util.collection.WeakEntry.*;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -284,9 +282,11 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      *         or the given {@code object} otherwise.
      */
     public synchronized <T extends E> T unique(final T element) {
-        // There is no way to make sure that this operation is really safe.
-        // We have to trust the Object.equals(Object) method to be strict
-        // about the type of compared objects.
+        /*
+         * There is no way to make sure that this operation is really safe.
+         * We have to trust the Object.equals(Object) method to be strict
+         * about the type of compared objects.
+         */
         return (T) intern(element, INTERN);
     }
 
