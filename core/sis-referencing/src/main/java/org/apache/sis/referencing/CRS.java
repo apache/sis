@@ -393,7 +393,7 @@ public final class CRS extends Static {
                     }
                     domain.intersect(regionOfInterest);
                     final double area = insideArea;
-                    insideArea = Extents.area(bbox);
+                    insideArea = Extents.area(domain);
                     outsideArea = area - insideArea;
                 }
                 if (insideArea > maxInsideArea || (insideArea == maxInsideArea && outsideArea < minOutsideArea)) {
