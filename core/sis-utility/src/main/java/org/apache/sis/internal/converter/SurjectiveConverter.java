@@ -35,8 +35,8 @@ import org.apache.sis.util.resources.Errors;
  * <p>This base class is stateless. Consequently sub-classes that choose to implement
  * {@link java.io.Serializable} do not need to care about this base class.</p>
  *
- * @param <S> The type of objects to convert.
- * @param <T> The type of converted objects.
+ * @param  <S>  the type of objects to convert.
+ * @param  <T>  the type of converted objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
