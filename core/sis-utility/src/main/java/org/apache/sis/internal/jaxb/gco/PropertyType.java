@@ -102,8 +102,8 @@ import org.apache.sis.util.resources.Errors;
  *       abstract {@code getElement()} from this class.</li>
  * </ul></div>
  *
- * @param <ValueType> The adapter subclass.
- * @param <BoundType> The interface being adapted.
+ * @param  <ValueType>  the adapter subclass.
+ * @param  <BoundType>  the interface being adapted.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
