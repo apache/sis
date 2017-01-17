@@ -37,7 +37,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>Does not accept null elements.</li>
  * </ul>
  *
- * @param <E> The type of elements in the set.
+ * @param  <E>  the type of elements in the set.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -60,7 +60,7 @@ public final class CheckedHashSet<E> extends LinkedHashSet<E> implements Checked
     /**
      * Constructs a set of the specified type.
      *
-     * @param type The element type (can not be null).
+     * @param type  the element type (can not be null).
      */
     public CheckedHashSet(final Class<E> type) {
         super();
@@ -71,8 +71,8 @@ public final class CheckedHashSet<E> extends LinkedHashSet<E> implements Checked
     /**
      * Constructs a set of the specified type and initial capacity.
      *
-     * @param type The element type (should not be null).
-     * @param capacity The initial capacity.
+     * @param type      the element type (should not be null).
+     * @param capacity  the initial capacity.
      */
     public CheckedHashSet(final Class<E> type, final int capacity) {
         super(capacity);
@@ -91,7 +91,7 @@ public final class CheckedHashSet<E> extends LinkedHashSet<E> implements Checked
     /**
      * Adds the specified element to this set if it is not already present.
      *
-     * @param  element element to be added to this set.
+     * @param  element  element to be added to this set.
      * @return {@code true} if the set did not already contain the specified element.
      * @throws IllegalArgumentException if the specified element is not of the expected type.
      */

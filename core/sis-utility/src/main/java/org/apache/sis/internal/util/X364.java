@@ -119,8 +119,8 @@ public enum X364 {
     /**
      * Creates a new code.
      *
-     * @param code  The X.364 numerical code.
-     * @param color The color name, or {@code null} if none.
+     * @param code   the X.364 numerical code.
+     * @param color  the color name, or {@code null} if none.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     private X364(final byte code, final String color) {
@@ -133,7 +133,7 @@ public enum X364 {
     /**
      * Creates a new background code.
      *
-     * @param foreground The X.364 code for a foreground color.
+     * @param foreground  the X.364 code for a foreground color.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     private X364(final X364 foreground) {
@@ -145,7 +145,7 @@ public enum X364 {
     /**
      * Returns the enum for the foreground color.
      *
-     * @return The foreground color, or {@code this} if this enum is already a foreground color.
+     * @return the foreground color, or {@code this} if this enum is already a foreground color.
      */
     public X364 foreground() {
         return foreground;
@@ -154,7 +154,7 @@ public enum X364 {
     /**
      * Returns the enum for the background color.
      *
-     * @return The background color, or {@code this} if this enum is already a background color.
+     * @return the background color, or {@code this} if this enum is already a background color.
      */
     public X364 background() {
         return background;
@@ -163,15 +163,17 @@ public enum X364 {
     /**
      * Returns the ANSI escape sequence.
      *
-     * @return The ANSI escape sequence.
+     * @return the ANSI escape sequence.
      */
     public String sequence() {
         if (sequence == null) {
             sequence = (START + code + END).intern();
-            // We used the string.intern() method in order to avoid worrying about memory barrier
-            // (synchronization or volatile variable) since intern() does its own synchronization.
-            // The String will live for the whole library lifetime anyway, and if there is other
-            // X3.64 libraries on the JVM we may share the strings with them as a side effect.
+            /*
+             * We used the string.intern() method in order to avoid worrying about memory barrier
+             * (synchronization or volatile variable) since intern() does its own synchronization.
+             * The String will live for the whole library lifetime anyway, and if there is other
+             * X3.64 libraries on the JVM we may share the strings with them as a side effect.
+             */
         }
         return sequence;
     }
@@ -179,10 +181,10 @@ public enum X364 {
     /**
      * Removes all escape codes from the given string.
      *
-     * @param  text      The string which may contains escape codes.
-     * @param  fromIndex The index from which to start the process.
-     * @param  toIndex   The index after the last character to process.
-     * @return Text without the escape codes, or the given {@code text} reference if
+     * @param  text       the string which may contains escape codes.
+     * @param  fromIndex  the index from which to start the process.
+     * @param  toIndex    the index after the last character to process.
+     * @return text without the escape codes, or the given {@code text} reference if
      *         it didn't contained any escape codes.
      */
     public static CharSequence plain(final CharSequence text, int fromIndex, final int toIndex) {
@@ -221,10 +223,10 @@ search:     do {
      * CharSequences.codePointCount}({@linkplain #plain plain}(text))</code> without the
      * cost of creating a temporary string.
      *
-     * @param  text      The string which may contains escape codes.
-     * @param  fromIndex The index from which to start the computation.
-     * @param  toIndex   The index after the last character to take in account.
-     * @return The length of the given string without escape codes.
+     * @param  text       the string which may contains escape codes.
+     * @param  fromIndex  the index from which to start the computation.
+     * @param  toIndex    the index after the last character to take in account.
+     * @return the length of the given string without escape codes.
      */
     public static int lengthOfPlain(final CharSequence text, final int fromIndex, final int toIndex) {
         int i = CharSequences.indexOf(text, START, fromIndex, toIndex);
@@ -243,11 +245,11 @@ search: do {
             while (i < end) {
                 final char c = text.charAt(i++);
                 if (c < '0' || c > '9') {
-                    continue search; // Not an X.364 sequence.
+                    continue search;                                        // Not an X.364 sequence.
                 }
             }
             length += CharSequences.codePointCount(text, last, start);
-            last = ++i; // The ++ is for skipping the END character.
+            last = ++i;                                                     // The ++ is for skipping the END character.
         } while ((i = CharSequences.indexOf(text, START, i, toIndex)) >= 0);
         length += CharSequences.codePointCount(text, last, toIndex);
         assert CharSequences.codePointCount(plain(text, fromIndex, toIndex)) == length : text.subSequence(fromIndex, toIndex);
@@ -258,9 +260,9 @@ search: do {
      * Returns the enumeration value for the given color name.
      * The search is case-insensitive.
      *
-     * @param  color The color name.
-     * @return The code for the given color name.
-     * @throws IllegalArgumentException If no code has been found for the given color name.
+     * @param  color  the color name.
+     * @return the code for the given color name.
+     * @throws IllegalArgumentException if no code has been found for the given color name.
      */
     public static X364 forColorName(String color) throws IllegalArgumentException {
         color = CharSequences.trimWhitespaces(color);
@@ -296,7 +298,7 @@ search: do {
             }
             terminal = System.getenv("CLICOLOR");
         } catch (SecurityException e) {
-            return false; // Okay according javadoc.
+            return false;                               // Okay according javadoc.
         }
         if (terminal != null) try {
             return Integer.parseInt(terminal) != 0;
