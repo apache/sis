@@ -54,7 +54,7 @@ public interface AdapterReplacement {
      * }
      *
      * @param  marshaller The marshaller to be configured.
-     * @throws JAXBException If the given marshaller can not be configured.
+     * @throws JAXBException if the given marshaller can not be configured.
      */
     void register(Marshaller marshaller) throws JAXBException;
 
@@ -67,7 +67,7 @@ public interface AdapterReplacement {
      * }
      *
      * @param  unmarshaller The unmarshaller to be configured.
-     * @throws JAXBException If the given unmarshaller can not be configured.
+     * @throws JAXBException if the given unmarshaller can not be configured.
      */
     void register(Unmarshaller unmarshaller) throws JAXBException;
 }

@@ -67,7 +67,7 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
     /**
      * Infers a code space from the authority.
      *
-     * @return The code space, or {@code null} if none.
+     * @return the code space, or {@code null} if none.
      *
      * @since 0.5
      */

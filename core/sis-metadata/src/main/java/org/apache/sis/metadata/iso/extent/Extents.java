@@ -132,8 +132,10 @@ public final class Extents extends Static {
                 if (element instanceof GeographicBoundingBox) {
                     final GeographicBoundingBox item = (GeographicBoundingBox) element;
                     if (bounds == null) {
-                        // We use DefaultGeographicBoundingBox.getInclusion(Boolean) below because
-                        // add(…) method that we use cares about the case where inclusion is false.
+                        /*
+                         * We use DefaultGeographicBoundingBox.getInclusion(Boolean) below because
+                         * add(…) method that we use cares about the case where inclusion is false.
+                         */
                         if (DefaultGeographicBoundingBox.getInclusion(item.getInclusion())) {
                             bounds = item;
                         }
@@ -338,7 +340,7 @@ public final class Extents extends Static {
                 final Date startTime, endTime;
                 if (t instanceof DefaultTemporalExtent) {
                     final DefaultTemporalExtent dt = (DefaultTemporalExtent) t;
-                    startTime = dt.getStartTime(); // Maybe user has overridden those methods.
+                    startTime = dt.getStartTime();                  // Maybe user has overridden those methods.
                     endTime   = dt.getEndTime();
                 } else {
                     final TemporalPrimitive p = t.getExtent();
@@ -389,7 +391,7 @@ public final class Extents extends Static {
                 Date   endTime = null;
                 if (t instanceof DefaultTemporalExtent) {
                     final DefaultTemporalExtent dt = (DefaultTemporalExtent) t;
-                    if (location != 1) startTime = dt.getStartTime(); // Maybe user has overridden those methods.
+                    if (location != 1) startTime = dt.getStartTime();       // Maybe user has overridden those methods.
                     if (location != 0)   endTime = dt.getEndTime();
                 } else {
                     final TemporalPrimitive p = t.getExtent();
@@ -452,8 +454,17 @@ public final class Extents extends Static {
         if (box == null) {
             return Double.NaN;
         }
-        double Δλ = box.getEastBoundLongitude() - box.getWestBoundLongitude(); // Negative if spanning the anti-meridian
-        Δλ -= floor(Δλ / (Longitude.MAX_VALUE - Longitude.MIN_VALUE)) * (Longitude.MAX_VALUE - Longitude.MIN_VALUE);
+        double Δλ = box.getEastBoundLongitude() - box.getWestBoundLongitude();
+        final double span = Longitude.MAX_VALUE - Longitude.MIN_VALUE;
+        if (Δλ > span) {
+            Δλ = span;
+        } else if (Δλ < 0) {
+            if (Δλ < -span) {
+                Δλ = -span;
+            } else {
+                Δλ += span;
+            }
+        }
         return (AUTHALIC_RADIUS * AUTHALIC_RADIUS) * toRadians(Δλ) *
                max(0, sin(toRadians(box.getNorthBoundLatitude())) -
                       sin(toRadians(box.getSouthBoundLatitude())));

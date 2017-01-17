@@ -27,6 +27,7 @@ import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Cloner;
+import org.apache.sis.internal.util.Acyclic;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
@@ -321,6 +322,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @see DefaultTreeTable
      * @see TableColumn
      */
+    @Acyclic
     public static class Node implements TreeTable.Node, Cloneable, Serializable {
         /**
          * For cross-version compatibility.
