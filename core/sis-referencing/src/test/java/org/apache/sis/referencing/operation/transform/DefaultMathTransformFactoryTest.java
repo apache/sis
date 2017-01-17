@@ -69,7 +69,7 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
     /**
      * Returns the factory to use for the tests.
      *
-     * @return The factory to use for the tests.
+     * @return the factory to use for the tests.
      */
     static DefaultMathTransformFactory factory() {
         final MathTransformFactory factory = DefaultFactories.forClass(MathTransformFactory.class);
@@ -82,7 +82,7 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
     /**
      * Tests the {@link DefaultMathTransformFactory#getOperationMethod(String)} method.
      *
-     * @throws NoSuchIdentifierException Should never happen.
+     * @throws NoSuchIdentifierException if the operation was not found.
      */
     @Test
     public void testGetOperationMethod() throws NoSuchIdentifierException {
@@ -118,7 +118,7 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
     /**
      * Tests the {@link DefaultMathTransformFactory#getAvailableMethods(Class)} method.
      *
-     * @throws NoSuchIdentifierException Should never happen.
+     * @throws NoSuchIdentifierException if the operation was not found.
      */
     @Test
     @DependsOnMethod("testGetOperationMethod")
@@ -145,7 +145,7 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
      * Asks for names which are known to be duplicated. One of the duplicated elements is deprecated.
      * However Apache SIS uses the same implementation.
      *
-     * @throws NoSuchIdentifierException Should never happen.
+     * @throws NoSuchIdentifierException if the operation was not found.
      */
     @Test
     public void testDuplicatedNames() throws NoSuchIdentifierException {
@@ -202,8 +202,10 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
             try {
                 mt = mtFactory.createParameterizedTransform(param);
             } catch (InvalidGeodeticParameterException e) {
-                // Some map projections have mandatory parameters which we ignore for now
-                // except for a few well-known projection that we know should not fail.
+                /*
+                 * Some map projections have mandatory parameters which we ignore for now
+                 * except for a few well-known projection that we know should not fail.
+                 */
                 if (classification.contains("Mercator")) {
                     throw e;
                 }

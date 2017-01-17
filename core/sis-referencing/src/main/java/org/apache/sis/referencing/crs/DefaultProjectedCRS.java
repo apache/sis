@@ -29,7 +29,7 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
+import org.opengis.referencing.cs.CoordinateSystem;                 // For javadoc
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
@@ -137,12 +137,12 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * for performing {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes unit
      * conversions and change of axis order} since those operations will be inferred by this constructor.
      *
-     * @param  properties The properties to be given to the new derived CRS object.
-     * @param  baseCRS    Coordinate reference system to base the derived CRS on.
-     * @param  conversion The defining conversion from a {@linkplain AxesConvention#NORMALIZED normalized} base
-     *                    to a normalized derived CRS.
-     * @param  derivedCS  The coordinate system for the derived CRS. The number of axes
-     *         must match the target dimension of the {@code baseToDerived} transform.
+     * @param  properties  the properties to be given to the new derived CRS object.
+     * @param  baseCRS     coordinate reference system to base the derived CRS on.
+     * @param  conversion  the defining conversion from a {@linkplain AxesConvention#NORMALIZED normalized}
+     *                     base to a normalized derived CRS.
+     * @param  derivedCS   the coordinate system for the derived CRS. The number of axes must match
+     *                     the target dimension of the {@code baseToDerived} transform.
      * @throws MismatchedDimensionException if the source and target dimensions of {@code baseToDerived}
      *         do not match the dimensions of {@code base} and {@code derivedCS} respectively.
      *
@@ -164,7 +164,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(ProjectedCRS)
      */
@@ -178,8 +178,8 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultProjectedCRS castOrCopy(final ProjectedCRS object) {
@@ -215,7 +215,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     /**
      * Returns the datum of the {@linkplain #getBaseCRS() base CRS}.
      *
-     * @return The datum of the base CRS.
+     * @return the datum of the base CRS.
      */
     @Override
     public GeodeticDatum getDatum() {
@@ -228,10 +228,10 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * the {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS() source}
      * of the {@linkplain #getConversionFromBase() conversion from base}.
      *
-     * @return The base coordinate reference system, which must be geographic.
+     * @return the base coordinate reference system, which must be geographic.
      */
     @Override
-    @XmlElement(name = "baseGeodeticCRS", required = true)  // Note: older GML version used "baseGeographicCRS".
+    @XmlElement(name = "baseGeodeticCRS", required = true)        // Note: older GML version used "baseGeographicCRS".
     public GeographicCRS getBaseCRS() {
         final Projection projection = super.getConversionFromBase();
         return (projection != null) ? (GeographicCRS) projection.getSourceCRS() : null;
@@ -251,7 +251,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * <div class="note"><b>Note:</b>
      * This is different than ISO 19111, which allows source and target CRS to be {@code null}.</div>
      *
-     * @return The map projection from base CRS to this CRS.
+     * @return the map projection from base CRS to this CRS.
      */
     @Override
     public Projection getConversionFromBase() {
@@ -264,8 +264,10 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     @Override
     @XmlElement(name = "cartesianCS", required = true)
     public final CartesianCS getCoordinateSystem() {
-        // See AbstractDerivedCRS.createConversionFromBase(…) for
-        // an explanation about why this method is declared final.
+        /*
+         * See AbstractDerivedCRS.createConversionFromBase(…) for
+         * an explanation about why this method is declared final.
+         */
         return (CartesianCS) super.getCoordinateSystem();
     }
 
@@ -297,10 +299,10 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * then axis order of the base geographic CRS are ignored
      * (but <strong>not</strong> axis order of <strong>this</strong> projected CRS).
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -403,10 +405,10 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
         final Parameters p = new Parameters(this);
         final boolean isBaseCRS;
         if (isWKT1) {
-            p.append(formatter);    // Format outside of any "Conversion" element.
+            p.append(formatter);                        // Format outside of any "Conversion" element.
             isBaseCRS = false;
         } else {
-            formatter.append(p);    // Format inside a "Conversion" element.
+            formatter.append(p);                        // Format inside a "Conversion" element.
             isBaseCRS = isBaseCRS(formatter);
         }
         /*
