@@ -19,6 +19,8 @@ package org.apache.sis.internal.converter;
 import java.util.Set;
 import java.util.EnumSet;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.net.URL;
 import java.net.URI;
 import java.net.MalformedURLException;
@@ -26,10 +28,6 @@ import java.net.URISyntaxException;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
-
-// Branch-specific import
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 
 /**
@@ -69,9 +67,9 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
      * This method verifies that the given path is non-null,
      * then delegates to {@link #doConvert(S)}.
      *
-     * @param  source The path to convert, or {@code null}.
-     * @return The converted value, or {@code null} if the given path was null.
-     * @throws UnconvertibleObjectException If an error occurred during the conversion.
+     * @param  source  the path to convert, or {@code null}.
+     * @return the converted value, or {@code null} if the given path was null.
+     * @throws UnconvertibleObjectException if an error occurred during the conversion.
      */
     @Override
     public final T apply(final S source) throws UnconvertibleObjectException {
@@ -89,9 +87,9 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
      * Invoked by {@link #apply(Object)} for converting the given path to the target
      * type of this converter.
      *
-     * @param  source The path to convert, guaranteed to be non-null.
-     * @return The converted path.
-     * @throws Exception If an error occurred during the conversion.
+     * @param  source  the path to convert, guaranteed to be non-null.
+     * @return the converted path.
+     * @throws Exception if an error occurred during the conversion.
      */
     abstract T doConvert(S source) throws Exception;
 

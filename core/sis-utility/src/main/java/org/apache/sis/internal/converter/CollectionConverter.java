@@ -66,7 +66,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
         private static final long serialVersionUID = -8680976097058177832L;
 
         @SuppressWarnings("unchecked")
-        public List() { // Instantiated by ServiceLoader.
+        public List() {                                 // Instantiated by ServiceLoader.
             super((Class) java.util.List.class);
         }
 
@@ -90,7 +90,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
         private static final long serialVersionUID = -1065360595793529078L;
 
         @SuppressWarnings("unchecked")
-        public Set() { // Instantiated by ServiceLoader.
+        public Set() {                                  // Instantiated by ServiceLoader.
             super((Class) java.util.Set.class);
         }
 
