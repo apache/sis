@@ -40,7 +40,7 @@ public final class GO_RecordType extends PropertyType<GO_RecordType, RecordType>
     /**
      * Wraps a {@code RecordType} value with a {@code gco:RecordType} tags at marshalling-time.
      *
-     * @param metadata The metadata value to marshal.
+     * @param  metadata  the metadata value to marshal.
      */
     private GO_RecordType(final RecordType metadata) {
         super(metadata);
@@ -49,8 +49,8 @@ public final class GO_RecordType extends PropertyType<GO_RecordType, RecordType>
     /**
      * Returns a wrapper for the given {@code RecordType} element.
      *
-     * @param  value The value to marshal.
-     * @return The wrapper around the given metadata value.
+     * @param  value  the value to marshal.
+     * @return the wrapper around the given metadata value.
      */
     @Override
     protected GO_RecordType wrap(final RecordType value) {
@@ -71,7 +71,7 @@ public final class GO_RecordType extends PropertyType<GO_RecordType, RecordType>
      * Returns the {@link DefaultRecordType} generated from the metadata value.
      * This method is systematically called at marshalling-time by JAXB.
      *
-     * @return The metadata to be marshalled.
+     * @return the metadata to be marshalled.
      */
     @XmlElement(name = "RecordType")
     public DefaultRecordType getElement() {
@@ -82,7 +82,7 @@ public final class GO_RecordType extends PropertyType<GO_RecordType, RecordType>
      * Sets the value for the {@link DefaultRecordType}.
      * This method is systematically called at unmarshalling-time by JAXB.
      *
-     * @param metadata The unmarshalled metadata.
+     * @param  metadata  the unmarshalled metadata.
      */
     public void setElement(final DefaultRecordType metadata) {
         this.metadata = metadata;

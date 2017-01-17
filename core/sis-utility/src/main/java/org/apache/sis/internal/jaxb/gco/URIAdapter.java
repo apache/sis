@@ -42,9 +42,9 @@ public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
      * Converts a URI read from a XML stream to the object containing the value.
      * JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  value The wrapper for the URI value, or {@code null}.
-     * @return A {@link URI} which represents the URI value, or {@code null}.
-     * @throws URISyntaxException If the string is not a valid URI.
+     * @param  value  the wrapper for the URI value, or {@code null}.
+     * @return a {@link URI} which represents the URI value, or {@code null}.
+     * @throws URISyntaxException if the string is not a valid URI.
      */
     @Override
     public URI unmarshal(final GO_CharacterString value) throws URISyntaxException {
@@ -60,8 +60,8 @@ public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
      * Converts a {@link URI} to the object to be marshalled in a XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The URI value, or {@code null}.
-     * @return The wrapper for the given URI, or {@code null}.
+     * @param  value  the URI value, or {@code null}.
+     * @return the wrapper for the given URI, or {@code null}.
      */
     @Override
     public GO_CharacterString marshal(final URI value) {

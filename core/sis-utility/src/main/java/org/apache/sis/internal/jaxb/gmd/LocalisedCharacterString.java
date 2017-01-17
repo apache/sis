@@ -17,13 +17,11 @@
 package org.apache.sis.internal.jaxb.gmd;
 
 import java.util.Locale;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.Debug;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -67,8 +65,8 @@ final class LocalisedCharacterString {
     /**
      * Constructs a localized string for the given locale and text.
      *
-     * @param locale The string language.
-     * @param text The string.
+     * @param  locale  the string language.
+     * @param  text    the string.
      */
     LocalisedCharacterString(final Locale locale, final String text) {
         this.locale = locale;
@@ -78,7 +76,7 @@ final class LocalisedCharacterString {
     /**
      * Returns the locale language for {@code <LocalisedCharacterString>} attribute.
      *
-     * @return The current locale.
+     * @return the current locale.
      * @see <a href="https://issues.apache.org/jira/browse/SIS-137">SIS-137</a>
      */
     @XmlAttribute(name = "locale", required = true)
@@ -94,7 +92,7 @@ final class LocalisedCharacterString {
      * Sets the locale language, using a string formatted as {@code #locale-xxx},
      * where {@code xxx} are the two or three letters representing the language.
      *
-     * @param localeId The new locale.
+     * @param  localeId  the new locale.
      * @see <a href="https://issues.apache.org/jira/browse/SIS-137">SIS-137</a>
      */
     public void setLocale(final String localeId) {

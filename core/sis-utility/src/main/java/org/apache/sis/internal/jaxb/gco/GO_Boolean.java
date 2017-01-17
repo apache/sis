@@ -44,7 +44,7 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
     /**
      * Constructs a wrapper for the given value.
      *
-     * @param value The value.
+     * @param  value  the value.
      */
     @SuppressWarnings("NumberEquality")
     private GO_Boolean(final Boolean value) {
@@ -65,8 +65,8 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
      * Allows JAXB to change the result of the marshalling process, according to the
      * ISO-19139 standard and its requirements about primitive types.
      *
-     * @param value The boolean value we want to surround by an element representing its type.
-     * @return An adaptation of the boolean value, that is to say a boolean value surrounded
+     * @param  value  the boolean value we want to surround by an element representing its type.
+     * @return an adaptation of the boolean value, that is to say a boolean value surrounded
      *         by {@code <gco:Boolean>} element.
      */
     @Override
@@ -77,7 +77,7 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
     /**
      * Invoked by JAXB at marshalling time for getting the actual value to write.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @XmlElement(name = "Boolean")
     @XmlSchemaType(name = "boolean")
@@ -88,7 +88,7 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param metadata The unmarshalled value.
+     * @param  metadata  the unmarshalled value.
      */
     public void setElement(final Boolean metadata) {
         this.metadata = metadata;

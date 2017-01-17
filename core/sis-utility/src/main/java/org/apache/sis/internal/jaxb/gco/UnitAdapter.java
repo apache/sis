@@ -37,8 +37,8 @@ public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
     /**
      * Returns a unit for the given string.
      *
-     * @param  value The unit symbol.
-     * @return The unit for the given symbol.
+     * @param  value  the unit symbol.
+     * @return the unit for the given symbol.
      * @throws IllegalArgumentException if the given symbol is unknown.
      */
     @Override
@@ -50,8 +50,8 @@ public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
     /**
      * Returns the symbol of the given unit.
      *
-     * @param  value The unit.
-     * @return The unit symbol.
+     * @param  value  the unit.
+     * @return the unit symbol.
      */
     @Override
     public String marshal(final Unit<?> value) {
