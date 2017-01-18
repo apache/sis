@@ -130,7 +130,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
      * with attributes. Built in a sub-class of {@link SimpleCharacterIterator} in
      * order to have access to the protected {@link #upper} field.
      */
-    @SuppressWarnings("serial")
+    @SuppressWarnings({"serial", "CloneableClassWithoutClone"})
     private static class LatitudeString extends SimpleCharacterIterator {
         LatitudeString() {
             super(LATITUDE_STRING);
@@ -213,19 +213,19 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
                  */
                 if (!isInteger) {
                     if (index < 7) {
-                        startInteger = index;   // End of previous integer field.
-                        limitInteger = index+1; // Start of next integer field.
+                        startInteger = index;               // End of previous integer field.
+                        limitInteger = index+1;             // Start of next integer field.
                     } else {
-                        startInteger = 8;       // End of last integer field.
+                        startInteger = 8;                   // End of last integer field.
                     }
                 }
                 if (!isSeparator) {
-                    if (index < 8) limitSeparator = 8; // Start of next separator field.
-                    else           startSeparator = 9; // End of previous separator field.
+                    if (index < 8) limitSeparator = 8;      // Start of next separator field.
+                    else           startSeparator = 9;      // End of previous separator field.
                 }
                 if (!isFraction) {
-                    if (index < 9) limitFraction =  9; // Start of next fraction field.
-                    else           startFraction = 10; // End of previous fraction field.
+                    if (index < 9) limitFraction =  9;      // Start of next fraction field.
+                    else           startFraction = 10;      // End of previous fraction field.
                 }
             }
             final Map<Attribute,Object> attributes = it.getAttributes();

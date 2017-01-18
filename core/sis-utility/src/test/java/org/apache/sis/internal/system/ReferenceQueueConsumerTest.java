@@ -41,7 +41,7 @@ public final strictfp class ReferenceQueueConsumerTest extends TestCase {
      * <p>This method is not a test of the SIS library, but rather a verification of our JDK
      * library interpretation.</p>
      *
-     * @throws InterruptedException This is the excepted exception.
+     * @throws InterruptedException this is the excepted exception.
      */
     @Test(expected=InterruptedException.class)
     public void verifyInterruptAssumption() throws InterruptedException {

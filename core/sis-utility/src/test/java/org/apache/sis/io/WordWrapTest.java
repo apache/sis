@@ -59,8 +59,8 @@ public strictfp class WordWrapTest extends LineAppenderTest {
      * Runs the test using an extract from Émile Nelligan (1879-1941)
      * with soft hyphen and X3.64 sequences added.
      *
-     * @param  lineSeparator The line separator to use in the test strings.
-     * @throws IOException Should never happen, since we are writing in a {@link StringBuilder}.
+     * @param  lineSeparator  the line separator to use in the test strings.
+     * @throws IOException should never happen, since we are writing in a {@link StringBuilder}.
      */
     @Override
     void run(final String lineSeparator) throws IOException {

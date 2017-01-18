@@ -61,7 +61,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
      * Returns all properties defined in this object,
      * for the convenience of {@link #equals(Object)} and {@link #hashCode()}.
      *
-     * @return The properties to use in hash code computations and in comparisons.
+     * @return the properties to use in hash code computations and in comparisons.
      */
     protected Object[] properties() {
         return new Object[] {code, alias};
@@ -78,7 +78,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
      * Creates an identified object of the given name.
      * Callers are free to assign new value to the {@link #alias} field directly.
      *
-     * @param code The initial {@link #getCode()} value, or {@code null} if none.
+     * @param  code  the initial {@link #getCode()} value, or {@code null} if none.
      */
     public IdentifiedObjectMock(final String code) {
         this.code = code;
@@ -88,8 +88,8 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
      * Creates an identified object of the given alias.
      * Callers are free to assign new value to the {@link #alias} field directly.
      *
-     * @param code  The initial {@link #getCode()} value, or {@code null} if none.
-     * @param alias The initial {@link #alias} value, or {@code null} if none.
+     * @param code   the initial {@link #getCode()} value, or {@code null} if none.
+     * @param alias  the initial {@link #alias} value, or {@code null} if none.
      */
     public IdentifiedObjectMock(final String code, final GenericName alias) {
         this.code  = code;
@@ -99,7 +99,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     /**
      * Returns the object name, or {@code null} if none.
      *
-     * @return The name of this object, or {@code null} if none.
+     * @return the name of this object, or {@code null} if none.
      */
     @Override
     public final Identifier getName() {
@@ -109,7 +109,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     /**
      * Returns the code supplied at construction time, or {@code null} if none.
      *
-     * @return The object code, or {@code null}.
+     * @return the object code, or {@code null}.
      */
     @Override
     public final String getCode() {
@@ -129,7 +129,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     /**
      * Returns the namespace version ({@code null} for now).
      *
-     * @return The namespace version.
+     * @return the namespace version.
      */
     @Override
     public final String getVersion() {
@@ -139,7 +139,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     /**
      * Returns the authority that define the object ({@code null} for now).
      *
-     * @return The defining authority.
+     * @return the defining authority.
      */
     @Override
     public final Citation getAuthority() {
@@ -159,7 +159,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     /**
      * Returns the identifiers (currently null).
      *
-     * @return The identifiers of this object.
+     * @return the identifiers of this object.
      */
     @Override
     public final Set<Identifier> getIdentifiers() {
@@ -169,7 +169,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     /**
      * Returns the description (currently null).
      *
-     * @return The description associated to this object.
+     * @return the description associated to this object.
      *
      * @since 0.5
      */
@@ -181,7 +181,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     /**
      * Returns the remarks (currently null).
      *
-     * @return The remarks associated to this object.
+     * @return the remarks associated to this object.
      */
     @Override
     public final InternationalString getRemarks() {
@@ -191,8 +191,8 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     /**
      * Returns the WKT representation (currently none).
      *
-     * @return The WLK representation of this object.
-     * @throws UnsupportedOperationException If there is no WKT representation.
+     * @return the WKT representation of this object.
+     * @throws UnsupportedOperationException if there is no WKT representation.
      */
     @Override
     public final String toWKT() throws UnsupportedOperationException {
@@ -210,7 +210,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     /**
      * Returns a hash code value for this object.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public final int hashCode() {
@@ -220,7 +220,7 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     /**
      * Compares this object with the given object for equality.
      *
-     * @param  object The other object, or {@code null}.
+     * @param  object  the other object, or {@code null}.
      * @return {@code true} if both objects are equal.
      */
     @Override
