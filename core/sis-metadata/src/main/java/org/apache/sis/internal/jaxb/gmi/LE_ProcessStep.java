@@ -35,6 +35,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  */
 @XmlType(name = "LE_ProcessStep_Type")
 @XmlRootElement(name = "LE_ProcessStep")
+@SuppressWarnings("CloneableClassWithoutClone")
 public class LE_ProcessStep extends DefaultProcessStep {
     /**
      * For cross-version compatibility.
@@ -52,7 +53,7 @@ public class LE_ProcessStep extends DefaultProcessStep {
      * Creates a new metadata as a copy of the given one.
      * This is a shallow copy constructor.
      *
-     * @param original The original metadata to copy.
+     * @param original  the original metadata to copy.
      */
     public LE_ProcessStep(final ProcessStep original) {
         super(original);
@@ -62,8 +63,8 @@ public class LE_ProcessStep extends DefaultProcessStep {
      * Wraps the given metadata into a SIS implementation that can be marshalled,
      * using the {@code "gmi"} namespace if necessary.
      *
-     * @param  original The original metadata provided by the user.
-     * @return The metadata to marshall.
+     * @param  original  the original metadata provided by the user.
+     * @return the metadata to marshall.
      */
     public static DefaultProcessStep castOrCopy(final ProcessStep original) {
         if (original != null && !(original instanceof LE_ProcessStep)) {

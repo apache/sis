@@ -31,14 +31,12 @@ import java.sql.Types;
 public final class TypeMapper {
     /**
      * A list of Java classes to be mapped to SQL types. We do not want to map every SQL types,
-     * but only the ones which is of interest for the Apache SIS metadata implementation.
+     * but only the ones which are of interest for the Apache SIS metadata implementation.
      * The types will be tested in the order they are declared, so the last declarations are fallbacks.
      *
      * <p>The types declared here matches both the JavaDB and PostgreSQL mapping.</p>
      */
     private static final TypeMapper[] TYPES = {
-        // Note: JavaDB does not supports BOOLEAN as of Derby 10.5.
-        // See http://issues.apache.org/jira/browse/DERBY-499
         new TypeMapper(Boolean.class, Types.BOOLEAN,   "BOOLEAN"),
         new TypeMapper(Date   .class, Types.TIMESTAMP, "TIMESTAMP"),
         new TypeMapper(Double .class, Types.DOUBLE,    "DOUBLE PRECISION"),

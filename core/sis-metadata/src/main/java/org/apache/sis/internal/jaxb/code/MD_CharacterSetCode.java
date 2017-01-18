@@ -47,8 +47,8 @@ public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, C
      * Substitutes the adapter value read from an XML stream by the object which will
      * contains the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  adapter The adapter for this metadata value.
-     * @return A code list which represents the metadata value.
+     * @param  adapter  the adapter for this metadata value.
+     * @return a code list which represents the metadata value.
      */
     @Override
     public final Charset unmarshal(final MD_CharacterSetCode adapter) throws IllegalCharsetNameException {
@@ -60,8 +60,8 @@ public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, C
      * Substitutes the code list by the adapter to be marshalled into an XML file
      * or stream. JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The code list value.
-     * @return The adapter for the given code list.
+     * @param  value  the code list value.
+     * @return the adapter for the given code list.
      */
     @Override
     public final MD_CharacterSetCode marshal(final Charset value) {
@@ -82,7 +82,7 @@ public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, C
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @XmlElement(name = "MD_CharacterSetCode")
     public CodeListUID getElement() {
@@ -92,7 +92,7 @@ public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, C
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param value The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
         identifier = value;
