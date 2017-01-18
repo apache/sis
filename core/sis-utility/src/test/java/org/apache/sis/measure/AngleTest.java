@@ -104,7 +104,7 @@ public final strictfp class AngleTest extends TestCase {
         assertEquals( 90, Latitude.clamp(Double.POSITIVE_INFINITY), 0);
         assertEquals(-90, Latitude.clamp(Double.NEGATIVE_INFINITY), 0);
         assertEquals(doubleToLongBits(+0.0), doubleToLongBits(Latitude.clamp(+0.0)));
-        assertEquals(doubleToLongBits(-0.0), doubleToLongBits(Latitude.clamp(-0.0))); // Sign shall be preserved.
+        assertEquals(doubleToLongBits(-0.0), doubleToLongBits(Latitude.clamp(-0.0)));       // Sign shall be preserved.
     }
 
     /**
@@ -117,11 +117,11 @@ public final strictfp class AngleTest extends TestCase {
         assertEquals(-160, Longitude.normalize( 200), 0);
         assertEquals( 160, Longitude.normalize(-200), 0);
         assertEquals(-180, Longitude.normalize(-180), 0);
-        assertEquals(-180, Longitude.normalize( 180), 0); // Upper value shall be exclusive.
+        assertEquals(-180, Longitude.normalize( 180), 0);                            // Upper value shall be exclusive.
         assertEquals(NaN,  Longitude.normalize( NaN), 0);
         assertEquals(NaN,  Longitude.normalize(Double.POSITIVE_INFINITY), 0);
         assertEquals(NaN,  Longitude.normalize(Double.NEGATIVE_INFINITY), 0);
         assertEquals(doubleToLongBits(+0.0), doubleToLongBits(Longitude.normalize(+0.0)));
-        assertEquals(doubleToLongBits(-0.0), doubleToLongBits(Longitude.normalize(-0.0))); // Sign shall be preserved.
+        assertEquals(doubleToLongBits(-0.0), doubleToLongBits(Longitude.normalize(-0.0)));  // Sign shall be preserved.
     }
 }

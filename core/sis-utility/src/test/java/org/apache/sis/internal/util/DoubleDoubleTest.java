@@ -107,9 +107,9 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      * Asserts that the result of some operation is equals to the expected value,
      * up to a tolerance value determined by the extended arithmetic precision.
      *
-     * @param expected The expected value, computed using {@code BigInteger} arithmetic.
-     * @param actual The actual value.
-     * @param ef Multiplication factor for the tolerance threshold.
+     * @param expected  the expected value, computed using {@code BigInteger} arithmetic.
+     * @param actual    the actual value.
+     * @param ef        multiplication factor for the tolerance threshold.
      */
     private static void assertExtendedEquals(final BigDecimal expected, final DoubleDouble actual, final double ef) {
         final BigDecimal value = toBigDecimal(actual);
@@ -352,7 +352,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      *   <li>The arrays do not contains an entry for a value that could be omitted.</li>
      * </ul>
      *
-     * @throws ReflectiveOperationException Should never happen.
+     * @throws ReflectiveOperationException if this test uses wrong field names.
      */
     @Test
     public void testArraysConsistency() throws ReflectiveOperationException {
@@ -432,7 +432,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
                 case 0:  dd = DoubleDouble.createRadiansToDegrees(); break;
                 case 1:  dd = DoubleDouble.createDegreesToRadians(); break;
                 case 2:  dd = DoubleDouble.createSecondsToRadians(); break;
-                default: return; // Test done.
+                default: return;                                             // Test done.
             }
             assertEquals(DoubleDouble.errorForWellKnownValue(dd.value), dd.error, STRICT);
         }

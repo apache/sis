@@ -360,7 +360,7 @@ loop:   for (int i=0; ; i++) {
      * Returns the string to write on the left side of the first line of every log records, or {@code null} if none.
      * This is a string to be shown just before the level.
      *
-     * @return The string to write on the left side of the first line of every log records, or {@code null} if none.
+     * @return the string to write on the left side of the first line of every log records, or {@code null} if none.
      */
     public String getHeader() {
         final String header;
@@ -394,7 +394,7 @@ loop:   for (int i=0; ; i++) {
      * {@code org.apache.sis.util.logging.MonolineFormatter.time} property in the
      * {@code jre/lib/logging.properties} file.
      *
-     * @return The time pattern, or {@code null} if elapsed time is not formatted.
+     * @return the time pattern, or {@code null} if elapsed time is not formatted.
      */
     public String getTimeFormat() {
         synchronized (buffer) {
@@ -410,8 +410,8 @@ loop:   for (int i=0; ; i++) {
      * The {@code "HH:mm:ss.SSS"} pattern will display the elapsed time in hours, minutes, seconds
      * and milliseconds.</div>
      *
-     * @param  pattern The time pattern, or {@code null} to disable time formatting.
-     * @throws IllegalArgumentException If the given pattern is invalid.
+     * @param  pattern  the time pattern, or {@code null} to disable time formatting.
+     * @throws IllegalArgumentException if the given pattern is invalid.
      */
     public void setTimeFormat(final String pattern) throws IllegalArgumentException {
         synchronized (buffer) {
@@ -440,7 +440,7 @@ loop:   for (int i=0; ; i++) {
      * {@code org.apache.sis.util.logging.MonolineFormatter.source} property in the
      * {@code jre/lib/logging.properties} file.
      *
-     * @return The source format, or {@code null} if source is not formatted.
+     * @return the source format, or {@code null} if source is not formatted.
      */
     public String getSourceFormat() {
         synchronized (buffer) {
@@ -465,8 +465,8 @@ loop:   for (int i=0; ; i++) {
      * The source class name usually contains the logger name since (by convention) logger
      * names are package names, but this is not mandatory neither enforced.
      *
-     * @param  format The format for displaying the source, or {@code null} if the source shall not be formatted.
-     * @throws IllegalArgumentException If the given argument is not one of the recognized format names.
+     * @param  format  the format for displaying the source, or {@code null} if the source shall not be formatted.
+     * @throws IllegalArgumentException if the given argument is not one of the recognized format names.
      */
     public void setSourceFormat(final String format) throws IllegalArgumentException {
         synchronized (buffer) {
@@ -497,8 +497,8 @@ loop:   for (int i=0; ; i++) {
      * The current set of supported colors are {@code "red"}, {@code "green"}, {@code "yellow"}, {@code "blue"},
      * {@code "magenta"}, {@code "cyan"} and {@code "gray"}. This set may be extended in any future SIS version.
      *
-     * @param  level The level for which to get the color.
-     * @return The color for the given level, or {@code null} if none.
+     * @param  level  the level for which to get the color.
+     * @return the color for the given level, or {@code null} if none.
      */
     public String getLevelColor(final Level level) {
         synchronized (buffer) {
@@ -521,9 +521,9 @@ loop:   for (int i=0; ; i++) {
      * <p>The given {@code color} argument shall be one of the values documented in the
      * {@link #getLevelColor(Level)} method.</p>
      *
-     * @param  level The level for which to set a new color.
-     * @param  color The case-insensitive new color, or {@code null} if none.
-     * @throws IllegalArgumentException If the given color is not one of the recognized values.
+     * @param  level  the level for which to set a new color.
+     * @param  color  the case-insensitive new color, or {@code null} if none.
+     * @throws IllegalArgumentException if the given color is not one of the recognized values.
      */
     public void setLevelColor(final Level level, final String color) throws IllegalArgumentException {
         boolean changed = false;
@@ -620,8 +620,8 @@ loop:   for (int i=0; ; i++) {
      * Formats the given log record and return the formatted string.
      * See the <a href="#overview">class javadoc</a> for information on the log format.
      *
-     * @param  record The log record to be formatted.
-     * @return A formatted log record.
+     * @param  record  the log record to be formatted.
+     * @return a formatted log record.
      */
     @Override
     public String format(final LogRecord record) {
@@ -759,7 +759,7 @@ loop:   for (int i=0; ; i++) {
      * </ul>
      *
      * @param  record The log record from which to get a localized message.
-     * @return The localized message.
+     * @return the localized message.
      */
     @Override
     public String formatMessage(final LogRecord record) {
@@ -803,11 +803,11 @@ loop:   for (int i=0; ; i++) {
      * Prints an abridged stack trace. This method is invoked when the record is logged at
      * at low logging level (typically less than {@link Level#INFO}).
      *
-     * @param exception         The exception to be logged.
-     * @param writer            Where to print the stack trace.
-     * @param loggerName        The name of the logger when the log will be sent.
-     * @param sourceClassName   The name of the class that emitted the log.
-     * @param sourceMethodName  The name of the method that emitted the log.
+     * @param exception         the exception to be logged.
+     * @param writer            where to print the stack trace.
+     * @param loggerName        the name of the logger when the log will be sent.
+     * @param sourceClassName   the name of the class that emitted the log.
+     * @param sourceMethodName  the name of the method that emitted the log.
      */
     private static void printAbridged(Throwable exception, final Appendable writer,
             final String loggerName, final String sourceClassName, final String sourceMethodName) throws IOException
@@ -916,9 +916,9 @@ loop:   for (int i=0; ; i++) {
      * The current implementation does not check for duplicated {@code ConsoleHandler} instances,
      * and does not check if any child logger has a {@code ConsoleHandler}.</div>
      *
-     * @return The new or existing {@code MonolineFormatter}. The formatter output can be configured
+     * @return the new or existing {@code MonolineFormatter}. The formatter output can be configured
      *         using the {@link #setTimeFormat(String)} and {@link #setSourceFormat(String)} methods.
-     * @throws SecurityException If this method does not have the permission to install the formatter.
+     * @throws SecurityException if this method does not have the permission to install the formatter.
      */
     @Configuration
     public static MonolineFormatter install()  throws SecurityException {
@@ -958,11 +958,11 @@ loop:   for (int i=0; ; i++) {
      * This is mostly a convenience for temporary increase of logging verbosity for debugging purpose.
      * This functionality should not be used in production environment, since it overwrite user's level setting.
      *
-     * @param  logger The base logger to apply the change on.
-     * @param  level The desired level, or {@code null} if no level should be set.
-     * @return The new or existing {@code MonolineFormatter}. The formatter output can be configured
+     * @param  logger  the base logger to apply the change on.
+     * @param  level   the desired level, or {@code null} if no level should be set.
+     * @return the new or existing {@code MonolineFormatter}. The formatter output can be configured
      *         using the {@link #setTimeFormat(String)} and {@link #setSourceFormat(String)} methods.
-     * @throws SecurityException If this method does not have the permission to install the formatter.
+     * @throws SecurityException if this method does not have the permission to install the formatter.
      */
     @Debug
     @Configuration

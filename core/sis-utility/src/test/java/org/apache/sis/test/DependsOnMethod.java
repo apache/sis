@@ -42,7 +42,7 @@ public @interface DependsOnMethod {
     /**
      * The names of test methods on which the annotated method depends.
      *
-     * @return The names of test methods on which the annotated method depends.
+     * @return the names of test methods on which the annotated method depends.
      */
     String[] value();
 }

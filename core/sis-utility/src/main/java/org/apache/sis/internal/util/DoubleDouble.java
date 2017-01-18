@@ -129,9 +129,11 @@ public final class DoubleDouble extends Number {
      * @see #errorForWellKnownValue(double)
      */
     private static final double[] VALUES = {
-        // Some of the following constants have more fraction digits than necessary. We declare the extra
-        // digits for documentation purpose, and in order to have identical content than DoubleDoubleTest
-        // so that a plain copy-and-paste can be performed between those two classes.
+        /*
+         * Some of the following constants have more fraction digits than necessary. We declare the extra
+         * digits for documentation purpose, and in order to have identical content than DoubleDoubleTest
+         * so that a plain copy-and-paste can be performed between those two classes.
+         */
          0.000004848136811095359935899141023579480, // Arc-second to radians
          0.0002777777777777777777777777777777778,   // Second to degrees
          0.002777777777777777777777777777777778,    // 1/360°

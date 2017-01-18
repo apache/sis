@@ -56,18 +56,18 @@ public final strictfp class DerivedSetTest extends TestCase implements ObjectCon
         assertEquals(target.size(), tested.size());
         assertEquals(target, tested);
 
-        assertFalse("contains(2)",       tested.contains(2 )); // Original value
-        assertTrue ("contains(20)",      tested.contains(20)); // Derived value
+        assertFalse("contains(2)",       tested.contains(2 ));              // Original value
+        assertTrue ("contains(20)",      tested.contains(20));              // Derived value
         assertTrue ("before remove(70)", source.contains(7 ));
         assertTrue (       "remove(70)", tested.remove  (70));
         assertFalse( "after remove(70)", source.contains(7 ));
-        assertTrue (       "remove(70)", target.remove(70)); // For comparison purpose.
+        assertTrue (       "remove(70)", target.remove  (70));              // For comparison purpose.
         assertEquals(target, tested);
 
         assertFalse("before add(30)", source.contains(3 ));
         assertTrue (       "add(30)", tested.add     (30));
         assertTrue ( "after add(30)", source.contains(3 ));
-        assertTrue (       "add(30)", target.add     (30)); // For comparison purpose.
+        assertTrue (       "add(30)", target.add     (30));                 // For comparison purpose.
         assertEquals(target, tested);
     }
 
@@ -97,8 +97,8 @@ public final strictfp class DerivedSetTest extends TestCase implements ObjectCon
     /**
      * Multiply the given value by 10, except value {@value #EXCLUDED}.
      *
-     * @param  value The value to multiply.
-     * @return The multiplied value, or {@code null}.
+     * @param  value  the value to multiply.
+     * @return the multiplied value, or {@code null}.
      */
     @Override
     public Integer apply(final Integer value) {

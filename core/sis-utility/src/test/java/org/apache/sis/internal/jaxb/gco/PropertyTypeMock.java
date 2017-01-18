@@ -55,8 +55,8 @@ final strictfp class PropertyTypeMock extends PropertyType<PropertyTypeMock, Res
      * If this {@code PropertyTypeMock} class was not for testing purpose only,
      * this method would be invoked by JAXB at marshalling time.
      *
-     * @param  metadata The pseudo-metadata element to wrap.
-     * @return A {@code PropertyType} wrapping the given the metadata element.
+     * @param  metadata  the pseudo-metadata element to wrap.
+     * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
     protected PropertyTypeMock wrap(final Result metadata) {
@@ -88,11 +88,13 @@ final strictfp class PropertyTypeMock extends PropertyType<PropertyTypeMock, Res
         }
 
         /** Returns the identifiers as a modifiable list. */
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
         @Override public Collection<? extends Identifier> getIdentifiers() {
             return identifiers;
         }
 
         /** Returns a view of the identifiers as a map. */
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
         @Override public IdentifierMap getIdentifierMap() {
             return map;
         }

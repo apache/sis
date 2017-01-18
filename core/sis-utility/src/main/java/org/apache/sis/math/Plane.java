@@ -109,9 +109,9 @@ public class Plane implements Cloneable, Serializable {
     /**
      * Constructs a new plane initialized to the given coefficients.
      *
-     * @param sx The slope along the <var>x</var> values.
-     * @param sy The slope along the <var>y</var> values.
-     * @param z0 The <var>z</var> value at (<var>x</var>,<var>y</var>) = (0,0).
+     * @param sx  the slope along the <var>x</var> values.
+     * @param sy  the slope along the <var>y</var> values.
+     * @param z0  the <var>z</var> value at (<var>x</var>,<var>y</var>) = (0,0).
      *
      * @see #setEquation(double, double, double)
      */
@@ -125,7 +125,7 @@ public class Plane implements Cloneable, Serializable {
      * Returns the slope along the <var>x</var> values. This coefficient appears in the plane equation
      * <var><b><u>sx</u></b></var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <var>z₀</var>.
      *
-     * @return The <var>sx</var> term.
+     * @return the <var>sx</var> term.
      */
     public final double slopeX() {
         return sx;
@@ -135,7 +135,7 @@ public class Plane implements Cloneable, Serializable {
      * Returns the slope along the <var>y</var> values. This coefficient appears in the plane equation
      * <var>sx</var>⋅<var>x</var> + <var><b><u>sy</u></b></var>⋅<var>y</var> + <var>z₀</var>.
      *
-     * @return The <var>sy</var> term.
+     * @return the <var>sy</var> term.
      */
     public final double slopeY() {
         return sy;
@@ -145,7 +145,7 @@ public class Plane implements Cloneable, Serializable {
      * Returns the <var>z</var> value at (<var>x</var>,<var>y</var>) = (0,0). This coefficient appears in the
      * plane equation <var>sx</var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <b><var>z₀</var></b>.
      *
-     * @return The <var>z₀</var> term.
+     * @return the <var>z₀</var> term.
      *
      * @see #z(double, double)
      */
@@ -159,9 +159,9 @@ public class Plane implements Cloneable, Serializable {
      *
      * <blockquote>x(y,z) = (z - ({@linkplain #z0() z₀} + {@linkplain #slopeY() sy}⋅y)) / {@linkplain #slopeX() sx}</blockquote>
      *
-     * @param y The <var>y</var> value where to compute <var>x</var>.
-     * @param z The <var>z</var> value where to compute <var>x</var>.
-     * @return  The <var>x</var> value.
+     * @param y the <var>y</var> value where to compute <var>x</var>.
+     * @param z the <var>z</var> value where to compute <var>x</var>.
+     * @return  the <var>x</var> value.
      */
     public final double x(final double y, final double z) {
         return (z - (z0 + sy*y)) / sx;
@@ -173,9 +173,9 @@ public class Plane implements Cloneable, Serializable {
      *
      * <blockquote>y(x,z) = (z - ({@linkplain #z0() z₀} + {@linkplain #slopeX() sx}⋅x)) / {@linkplain #slopeY() sy}</blockquote>
      *
-     * @param x The <var>x</var> value where to compute <var>y</var>.
-     * @param z The <var>z</var> value where to compute <var>y</var>.
-     * @return  The <var>y</var> value.
+     * @param x the <var>x</var> value where to compute <var>y</var>.
+     * @param z the <var>z</var> value where to compute <var>y</var>.
+     * @return  the <var>y</var> value.
      */
     public final double y(final double x, final double z) {
         return (z - (z0 + sx*x)) / sy;
@@ -187,9 +187,9 @@ public class Plane implements Cloneable, Serializable {
      *
      * <blockquote>z(x,y) = {@linkplain #slopeX() sx}⋅x + {@linkplain #slopeY() sy}⋅y + {@linkplain #z0() z₀}</blockquote>
      *
-     * @param x The <var>x</var> value where to compute <var>z</var>.
-     * @param y The <var>y</var> value where to compute <var>z</var>.
-     * @return  The <var>z</var> value.
+     * @param x the <var>x</var> value where to compute <var>z</var>.
+     * @param y the <var>y</var> value where to compute <var>z</var>.
+     * @return  the <var>z</var> value.
      *
      * @see #z0()
      */
@@ -200,9 +200,9 @@ public class Plane implements Cloneable, Serializable {
     /**
      * Sets the equation of this plane to the given coefficients.
      *
-     * @param sx The slope along the <var>x</var> values.
-     * @param sy The slope along the <var>y</var> values.
-     * @param z0 The <var>z</var> value at (<var>x</var>,<var>y</var>) = (0,0).
+     * @param sx  the slope along the <var>x</var> values.
+     * @param sy  the slope along the <var>y</var> values.
+     * @param z0  the <var>z</var> value at (<var>x</var>,<var>y</var>) = (0,0).
      */
     public void setEquation(final double sx, final double sy, final double z0) {
         this.sx = sx;
@@ -219,10 +219,10 @@ public class Plane implements Cloneable, Serializable {
      * <p>{@link Double#NaN} values are ignored.
      * The result is undetermined if all points are colinear.</p>
      *
-     * @param  x vector of <var>x</var> coordinates.
-     * @param  y vector of <var>y</var> coordinates.
-     * @param  z vector of <var>z</var> values.
-     * @return An estimation of the Pearson correlation coefficient.
+     * @param  x  vector of <var>x</var> coordinates.
+     * @param  y  vector of <var>y</var> coordinates.
+     * @param  z  vector of <var>z</var> values.
+     * @return an estimation of the Pearson correlation coefficient.
      * @throws IllegalArgumentException if <var>x</var>, <var>y</var> and <var>z</var> do not have the same length.
      */
     public double fit(final double[] x, final double[] y, final double[] z) {
@@ -240,8 +240,8 @@ public class Plane implements Cloneable, Serializable {
      * {@link Double#NaN} ordinate values are ignored.
      * The result is undetermined if all points are colinear.</p>
      *
-     * @param  points The three-dimensional points.
-     * @return An estimation of the Pearson correlation coefficient.
+     * @param  points  the three-dimensional points.
+     * @return an estimation of the Pearson correlation coefficient.
      * @throws MismatchedDimensionException if a point is not three-dimensional.
      */
     public double fit(final Iterable<? extends DirectPosition> points) {
@@ -379,7 +379,7 @@ public class Plane implements Cloneable, Serializable {
     /**
      * Returns a clone of this plane.
      *
-     * @return A clone of this plane.
+     * @return a clone of this plane.
      */
     @Override
     public Plane clone() {
@@ -393,7 +393,7 @@ public class Plane implements Cloneable, Serializable {
     /**
      * Compares this plane with the specified object for equality.
      *
-     * @param object The object to compare with this plane for equality.
+     * @param  object  the object to compare with this plane for equality.
      * @return {@code true} if both objects are equal.
      */
     @Override

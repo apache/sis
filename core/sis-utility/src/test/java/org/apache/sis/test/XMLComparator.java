@@ -87,7 +87,7 @@ public strictfp class XMLComparator {
     private static final Map<String, String> PREFIX_URL = new HashMap<>(16);
     static {
         final Map<String,String> map = PREFIX_URL;
-        map.put("xmlns", "http://www.w3.org/2000/xmlns"); // No trailing slash.
+        map.put("xmlns", "http://www.w3.org/2000/xmlns");           // No trailing slash.
         map.put("xlink", Namespaces.XLINK);
         map.put("xsi",   Namespaces.XSI);
         map.put("gml",   Namespaces.GML);
@@ -190,11 +190,11 @@ public strictfp class XMLComparator {
      *   <li>{@link String}: The string content is parsed directly as a XML document.</li>
      * </ul>
      *
-     * @param  expected  The expected XML document.
-     * @param  actual    The XML document to compare.
-     * @throws IOException If the stream can not be read.
-     * @throws ParserConfigurationException If a {@link DocumentBuilder} can not be created.
-     * @throws SAXException If an error occurred while parsing the XML document.
+     * @param  expected  the expected XML document.
+     * @param  actual    the XML document to compare.
+     * @throws IOException if the stream can not be read.
+     * @throws ParserConfigurationException if a {@link DocumentBuilder} can not be created.
+     * @throws SAXException if an error occurred while parsing the XML document.
      */
     public XMLComparator(final Object expected, final Object actual)
             throws IOException, ParserConfigurationException, SAXException
@@ -288,8 +288,8 @@ public strictfp class XMLComparator {
      * Then this method invokes itself recursively for every children,
      * by a call to {@link #compareChildren(Node, Node)}.
      *
-     * @param expected The expected node.
-     * @param actual The node to compare.
+     * @param expected  the expected node.
+     * @param actual    the node to compare.
      */
     protected void compareNode(final Node expected, final Node actual) {
         if (expected == null || actual == null) {
@@ -329,8 +329,8 @@ public strictfp class XMLComparator {
      *
      * <p>Subclasses can override this method if they need a different processing.</p>
      *
-     * @param expected The expected node.
-     * @param actual   The actual node.
+     * @param expected  the expected node.
+     * @param actual    the actual node.
      */
     protected void compareTextNode(final Text expected, final Node actual) {
         assertInstanceOf("Actual node is not of the expected type.", Text.class, actual);
@@ -346,8 +346,8 @@ public strictfp class XMLComparator {
      *
      * <p>Subclasses can override this method if they need a different processing.</p>
      *
-     * @param expected The expected node.
-     * @param actual   The actual node.
+     * @param expected  the expected node.
+     * @param actual    the actual node.
      */
     protected void compareCDATASectionNode(final CDATASection expected, final Node actual) {
         assertInstanceOf("Actual node is not of the expected type.", CDATASection.class, actual);
@@ -363,8 +363,8 @@ public strictfp class XMLComparator {
      *
      * <p>Subclasses can override this method if they need a different processing.</p>
      *
-     * @param expected The expected node.
-     * @param actual   The actual node.
+     * @param expected  the expected node.
+     * @param actual    the actual node.
      */
     protected void compareCommentNode(final Comment expected, final Node actual) {
         assertInstanceOf("Actual node is not of the expected type.", Comment.class, actual);
@@ -380,8 +380,8 @@ public strictfp class XMLComparator {
      *
      * <p>Subclasses can override this method if they need a different processing.</p>
      *
-     * @param expected The expected node.
-     * @param actual   The actual node.
+     * @param expected  the expected node.
+     * @param actual    the actual node.
      */
     protected void compareProcessingInstructionNode(final ProcessingInstruction expected, final Node actual) {
         assertInstanceOf("Actual node is not of the expected type.", ProcessingInstruction.class, actual);
@@ -397,8 +397,8 @@ public strictfp class XMLComparator {
      *
      * <p>Subclasses can override this method if they need a different processing.</p>
      *
-     * @param expected The expected node.
-     * @param actual   The actual node.
+     * @param expected  the expected node.
+     * @param actual    the actual node.
      */
     protected void compareAttributeNode(final Attr expected, final Node actual) {
         assertInstanceOf("Actual node is not of the expected type.", Attr.class, actual);
@@ -414,8 +414,8 @@ public strictfp class XMLComparator {
      *
      * <p>Subclasses can override this method if they need a different processing.</p>
      *
-     * @param expected The expected node.
-     * @param actual The node for which to compare children.
+     * @param expected  the expected node.
+     * @param actual    the node for which to compare children.
      */
     protected void compareChildren(Node expected, Node actual) {
         expected = firstNonEmptySibling(expected.getFirstChild());
@@ -434,8 +434,8 @@ public strictfp class XMLComparator {
      * Compares the names and namespaces of the given node.
      * Subclasses can override this method if they need a different comparison.
      *
-     * @param expected The node having the expected name and namespace.
-     * @param actual The node to compare.
+     * @param expected  the node having the expected name and namespace.
+     * @param actual    the node to compare.
      */
     protected void compareNames(final Node expected, final Node actual) {
         assertPropertyEquals("namespace", expected.getNamespaceURI(), actual.getNamespaceURI(), expected, actual);
@@ -458,8 +458,8 @@ public strictfp class XMLComparator {
      * the extra attributes are ignored. This may change in a future version if it appears to be
      * a problem in practice.</p>
      *
-     * @param expected The node having the expected attributes.
-     * @param actual The node to compare.
+     * @param expected  the node having the expected attributes.
+     * @param actual    the node to compare.
      */
     @SuppressWarnings("null")
     protected void compareAttributes(final Node expected, final Node actual) {
@@ -510,10 +510,10 @@ public strictfp class XMLComparator {
     /**
      * Returns {@code true} if the given node or attribute shall be ignored.
      *
-     * @param ignored The set of node or attribute fully qualified names to ignore.
-     * @param ns      The node or attribute namespace, or {@code null}.
-     * @param name    The node or attribute name.
-     * @return        {@coce true} if the node or attribute shall be ignored.
+     * @param  ignored  the set of node or attribute fully qualified names to ignore.
+     * @param  ns       the node or attribute namespace, or {@code null}.
+     * @param  name     the node or attribute name.
+     * @return {@coce true} if the node or attribute shall be ignored.
      */
     private static boolean isIgnored(final Set<String> ignored, String ns, final String name) {
         if (!ignored.isEmpty()) {
@@ -567,8 +567,8 @@ public strictfp class XMLComparator {
      * if none. This method first check the given node, then check all siblings. Attribute nodes are
      * ignored.
      *
-     * @param  node The node to check, or {@code null}.
-     * @return The first node having a non-empty text content, or {@code null} if none.
+     * @param  node  the node to check, or {@code null}.
+     * @return the first node having a non-empty text content, or {@code null} if none.
      */
     private Node firstNonEmptySibling(Node node) {
         for (; node != null; node = node.getNextSibling()) {
@@ -604,8 +604,8 @@ public strictfp class XMLComparator {
     /**
      * Verifies that the text content of the given nodes are equal.
      *
-     * @param expected The node that contains the expected text.
-     * @param actual   The node that contains the actual text to verify.
+     * @param expected  the node that contains the expected text.
+     * @param actual    the node that contains the actual text to verify.
      */
     protected void assertTextContentEquals(final Node expected, final Node actual) {
         assertPropertyEquals("textContent", expected.getTextContent(), actual.getTextContent(), expected, actual);
@@ -615,11 +615,11 @@ public strictfp class XMLComparator {
      * Verifies that the given property (text or number) are equal, ignoring spaces. If they are
      * not equal, then an error message is formatted using the given property name and nodes.
      *
-     * @param propertyName The name of the property being compared (typically "name", "namespace", etc.).
-     * @param expected     The property value from the expected node to compare.
-     * @param actual       The property value to compare to the expected one.
-     * @param expectedNode The node from which the expected property has been fetched.
-     * @param actualNode   The node being compared to the expected node.
+     * @param propertyName  the name of the property being compared (typically "name", "namespace", etc.).
+     * @param expected      the property value from the expected node to compare.
+     * @param actual        the property value to compare to the expected one.
+     * @param expectedNode  the node from which the expected property has been fetched.
+     * @param actualNode    the node being compared to the expected node.
      */
     protected void assertPropertyEquals(final String propertyName, Comparable<?> expected, Comparable<?> actual,
             final Node expectedNode, final Node actualNode)
@@ -671,9 +671,9 @@ public strictfp class XMLComparator {
      * Formats an error message for a node mismatch. The message will contain a string
      * representation of the expected and actual node.
      *
-     * @param expected The expected node.
-     * @param result   The actual node.
-     * @return         An error message containing the expected and actual node.
+     * @param  expected  the expected node.
+     * @param  result    the actual node.
+     * @return an error message containing the expected and actual node.
      */
     protected String formatErrorMessage(final Node expected, final Node result) {
         final String lineSeparator = System.lineSeparator();
@@ -685,7 +685,7 @@ public strictfp class XMLComparator {
     /**
      * Formats in the given buffer an error message for a node mismatch.
      *
-     * @param lineSeparator The platform-specific line separator.
+     * @param  lineSeparator  the platform-specific line separator.
      */
     private static void formatErrorMessage(final StringBuilder buffer, final Node expected,
             final Node result, final String lineSeparator)
@@ -705,10 +705,10 @@ public strictfp class XMLComparator {
      *
      * <p>This method formats only a summary if the hierarchy is equals to the expected one.</p>
      *
-     * @param buffer        The buffer in which to append the formatted hierarchy.
-     * @param node          The node for which to format the parents.
-     * @param expected      The expected hierarchy, or {@code null} if unknown.
-     * @param lineSeparator The platform-specific line separator.
+     * @param  buffer         the buffer in which to append the formatted hierarchy.
+     * @param  node           the node for which to format the parents.
+     * @param  expected       the expected hierarchy, or {@code null} if unknown.
+     * @param  lineSeparator  the platform-specific line separator.
      */
     private static List<String> formatHierarchy(final StringBuilder buffer, Node node,
             final List<String> expected, final String lineSeparator)
@@ -741,9 +741,9 @@ public strictfp class XMLComparator {
      * Appends to the given buffer a string representation of the given node.
      * The string representation is terminated by a line feed.
      *
-     * @param buffer        The buffer in which to append the formatted node.
-     * @param node          The node to format.
-     * @param lineSeparator The platform-specific line separator.
+     * @param  buffer         the buffer in which to append the formatted node.
+     * @param  node           the node to format.
+     * @param  lineSeparator  the platform-specific line separator.
      */
     @SuppressWarnings("null")
     private static void formatNode(final StringBuilder buffer, final Node node, final String lineSeparator) {
@@ -751,8 +751,10 @@ public strictfp class XMLComparator {
             buffer.append("(no node)").append(lineSeparator);
             return;
         }
-        // Format the text content, together with the text content of the
-        // child if there is exactly one child.
+        /*
+         * Format the text content, together with the text content of the
+         * child if there is exactly one child.
+         */
         final String ns = node.getNamespaceURI();
         if (ns != null) {
             buffer.append(ns).append(':');
@@ -767,8 +769,9 @@ public strictfp class XMLComparator {
                 hasText = appendTextContent(buffer, children.item(0));
             }
         }
-
-        // Format the number of children and the number of attributes, if any.
+        /*
+         * Format the number of children and the number of attributes, if any.
+         */
         String separator = " (";
         if (numChildren != 0) {
             buffer.append(separator).append("nbChild=").append(numChildren);
@@ -786,8 +789,9 @@ public strictfp class XMLComparator {
         if (!separator.equals(" (")) {
             buffer.append(')');
         }
-
-        // Format all attributes, if any.
+        /*
+         * Format all attributes, if any.
+         */
         separator = " [";
         for (int i=0; i<numAtts; i++) {
             buffer.append(separator).append(atts.item(i));
@@ -804,8 +808,8 @@ public strictfp class XMLComparator {
      * or related type ({@link CDATASection}, {@link Comment} or {@link ProcessingInstruction}).
      * Otherwise this method does nothing.
      *
-     * @param  buffer The buffer in which to append text content.
-     * @param  node   The node for which to append text content.
+     * @param  buffer  the buffer in which to append text content.
+     * @param  node    the node for which to append text content.
      * @return {@code true} if a text has been formatted.
      */
     private static boolean appendTextContent(final StringBuilder buffer, final Node node) {

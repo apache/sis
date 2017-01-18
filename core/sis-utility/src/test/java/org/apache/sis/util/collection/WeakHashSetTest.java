@@ -95,7 +95,7 @@ public final strictfp class WeakHashSetTest extends TestCase {
      * Tests the {@link WeakHashSet} using weak references. In this test, we have to keep
      * in mind that some elements in {@code weakSet} may disappear at any time!
      *
-     * @throws InterruptedException If the test has been interrupted.
+     * @throws InterruptedException if the test has been interrupted.
      */
     @Test
     @DependsOnMethod("testStrongReferences")
@@ -105,7 +105,8 @@ public final strictfp class WeakHashSetTest extends TestCase {
             final WeakHashSet<Integer> weakSet = new WeakHashSet<>(Integer.class);
             final HashSet<Integer> strongSet = new HashSet<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
-                final Integer value = new Integer(random.nextInt(SAMPLE_SIZE)); // Really need new instances
+                @SuppressWarnings("UnnecessaryBoxing")
+                final Integer value = new Integer(random.nextInt(SAMPLE_SIZE));         // Really need new instances
                 if (random.nextBoolean()) {
                     /*
                      * Tests addition.
@@ -121,7 +122,7 @@ public final strictfp class WeakHashSetTest extends TestCase {
                          */
                         assertTrue("add:", strongModified);
                     } else {
-                        assertTrue(value != weakSet.get(value));
+                        assertNotSame(value, weakSet.get(value));
                         if (strongModified) {
                             /*
                              * The element was not in HashSet but still exist in the WeakHashSet.

@@ -195,7 +195,7 @@ abstract class Pooled {
      * This method is not invoked in the {@link #Pooled(Pooled)} constructor in order to
      * give to subclasses a chance to complete their construction first.
      *
-     * @param  template the {@link PooledTemplate} from which to get the initial values.
+     * @param  template  the {@link PooledTemplate} from which to get the initial values.
      * @throws JAXBException if an error occurred while setting a property.
      */
     final void initialize(final Pooled template) throws JAXBException {

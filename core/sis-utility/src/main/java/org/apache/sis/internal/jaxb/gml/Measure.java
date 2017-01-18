@@ -112,8 +112,8 @@ public final class Measure {
      * Constructs a representation of the measure as defined in ISO-19103 standard,
      * with the UOM attribute like {@code "gmxUom.xml#xpointer(//*[@gml:id='m'])"}.
      *
-     * @param value The value of the measure.
-     * @param unit  The unit of measurement.
+     * @param value  the value of the measure.
+     * @param unit   the unit of measurement.
      */
     public Measure(final double value, final Unit<?> unit) {
         this.value = value;
@@ -150,9 +150,9 @@ public final class Measure {
      * {@code uom} attribute, instead of letting the {@code uom} attribute on the measurement value.
      * The main example is {@link org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis}.
      *
-     * @param  unit       the unit to format.
-     * @param  asXPointer {@code true} if the units shall be formatted as {@code xpointer}.
-     * @param  inAxis     {@code true} for a unit used in Coordinate System Axis definition.
+     * @param  unit        the unit to format.
+     * @param  asXPointer  {@code true} if the units shall be formatted as {@code xpointer}.
+     * @param  inAxis      {@code true} for a unit used in Coordinate System Axis definition.
      * @return the string representation of the unit of measure.
      */
     public static String getUOM(final Unit<?> unit, final boolean asXPointer, final boolean inAxis) {

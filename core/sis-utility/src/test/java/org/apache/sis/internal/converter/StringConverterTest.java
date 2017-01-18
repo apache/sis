@@ -17,14 +17,17 @@
 package org.apache.sis.internal.converter;
 
 import java.util.Locale;
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.lang.annotation.ElementType;
 import javax.measure.Unit;
 import org.opengis.util.InternationalString;
@@ -41,11 +44,6 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 
-// Branch-dependent imports
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.charset.StandardCharsets;
-
 
 /**
  * Tests the various {@link StringConverter} implementations.
@@ -55,6 +53,7 @@ import java.nio.charset.StandardCharsets;
  * @version 0.8
  * @module
  */
+@SuppressWarnings("UnnecessaryBoxing")
 @DependsOn(org.apache.sis.measure.AngleTest.class)
 public final strictfp class StringConverterTest extends TestCase {
     /**

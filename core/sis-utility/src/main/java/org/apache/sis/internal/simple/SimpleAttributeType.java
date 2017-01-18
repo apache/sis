@@ -149,7 +149,7 @@ public final class SimpleAttributeType<V> implements AttributeType<V>, Type, Ser
     /**
      * Not used for this simple attribute type.
      *
-     * @return Always {@code null}.
+     * @return always {@code null}.
      */
     @Override
     public InternationalString getDescription() {

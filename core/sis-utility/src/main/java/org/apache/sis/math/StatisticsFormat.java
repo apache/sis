@@ -51,6 +51,7 @@ import static java.lang.Math.*;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.
 public class StatisticsFormat extends TabularFormat<Statistics> {
     /**
      * For cross-version compatibility.
@@ -90,7 +91,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     /**
      * Returns an instance for the current system default locale.
      *
-     * @return A statistics format instance for the current default locale.
+     * @return a statistics format instance for the current default locale.
      */
     public static StatisticsFormat getInstance() {
         return new StatisticsFormat(
@@ -101,8 +102,8 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     /**
      * Returns an instance for the given locale.
      *
-     * @param  locale The locale for which to get a {@code StatisticsFormat} instance.
-     * @return A statistics format instance for the given locale.
+     * @param  locale  the locale for which to get a {@code StatisticsFormat} instance.
+     * @return a statistics format instance for the given locale.
      */
     public static StatisticsFormat getInstance(final Locale locale) {
         return new StatisticsFormat(locale, locale, null);
@@ -112,10 +113,10 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * Constructs a new format for the given numeric and header locales.
      * The timezone is used only if the values added to the {@link Statistics} are dates.
      *
-     * @param locale       The locale to use for numbers, dates and angles formatting,
-     *                     or {@code null} for the {@linkplain Locale#ROOT root locale}.
-     * @param headerLocale The locale for row and column headers. Usually same as {@code locale}.
-     * @param timezone     The timezone, or {@code null} for UTC.
+     * @param locale        the locale to use for numbers, dates and angles formatting,
+     *                      or {@code null} for the {@linkplain Locale#ROOT root locale}.
+     * @param headerLocale  the locale for row and column headers. Usually same as {@code locale}.
+     * @param timezone      the timezone, or {@code null} for UTC.
      */
     public StatisticsFormat(final Locale locale, final Locale headerLocale, final TimeZone timezone) {
         super(locale, timezone);
@@ -131,8 +132,8 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      *       used for all values below the header row.</li>
      * </ul>
      *
-     * @param  category The category for which a locale is desired.
-     * @return The locale for the given category (never {@code null}).
+     * @param  category  the category for which a locale is desired.
+     * @return the locale for the given category (never {@code null}).
      *
      * @since 0.4
      */
@@ -172,8 +173,8 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * Sets whether this formatter shall consider that the statistics where computed using
      * the totality of the populations under study. The default value is {@code false}.
      *
-     * @param allPopulation {@code true} if the statistics to format where computed
-     *        using the totality of the populations under study.
+     * @param  allPopulation  {@code true} if the statistics to format where computed using
+     *                        the totality of the populations under study.
      *
      * @see Statistics#standardDeviation(boolean)
      */
@@ -185,7 +186,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * Returns the "width" of the border to drawn around the table, in number of lines.
      * The default width is 0, which stands for no border.
      *
-     * @return The border "width" in number of lines.
+     * @return the border "width" in number of lines.
      */
     public int getBorderWidth() {
         return borderWidth;
@@ -201,7 +202,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      *  <li>2 for double lines ({@code ║},{@code ═})</li>
      * </ul>
      *
-     * @param borderWidth The border width, in number of lines.
+     * @param  borderWidth  the border width, in number of lines.
      */
     public void setBorderWidth(final int borderWidth) {
         ArgumentChecks.ensureBetween("borderWidth", 0, 2, borderWidth);
@@ -211,8 +212,8 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     /**
      * Not yet implemented.
      *
-     * @return Currently never return.
-     * @throws ParseException Currently never thrown.
+     * @return currently never return.
+     * @throws ParseException currently never thrown.
      */
     @Override
     public Statistics parse(CharSequence text, ParsePosition pos) throws ParseException {
@@ -228,10 +229,10 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      *   <li>{@link #format(Statistics[], Appendable)}</li>
      * </ul>
      *
-     * @param  object      The object to format.
-     * @param  toAppendTo  Where to format the object.
-     * @param  pos         Ignored in current implementation.
-     * @return             The given buffer, returned for convenience.
+     * @param  object      the object to format.
+     * @param  toAppendTo  where to format the object.
+     * @param  pos         ignored in current implementation.
+     * @return the given buffer, returned for convenience.
      */
     @Override
     public StringBuffer format(final Object object, final StringBuffer toAppendTo, final FieldPosition pos) {
@@ -251,9 +252,9 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * If statistics on {@linkplain Statistics#differences() differences}
      * are associated to the given object, they will be formatted too.
      *
-     * @param  stats       The statistics to format.
-     * @param  toAppendTo  Where to format the statistics.
-     * @throws IOException If an error occurred while writing to the given appendable.
+     * @param  stats       the statistics to format.
+     * @param  toAppendTo  where to format the statistics.
+     * @throws IOException if an error occurred while writing to the given appendable.
      */
     @Override
     public void format(Statistics stats, final Appendable toAppendTo) throws IOException {
@@ -270,9 +271,9 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * for the statistics on {@linkplain Statistics#differences() differences} - if
      * such statistics are wanted, they must be included in the given array.
      *
-     * @param  stats       The statistics to format.
-     * @param  toAppendTo  Where to format the statistics.
-     * @throws IOException If an error occurred while writing to the given appendable.
+     * @param  stats       the statistics to format.
+     * @param  toAppendTo  where to format the statistics.
+     * @throws IOException if an error occurred while writing to the given appendable.
      */
     public void format(final Statistics[] stats, final Appendable toAppendTo) throws IOException {
         /*
@@ -326,7 +327,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
          */
         final Format format = getFormat(Double.class);
         if (format instanceof DecimalFormat) {
-            ((DecimalFormat) format).applyPattern("#0"); // Also disable scientific notation.
+            ((DecimalFormat) format).applyPattern("#0");        // Also disable scientific notation.
         } else if (format instanceof NumberFormat) {
             setFractionDigits((NumberFormat) format, 0);
         }
@@ -400,8 +401,8 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * their standard deviation. It can be used for reasonable default formatting when the user
      * didn't specify an explicit one.
      *
-     * @param  format The formatter to configure.
-     * @param  stats  The statistics for which to configure the formatter.
+     * @param  format  the formatter to configure.
+     * @param  stats   the statistics for which to configure the formatter.
      */
     private void configure(final Format format, final Statistics stats) {
         final double minimum  = stats.minimum();

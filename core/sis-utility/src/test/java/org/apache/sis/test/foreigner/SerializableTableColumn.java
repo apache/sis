@@ -25,7 +25,7 @@ import org.apache.sis.util.collection.TableColumn;
 /**
  * For testing {@link TableColumn} deserialization.
  *
- * @param <V> Base type of all values in the column identified by this instance.
+ * @param  <V>  base type of all values in the column identified by this instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3

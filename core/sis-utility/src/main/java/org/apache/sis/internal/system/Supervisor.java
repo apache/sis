@@ -111,7 +111,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
      * has not been previously successfully {@linkplain #register() registered}, or if it has
      * already been unregistered.
      *
-     * @throws JMException If an error occurred during unregistration.
+     * @throws JMException if an error occurred during unregistration.
      */
     static synchronized void unregister() throws JMException {
         final ObjectName n = name;
@@ -126,7 +126,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
     /**
      * Creates a new {@code Supervisor}.
      *
-     * @throws NotCompliantMBeanException Should never happen.
+     * @throws NotCompliantMBeanException should never happen.
      */
     public Supervisor() throws NotCompliantMBeanException {
         super(SupervisorMBean.class);
@@ -145,7 +145,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
     /**
      * Returns the localized description for this MBean.
      *
-     * @return A localized description.
+     * @return a localized description.
      */
     @Override
     protected String getDescription(final MBeanInfo info) {
@@ -155,7 +155,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
     /**
      * Returns the localized description for the given constructor, attribute or operation.
      *
-     * @return A localized description for the given attribute or operation.
+     * @return a localized description for the given attribute or operation.
      */
     @Override
     protected String getDescription(final MBeanFeatureInfo info) {
@@ -165,10 +165,10 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
     /**
      * Returns the localized description for the given constructor parameter.
      *
-     * @param info     The constructor.
-     * @param param    The constructor parameter.
-     * @param sequence The parameter number (0 for the first parameter, 1 for the second, etc.)
-     * @return A localized description for the specified constructor parameter.
+     * @param  info      the constructor.
+     * @param  param     the constructor parameter.
+     * @param  sequence  the parameter number (0 for the first parameter, 1 for the second, etc.)
+     * @return a localized description for the specified constructor parameter.
      */
     @Override
     protected String getDescription(MBeanConstructorInfo info, MBeanParameterInfo param, int sequence) {
@@ -178,10 +178,10 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
     /**
      * Returns the name of the given constructor parameter.
      *
-     * @param info     The constructor.
-     * @param param    The constructor parameter.
-     * @param sequence The parameter number (0 for the first parameter, 1 for the second, etc.)
-     * @return The name of the specified constructor parameter.
+     * @param  info      the constructor.
+     * @param  param     the constructor parameter.
+     * @param  sequence  the parameter number (0 for the first parameter, 1 for the second, etc.)
+     * @return the name of the specified constructor parameter.
      */
     @Override
     protected String getParameterName(MBeanConstructorInfo info, MBeanParameterInfo param, int sequence) {

@@ -613,9 +613,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return NumberRange.create(min, true, max, true);
         }
 
-        // Not worth to override 'increment(double)' because the array can not be long anyway
-        // (except if the increment is zero) and the implicit conversion of 'short' to 'int'
-        // performed by Java would make the implementation a little bit more tricky.
+        /*
+         * Not worth to override 'increment(double)' because the array can not be long anyway
+         * (except if the increment is zero) and the implicit conversion of 'short' to 'int'
+         * performed by Java would make the implementation a little bit more tricky.
+         */
     }
 
     /**
@@ -672,9 +674,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return NumberRange.create(min, true, max, true);
         }
 
-        // Not worth to override 'increment(double)' because the array can not be long anyway
-        // (except if the increment is zero) and the implicit conversion of 'byte' to 'int'
-        // performed by Java would make the implementation a little bit more tricky.
+        /*
+         * Not worth to override 'increment(double)' because the array can not be long anyway
+         * (except if the increment is zero) and the implicit conversion of 'byte' to 'int'
+         * performed by Java would make the implementation a little bit more tricky.
+         */
     }
 
     /**

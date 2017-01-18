@@ -82,7 +82,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
      * Ensures that the current converters is also registered for the given target class.
      * The given target may not be the same than the {@link ObjectConverter#getTargetClass()}.
      *
-     * @param targetClass The target class to ensure that the converter is registered for.
+     * @param  targetClass  the target class to ensure that the converter is registered for.
      */
     private void assertSameConverterForTarget(final Class<?> targetClass) {
         final ObjectConverter<?,?> converter = converters.peekLast();
@@ -101,7 +101,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
     /**
      * Ensures that there is no converter for the given target.
      *
-     * @param targetClass The target which should not have any registered converter.
+     * @param  targetClass  the target which should not have any registered converter.
      */
     private void assertNoConverterForTarget(final Class<?> targetClass) {
         final ObjectConverter<?,?> converter = converters.peekLast();
@@ -123,7 +123,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
     /**
      * Ensures that the converter for the given target is an {@link IdentityConverter}.
      *
-     * @param targetClass The target for which an identity converter should be obtained.
+     * @param  targetClass  the target for which an identity converter should be obtained.
      */
     private void assertIdentityForTarget(final Class<?> targetClass) {
         final ObjectConverter<?,?> converter = converters.peekLast();
@@ -136,10 +136,9 @@ public final strictfp class ConverterRegistryTest extends TestCase {
     }
 
     /**
-     * Asserts that the converter to the given target is a fallback having the given string
-     * representation.
+     * Asserts that the converter to the given target is a fallback having the given string representation.
      *
-     * @param expected The expected string representation of the fallback.
+     * @param  expected  the expected string representation of the fallback.
      */
     private void assertFallbackEquals(final Class<?> target, final String expected) {
         ObjectConverter<?,?> converter = converters.peekLast();
@@ -170,7 +169,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
         assertMultilinesEquals("After StringConverter.Short",
             "ConverterRegistry\n" +
             "  ├─Short         ← String\n" +
-            "  ├─Number        ← String\n" +  // Same instance than above, applied to Number target.
+            "  ├─Number        ← String\n" +                // Same instance than above, applied to Number target.
             "  │   └─Short     ← String\n" +
             "  ├─Object        ← String\n" +
             "  ├─Comparable    ← String\n" +
@@ -198,7 +197,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
             "  ├─Comparable    ← String\n" +
             "  ├─Serializable  ← String\n" +
             "  ├─Long          ← String\n" +
-            "  └─Number        ← String\n" + // The FallbackConverter, which replaced the previous.
+            "  └─Number        ← String\n" +                // The FallbackConverter, which replaced the previous.
             "      ├─Short     ← String\n" +
             "      └─Long      ← String\n", registry.toString());
         /*
@@ -243,7 +242,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
             "  ├─Serializable  ← String\n" +
             "  ├─Long          ← String\n" +
             "  ├─Boolean       ← String\n" +
-            "  └─Number        ← String\n", registry.toString()); // Replaced the FallbackConverter.
+            "  └─Number        ← String\n", registry.toString());       // Replaced the FallbackConverter.
         /*
          * Adds String ← Float
          * Expected side-effect: none
