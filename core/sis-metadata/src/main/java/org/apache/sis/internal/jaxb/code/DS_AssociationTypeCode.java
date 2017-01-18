@@ -49,7 +49,7 @@ public final class DS_AssociationTypeCode extends CodeListAdapter<DS_Association
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
     protected DS_AssociationTypeCode wrap(final CodeListUID value) {
@@ -59,7 +59,7 @@ public final class DS_AssociationTypeCode extends CodeListAdapter<DS_Association
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<AssociationType> getCodeListClass() {
@@ -69,7 +69,7 @@ public final class DS_AssociationTypeCode extends CodeListAdapter<DS_Association
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "DS_AssociationTypeCode")
@@ -80,7 +80,7 @@ public final class DS_AssociationTypeCode extends CodeListAdapter<DS_Association
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param value The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
         identifier = value;

@@ -54,8 +54,8 @@ public class ObjectFactory {
     /**
      * Creates an instance of {@code JAXBElement<Object>}}.
      *
-     * @param  value The {@code Object} value to wrap.
-     * @return The wrapped value.
+     * @param  value  the {@code Object} value to wrap.
+     * @return the wrapped value.
      */
     @XmlElementDecl(name = "AbstractObject", namespace = Namespaces.GML)
     public JAXBElement<Object> createObject(final Object value) {
@@ -68,8 +68,8 @@ public class ObjectFactory {
      * However it is declared here as {@code Object} in order to avoid a dependency
      * toward the GML module.
      *
-     * @param  value The GML {@code AbstractGMLType} value to wrap.
-     * @return The wrapped value.
+     * @param  value  the GML {@code AbstractGMLType} value to wrap.
+     * @return the wrapped value.
      */
     @Workaround(library = "JAXB", version = "2.1")
     @XmlElementDecl(name = "AbstractGML",
@@ -86,8 +86,8 @@ public class ObjectFactory {
      * However it is declared here as {@code Object} in order to avoid a dependency
      * toward the GML module.
      *
-     * @param  value The {@code AbstractGeometryType} value to wrap.
-     * @return The wrapped value.
+     * @param  value  the {@code AbstractGeometryType} value to wrap.
+     * @return the wrapped value.
      */
     @Workaround(library = "JAXB", version = "2.1")
     @XmlElementDecl(name = "AbstractGeometry",

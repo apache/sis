@@ -144,11 +144,11 @@ public final class NameMeaning extends Static {
      * the given values. This method delegates to {@link DefinitionURI#format(String, String, String, String)}
      * after "fixing" the given values using some heuristic knowledge about the meaning of URN.
      *
-     * @param  type      The object type.
-     * @param  authority The authority as one of the values documented in {@link DefinitionURI} javadoc.
-     * @param  version   The code version, or {@code null}. This is the only optional information.
-     * @param  code      The code.
-     * @return An identifier using the URN syntax, or {@code null} if a mandatory information is missing.
+     * @param  type       the object type.
+     * @param  authority  the authority as one of the values documented in {@link DefinitionURI} javadoc.
+     * @param  version    the code version, or {@code null}. This is the only optional information.
+     * @param  code       the code.
+     * @return an identifier using the URN syntax, or {@code null} if a mandatory information is missing.
      *
      * @since 0.7
      *
@@ -194,8 +194,8 @@ public final class NameMeaning extends Static {
      * Returns the "object type" part of an OGC URN for the given class, or {@code null} if unknown.
      * See {@link org.apache.sis.internal.util.DefinitionURI} javadoc for a list of object types in URN.
      *
-     * @param  type The class for which to get the URN type.
-     * @return The URN type, or {@code null} if unknown.
+     * @param  type  the class for which to get the URN type.
+     * @return the URN type, or {@code null} if unknown.
      */
     public static String toObjectType(final Class<?> type) {
         for (int i=0; i<CLASSES.length; i++) {
@@ -212,8 +212,8 @@ public final class NameMeaning extends Static {
      * This approach is based on the assumption that the authority is some specification document or reference to
      * a database, not an organization. However this policy may be revisited in any future SIS version.
      *
-     * @param authority The authority from which to get a version, or {@code null}.
-     * @return The version, or {@code null} if none.
+     * @param  authority  the authority from which to get a version, or {@code null}.
+     * @return the version, or {@code null} if none.
      *
      * @since 0.7
      */

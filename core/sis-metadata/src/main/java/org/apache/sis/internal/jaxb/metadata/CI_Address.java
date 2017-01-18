@@ -62,8 +62,8 @@ public final class CI_Address extends PropertyType<CI_Address, Address> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gmd:CI_Address>} XML element.
      *
-     * @param  metadata The metadata element to marshall.
-     * @return A {@code PropertyType} wrapping the given the metadata element.
+     * @param  metadata  the metadata element to marshall.
+     * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
     protected CI_Address wrap(final Address metadata) {
@@ -75,7 +75,7 @@ public final class CI_Address extends PropertyType<CI_Address, Address> {
      * inside the {@code <gmd:CI_Address>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The metadata to be marshalled.
+     * @return the metadata to be marshalled.
      */
     @XmlElementRef
     public DefaultAddress getElement() {
@@ -85,7 +85,7 @@ public final class CI_Address extends PropertyType<CI_Address, Address> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param metadata The unmarshalled metadata.
+     * @param  metadata  the unmarshalled metadata.
      */
     public void setElement(final DefaultAddress metadata) {
         this.metadata = metadata;
