@@ -64,7 +64,7 @@ public final strictfp class CacheTest extends TestCase {
      * Tests {@link Cache} as a {@link java.util.Map} using weak references. In this test, we
      * have to keep in mind than some elements in {@code weakMap} may disappear at any time.
      *
-     * @throws InterruptedException If the test has been interrupted.
+     * @throws InterruptedException if the test has been interrupted.
      *
      * @see WeakValueHashMapTest#testWeakReferences()
      */
@@ -100,7 +100,7 @@ public final strictfp class CacheTest extends TestCase {
      * Tests the cache when a thread is blocking a second one.
      * The second thread tries to write a value while the first thread holds the lock.
      *
-     * @throws InterruptedException If the test has been interrupted.
+     * @throws InterruptedException if the test has been interrupted.
      */
     @Test
     @DependsOnMethod("testPutAndUnlock")
@@ -181,8 +181,8 @@ public final strictfp class CacheTest extends TestCase {
      * Validates the entries created by the {@link #stress()} test. The check performed in
      * this method shall obviously be consistent with the values created by {@code stress()}.
      *
-     * @param  name  The name of the value being measured.
-     * @param  cache The cache to validate.
+     * @param  name   the name of the value being measured.
+     * @param  cache  the cache to validate.
      * @return Statistics on the key values of the given map.
      */
     private static Statistics validateStressEntries(final String name, final Map<Integer,Integer> cache) {
@@ -200,7 +200,7 @@ public final strictfp class CacheTest extends TestCase {
      * Starts many threads writing in the same cache, with a high probability that two threads
      * ask for the same key in some occasions.
      *
-     * @throws InterruptedException If the test has been interrupted.
+     * @throws InterruptedException if the test has been interrupted.
      */
     @Test
     @Performance
@@ -225,12 +225,13 @@ public final strictfp class CacheTest extends TestCase {
             }
 
             /**
-             * Put random values in the map.
+             * Puts random values in the map.
              */
+            @SuppressWarnings({"UnnecessaryBoxing", "CallToThreadYield", "NumberEquality"})
             @Override public void run() {
                 for (int i=0; i<count; i++) {
                     final Integer key = i;
-                    final Integer expected = new Integer(i * i); // We really want new instance.
+                    final Integer expected = new Integer(i * i);        // We really want new instance.
                     final Integer value;
                     try {
                         value = cache.getOrCreate(key, () -> expected);
@@ -241,9 +242,9 @@ public final strictfp class CacheTest extends TestCase {
                         }
                         continue;
                     }
-                    if (expected == value) { // Identity comparison (not value comparison).
+                    if (expected == value) {                            // Identity comparison (not value comparison).
                         addCount++;
-                        yield(); // Gives a chance to other threads.
+                        yield();                                        // Gives a chance to other threads.
                     }
                 }
             }

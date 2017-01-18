@@ -18,7 +18,6 @@ package org.apache.sis.util.collection;
 
 import java.util.HashSet;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -95,7 +94,7 @@ public final strictfp class WeakHashSetTest extends TestCase {
      * Tests the {@link WeakHashSet} using weak references. In this test, we have to keep
      * in mind that some elements in {@code weakSet} may disappear at any time!
      *
-     * @throws InterruptedException If the test has been interrupted.
+     * @throws InterruptedException if the test has been interrupted.
      */
     @Test
     @DependsOnMethod("testStrongReferences")
@@ -105,7 +104,8 @@ public final strictfp class WeakHashSetTest extends TestCase {
             final WeakHashSet<Integer> weakSet = new WeakHashSet<>(Integer.class);
             final HashSet<Integer> strongSet = new HashSet<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
-                final Integer value = new Integer(random.nextInt(SAMPLE_SIZE)); // Really need new instances
+                @SuppressWarnings("UnnecessaryBoxing")
+                final Integer value = new Integer(random.nextInt(SAMPLE_SIZE));         // Really need new instances
                 if (random.nextBoolean()) {
                     /*
                      * Tests addition.
@@ -121,7 +121,7 @@ public final strictfp class WeakHashSetTest extends TestCase {
                          */
                         assertTrue("add:", strongModified);
                     } else {
-                        assertTrue(value != weakSet.get(value));
+                        assertNotSame(value, weakSet.get(value));
                         if (strongModified) {
                             /*
                              * The element was not in HashSet but still exist in the WeakHashSet.
@@ -155,21 +155,13 @@ public final strictfp class WeakHashSetTest extends TestCase {
              * happen too often, we may turn off the "allow garbage collector dependent tests" flag.
              */
             if (TestConfiguration.allowGarbageCollectorDependentTests()) {
-                waitForGarbageCollection(new Callable<Boolean>() {
-                    @Override public Boolean call() {
-                        return weakSet.size() == strongSet.size();
-                    }
-                });
+                waitForGarbageCollection(() -> weakSet.size() == strongSet.size());
                 assertSetEquals(strongSet, weakSet);
                 /*
                  * Clearing all strong references should make the set empty.
                  */
                 strongSet.clear();
-                assertTrue("Expected an empty set.", waitForGarbageCollection(new Callable<Boolean>() {
-                    @Override public Boolean call() {
-                        return weakSet.isEmpty();
-                    }
-                }));
+                assertTrue("Expected an empty set.", waitForGarbageCollection(weakSet::isEmpty));
             }
         }
     }

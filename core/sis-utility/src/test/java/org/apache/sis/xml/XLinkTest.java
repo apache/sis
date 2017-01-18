@@ -37,7 +37,7 @@ public final strictfp class XLinkTest extends TestCase {
     /**
      * Tests the automatic {@link XLink#getType()} detection.
      *
-     * @throws URISyntaxException Should never happen.
+     * @throws URISyntaxException if a test URI can not be parsed (should not happen).
      */
     @Test
     public void testGetType() throws URISyntaxException {
@@ -110,7 +110,7 @@ public final strictfp class XLinkTest extends TestCase {
     /**
      * Tests write operation, which should not be allowed for some type of link.
      *
-     * @throws URISyntaxException Should never happen.
+     * @throws URISyntaxException if a test URI can not be parsed (should not happen).
      */
     @Test
     public void testWrite() throws URISyntaxException {
@@ -157,7 +157,7 @@ public final strictfp class XLinkTest extends TestCase {
     /**
      * Tests equality.
      *
-     * @throws URISyntaxException Should never happen.
+     * @throws URISyntaxException if a test URI can not be parsed (should not happen).
      */
     @Test
     public void testEquals() throws URISyntaxException {

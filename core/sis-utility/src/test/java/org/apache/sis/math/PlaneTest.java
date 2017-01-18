@@ -42,7 +42,7 @@ public final strictfp class PlaneTest extends TestCase {
      *
      * This method also verifies that the Pearson coefficient is close to 1.
      *
-     * @param tolerance The maximal difference allowed between the fitted and the original values.
+     * @param  tolerance  the maximal difference allowed between the fitted and the original values.
      */
     private static Plane assertFitEquals(final double tolerance, final double[] x, final double[] y, final double[] z) {
         final Plane plan = new Plane();
@@ -57,11 +57,11 @@ public final strictfp class PlaneTest extends TestCase {
     /**
      * Returns an array of the given length filled with random values.
      *
-     * @param  rd     The random number generator to use.
-     * @param  length The desired array length.
-     * @param  offset The minimal value allowed in the returned array.
-     * @param  scale  The difference between the minimal and maximal allowed values.
-     * @return The array of random values.
+     * @param  rd      the random number generator to use.
+     * @param  length  the desired array length.
+     * @param  offset  the minimal value allowed in the returned array.
+     * @param  scale   the difference between the minimal and maximal allowed values.
+     * @return the array of random values.
      */
     private static double[] random(final Random rd, final int length, final double offset, final double scale) {
         final double[] x = new double[length];

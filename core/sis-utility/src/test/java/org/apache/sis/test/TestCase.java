@@ -186,7 +186,7 @@ public abstract strictfp class TestCase {
      * case.
      */
     static void clearBuffer() {
-        synchronized (buffer) { // This is the lock used by the 'out' PrintWriter.
+        synchronized (buffer) {             // This is the lock used by the 'out' PrintWriter.
             out.flush();
             buffer.getBuffer().setLength(0);
         }
@@ -204,7 +204,7 @@ public abstract strictfp class TestCase {
     static void flushOutput() {
         System.out.flush();
         System.err.flush();
-        synchronized (buffer) { // This is the lock used by the 'out' PrintWriter.
+        synchronized (buffer) {             // This is the lock used by the 'out' PrintWriter.
             out.flush();
             /*
              * Get the text content and remove the trailing spaces

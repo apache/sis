@@ -29,7 +29,7 @@ import org.apache.sis.test.TestRunner;
  * a {@link DefaultNameFactory} instance shared for all tests in this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from goetk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -39,13 +39,13 @@ public final strictfp class DefaultNameFactoryTest extends NameTest {
     /**
      * The factory to test.
      */
-    private static DefaultNameFactory factory;
+    private static DefaultNameFactory factorySIS;
 
     /**
      * Creates a new test suite using the singleton factory instance.
      */
     public DefaultNameFactoryTest() {
-        super(factory);
+        super(factorySIS);
     }
 
     /**
@@ -53,7 +53,7 @@ public final strictfp class DefaultNameFactoryTest extends NameTest {
      */
     @BeforeClass
     public static void createFactory() {
-        factory = new DefaultNameFactory();
+        factorySIS = new DefaultNameFactory();
     }
 
     /**
@@ -61,6 +61,6 @@ public final strictfp class DefaultNameFactoryTest extends NameTest {
      */
     @AfterClass
     public static void disposeFactory() {
-        factory = null;
+        factorySIS = null;
     }
 }
