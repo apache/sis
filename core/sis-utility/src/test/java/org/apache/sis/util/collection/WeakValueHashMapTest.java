@@ -65,7 +65,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
      * Implementation of the {@link #testStrongReferences()} method,
      * to be reused by {@link CacheTest}.
      *
-     * @param weakMap The map implementation to test.
+     * @param weakMap  the map implementation to test.
      */
     static void testStrongReferences(final Map<Integer,Integer> weakMap) {
         final Random random = new Random();
@@ -95,7 +95,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
      * In this test, we have to keep in mind than some elements
      * in {@code weakMap} may disappear at any time.
      *
-     * @throws InterruptedException If the test has been interrupted.
+     * @throws InterruptedException if the test has been interrupted.
      */
     @Test
     @DependsOnMethod("testStrongReferences")
@@ -109,13 +109,16 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
      *
      * @param weakMap The map implementation to test.
      */
+    @SuppressWarnings("UnnecessaryBoxing")
     static void testWeakReferences(final Map<Integer,Integer> weakMap) throws InterruptedException {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
             weakMap.clear();
             final HashMap<Integer,Integer> strongMap = new HashMap<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
-                // We really want new instances here.
+                /*
+                 * We really want new instances here.
+                 */
                 final Integer key   = new Integer(random.nextInt(SAMPLE_SIZE));
                 final Integer value = new Integer(random.nextInt(SAMPLE_SIZE));
                 if (random.nextBoolean()) {
@@ -136,8 +139,10 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
                         assertNotSame(value, weakPrevious);
                     }
                     if (strongPrevious != null) {
-                        // Note: If 'strongPrevious==null', 'weakPrevious' can not
-                        //       be null since GC has not collected its entry yet.
+                        /*
+                         * Note: If 'strongPrevious==null', 'weakPrevious' can not
+                         *       be null since GC has not collected its entry yet.
+                         */
                         assertSame("put:", strongPrevious, weakPrevious);
                     }
                 } else {
@@ -206,11 +211,12 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testStrongReferences")
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testIdentityComparisons() {
         final WeakValueHashMap<Integer,Integer> weakMap = new WeakValueHashMap<>(Integer.class, true);
         final Integer k1 = 10;
         final Integer k2 = 20;
-        final Integer k3 = new Integer(10); // Really want a new instance.
+        final Integer k3 = new Integer(10);         // Really want a new instance.
         final Integer v1 = 1;
         final Integer v2 = 2;
         final Integer v3 = 3;

@@ -47,8 +47,8 @@ public final strictfp class TabulationExpansionTest extends LineAppenderTest {
     /**
      * Runs the test.
      *
-     * @param  lineSeparator The line separator to use in the test strings.
-     * @throws IOException Should never happen, since we are writing in a {@link StringBuilder}.
+     * @param  lineSeparator  the line separator to use in the test strings.
+     * @throws IOException should never happen, since we are writing in a {@link StringBuilder}.
      */
     @Override
     void run(final String lineSeparator) throws IOException {

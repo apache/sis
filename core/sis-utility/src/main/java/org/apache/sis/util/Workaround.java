@@ -47,7 +47,7 @@ public @interface Workaround {
      * A string identifying the library having a bug or limitation.
      * Examples: {@code "JDK"}, {@code "NetCDF"}, {@code "JUnit"}, {@code "SIS"}.
      *
-     * @return An identifier of the library having a bug or limitation.
+     * @return an identifier of the library having a bug or limitation.
      */
     String library();
 
@@ -55,7 +55,7 @@ public @interface Workaround {
      * The last library version on which the bug has been verified.
      * The bug may have existed before, and may still exist later.
      *
-     * @return The library version on which the bug has been observed.
+     * @return the library version on which the bug has been observed.
      */
     String version();
 }

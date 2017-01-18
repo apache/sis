@@ -25,8 +25,8 @@ import org.apache.sis.util.ObjectConverter;
  * If a value is converted into a null value, then this iterator skips that value.
  * Consequently this iterator can not returns null value.
  *
- * @param <S> The type of elements in the storage collection.
- * @param <E> The type of elements in this set.
+ * @param  <S>  the type of elements in the storage collection.
+ * @param  <E>  the type of elements in this set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3

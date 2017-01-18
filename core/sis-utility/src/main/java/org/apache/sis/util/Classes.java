@@ -212,8 +212,10 @@ public final class Classes extends Static {
                  * Check if we have an array, then check the (component) class.
                  */
                 if (type instanceof ParameterizedType) {
-                    // Example: replace ParameterDescriptor<?> by ParameterDescriptor
-                    // before we test if (type instanceof Class<?>).
+                    /*
+                     * Example: replace ParameterDescriptor<?> by ParameterDescriptor
+                     * before we test if (type instanceof Class<?>).
+                     */
                     type = ((ParameterizedType) type).getRawType();
                 }
                 int dimension = 0;

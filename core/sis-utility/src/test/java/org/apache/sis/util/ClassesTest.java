@@ -188,16 +188,16 @@ public final strictfp class ClassesTest extends TestCase {
     /**
      * Tests the {@link Classes#boundOfParameterizedProperty(Field)} method.
      *
-     * @throws NoSuchFieldException  Should never occur.
-     * @throws NoSuchMethodException Should never occur.
+     * @throws NoSuchFieldException  if there is an error in a field name.
+     * @throws NoSuchMethodException if there is an error in a method name.
      */
     @Test
     public void testBoundOfParameterizedProperty() throws NoSuchFieldException, NoSuchMethodException {
         final Class<?>[] g = null;
         final Class<?>[] s = new Class<?>[] {Set.class};
         final Class<Parameterized> c = Parameterized.class;
-        assertNull(                 boundOfParameterizedProperty(c.getMethod("getter0", g)));
-        assertNull(                 boundOfParameterizedProperty(c.getMethod("setter0", s)));
+        assertNull(                    boundOfParameterizedProperty(c.getMethod("getter0", g)));
+        assertNull(                    boundOfParameterizedProperty(c.getMethod("setter0", s)));
         assertEquals(Long      .class, boundOfParameterizedProperty(c.getField ("attrib2"   )));
         assertEquals(Integer   .class, boundOfParameterizedProperty(c.getMethod("getter1", g)));
         assertEquals(Byte      .class, boundOfParameterizedProperty(c.getMethod("getter2", g)));
@@ -215,22 +215,21 @@ public final strictfp class ClassesTest extends TestCase {
     @SuppressWarnings("rawtypes")
     private static final class Parameterized {
         public Set<? extends Long> attrib2 = null;
-        public Set                 getter0() {return null;} // Intentionnaly unparameterized.
+        public Set                 getter0() {return null;}         // Intentionnaly unparameterized.
         public Set<       Integer> getter1() {return null;}
         public Set<? extends Byte> getter2() {return null;}
         public Set<? super  Float> getter3() {return null;}
         public Set<       short[]> getter4() {return null;}
         public Set<Comparable<?>>  getter5() {return null;}
 
-        public void setter0(Set                  dummy) {}  // Intentionnaly unparameterized.
+        public void setter0(Set                  dummy) {}          // Intentionnaly unparameterized.
         public void setter1(Set<         String> dummy) {}
         public void setter2(Set<? extends Short> dummy) {}
         public void setter3(Set<? super  Double> dummy) {}
     }
 
     /**
-     * Tests the {@link Classes#getShortName(Class)}, in particular the example values
-     * given in the javadoc.
+     * Tests the {@link Classes#getShortName(Class)}, in particular the example values given in the javadoc.
      */
     @Test
     public void testGetShortName() {

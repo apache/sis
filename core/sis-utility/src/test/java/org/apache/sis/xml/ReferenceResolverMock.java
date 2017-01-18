@@ -54,7 +54,7 @@ public final strictfp class ReferenceResolverMock extends ReferenceResolver {
      * annotated by {@link org.junit.After}. This is done automatically by {@link org.apache.sis.test.XMLTestCase}.
      *
      * @param  marshalling {@code true} for marshalling, or {@code false} for unmarshalling.
-     * @return The (un)marshalling context.
+     * @return the (un)marshalling context.
      */
     public static Context begin(final boolean marshalling) {
         return new Context(marshalling ? Context.MARSHALLING : 0, null, null, null, null,

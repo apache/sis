@@ -82,8 +82,10 @@ public final class DelayedExecutor extends DaemonThread {
         synchronized (Threads.class) {
             final DelayedExecutor thread;
             Threads.lastCreatedDaemon = thread = new DelayedExecutor(Threads.lastCreatedDaemon);
-            // Call to Thread.start() must be outside the constructor
-            // (Reference: Goetz et al.: "Java Concurrency in Practice").
+            /*
+             * Call to Thread.start() must be outside the constructor
+             * (Reference: Goetz et al.: "Java Concurrency in Practice").
+             */
             thread.start();
         }
         if (Supervisor.ENABLED) {
@@ -125,8 +127,10 @@ public final class DelayedExecutor extends DaemonThread {
                     continue;
                 }
             } catch (InterruptedException exception) {
-                // Probably the 'killAll' method has been invoked.
-                // We need to test 'isKillRequested()' below.
+                /*
+                 * Probably the 'killAll' method has been invoked.
+                 * We need to test 'isKillRequested()' below.
+                 */
             } catch (Throwable exception) {
                 Logging.unexpectedException(Logging.getLogger(Loggers.SYSTEM), getClass(), "run", exception);
             }
@@ -158,8 +162,10 @@ public final class DelayedExecutor extends DaemonThread {
             }
             return true;
         } catch (InterruptedException e) {
-            // Someone doesn't want to let us wait. Since we didn't had the time to
-            // determine if the thread is stalled, conservatively return 'false'.
+            /*
+             * Someone doesn't want to let us wait. Since we didn't had the time to
+             * determine if the thread is stalled, conservatively return 'false'.
+             */
         }
         return false;
     }

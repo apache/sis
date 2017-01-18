@@ -40,7 +40,7 @@ public final strictfp class XmlUtilitiesTest extends XMLTestCase {
      * Tests the {@link XmlUtilities#toXML} method.
      * This test arbitrarily uses the CET timezone.
      *
-     * @throws DatatypeConfigurationException Should never happen.
+     * @throws DatatypeConfigurationException if the XML factory can not be created.
      */
     @Test
     public void testToXML() throws DatatypeConfigurationException {

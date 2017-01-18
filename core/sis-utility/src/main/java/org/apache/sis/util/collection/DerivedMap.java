@@ -55,10 +55,10 @@ import org.apache.sis.math.FunctionProperty;
  * If the storage map is known to be immutable, then sub-classes may consider to cache some values,
  * especially the result of the {@link #size()} method.
  *
- * @param <SK> The type of keys in the storage map.
- * @param <SV> The type of values in the storage map.
- * @param <K>  The type of keys in this map.
- * @param <V>  The type of values in this map.
+ * @param  <SK>  the type of keys in the storage map.
+ * @param  <SV>  the type of values in the storage map.
+ * @param  <K>   the type of keys in this map.
+ * @param  <V>   the type of values in this map.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
@@ -105,9 +105,9 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
     /**
      * Creates a new derived map from the specified storage map.
      *
-     * @param storage        The map which actually store the entries.
-     * @param keyConverter   The converter for the keys.
-     * @param valueConverter The converter for the values.
+     * @param storage         the map which actually store the entries.
+     * @param keyConverter    the converter for the keys.
+     * @param valueConverter  the converter for the values.
      */
     static <SK,SV,K,V> Map<K,V> create(final Map<SK,SV> storage,
                                        final ObjectConverter<SK,K> keyConverter,
@@ -130,9 +130,9 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
     /**
      * Creates a new derived map from the specified storage map.
      *
-     * @param storage        The map which actually store the entries.
-     * @param keyConverter   The converter for the keys.
-     * @param valueConverter The converter for the values.
+     * @param storage         the map which actually store the entries.
+     * @param keyConverter    the converter for the keys.
+     * @param valueConverter  the converter for the values.
      */
     private DerivedMap(final Map<SK,SV> storage,
                        final ObjectConverter<SK,K> keyConverter,
@@ -146,7 +146,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
     /**
      * Returns the number of entries in this map.
      *
-     * @return The number of entries in this map.
+     * @return the number of entries in this map.
      */
     @Override
     public int size() {
@@ -166,8 +166,8 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
     /**
      * Associates the specified value with the specified key in this map.
      *
-     * @param  key key with which the specified value is to be associated.
-     * @param  value value to be associated with the specified key.
+     * @param  key    key with which the specified value is to be associated.
+     * @param  value  value to be associated with the specified key.
      * @return previous value associated with specified key, or {@code null}
      *         if there was no mapping for key.
      * @throws UnsupportedOperationException if the converters are not invertible,
@@ -303,6 +303,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
      * Returns a set view of the keys contained in this map.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Safe because immutable.
     public final Set<K> keySet() {
         if (keySet == null) {
             keySet = DerivedSet.create(storage.keySet(), keyConverter);
@@ -314,6 +315,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
      * Returns a set view of the mappings contained in this map.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Safe because immutable.
     public final Set<Map.Entry<K,V>> entrySet() {
         if (entrySet == null) {
             entrySet = DerivedSet.create(storage.entrySet(), this);

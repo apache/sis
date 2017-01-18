@@ -66,9 +66,9 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * Creates a pooled marshaller wrapping the given one.
      * Callers shall invoke {@link #reset(Pooled)} after construction for completing the initialization.
      *
-     * @param  marshaller The marshaller to use for the actual work.
-     * @param  template The {@link PooledTemplate} from which to get the initial values.
-     * @throws JAXBException If an error occurred while setting a property.
+     * @param  marshaller  the marshaller to use for the actual work.
+     * @param  template    the {@link PooledTemplate} from which to get the initial values.
+     * @throws JAXBException if an error occurred while setting a property.
      */
     PooledMarshaller(final Marshaller marshaller, final Pooled template) throws JAXBException {
         super(template);
@@ -80,9 +80,9 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * Resets the given marshaller property to its initial state.
      * This method is invoked automatically by {@link #reset(Pooled)}.
      *
-     * @param  key   The property to reset.
-     * @param  value The saved initial value to give to the property.
-     * @throws JAXBException If an error occurred while restoring a property.
+     * @param  key    the property to reset.
+     * @param  value  the saved initial value to give to the property.
+     * @throws JAXBException if an error occurred while restoring a property.
      */
     @Override
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -119,8 +119,8 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * than the one supported natively by SIS, i.e. when {@link #getFilterVersion()} returns
      * a non-null value.
      *
-     * @param object  The object to marshall.
-     * @param output  The writer created by SIS (<b>not</b> the writer given by the user).
+     * @param object  the object to marshall.
+     * @param output  the writer created by SIS (<b>not</b> the writer given by the user).
      * @param version Identify the namespace substitutions to perform.
      */
     private void marshal(final Object object, XMLStreamWriter output, final FilterVersion version)
@@ -133,7 +133,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
         } finally {
             context.finish();
         }
-        output.close(); // Despite its name, this method does not close the underlying output stream.
+        output.close();         // Despite its name, this method does not close the underlying output stream.
     }
 
     /**

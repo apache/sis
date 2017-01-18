@@ -174,7 +174,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
         final NameSpace scope = object.scope();
         final InternationalString name = object.toInternationalString();
         if (scope instanceof DefaultNameSpace) {
-            return ((DefaultNameSpace) scope).local(name, null); // May return a cached instance.
+            return ((DefaultNameSpace) scope).local(name, null);        // May return a cached instance.
         } else {
             return new DefaultLocalName(scope, name);
         }

@@ -119,8 +119,9 @@ public final strictfp class NamesTest extends TestCase {
      */
     private static void assertValueClassEquals(final Class<?> expected, final TypeName type) {
         assertEquals(expected, toClass(type));
-
-        // Tests detection with an implementation which is not the SIS one.
+        /*
+         * Tests detection with an implementation which is not the SIS one.
+         */
         assertEquals(expected, toClass(new TypeName() {
             @Override public int                       depth()                  {return type.depth();}
             @Override public List<? extends LocalName> getParsedNames()         {return type.getParsedNames();}

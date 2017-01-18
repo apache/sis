@@ -76,7 +76,7 @@ public abstract class InstallationResources {
      * This method may return an empty set if this {@code InstallationResources} instance did not find the
      * resources (for example because of files not found) or does not have the permission to distribute them.
      *
-     * @return Identifiers of resources that this instance can distribute.
+     * @return identifiers of resources that this instance can distribute.
      */
     public abstract Set<String> getAuthorities();
 
@@ -89,10 +89,10 @@ public abstract class InstallationResources {
      * <a href="http://www.epsg.org/TermsOfUse">http://www.epsg.org/TermsOfUse</a> page.
      * </div>
      *
-     * @param  authority One of the values returned by {@link #getAuthorities()}.
-     * @param  locale    The preferred locale for the terms of use.
-     * @param  mimeType  Either {@code "text/plain"} or {@code "text/html"}.
-     * @return The terms of use in plain text or HTML, or {@code null} if none.
+     * @param  authority  one of the values returned by {@link #getAuthorities()}.
+     * @param  locale     the preferred locale for the terms of use.
+     * @param  mimeType   either {@code "text/plain"} or {@code "text/html"}.
+     * @return the terms of use in plain text or HTML, or {@code null} if none.
      * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
      * @throws IOException if an error occurred while reading the license file.
      */
@@ -108,8 +108,8 @@ public abstract class InstallationResources {
      * followed by a script that creates foreigner keys.
      * </div>
      *
-     * @param  authority One of the values returned by {@link #getAuthorities()}.
-     * @return The names of all resources of the given authority that are distributed by this instance.
+     * @param  authority  one of the values returned by {@link #getAuthorities()}.
+     * @return the names of all resources of the given authority that are distributed by this instance.
      * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
      * @throws IOException if fetching the resource names required an I/O operation and that operation failed.
      */
@@ -120,10 +120,10 @@ public abstract class InstallationResources {
      * The resource may be a SQL script or any other resources readable as a text.
      * The returned {@link BufferedReader} instance shall be closed by the caller.
      *
-     * @param  authority One of the values returned by {@link #getAuthorities()}.
-     * @param  resource Index of the script to open, from 0 inclusive to
+     * @param  authority  one of the values returned by {@link #getAuthorities()}.
+     * @param  resource   index of the script to open, from 0 inclusive to
      *         <code>{@linkplain #getResourceNames(String) getResourceNames}(authority).length</code> exclusive.
-     * @return A reader for the installation script content.
+     * @return a reader for the installation script content.
      * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
      * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
      * @throws IOException if an error occurred while creating the reader.

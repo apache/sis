@@ -221,7 +221,7 @@ public class TableAppender extends Appender implements Flushable {
     /**
      * Creates a new table formatter writing in an internal buffer with the specified column separator.
      *
-     * @param separator String to write between columns.
+     * @param separator  string to write between columns.
      */
     public TableAppender(final String separator) {
         this(new StringBuilder(256), separator);
@@ -233,7 +233,7 @@ public class TableAppender extends Appender implements Flushable {
      * The default is a vertical double line for the left and right table borders, and a single
      * line between the columns.
      *
-     * @param out The underlying stream or buffer to write to.
+     * @param out  the underlying stream or buffer to write to.
      */
     public TableAppender(final Appendable out) {
         super(out);
@@ -245,8 +245,8 @@ public class TableAppender extends Appender implements Flushable {
     /**
      * Creates a new table formatter writing in the given output with the specified column separator.
      *
-     * @param out The underlying stream or buffer to write to.
-     * @param separator String to write between columns.
+     * @param out        the underlying stream or buffer to write to.
+     * @param separator  string to write between columns.
      */
     public TableAppender(final Appendable out, final String separator) {
         super(out);
@@ -268,8 +268,8 @@ public class TableAppender extends Appender implements Flushable {
      *
      * @param  horizontalBorder -1 for left border, +1 for right border,  0 for center.
      * @param  verticalBorder   -1 for top  border, +1 for bottom border, 0 for center.
-     * @param  horizontalChar   Character to use for horizontal line.
-     * @throws IOException      If the writing operation failed.
+     * @param  horizontalChar   character to use for horizontal line.
+     * @throws IOException      if the writing operation failed.
      */
     private void writeBorder(final int  horizontalBorder,
                              final int  verticalBorder,
@@ -346,8 +346,8 @@ public class TableAppender extends Appender implements Flushable {
      *
      * The default value is {@code false}.
      *
-     * @param multiLines {@code true} true if EOL are used for line feeds inside
-     *        current cells, or {@code false} if EOL move to the next row.
+     * @param multiLines  {@code true} true if EOL are used for line feeds inside current cells,
+     *                    or {@code false} if EOL move to the next row.
      */
     public void setMultiLinesCells(final boolean multiLines) {
         multiLinesCells = multiLines;
@@ -357,7 +357,7 @@ public class TableAppender extends Appender implements Flushable {
      * Returns the alignment of the text inside the current cell.
      * The default value is {@link #ALIGN_LEFT}.
      *
-     * @return Current cell alignment as one of the {@link #ALIGN_LEFT},
+     * @return current cell alignment as one of the {@link #ALIGN_LEFT},
      *         {@link #ALIGN_RIGHT} or {@link #ALIGN_CENTER} constants.
      */
     public byte getCellAlignment() {
@@ -372,8 +372,8 @@ public class TableAppender extends Appender implements Flushable {
      *
      * <p>If this method is never invoked, then the default alignment is {@link #ALIGN_LEFT}.</p>
      *
-     * @param alignment The new cell alignment as one of the {@link #ALIGN_LEFT},
-     *        {@link #ALIGN_RIGHT} or {@link #ALIGN_CENTER} constants.
+     * @param  alignment  the new cell alignment as one of the {@link #ALIGN_LEFT},
+     *                    {@link #ALIGN_RIGHT} or {@link #ALIGN_CENTER} constants.
      */
     public void setCellAlignment(final byte alignment) {
         if (alignment < ALIGN_LEFT || alignment > ALIGN_RIGHT) {
@@ -386,12 +386,12 @@ public class TableAppender extends Appender implements Flushable {
     /**
      * Returns the number of rows in this table. This count is reset to 0 by {@link #flush()}.
      *
-     * @return The number of rows in this table.
+     * @return the number of rows in this table.
      */
     public int getRowCount() {
         int count = currentRow;
         if (currentColumn != 0) {
-            count++; // Some writting has begun in the current row.
+            count++;                            // Some writting has begun in the current row.
         }
         return count;
     }
@@ -399,15 +399,15 @@ public class TableAppender extends Appender implements Flushable {
     /**
      * Returns the number of columns in this table.
      *
-     * @return The number of columns in this table.
+     * @return the number of columns in this table.
      */
     public int getColumnCount() {
         return maximalColumnWidths.length;
     }
 
     /**
-     * Writes a single character. If {@link #isMultiLinesCells()} is {@code false}
-     * (which is the default), then:
+     * Writes a single character.
+     * If {@link #isMultiLinesCells()} is {@code false} (which is the default), then:
      *
      * <ul>
      *   <li>Tabulations ({@code '\t'}) are replaced by calls to {@link #nextColumn()}.</li>
@@ -415,7 +415,7 @@ public class TableAppender extends Appender implements Flushable {
      *       line or paragraph separators} are replaced by calls to {@link #nextLine()}.</li>
      * </ul>
      *
-     * @param  c Character to write.
+     * @param  c  character to write.
      * @return {@code this}.
      */
     @Override
@@ -448,8 +448,8 @@ public class TableAppender extends Appender implements Flushable {
     /**
      * Appends the specified character sequence.
      *
-     * @param  sequence The character sequence to append, or {@code null}.
-     * @return A reference to this {@code Appendable}.
+     * @param  sequence  the character sequence to append, or {@code null}.
+     * @return a reference to this {@code Appendable}.
      */
     @Override
     public TableAppender append(CharSequence sequence) {
@@ -463,9 +463,9 @@ public class TableAppender extends Appender implements Flushable {
      * Writes a portion of a character sequence. Tabulations and line separators are
      * interpreted as by {@link #append(char)}.
      *
-     * @param  sequence The character sequence to be written.
-     * @param  start    Index from which to start reading characters.
-     * @param  end      Index of the character following the last character to read.
+     * @param  sequence  the character sequence to be written.
+     * @param  start     index from which to start reading characters.
+     * @param  end       index of the character following the last character to read.
      * @return {@code this}.
      */
     @Override
@@ -478,8 +478,10 @@ public class TableAppender extends Appender implements Flushable {
         try {
             start = appendSurrogate(sequence, start, end);
         } catch (IOException e) {
-            // Should never happen, because appendSurrogate(…) delegates to append(char)
-            // which is overriden without 'throws IOException' clause in this class.
+            /*
+             * Should never happen, because appendSurrogate(…) delegates to append(char)
+             * which is overriden without 'throws IOException' clause in this class.
+             */
             throw new AssertionError(e);
         }
         if (start != end) {
@@ -545,7 +547,7 @@ public class TableAppender extends Appender implements Flushable {
      * <p>Calling {@code nextColumn('*')} from the first character
      * in a cell is a convenient way to put a pad value in this cell.</p>
      *
-     * @param fill Character filling the cell (default to whitespace).
+     * @param  fill  character filling the cell (default to whitespace).
      */
     public void nextColumn(final char fill) {
         final String cellText = buffer.toString();
@@ -591,8 +593,8 @@ public class TableAppender extends Appender implements Flushable {
      * <p>Calling {@code nextLine('-')} or {@code nextLine('═')} from the first column of a row
      * is a convenient way to fill this row with a line separator.</p>
      *
-     * @param fill Character filling the rest of the line (default to whitespace).
-     *             This character may be use as a row separator.
+     * @param  fill  character filling the rest of the line (default to whitespace).
+     *              This character may be use as a row separator.
      */
     public void nextLine(final char fill) {
         if (buffer.length() != 0) {
@@ -820,9 +822,9 @@ public class TableAppender extends Appender implements Flushable {
      * Repeats a character. The {@code count} value may be negative,
      * which is handled as if it was zero.
      *
-     * @param out   The stream or buffer where to repeat the character.
-     * @param car   Character to write (usually ' ').
-     * @param count Number of repetition.
+     * @param  out    the stream or buffer where to repeat the character.
+     * @param  car    character to write (usually ' ').
+     * @param  count  number of repetition.
      */
     private static void repeat(final Appendable out, final char car, int count) throws IOException {
         while (--count >= 0) {

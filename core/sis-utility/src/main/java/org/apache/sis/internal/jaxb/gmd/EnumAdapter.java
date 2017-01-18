@@ -31,8 +31,8 @@ import org.apache.sis.util.iso.Types;
  *   </srv:direction>
  * }
  *
- * @param <ValueType> The subclass implementing this adapter.
- * @param <BoundType> The enum being adapted.
+ * @param  <ValueType>  the subclass implementing this adapter.
+ * @param  <BoundType>  the enum being adapted.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -51,8 +51,8 @@ public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundT
     /**
      * Converts the given XML value to an enumeration constant name.
      *
-     * @param  value The text in the XML element.
-     * @return The presumed enumeration constant name.
+     * @param  value  the text in the XML element.
+     * @return the presumed enumeration constant name.
      */
     protected static String name(final String value) {
         /*
@@ -81,8 +81,8 @@ public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundT
     /**
      * Returns the text to write in the XML element for the given enumeration constant.
      *
-     * @param  e The enumeration constant.
-     * @return The text to write in the XML element.
+     * @param  e  the enumeration constant.
+     * @return the text to write in the XML element.
      */
     protected static String value(final ControlledVocabulary e) {
         return Types.getCodeName(e);

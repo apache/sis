@@ -97,7 +97,7 @@ final class Loader extends ResourceBundle.Control {
         try {
             classe = Class.forName(baseName, true, loader);
         } catch (ClassNotFoundException e) {
-            return null; // This is the expected behavior as of Control.newBundle contract.
+            return null;        // This is the expected behavior as of Control.newBundle contract.
         }
         /*
          * Gets the filename relative to the class we created, since we assumes that UTF files

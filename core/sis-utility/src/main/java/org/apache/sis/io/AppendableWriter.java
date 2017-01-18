@@ -39,7 +39,7 @@ final class AppendableWriter extends Writer {
     /**
      * Creates a new filtered formatter which will send its output to the given stream or buffer.
      *
-     * @param out The underlying character output stream or buffer.
+     * @param out  the underlying character output stream or buffer.
      */
     AppendableWriter(final Appendable out) {
         super(getLock(out));
@@ -173,7 +173,7 @@ final class AppendableWriter extends Writer {
      * Returns the content of the underlying {@link Appendable} as a string if possible,
      * or the localized <cite>"Unavailable content"</cite> string otherwise.
      *
-     * @return The content of the underlying {@code Appendable},
+     * @return the content of the underlying {@code Appendable},
      *         or a localized message for unavailable content.
      *
      * @see IO#content(Appendable)

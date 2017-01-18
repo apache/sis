@@ -53,7 +53,7 @@ public final class GO_Distance extends XmlAdapter<GO_Distance, Double> {
     /**
      * Constructs an adapter for the given value before marshalling.
      *
-     * @param value The value.
+     * @param  value  the value.
      *
      * @todo The unit of measurement is fixed to metres for now because we do not have this information
      *       in current metadata interface. This will need to be revisited in a future SIS version if we
@@ -67,8 +67,8 @@ public final class GO_Distance extends XmlAdapter<GO_Distance, Double> {
     /**
      * Allows JAXB to generate a Double object using the value found in the adapter.
      *
-     * @param value The value wrapped in an adapter.
-     * @return The double value extracted from the adapter.
+     * @param  value  the value wrapped in an adapter.
+     * @return the double value extracted from the adapter.
      */
     @Override
     public Double unmarshal(final GO_Distance value) {
@@ -85,8 +85,8 @@ public final class GO_Distance extends XmlAdapter<GO_Distance, Double> {
      * Allows JAXB to change the result of the marshalling process, according to the
      * ISO-19139 standard and its requirements about {@code measures}.
      *
-     * @param value The double value we want to integrate into a {@code <gco:Distance>} element.
-     * @return An adaptation of the double value, that is to say a double value surrounded
+     * @param  value  the double value we want to integrate into a {@code <gco:Distance>} element.
+     * @return an adaptation of the double value, that is to say a double value surrounded
      *         by {@code <gco:Distance>} element, with an {@code uom} attribute.
      */
     @Override

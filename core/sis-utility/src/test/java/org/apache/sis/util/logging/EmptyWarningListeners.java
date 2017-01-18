@@ -45,6 +45,7 @@ public final strictfp class EmptyWarningListeners<S> extends WarningListeners<S>
     /**
      * The logger to be returned by {@link #getLogger()}.
      */
+    @SuppressWarnings("NonConstantLogger")
     private final Logger logger;
 
     /**

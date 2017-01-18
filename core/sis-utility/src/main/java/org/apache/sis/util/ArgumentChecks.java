@@ -16,7 +16,7 @@
  */
 package org.apache.sis.util;
 
-import java.util.Map; // For javadoc
+import java.util.Map;                                               // For javadoc
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.Envelope;

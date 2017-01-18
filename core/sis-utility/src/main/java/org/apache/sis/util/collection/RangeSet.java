@@ -128,7 +128,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * comparator throws an exception. Such ambiguities should not happen in sequences
      * of ranges created by {@code RangeSet}.</p>
      *
-     * @param <E> The type of range elements.
+     * @param  <E>  the type of range elements.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3
@@ -176,11 +176,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                     cmax = included ? +1 : -1;
                 }
             }
-            if (cmin == cmax) return cmax; // Easy case: min and max are both greater, smaller or eq.
-            if (cmin == 0)    return cmax; // Easy case: only max value differ.
-            if (cmax == 0)    return cmin; // Easy case: only min value differ.
-            // One range is included in the other.
-            throw new IllegalArgumentException(Errors.format(
+            if (cmin == cmax) return cmax;                      // Easy case: min and max are both greater, smaller or eq.
+            if (cmin == 0)    return cmax;                      // Easy case: only max value differ.
+            if (cmax == 0)    return cmin;                      // Easy case: only min value differ.
+            throw new IllegalArgumentException(Errors.format(   // One range is included in the other.
                     Errors.Keys.UndefinedOrderingForElements_2, r1, r2));
         }
 
@@ -270,8 +269,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         this.isMinIncluded = isMinIncluded;
         this.isMaxIncluded = isMaxIncluded;
         if (!isMinIncluded && !isMaxIncluded) {
-            // We do not localize this error message because it may disaspear
-            // in a future SIS version if we decide to support closed intervals.
+            /*
+             * We do not localize this error message because it may disaspear
+             * in a future SIS version if we decide to support closed intervals.
+             */
             throw new IllegalArgumentException("Open intervals are not yet supported.");
         }
     }
@@ -283,7 +284,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @param  elementType    the type of the range elements.
      * @param  isMinIncluded  {@code true} if the minimal values are inclusive, or {@code false} if exclusive.
      * @param  isMaxIncluded  {@code true} if the maximal values are inclusive, or {@code false} if exclusive.
-     * @return A new range set for range elements of the given type.
+     * @return a new range set for range elements of the given type.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     public static <E extends Comparable<? super E>> RangeSet<E> create(final Class<E> elementType,
@@ -339,6 +340,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     /**
      * Unconditionally copies the internal array in a new array having just the required length.
      */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     private void reallocate() {
         if (length == 0) {
             array = null;
@@ -370,6 +372,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @param  minValue  the first value to insert.
      * @param  maxValue  the second value to insert.
      */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     private void insertAt(final int lower, final E minValue, final E maxValue) {
         final Object oldArray = array;
         final int capacity = Array.getLength(oldArray);
@@ -391,6 +394,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @param  lower  first value to remove, inclusive.
      * @param  upper  last value to remove, exclusive.
      */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     private void removeAt(final int lower, final int upper) {
         final int oldLength = length;
         System.arraycopy(array, upper, array, lower, oldLength - upper);
@@ -826,13 +830,17 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             if (lower < 0) {
                 lower = ~lower;
                 if ((lower & 1) == 0) {
-                    // The lower endpoint of the given range falls between
-                    // two ranges of this set.
+                    /*
+                     * The lower endpoint of the given range falls between
+                     * two ranges of this set.
+                     */
                     return false;
                 }
             } else if ((lower & 1) == 0) {
-                // Lower endpoint of the given range matches exactly
-                // the lower endpoint of a range in this set.
+                /*
+                 * Lower endpoint of the given range matches exactly
+                 * the lower endpoint of a range in this set.
+                 */
                 if (!isMinIncluded && range.isMinIncluded()) {
                     return false;
                 }
@@ -845,13 +853,17 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             if (upper < 0) {
                 upper = ~upper;
                 if ((upper & 1) == 0) {
-                    // The upper endpoint of the given range falls between
-                    // two ranges of this set, or is after all ranges.
+                    /*
+                     * The upper endpoint of the given range falls between
+                     * two ranges of this set, or is after all ranges.
+                     */
                     return false;
                 }
             } else if ((upper & 1) != 0) {
-                // Upper endpoint of the given range matches exactly
-                // the upper endpoint of a range in this set.
+                /*
+                 * Upper endpoint of the given range matches exactly
+                 * the upper endpoint of a range in this set.
+                 */
                 if (!isMaxIncluded && range.isMaxIncluded()) {
                     return false;
                 }
@@ -1112,7 +1124,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         @Override
         public boolean remove(Object object) {
             if (object instanceof Range<?>) {
-                @SuppressWarnings("unchecked") // Type will actally be checked on the line after.
+                @SuppressWarnings("unchecked")              // Type will actally be checked on the line after.
                 final Range<E> range = (Range<E>) object;
                 if (range.getElementType() == elementType) {
                     object = subRange.intersect(range);
@@ -1129,7 +1141,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         @Override
         public boolean contains(final Object object) {
             if (object instanceof Range<?>) {
-                @SuppressWarnings("unchecked") // Type will actally be checked on the line after.
+                @SuppressWarnings("unchecked")              // Type will actally be checked on the line after.
                 final Range<E> range = (Range<E>) object;
                 if (range.getElementType() == elementType) {
                     if (!subRange.contains(range)) {
@@ -1351,8 +1363,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             }
             final Range<E> range = getRange(position);
             if (RangeSet.this.modCount != this.modCount) {
-                // Check it last, in case a change occurred
-                // while we were creating the range.
+                /*
+                 * This check has been performed last in case a change occurred
+                 * while we were creating the range.
+                 */
                 throw new ConcurrentModificationException();
             }
             position += 2;
@@ -1391,8 +1405,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     public int indexOfRange(final E value) {
         int index = binarySearch(value, 0, length);
         if (index < 0) {
-            // Found an insertion point. Make sure that the insertion
-            // point is inside a range (i.e. before the maximum value).
+            /*
+             * Found an insertion point. Make sure that the insertion
+             * point is inside a range (i.e. before the maximum value).
+             */
             index = ~index; // Tild sign, not minus.
             if ((index & 1) == 0) {
                 return -1;
@@ -1401,7 +1417,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             // The value is equals to an excluded endpoint.
             return -1;
         }
-        index /= 2; // Round toward 0 (odd index are maximum values).
+        index /= 2;             // Round toward 0 (odd index are maximum values).
         return index;
     }
 

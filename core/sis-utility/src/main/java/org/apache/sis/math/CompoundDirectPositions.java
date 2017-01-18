@@ -71,7 +71,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     /**
      * Starts a new iteration.
      *
-     * @return Always {@code this}.
+     * @return always {@code this}.
      */
     @Override
     public Iterator<DirectPosition> iterator() {
@@ -90,7 +90,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     /**
      * Sets this object to the next position and return it.
      *
-     * @return Always {@code this}.
+     * @return always {@code this}.
      */
     @Override
     public DirectPosition next() {
@@ -101,7 +101,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     /**
      * Returns {@code this} since this object is already a direct position.
      *
-     * @return Always {@code this}.
+     * @return always {@code this}.
      */
     @Override
     public DirectPosition getDirectPosition() {
@@ -111,7 +111,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     /**
      * Returns {@code null} since there is no CRS associated to this object.
      *
-     * @return Always {@code null}.
+     * @return always {@code null}.
      */
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {

@@ -153,7 +153,7 @@ public class LineAppender extends Appender implements Flushable {
      *   <li>{@link #setLineSeparator(String)}</li>
      * </ul>
      *
-     * @param out The underlying stream or buffer to write to.
+     * @param out  the underlying stream or buffer to write to.
      */
     public LineAppender(final Appendable out) {
         super(out);
@@ -163,8 +163,8 @@ public class LineAppender extends Appender implements Flushable {
     /**
      * Constructs a formatter which will replaces line separators by the given string.
      *
-     * @param out                   The underlying stream or buffer to write to.
-     * @param lineSeparator         The line separator to send to {@code out}, or {@code null}
+     * @param out                   the underlying stream or buffer to write to.
+     * @param lineSeparator         the line separator to send to {@code out}, or {@code null}
      *                              for forwarding the EOL sequences unchanged.
      * @param isTabulationExpanded  {@code true} for expanding tabulations into spaces,
      *                              or {@code false} for sending {@code '\t'} characters as-is.
@@ -180,8 +180,8 @@ public class LineAppender extends Appender implements Flushable {
     /**
      * Constructs a formatter which will wrap the lines at a given maximal length.
      *
-     * @param out                   The underlying stream or buffer to write to.
-     * @param maximalLineLength     The maximal number of Unicode characters per line,
+     * @param out                   the underlying stream or buffer to write to.
+     * @param maximalLineLength     the maximal number of Unicode characters per line,
      *                              or {@link Integer#MAX_VALUE} if there is no limit.
      * @param isTabulationExpanded  {@code true} for expanding tabulations into spaces,
      *                              or {@code false} for forwarding {@code '\t'} characters as-is.
@@ -197,7 +197,7 @@ public class LineAppender extends Appender implements Flushable {
      * Returns the maximal line length, in unit of Unicode characters (code point count).
      * The default value is no limit.
      *
-     * @return The current maximal number of Unicode characters per line,
+     * @return the current maximal number of Unicode characters per line,
      *         or {@link Integer#MAX_VALUE} if there is no limit.
      */
     public int getMaximalLineLength() {
@@ -207,8 +207,8 @@ public class LineAppender extends Appender implements Flushable {
     /**
      * Sets the maximal line length, in units of Unicode characters (code point count).
      *
-     * @param length The new maximal number of Unicode characters per line,
-     *               or {@link Integer#MAX_VALUE} if there is no limit.
+     * @param  length  the new maximal number of Unicode characters per line,
+     *                 or {@link Integer#MAX_VALUE} if there is no limit.
      */
     public void setMaximalLineLength(final int length) {
         ArgumentChecks.ensureStrictlyPositive("length", length);
@@ -219,7 +219,7 @@ public class LineAppender extends Appender implements Flushable {
      * Returns the current tabulation width, in unit of Unicode characters (code point count).
      * The default value is 8.
      *
-     * @return The current tabulation width in number of Unicode characters.
+     * @return the current tabulation width in number of Unicode characters.
      */
     public int getTabulationWidth() {
         return tabulationWidth;
@@ -228,7 +228,7 @@ public class LineAppender extends Appender implements Flushable {
     /**
      * Sets the tabulation width, in unit of Unicode characters (code point count).
      *
-     * @param  width The new tabulation width. Must be greater than 0.
+     * @param  width  the new tabulation width. Must be greater than 0.
      * @throws IllegalArgumentException if {@code tabWidth} is not greater than 0
      *         or is unreasonably high.
      */
@@ -264,7 +264,7 @@ public class LineAppender extends Appender implements Flushable {
      * Returns the line separator to be sent to the underlying appendable,
      * or {@code null} if EOL sequences are forwarded unchanged.
      *
-     * @return The current line separator, or {@code null} if EOL are forwarded <i>as-is</i>.
+     * @return the current line separator, or {@code null} if EOL are forwarded <i>as-is</i>.
      */
     public String getLineSeparator() {
         return isEndOfLineReplaced ? lineSeparator : null;
@@ -277,7 +277,7 @@ public class LineAppender extends Appender implements Flushable {
      * If {@code null} (the default), then the line separators given to the {@code append}
      * methods are forwarded unchanged.
      *
-     * @param  lineSeparator The new line separator, or {@code null} for forwarding EOL <i>as-is</i>.
+     * @param  lineSeparator  the new line separator, or {@code null} for forwarding EOL <i>as-is</i>.
      *
      * @see System#lineSeparator()
      * @see Characters#isLineOrParagraphSeparator(int)
@@ -309,12 +309,12 @@ public class LineAppender extends Appender implements Flushable {
      * responsibility.
      */
     private void endOfLine() throws IOException {
-        buffer.setLength(printableLength); // Reduce the amount of work for StringBuilder.deleteCharAt(int).
+        buffer.setLength(printableLength);      // Reduce the amount of work for StringBuilder.deleteCharAt(int).
         deleteSoftHyphen(printableLength - 1);
         transfer(printableLength);
         printableLength  = 0;
         codePointCount   = 0;
-        isEscapeSequence = false; // Handle line-breaks as "end of escape sequence".
+        isEscapeSequence = false;               // Handle line-breaks as "end of escape sequence".
         isNewLine        = true;
     }
 
@@ -322,7 +322,7 @@ public class LineAppender extends Appender implements Flushable {
      * Removes the soft hyphen characters from the given buffer. This is invoked
      * when the buffer is about to be written without being split on two lines.
      *
-     * @param i Index after the last character to check. This is either {@link printableLength}
+     * @param i index after the last character to check. This is either {@link printableLength}
      *          for checking all characters, or {@code printableLength-1} for preserving the last
      *          soft hyphen on the line (while removing all others).
      */
@@ -352,7 +352,7 @@ public class LineAppender extends Appender implements Flushable {
     /**
      * Writes the specified code point.
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws IOException if an I/O error occurs.
      */
     @SuppressWarnings("fallthrough")
     private void write(final int c) throws IOException {
@@ -448,7 +448,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
                 switch (b) {
                     case '-': {
                         if (i>=n && !Character.isLetter(buffer.codePointBefore(i-n))) {
-                            break; // Continue searching previous characters.
+                            break;                      // Continue searching previous characters.
                         }
                         // fall through
                     }
@@ -483,9 +483,9 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
     /**
      * Writes a single character.
      *
-     * @param  c The character to append.
-     * @return A reference to this {@code Appendable}.
-     * @throws IOException If an I/O error occurs.
+     * @param  c  the character to append.
+     * @return a reference to this {@code Appendable}.
+     * @throws IOException if an I/O error occurs.
      */
     @Override
     public Appendable append(final char c) throws IOException {
@@ -499,11 +499,11 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
     /**
      * Writes a portion of a character sequence.
      *
-     * @param  sequence The character sequence to be written.
-     * @param  start    Index from which to start reading characters.
-     * @param  end      Index of the character following the last character to read.
-     * @return A reference to this {@code Appendable}.
-     * @throws IOException If an I/O error occurs.
+     * @param  sequence  the character sequence to be written.
+     * @param  start     index from which to start reading characters.
+     * @param  end       index of the character following the last character to read.
+     * @return a reference to this {@code Appendable}.
+     * @throws IOException if an I/O error occurs.
      */
     @Override
     public Appendable append(final CharSequence sequence, int start, final int end) throws IOException {
@@ -533,7 +533,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
      * are discarded, and the column position (for tabulation expansion calculation) is
      * reset to 0. This method does not write any line separator.
      *
-     * @throws IOException If an error occurred while sending the trailing non-white
+     * @throws IOException if an error occurred while sending the trailing non-white
      *         characters to the underlying stream.
      */
     public void clear() throws IOException {
@@ -552,7 +552,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
      * {@linkplain Characters#isLineOrParagraphSeparator(int) line or paragraph terminator},
      * or to invoke {@link #clear()}.</p>
      *
-     * @throws IOException If an I/O error occurs.
+     * @throws IOException if an I/O error occurs.
      */
     @Override
     public void flush() throws IOException {

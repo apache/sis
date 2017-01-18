@@ -41,7 +41,7 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * <p>This class is not thread-safe. Synchronization, if desired, shall be done by the caller.</p>
  *
- * @param <E> the type of elements in the set.
+ * @param  <E>  the type of elements in the set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
@@ -197,7 +197,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * Caches a new element. Subclasses can override this method is they want to substitute the given value
      * by another value.
      *
-     * @param  element  The element to add to the cache.
+     * @param  element  the element to add to the cache.
      */
     protected void cache(final E element) {
         if (numCached >= cachedElements.length) {

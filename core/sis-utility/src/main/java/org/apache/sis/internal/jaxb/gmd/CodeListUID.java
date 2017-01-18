@@ -60,13 +60,13 @@ public final class CodeListUID {
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"}</li>
      * </ul>
      *
-     * @param  context    The current (un)marshalling context, or {@code null} if none.
-     * @param  identifier The UML identifier of the code list.
-     * @return The URL to the given code list in the given schema.
+     * @param  context     the current (un)marshalling context, or {@code null} if none.
+     * @param  identifier  the UML identifier of the code list.
+     * @return the URL to the given code list in the given schema.
      */
     private static String schema(final Context context, final String identifier) {
         return Context.schema(context, "gmd", Schemas.METADATA_ROOT)
-                .append(Schemas.CODELISTS_PATH) // Future SIS version may switch between localized/unlocalized file.
+                .append(Schemas.CODELISTS_PATH)     // Future SIS version may switch between localized/unlocalized file.
                 .append('#').append(identifier).toString();
     }
 
@@ -110,11 +110,11 @@ public final class CodeListUID {
     /**
      * Builds a code list with the given attributes.
      *
-     * @param context       The current (un)marshalling context, or {@code null} if none.
-     * @param codeList      The {@code codeList} attribute, to be concatenated after the {@code "#"} symbol.
-     * @param codeListValue The {@code codeListValue} attribute, to be declared in the XML element.
-     * @param codeSpace     The 3-letters language code of the {@code value} attribute, or {@code null} if none.
-     * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
+     * @param context        the current (un)marshalling context, or {@code null} if none.
+     * @param codeList       the {@code codeList} attribute, to be concatenated after the {@code "#"} symbol.
+     * @param codeListValue  the {@code codeListValue} attribute, to be declared in the XML element.
+     * @param codeSpace      the 3-letters language code of the {@code value} attribute, or {@code null} if none.
+     * @param value          the value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
     public CodeListUID(final Context context, final String codeList, final String codeListValue,
             final String codeSpace, final String value)
@@ -129,8 +129,8 @@ public final class CodeListUID {
      * Builds a value for {@link CodeListAdapter} elements.
      * This constructors stores the values that will be used for marshalling.
      *
-     * @param context The current (un)marshalling context, or {@code null} if none.
-     * @param code    The code list to wrap.
+     * @param context  the current (un)marshalling context, or {@code null} if none.
+     * @param code     the code list to wrap.
      */
     public CodeListUID(final Context context, final ControlledVocabulary code) {
         final String classID = Types.getListName(code);
@@ -156,9 +156,11 @@ public final class CodeListUID {
         if (value != null) {
             codeSpace = Context.converter(context).toLanguageCode(context, locale);
         } else {
-            // Fallback when no value is defined for the code list. Build a value from the
-            // most descriptive name (excluding the field name), which is usually the UML
-            // name except for CharacterSet in which case it is a string like "UTF-8".
+            /*
+             * Fallback when no value is defined for the code list. Build a value from the
+             * most descriptive name (excluding the field name), which is usually the UML
+             * name except for CharacterSet in which case it is a string like "UTF-8".
+             */
             value = Types.getCodeLabel(code);
         }
         codeListValue = fieldID;
@@ -170,7 +172,7 @@ public final class CodeListUID {
      * code list is actually used as an enumeration, then the above attribute
      * is null and we have to use directly the {@linkplain #value} instead.
      *
-     * @return The identifier to be given to the {@code CodeList.valueOf(…)} method.
+     * @return the identifier to be given to the {@code CodeList.valueOf(…)} method.
      */
     @Override
     public String toString() {

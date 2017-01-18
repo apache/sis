@@ -71,10 +71,10 @@ public final class LanguageCode extends GO_CharacterString {
      * Builds a {@code <LanguageCode>} element.
      * For private use by {@link #create(Context, Locale)} only.
      *
-     * @param context       The current (un)marshalling context, or {@code null} if none.
-     * @param codeListValue The {@code codeListValue} attribute in the XML element.
-     * @param codeSpace     The 3-letters language code of the {@code value} attribute, or {@code null} if none.
-     * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
+     * @param  context        the current (un)marshalling context, or {@code null} if none.
+     * @param  codeListValue  the {@code codeListValue} attribute in the XML element.
+     * @param  codeSpace      the 3-letters language code of the {@code value} attribute, or {@code null} if none.
+     * @param  value          the value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
     private LanguageCode(final Context context, final String codeListValue, final String codeSpace, final String value) {
         identifier = new CodeListUID(context, "LanguageCode", codeListValue, codeSpace, value);
@@ -83,9 +83,9 @@ public final class LanguageCode extends GO_CharacterString {
     /**
      * Creates a new wrapper for the given locale.
      *
-     * @param context The current (un)marshalling context, or {@code null} if none.
-     * @param locale  The value to marshal, or {@code null}.
-     * @return The language to marshal, or {@code null} if the given locale was null
+     * @param  context  the current (un)marshalling context, or {@code null} if none.
+     * @param  locale   the value to marshal, or {@code null}.
+     * @return the language to marshal, or {@code null} if the given locale was null
      *         or if its {@link Locale#getLanguage()} attribute is the empty string.
      */
     public static LanguageCode create(final Context context, final Locale locale) {
@@ -132,7 +132,7 @@ public final class LanguageCode extends GO_CharacterString {
      * Returns the language, or {@code null} if none. The language is expected to
      * be a 2- or 3-letters ISO 639 code, but this is not verified by this method.
      *
-     * @return The language code
+     * @return the language code
      */
     public String getLanguage() {
         String code;

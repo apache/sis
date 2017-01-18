@@ -28,7 +28,7 @@ import java.util.Iterator;
  * different threads can safely use their iterators concurrently even if the underlying {@code Iterable}s
  * were not thread-safe, because of the synchronization on {@code Iterable<E>} instances.</p>
  *
- * @param <E> The type of elements to be returned by the iterator.
+ * @param  <E>  the type of elements to be returned by the iterator.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7

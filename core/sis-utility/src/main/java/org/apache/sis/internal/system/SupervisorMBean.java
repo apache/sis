@@ -39,10 +39,10 @@ public interface SupervisorMBean {
      * Apache SIS version, Java version and operation system version; a "Classpath"
      * section containing bootstrap, extension and user classpath, <i>etc</i>.
      *
-     * @param  sections The section for which information are desired.
-     * @param  locale   The locale to use for formatting the texts in the tree, or {@code null} for the default.
-     * @param  timezone The timezone to use for formatting the dates, or {@code null} for the default.
-     * @return Configuration information, as a tree for grouping some configuration by sections.
+     * @param  sections  the section for which information are desired.
+     * @param  locale    the locale to use for formatting the texts in the tree, or {@code null} for the default.
+     * @param  timezone  the timezone to use for formatting the dates, or {@code null} for the default.
+     * @return configuration information, as a tree for grouping some configuration by sections.
      */
     TreeTable configuration(EnumSet<About> sections, Locale locale, TimeZone timezone);
 
@@ -50,8 +50,8 @@ public interface SupervisorMBean {
      * If there is something wrong with the current Apache SIS status,
      * returns descriptions of the problems. Otherwise returns {@code null}.
      *
-     * @param  locale The locale to use for reporting messages, or {@code null} for the default.
-     * @return A description of a problems in the library, or {@code null} if none.
+     * @param  locale  the locale to use for reporting messages, or {@code null} for the default.
+     * @return a description of a problems in the library, or {@code null} if none.
      */
     String[] warnings(Locale locale);
 }

@@ -17,11 +17,9 @@
 package org.apache.sis.util;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Comparator;
 import java.lang.reflect.Array;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**

@@ -18,13 +18,11 @@ package org.apache.sis.internal.jaxb.gmx;
 
 import java.net.URI;
 import java.util.Locale;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.XLink;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -66,8 +64,8 @@ public final class Anchor extends XLink implements InternationalString {
     /**
      * Creates an {@code Anchor} initialized to the given {@code xlink} value.
      *
-     * @param xlink The {@code xlink} from which to copy the attributes.
-     * @param value Often a short textual description of the URI target.
+     * @param xlink  the {@code xlink} from which to copy the attributes.
+     * @param value  often a short textual description of the URI target.
      */
     public Anchor(final XLink xlink, final String value) {
         super(xlink);
@@ -77,8 +75,8 @@ public final class Anchor extends XLink implements InternationalString {
     /**
      * Creates an {@code Anchor} initialized to the given {@code href} value.
      *
-     * @param href  A URI to an external resources or an identifier.
-     * @param value Often a short textual description of the URI target.
+     * @param href   a URI to an external resources or an identifier.
+     * @param value  often a short textual description of the URI target.
      */
     public Anchor(final URI href, final String value) {
         setHRef(href);
@@ -97,8 +95,8 @@ public final class Anchor extends XLink implements InternationalString {
     /**
      * Returns the text as a string, or {@code null} if none.
      *
-     * @param  locale Ignored in current implementation.
-     * @return The anchor text, or {@code null} if none.
+     * @param  locale  ignored in current implementation.
+     * @return the anchor text, or {@code null} if none.
      */
     @Override
     public String toString(final Locale locale) {
@@ -134,7 +132,7 @@ public final class Anchor extends XLink implements InternationalString {
             original = "";
         }
         final String substring = original.substring(start, end);
-        if (substring == original) { // Identity comparison is ok here.
+        if (substring == original) {                                // Identity comparison is ok here.
             return this;
         }
         return new Anchor(this, substring);
@@ -144,7 +142,7 @@ public final class Anchor extends XLink implements InternationalString {
      * Compares the value of this object with the given international string for order.
      * Null values are sorted last.
      *
-     * @param other The string to compare with this anchor type.
+     * @param  other  the string to compare with this anchor type.
      */
     @Override
     public int compareTo(final InternationalString other) {
@@ -158,7 +156,7 @@ public final class Anchor extends XLink implements InternationalString {
     /**
      * Compares this {@code Anchor} with the given object for equality.
      *
-     * @param object The object to compare with this anchor type.
+     * @param  object  the object to compare with this anchor type.
      */
     @Override
     public boolean equals(final Object object) {
