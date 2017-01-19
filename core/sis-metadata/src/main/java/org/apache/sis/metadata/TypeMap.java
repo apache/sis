@@ -40,9 +40,9 @@ final class TypeMap extends PropertyMap<Class<?>> {
     /**
      * Creates a type map for the specified accessor.
      *
-     * @param accessor    The accessor to use for the metadata.
-     * @param keyPolicy   Determines the string representation of keys in the map..
-     * @param valuePolicy The kind of values in this map.
+     * @param accessor     the accessor to use for the metadata.
+     * @param keyPolicy    determines the string representation of keys in the map..
+     * @param valuePolicy  the kind of values in this map.
      */
     TypeMap(final PropertyAccessor accessor, final KeyNamePolicy keyPolicy, final TypeValuePolicy valuePolicy) {
         super(accessor, keyPolicy);

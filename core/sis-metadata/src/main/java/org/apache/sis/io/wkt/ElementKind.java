@@ -148,8 +148,8 @@ public enum ElementKind {
      * The given type can be any sub-type of the above types. If an object implements more
      * than one of the above interfaces, then the selected {@code ElementKind} is arbitrary.
      *
-     * @param  type The object type, or {@code null}.
-     * @return The element kind of the given type, or {@code null} if none match.
+     * @param  type  the object type, or {@code null}.
+     * @return the element kind of the given type, or {@code null} if none match.
      */
     public static ElementKind forType(final Class<?> type) {
         if (type != null) {

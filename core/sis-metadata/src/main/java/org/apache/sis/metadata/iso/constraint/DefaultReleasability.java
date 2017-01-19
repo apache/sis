@@ -44,6 +44,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Releasability_Type", propOrder = {
     "addressees",
     "statement",
@@ -82,7 +83,7 @@ public class DefaultReleasability extends ISOMetadata implements Releasability {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Releasability)
      */
@@ -109,8 +110,8 @@ public class DefaultReleasability extends ISOMetadata implements Releasability {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultReleasability castOrCopy(final Releasability object) {
@@ -123,7 +124,7 @@ public class DefaultReleasability extends ISOMetadata implements Releasability {
     /**
      * Returns the parties to which the release statement applies.
      *
-     * @return Parties to which the release statement applies.
+     * @return parties to which the release statement applies.
      */
     @Override
     @XmlElement(name = "addressee")
@@ -134,7 +135,7 @@ public class DefaultReleasability extends ISOMetadata implements Releasability {
     /**
      * Sets the parties to which the release statement applies.
      *
-     * @param newValues The new parties.
+     * @param  newValues  the new parties.
      */
     public void getAddressees(final Collection<? extends Responsibility> newValues) {
         addressees = writeCollection(newValues, addressees, Responsibility.class);
@@ -143,7 +144,7 @@ public class DefaultReleasability extends ISOMetadata implements Releasability {
     /**
      * Returns the release statement.
      *
-     * @return Release statement, or {@code null} if none.
+     * @return release statement, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "statement")
@@ -154,7 +155,7 @@ public class DefaultReleasability extends ISOMetadata implements Releasability {
     /**
      * Sets the release statement.
      *
-     * @param newValue The new release statement.
+     * @param  newValue  the new release statement.
      */
     public void setStatement(final InternationalString newValue) {
         checkWritePermission();
@@ -164,7 +165,7 @@ public class DefaultReleasability extends ISOMetadata implements Releasability {
     /**
      * Components in determining releasability.
      *
-     * @return Components in determining releasability.
+     * @return components in determining releasability.
      */
     @Override
     @XmlElement(name = "disseminationConstraints")
@@ -175,7 +176,7 @@ public class DefaultReleasability extends ISOMetadata implements Releasability {
     /**
      * Sets the components in determining releasability.
      *
-     * @param newValues The new components.
+     * @param  newValues  the new components.
      */
     public void getDisseminationConstraints(final Collection<? extends Restriction> newValues) {
         disseminationConstraints = writeCollection(newValues, disseminationConstraints, Restriction.class);

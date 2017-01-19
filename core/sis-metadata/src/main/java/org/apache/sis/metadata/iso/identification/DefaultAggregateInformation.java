@@ -56,6 +56,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
  * @deprecated As of ISO 19115:2014, replaced by {@link DefaultAssociatedResource}.
  */
 @Deprecated
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_AggregateInformation_Type", propOrder = {
     "aggregateDataSetName",
     "aggregateDataSetIdentifier",
@@ -80,7 +81,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(AssociatedResource)
      */
@@ -102,8 +103,8 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultAggregateInformation castOrCopy(final AssociatedResource object) {
@@ -116,7 +117,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     /**
      * Citation information about the aggregate dataset.
      *
-     * @return Citation information about the aggregate dataset, or {@code null}.
+     * @return citation information about the aggregate dataset, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getName()}.
      */
@@ -130,7 +131,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     /**
      * Sets the citation information about the aggregate dataset.
      *
-     * @param newValue The new citation.
+     * @param  newValue  the new citation.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setName(Citation)}.
      */
@@ -142,7 +143,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     /**
      * Identification information about aggregate dataset.
      *
-     * @return Identification information about aggregate dataset, or {@code null}.
+     * @return identification information about aggregate dataset, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by the first identifier of {@link #getAggregateDataSetName()}.
      */
@@ -172,7 +173,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     /**
      * Sets the identification information about aggregate dataset.
      *
-     * @param newValue The new identifier.
+     * @param  newValue  the new identifier.
      *
      * @deprecated As of ISO 19115:2014, replaced by an identifier of {@link #getAggregateDataSetName()}.
      */
@@ -208,7 +209,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     /**
      * Association type of the aggregate dataset.
      *
-     * @return Association type of the aggregate dataset.
+     * @return association type of the aggregate dataset.
      */
     @Override
     @XmlElement(name = "associationType", required = true)
@@ -219,7 +220,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     /**
      * Sets the association type of the aggregate dataset.
      *
-     * @param newValue The new association type.
+     * @param  newValue  the new association type.
      */
     @Override
     public void setAssociationType(final AssociationType newValue) {
@@ -229,7 +230,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     /**
      * Type of initiative under which the aggregate dataset was produced.
      *
-     * @return Type of initiative under which the aggregate dataset was produced, or {@code null}.
+     * @return type of initiative under which the aggregate dataset was produced, or {@code null}.
      */
     @Override
     @XmlElement(name = "initiativeType")
@@ -240,7 +241,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
     /**
      * Sets the type of initiative under which the aggregate dataset was produced.
      *
-     * @param newValue The new initiative.
+     * @param  newValue  the new initiative.
      */
     @Override
     public void setInitiativeType(final InitiativeType newValue) {

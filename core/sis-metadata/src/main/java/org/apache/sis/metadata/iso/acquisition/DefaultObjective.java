@@ -51,6 +51,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @version 0.7
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_Objective_Type", propOrder = {
     "identifiers",
     "priority",
@@ -115,7 +116,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Objective)
      */
@@ -147,8 +148,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultObjective castOrCopy(final Objective object) {
@@ -170,7 +171,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * The {@code <gmd:identifier>} element marshalled to XML will exclude all the above cited identifiers,
      * for ISO 19139 compliance. Those identifiers will appear in other XML elements or attributes.</div>
      *
-     * @return Identify the objective.
+     * @return identification of the objective.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -184,7 +185,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * <p>XML identifiers ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
      * are not affected by this method, unless they are explicitely provided in the given collection.</p>
      *
-     * @param newValues The new identifiers values.
+     * @param  newValues  the new identifiers values.
      */
     public void setIdentifiers(Collection<? extends Identifier> newValues) {
         newValues = NonMarshalledAuthority.setMarshallables(identifiers, newValues);
@@ -194,7 +195,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Returns the priority applied to the target. {@code null} if unspecified.
      *
-     * @return Priority applied, or {@code null}.
+     * @return priority applied, or {@code null}.
      */
     @Override
     @XmlElement(name = "priority")
@@ -205,7 +206,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Sets the priority applied to the target.
      *
-     * @param newValue The new priority value.
+     * @param  newValue  the new priority value.
      */
     public void setPriority(final InternationalString newValue) {
         checkWritePermission();
@@ -215,7 +216,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Returns the collection technique for the objective.
      *
-     * @return Collection technique for the objective.
+     * @return collection technique for the objective.
      */
     @Override
     @XmlElement(name = "type")
@@ -226,7 +227,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Sets the collection technique for the objective.
      *
-     * @param newValues The new types values.
+     * @param  newValues  the new types values.
      */
     public void setTypes(final Collection<? extends ObjectiveType> newValues) {
         types = writeCollection(newValues, types, ObjectiveType.class);
@@ -235,7 +236,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Returns the role or purpose performed by or activity performed at the objective.
      *
-     * @return Role or purpose performed by or activity performed at the objective.
+     * @return role or purpose performed by or activity performed at the objective.
      */
     @Override
     @XmlElement(name = "function")
@@ -246,7 +247,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Sets the role or purpose performed by or activity performed at the objective.
      *
-     * @param newValues The new functions values.
+     * @param  newValues  the new functions values.
      */
     public void setFunctions(final Collection<? extends InternationalString> newValues) {
         functions = writeCollection(newValues, functions, InternationalString.class);
@@ -256,7 +257,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * Returns the extent information including the bounding box, bounding polygon, vertical and
      * temporal extent of the objective.
      *
-     * @return Extent information.
+     * @return extent information.
      */
     @Override
     @XmlElement(name = "extent")
@@ -268,7 +269,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * Sets the extent information including the bounding box, bounding polygon, vertical and
      * temporal extent of the objective.
      *
-     * @param newValues The new extents values.
+     * @param  newValues  the new extents values.
      */
     public void setExtents(final Collection<? extends Extent> newValues) {
         extents = writeCollection(newValues, extents, Extent.class);
@@ -277,7 +278,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Returns the event or events associated with objective completion.
      *
-     * @return Events associated with objective completion.
+     * @return events associated with objective completion.
      */
     @Override
     @XmlElement(name = "objectiveOccurence", required = true)
@@ -288,7 +289,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Sets the event or events associated with objective completion.
      *
-     * @param newValues The new objective occurrences values.
+     * @param  newValues  the new objective occurrences values.
      */
     public void setObjectiveOccurences(final Collection<? extends Event> newValues) {
         objectiveOccurences = writeCollection(newValues, objectiveOccurences, Event.class);
@@ -297,7 +298,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Returns the pass of the platform over the objective.
      *
-     * @return Pass of the platform.
+     * @return pass of the platform.
      */
     @Override
     @XmlElement(name = "pass")
@@ -308,7 +309,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Sets the pass of the platform over the objective.
      *
-     * @param newValues The new pass values.
+     * @param  newValues  the new pass values.
      */
     public void setPass(final Collection<? extends PlatformPass> newValues) {
         pass = writeCollection(newValues, pass, PlatformPass.class);
@@ -317,7 +318,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Returns the instrument which senses the objective data.
      *
-     * @return Instrument which senses the objective data.
+     * @return instrument which senses the objective data.
      */
     @Override
     @XmlElement(name = "sensingInstrument")
@@ -328,7 +329,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Sets the instrument which senses the objective data.
      *
-     * @param newValues The new sensing instruments values.
+     * @param  newValues  the new sensing instruments values.
      */
     public void setSensingInstruments(final Collection<? extends Instrument> newValues) {
         sensingInstruments = writeCollection(newValues, sensingInstruments, Instrument.class);

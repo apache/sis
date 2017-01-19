@@ -106,8 +106,8 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Creates a new representative fraction from the specified denominator.
      *
-     * @param  denominator The denominator as a positive number, or 0 if unspecified.
-     * @throws IllegalArgumentException If the given value is negative.
+     * @param  denominator  the denominator as a positive number, or 0 if unspecified.
+     * @throws IllegalArgumentException if the given value is negative.
      */
     public DefaultRepresentativeFraction(final long denominator) {
         ArgumentChecks.ensurePositive("denominator", denominator);
@@ -124,7 +124,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public DefaultRepresentativeFraction(final RepresentativeFraction object) {
         if (object != null) {
@@ -140,8 +140,8 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * property values of the given object, using a <cite>shallow</cite> copy operation
      * (i.e. properties are not cloned).
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultRepresentativeFraction castOrCopy(final RepresentativeFraction object) {
@@ -152,7 +152,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Returns the denominator of this representative fraction.
      *
-     * @return The denominator.
+     * @return the denominator.
      */
     @Override
     @ValueRange(minimum = 0)
@@ -165,7 +165,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Sets the denominator value.
      *
-     * @param  denominator The new denominator value, or 0 if none.
+     * @param  denominator  the new denominator value, or 0 if none.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setDenominator(final long denominator) {
@@ -183,7 +183,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      *
      * <p>The equivalent of a {@code getScale()} method is {@link #doubleValue()}.</p>
      *
-     * @param  scale The scale as a number between 0 exclusive and 1 inclusive, or NaN.
+     * @param  scale  the scale as a number between 0 exclusive and 1 inclusive, or NaN.
      * @throws IllegalArgumentException if the given scale is our of range.
      */
     public void setScale(final double scale) {
@@ -207,7 +207,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Returns the scale value of this representative fraction.
      * This method is the converse of {@link #setScale(double)}.
      *
-     * @return The scale value of this representative fraction, or NaN if none.
+     * @return the scale value of this representative fraction, or NaN if none.
      */
     @Override
     public double doubleValue() {
@@ -217,7 +217,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Returns the scale as a {@code float} type.
      *
-     * @return The scale.
+     * @return the scale.
      */
     @Override
     public float floatValue() {
@@ -287,7 +287,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Returns a modifiable copy of this representative fraction.
      *
-     * @return A modifiable copy of this representative fraction.
+     * @return a modifiable copy of this representative fraction.
      */
     @Override
     public DefaultRepresentativeFraction clone() {
@@ -295,7 +295,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
         try {
             c = (DefaultRepresentativeFraction) super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e);    // Should never happen since we are cloneable.
+            throw new AssertionError(e);                        // Should never happen since we are cloneable.
         }
         c.isUnmodifiable = false;
         return c;
@@ -304,7 +304,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Compares this object with the specified value for equality.
      *
-     * @param object The object to compare with.
+     * @param  object  the object to compare with.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -334,7 +334,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Returns a string representation of this scale, or {@code NaN} if undefined.
      * If defined, the string representation uses the colon as in "1:20000".
      *
-     * @return A string representation of this scale.
+     * @return a string representation of this scale.
      */
     @Override
     public String toString() {

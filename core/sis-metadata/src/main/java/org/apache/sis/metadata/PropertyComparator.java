@@ -91,7 +91,7 @@ final class PropertyComparator implements Comparator<Method> {
     /**
      * Creates a new comparator for the given implementation class.
      *
-     * @param implementation The implementation class, or the interface if the implementation class is unknown.
+     * @param implementation  the implementation class, or the interface if the implementation class is unknown.
      */
     PropertyComparator(Class<?> implementation) {
         this.implementation = implementation;
@@ -123,8 +123,8 @@ final class PropertyComparator implements Comparator<Method> {
      * when the implementation has been updated for a new standard, while the interface is still reflecting the
      * old standard.
      *
-     * @param  implementation The implementation class, or the interface is the implementation class is unknown.
-     * @param  method The method to check for deprecation.
+     * @param  implementation  the implementation class, or the interface is the implementation class is unknown.
+     * @param  method          the method to check for deprecation.
      * @return {@code true} if the method is deprecated.
      */
     static boolean isDeprecated(final Class<?> implementation, Method method) {
@@ -140,8 +140,10 @@ final class PropertyComparator implements Comparator<Method> {
         try {
             method = implementation.getMethod(method.getName(), (Class[]) null);
         } catch (NoSuchMethodException e) {
-            // Should never happen since the implementation is supposed to implement
-            // the interface that declare the method given in argument.
+            /*
+             * Should never happen since the implementation is supposed to implement
+             * the interface that declare the method given in argument.
+             */
             throw new AssertionError(e);
         }
         return method.isAnnotationPresent(Deprecated.class);
@@ -156,23 +158,22 @@ final class PropertyComparator implements Comparator<Method> {
         if (deprecated != isDeprecated(implementation, m2)) {
             return deprecated ? +1 : -1;
         }
-        int c = indexOf(m2) - indexOf(m1); // indexOf(…) are sorted in descending order.
+        int c = indexOf(m2) - indexOf(m1);                          // indexOf(…) are sorted in descending order.
         if (c == 0) {
             final UML a1 = m1.getAnnotation(UML.class);
             final UML a2 = m2.getAnnotation(UML.class);
             if (a1 != null) {
-                if (a2 == null) return +1;   // Sort annotated elements first.
-                c = order(a1) - order(a2);   // Mandatory elements must be first.
+                if (a2 == null) return +1;                          // Sort annotated elements first.
+                c = order(a1) - order(a2);                          // Mandatory elements must be first.
                 if (c == 0) {
                     // Fallback on alphabetical order.
                     c = a1.identifier().compareToIgnoreCase(a2.identifier());
                 }
                 return c;
             } else if (a2 != null) {
-                return -1; // Sort annotated elements first.
+                return -1;                                          // Sort annotated elements first.
             }
-            // Fallback on alphabetical order.
-            c = m1.getName().compareToIgnoreCase(m2.getName());
+            c = m1.getName().compareToIgnoreCase(m2.getName());     // Fallback on alphabetical order.
         }
         return c;
     }
@@ -270,9 +271,9 @@ final class PropertyComparator implements Comparator<Method> {
      * by the property name {@code "title"}. We will perform this operation only if there is
      * at least 1 character after the prefix.
      *
-     * @param  name The method name (can not be {@code null}).
-     * @param  base Must be the result of {@code prefix(name).length()}.
-     * @return The property name (never {@code null}).
+     * @param  name  the method name (can not be {@code null}).
+     * @param  base  must be the result of {@code prefix(name).length()}.
+     * @return the property name (never {@code null}).
      */
     static String toPropertyName(String name, final int base) {
         final int length = name.length();
