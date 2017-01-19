@@ -51,6 +51,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Dimension_Type", propOrder = {
     "dimensionName",
     "dimensionSize",
@@ -101,8 +102,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Creates a dimension initialized to the given type and size.
      *
-     * @param  dimensionName The name of the axis, or {@code null} if none, or {@code null} if none.
-     * @param  dimensionSize The number of elements along the axis, or {@code null} if none.
+     * @param  dimensionName  the name of the axis, or {@code null} if none, or {@code null} if none.
+     * @param  dimensionSize  the number of elements along the axis, or {@code null} if none.
      * @throws IllegalArgumentException if {@code dimensionSize} is negative.
      */
     public DefaultDimension(final DimensionNameType dimensionName, final int dimensionSize) {
@@ -123,7 +124,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Dimension)
      */
@@ -152,8 +153,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultDimension castOrCopy(final Dimension object) {
@@ -166,7 +167,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Returns the name of the axis.
      *
-     * @return Name of the axis, or {@code null}.
+     * @return name of the axis, or {@code null}.
      */
     @Override
     @XmlElement(name = "dimensionName", required = true)
@@ -177,7 +178,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Sets the name of the axis.
      *
-     * @param newValue The new dimension name.
+     * @param  newValue  the new dimension name.
      */
     public void setDimensionName(final DimensionNameType newValue) {
         checkWritePermission();
@@ -187,7 +188,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Returns the number of elements along the axis.
      *
-     * @return Number of elements along the axis, or {@code null}.
+     * @return number of elements along the axis, or {@code null}.
      */
     @Override
     @ValueRange(minimum = 0)
@@ -199,7 +200,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Sets the number of elements along the axis.
      *
-     * @param newValue The new dimension size, or {@code null}.
+     * @param  newValue  the new dimension size, or {@code null}.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setDimensionSize(final Integer newValue) {
@@ -212,7 +213,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Returns the degree of detail in the grid dataset.
      *
-     * @return Degree of detail in the grid dataset, or {@code null}.
+     * @return degree of detail in the grid dataset, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
@@ -225,7 +226,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Sets the degree of detail in the grid dataset.
      *
-     * @param newValue The new resolution, or {@code null}.
+     * @param  newValue  the new resolution, or {@code null}.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setResolution(final Double newValue) {
@@ -241,7 +242,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * <div class="note"><b>Example:</b>
      * dimensionName = "column", dimensionTitle = "longitude"</div>
      *
-     * @return The enhancement/ modifier of the dimension name.
+     * @return the enhancement/ modifier of the dimension name.
      *
      * @since 0.5
      */
@@ -254,7 +255,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Sets the enhancement/ modifier of the dimension name.
      *
-     * @param newValue The new enhancement/ modifier of the dimension name.
+     * @param  newValue  the new enhancement/ modifier of the dimension name.
      *
      * @since 0.5
      */
@@ -266,7 +267,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Return the axis dimension description.
      *
-     * @return The axis dimension description.
+     * @return the axis dimension description.
      *
      * @since 0.5
      */
@@ -279,7 +280,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Sets the axis dimension description.
      *
-     * @param newValue The new axis dimension description.
+     * @param  newValue  the new axis dimension description.
      *
      * @since 0.5
      */

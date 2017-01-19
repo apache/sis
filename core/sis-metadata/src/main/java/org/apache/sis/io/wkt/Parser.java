@@ -49,8 +49,8 @@ public interface Parser {
      * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} or
      * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform Math Transforms}.
      *
-     * @param  text Object encoded in Well-Known Text format (version 1 or 2).
-     * @return The result of parsing the given text.
+     * @param  text  object encoded in Well-Known Text format (version 1 or 2).
+     * @return the result of parsing the given text.
      * @throws FactoryException if the object creation failed.
      */
     Object createFromWKT(String text) throws FactoryException;

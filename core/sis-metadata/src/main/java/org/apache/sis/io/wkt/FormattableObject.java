@@ -97,8 +97,8 @@ public abstract class FormattableObject {
      *
      * <p>By default this method formats this object according the {@link Convention#WKT2} rules.</p>
      *
-     * @return The default Well Know Text representation of this object.
-     * @throws UnformattableObjectException If this object can not be formatted as a standard WKT.
+     * @return the default Well Know Text representation of this object.
+     * @throws UnformattableObjectException if this object can not be formatted as a standard WKT.
      *
      * @see org.opengis.referencing.IdentifiedObject#toWKT()
      */
@@ -116,7 +116,7 @@ public abstract class FormattableObject {
      * Consequently the WKT is not guaranteed to be ISO 19162 compliant.
      * For stricter conformance, use {@link #toWKT()} instead.</p>
      *
-     * @return The Well Known Text (WKT) or an alternative representation of this object.
+     * @return the Well Known Text (WKT) or an alternative representation of this object.
      */
     @Override
     public String toString() {
@@ -131,8 +131,8 @@ public abstract class FormattableObject {
      *
      * <p>For stricter conformance to ISO 19162 standard, use {@link #toWKT()} or {@link WKTFormat} instead.</p>
      *
-     * @param  convention The WKT convention to use.
-     * @return The Well Known Text (WKT) or a pseudo-WKT representation of this object.
+     * @param  convention  the WKT convention to use.
+     * @return the Well Known Text (WKT) or a pseudo-WKT representation of this object.
      */
     public String toString(final Convention convention) {
         ArgumentChecks.ensureNonNull("convention", convention);
@@ -165,12 +165,12 @@ public abstract class FormattableObject {
      * If {@code strict} is true, then an exception is thrown if the WKT is not standard-compliant.
      * If {@code strict} if false, then warnings are appended after the WKT instead.
      *
-     * @param  convention  The convention for choosing WKT element names.
+     * @param  convention  the convention for choosing WKT element names.
      * @param  colorize    {@code true} for applying syntax coloring, or {@code false} otherwise.
      * @param  strict      {@code true} if an exception shall be thrown for unformattable objects,
      *                     or {@code false} for providing a non-standard formatting instead.
-     * @return The Well Known Text (WKT) or a pseudo-WKT representation of this object.
-     * @throws UnformattableObjectException If {@code strict} is {@code true} and this object can not be formatted.
+     * @return the Well Known Text (WKT) or a pseudo-WKT representation of this object.
+     * @throws UnformattableObjectException if {@code strict} is {@code true} and this object can not be formatted.
      */
     private String formatWKT(final Convention convention, final boolean colorize, final boolean strict)
              throws UnformattableObjectException
@@ -239,8 +239,8 @@ public abstract class FormattableObject {
      * while the keyword needs to be defined by the concrete subclasses.
      * In such case, the method in the abstract class shall return {@code null}.</p>
      *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return The {@linkplain KeywordCase#CAMEL_CASE CamelCase} keyword for the WKT element, or {@code null} if unknown.
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
+     * @return the {@linkplain KeywordCase#CAMEL_CASE CamelCase} keyword for the WKT element, or {@code null} if unknown.
      *
      * @see #toWKT()
      * @see #toString()

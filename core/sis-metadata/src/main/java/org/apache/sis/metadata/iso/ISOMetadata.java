@@ -33,6 +33,7 @@ import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.collection.Containers;
 
@@ -54,10 +55,11 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @XmlTransient
+@SuppressWarnings("CloneableClassWithoutClone")     // ModifiableMetadata needs shallow clones.
 public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject, Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -124,7 +126,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
 
 
     // --------------------------------------------------------------------------------------
-    // Code below this point also appears in other IdentifiedObject implementations.
+    // Identifier methods below also appear in other IdentifiedObject implementations.
     // If this code is modified, consider revisiting also the following classes:
     //
     //   * org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction
@@ -163,6 +165,34 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
                               : new IdentifierMapAdapter(identifiers);
     }
 
+    // --------------------------------------------------------------------------------------
+    // End of identifier methods.
+    // --------------------------------------------------------------------------------------
+
+    /**
+     * Declares this metadata and all its properties as unmodifiable. Any attempt to modify a
+     * property after this method call will throw an {@link UnmodifiableMetadataException}.
+     * If this metadata is already unmodifiable, then this method does nothing.
+     *
+     * <p>Subclasses usually do not need to override this method since the default implementation
+     * performs most of its work using Java reflection.</p>
+     */
+    @Override
+    public void freeze() {
+        if (isModifiable()) {
+            final Collection<Identifier> p = identifiers;
+            super.freeze();
+            /*
+             * The 'identifiers' collection will have been replaced by an unmodifiable collection if
+             * subclass has an "identifiers" property. If this is not the case, then the collection
+             * is unchanged (or null) so we have to make it unmodifiable here.
+             */
+            if (p == identifiers) {
+                identifiers = CollectionsExt.unmodifiableOrCopy(p);                     // Null safe.
+            }
+        }
+    }
+
 
 
 
@@ -182,7 +212,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * This method is invoked automatically by JAXB and should never be invoked explicitely.
      */
     @XmlID
-    @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlAttribute                           // Defined in "gco" as unqualified attribute.
     @XmlSchemaType(name = "ID")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     private String getID() {
@@ -201,7 +231,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * Returns an unique identifier, or {@code null} if none.
      * This method is invoked automatically by JAXB and should never be invoked explicitely.
      */
-    @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlAttribute                           // Defined in "gco" as unqualified attribute.
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     private String getUUID() {
         /*

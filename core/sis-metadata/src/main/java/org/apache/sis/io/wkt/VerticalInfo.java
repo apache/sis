@@ -81,10 +81,10 @@ final class VerticalInfo {
     /**
      * Adds to the chained list a new {@code DefaultVerticalExtent} instance pending completion.
      *
-     * @param next    The existing {@code VerticalInfo} instance. Will become the next instance
-     *                to process after {@code this} in a chain of {@code VerticalInfo}.
-     * @param extents Where to add the vertical extent.
-     * @param unit    The unit to assign to the {@code extent}. Can not be null.
+     * @param next     the existing {@code VerticalInfo} instance. Will become the next instance
+     *                 to process after {@code this} in a chain of {@code VerticalInfo}.
+     * @param extents  where to add the vertical extent.
+     * @param unit     the unit to assign to the {@code extent}. Can not be null.
      */
     VerticalInfo(final VerticalInfo next, final DefaultExtent extents, final double minimum, final double maximum, final Unit<Length> unit) {
         this.next   = next;
@@ -105,7 +105,7 @@ final class VerticalInfo {
      *
      * This method processes also all other {@code VerticalInfo} instances in the chained list.
      *
-     * @return The new head of the chained list (may be {@code this}), or {@code null} if the list
+     * @return the new head of the chained list (may be {@code this}), or {@code null} if the list
      *         became empty as a result of this operation.
      */
     final VerticalInfo resolve(final VerticalCRS crs) {

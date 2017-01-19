@@ -23,6 +23,14 @@ import java.util.Collection;
  * A container that ensures that all elements are assignable to a given base type.
  * Checked containers are usually {@link Collection}, but not always.
  *
+ * <p><b>Constraint:</b>
+ * if a class implements both {@code CheckedContainer} and {@code Collection},
+ * then the parameterized type shall be the same type. Example:</p>
+ *
+ * {@preformat java
+ *     class MyList<E> extends AbstractList<E> implements CheckedContainer<E> { ... }
+ * }
+ *
  * @param  <E>  the base type of elements in the container.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

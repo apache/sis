@@ -50,6 +50,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_SampleDimension_Type", propOrder = {
     "maxValue",
     "minValue",
@@ -157,7 +158,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(SampleDimension)
      */
@@ -196,8 +197,8 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultSampleDimension castOrCopy(final SampleDimension object) {
@@ -214,7 +215,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns the minimum value of data values in each dimension included in the resource.
      *
-     * @return Minimum value of data values in each dimension included in the resource, or {@code null} if unspecified.
+     * @return minimum value of data values in each dimension included in the resource, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "minValue")
@@ -225,7 +226,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Sets the minimum value of data values in each dimension included in the resource.
      *
-     * @param newValue The new new minimum value.
+     * @param  newValue  the new new minimum value.
      */
     public void setMinValue(final Double newValue) {
         checkWritePermission();
@@ -235,7 +236,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns the maximum value of data values in each dimension included in the resource.
      *
-     * @return Maximum value of data values in each dimension included in the resource, or {@code null} if unspecified.
+     * @return maximum value of data values in each dimension included in the resource, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "maxValue")
@@ -246,7 +247,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Sets the maximum value of data values in each dimension included in the resource.
      *
-     * @param newValue The new new maximum value.
+     * @param  newValue  the new new maximum value.
      */
     public void setMaxValue(final Double newValue) {
         checkWritePermission();
@@ -256,7 +257,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns the mean value of data values in each dimension included in the resource.
      *
-     * @return The mean value of data values in each dimension included in the resource, or {@code null} if none.
+     * @return the mean value of data values in each dimension included in the resource, or {@code null} if none.
      */
     @Override
 /// @XmlElement(name = "meanValue")
@@ -267,7 +268,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Sets the mean value of data values in each dimension included in the resource.
      *
-     * @param newValue The new mean value of data values in each dimension included in the resource.
+     * @param  newValue  the new mean value of data values in each dimension included in the resource.
      */
     public void setMeanValue(final Double newValue) {
         checkWritePermission();
@@ -277,7 +278,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns the number of values used in a thematic classification resource.
      *
-     * @return The number of values used in a thematic classification resource, or {@code null} if none.
+     * @return the number of values used in a thematic classification resource, or {@code null} if none.
      */
     @Override
     @ValueRange(minimum = 0)
@@ -289,7 +290,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Sets the number of values used in a thematic classification resource.
      *
-     * @param newValue The new number of values used in a thematic classification resource.
+     * @param  newValue  the new number of values used in a thematic classification resource.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setNumberOfValues(final Integer newValue) {
@@ -302,7 +303,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns the standard deviation of data values in each dimension included in the resource.
      *
-     * @return Standard deviation of data values in each dimension included in the resource, or {@code null} if none.
+     * @return standard deviation of data values in each dimension included in the resource, or {@code null} if none.
      */
     @Override
 /// @XmlElement(name = "standardDeviation")
@@ -313,7 +314,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Sets the standard deviation of data values in each dimension included in the resource.
      *
-     * @param newValue The new standard deviation of data values in each dimension included in the resource.
+     * @param  newValue  the new standard deviation of data values in each dimension included in the resource.
      */
     public void setStandardDeviation(final Double newValue) {
         checkWritePermission();
@@ -323,7 +324,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns the units of data in the dimension.
      *
-     * @return The units of data in the dimension, or {@code null} if unspecified.
+     * @return the units of data in the dimension, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "units")
@@ -334,7 +335,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Sets the units of data in the dimension.
      *
-     * @param newValue The new units of data in the dimension.
+     * @param  newValue  the new units of data in the dimension.
      */
     public void setUnits(final Unit<?> newValue) {
         checkWritePermission();
@@ -344,7 +345,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns the scale factor which has been applied to the cell value.
      *
-     * @return Scale factor which has been applied to the cell value, or {@code null} if none.
+     * @return scale factor which has been applied to the cell value, or {@code null} if none.
      */
     @Override
 /// @XmlElement(name = "scaleFactor")
@@ -355,7 +356,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Sets the scale factor which has been applied to the cell value.
      *
-     * @param newValue The new scale factor which has been applied to the cell value.
+     * @param  newValue  the new scale factor which has been applied to the cell value.
      */
     public void setScaleFactor(final Double newValue) {
         checkWritePermission();
@@ -365,7 +366,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns the physical value corresponding to a cell value of zero.
      *
-     * @return The physical value corresponding to a cell value of zero, or {@code null} if none.
+     * @return the physical value corresponding to a cell value of zero, or {@code null} if none.
      */
     @Override
 /// @XmlElement(name = "offset")
@@ -376,7 +377,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Sets the physical value corresponding to a cell value of zero.
      *
-     * @param newValue The new physical value corresponding to a cell value of zero, or {@code null} if none..
+     * @param  newValue  the new physical value corresponding to a cell value of zero, or {@code null} if none..
      */
     public void setOffset(final Double newValue) {
         checkWritePermission();
@@ -386,7 +387,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns type of transfer function to be used when scaling a physical value for a given element.
      *
-     * @return Type of transfer function, or {@code null}.
+     * @return type of transfer function, or {@code null}.
      */
     @Override
     public TransferFunctionType getTransferFunctionType() {
@@ -396,7 +397,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Sets the type of transfer function to be used when scaling a physical value for a given element.
      *
-     * @param newValue The new transfer function value.
+     * @param  newValue  the new transfer function value.
      */
     public void setTransferFunctionType(final TransferFunctionType newValue) {
         checkWritePermission();
@@ -407,7 +408,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * Returns the maximum number of significant bits in the uncompressed representation
      * for the value in each band of each pixel.
      *
-     * @return Maximum number of significant bits in the uncompressed representation
+     * @return maximum number of significant bits in the uncompressed representation
      *         for the value in each band of each pixel, or {@code null} if none.
      */
     @Override
@@ -421,7 +422,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * Sets the maximum number of significant bits in the uncompressed representation
      * for the value in each band of each pixel.
      *
-     * @param newValue The new maximum number of significant bits.
+     * @param  newValue  the new maximum number of significant bits.
      * @throws IllegalArgumentException if the given value is zero or negative.
      */
     public void setBitsPerValue(final Integer newValue) {
@@ -435,7 +436,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * Returns the smallest distance between which separate points can be distinguished,
      * as specified in instrument design.
      *
-     * @return Smallest distance between which separate points can be distinguished, or {@code null}.
+     * @return smallest distance between which separate points can be distinguished, or {@code null}.
      */
     @Override
     @ValueRange(minimum = 0, isMinIncluded = false)
@@ -447,7 +448,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * Sets the smallest distance between which separate points can be distinguished,
      * as specified in instrument design.
      *
-     * @param newValue The new nominal spatial resolution.
+     * @param  newValue  the new nominal spatial resolution.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setNominalSpatialResolution(final Double newValue) {
@@ -460,7 +461,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns type of other attribute description.
      *
-     * @return Type of other attribute description, or {@code null} if none.
+     * @return type of other attribute description, or {@code null} if none.
      */
     @Override
 /// @XmlElement(name = "otherPropertyType")
@@ -471,7 +472,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Sets a new type of other attribute description.
      *
-     * @param newValue The new type of other attribute description.
+     * @param  newValue  the new type of other attribute description.
      */
     public void setOtherPropertyType(final RecordType newValue) {
         checkWritePermission();
@@ -494,7 +495,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * Sets a new instance of other/attributeType that defines attributes not explicitly
      * included in {@link CoverageContentType}.
      *
-     * @param newValue The new instance of other/attributeType.
+     * @param  newValue  the new instance of other/attributeType.
      */
     public void setOtherProperty(final Record newValue) {
         checkWritePermission();

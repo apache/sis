@@ -38,8 +38,8 @@ final class InformationMap extends PropertyMap<ExtendedElementInformation> {
     /**
      * Creates an information map for the specified accessor.
      *
-     * @param accessor  The accessor to use for the metadata.
-     * @param keyPolicy Determines the string representation of keys in the map.
+     * @param accessor   the accessor to use for the metadata.
+     * @param keyPolicy  determines the string representation of keys in the map.
      */
     InformationMap(final PropertyAccessor accessor, final KeyNamePolicy keyPolicy) {
         super(accessor, keyPolicy);
