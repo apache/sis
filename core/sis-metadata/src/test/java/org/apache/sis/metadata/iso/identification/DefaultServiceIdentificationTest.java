@@ -69,7 +69,7 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
     /**
      * Tests the marshalling of a service metadata.
      *
-     * @throws JAXBException If an error occurred during the during marshalling process.
+     * @throws JAXBException if an error occurred during the during marshalling process.
      */
     @Test
     public void testMarshal() throws JAXBException {
@@ -82,7 +82,7 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      * <p><b>XML test file:</b>
      * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/service/ServiceIdentification.xml"}</p>
      *
-     * @throws JAXBException If an error occurred during the during unmarshalling process.
+     * @throws JAXBException if an error occurred during the during unmarshalling process.
      */
     @Test
     public void testUnmarshal() throws JAXBException {

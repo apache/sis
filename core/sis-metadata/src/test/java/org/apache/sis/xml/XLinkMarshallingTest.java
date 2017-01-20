@@ -73,8 +73,8 @@ public final strictfp class XLinkMarshallingTest extends XMLTestCase {
     /**
      * Verifies if the given metadata contains the expected {@code xlink:href} attribute value.
      *
-     * @param isNilExpected {@code true} if the identification info is expected to be a {@link NilObject} instance.
-     * @param metadata The metadata to verify.
+     * @param  isNilExpected  {@code true} if the identification info is expected to be a {@link NilObject} instance.
+     * @param  metadata       the metadata to verify.
      */
     private static void verify(final boolean isNilExpected, final DefaultMetadata metadata) {
         final Identification identification = getSingleton(metadata.getIdentificationInfo());
@@ -94,8 +94,8 @@ public final strictfp class XLinkMarshallingTest extends XMLTestCase {
      *   </gmd:MD_Metadata>
      * }
      *
-     * @throws JAXBException Should never happen.
-     * @throws URISyntaxException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
+     * @throws URISyntaxException if the URI used in this test is malformed.
      */
     @Test
     public void testLinkOnly() throws JAXBException, URISyntaxException {
@@ -126,8 +126,8 @@ public final strictfp class XLinkMarshallingTest extends XMLTestCase {
      *   </gmd:MD_Metadata>
      * }
      *
-     * @throws JAXBException Should never happen.
-     * @throws URISyntaxException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
+     * @throws URISyntaxException if the URI used in this test is malformed.
      */
     @Test
     public void testWithElement() throws JAXBException, URISyntaxException {
