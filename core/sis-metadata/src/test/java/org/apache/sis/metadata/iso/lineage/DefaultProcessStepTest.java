@@ -45,7 +45,7 @@ public final strictfp class DefaultProcessStepTest extends XMLTestCase {
      * <p><b>XML test file:</b>
      * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/lineage/ProcessStep.xml"}</p>
      *
-     * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.
+     * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      */
     @Test
     public void testXML() throws JAXBException {
