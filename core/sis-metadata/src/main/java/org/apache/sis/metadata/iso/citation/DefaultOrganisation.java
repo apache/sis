@@ -44,6 +44,7 @@ import org.opengis.metadata.identification.BrowseGraphic;
  * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Organisation_Type", propOrder = {
     "logo",
     "individual"
@@ -74,10 +75,10 @@ public class DefaultOrganisation extends AbstractParty implements Organisation {
     /**
      * Constructs an organization initialized to the specified values.
      *
-     * @param name        Name of the organization, or {@code null} if none.
-     * @param logo        Graphic identifying the organization, or {@code null} if none.
-     * @param individual  Position of the individual in an organization, or {@code null} if none.
-     * @param contactInfo Contact information for the organization, or {@code null} if none.
+     * @param name         name of the organization, or {@code null} if none.
+     * @param logo         graphic identifying the organization, or {@code null} if none.
+     * @param individual   position of the individual in an organization, or {@code null} if none.
+     * @param contactInfo  contact information for the organization, or {@code null} if none.
      */
     public DefaultOrganisation(final CharSequence name,
                                final BrowseGraphic logo,
@@ -94,7 +95,7 @@ public class DefaultOrganisation extends AbstractParty implements Organisation {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Organisation)
      */
@@ -120,8 +121,8 @@ public class DefaultOrganisation extends AbstractParty implements Organisation {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultOrganisation castOrCopy(final Organisation object) {
@@ -134,7 +135,7 @@ public class DefaultOrganisation extends AbstractParty implements Organisation {
     /**
      * Returns the graphics identifying organization.
      *
-     * @return Graphics identifying organization, or an empty collection if there is none.
+     * @return graphics identifying organization, or an empty collection if there is none.
      */
     @Override
     @XmlElement(name = "logo")
@@ -145,7 +146,7 @@ public class DefaultOrganisation extends AbstractParty implements Organisation {
     /**
      * Sets the graphics identifying organisation.
      *
-     * @param newValues The new graphics identifying organization.
+     * @param  newValues  the new graphics identifying organization.
      */
     public void setLogo(final Collection<? extends BrowseGraphic> newValues) {
         logo = writeCollection(newValues, logo, BrowseGraphic.class);
@@ -154,7 +155,7 @@ public class DefaultOrganisation extends AbstractParty implements Organisation {
     /**
      * Returns the individuals in the named organization.
      *
-     * @return Individuals in the named organization, or an empty collection.
+     * @return individuals in the named organization, or an empty collection.
      */
     @Override
     @XmlElement(name = "individual")
@@ -165,7 +166,7 @@ public class DefaultOrganisation extends AbstractParty implements Organisation {
     /**
      * Sets the individuals in the named organization.
      *
-     * @param newValues The new individuals in the named organization.
+     * @param  newValues  the new individuals in the named organization.
      */
     public void setIndividual(final Collection<? extends Individual> newValues) {
         individual = writeCollection(newValues, individual, Individual.class);

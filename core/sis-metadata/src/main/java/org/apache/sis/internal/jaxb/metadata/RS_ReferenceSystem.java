@@ -53,7 +53,7 @@ public final class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, R
     /**
      * Wraps a Reference System value in a {@code MD_ReferenceSystem} element at marshalling-time.
      *
-     * @param metadata The metadata value to marshal.
+     * @param  metadata  the metadata value to marshal.
      */
     protected RS_ReferenceSystem(final ReferenceSystem metadata) {
         super(metadata);
@@ -63,8 +63,8 @@ public final class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, R
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gmd:RS_ReferenceSystem>} XML element.
      *
-     * @param  metadata The metadata element to marshall.
-     * @return A {@code PropertyType} wrapping the given the metadata element.
+     * @param  metadata  the metadata element to marshall.
+     * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
     protected RS_ReferenceSystem wrap(ReferenceSystem metadata) {
@@ -76,7 +76,7 @@ public final class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, R
      * inside the {@code <gmd:RS_ReferenceSystem>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The metadata to be marshalled.
+     * @return the metadata to be marshalled.
      */
     @XmlElementRef
     public ReferenceSystemMetadata getElement() {
@@ -93,7 +93,7 @@ public final class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, R
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param metadata The unmarshalled metadata.
+     * @param  metadata  the unmarshalled metadata.
      */
     public void setElement(final ReferenceSystemMetadata metadata) {
         this.metadata = metadata;

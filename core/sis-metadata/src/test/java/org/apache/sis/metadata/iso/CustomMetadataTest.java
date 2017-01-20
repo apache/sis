@@ -63,7 +63,7 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
     /**
      * Tests the marshalling of a metadata implemented by {@link Proxy}.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testProxy() throws JAXBException {
@@ -97,7 +97,7 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
     /**
      * Tests that the attributes defined in subtypes are also marshalled.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-108">GEOTK-108</a>
      */

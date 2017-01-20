@@ -64,7 +64,8 @@ public class SQLBuilder {
     /**
      * Creates a new {@code SQLBuilder} initialized from the given database metadata.
      *
-     * @param  metadata  the database metadata.
+     * @param  metadata     the database metadata.
+     * @param  quoteSchema  whether the schema name should be written between quotes.
      * @throws SQLException if an error occurred while fetching the database metadata.
      */
     public SQLBuilder(final DatabaseMetaData metadata, final boolean quoteSchema) throws SQLException {

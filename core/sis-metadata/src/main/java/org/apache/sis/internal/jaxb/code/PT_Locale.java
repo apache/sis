@@ -163,8 +163,8 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
      * Substitutes the locale by the wrapper to be marshalled into an XML file
      * or stream. JAXB calls automatically this method at marshalling time.
      *
-     * @param value The locale value.
-     * @return The wrapper for the locale value.
+     * @param  value  the locale value.
+     * @return the wrapper for the locale value.
      */
     @Override
     public PT_Locale marshal(final Locale value) {
@@ -175,8 +175,8 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
      * Substitutes the wrapped value read from a XML stream by the object which will
      * contains the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param value The wrapper for this metadata value.
-     * @return A locale which represents the metadata value.
+     * @param  value  the wrapper for this metadata value.
+     * @return a locale which represents the metadata value.
      */
     @Override
     public Locale unmarshal(final PT_Locale value) {

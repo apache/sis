@@ -409,8 +409,10 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             if (property != null) {
                 final String tip = entry.getKey();
                 if (JDK8.putIfAbsent(byName, tip, property) == null) {
-                    // This block is skipped if there is properties named "tip" and "head:tip".
-                    // The 'indices' value may be null if the property is an operation.
+                    /*
+                     * This block is skipped if there is properties named "tip" and "head:tip".
+                     * The 'indices' value may be null if the property is an operation.
+                     */
                     final Integer value = indices.get(property.getName().toString());
                     if (value != null && indices.put(tip, value) != null) {
                         throw new AssertionError(tip);                                  // Should never happen.

@@ -53,8 +53,8 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
      * <p>The spelling of "license" was changed to "licence" in latest standard, but XML
      * marshalling shall use the previous spelling until XML schema are updated.</p>
      *
-     * @param value The value version of {@link CodeList}, to be marshalled.
-     * @return The wrapper for the code list value.
+     * @param  value  the value version of {@link CodeList}, to be marshalled.
+     * @return the wrapper for the code list value.
      */
     @Override
     protected MD_RestrictionCode wrap(final CodeListUID value) {
@@ -67,7 +67,7 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
     /**
      * Returns the class of code list wrapped by this adapter.
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<Restriction> getCodeListClass() {
@@ -77,7 +77,7 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "MD_RestrictionCode")
@@ -88,7 +88,7 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param value The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
         identifier = value;

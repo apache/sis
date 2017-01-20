@@ -40,6 +40,7 @@ import org.opengis.metadata.quality.AbsoluteExternalPositionalAccuracy;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_AbsoluteExternalPositionalAccuracy_Type")
 @XmlRootElement(name = "DQ_AbsoluteExternalPositionalAccuracy")
 public class DefaultAbsoluteExternalPositionalAccuracy extends AbstractPositionalAccuracy

@@ -44,6 +44,7 @@ import org.apache.sis.xml.Namespaces;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "LE_ProcessStepReport_Type", propOrder = {
     "name",
     "description",
@@ -82,7 +83,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ProcessStepReport)
      */
@@ -109,8 +110,8 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultProcessStepReport castOrCopy(final ProcessStepReport object) {
@@ -123,7 +124,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
     /**
      * Returns the name of the processing report.
      *
-     * @return Name of the processing report, or {@code null}.
+     * @return name of the processing report, or {@code null}.
      */
     @Override
     @XmlElement(name = "name", namespace = Namespaces.GMI, required = true)
@@ -134,7 +135,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
     /**
      * Sets the name of the processing report.
      *
-     * @param newValue The new name value.
+     * @param  newValue  the new name value.
      */
     public void setName(final InternationalString newValue) {
         checkWritePermission();
@@ -144,7 +145,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
     /**
      * Returns the textual description of what occurred during the process step.
      *
-     * @return What occurred during the process step, or {@code null}.
+     * @return what occurred during the process step, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", namespace = Namespaces.GMI)
@@ -155,7 +156,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
     /**
      * Sets the textual description of what occurred during the process step.
      *
-     * @param newValue The new description value.
+     * @param  newValue  the new description value.
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -165,7 +166,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
     /**
      * Returns the type of file that contains the processing report.
      *
-     * @return Type of file that contains the processing report, or {@code null}.
+     * @return type of file that contains the processing report, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileType", namespace = Namespaces.GMI)
@@ -176,7 +177,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
     /**
      * Sets the type of file that contains the processing report.
      *
-     * @param newValue The new file type value.
+     * @param  newValue  the new file type value.
      */
     public void setFileType(final InternationalString newValue) {
         checkWritePermission();

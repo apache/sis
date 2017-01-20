@@ -62,8 +62,8 @@ public final class MI_Event extends PropertyType<MI_Event, Event> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gmi:MI_Event>} XML element.
      *
-     * @param  metadata The metadata element to marshall.
-     * @return A {@code PropertyType} wrapping the given the metadata element.
+     * @param  metadata  the metadata element to marshall.
+     * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
     protected MI_Event wrap(final Event metadata) {
@@ -75,7 +75,7 @@ public final class MI_Event extends PropertyType<MI_Event, Event> {
      * inside the {@code <gmi:MI_Event>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The metadata to be marshalled.
+     * @return the metadata to be marshalled.
      */
     @XmlElementRef
     public DefaultEvent getElement() {
@@ -85,7 +85,7 @@ public final class MI_Event extends PropertyType<MI_Event, Event> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param metadata The unmarshalled metadata.
+     * @param  metadata  the unmarshalled metadata.
      */
     public void setElement(final DefaultEvent metadata) {
         this.metadata = metadata;

@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso;
 
 import java.util.Map;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -39,9 +40,6 @@ import org.apache.sis.io.wkt.ElementKind;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**

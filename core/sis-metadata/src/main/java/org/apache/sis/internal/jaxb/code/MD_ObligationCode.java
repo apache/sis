@@ -47,8 +47,8 @@ public final class MD_ObligationCode extends EnumAdapter<MD_ObligationCode, Obli
     /**
      * Returns the wrapped value.
      *
-     * @param wrapper The wrapper.
-     * @return The wrapped value.
+     * @param  wrapper  the wrapper.
+     * @return the wrapped value.
      */
     @Override
     public final Obligation unmarshal(final MD_ObligationCode wrapper) {
@@ -58,8 +58,8 @@ public final class MD_ObligationCode extends EnumAdapter<MD_ObligationCode, Obli
     /**
      * Wraps the given value.
      *
-     * @param  e The value to wrap.
-     * @return The wrapped value.
+     * @param  e  the value to wrap.
+     * @return the wrapped value.
      */
     @Override
     public final MD_ObligationCode marshal(final Obligation e) {

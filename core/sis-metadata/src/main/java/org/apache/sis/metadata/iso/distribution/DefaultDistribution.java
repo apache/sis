@@ -47,6 +47,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Distribution_Type", propOrder = {
     "distributionFormats",
     "distributors",
@@ -91,7 +92,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Distribution)
      */
@@ -119,8 +120,8 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultDistribution castOrCopy(final Distribution object) {
@@ -133,7 +134,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     /**
      * Returns a brief description of a set of distribution options.
      *
-     * @return Brief description of a set of distribution options.
+     * @return brief description of a set of distribution options.
      *
      * @since 0.5
      */
@@ -145,7 +146,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     /**
      * Sets a brief description of a set of distribution options.
      *
-     * @param newValue The new description.
+     * @param  newValue  the new description.
      *
      * @since 0.5
      */
@@ -157,7 +158,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     /**
      * Provides a description of the format of the data to be distributed.
      *
-     * @return Description of the format of the data to be distributed.
+     * @return description of the format of the data to be distributed.
      */
     @Override
     @XmlElement(name = "distributionFormat")
@@ -168,7 +169,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     /**
      * Sets a description of the format of the data to be distributed.
      *
-     * @param newValues The new distribution formats.
+     * @param  newValues  the new distribution formats.
      */
     public void setDistributionFormats(final Collection<? extends Format> newValues) {
         distributionFormats = writeCollection(newValues, distributionFormats, Format.class);
@@ -177,7 +178,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     /**
      * Provides information about the distributor.
      *
-     * @return Information about the distributor.
+     * @return information about the distributor.
      */
     @Override
     @XmlElement(name = "distributor")
@@ -188,7 +189,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     /**
      * Sets information about the distributor.
      *
-     * @param newValues The new distributors.
+     * @param  newValues  the new distributors.
      */
     public void setDistributors(final Collection<? extends Distributor> newValues) {
         distributors = writeCollection(newValues, distributors, Distributor.class);
@@ -197,7 +198,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     /**
      * Provides information about technical means and media by which a resource is obtained from the distributor.
      *
-     * @return Technical means and media by which a resource is obtained from the distributor.
+     * @return technical means and media by which a resource is obtained from the distributor.
      */
     @Override
     @XmlElement(name = "transferOptions")
@@ -209,7 +210,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * Sets information about technical means and media by which a resource is obtained
      * from the distributor.
      *
-     * @param newValues The new transfer options.
+     * @param  newValues  the new transfer options.
      */
     public void setTransferOptions(final Collection<? extends DigitalTransferOptions> newValues) {
         transferOptions = writeCollection(newValues, transferOptions, DigitalTransferOptions.class);

@@ -54,7 +54,7 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
     /**
      * Wraps a Temporal Period Duration value at marshalling-time.
      *
-     * @param metadata The metadata value to marshal.
+     * @param  metadata  the metadata value to marshal.
      */
     private TM_PeriodDuration(final PeriodDuration metadata) {
         super(metadata);
@@ -63,8 +63,8 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
     /**
      * Returns the Period Duration value wrapped by a {@code gts:TM_PeriodDuration} element.
      *
-     * @param value The value to marshal.
-     * @return The adapter which wraps the metadata value.
+     * @param  value  the value to marshal.
+     * @return the adapter which wraps the metadata value.
      */
     @Override
     protected TM_PeriodDuration wrap(final PeriodDuration value) {
@@ -85,7 +85,7 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      * Returns the {@link Duration} generated from the metadata value.
      * This method is systematically called at marshalling time by JAXB.
      *
-     * @return The time period, or {@code null}.
+     * @return the time period, or {@code null}.
      */
     @XmlElement(name = "TM_PeriodDuration")
     public Duration getElement() {
@@ -133,10 +133,10 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      * Sets the value from the {@link Duration}.
      * This method is called at unmarshalling time by JAXB.
      *
-     * @param duration The adapter to set.
+     * @param  duration  the adapter to set.
      */
     public void setElement(final Duration duration) {
-        metadata = null; // Cleaned first in case of failure.
+        metadata = null;                                        // Cleaned first in case of failure.
         if (duration != null) try {
             final TemporalFactory factory = TemporalUtilities.getTemporalFactory();
             InternationalString years = null;
@@ -148,7 +148,7 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
             if ((value = duration.getMonths()) != 0) {
                 months = new SimpleInternationalString(Integer.toString(value));
             }
-            InternationalString weeks = null; // no weeks in javax.xml.datatype.Duration
+            InternationalString weeks = null;                   // No weeks in javax.xml.datatype.Duration
             InternationalString days = null;
             if ((value = duration.getDays()) != 0) {
                 days = new SimpleInternationalString(Integer.toString(value));
@@ -174,8 +174,8 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
     /**
      * Reports a failure to execute the operation because of missing {@code sis-temporal} module.
      *
-     * @param methodName The method name.
-     * @param e The exception.
+     * @param  methodName  the method name.
+     * @param  e           the exception.
      */
     private static void warningOccured(final String methodName, final Exception e) {
         if (TemporalUtilities.REPORT_MISSING_MODULE || !e.getMessage().contains("sis-temporal")) {

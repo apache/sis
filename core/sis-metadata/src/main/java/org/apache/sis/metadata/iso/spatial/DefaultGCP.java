@@ -45,6 +45,7 @@ import org.apache.sis.xml.Namespaces;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_GCP_Type", propOrder = {
     //"geographicCoordinates",
     "accuracyReports"
@@ -77,7 +78,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GCP)
      */
@@ -103,8 +104,8 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGCP castOrCopy(final GCP object) {
@@ -117,7 +118,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
     /**
      * Returns the geographic or map position of the control point, in either two or three dimensions.
      *
-     * @return Geographic or map position of the control point, or {@code null}.
+     * @return geographic or map position of the control point, or {@code null}.
      *
      * @todo finish the annotation on the referencing module before.
      */
@@ -130,7 +131,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
     /**
      * Sets the geographic or map position of the control point, in either two or three dimensions.
      *
-     * @param newValue The new geographic coordinates values.
+     * @param  newValue  the new geographic coordinates values.
      */
     public void setGeographicCoordinates(final DirectPosition newValue) {
         checkWritePermission();
@@ -140,7 +141,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
     /**
      * Returns the accuracy of a ground control point.
      *
-     * @return Accuracy of a ground control point.
+     * @return accuracy of a ground control point.
      */
     @Override
     @XmlElement(name = "accuracyReport", namespace = Namespaces.GMI)
@@ -151,7 +152,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
     /**
      * Sets the accuracy of a ground control point.
      *
-     * @param newValues The new accuracy report values.
+     * @param  newValues  the new accuracy report values.
      */
     public void setAccuracyReports(final Collection<? extends Element> newValues) {
         accuracyReports = writeCollection(newValues, accuracyReports, Element.class);

@@ -75,6 +75,7 @@ import org.apache.sis.internal.jdk8.BiConsumer;
  * @version 0.8
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Format_Type", propOrder = {
     "name",
     "version",
