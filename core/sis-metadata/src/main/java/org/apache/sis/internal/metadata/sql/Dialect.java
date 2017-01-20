@@ -75,8 +75,8 @@ enum Dialect {
     /**
      * Returns the presumed SQL dialect.
      *
-     * @param  metadata The database metadata.
-     * @return The presumed SQL dialect.
+     * @param  metadata  the database metadata.
+     * @return the presumed SQL dialect.
      * @throws SQLException if an error occurred while querying the metadata.
      */
     public static Dialect guess(final DatabaseMetaData metadata) throws SQLException {

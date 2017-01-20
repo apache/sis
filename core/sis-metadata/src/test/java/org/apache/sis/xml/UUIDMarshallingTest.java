@@ -117,7 +117,7 @@ public final strictfp class UUIDMarshallingTest extends XMLTestCase {
      * On an implementation note, the {@code uuid} and other attributes of the {@code <gmd:CI_Series>}
      * elements are handled by {@link org.apache.sis.internal.jaxb.gco.PropertyType}.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testIdentification() throws JAXBException {
@@ -168,7 +168,7 @@ public final strictfp class UUIDMarshallingTest extends XMLTestCase {
      * On an implementation note, the {@code uuidref}, {@code xlink:href} and other attributes of the
      * {@code <gmd:series>} element are handled by {@link org.apache.sis.internal.jaxb.gco.PropertyType}.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testReference() throws JAXBException {
@@ -200,7 +200,7 @@ public final strictfp class UUIDMarshallingTest extends XMLTestCase {
      * The same test than {@link #testReference()}, except that the {@code <gmd:CI_Series>} element is empty.
      * This situation shall force the creation of a new, empty, element for storing the {@code uuidref} information.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testReference")

@@ -64,6 +64,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractDQ_Element_Type", propOrder = {
     "namesOfMeasure",
     "measureIdentification",
@@ -183,8 +184,8 @@ public class AbstractElement extends ISOMetadata implements Element {
         public Date get(final int index) {
             long date = date1;
             switch (index) {
-                case 1:  date = date2; // Fall through
-                case 0:  if (date != Long.MIN_VALUE) return new Date(date); // else fallthrough.
+                case 1:  date = date2;                                          // Fall through
+                case 0:  if (date != Long.MIN_VALUE) return new Date(date);     // else fallthrough.
                 default: throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
             }
         }
@@ -213,7 +214,7 @@ public class AbstractElement extends ISOMetadata implements Element {
         public Date remove(final int index) {
             final Date previous = get(index);
             switch (index) {
-                case 0: date1 = date2; // Fallthrough
+                case 0: date1 = date2;                      // Fallthrough
                 case 1: date2 = Long.MIN_VALUE; break;
             }
             modCount++;
@@ -534,7 +535,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     public void setDates(final Collection<? extends Date> newValues) {
         checkWritePermission();
-        if (newValues != dates) { // Mandatory check for avoiding the call to 'dates.clear()'.
+        if (newValues != dates) {               // Mandatory check for avoiding the call to 'dates.clear()'.
             writeDates(newValues);
         }
     }

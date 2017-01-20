@@ -48,6 +48,7 @@ import org.apache.sis.util.iso.Types;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractCI_Party_Type", propOrder = {
     "name",
     "contactInfo"
@@ -82,8 +83,8 @@ public class AbstractParty extends ISOMetadata implements Party {
     /**
      * Constructs a party initialized with the specified name and contact information.
      *
-     * @param name        Name of the party, or {@code null} if none.
-     * @param contactInfo Contact information for the party, or {@code null} if none.
+     * @param name         name of the party, or {@code null} if none.
+     * @param contactInfo  contact information for the party, or {@code null} if none.
      */
     public AbstractParty(final CharSequence name, final Contact contactInfo) {
         this.name        = Types.toInternationalString(name);
@@ -95,7 +96,7 @@ public class AbstractParty extends ISOMetadata implements Party {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Party)
      */
@@ -125,8 +126,8 @@ public class AbstractParty extends ISOMetadata implements Party {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractParty castOrCopy(final Party object) {
@@ -145,7 +146,7 @@ public class AbstractParty extends ISOMetadata implements Party {
     /**
      * Return the name of the party.
      *
-     * @return Name of the party.
+     * @return name of the party.
      */
     @Override
     @XmlElement(name = "name")
@@ -156,7 +157,7 @@ public class AbstractParty extends ISOMetadata implements Party {
     /**
      * Sets the name of the party.
      *
-     * @param newValue The new name of the party.
+     * @param  newValue  the new name of the party.
      */
     public void setName(final InternationalString newValue) {
        checkWritePermission();
@@ -166,7 +167,7 @@ public class AbstractParty extends ISOMetadata implements Party {
     /**
      * Returns the contact information for the party.
      *
-     * @return Contact information for the party.
+     * @return contact information for the party.
      */
     @Override
     @XmlElement(name = "contactInfo")
@@ -177,7 +178,7 @@ public class AbstractParty extends ISOMetadata implements Party {
     /**
      * Sets the contact information for the party.
      *
-     * @param newValues The new contact information for the party.
+     * @param  newValues  the new contact information for the party.
      */
     public void setContactInfo(final Collection<? extends Contact> newValues) {
         contactInfo = writeCollection(newValues, contactInfo, Contact.class);

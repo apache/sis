@@ -62,8 +62,8 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Res
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gmd:CI_Responsibility>} XML element.
      *
-     * @param  metadata The metadata element to marshall.
-     * @return A {@code PropertyType} wrapping the given the metadata element.
+     * @param  metadata  the metadata element to marshall.
+     * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
     protected CI_Responsibility wrap(final Responsibility metadata) {
@@ -75,7 +75,7 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Res
      * inside the {@code <gmd:CI_Responsibility>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The metadata to be marshalled.
+     * @return the metadata to be marshalled.
      */
     @XmlElementRef
     @SuppressWarnings("deprecation")
@@ -90,7 +90,7 @@ public final class CI_Responsibility extends PropertyType<CI_Responsibility, Res
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param metadata The unmarshalled metadata.
+     * @param  metadata  the unmarshalled metadata.
      */
     public void setElement(final DefaultResponsibility metadata) {
         this.metadata = metadata;

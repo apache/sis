@@ -43,6 +43,7 @@ import org.opengis.metadata.citation.OnlineResource;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_ApplicationSchemaInformation_Type", propOrder = {
     "name",
     "schemaLanguage",
@@ -53,9 +54,7 @@ import org.opengis.metadata.citation.OnlineResource;
     "softwareDevelopmentFileFormat"
 })
 @XmlRootElement(name = "MD_ApplicationSchemaInformation")
-public class DefaultApplicationSchemaInformation extends ISOMetadata
-        implements ApplicationSchemaInformation
-{
+public class DefaultApplicationSchemaInformation extends ISOMetadata implements ApplicationSchemaInformation {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -105,9 +104,9 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Creates a application schema information initialized to the specified values.
      *
-     * @param name               The name of the application schema used.
-     * @param schemaLanguage     The the identification of the schema language used.
-     * @param constraintLanguage The formal language used in application schema.
+     * @param name                the name of the application schema used.
+     * @param schemaLanguage      the the identification of the schema language used.
+     * @param constraintLanguage  the formal language used in application schema.
      */
     public DefaultApplicationSchemaInformation(final Citation name,
                                                final String schemaLanguage,
@@ -123,7 +122,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ApplicationSchemaInformation)
      */
@@ -154,8 +153,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultApplicationSchemaInformation castOrCopy(final ApplicationSchemaInformation object) {
@@ -168,7 +167,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Name of the application schema used.
      *
-     * @return Name of the application schema, or {@code null}.
+     * @return name of the application schema, or {@code null}.
      */
     @Override
     @XmlElement(name = "name", required = true)
@@ -179,7 +178,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Sets the name of the application schema used.
      *
-     * @param newValue The new name.
+     * @param  newValue  the new name.
      */
     public void setName(final Citation newValue) {
         checkWritePermission();
@@ -189,7 +188,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Identification of the schema language used.
      *
-     * @return The schema language used, or {@code null}.
+     * @return the schema language used, or {@code null}.
      */
     @Override
     @XmlElement(name = "schemaLanguage", required = true)
@@ -200,7 +199,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Sets the identification of the schema language used.
      *
-     * @param newValue The new schema language.
+     * @param  newValue  the new schema language.
      */
     public void setSchemaLanguage(final String newValue) {
         checkWritePermission();
@@ -210,7 +209,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Formal language used in Application Schema.
      *
-     * @return Formal language used in Application Schema, or {@code null}.
+     * @return formal language used in Application Schema, or {@code null}.
      */
     @Override
     @XmlElement(name = "constraintLanguage", required = true)
@@ -221,7 +220,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Sets the formal language used in application schema.
      *
-     * @param newValue The new constraint language.
+     * @param  newValue  the new constraint language.
      */
     public void setConstraintLanguage(final String newValue) {
         checkWritePermission();
@@ -231,7 +230,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Full application schema given as an ASCII file.
      *
-     * @return Application schema as an ASCII file, or {@code null}.
+     * @return application schema as an ASCII file, or {@code null}.
      */
     @Override
 /// @XmlElement(name = "schemaAscii")
@@ -242,7 +241,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Sets the full application schema given as an ASCII file.
      *
-     * @param newValue The new ASCII file.
+     * @param  newValue  the new ASCII file.
      */
     public void setSchemaAscii(final CharSequence newValue) {
         checkWritePermission();
@@ -252,7 +251,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Full application schema given as a graphics file.
      *
-     * @return Application schema as a graphics file, or {@code null}.
+     * @return application schema as a graphics file, or {@code null}.
      */
     @Override
 /// @XmlElement(name = "graphicsFile")
@@ -263,7 +262,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Sets the full application schema given as a graphics file.
      *
-     * @param newValue The new graphics file.
+     * @param  newValue  the new graphics file.
      */
     public void setGraphicsFile(final OnlineResource newValue) {
         checkWritePermission();
@@ -273,7 +272,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Full application schema given as a software development file.
      *
-     * @return Application schema as a software development file, or {@code null}.
+     * @return application schema as a software development file, or {@code null}.
      */
     @Override
 /// @XmlElement(name = "softwareDevelopmentFile")
@@ -284,7 +283,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Sets the full application schema given as a software development file.
      *
-     * @param newValue The new software development file.
+     * @param  newValue  the new software development file.
      */
     public void setSoftwareDevelopmentFile(final OnlineResource newValue) {
         checkWritePermission();
@@ -294,7 +293,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Software dependent format used for the application schema software dependent file.
      *
-     * @return Format used for the application schema software file, or {@code null}.
+     * @return format used for the application schema software file, or {@code null}.
      */
     @Override
     @XmlElement(name = "softwareDevelopmentFileFormat")
@@ -305,7 +304,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Sets the software dependent format used for the application schema software dependent file.
      *
-     * @param newValue The new software development file format.
+     * @param  newValue  the new software development file format.
      */
     public void setSoftwareDevelopmentFileFormat(final String newValue) {
         checkWritePermission();

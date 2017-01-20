@@ -53,6 +53,7 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_CoverageDescription_Type", propOrder = {
     "attributeDescription",
     "contentType",

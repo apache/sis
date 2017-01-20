@@ -49,6 +49,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "LE_Processing_Type", propOrder = {
     "identifier",
     "softwareReferences",
@@ -101,7 +102,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Processing)
      */
@@ -131,8 +132,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultProcessing castOrCopy(final Processing object) {
@@ -145,7 +146,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Returns the information to identify the processing package that produced the data.
      *
-     * @return Identifier of the processing package that produced the data, or {@code null}.
+     * @return identifier of the processing package that produced the data, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", namespace = Namespaces.GMI, required = true)
@@ -156,7 +157,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Sets the information to identify the processing package that produced the data.
      *
-     * @param newValue The new identifier value.
+     * @param  newValue  the new identifier value.
      */
     public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
@@ -167,7 +168,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Returns the reference to document describing processing software.
      *
-     * @return Document describing processing software.
+     * @return document describing processing software.
      */
     @Override
     @XmlElement(name = "softwareReference", namespace = Namespaces.GMI)
@@ -178,7 +179,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Sets the reference to document describing processing software.
      *
-     * @param newValues The new software references values.
+     * @param  newValues  the new software references values.
      */
     public void setSoftwareReferences(final Collection<? extends Citation> newValues) {
         softwareReferences = writeCollection(newValues, softwareReferences, Citation.class);
@@ -187,7 +188,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Returns the additional details about the processing procedures. {@code null} if unspecified.
      *
-     * @return Processing procedures, or {@code null}.
+     * @return processing procedures, or {@code null}.
      */
     @Override
     @XmlElement(name = "procedureDescription", namespace = Namespaces.GMI)
@@ -198,7 +199,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Sets the additional details about the processing procedures.
      *
-     * @param newValue The new procedure description value.
+     * @param  newValue  the new procedure description value.
      */
     public void setProcedureDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -208,7 +209,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Returns the reference to documentation describing the processing.
      *
-     * @return Documentation describing the processing.
+     * @return documentation describing the processing.
      */
     @Override
     @XmlElement(name = "documentation", namespace = Namespaces.GMI)
@@ -219,7 +220,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Sets the reference to documentation describing the processing.
      *
-     * @param newValues The new documentations values.
+     * @param  newValues  the new documentations values.
      */
     public void setDocumentations(final Collection<? extends Citation> newValues) {
         documentations = writeCollection(newValues, documentations, Citation.class);
@@ -228,7 +229,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Returns the parameters to control the processing operations, entered at run time.
      *
-     * @return Parameters to control the processing operations, or {@code null}.
+     * @return parameters to control the processing operations, or {@code null}.
      */
     @Override
     @XmlElement(name = "runTimeParameters", namespace = Namespaces.GMI)
@@ -239,7 +240,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Sets the parameters to control the processing operations, entered at run time.
      *
-     * @param newValue The new runtime parameter value.
+     * @param  newValue  the new runtime parameter value.
      */
     public void setRunTimeParameters(final InternationalString newValue) {
         checkWritePermission();
@@ -250,7 +251,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * Returns the details of the methodology by which geographic information was derived from the
      * instrument readings.
      *
-     * @return Methodology by which geographic information was derived from the instrument readings.
+     * @return methodology by which geographic information was derived from the instrument readings.
      */
     @Override
     @XmlElement(name = "algorithm", namespace = Namespaces.GMI)
@@ -262,7 +263,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * Sets the details of the methodology by which geographic information was derived from the
      * instrument readings.
      *
-     * @param newValues The new algorithms values.
+     * @param  newValues  the new algorithms values.
      */
     public void setAlgorithms(final Collection<? extends Algorithm> newValues) {
         algorithms = writeCollection(newValues, algorithms, Algorithm.class);

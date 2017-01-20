@@ -47,8 +47,8 @@ public final class MD_PixelOrientationCode extends EnumAdapter<MD_PixelOrientati
     /**
      * Returns the wrapped value.
      *
-     * @param wrapper The wrapper.
-     * @return The wrapped value.
+     * @param  wrapper  the wrapper.
+     * @return the wrapped value.
      */
     @Override
     public final PixelOrientation unmarshal(final MD_PixelOrientationCode wrapper) {
@@ -58,8 +58,8 @@ public final class MD_PixelOrientationCode extends EnumAdapter<MD_PixelOrientati
     /**
      * Wraps the given value.
      *
-     * @param  e The value to wrap.
-     * @return The wrapped value.
+     * @param  e  the value to wrap.
+     * @return the wrapped value.
      */
     @Override
     public final MD_PixelOrientationCode marshal(final PixelOrientation e) {

@@ -49,6 +49,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_RangeDimension_Type", propOrder = {
     "sequenceIdentifier",
     "descriptor",
@@ -89,7 +90,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(RangeDimension)
      */
@@ -118,8 +119,8 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultRangeDimension castOrCopy(final RangeDimension object) {
@@ -136,7 +137,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     /**
      * Returns a unique name or number that identifies attributes included in the coverage.
      *
-     * @return Unique name or number, or {@code null}.
+     * @return unique name or number, or {@code null}.
      */
     @Override
     @XmlElement(name = "sequenceIdentifier")
@@ -147,7 +148,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     /**
      * Sets the number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
      *
-     * @param newValue The new sequence identifier.
+     * @param  newValue  the new sequence identifier.
      */
     public void setSequenceIdentifier(final MemberName newValue) {
         checkWritePermission();
@@ -157,7 +158,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     /**
      * Returns the description of the attribute.
      *
-     * @return Description of the attribute, or {@code null}.
+     * @return description of the attribute, or {@code null}.
      *
      * @since 0.5
      */
@@ -170,7 +171,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     /**
      * Sets the description of the attribute.
      *
-     * @param newValue The new description.
+     * @param  newValue  the new description.
      *
      * @since 0.5
      */
@@ -183,7 +184,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * Returns the description of the range of a cell measurement value.
      * This method fetches the value from the {@linkplain #getDescription() description}.
      *
-     * @return Description of the range of a cell measurement value, or {@code null}.
+     * @return description of the range of a cell measurement value, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, renamed {@link #getDescription()}.
      */
@@ -198,7 +199,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * Sets the description of the range of a cell measurement value.
      * This method stores the value in the {@linkplain #setDescription(InternationalString) description}.
      *
-     * @param newValue The new descriptor.
+     * @param  newValue  the new descriptor.
      *
      * @deprecated As of ISO 19115:2014, renamed {@link #setDescription(InternationalString)}.
      */
@@ -211,7 +212,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * Returns the identifiers for each attribute included in the resource.
      * These identifiers can be use to provide names for the attribute from a standard set of names.
      *
-     * @return Identifiers for each attribute included in the resource.
+     * @return identifiers for each attribute included in the resource.
      *
      * @since 0.5
      */
@@ -224,7 +225,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     /**
      * Sets the identifiers for each attribute included in the resource.
      *
-     * @param newValues The new identifiers for each attribute.
+     * @param  newValues  the new identifiers for each attribute.
      *
      * @since 0.5
      */

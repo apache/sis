@@ -46,6 +46,7 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "SV_OperationChainMetadata_Type", namespace = Namespaces.SRV, propOrder = {
     "name",
     "description",
@@ -82,7 +83,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
     /**
      * Constructs a new operation chain metadata initialized to the specified name.
      *
-     * @param name The name as used by the service for this chain.
+     * @param  name  the name as used by the service for this chain.
      */
     public DefaultOperationChainMetadata(final CharSequence name) {
         this.name = Types.toInternationalString(name);
@@ -93,7 +94,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(OperationChainMetadata)
      */
@@ -120,8 +121,8 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultOperationChainMetadata castOrCopy(final OperationChainMetadata object) {
@@ -134,7 +135,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
     /**
      * Returns the name as used by the service for this chain.
      *
-     * @return Name as used by the service for this chain.
+     * @return name as used by the service for this chain.
      */
     @Override
     @XmlElement(name = "name", namespace = Namespaces.SRV, required = true)
@@ -145,7 +146,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
     /**
      * Sets the name used by the service for this chain.
      *
-     * @param newValue The new name used by the service for this chain.
+     * @param  newValue  the new name used by the service for this chain.
      */
     public void setName(final InternationalString newValue) {
         checkWritePermission();
@@ -155,7 +156,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
     /**
      * Returns a narrative explanation of the services in the chain and resulting output.
      *
-     * @return Narrative explanation of the services in the chain and resulting output, or {@code null} if none.
+     * @return narrative explanation of the services in the chain and resulting output, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "description", namespace = Namespaces.SRV)
@@ -166,7 +167,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
     /**
      * Sets the narrative explanation of the services in the chain and resulting output.
      *
-     * @param newValue The new a narrative explanation of the services in the chain and resulting output
+     * @param  newValue  the new a narrative explanation of the services in the chain and resulting output
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -176,7 +177,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
     /**
      * Returns information about the operations applied by the chain.
      *
-     * @return Information about the operations applied by the chain.
+     * @return information about the operations applied by the chain.
      */
     @Override
     @XmlElement(name = "operation", namespace = Namespaces.SRV, required = true)
@@ -187,7 +188,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata implements Operat
     /**
      * Sets the information about the operations applied by the chain.
      *
-     * @param newValues The new information about the operations applied by the chain.
+     * @param  newValues  the new information about the operations applied by the chain.
      */
     public void setOperations(final List<? extends OperationMetadata> newValues) {
         operations = writeList(newValues, operations, OperationMetadata.class);

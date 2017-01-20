@@ -89,7 +89,7 @@ public final strictfp class TreeTableViewTest extends TestCase {
     /**
      * Tests serialization.
      *
-     * @throws Exception If an error occurred during the serialization process.
+     * @throws Exception if an error occurred during the serialization process.
      */
     @Test
     @DependsOnMethod("testToString")

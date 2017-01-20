@@ -58,6 +58,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_ScopeDescription_Type") // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_ScopeDescription")
 public class DefaultScopeDescription extends ISOMetadata implements ScopeDescription {
@@ -135,7 +136,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * {@linkplain #getAttributeInstances() attribute instances}
      * and {@linkplain #getOther() other}.</p>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ScopeDescription)
      */
@@ -181,8 +182,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultScopeDescription castOrCopy(final ScopeDescription object) {
@@ -215,8 +216,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
                        ? null : new ExcludedSet<CharSequence>(NAMES[code-1], NAMES[property-1]);
             }
         }
-        // Unconditionally create a new set, because the
-        // user may hold a reference to the previous one.
+        /*
+         * Unconditionally create a new set, because the
+         * user may hold a reference to the previous one.
+         */
         final Set<CharSequence> c = nonNullSet(null, CharSequence.class);
         property = code;
         this.value = c;
@@ -227,8 +230,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Sets the properties identified by the {@code code} argument, if non-null and non-empty.
      * This discards any other properties.
      *
-     * @param caller The caller method, for logging purpose.
-     * @param code   The property which is going to be set.
+     * @param caller  the caller method, for logging purpose.
+     * @param code    the property which is going to be set.
      */
     private void setProperty(final Set<? extends CharSequence> newValue, final byte code) {
         Set<CharSequence> c = null;
@@ -246,7 +249,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Sends a warning if setting the value for the given property would overwrite an existing property.
      *
-     * @param code The property which is going to be set.
+     * @param  code  the property which is going to be set.
      */
     private void warningOnOverwrite(final byte code) {
         if (value != null && property != code) {
@@ -265,7 +268,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * “<cite>Administrative area A, B &amp; C</cite>” description.
      * </div>
      *
-     * @return Dataset to which the information applies, or {@code null}.
+     * @return dataset to which the information applies, or {@code null}.
      */
     @Override
     @XmlElement(name = "dataset")
@@ -280,7 +283,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new dataset.
+     * @param  newValue  the new dataset.
      */
     public void setDataset(final String newValue) {
         checkWritePermission();
@@ -304,7 +307,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
      *
-     * @return Feature types to which the information applies.
+     * @return feature types to which the information applies.
      */
     @Override
     public Set<CharSequence> getFeatures() {
@@ -318,7 +321,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
-     * @param newValues The new feature types.
+     * @param  newValues  the new feature types.
      */
     public void setFeatures(final Set<? extends CharSequence> newValues) {
         setProperty(newValues, FEATURES);
@@ -337,7 +340,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
      *
-     * @return Attribute types to which the information applies.
+     * @return attribute types to which the information applies.
      */
     @Override
     public Set<CharSequence> getAttributes() {
@@ -351,7 +354,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
-     * @param newValues The new attribute types.
+     * @param  newValues  the new attribute types.
      */
     public void setAttributes(final Set<? extends CharSequence> newValues) {
         setProperty(newValues, ATTRIBUTES);
@@ -370,7 +373,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
      *
-     * @return Feature instances to which the information applies.
+     * @return feature instances to which the information applies.
      */
     @Override
     public Set<CharSequence> getFeatureInstances() {
@@ -384,7 +387,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
-     * @param newValues The new feature instances.
+     * @param  newValues  the new feature instances.
      */
     public void setFeatureInstances(final Set<? extends CharSequence> newValues) {
         setProperty(newValues, FEATURE_INSTANCES);
@@ -403,7 +406,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
      *
-     * @return Attribute instances to which the information applies.
+     * @return attribute instances to which the information applies.
      */
     @Override
     public Set<CharSequence> getAttributeInstances() {
@@ -417,7 +420,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
-     * @param newValues The new attribute instances.
+     * @param  newValues  the new attribute instances.
      */
     public void setAttributeInstances(final Set<? extends CharSequence> newValues) {
         setProperty(newValues, ATTRIBUTE_INSTANCES);
@@ -426,7 +429,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Returns the class of information that does not fall into the other categories to which the information applies.
      *
-     * @return Class of information that does not fall into the other categories, or {@code null}.
+     * @return class of information that does not fall into the other categories, or {@code null}.
      */
     @Override
     @XmlElement(name = "other")

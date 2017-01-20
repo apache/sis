@@ -377,7 +377,7 @@ class PropertyAccessor {
                             Classes.getShortName(type) + '.' + name));
                 }
                 if (deprecated) {
-                    mapping.put(name, old); // Restore the undeprecated method.
+                    mapping.put(name, old);                 // Restore the undeprecated method.
                 }
             }
         }
@@ -413,7 +413,7 @@ class PropertyAccessor {
         for (Method candidate : getters) {
             if (Classes.isPossibleGetter(candidate)) {
                 final String name = candidate.getName();
-                if (name.startsWith(SET)) { // Paranoiac check.
+                if (name.startsWith(SET)) {                         // Paranoiac check.
                     continue;
                 }
                 /*
@@ -424,13 +424,13 @@ class PropertyAccessor {
                 if (MetadataStandard.IMPLEMENTATION_CAN_ALTER_API) {
                     if (type == implementation) {
                         if (!type.isInterface() && !candidate.isAnnotationPresent(UML.class)) {
-                            continue; // @UML considered optional only for interfaces.
+                            continue;           // @UML considered optional only for interfaces.
                         }
                     } else try {
                         candidate = type.getMethod(name, (Class[]) null);
                     } catch (NoSuchMethodException e) {
                         if (!candidate.isAnnotationPresent(UML.class)) {
-                            continue; // Not a method from an interface, and no @UML in implementation.
+                            continue;           // Not a method from an interface, and no @UML in implementation.
                         }
                     }
                 }
@@ -446,7 +446,7 @@ class PropertyAccessor {
                     final Class<?> pt = getters[pi].getReturnType();
                     final Class<?> ct = candidate  .getReturnType();
                     if (ct.isAssignableFrom(pt)) {
-                        continue; // Previous type was more accurate.
+                        continue;                       // Previous type was more accurate.
                     }
                     if (pt.isAssignableFrom(ct)) {
                         getters[pi] = candidate;
@@ -494,7 +494,7 @@ class PropertyAccessor {
      *
      * @param  name       the name of the property to search.
      * @param  mandatory  whether this method shall throw an exception or return {@code -1}
-     *         if the given name is not found.
+     *                    if the given name is not found.
      * @return the index of the given name, or -1 if none and {@code mandatory} is {@code false}.
      * @throws IllegalArgumentException if the name is not found and {@code mandatory} is {@code true}.
      */
@@ -588,8 +588,10 @@ class PropertyAccessor {
                     if (implementation != type) try {
                         getter = implementation.getMethod(getter.getName(), (Class<?>[]) null);
                     } catch (NoSuchMethodException error) {
-                        // Should never happen, since the implementation class
-                        // implements the interface where the getter come from.
+                        /*
+                         * Should never happen, since the implementation class
+                         * implements the interface where the getter come from.
+                         */
                         throw new AssertionError(error);
                     }
                     return getter.getDeclaringClass();
@@ -800,8 +802,10 @@ class PropertyAccessor {
                 if (changed == null) {
                     changed = (mode == RETURN_NULL) || (newValues[0] != oldValue);
                     if (changed && mode == APPEND && !ValueExistencePolicy.isNullOrEmpty(oldValue)) {
-                        // If 'convert' did not added the value in a collection and if a value already
-                        // exists, do not modify the existing value. Exit now with "no change" status.
+                        /*
+                         * If 'convert' did not added the value in a collection and if a value already
+                         * exists, do not modify the existing value. Exit now with "no change" status.
+                         */
                         return null;
                     }
                 }

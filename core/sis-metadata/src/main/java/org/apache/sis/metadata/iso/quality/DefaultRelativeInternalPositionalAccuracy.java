@@ -40,6 +40,7 @@ import org.opengis.metadata.quality.RelativeInternalPositionalAccuracy;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_RelativeInternalPositionalAccuracy_Type")
 @XmlRootElement(name = "DQ_RelativeInternalPositionalAccuracy")
 public class DefaultRelativeInternalPositionalAccuracy extends AbstractPositionalAccuracy

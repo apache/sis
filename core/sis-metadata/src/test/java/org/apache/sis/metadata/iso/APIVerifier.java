@@ -63,9 +63,9 @@ public final strictfp class APIVerifier extends TestCase {
     /**
      * Verifies the API changes for the ISO 19115 standard.
      *
-     * @throws IOException If an error occurred while reading the {@code "api-changes.properties"} file.
-     * @throws ClassNotFoundException If a class declared in {@code "api-changes.properties"} has not been found.
-     * @throws NoSuchMethodException If a method declared in {@code "api-changes.properties"} has not been found.
+     * @throws IOException if an error occurred while reading the {@code "api-changes.properties"} file.
+     * @throws ClassNotFoundException if a class declared in {@code "api-changes.properties"} has not been found.
+     * @throws NoSuchMethodException if a method declared in {@code "api-changes.properties"} has not been found.
      */
     @Test
     public void verifyISO1915() throws IOException, ClassNotFoundException, NoSuchMethodException {
@@ -85,8 +85,8 @@ public final strictfp class APIVerifier extends TestCase {
     /**
      * Implementation of {@link #verifyISO1915()}.
      *
-     * @param standard The metadata standard.
-     * @param changes The list of changes in the given metadata standard.
+     * @param standard  the metadata standard.
+     * @param changes   the list of changes in the given metadata standard.
      */
     private void verifyAPI(final MetadataStandard standard, final Properties changes)
             throws ClassNotFoundException, NoSuchMethodException
@@ -147,10 +147,10 @@ public final strictfp class APIVerifier extends TestCase {
      * <p>This method also opportunistically lists method signature changes if some are found.
      * This is is for information purpose and shall not be included in the {@code api-changes.properties} file.</p>
      *
-     * @param  releasedJAR Path to the JAR file of the GeoAPI interfaces implemented by the stable version of Apache SIS.
-     * @param  snapshotJAR Path to the JAR file of the GeoAPI interfaces that we would implement if it was released.
-     * @param  unitsJAR    Path to the JAR file containing the {@code Unit} class. This is a GeoAPI dependency.
-     * @param  out Where to write the API differences between {@code releasedJAR} and {@code snapshotJAR}.
+     * @param  releasedJAR  path to the JAR file of the GeoAPI interfaces implemented by the stable version of Apache SIS.
+     * @param  snapshotJAR  path to the JAR file of the GeoAPI interfaces that we would implement if it was released.
+     * @param  unitsJAR     path to the JAR file containing the {@code Unit} class. This is a GeoAPI dependency.
+     * @param  out          where to write the API differences between {@code releasedJAR} and {@code snapshotJAR}.
      * @throws ReflectiveOperationException if an error occurred while processing the JAR file content.
      * @throws IOException if an error occurred while reading the JAR files or writing to {@code out}.
      */

@@ -35,6 +35,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  */
 @XmlType(name = "MI_Metadata_Type")
 @XmlRootElement(name = "MI_Metadata")
+@SuppressWarnings("CloneableClassWithoutClone")
 public class MI_Metadata extends DefaultMetadata {
     /**
      * For cross-version compatibility.
@@ -52,7 +53,7 @@ public class MI_Metadata extends DefaultMetadata {
      * Creates a new metadata as a copy of the given one.
      * This is a shallow copy constructor.
      *
-     * @param original The original metadata to copy.
+     * @param  original  the original metadata to copy.
      */
     public MI_Metadata(final Metadata original) {
         super(original);
@@ -62,8 +63,8 @@ public class MI_Metadata extends DefaultMetadata {
      * Wraps the given metadata into a SIS implementation that can be marshalled,
      * using the {@code "gmi"} namespace if necessary.
      *
-     * @param  original The original metadata provided by the user.
-     * @return The metadata to marshall.
+     * @param  original  the original metadata provided by the user.
+     * @return the metadata to marshall.
      */
     public static DefaultMetadata castOrCopy(final Metadata original) {
         if (original != null && !(original instanceof MI_Metadata)) {

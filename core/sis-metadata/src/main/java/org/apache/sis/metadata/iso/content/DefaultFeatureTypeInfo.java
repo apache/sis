@@ -48,6 +48,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @see org.apache.sis.storage.FeatureNaming
  * @see org.apache.sis.feature.DefaultFeatureType
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_FeatureTypeInfo", propOrder = {
     "featureTypeName",
     "featureInstanceCount"

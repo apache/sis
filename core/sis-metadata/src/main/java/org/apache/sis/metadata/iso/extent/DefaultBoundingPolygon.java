@@ -46,6 +46,7 @@ import org.opengis.metadata.extent.BoundingPolygon;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_BoundingPolygon_Type")
 @XmlRootElement(name = "EX_BoundingPolygon")
 public class DefaultBoundingPolygon extends AbstractGeographicExtent implements BoundingPolygon {
@@ -68,7 +69,7 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
     /**
      * Creates a bounding polygon initialized to the specified polygon.
      *
-     * @param polygon The sets of points defining the bounding polygon.
+     * @param polygon  the sets of points defining the bounding polygon.
      */
     public DefaultBoundingPolygon(final Geometry polygon) {
         polygons = singleton(polygon, Geometry.class);
@@ -79,7 +80,7 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(BoundingPolygon)
      */
@@ -104,8 +105,8 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultBoundingPolygon castOrCopy(final BoundingPolygon object) {
@@ -118,7 +119,7 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
     /**
      * Returns the sets of points defining the bounding polygon or other geometry.
      *
-     * @return The sets of points defining the resource boundary.
+     * @return the sets of points defining the resource boundary.
      */
     @Override
     @XmlElement(name = "polygon", required = true)
@@ -129,7 +130,7 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
     /**
      * Sets the sets of points defining the resource boundary.
      *
-     * @param newValues The new boundaries.
+     * @param  newValues  the new boundaries.
      */
     public void setPolygons(final Collection<? extends Geometry> newValues) {
         polygons = writeCollection(newValues, polygons, Geometry.class);

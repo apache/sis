@@ -47,6 +47,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_Instrument_Type", propOrder = {
     "citations",
     "identifier",
@@ -92,7 +93,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Instrument)
      */
@@ -121,8 +122,8 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultInstrument castOrCopy(final Instrument object) {
@@ -135,7 +136,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     /**
      * Returns the complete citation of the instrument.
      *
-     * @return Complete citation of the instrument.
+     * @return complete citation of the instrument.
      */
     @Override
     @XmlElement(name = "citation")
@@ -146,7 +147,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     /**
      * Sets the complete citation of the instrument.
      *
-     * @param newValues The new citation values.
+     * @param  newValues  the new citation values.
      */
     public void setCitations(final Collection<? extends Citation> newValues) {
         citations = writeCollection(newValues, citations, Citation.class);
@@ -155,7 +156,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     /**
      * Returns the unique identification of the instrument.
      *
-     * @return Unique identification of the instrument, or {@code null}.
+     * @return unique identification of the instrument, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -166,7 +167,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     /**
      * Sets the unique identification of the instrument.
      *
-     * @param newValue The new identifier value.
+     * @param  newValue  the new identifier value.
      */
     public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
@@ -177,7 +178,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     /**
      * Returns the name of the type of instrument. Examples: framing, line-scan, push-broom, pan-frame.
      *
-     * @return Type of instrument, or {@code null}.
+     * @return type of instrument, or {@code null}.
      */
     @Override
     @XmlElement(name = "type", required = true)
@@ -188,7 +189,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     /**
      * Sets the name of the type of instrument. Examples: framing, line-scan, push-broom, pan-frame.
      *
-     * @param newValue The new type value.
+     * @param  newValue  the new type value.
      */
     public void setType(final InternationalString newValue) {
         checkWritePermission();
@@ -198,7 +199,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     /**
      * Returns the textual description of the instrument. {@code null} if unspecified.
      *
-     * @return Textual description, or {@code null}.
+     * @return textual description, or {@code null}.
      */
     @Override
     @XmlElement(name = "description")
@@ -209,7 +210,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     /**
      * Sets the textual description of the instrument.
      *
-     * @param newValue The new description value.
+     * @param  newValue  the new description value.
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -219,7 +220,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     /**
      * Returns the platform on which the instrument is mounted. {@code null} if unspecified.
      *
-     * @return Platform on which the instrument is mounted, or {@code null}.
+     * @return platform on which the instrument is mounted, or {@code null}.
      */
     @Override
     @XmlElement(name = "mountedOn")
@@ -230,7 +231,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     /**
      * Sets the platform on which the instrument is mounted.
      *
-     * @param newValue The new platform value.
+     * @param  newValue  the new platform value.
      */
     public void setMountedOn(final Platform newValue) {
         checkWritePermission();

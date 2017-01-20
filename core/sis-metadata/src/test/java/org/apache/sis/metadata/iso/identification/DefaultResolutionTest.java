@@ -134,7 +134,7 @@ public final strictfp class DefaultResolutionTest extends TestCase {
      * <p>Annotating an other method as a workaround seems to always work. See the {@link DefaultResolution#getValue()}
      * javadoc for instructions about how to check if this workaround is still needed with more recent JAXB versions.</p>
      *
-     * @throws JAXBException If an error occurred while marshalling the element.
+     * @throws JAXBException if an error occurred while marshalling the element.
      *
      * @see DefaultResolution#getValue()
      */

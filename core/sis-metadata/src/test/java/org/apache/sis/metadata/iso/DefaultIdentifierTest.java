@@ -66,7 +66,7 @@ public final strictfp class DefaultIdentifierTest extends XMLTestCase {
     /**
      * Test XML marshalling.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testMarshal() throws JAXBException {
@@ -79,7 +79,7 @@ public final strictfp class DefaultIdentifierTest extends XMLTestCase {
     /**
      * Test XML unmarshalling.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testUnmarshall() throws JAXBException {
