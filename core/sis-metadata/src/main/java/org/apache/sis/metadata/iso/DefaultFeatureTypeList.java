@@ -41,6 +41,7 @@ import org.opengis.metadata.FeatureTypeList;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(propOrder = {
     "spatialObject",
     "spatialSchemaName"
@@ -71,7 +72,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
     /**
      * Creates a feature type list initialized to the given values.
      *
-     * @param spatialObject  the instance of a type defined in the spatial schema, or {@code null} if none.
+     * @param spatialObject      the instance of a type defined in the spatial schema, or {@code null} if none.
      * @param spatialSchemaName  the name of the spatial schema used, or {@code null} if none.
      */
     public DefaultFeatureTypeList(final String spatialObject, final String spatialSchemaName) {
@@ -84,7 +85,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object the metadata to copy values from, or {@code null} if none.
+     * @param object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(FeatureTypeList)
      */
@@ -135,7 +136,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
     /**
      * Sets the instance of a type defined in the spatial schema.
      *
-     * @param newValue  the new spatial object.
+     * @param  newValue  the new spatial object.
      */
     public void setSpatialObject(final String newValue) {
         checkWritePermission();
@@ -156,7 +157,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
     /**
      * Sets the name of the spatial schema used.
      *
-     * @param newValue  the new spatial schema.
+     * @param  newValue  the new spatial schema.
      */
     public void setSpatialSchemaName(final String newValue) {
         checkWritePermission();

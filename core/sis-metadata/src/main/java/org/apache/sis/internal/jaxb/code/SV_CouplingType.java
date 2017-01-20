@@ -49,7 +49,7 @@ public final class SV_CouplingType extends UnsupportedCodeListAdapter<SV_Couplin
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
     protected SV_CouplingType wrap(final CodeListUID value) {
@@ -59,7 +59,7 @@ public final class SV_CouplingType extends UnsupportedCodeListAdapter<SV_Couplin
     /**
      * {@inheritDoc}
      *
-     * @return The code list class name.
+     * @return the code list class.
      */
     @Override
     protected String getCodeListName() {
@@ -69,7 +69,7 @@ public final class SV_CouplingType extends UnsupportedCodeListAdapter<SV_Couplin
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "SV_CouplingType", namespace = Namespaces.SRV)
@@ -80,7 +80,7 @@ public final class SV_CouplingType extends UnsupportedCodeListAdapter<SV_Couplin
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param value The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
         identifier = value;

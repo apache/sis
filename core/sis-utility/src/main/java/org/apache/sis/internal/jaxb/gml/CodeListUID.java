@@ -31,7 +31,7 @@ import org.apache.sis.util.iso.Types;
  * @version 0.7
  * @module
  */
-final class CodeListUID {
+public final class CodeListUID {
     /**
      * The code space of the {@link #value} as an URI, or {@code null}.
      */

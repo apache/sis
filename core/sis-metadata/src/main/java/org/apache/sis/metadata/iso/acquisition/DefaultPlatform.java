@@ -48,6 +48,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_Platform_Type", propOrder = {
     "citation",
     "identifier",
@@ -93,7 +94,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Platform)
      */
@@ -122,8 +123,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultPlatform castOrCopy(final Platform object) {
@@ -136,7 +137,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     /**
      * Returns the source where information about the platform is described. {@code null} if unspecified.
      *
-     * @return Source where information about the platform is described, or {@code null}.
+     * @return source where information about the platform is described, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation")
@@ -147,7 +148,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     /**
      * Sets the source where information about the platform is described.
      *
-     * @param newValue The new citation value.
+     * @param  newValue  the new citation value.
      */
     public void setCitation(final Citation newValue) {
         checkWritePermission();
@@ -157,7 +158,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     /**
      * Returns the unique identification of the platform.
      *
-     * @return Unique identification of the platform, or {@code null}.
+     * @return unique identification of the platform, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -168,7 +169,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     /**
      * Sets the unique identification of the platform.
      *
-     * @param newValue The new identifier value.
+     * @param  newValue  the new identifier value.
      */
     public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
@@ -179,7 +180,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     /**
      * Gets the narrative description of the platform supporting the instrument.
      *
-     * @return Narrative description of the platform, or {@code null}.
+     * @return narrative description of the platform, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", required = true)
@@ -190,7 +191,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     /**
      * Sets the narrative description of the platform supporting the instrument.
      *
-     * @param newValue The new description value.
+     * @param  newValue  the new description value.
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -205,7 +206,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      * This change will be tentatively applied in GeoAPI 4.0.
      * </div>
      *
-     * @return Organization responsible for building, launch, or operation of the platform.
+     * @return organization responsible for building, launch, or operation of the platform.
      */
     @Override
     @XmlElement(name = "sponsor")
@@ -221,7 +222,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      * This change will be tentatively applied in GeoAPI 4.0.
      * </div>
      *
-     * @param newValues The new sponsors values;
+     * @param  newValues  the new sponsors values;
      */
     public void setSponsors(final Collection<? extends ResponsibleParty> newValues) {
         sponsors = writeCollection(newValues, sponsors, ResponsibleParty.class);
@@ -230,7 +231,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     /**
      * Gets the instrument(s) mounted on a platform.
      *
-     * @return Instrument(s) mounted on a platform.
+     * @return instrument(s) mounted on a platform.
      */
     @Override
     @XmlElement(name = "instrument", required = true)
@@ -241,7 +242,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     /**
      * Sets the instrument(s) mounted on a platform.
      *
-     * @param newValues The new instruments values.
+     * @param  newValues  the new instruments values.
      */
     public void setInstruments(final Collection<? extends Instrument> newValues) {
         instruments = writeCollection(newValues, instruments, Instrument.class);

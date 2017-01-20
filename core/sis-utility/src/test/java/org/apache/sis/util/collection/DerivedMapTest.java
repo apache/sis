@@ -82,7 +82,7 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
         assertEquals("before remove(300)", 8,  source.get        (3  ).intValue());
         assertEquals("       remove(300)", 80, tested.remove     (300).intValue());
         assertFalse ("after  remove(300)",     source.containsKey(3  ));
-        assertEquals("       remove(300)", 80, target.remove     (300).intValue()); // For comparison purpose.
+        assertEquals("       remove(300)", 80, target.remove     (300).intValue());         // For comparison purpose.
         assertEquals(target, tested);
 
         assertEquals("before put(900)", 1,  source.get(9      ).intValue());
@@ -119,8 +119,8 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
     /**
      * Multiplies the given value by 10, except value {@value #EXCLUDED}.
      *
-     * @param  value The value to multiply.
-     * @return The multiplied value, or {@code null}.
+     * @param  value  the value to multiply.
+     * @return the multiplied value, or {@code null}.
      */
     @Override
     public Integer apply(final Integer value) {

@@ -73,7 +73,7 @@ public final strictfp class StatisticsTest extends TestCase {
      */
     @Test
     public void testGaussian() {
-        final Random random = new Random(317780561); // See class javadoc.
+        final Random random = new Random(317780561);            // See class javadoc.
         final Statistics statistics = new Statistics(null);
         for (int i=0; i<10000; i++) {
             statistics.accept(random.nextGaussian());
@@ -192,7 +192,7 @@ public final strictfp class StatisticsTest extends TestCase {
      */
     @Test
     public void testConcatenation() {
-        final Random random = new Random(429323868); // See class javadoc.
+        final Random random = new Random(429323868);            // See class javadoc.
         final Statistics global = new Statistics(null);
         final Statistics byBlock = new Statistics(null);
         for (int i=0; i<10; i++) {

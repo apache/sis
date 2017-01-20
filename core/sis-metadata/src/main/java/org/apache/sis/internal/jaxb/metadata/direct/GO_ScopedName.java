@@ -37,8 +37,8 @@ public final class GO_ScopedName extends XmlAdapter<CodeType.ScopedName, ScopedN
     /**
      * Converts a GeoAPI interface to the SIS implementation for XML marshalling.
      *
-     * @param  name The bound type value, here the GeoAPI interface.
-     * @return The adapter for the given value, here the SIS implementation.
+     * @param  name  the bound type value, here the GeoAPI interface.
+     * @return the adapter for the given value, here the SIS implementation.
      */
     @Override
     public CodeType.ScopedName marshal(final ScopedName name) {
@@ -53,8 +53,8 @@ public final class GO_ScopedName extends XmlAdapter<CodeType.ScopedName, ScopedN
     /**
      * Returns the scope name from the given string.
      *
-     * @param  code The metadata value.
-     * @return The value to marshal (which is the same).
+     * @param  code  the metadata value.
+     * @return the value to marshal (which is the same).
      */
     @Override
     public ScopedName unmarshal(final CodeType.ScopedName code) {

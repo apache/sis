@@ -47,7 +47,7 @@ public final strictfp class IntegerListTest extends TestCase {
     /**
      * Writes values and read them again for making sure they are the expected ones.
      *
-     * @param maximalValue The maximal value allowed.
+     * @param maximalValue  the maximal value allowed.
      */
     private void testReadWrite(final int maximalValue) {
         final Random random = TestUtilities.createRandomNumberGenerator();

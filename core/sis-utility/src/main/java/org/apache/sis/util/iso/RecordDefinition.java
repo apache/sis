@@ -53,7 +53,7 @@ import org.apache.sis.internal.simple.SimpleAttributeType;
  * @module
  */
 @XmlTransient
-abstract class RecordDefinition { // Intentionally not Serializable.
+abstract class RecordDefinition {                                       // Intentionally not Serializable.
     /**
      * {@code RecordDefinition} implementation used as a fallback when the user-supplied {@link RecordType}
      * is not an instance of {@link DefaultRecordType}. So this adapter is used only if Apache SIS is mixed
@@ -71,7 +71,7 @@ abstract class RecordDefinition { // Intentionally not Serializable.
         /**
          * The wrapped record type.
          */
-        private final RecordType recordType; // This is the only serialized field in this file.
+        private final RecordType recordType;            // This is the only serialized field in this file.
 
         /**
          * Creates a new adapter for the given record type.
@@ -84,9 +84,9 @@ abstract class RecordDefinition { // Intentionally not Serializable.
         /**
          * Invoked on deserialization for restoring the transient fields.
          *
-         * @param  in The input stream from which to deserialize an attribute.
-         * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-         * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+         * @param  in  the input stream from which to deserialize an attribute.
+         * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+         * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
          */
         private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
             in.defaultReadObject();
@@ -141,8 +141,8 @@ abstract class RecordDefinition { // Intentionally not Serializable.
     /**
      * Invoked on construction or deserialization for computing the transient fields.
      *
-     * @param  memberTypes The (<var>name</var>, <var>type</var>) pairs in this record type.
-     * @return The values in the given map. This information is not stored in {@code RecordDefinition}
+     * @param  memberTypes  the (<var>name</var>, <var>type</var>) pairs in this record type.
+     * @return the values in the given map. This information is not stored in {@code RecordDefinition}
      *         because not needed by this class, but the {@link DefaultRecordType} subclass will store it.
      */
     final Type[] computeTransientFields(final Map<? extends MemberName, ? extends Type> memberTypes) {
@@ -222,7 +222,7 @@ abstract class RecordDefinition { // Intentionally not Serializable.
      * Returns a string representation of this object.
      * The string representation is for debugging purpose and may change in any future SIS version.
      *
-     * @return A string representation of this record type.
+     * @return a string representation of this record type.
      */
     @Debug
     @Override
@@ -233,9 +233,9 @@ abstract class RecordDefinition { // Intentionally not Serializable.
     /**
      * Returns a string representation of a {@code Record} or {@code RecordType}.
      *
-     * @param  head   Either {@code "Record"} or {@code "RecordType"}.
-     * @param  values The values as an array, or {@code null} for writing the types instead.
-     * @return The string representation.
+     * @param  head    either {@code "Record"} or {@code "RecordType"}.
+     * @param  values  the values as an array, or {@code null} for writing the types instead.
+     * @return the string representation.
      */
     final String toString(final String head, final Object values) {
         final StringBuilder buffer = new StringBuilder(250);

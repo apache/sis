@@ -79,6 +79,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @version 0.8
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Format_Type", propOrder = {
     "name",
     "version",

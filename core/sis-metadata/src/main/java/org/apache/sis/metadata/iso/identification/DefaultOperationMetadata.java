@@ -63,6 +63,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "SV_OperationMetadata_Type", namespace = Namespaces.SRV, propOrder = {
     "operationName",
     "distributedComputingPlatforms",
@@ -126,7 +127,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(OperationMetadata)
      */
@@ -147,7 +148,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Returns an unique identifier for this interface.
      *
-     * @return An unique identifier for this interface.
+     * @return an unique identifier for this interface.
      */
     @XmlElement(name = "operationName", namespace = Namespaces.SRV, required = true)
     @UML(identifier="operationName", obligation=MANDATORY, specification=ISO_19115)
@@ -158,7 +159,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Sets the unique identifier for this interface.
      *
-     * @param newValue The new unique identifier for this interface.
+     * @param  newValue  the new unique identifier for this interface.
      */
     public void setOperationName(final String newValue) {
         checkWritePermission();
@@ -173,7 +174,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Distributed computing platforms on which the operation has been implemented.
+     * @return distributed computing platforms on which the operation has been implemented.
      */
     @XmlJavaTypeAdapter(DCPList.class)
     @XmlElement(name = "DCP", namespace = Namespaces.SRV, required = true)
@@ -214,7 +215,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      * }
      * </div>
      *
-     * @param newValues The new distributed computing platforms on which the operation has been implemented.
+     * @param  newValues  the new distributed computing platforms on which the operation has been implemented.
      */
     public void setDistributedComputingPlatforms(final Collection<? extends CodeList<?>> newValues) {
         distributedComputingPlatforms = writeCollection(newValues, distributedComputingPlatforms, (Class) CodeList.class);
@@ -223,7 +224,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Returns free text description of the intent of the operation and the results of the operation.
      *
-     * @return Free text description of the intent of the operation and the results of the operation, or {@code null} if none.
+     * @return free text description of the intent of the operation and the results of the operation, or {@code null} if none.
      */
     @XmlElement(name = "operationDescription", namespace = Namespaces.SRV)
     @UML(identifier="operationDescription", obligation=OPTIONAL, specification=ISO_19115)
@@ -234,7 +235,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Sets free text description of the intent of the operation and the results of the operation.
      *
-     * @param newValue The new free text description of the intent of the operation and the results of the operation.
+     * @param  newValue  the new free text description of the intent of the operation and the results of the operation.
      */
     public void setOperationDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -244,7 +245,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Returns the name used to invoke this interface within the context of the DCP.
      *
-     * @return The name used to invoke this interface within the context of the distributed computing platforms,
+     * @return the name used to invoke this interface within the context of the distributed computing platforms,
      *         or {@code null} if none.
      */
     @XmlElement(name = "invocationName", namespace = Namespaces.SRV)
@@ -256,7 +257,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Sets the name used to invoke this interface within the context of the DCP.
      *
-     * @param newValue The new name used to invoke this interface within the context of the DCP.
+     * @param  newValue  the new name used to invoke this interface within the context of the DCP.
      */
     public void setInvocationName(final InternationalString newValue) {
         checkWritePermission();
@@ -266,7 +267,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Returns the handle for accessing the service interface.
      *
-     * @return Handle for accessing the service interface.
+     * @return handle for accessing the service interface.
      */
     @XmlElement(name = "connectPoint", namespace = Namespaces.SRV, required = true)
     @UML(identifier="connectPoint", obligation=MANDATORY, specification=ISO_19115)
@@ -277,7 +278,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Sets the handle for accessing the service interface.
      *
-     * @param newValue The new handle for accessing the service interface.
+     * @param  newValue  the new handle for accessing the service interface.
      */
     public void setConnectPoints(final Collection<? extends OnlineResource> newValue) {
         connectPoints = writeCollection(newValue, connectPoints, OnlineResource.class);
@@ -286,7 +287,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Returns the parameters that are required for this interface.
      *
-     * @return The parameters that are required for this interface, or an empty collection if none.
+     * @return the parameters that are required for this interface, or an empty collection if none.
      */
     @SuppressWarnings("unchecked")
     @XmlElement(name = "parameters", namespace = Namespaces.SRV)
@@ -298,7 +299,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
     /**
      * Sets the parameters that are required for this interface.
      *
-     * @param newValues The new set of parameters that are required for this interface.
+     * @param  newValues  the new set of parameters that are required for this interface.
      */
     @SuppressWarnings("unchecked")
     public void setParameters(final Collection<? extends ParameterDescriptor<?>> newValues) {
@@ -313,7 +314,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return List of operation that must be completed immediately, or an empty list if none.
+     * @return list of operation that must be completed immediately, or an empty list if none.
      */
     @XmlElement(name = "dependsOn", namespace = Namespaces.SRV)
     @UML(identifier="dependsOn", obligation=OPTIONAL, specification=ISO_19115)
@@ -329,7 +330,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @param newValues The new list of operation.
+     * @param  newValues  the new list of operation.
      */
     public void setDependsOn(final List<? extends DefaultOperationMetadata> newValues) {
         dependsOn = writeList(newValues, dependsOn, DefaultOperationMetadata.class);

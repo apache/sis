@@ -97,6 +97,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     /**
      * A null implementation for the {@link #FREEZING} constant.
      */
+    @SuppressWarnings("CloneableClassWithoutClone")
     private static final class Null extends ModifiableMetadata {
         @Override public MetadataStandard getStandard() {
             return null;
@@ -185,8 +186,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                 return this;
             }
             candidate.freeze();
-            // Set the field only after success. The 'unmodifiable' field must
-            // stay null if an exception occurred during clone() or freeze().
+            /*
+             * Set the field only after success. The 'unmodifiable' field must
+             * stay null if an exception occurred during clone() or freeze().
+             */
             unmodifiable = candidate;
         }
         assert !unmodifiable.isModifiable();

@@ -59,7 +59,8 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @version 0.5
  * @module
  */
-@XmlType(name = "MD_ServiceIdentification_Type", propOrder = { // ISO 19139 still use the old prefix.
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
+@XmlType(name = "MD_ServiceIdentification_Type", propOrder = {  // ISO 19139 still use the old prefix.
     "serviceType",
     "serviceTypeVersions",
 /// "accessProperties",
@@ -143,9 +144,9 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Constructs a service identification initialized to the specified values.
      *
-     * @param serviceType Service type name.
-     * @param citation    Citation data for the resource(s).
-     * @param abstracts   Brief narrative summary of the content of the resource(s).
+     * @param serviceType  service type name.
+     * @param citation     citation data for the resource(s).
+     * @param abstracts    brief narrative summary of the content of the resource(s).
      */
     public DefaultServiceIdentification(final GenericName  serviceType,
                                         final Citation     citation,
@@ -160,7 +161,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ServiceIdentification)
      */
@@ -196,8 +197,8 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultServiceIdentification castOrCopy(final ServiceIdentification object) {
@@ -212,7 +213,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *
      * <div class="note"><b>Examples:</b> "discovery", "view", "download", "transformation", or "invoke"</div>
      *
-     * @return A service type name.
+     * @return a service type name.
      */
     @XmlElement(name = "serviceType", namespace = Namespaces.SRV, required = true)
     @UML(identifier="serviceType", obligation=MANDATORY, specification=ISO_19115)
@@ -223,7 +224,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Sets the service type name.
      *
-     * @param newValue The new service type name.
+     * @param  newValue  the new service type name.
      */
     public void setServiceType(final GenericName newValue) {
         checkWritePermission();
@@ -233,7 +234,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Returns the versions of the service.
      *
-     * @return The versions of the service.
+     * @return the versions of the service.
      */
     @XmlElement(name = "serviceTypeVersion", namespace = Namespaces.SRV)
     @UML(identifier="serviceTypeVersion", obligation=OPTIONAL, specification=ISO_19115)
@@ -244,7 +245,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Sets the versions of the service.
      *
-     * @param newValues The new versions of the service.
+     * @param  newValues  the new versions of the service.
      */
     public void setServiceTypeVersions(final Collection<? extends String> newValues) {
         serviceTypeVersions = writeCollection(newValues, serviceTypeVersions, String.class);
@@ -253,7 +254,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Returns information about the availability of the service.
      *
-     * @return Information about the availability of the service, or {@code null} if none.
+     * @return information about the availability of the service, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -267,7 +268,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Sets information about the availability of the service.
      *
-     * @param newValue The new information about the availability of the service.
+     * @param  newValue  the new information about the availability of the service.
      *
      * @since 0.5
      */
@@ -284,7 +285,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Type of coupling between service and associated data, or {@code null} if none.
+     * @return type of coupling between service and associated data, or {@code null} if none.
      */
     @XmlJavaTypeAdapter(SV_CouplingType.class)
     @XmlElement(name = "couplingType", namespace = Namespaces.SRV)
@@ -325,7 +326,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * }
      * </div>
      *
-     * @param newValue The new type of coupling between service and associated data.
+     * @param  newValue  the new type of coupling between service and associated data.
      */
     public void setCouplingType(final CodeList<?> newValue) {
         checkWritePermission();
@@ -340,7 +341,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Further description(s) of the data coupling in the case of tightly coupled services.
+     * @return further description(s) of the data coupling in the case of tightly coupled services.
      */
     @XmlElement(name = "coupledResource", namespace = Namespaces.SRV)
     @UML(identifier="coupledResource", obligation=CONDITIONAL, specification=ISO_19115)
@@ -356,7 +357,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @param newValues The new further description(s) of the data coupling.
+     * @param  newValues  the new further description(s) of the data coupling.
      */
     public void setCoupledResources(final Collection<? extends DefaultCoupledResource> newValues) {
         coupledResources = writeCollection(newValues, coupledResources, DefaultCoupledResource.class);
@@ -365,7 +366,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Returns the reference(s) to the resource on which the service operates.
      *
-     * @return Reference(s) to the resource on which the service operates.
+     * @return reference(s) to the resource on which the service operates.
      *
      * @since 0.5
      */
@@ -378,7 +379,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Sets the reference(s) to the resource on which the service operates.
      *
-     * @param newValues The new reference(s) to the resource on which the service operates.
+     * @param  newValues  the new reference(s) to the resource on which the service operates.
      *
      * @since 0.5
      */
@@ -389,7 +390,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Returns the profile(s) to which the service adheres.
      *
-     * @return Profile(s) to which the service adheres.
+     * @return profile(s) to which the service adheres.
      *
      * @since 0.5
      */
@@ -402,7 +403,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Sets the profile(s) to which the service adheres.
      *
-     * @param newValues The new profile(s) to which the service adheres.
+     * @param  newValues  the new profile(s) to which the service adheres.
      */
     public void setProfiles(final Collection<? extends Citation> newValues) {
         profiles = writeCollection(newValues, profiles, Citation.class);
@@ -411,7 +412,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Returns the standard(s) to which the service adheres.
      *
-     * @return Standard(s) to which the service adheres.
+     * @return standard(s) to which the service adheres.
      *
      * @since 0.5
      */
@@ -424,7 +425,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Sets the standard(s) to which the service adheres.
      *
-     * @param newValues The new standard(s) to which the service adheres.
+     * @param  newValues  the new standard(s) to which the service adheres.
      *
      * @since 0.5
      */
@@ -440,7 +441,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Information about the operations that comprise the service.
+     * @return information about the operations that comprise the service.
      */
     @XmlElement(name = "containsOperations", namespace = Namespaces.SRV)
     @UML(identifier="containsOperations", obligation=OPTIONAL, specification=ISO_19115)
@@ -456,7 +457,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @param newValues The new information(s) about the operations that comprise the service.
+     * @param  newValues  the new information(s) about the operations that comprise the service.
      */
     public void setContainsOperations(final Collection<? extends DefaultOperationMetadata> newValues) {
         containsOperations = writeCollection(newValues, containsOperations, DefaultOperationMetadata.class);
@@ -465,7 +466,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Provides information on the resources that the service operates on.
      *
-     * @return Information on the resources that the service operates on.
+     * @return information on the resources that the service operates on.
      */
     @XmlElement(name = "operatesOn", namespace = Namespaces.SRV)
     @UML(identifier="operatesOn", obligation=OPTIONAL, specification=ISO_19115)
@@ -476,7 +477,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Sets the information on the resources that the service operates on.
      *
-     * @param newValues The new information on the resources that the service operates on.
+     * @param  newValues  the new information on the resources that the service operates on.
      */
     public void setOperatesOn(final Collection<? extends DataIdentification> newValues) {
         operatesOn = writeCollection(newValues, operatesOn, DataIdentification.class);
@@ -490,7 +491,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Information about the chain applied by the service.
+     * @return information about the chain applied by the service.
      *
      * @since 0.5
      */
@@ -508,7 +509,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @param newValues The new information about the chain applied by the service.
+     * @param  newValues  the new information about the chain applied by the service.
      *
      * @since 0.5
      */

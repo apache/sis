@@ -18,11 +18,9 @@ package org.apache.sis.internal.system;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import org.apache.sis.util.logging.Logging;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -78,7 +76,7 @@ public final class Shutdown extends Thread {
     /**
      * Returns the value set by the last call to {@link #setContainer(String)}.
      *
-     * @return Typically {@code "OSGi"}, {@code "Servlet"} or {@code null}.
+     * @return typically {@code "OSGi"}, {@code "Servlet"} or {@code null}.
      */
     public static String getContainer() {
         synchronized (resources) {
@@ -91,8 +89,8 @@ public final class Shutdown extends Thread {
      * Example of such environments are OSG and servlet containers. In such case, the shutdown hook will not
      * be registered to the JVM {@link Runtime}.
      *
-     * @param env A description of the container. Should contain version information if possible.
-     *            Example: {@code "OSGi"} or {@code "JavaServer Web Dev Kit/1.0"}.
+     * @param  env  a description of the container. Should contain version information if possible.
+     *              Example: {@code "OSGi"} or {@code "JavaServer Web Dev Kit/1.0"}.
      */
     public static void setContainer(final String env) {
         Objects.requireNonNull(env);
@@ -108,7 +106,7 @@ public final class Shutdown extends Thread {
      *
      * <p>The same resource shall not be added twice.</p>
      *
-     * @param resource The resource disposal to register for execution at shutdown time.
+     * @param  resource  the resource disposal to register for execution at shutdown time.
      */
     public static void register(final Callable<?> resource) {
         synchronized (resources) {
@@ -136,7 +134,7 @@ public final class Shutdown extends Thread {
      * Unregisters a code from execution at JVM shutdown time.
      * This method uses identity comparison (it does not use {@link Object#equals(Object)}).
      *
-     * @param resource The resource disposal to cancel execution.
+     * @param  resource  the resource disposal to cancel execution.
      */
     public static void unregister(final Callable<?> resource) {
         synchronized (resources) {
@@ -152,7 +150,7 @@ public final class Shutdown extends Thread {
     /**
      * Unregisters the supervisor MBean, executes the disposal tasks and shutdowns the {@code sis-utility} threads.
      *
-     * @param  caller The class invoking this method, to be used only for logging purpose, or {@code null}
+     * @param  caller  the class invoking this method, to be used only for logging purpose, or {@code null}
      *         if the logging system is not available anymore (i.e. the JVM itself is shutting down).
      * @throws Exception if an error occurred during unregistration of the supervisor MBean
      *         or during a resource disposal.

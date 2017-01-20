@@ -61,7 +61,7 @@ public enum OS {
     /**
      * Returns the operating system SIS is currently on.
      *
-     * @return The operation system.
+     * @return the operation system.
      */
     public static OS current() {
         final String name = System.getProperty("os.name");

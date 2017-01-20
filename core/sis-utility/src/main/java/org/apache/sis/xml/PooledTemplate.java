@@ -62,7 +62,7 @@ final class PooledTemplate extends Pooled {
     @Override
     void setStandardProperty(final String name, final Object value) {
         if (initialProperties.put(name, value) != null) {
-            throw new AssertionError(name); // If non-null, some code has done unexpected changes in the map.
+            throw new AssertionError(name);         // If non-null, some code has done unexpected changes in the map.
         }
     }
 

@@ -91,8 +91,8 @@ public final class PT_FreeText extends GO_CharacterString {
      * duplicate the {@code <gco:CharacterString>} element, or the unlocalized string normally
      * written in {@code <gco:CharacterString>} may be missing.</p>
      *
-     * @param text The text to write in the {@code <gco:CharacterString>} element.
-     * @param textGroup The text group elements.
+     * @param  text       the text to write in the {@code <gco:CharacterString>} element.
+     * @param  textGroup  the text group elements.
      *
      * @see org.apache.sis.xml.XML#LOCALE
      */
@@ -106,8 +106,8 @@ public final class PT_FreeText extends GO_CharacterString {
      * if it contains at least one non-root locale. Otherwise returns {@code null}, meaning that
      * the simpler {@link GO_CharacterString} construct should be used instead.
      *
-     * @param text An international string which could have several translations embedded for the same text.
-     * @return A {@code PT_FreeText} instance if the given text has several translations, or {@code null} otherwise.
+     * @param  text  an international string which could have several translations embedded for the same text.
+     * @return a {@code PT_FreeText} instance if the given text has several translations, or {@code null} otherwise.
      */
     public static PT_FreeText create(final InternationalString text) {
         if (text instanceof DefaultInternationalString) {
@@ -141,7 +141,7 @@ public final class PT_FreeText extends GO_CharacterString {
      * field is intentionally omitted since it is usually the text we are searching for!
      * (this method is used for detecting duplicated values).
      *
-     * @param  search The text to search (usually the {@link #text} value).
+     * @param  search  the text to search (usually the {@link #text} value).
      * @return {@code true} if the given text has been found.
      */
     private boolean contains(final String search) {
@@ -166,7 +166,7 @@ public final class PT_FreeText extends GO_CharacterString {
     /**
      * Returns the content of this {@code <gco:CharacterString>} as an {@code InternationalString}.
      *
-     * @return The character sequence for this {@code <gco:CharacterString>}.
+     * @return the character sequence for this {@code <gco:CharacterString>}.
      */
     @Override
     protected CharSequence toCharSequence() {

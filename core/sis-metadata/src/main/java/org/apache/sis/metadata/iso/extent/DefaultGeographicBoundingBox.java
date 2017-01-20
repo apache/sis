@@ -105,6 +105,7 @@ import static java.lang.Double.doubleToLongBits;
  *
  * @see org.apache.sis.geometry.GeneralEnvelope
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_GeographicBoundingBox_Type", propOrder = {
     "westBoundLongitude",
     "eastBoundLongitude",
@@ -252,8 +253,10 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
             return true;
         }
         final boolean p = value;
-        // (value == Boolean.FALSE) is an optimization for a common case avoiding PrimitiveTypeProperties check.
-        // DO NOT REPLACE BY 'equals' OR 'booleanValue()' - the exact reference value matter.
+        /*
+         * (value == Boolean.FALSE) is an optimization for a common case avoiding PrimitiveTypeProperties check.
+         * DO NOT REPLACE BY 'equals' OR 'booleanValue()' - the exact reference value matter.
+         */
         if (p || (value == Boolean.FALSE) || !(PrimitiveTypeProperties.property(value) instanceof NilReason)) {
             return p;
         }

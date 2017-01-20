@@ -52,8 +52,8 @@ public final strictfp class LeftMarginTest extends LineAppenderTest {
     /**
      * Runs the test using an extract from Arthur RIMBAUD (1854-1891), "Le bateau ivre".
      *
-     * @param  lineSeparator The line separator to use in the test strings.
-     * @throws IOException Should never happen, since we are writing in a {@link StringBuilder}.
+     * @param  lineSeparator  the line separator to use in the test strings.
+     * @throws IOException should never happen, since we are writing in a {@link StringBuilder}.
      */
     @Override
     void run(final String lineSeparator) throws IOException {

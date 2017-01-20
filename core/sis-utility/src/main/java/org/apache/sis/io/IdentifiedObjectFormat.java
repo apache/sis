@@ -36,6 +36,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @version 0.4
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.
 final class IdentifiedObjectFormat extends Format {
     /**
      * For cross-version compatibility.

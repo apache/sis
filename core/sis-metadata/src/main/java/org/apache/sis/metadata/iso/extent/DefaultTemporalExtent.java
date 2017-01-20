@@ -60,6 +60,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_TemporalExtent_Type")
 @XmlRootElement(name = "EX_TemporalExtent")
 @XmlSeeAlso(DefaultSpatialTemporalExtent.class)

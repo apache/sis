@@ -33,8 +33,8 @@ public final class CI_OnlineResource extends MetadataAdapter<OnlineResource, Def
     /**
      * Converts a GeoAPI interface to the SIS implementation for XML marshalling.
      *
-     * @param  value The bound type value, here the GeoAPI interface.
-     * @return The adapter for the given value, here the SIS implementation.
+     * @param  value  the bound type value, here the GeoAPI interface.
+     * @return the adapter for the given value, here the SIS implementation.
      */
     @Override
     public DefaultOnlineResource marshal(final OnlineResource value) {

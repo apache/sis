@@ -101,7 +101,7 @@ public abstract class LoggerAdapter extends Logger {
     /**
      * Creates a new logger.
      *
-     * @param name The logger name.
+     * @param  name  the logger name.
      */
     protected LoggerAdapter(final String name) {
         super(name, null);
@@ -122,7 +122,7 @@ public abstract class LoggerAdapter extends Logger {
      * Sets the level for this logger. Subclasses must redirect the call to the external
      * logging framework, or do nothing if the level can not be changed programmatically.
      *
-     * @param level The new value for the log level (may be null).
+     * @param level  the new value for the log level (may be null).
      */
     @Override
     public abstract void setLevel(Level level);
@@ -131,7 +131,7 @@ public abstract class LoggerAdapter extends Logger {
      * Returns the level for this logger. Subclasses shall get this level from the
      * external logging framework.
      *
-     * @return The logger's level.
+     * @return the logger's level.
      */
     @Override
     public abstract Level getLevel();
@@ -143,7 +143,7 @@ public abstract class LoggerAdapter extends Logger {
      * value used in the JDK logging framework. Subclasses should override this method if
      * a different debug level is wanted.
      *
-     * @return The level to use for debugging informations.
+     * @return the level to use for debugging informations.
      */
     @Debug
     protected Level getDebugLevel() {
@@ -191,7 +191,7 @@ public abstract class LoggerAdapter extends Logger {
      *     }
      * }
      *
-     * @param  level A message logging level.
+     * @param  level  a message logging level.
      * @return {@code true} if the given message level is currently being logged.
      */
     @Override
@@ -200,7 +200,7 @@ public abstract class LoggerAdapter extends Logger {
     /**
      * Logs a {@link Level#SEVERE SEVERE} message.
      *
-     * @param message The message to log.
+     * @param message  the message to log.
      */
     @Override
     public abstract void severe(String message);
@@ -208,7 +208,7 @@ public abstract class LoggerAdapter extends Logger {
     /**
      * Logs a {@link Level#WARNING WARNING} message.
      *
-     * @param message The message to log.
+     * @param message  the message to log.
      */
     @Override
     public abstract void warning(String message);
@@ -216,7 +216,7 @@ public abstract class LoggerAdapter extends Logger {
     /**
      * Logs an {@link Level#INFO INFO} message.
      *
-     * @param message The message to log.
+     * @param message  the message to log.
      */
     @Override
     public abstract void info(String message);
@@ -224,7 +224,7 @@ public abstract class LoggerAdapter extends Logger {
     /**
      * Logs an {@link Level#CONFIG CONFIG} message.
      *
-     * @param message The message to log.
+     * @param message  the message to log.
      */
     @Override
     public abstract void config(String message);
@@ -232,7 +232,7 @@ public abstract class LoggerAdapter extends Logger {
     /**
      * Logs a {@link Level#FINE FINE} message.
      *
-     * @param message The message to log.
+     * @param message  the message to log.
      */
     @Override
     public abstract void fine(String message);
@@ -240,7 +240,7 @@ public abstract class LoggerAdapter extends Logger {
     /**
      * Logs a {@link Level#FINER FINER} message.
      *
-     * @param message The message to log.
+     * @param message  the message to log.
      */
     @Override
     public abstract void finer(String message);
@@ -248,7 +248,7 @@ public abstract class LoggerAdapter extends Logger {
     /**
      * Logs a {@link Level#FINEST FINEST} message.
      *
-     * @param message The message to log.
+     * @param message  the message to log.
      */
     @Override
     public abstract void finest(String message);
@@ -258,8 +258,8 @@ public abstract class LoggerAdapter extends Logger {
      * default {@link Logger}, this implementation bypass the level check in order to let
      * the backing logging framework do its own check.
      *
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of method that is being entered.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of method that is being entered.
      */
     @Override
     public void entering(final String sourceClass, final String sourceMethod) {
@@ -271,9 +271,9 @@ public abstract class LoggerAdapter extends Logger {
      * Compared to the default {@link Logger}, this implementation bypass the level check in
      * order to let the backing logging framework do its own check.
      *
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of method that is being entered.
-     * @param param        Parameter to the method being entered.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of method that is being entered.
+     * @param param         parameter to the method being entered.
      */
     @Override
     public void entering(String sourceClass, String sourceMethod, Object param) {
@@ -285,9 +285,9 @@ public abstract class LoggerAdapter extends Logger {
      * Compared to the default {@link Logger}, this implementation bypass the level check in
      * order to let the backing logging framework do its own check.
      *
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of method that is being entered.
-     * @param params       Array of parameters to the method being entered.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of method that is being entered.
+     * @param params        array of parameters to the method being entered.
      */
     @Override
     public void entering(final String sourceClass, final String sourceMethod, final Object[] params) {
@@ -315,8 +315,8 @@ public abstract class LoggerAdapter extends Logger {
      * default {@link Logger}, this implementation bypass the level check in order to let
      * the backing logging framework do its own check.
      *
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
      */
     @Override
     public void exiting(final String sourceClass, final String sourceMethod) {
@@ -328,9 +328,9 @@ public abstract class LoggerAdapter extends Logger {
      * default {@link Logger}, this implementation bypass the level check in order to let
      * the backing logging framework do its own check.
      *
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
-     * @param result       Object that is being returned.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
+     * @param result        object that is being returned.
      */
     @Override
     public void exiting(String sourceClass, String sourceMethod, Object result) {
@@ -342,9 +342,9 @@ public abstract class LoggerAdapter extends Logger {
      * default {@link Logger}, this implementation bypass the level check in order to let
      * the backing logging framework do its own check.
      *
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
-     * @param thrown       The Throwable that is being thrown.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
+     * @param thrown        the Throwable that is being thrown.
      */
     @Override
     public void throwing(String sourceClass, String sourceMethod, Throwable thrown) {
@@ -356,7 +356,7 @@ public abstract class LoggerAdapter extends Logger {
      * {@link #logrb(Level,String,String,ResourceBundle,String,Object[]) logrb} or
      * {@link #logp(Level,String,String,String)} methods.
      *
-     * @param record The log record to be published.
+     * @param record  the log record to be published.
      */
     @Override
     public void log(final LogRecord record) {
@@ -408,8 +408,8 @@ public abstract class LoggerAdapter extends Logger {
      * {@link #config(String) config}, {@link #fine(String) fine}, {@link #finer(String) finer} or
      * {@link #finest(String) finest} methods according the supplied level.
      *
-     * @param level   One of the message level identifiers.
-     * @param message The message to log.
+     * @param level    one of the message level identifiers.
+     * @param message  the message to log.
      */
     @Override
     @SuppressWarnings("fallthrough")
@@ -418,8 +418,10 @@ public abstract class LoggerAdapter extends Logger {
         switch (n / 100) {
             default: {
                 if (n < 0 || n == Integer.MAX_VALUE) break;
-                // MAX_VALUE is a special value for Level.OFF. Otherwise and
-                // if positive, fallthrough since we are greater than SEVERE.
+                /*
+                 * MAX_VALUE is a special value for Level.OFF. Otherwise and
+                 * if positive, fallthrough since we are greater than SEVERE.
+                 */
             }
             case 10: severe (message); break;
             case  9: warning(message); break;
@@ -439,9 +441,9 @@ public abstract class LoggerAdapter extends Logger {
      * Logs a record at the specified level. The default implementation discards the exception
      * and delegates to <code>{@linkplain #log(Level,String) log}(level, message)</code>.
      *
-     * @param level   One of the message level identifiers.
-     * @param message The message to log.
-     * @param thrown  Throwable associated with log message.
+     * @param level    one of the message level identifiers.
+     * @param message  the message to log.
+     * @param thrown   throwable associated with log message.
      */
     @Override
     public void log(final Level level, final String message, final Throwable thrown) {
@@ -453,9 +455,9 @@ public abstract class LoggerAdapter extends Logger {
      * <code>{@linkplain #log(Level,String,Object[]) log}(level, message, params)</code>
      * where the {@code params} array is built from the {@code param} object.
      *
-     * @param level   One of the message level identifiers.
-     * @param message The message to log.
-     * @param param   Parameter to the method being entered.
+     * @param level    one of the message level identifiers.
+     * @param message  the message to log.
+     * @param param    parameter to the method being entered.
      */
     @Override
     public void log(final Level level, final String message, final Object param) {
@@ -467,9 +469,9 @@ public abstract class LoggerAdapter extends Logger {
      * The default implementation formats the message immediately, then delegates to
      * <code>{@linkplain #log(Level,String) log}(level, message)</code>.
      *
-     * @param level   One of the message level identifiers.
-     * @param message The message to log.
-     * @param params  Array of parameters to the method being entered.
+     * @param level    one of the message level identifiers.
+     * @param message  the message to log.
+     * @param params   array of parameters to the method being entered.
      */
     @Override
     public void log(final Level level, final String message, final Object[] params) {
@@ -481,10 +483,10 @@ public abstract class LoggerAdapter extends Logger {
      * the source class and source method, then delegates to
      * <code>{@linkplain #log(Level,String) log}(level, message)</code>.
      *
-     * @param level        One of the message level identifiers.
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
-     * @param message      The message to log.
+     * @param level         one of the message level identifiers.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
+     * @param message       the message to log.
      */
     @Override
     public void logp(final Level level, final String sourceClass, final String sourceMethod,
@@ -498,11 +500,11 @@ public abstract class LoggerAdapter extends Logger {
      * the source class and source method, then delegates to
      * <code>{@linkplain #log(Level,String,Throwable) log}(level, message, thrown)</code>.
      *
-     * @param level        One of the message level identifiers.
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
-     * @param message      The message to log.
-     * @param thrown       Throwable associated with log message.
+     * @param level         one of the message level identifiers.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
+     * @param message       the message to log.
+     * @param thrown        throwable associated with log message.
      */
     @Override
     public void logp(final Level level, final String sourceClass, final String sourceMethod,
@@ -520,11 +522,11 @@ public abstract class LoggerAdapter extends Logger {
      * <p>Note that {@code sourceClass} and {@code sourceMethod} will be discarded unless the
      * target {@link #logp(Level,String,String,String) logp} method has been overridden.</p>
      *
-     * @param level        One of the message level identifiers.
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
-     * @param message      The message to log.
-     * @param param        Parameter to the method being entered.
+     * @param level         one of the message level identifiers.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
+     * @param message       the message to log.
+     * @param param         parameter to the method being entered.
      */
     @Override
     public void logp(final Level level, final String sourceClass, final String sourceMethod,
@@ -541,11 +543,11 @@ public abstract class LoggerAdapter extends Logger {
      * <p>Note that {@code sourceClass} and {@code sourceMethod} will be discarded unless the
      * target {@link #logp(Level,String,String,String) logp} method has been overridden.</p>
      *
-     * @param level        One of the message level identifiers.
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
-     * @param message      The message to log.
-     * @param params       Array of parameters to the method being entered.
+     * @param level         one of the message level identifiers.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
+     * @param message       the message to log.
+     * @param params        array of parameters to the method being entered.
      */
     @Override
     public void logp(final Level level, final String sourceClass, final String sourceMethod,
@@ -559,12 +561,12 @@ public abstract class LoggerAdapter extends Logger {
      * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String,
      * Object[]) logp}(level, sourceClass, sourceMethod, message, params)</code>.
      *
-     * @param level        One of the message level identifiers.
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
-     * @param bundle       The resource bundle for localizing the message, or {@code null}.
-     * @param message      The message to log.
-     * @param params       Array of parameters to the method being entered.
+     * @param level         one of the message level identifiers.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
+     * @param bundle        the resource bundle for localizing the message, or {@code null}.
+     * @param message       the message to log.
+     * @param params        array of parameters to the method being entered.
      *
      * @since 0.5
      */
@@ -579,12 +581,12 @@ public abstract class LoggerAdapter extends Logger {
      * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String,
      * Throwable) logp}(level, sourceClass, sourceMethod, message, thrown)</code>.
      *
-     * @param level        One of the message level identifiers.
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
-     * @param bundle       The resource bundle for localizing the message, or {@code null}.
-     * @param message      The message to log.
-     * @param thrown       Throwable associated with log message.
+     * @param level         one of the message level identifiers.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
+     * @param bundle        the resource bundle for localizing the message, or {@code null}.
+     * @param message       the message to log.
+     * @param thrown        throwable associated with log message.
      *
      * @since 0.5
      */
@@ -599,11 +601,11 @@ public abstract class LoggerAdapter extends Logger {
      * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String)
      * logp}(level, sourceClass, sourceMethod, message)</code>.
      *
-     * @param level        One of the message level identifiers.
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
-     * @param bundleName   Name of resource bundle to localize message, or {@code null}.
-     * @param message      The message to log.
+     * @param level         one of the message level identifiers.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
+     * @param bundleName    name of resource bundle to localize message, or {@code null}.
+     * @param message       the message to log.
      *
      * @deprecated JDK 8 has deprecated this method.
      */
@@ -620,12 +622,12 @@ public abstract class LoggerAdapter extends Logger {
      * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String,
      * Throwable) logp}(level, sourceClass, sourceMethod, message, thrown)</code>.
      *
-     * @param level        One of the message level identifiers.
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
-     * @param bundleName   Name of resource bundle to localize message, or {@code null}.
-     * @param message      The message to log.
-     * @param thrown       Throwable associated with log message.
+     * @param level         one of the message level identifiers.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
+     * @param bundleName    name of resource bundle to localize message, or {@code null}.
+     * @param message       the message to log.
+     * @param thrown        throwable associated with log message.
      *
      * @deprecated JDK 8 has deprecated this method.
      */
@@ -642,12 +644,12 @@ public abstract class LoggerAdapter extends Logger {
      * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String,
      * Object) logp}(level, sourceClass, sourceMethod, message, param)</code>.
      *
-     * @param level        One of the message level identifiers.
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
-     * @param bundleName   Name of resource bundle to localize message, or {@code null}.
-     * @param message      The message to log.
-     * @param param        Parameter to the method being entered.
+     * @param level         one of the message level identifiers.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
+     * @param bundleName    name of resource bundle to localize message, or {@code null}.
+     * @param message       the message to log.
+     * @param param         parameter to the method being entered.
      *
      * @deprecated JDK 8 has deprecated this method.
      */
@@ -664,12 +666,12 @@ public abstract class LoggerAdapter extends Logger {
      * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String,
      * Object[]) logp}(level, sourceClass, sourceMethod, message, params)</code>.
      *
-     * @param level        One of the message level identifiers.
-     * @param sourceClass  Name of class that issued the logging request.
-     * @param sourceMethod Name of the method.
-     * @param bundleName   Name of resource bundle to localize message, or {@code null}.
-     * @param message      The message to log.
-     * @param params       Array of parameters to the method being entered.
+     * @param level         one of the message level identifiers.
+     * @param sourceClass   name of class that issued the logging request.
+     * @param sourceMethod  name of the method.
+     * @param bundleName    name of resource bundle to localize message, or {@code null}.
+     * @param message       the message to log.
+     * @param params        array of parameters to the method being entered.
      *
      * @deprecated JDK 8 has deprecated this method.
      */
@@ -687,7 +689,7 @@ public abstract class LoggerAdapter extends Logger {
      * (e.g. <a href="http://commons.apache.org/logging/">Commons-logging</a>) instead,
      * which is not expected to use {@link Handler} objects.
      *
-     * @param handler A logging handler, ignored in default implementation.
+     * @param handler  a logging handler, ignored in default implementation.
      */
     @Override
     public void addHandler(Handler handler) {
@@ -696,7 +698,7 @@ public abstract class LoggerAdapter extends Logger {
     /**
      * Do nothing since this logger adapter does not support handlers.
      *
-     * @param handler A logging handler, ignored in default implementation.
+     * @param handler  a logging handler, ignored in default implementation.
      */
     @Override
     public void removeHandler(Handler handler) {
@@ -707,7 +709,7 @@ public abstract class LoggerAdapter extends Logger {
      * with {@link #addHandler} not allowing to add any handlers, and avoid mixing
      * loggings from the external framework with JDK loggings.
      *
-     * @param useParentHandlers Ignored in default implementation.
+     * @param useParentHandlers  ignored in default implementation.
      */
     @Override
     public void setUseParentHandlers(boolean useParentHandlers) {
@@ -718,7 +720,7 @@ public abstract class LoggerAdapter extends Logger {
      * More specifically, it should not inherits any configuration from a parent
      * logger using the JDK logging framework.
      *
-     * @param parent Ignored in default implementation.
+     * @param parent  ignored in default implementation.
      */
     @Override
     public void setParent(Logger parent) {
@@ -731,7 +733,7 @@ public abstract class LoggerAdapter extends Logger {
      * is cascaded into many other {@code log} calls, and this test must works in multi-threads
      * environment).
      *
-     * @param filter Ignored in default implementation.
+     * @param filter  ignored in default implementation.
      */
     @Override
     public void setFilter(Filter filter) {
@@ -739,7 +741,7 @@ public abstract class LoggerAdapter extends Logger {
 
     /**
      * Wraps the specified object in an array. This is a helper method for
-     * {@code log(..., Object)} methods that delegate their work to {@code log(..., Object[])}
+     * {@code log(…, Object)} methods that delegate their work to {@code log(…, Object[])}
      */
     private static Object[] asArray(final Object param) {
         return (param != null) ? new Object[] {param} : null;
@@ -747,15 +749,17 @@ public abstract class LoggerAdapter extends Logger {
 
     /**
      * Formats the specified message. This is a helper method for
-     * {@code log(..., Object[])} methods that delegate their work to {@code log(...)}
+     * {@code log(…, Object[])} methods that delegate their work to {@code log(…)}
      */
     private static String format(String message, final Object[] params) {
         if (params != null && params.length != 0) {
             if (MESSAGE_FORMAT.matcher(message).find()) try {
                 message = MessageFormat.format(message, params);
             } catch (IllegalArgumentException e) {
-                // The default Formatter.messageFormat implementation ignores this exception
-                // and uses the pattern as the message, so we mimic its behavior here.
+                /*
+                 * The default Formatter.messageFormat implementation ignores this exception
+                 * and uses the pattern as the message, so we mimic its behavior here.
+                 */
             }
         }
         return message;
@@ -763,28 +767,32 @@ public abstract class LoggerAdapter extends Logger {
 
     /**
      * Localizes the specified message. This is a helper method for
-     * {@code logrb(...)} methods that delegate their work to {@code logp(...)}
+     * {@code logrb(…)} methods that delegate their work to {@code logp(…)}
      */
     private static String localize(final String bundleName, String message) {
         if (bundleName != null) try {
             message = ResourceBundle.getBundle(bundleName).getString(message);
         } catch (MissingResourceException e) {
-            // The default Formatter.messageFormat implementation ignores this exception
-            // and uses the bundle key as the message, so we mimic its behavior here.
+            /*
+             * The default Formatter.messageFormat implementation ignores this exception
+             * and uses the bundle key as the message, so we mimic its behavior here.
+             */
         }
         return message;
     }
 
     /**
      * Localizes the specified message. This is a helper method for
-     * {@code logrb(...)} methods that delegate their work to {@code logp(...)}
+     * {@code logrb(…)} methods that delegate their work to {@code logp(…)}
      */
     private static String localize(final ResourceBundle bundle, String message) {
         if (bundle != null) try {
             message = bundle.getString(message);
         } catch (MissingResourceException e) {
-            // The default Formatter.messageFormat implementation ignores this exception
-            // and uses the bundle key as the message, so we mimic its behavior here.
+            /*
+             * The default Formatter.messageFormat implementation ignores this exception
+             * and uses the bundle key as the message, so we mimic its behavior here.
+             */
         }
         return message;
     }

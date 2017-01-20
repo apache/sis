@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Arrays;
 import java.lang.reflect.Array;
 import java.lang.ref.WeakReference;
@@ -32,9 +33,6 @@ import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.WeakEntry.*;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**

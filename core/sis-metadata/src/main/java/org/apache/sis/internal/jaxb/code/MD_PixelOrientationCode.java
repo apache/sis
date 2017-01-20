@@ -51,7 +51,7 @@ public final class MD_PixelOrientationCode
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
     protected MD_PixelOrientationCode wrap(final CodeListUID value) {
@@ -61,7 +61,7 @@ public final class MD_PixelOrientationCode
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<PixelOrientation> getCodeListClass() {

@@ -64,7 +64,7 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
     /**
      * Creates a wrapper for a {@link CodeList}, in order to handle the format specified in ISO-19139.
      *
-     * @param value The value of {@link CodeList} to be marshalled.
+     * @param  value  the value of {@link CodeList} to be marshalled.
      */
     protected CodeListAdapter(final CodeListUID value) {
         identifier = value;
@@ -82,15 +82,15 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      * For example {@link org.apache.sis.internal.jaxb.code.MD_RestrictionCode}
      * replaces {@code "licence"} by {@code "license"} for ISO 19115:2003 compatibility.
      *
-     * @param value The value of {@link CodeList}, to be marshalled.
-     * @return The wrapper for the code list value.
+     * @param  value  the value of {@link CodeList}, to be marshalled.
+     * @return the wrapper for the code list value.
      */
     protected abstract ValueType wrap(CodeListUID value);
 
     /**
      * Returns the class of code list wrapped by this adapter.
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     protected abstract Class<BoundType> getCodeListClass();
 
@@ -98,8 +98,8 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      * Substitutes the adapter value read from an XML stream by the object which will
      * contain the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  adapter The adapter for this metadata value.
-     * @return A code list which represents the metadata value.
+     * @param  adapter  the adapter for this metadata value.
+     * @return a code list which represents the metadata value.
      */
     @Override
     public final BoundType unmarshal(final ValueType adapter) {
@@ -110,8 +110,8 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      * Substitutes the code list by the adapter to be marshalled into an XML file
      * or stream. JAXB calls automatically this method at marshalling time.
      *
-     * @param  code The code list value.
-     * @return The adapter for the given code list.
+     * @param  code  the code list value.
+     * @return the adapter for the given code list.
      */
     @Override
     public final ValueType marshal(final BoundType code) {
@@ -148,7 +148,7 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      * Invoked by JAXB on marshalling. Subclasses must override this
      * method with the appropriate {@code @XmlElement} annotation.
      *
-     * @return The {@code CodeList} value to be marshalled.
+     * @return the {@code CodeList} value to be marshalled.
      */
     public abstract CodeListUID getElement();
 

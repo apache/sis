@@ -101,9 +101,9 @@ public final class PerformanceLevel extends Level {
     /**
      * Constructs a new logging level for monitoring performance.
      *
-     * @param name     The logging level name.
-     * @param value    The level value.
-     * @param duration The minimal duration (in nanoseconds) for logging a record.
+     * @param name      the logging level name.
+     * @param value     the level value.
+     * @param duration  the minimal duration (in nanoseconds) for logging a record.
      */
     private PerformanceLevel(final String name, final int value, final long duration) {
         super(name, value);
@@ -113,9 +113,9 @@ public final class PerformanceLevel extends Level {
     /**
      * Returns the level to use for logging an event of the given duration.
      *
-     * @param  duration The event duration.
-     * @param  unit The unit of the given duration value.
-     * @return The level to use for logging an event of the given duration.
+     * @param  duration  the event duration.
+     * @param  unit      the unit of the given duration value.
+     * @return the level to use for logging an event of the given duration.
      */
     public static PerformanceLevel forDuration(long duration, final TimeUnit unit) {
         duration = unit.toNanos(duration);
@@ -129,8 +129,8 @@ public final class PerformanceLevel extends Level {
     /**
      * Returns the minimal duration for logging an event at this level.
      *
-     * @param  unit The unit in which to express the minimal duration.
-     * @return The minimal duration in the given unit.
+     * @param  unit  the unit in which to express the minimal duration.
+     * @return the minimal duration in the given unit.
      */
     public long getMinDuration(final TimeUnit unit) {
         return unit.convert(minDuration, TimeUnit.NANOSECONDS);
@@ -152,9 +152,9 @@ public final class PerformanceLevel extends Level {
      * However invoking this method on the {@code PERFORMANCE} field will ensure that every
      * {@code SLOW*} levels will have at least the given duration.</div>
      *
-     * @param  duration The minimal duration.
-     * @param  unit The unit of the given duration value.
-     * @throws IllegalArgumentException If the given duration is negative.
+     * @param  duration  the minimal duration.
+     * @param  unit      the unit of the given duration value.
+     * @throws IllegalArgumentException if the given duration is negative.
      */
     @Configuration
     @SuppressWarnings("fallthrough")

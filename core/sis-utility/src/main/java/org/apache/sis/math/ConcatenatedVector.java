@@ -49,8 +49,8 @@ final class ConcatenatedVector extends Vector implements Serializable {
     /**
      * Creates a concatenated vector.
      *
-     * @param first  the vector for the lower indices.
-     * @param second the vector for the higher indices.
+     * @param first   the vector for the lower indices.
+     * @param second  the vector for the higher indices.
      */
     public ConcatenatedVector(final Vector first, final Vector second) {
         this.first  = first;

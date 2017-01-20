@@ -56,6 +56,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Organisation_Type", propOrder = {
     "logo",
     "individual"
@@ -87,10 +88,10 @@ public class DefaultOrganisation extends AbstractParty {
     /**
      * Constructs an organization initialized to the specified values.
      *
-     * @param name        Name of the organization, or {@code null} if none.
-     * @param logo        Graphic identifying the organization, or {@code null} if none.
-     * @param individual  Position of the individual in an organization, or {@code null} if none.
-     * @param contactInfo Contact information for the organization, or {@code null} if none.
+     * @param name         name of the organization, or {@code null} if none.
+     * @param logo         graphic identifying the organization, or {@code null} if none.
+     * @param individual   position of the individual in an organization, or {@code null} if none.
+     * @param contactInfo  contact information for the organization, or {@code null} if none.
      */
     public DefaultOrganisation(final CharSequence name,
                                final BrowseGraphic logo,
@@ -107,7 +108,7 @@ public class DefaultOrganisation extends AbstractParty {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public DefaultOrganisation(final DefaultOrganisation object) {
         super(object);
@@ -120,7 +121,7 @@ public class DefaultOrganisation extends AbstractParty {
     /**
      * Returns the graphics identifying organization.
      *
-     * @return Graphics identifying organization, or an empty collection if there is none.
+     * @return graphics identifying organization, or an empty collection if there is none.
      */
     @XmlElement(name = "logo")
     @UML(identifier="logo", obligation=CONDITIONAL, specification=ISO_19115)
@@ -131,7 +132,7 @@ public class DefaultOrganisation extends AbstractParty {
     /**
      * Sets the graphics identifying organisation.
      *
-     * @param newValues The new graphics identifying organization.
+     * @param  newValues  the new graphics identifying organization.
      */
     public void setLogo(final Collection<? extends BrowseGraphic> newValues) {
         logo = writeCollection(newValues, logo, BrowseGraphic.class);
@@ -145,7 +146,7 @@ public class DefaultOrganisation extends AbstractParty {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Individuals in the named organization, or an empty collection.
+     * @return individuals in the named organization, or an empty collection.
      */
     @XmlElement(name = "individual")
     @UML(identifier="individual", obligation=OPTIONAL, specification=ISO_19115)
@@ -161,7 +162,7 @@ public class DefaultOrganisation extends AbstractParty {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @param newValues The new individuals in the named organization.
+     * @param  newValues  the new individuals in the named organization.
      */
     public void setIndividual(final Collection<? extends DefaultIndividual> newValues) {
         individual = writeCollection(newValues, individual, DefaultIndividual.class);

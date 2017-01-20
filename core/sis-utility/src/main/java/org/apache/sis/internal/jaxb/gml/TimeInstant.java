@@ -64,7 +64,7 @@ public final class TimeInstant extends GMLAdapter {
     /**
      * Creates a new time instant initialized to the given value.
      *
-     * @param instant The initial instant value.
+     * @param instant  the initial instant value.
      */
     public TimeInstant(final Instant instant) {
         timePosition = toXML(instant);
@@ -101,7 +101,7 @@ public final class TimeInstant extends GMLAdapter {
     /**
      * Returns a string representation for debugging and formatting error message.
      *
-     * @return A string representation of this time instant.
+     * @return a string representation of this time instant.
      */
     @Override
     public String toString() {

@@ -18,8 +18,8 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.Collections;
-
 import org.apache.sis.util.CharSequences;
+
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;

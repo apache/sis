@@ -95,11 +95,11 @@ public final strictfp class VerticalCRSMock extends IdentifiedObjectMock
     /**
      * Creates a new vertical CRS for the given name.
      *
-     * @param name         The CRS, CS, datum and axis name.
-     * @param up           {@code true} if the axis direction is up, or {@code false} if down.
-     * @param unit         The unit of measurement.
-     * @param minimumValue The minium value.
-     * @param maximumValue The maximum value.
+     * @param name          the CRS, CS, datum and axis name.
+     * @param up            {@code true} if the axis direction is up, or {@code false} if down.
+     * @param unit          the unit of measurement.
+     * @param minimumValue  the minium value.
+     * @param maximumValue  the maximum value.
      */
     private VerticalCRSMock(final String name, VerticalDatumType type,
             final double minimumValue, final double maximumValue, final Unit<?> unit, final boolean up)

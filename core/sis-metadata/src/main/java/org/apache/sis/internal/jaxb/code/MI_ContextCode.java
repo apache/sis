@@ -50,7 +50,7 @@ public final class MI_ContextCode extends CodeListAdapter<MI_ContextCode, Contex
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
     protected MI_ContextCode wrap(CodeListUID value) {
@@ -60,7 +60,7 @@ public final class MI_ContextCode extends CodeListAdapter<MI_ContextCode, Contex
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<Context> getCodeListClass() {
@@ -70,7 +70,7 @@ public final class MI_ContextCode extends CodeListAdapter<MI_ContextCode, Contex
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "MI_ContextCode", namespace = Namespaces.GMI)
@@ -81,7 +81,7 @@ public final class MI_ContextCode extends CodeListAdapter<MI_ContextCode, Contex
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param value The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
         identifier = value;

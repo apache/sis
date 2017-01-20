@@ -86,8 +86,8 @@ public class Line implements Cloneable, Serializable {
      * Constructs a line with the specified slope and offset.
      * The linear equation will be <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var>.
      *
-     * @param slope The slope.
-     * @param y0 The <var>y</var> value at <var>x</var> = 0.
+     * @param slope  the slope.
+     * @param y0     the <var>y</var> value at <var>x</var> = 0.
      *
      * @see #setEquation(double, double)
      */
@@ -100,7 +100,7 @@ public class Line implements Cloneable, Serializable {
     /**
      * Returns the slope.
      *
-     * @return The slope.
+     * @return the slope.
      *
      * @see #x0()
      * @see #y0()
@@ -113,7 +113,7 @@ public class Line implements Cloneable, Serializable {
      * Returns the <var>x</var> value for <var>y</var> = 0.
      * Coordinate (<var>x₀</var>, 0) is the intersection point with the <var>x</var> axis.
      *
-     * @return The <var>x</var> value for <var>y</var> = 0.
+     * @return the <var>x</var> value for <var>y</var> = 0.
      *
      * @see #y0()
      * @see #slope()
@@ -126,8 +126,8 @@ public class Line implements Cloneable, Serializable {
      * Computes <var>x</var> = <var>f</var>⁻¹(<var>y</var>).
      * If the line is horizontal, then this method returns an infinite value.
      *
-     * @param  y The <var>y</var> value where to evaluate the inverse function.
-     * @return The <var>x</var> value for the given <var>y</var> value.
+     * @param  y  the <var>y</var> value where to evaluate the inverse function.
+     * @return the <var>x</var> value for the given <var>y</var> value.
      *
      * @see #y(double)
      */
@@ -139,7 +139,7 @@ public class Line implements Cloneable, Serializable {
      * Returns the <var>y</var> value for <var>x</var> = 0.
      * Coordinate (0, <var>y₀</var>) is the intersection point with the <var>y</var> axis.
      *
-     * @return The <var>y</var> value for <var>x</var> = 0.
+     * @return the <var>y</var> value for <var>x</var> = 0.
      *
      * @see #x0()
      * @see #slope()
@@ -152,8 +152,8 @@ public class Line implements Cloneable, Serializable {
      * Computes <var>y</var> = <var>f</var>(<var>x</var>).
      * If the line is vertical, then this method returns an infinite value.
      *
-     * @param  x The <var>x</var> value where to evaluate the inverse function.
-     * @return The <var>y</var> value for the given <var>x</var> value.
+     * @param  x  the <var>x</var> value where to evaluate the inverse function.
+     * @return the <var>y</var> value for the given <var>x</var> value.
      *
      * @see #x(double)
      */
@@ -164,8 +164,8 @@ public class Line implements Cloneable, Serializable {
     /**
      * Translates the line. The slope stay unchanged.
      *
-     * @param dx The horizontal translation.
-     * @param dy The vertical translation.
+     * @param  dx  the horizontal translation.
+     * @param  dy  the vertical translation.
      */
     public void translate(final double dx, final double dy) {
         if (slope == 0 || isInfinite(slope)) {
@@ -181,8 +181,8 @@ public class Line implements Cloneable, Serializable {
      * Sets this line to the specified slope and offset.
      * The linear equation will be <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var>.
      *
-     * @param slope The slope.
-     * @param y0 The <var>y</var> value at <var>x</var> = 0.
+     * @param  slope  the slope.
+     * @param  y0     the <var>y</var> value at <var>x</var> = 0.
      *
      * @see #setFromPoints(double, double, double, double)
      * @see #fit(double[], double[])
@@ -197,10 +197,10 @@ public class Line implements Cloneable, Serializable {
      * Sets a line through the specified points.
      * The line will continue toward infinity after the points.
      *
-     * @param x1 Ordinate <var>x</var> of the first point.
-     * @param y1 Ordinate <var>y</var> of the first point.
-     * @param x2 Ordinate <var>x</var> of the second point.
-     * @param y2 Ordinate <var>y</var> of the second point.
+     * @param  x1  ordinate <var>x</var> of the first point.
+     * @param  y1  ordinate <var>y</var> of the first point.
+     * @param  x2  ordinate <var>x</var> of the second point.
+     * @param  y2  ordinate <var>y</var> of the second point.
      */
     public void setFromPoints(final double x1, final double y1, final double x2, final double y2) {
         this.slope = (y2 - y1) / (x2 - x1);
@@ -222,9 +222,9 @@ public class Line implements Cloneable, Serializable {
      * least-squares senses. This method assume that the <var>x</var> values are precise and all uncertainty
      * is in <var>y</var>.
      *
-     * @param x Vector of <var>x</var> values (independent variable).
-     * @param y Vector of <var>y</var> values (dependent variable).
-     * @return Estimation of the correlation coefficient. The closer this coefficient is to +1 or -1, the better the fit.
+     * @param  x  vector of <var>x</var> values (independent variable).
+     * @param  y  vector of <var>y</var> values (dependent variable).
+     * @return estimation of the correlation coefficient. The closer this coefficient is to +1 or -1, the better the fit.
      *
      * @throws IllegalArgumentException if <var>x</var> and <var>y</var> do not have the same length.
      */
@@ -241,8 +241,8 @@ public class Line implements Cloneable, Serializable {
      * <p>Points shall be two dimensional with ordinate values in the (<var>x</var>,<var>y</var>) order.
      * {@link Double#NaN} ordinate values are ignored.</p>
      *
-     * @param  points The two-dimensional points.
-     * @return Estimation of the correlation coefficient. The closer this coefficient is to +1 or -1, the better the fit.
+     * @param  points  the two-dimensional points.
+     * @return estimation of the correlation coefficient. The closer this coefficient is to +1 or -1, the better the fit.
      * @throws MismatchedDimensionException if a point is not two-dimensional.
      */
     public double fit(final Iterable<? extends DirectPosition> points) {
@@ -264,7 +264,7 @@ public class Line implements Cloneable, Serializable {
             }
             i++;
             final double x,y;
-            if (!isNaN(y = p.getOrdinate(1)) &&  // Test first the dimension which is most likely to contain NaN.
+            if (!isNaN(y = p.getOrdinate(1)) &&     // Test first the dimension which is most likely to contain NaN.
                 !isNaN(x = p.getOrdinate(0)))
             {
                 mean_x.add(x);
@@ -343,7 +343,7 @@ public class Line implements Cloneable, Serializable {
     /**
      * Returns a clone of this line.
      *
-     * @return A clone of this line.
+     * @return a clone of this line.
      */
     @Override
     public Line clone() {
@@ -357,7 +357,7 @@ public class Line implements Cloneable, Serializable {
     /**
      * Compares this line with the specified object for equality.
      *
-     * @param object The object to compare with this line for equality.
+     * @param  object  the object to compare with this line for equality.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -384,7 +384,7 @@ public class Line implements Cloneable, Serializable {
      * Returns a string representation of this line. This method returns the linear equation
      * in the form <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var>.
      *
-     * @return A string representation of this line.
+     * @return a string representation of this line.
      */
     @Override
     public String toString() {

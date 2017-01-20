@@ -44,8 +44,8 @@ public strictfp class CoordinateSystemAxisMock extends IdentifiedObjectMock
     /**
      * Creates a new axis for the given name.
      *
-     * @param name         The axis name.
-     * @param abbreviation The axis abbreviation.
+     * @param name          the axis name.
+     * @param abbreviation  the axis abbreviation.
      */
     public CoordinateSystemAxisMock(final String name, final String abbreviation) {
         super(name);

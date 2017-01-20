@@ -106,7 +106,7 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
      * source value, then this properties set can not contain the {@link FunctionProperty#INJECTIVE}
      * value. See class javadoc for more discussion.
      *
-     * @return The manners in which source values are mapped to target values.
+     * @return the manners in which source values are mapped to target values.
      *         May be an empty set, but never null.
      */
     Set<FunctionProperty> properties();
@@ -114,14 +114,14 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
     /**
      * Returns the type of objects to convert.
      *
-     * @return The type of objects to convert.
+     * @return the type of objects to convert.
      */
     Class<S> getSourceClass();
 
     /**
      * Returns the type of converted objects.
      *
-     * @return The type of converted objects.
+     * @return the type of converted objects.
      */
     Class<T> getTargetClass();
 
@@ -131,17 +131,16 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
      * throws an exception, at implementation choice. Note that this choice may affect the set of
      * function {@linkplain #properties() properties} - see the class Javadoc for more discussion.
      *
-     * @param  object The object to convert, or {@code null}.
-     * @return The converted object, or {@code null}.
-     * @throws UnconvertibleObjectException If the given object is not an element of the function domain.
+     * @param  object  the object to convert, or {@code null}.
+     * @return the converted object, or {@code null}.
+     * @throws UnconvertibleObjectException if the given object is not an element of the function domain.
      */
     @Override
     T apply(S object) throws UnconvertibleObjectException;
 
     /**
-     * Returns a converter capable to convert instances of <var>T</var> back to instances of
-     * <var>S</var>. Before to invoke this method, callers can verify if this converter is
-     * invertible as below:
+     * Returns a converter capable to convert instances of <var>T</var> back to instances of <var>S</var>.
+     * Before to invoke this method, callers can verify if this converter is invertible as below:
      *
      * {@preformat java
      *     if (converter.properties().contains(FunctionProperty.INVERTIBLE)) {
@@ -149,8 +148,8 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
      *     }
      * }
      *
-     * @return A converter for converting instances of <var>T</var> back to instances of <var>S</var>.
-     * @throws UnsupportedOperationException If this converter is not invertible.
+     * @return a converter for converting instances of <var>T</var> back to instances of <var>S</var>.
+     * @throws UnsupportedOperationException if this converter is not invertible.
      *
      * @see FunctionProperty#INVERTIBLE
      */

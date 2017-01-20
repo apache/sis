@@ -58,6 +58,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_AttributeGroup_Type", propOrder = {
     "contentType",
     "attribute"
@@ -89,8 +90,8 @@ public class DefaultAttributeGroup extends ISOMetadata {
     /**
      * Constructs an attribute group initialized to the given values.
      *
-     * @param contentType Type of information represented by the value, or {@code null}.
-     * @param attribute   The attribute, or {@code null}.
+     * @param contentType  type of information represented by the value, or {@code null}.
+     * @param attribute    the attribute, or {@code null}.
      */
     public DefaultAttributeGroup(final CoverageContentType contentType, final RangeDimension attribute) {
         contentTypes = singleton(contentType, CoverageContentType.class);
@@ -102,7 +103,7 @@ public class DefaultAttributeGroup extends ISOMetadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(AttributeGroup)
      */
@@ -117,7 +118,7 @@ public class DefaultAttributeGroup extends ISOMetadata {
     /**
      * Returns the types of information represented by the value(s).
      *
-     * @return The types of information represented by the value(s).
+     * @return the types of information represented by the value(s).
      */
     @XmlElement(name = "contentType", required = true)
     @UML(identifier="contentType", obligation=MANDATORY, specification=ISO_19115)
@@ -128,7 +129,7 @@ public class DefaultAttributeGroup extends ISOMetadata {
     /**
      * Sets the types of information represented by the value(s).
      *
-     * @param newValues The new types of information.
+     * @param  newValues  the new types of information.
      */
     public void setContentTypes(final Collection<? extends CoverageContentType> newValues) {
         contentTypes = writeCollection(newValues, contentTypes, CoverageContentType.class);
@@ -137,7 +138,7 @@ public class DefaultAttributeGroup extends ISOMetadata {
     /**
      * Returns information on an attribute of the resource.
      *
-     * @return Information on an attribute of the resource.
+     * @return information on an attribute of the resource.
      */
     @XmlElement(name = "attribute")
     @UML(identifier="attribute", obligation=OPTIONAL, specification=ISO_19115)
@@ -148,7 +149,7 @@ public class DefaultAttributeGroup extends ISOMetadata {
     /**
      * Sets information on an attribute of the resource.
      *
-     * @param newValues The new attributes.
+     * @param  newValues  the new attributes.
      */
     public void setAttributes(final Collection<? extends RangeDimension> newValues) {
         attributes = writeCollection(newValues, attributes, RangeDimension.class);

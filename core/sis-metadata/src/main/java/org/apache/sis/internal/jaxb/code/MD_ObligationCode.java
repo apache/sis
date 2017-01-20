@@ -35,8 +35,8 @@ public final class MD_ObligationCode extends XmlAdapter<String, Obligation> {
     /**
      * Returns the obligation enumeration for the given name.
      *
-     * @param value The obligation name.
-     * @return The obligation enumeration for the given name.
+     * @param  value the obligation name.
+     * @return the obligation enumeration for the given name.
      */
     @Override
     public Obligation unmarshal(String value) {
@@ -46,8 +46,8 @@ public final class MD_ObligationCode extends XmlAdapter<String, Obligation> {
     /**
      * Returns the name of the given obligation.
      *
-     * @param value The obligation enumeration.
-     * @return The name of the given obligation.
+     * @param  value  the obligation enumeration.
+     * @return the name of the given obligation.
      */
     @Override
     public String marshal(final Obligation value) {

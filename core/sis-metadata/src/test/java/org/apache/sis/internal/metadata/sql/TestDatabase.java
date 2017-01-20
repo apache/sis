@@ -16,16 +16,14 @@
  */
 package org.apache.sis.internal.metadata.sql;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.apache.sis.util.Debug;
 import org.apache.sis.internal.system.DataDirectory;
 
 import static org.junit.Assume.*;
-
-// Branch-dependent imports
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 
 /**
@@ -107,7 +105,7 @@ public final strictfp class TestDatabase {
         ds.getClass().getMethod("setConnectionAttributes", String.class).invoke(ds, "drop=true");
         try {
             ds.getConnection().close();
-        } catch (SQLException e) {          // This is the expected exception.
+        } catch (SQLException e) {                          // This is the expected exception.
             if (!Initializer.isSuccessfulShutdown(e)) {
                 throw e;
             }

@@ -59,6 +59,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Responsibility_Type", propOrder = {
 /// "role",
 /// "extents",
@@ -99,9 +100,9 @@ public class DefaultResponsibility extends ISOMetadata {
     /**
      * Constructs a responsibility initialized to the specified values.
      *
-     * @param role   Function performed by the responsible party, or {@code null}.
-     * @param extent Spatial or temporal extent of the role, or {@code null}.
-     * @param party  Information about the party, or {@code null}.
+     * @param role    function performed by the responsible party, or {@code null}.
+     * @param extent  spatial or temporal extent of the role, or {@code null}.
+     * @param party   information about the party, or {@code null}.
      */
     public DefaultResponsibility(final Role role, final Extent extent, final AbstractParty party) {
         this.role    = role;
@@ -114,7 +115,7 @@ public class DefaultResponsibility extends ISOMetadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public DefaultResponsibility(final DefaultResponsibility object) {
         super(object);
@@ -143,7 +144,7 @@ public class DefaultResponsibility extends ISOMetadata {
     /**
      * Returns the function performed by the responsible party.
      *
-     * @return Function performed by the responsible party.
+     * @return function performed by the responsible party.
      */
 /// @XmlElement(name = "role", required = true)
     @UML(identifier="role", obligation=MANDATORY, specification=ISO_19115)
@@ -154,7 +155,7 @@ public class DefaultResponsibility extends ISOMetadata {
     /**
      * Sets the function performed by the responsible party.
      *
-     * @param newValue The new role, or {@code null} if none.
+     * @param  newValue  the new role, or {@code null} if none.
      */
     public void setRole(final Role newValue) {
         checkWritePermission();
@@ -164,7 +165,7 @@ public class DefaultResponsibility extends ISOMetadata {
     /**
      * Returns the spatial or temporal extents of the role.
      *
-     * @return The spatial or temporal extents of the role.
+     * @return the spatial or temporal extents of the role.
      */
 /// @XmlElement(name = "extent")
     @UML(identifier="extent", obligation=OPTIONAL, specification=ISO_19115)
@@ -175,7 +176,7 @@ public class DefaultResponsibility extends ISOMetadata {
     /**
      * Sets the spatial and temporal extents of the role.
      *
-     * @param newValues The new spatial and temporal extents of the role.
+     * @param  newValues  the new spatial and temporal extents of the role.
      */
     public void setExtents(final Collection<? extends Extent> newValues) {
         extents = writeCollection(newValues, extents, Extent.class);
@@ -189,7 +190,7 @@ public class DefaultResponsibility extends ISOMetadata {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Information about the parties.
+     * @return information about the parties.
      */
 /// @XmlElement(name = "party", required = true)
     @UML(identifier="party", obligation=MANDATORY, specification=ISO_19115)
@@ -205,7 +206,7 @@ public class DefaultResponsibility extends ISOMetadata {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @param newValues New information about the parties.
+     * @param  newValues  new information about the parties.
      */
     public void setParties(final Collection<? extends AbstractParty> newValues) {
         parties = writeCollection(newValues, parties, AbstractParty.class);

@@ -81,7 +81,7 @@ public final strictfp class RangeTest extends TestCase {
      * <p>This test requires assertions to be enabled.</p>
      */
     @Test(expected = IllegalArgumentException.class)
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes", "ResultOfObjectAllocationIgnored"})
     public void testConstructorErrors00() {
         assumeTrue(Range.class.desiredAssertionStatus());
         new Range(Double.class, "error", true, "blast", true);
@@ -96,7 +96,7 @@ public final strictfp class RangeTest extends TestCase {
      * <p>This test requires assertions to be enabled.</p>
      */
     @Test(expected = IllegalArgumentException.class)
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes", "ResultOfObjectAllocationIgnored"})
     public void testConstructorErrors01() {
         assumeTrue(Range.class.desiredAssertionStatus());
         new Range(String.class, 123.233, true, 8740.09, true);
@@ -229,6 +229,7 @@ public final strictfp class RangeTest extends TestCase {
      * Tests the {@link Range#intersect(Range)} method.
      */
     @Test
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testIntersection() {
         final Range<Integer> range1 = new Range<>(Integer.class, 1, true, 5, true);
         final Range<Integer> range2 = new Range<>(Integer.class, 4, true, 6, true);
@@ -256,6 +257,7 @@ public final strictfp class RangeTest extends TestCase {
      * Tests the {@link Range#union(Range)} method.
      */
     @Test
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testUnion() {
         final Range<Character> range1 = new Range<>(Character.class, 'a', true, 'f', true);
         final Range<Character> range2 = new Range<>(Character.class, 'd', true, 'h', true);
@@ -270,6 +272,7 @@ public final strictfp class RangeTest extends TestCase {
      * Tests the {@link Range#union(Range)} method with disjoint ranges.
      */
     @Test
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testDisjointUnion() {
         final Range<Character> range1 = new Range<>(Character.class, 'a', true, 'f', true);
         final Range<Character> range2 = new Range<>(Character.class, 'm', true, 'v', true);

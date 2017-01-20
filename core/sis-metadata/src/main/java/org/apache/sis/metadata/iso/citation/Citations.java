@@ -18,7 +18,7 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.List;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.IdentifiedObject;        // For javadoc
+import org.opengis.referencing.IdentifiedObject;                // For javadoc
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.IdentifierSpace;
@@ -29,7 +29,7 @@ import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
-import org.apache.sis.metadata.iso.DefaultIdentifier;   // For javadoc
+import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
 
 import static org.apache.sis.internal.util.Citations.equalsFiltered;
 
@@ -488,8 +488,8 @@ public final class Citations extends Static {
      *   <li>Otherwise, a new citation is created with the specified name as the title.</li>
      * </ul>
      *
-     * @param  identifier The citation title (or alternate title), or {@code null}.
-     * @return A citation using the specified name, or {@code null} if the given title is null or empty.
+     * @param  identifier  the citation title (or alternate title), or {@code null}.
+     * @return a citation using the specified name, or {@code null} if the given title is null or empty.
      */
     public static Citation fromName(String identifier) {
         if (identifier == null || ((identifier = CharSequences.trimWhitespaces(identifier)).isEmpty())) {
@@ -500,7 +500,7 @@ public final class Citations extends Static {
                 return citation;
             }
         }
-        if (equalsFiltered(identifier, "OGP")) {    // Old name of "IOGP" organization.
+        if (equalsFiltered(identifier, "OGP")) {        // Old name of "IOGP" organization.
             return IOGP;
         }
         if (equalsFiltered(identifier, Constants.CRS)) {
@@ -520,8 +520,8 @@ public final class Citations extends Static {
      * and ignores every character which is not a {@linkplain Character#isLetterOrDigit(int)
      * letter or a digit}. The titles ordering is not significant.
      *
-     * @param  c1 The first citation to compare, or {@code null}.
-     * @param  c2 the second citation to compare, or {@code null}.
+     * @param  c1  the first citation to compare, or {@code null}.
+     * @param  c2  the second citation to compare, or {@code null}.
      * @return {@code true} if both arguments are non-null, and at least one title or alternate title matches.
      */
     public static boolean titleMatches(final Citation c1, final Citation c2) {
@@ -534,8 +534,8 @@ public final class Citations extends Static {
      * matches the given string. The comparison is case-insensitive and ignores every character
      * which is not a {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
      *
-     * @param  citation The citation to check for, or {@code null}.
-     * @param  title The title or alternate title to compare, or {@code null}.
+     * @param  citation  the citation to check for, or {@code null}.
+     * @param  title     the title or alternate title to compare, or {@code null}.
      * @return {@code true} if both arguments are non-null, and the title or an alternate
      *         title matches the given string.
      */
@@ -556,8 +556,8 @@ public final class Citations extends Static {
      * method. This fallback exists for compatibility with client codes using the citation
      * {@linkplain DefaultCitation#getTitle() titles} without identifiers.</p>
      *
-     * @param  c1 The first citation to compare, or {@code null}.
-     * @param  c2 the second citation to compare, or {@code null}.
+     * @param  c1  the first citation to compare, or {@code null}.
+     * @param  c2  the second citation to compare, or {@code null}.
      * @return {@code true} if both arguments are non-null, and at least one identifier matches.
      */
     public static boolean identifierMatches(final Citation c1, final Citation c2) {
@@ -577,8 +577,8 @@ public final class Citations extends Static {
      * {@linkplain DefaultCitation#getAlternateTitles() alternate titles} (often abbreviations)
      * without identifiers.</p>
      *
-     * @param  citation The citation to check for, or {@code null}.
-     * @param  identifier The identifier to compare, or {@code null}.
+     * @param  citation    the citation to check for, or {@code null}.
+     * @param  identifier  the identifier to compare, or {@code null}.
      * @return {@code true} if both arguments are non-null, and an identifier matches the given string.
      */
     public static boolean identifierMatches(final Citation citation, final String identifier) {
@@ -638,8 +638,8 @@ public final class Citations extends Static {
      * The returned string is useful when an "identifier-like" string is desired for display or information purpose,
      * but does not need to be a strictly valid identifier.
      *
-     * @param  citation The citation for which to get the identifier, or {@code null}.
-     * @return A non-empty identifier for the given citation without leading or trailing whitespaces,
+     * @param  citation  the citation for which to get the identifier, or {@code null}.
+     * @return a non-empty identifier for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not declare any identifier or title.
      */
     public static String getIdentifier(final Citation citation) {
@@ -679,8 +679,8 @@ public final class Citations extends Static {
      *   <li>{@code ⁔}</li>
      * </ul></div>
      *
-     * @param  citation The citation for which to get the Unicode identifier, or {@code null}.
-     * @return A non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
+     * @param  citation  the citation for which to get the Unicode identifier, or {@code null}.
+     * @return a non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
      *
      * @see org.apache.sis.metadata.iso.ImmutableIdentifier

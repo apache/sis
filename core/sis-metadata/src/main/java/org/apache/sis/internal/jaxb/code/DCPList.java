@@ -49,7 +49,7 @@ public final class DCPList extends UnsupportedCodeListAdapter<DCPList> {
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
     protected DCPList wrap(final CodeListUID value) {
@@ -59,7 +59,7 @@ public final class DCPList extends UnsupportedCodeListAdapter<DCPList> {
     /**
      * {@inheritDoc}
      *
-     * @return The code list class name.
+     * @return the code list class.
      */
     @Override
     protected String getCodeListName() {
@@ -90,7 +90,7 @@ public final class DCPList extends UnsupportedCodeListAdapter<DCPList> {
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "DCPList", namespace = Namespaces.SRV)
@@ -101,7 +101,7 @@ public final class DCPList extends UnsupportedCodeListAdapter<DCPList> {
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param value The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
         identifier = value;

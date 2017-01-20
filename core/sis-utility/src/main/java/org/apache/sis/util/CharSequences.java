@@ -91,16 +91,6 @@ public final class CharSequences extends Static {
      * of length 4. Strings are constructed only when first needed.
      */
     private static final String[] SPACES = new String[10];
-    static {
-        // Our 'spaces(int)' method will invoke 'substring' on the longuest string in an attempt
-        // to share the same char[] array. Note however that array sharing has been removed from
-        // JDK8, which copy every char[] arrays anyway. Consequently the JDK8 branch will abandon
-        // this strategy and build the char[] array on the fly.
-        final int last = SPACES.length - 1;
-        final char[] spaces = new char[last+1];
-        Arrays.fill(spaces, ' ');
-        SPACES[last] = new String(spaces).intern();
-    }
 
     /**
      * Do not allow instantiation of this class.
@@ -141,10 +131,12 @@ public final class CharSequences extends Static {
             return "";
         }
         if (length < SPACES.length) {
-            String s = SPACES[length-1];
+            String s = SPACES[length - 1];
             if (s == null) {
-                s = SPACES[SPACES.length - 1].substring(0, length).intern();
-                SPACES[length-1] = s;
+                final char[] spaces = new char[length];
+                Arrays.fill(spaces, ' ');
+                s = new String(spaces).intern();
+                SPACES[length - 1] = s;
             }
             return s;
         }
@@ -956,7 +948,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * but is overloaded for the {@code String} type because of its frequent use.</p>
      *
      * @param  text  the text from which to remove leading and trailing whitespaces, or {@code null}.
-     * @return A string with leading and trailing whitespaces removed, or {@code null} is the given
+     * @return a string with leading and trailing whitespaces removed, or {@code null} is the given
      *         text was null.
      */
     public static String trimWhitespaces(String text) {

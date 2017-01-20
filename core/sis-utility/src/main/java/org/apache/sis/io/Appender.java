@@ -66,7 +66,7 @@ abstract class Appender implements Appendable {
     /**
      * Creates a new appender which will send its output to the given stream or buffer.
      *
-     * @param out The underlying character output stream or buffer.
+     * @param out  the underlying character output stream or buffer.
      */
     protected Appender(final Appendable out) {
         ArgumentChecks.ensureNonNull("out", out);
@@ -80,7 +80,7 @@ abstract class Appender implements Appendable {
      */
     final String lineSeparator(final CharSequence sequence, int start, final int end) {
         if (isHighSurrogate()) {
-            start++; // Skip invalid character.
+            start++;                                        // Skip invalid character.
         }
         while (start < end) {
             final int c = Character.codePointAt(sequence, start);
@@ -109,8 +109,11 @@ abstract class Appender implements Appendable {
             if (Character.isLowSurrogate(c)) {
                 return Character.toCodePoint(h, c);
             }
-            // Unpaired surrogate.  This is usually an error, but this not the fault of
-            // this class since we are processing data supplied by the user. Be lenient.
+            /*
+             * If we reach this point, we have unpaired surrogate.  This is usually an error,
+             * but this not the fault of this class since we are processing data supplied by
+             * the user. Be lenient.
+             */
         }
         if (Character.isHighSurrogate(c)) {
             highSurrogate = c;
@@ -132,10 +135,10 @@ abstract class Appender implements Appendable {
      * delegates to {@link #append(char)} and returns {@code start+1}. The intend is to avoid
      * processing a character sequence which starts by an invalid code point.
      *
-     * @param  sequence The character sequence to write.
-     * @param  start    Index of the first character to write by this method or by the caller.
-     * @param  end      Index after the last character to be written by the caller.
-     * @return Index of the first character which need to be written by the caller.
+     * @param  sequence  the character sequence to write.
+     * @param  start     index of the first character to write by this method or by the caller.
+     * @param  end       index after the last character to be written by the caller.
+     * @return index of the first character which need to be written by the caller.
      */
     final int appendSurrogate(final CharSequence sequence, int start, final int end) throws IOException {
         if (start != end && highSurrogate != 0) {
@@ -153,8 +156,8 @@ abstract class Appender implements Appendable {
     /**
      * Appends the given code point to the underlying {@link #out} stream or buffer.
      *
-     * @param  c The code point to append.
-     * @throws IOException If an error occurred while appending the code point.
+     * @param  c  the code point to append.
+     * @throws IOException if an error occurred while appending the code point.
      */
     final void appendCodePoint(final int c) throws IOException {
         if (Character.isBmpCodePoint(c)) {
@@ -171,9 +174,9 @@ abstract class Appender implements Appendable {
      * Appends the specified character sequence.
      * The default implementation delegates to {@link #append(CharSequence, int, int)}.
      *
-     * @param  sequence The character sequence to append, or {@code null}.
-     * @return A reference to this {@code Appendable}.
-     * @throws IOException If an I/O error occurred.
+     * @param  sequence  the character sequence to append, or {@code null}.
+     * @return a reference to this {@code Appendable}.
+     * @throws IOException if an I/O error occurred.
      */
     @Override
     public Appendable append(CharSequence sequence) throws IOException {
@@ -187,7 +190,7 @@ abstract class Appender implements Appendable {
      * Returns the content of this {@code Appendable} as a string if possible,
      * or the localized <cite>"Unavailable content"</cite> string otherwise.
      *
-     * @return The content of this {@code Appendable}, or a localized message for unavailable content.
+     * @return the content of this {@code Appendable}, or a localized message for unavailable content.
      *
      * @see IO#content(Appendable)
      */
