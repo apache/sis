@@ -761,8 +761,8 @@ parseLine:  while (pos < length) {
      * the SQL statement under execution. The main purpose of this method is to provide information about the position
      * where an exception occurred.
      *
-     * @param locale The locale for the message to return.
-     * @return A string representation of the current position, or {@code null} if unknown.
+     * @param  locale  the locale for the message to return.
+     * @return a string representation of the current position, or {@code null} if unknown.
      */
     public String status(final Locale locale) {
         String position = null;

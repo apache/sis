@@ -73,7 +73,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
     /**
      * Tests the construction of a plain property (no identifier).
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
     public void testWithNoReference() throws Exception {
@@ -86,7 +86,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
      * Tests the construction of an object containing {@code UUID} reference,
      * but in a context where the user didn't gave us the authorization to use it.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testWithUUID")
@@ -98,7 +98,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
      * Tests the construction of an object containing a {@link UUID}.
      * The {@code UUID} is allowed to replace the object definition in the XML to be marshalled.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testWithNoReference")
@@ -142,7 +142,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
      * Tests the construction of an object containing a {@link XLink} while keeping the metadata.
      * The {@code XLink} is provided for information purpose.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testWithXLink")
@@ -154,7 +154,7 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
      * Tests the construction of an object containing a {@link XLink} replacing the metadata.
      * The {@code XLink} is allowed to replace the object definition in the XML to be marshalled.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testWithNoReference")

@@ -60,6 +60,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "LI_Lineage_Type", propOrder = {
     "statement",
 /// "scope",
@@ -113,7 +114,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Lineage)
      */
@@ -144,8 +145,8 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultLineage castOrCopy(final Lineage object) {
@@ -160,7 +161,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * Can be provided only if {@linkplain DefaultScope#getLevel scope level}
      * is {@link ScopeCode#DATASET DATASET} or {@link ScopeCode#SERIES SERIES}.
      *
-     * @return Explanation of the data producer's knowledge about the lineage, or {@code null}.
+     * @return explanation of the data producer's knowledge about the lineage, or {@code null}.
      */
     @Override
     @XmlElement(name = "statement")
@@ -171,7 +172,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     /**
      * Sets the general explanation of the data producers knowledge about the lineage of a dataset.
      *
-     * @param newValue The new statement.
+     * @param  newValue  the new statement.
      */
     public void setStatement(final InternationalString newValue) {
         checkWritePermission();
@@ -181,7 +182,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     /**
      * Returns the type of resource and / or extents to which the lineage information applies.
      *
-     * @return Type of resource and / or extents to which the lineage information applies.
+     * @return type of resource and / or extents to which the lineage information applies.
      *
      * @since 0.5
      */
@@ -194,7 +195,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     /**
      * Sets the type of resource and / or extents to which the lineage information applies.
      *
-     * @param newValue The new type of resource.
+     * @param  newValue  the new type of resource.
      *
      * @since 0.5
      */
@@ -206,7 +207,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     /**
      * Returns additional documentation.
      *
-     * @return Additional documentation.
+     * @return additional documentation.
      *
      * @since 0.5
      */
@@ -230,7 +231,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     /**
      * Returns the information about about events in the life of a resource specified by the scope.
      *
-     * @return Information about events in the life of a resource.
+     * @return information about events in the life of a resource.
      */
     @Override
     @XmlElement(name = "processStep")
@@ -241,7 +242,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     /**
      * Sets information about events in the life of a resource specified by the scope.
      *
-     * @param newValues The new process steps.
+     * @param  newValues  the new process steps.
      */
     public void setProcessSteps(final Collection<? extends ProcessStep> newValues)  {
         processSteps = writeCollection(newValues, processSteps, ProcessStep.class);
@@ -250,7 +251,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     /**
      * Returns information about the source data used in creating the data specified by the scope.
      *
-     * @return Information about the source data.
+     * @return information about the source data.
      */
     @Override
     @XmlElement(name = "source")
@@ -261,7 +262,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     /**
      * Sets information about the source data used in creating the data specified by the scope.
      *
-     * @param newValues The new sources.
+     * @param  newValues  the new sources.
      */
     public void setSources(final Collection<? extends Source> newValues) {
         sources = writeCollection(newValues, sources, Source.class);

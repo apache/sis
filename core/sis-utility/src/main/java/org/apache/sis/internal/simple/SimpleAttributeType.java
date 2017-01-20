@@ -138,7 +138,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * Not used for this simple attribute type.
      *
-     * @return Always {@code null}.
+     * @return always {@code null}.
      */
     public InternationalString getDescription() {
         return null;

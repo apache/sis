@@ -66,8 +66,8 @@ public final strictfp class DefaultContactTest extends XMLTestCase implements Wa
      * warning occurred before this method call (i.e. each test is allowed to cause at most one warning), then
      * remember the warning parameters for verification by the test method.
      *
-     * @param source  Ignored.
-     * @param warning The warning.
+     * @param source   ignored.
+     * @param warning  the warning.
      */
     @Override
     public void warningOccured(final Object source, final LogRecord warning) {
@@ -152,8 +152,8 @@ public final strictfp class DefaultContactTest extends XMLTestCase implements Wa
     /**
      * Implementation of {@link #testSetPhone()} and {@link #testSetNonSISPhone()}.
      *
-     * @param hideSIS Whether to hide to {@link DefaultContact} the fact that we
-     *        are using a SIS implementation of {@code Telephone}.
+     * @param hideSIS  whether to hide to {@link DefaultContact} the fact that
+     *                 we are using a SIS implementation of {@code Telephone}.
      */
     @SuppressWarnings("deprecation")
     private void testSetPhone(final boolean hideSIS) {

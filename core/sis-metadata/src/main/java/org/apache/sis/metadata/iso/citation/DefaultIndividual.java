@@ -55,6 +55,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Individual_Type", propOrder = {
     "positionName"
 })
@@ -80,9 +81,9 @@ public class DefaultIndividual extends AbstractParty {
     /**
      * Constructs an individual initialized to the specified values.
      *
-     * @param name         Name of the individual.
-     * @param positionName Position of the individual in an organization.
-     * @param contactInfo  Contact information for the individual.
+     * @param name          name of the individual.
+     * @param positionName  position of the individual in an organization.
+     * @param contactInfo   contact information for the individual.
      */
     public DefaultIndividual(final CharSequence name,
                              final CharSequence positionName,
@@ -97,7 +98,7 @@ public class DefaultIndividual extends AbstractParty {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public DefaultIndividual(final DefaultIndividual object) {
         super(object);
@@ -109,7 +110,7 @@ public class DefaultIndividual extends AbstractParty {
     /**
      * Returns position of the individual in an organization, or {@code null} if none.
      *
-     * @return Position of the individual in an organization, or {@code null} if none.
+     * @return position of the individual in an organization, or {@code null} if none.
      */
     @XmlElement(name = "positionName")
     @UML(identifier="positionName", obligation=CONDITIONAL, specification=ISO_19115)
@@ -120,7 +121,7 @@ public class DefaultIndividual extends AbstractParty {
     /**
      * Sets a new position of the individual in an organization.
      *
-     * @param newValue The new position of the individual in an organization.
+     * @param  newValue  the new position of the individual in an organization.
      */
     public void setPositionName(final InternationalString newValue) {
         checkWritePermission();

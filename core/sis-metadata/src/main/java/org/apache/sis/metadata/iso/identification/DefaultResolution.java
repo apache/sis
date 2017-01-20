@@ -65,6 +65,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @see AbstractIdentification#getSpatialResolutions()
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Resolution_Type") // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_Resolution")
 public class DefaultResolution extends ISOMetadata implements Resolution {
@@ -214,7 +215,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
         checkWritePermission();
         if (value != null && property != code) {
             if (newValue == null) {
-                return; // Do not erase the other property.
+                return;                                     // Do not erase the other property.
             }
             Context.warningOccured(Context.current(), DefaultResolution.class, SETTERS[code-1],
                     Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);

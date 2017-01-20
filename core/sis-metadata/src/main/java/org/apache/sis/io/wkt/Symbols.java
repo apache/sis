@@ -366,7 +366,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Returns the number of paired quotes. For example if the WKT parser accepts both the
      * {@code "…"} and {@code “…”} quote pairs, then this method returns 2.
      *
-     * @return The number of quote pairs.
+     * @return the number of quote pairs.
      *
      * @see #getOpeningQuote(int)
      * @see #getClosingQuote(int)

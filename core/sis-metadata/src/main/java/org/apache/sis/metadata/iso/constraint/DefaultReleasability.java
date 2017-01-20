@@ -56,6 +56,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Releasability_Type", propOrder = {
     "addressees",
     "statement",
@@ -95,7 +96,7 @@ public class DefaultReleasability extends ISOMetadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Releasability)
      */
@@ -116,7 +117,7 @@ public class DefaultReleasability extends ISOMetadata {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Parties to which the release statement applies.
+     * @return parties to which the release statement applies.
      */
     @XmlElement(name = "addressee")
     @UML(identifier="addressee", obligation=OPTIONAL, specification=ISO_19115)
@@ -132,7 +133,7 @@ public class DefaultReleasability extends ISOMetadata {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @param newValues The new parties.
+     * @param  newValues  the new parties.
      */
     public void getAddressees(final Collection<? extends DefaultResponsibility> newValues) {
         addressees = writeCollection(newValues, addressees, DefaultResponsibility.class);
@@ -141,7 +142,7 @@ public class DefaultReleasability extends ISOMetadata {
     /**
      * Returns the release statement.
      *
-     * @return Release statement, or {@code null} if none.
+     * @return release statement, or {@code null} if none.
      */
     @XmlElement(name = "statement")
     @UML(identifier="statement", obligation=OPTIONAL, specification=ISO_19115)
@@ -152,7 +153,7 @@ public class DefaultReleasability extends ISOMetadata {
     /**
      * Sets the release statement.
      *
-     * @param newValue The new release statement.
+     * @param  newValue  the new release statement.
      */
     public void setStatement(final InternationalString newValue) {
         checkWritePermission();
@@ -162,7 +163,7 @@ public class DefaultReleasability extends ISOMetadata {
     /**
      * Components in determining releasability.
      *
-     * @return Components in determining releasability.
+     * @return components in determining releasability.
      */
     @XmlElement(name = "disseminationConstraints")
     @UML(identifier="disseminationConstraints", obligation=OPTIONAL, specification=ISO_19115)
@@ -173,7 +174,7 @@ public class DefaultReleasability extends ISOMetadata {
     /**
      * Sets the components in determining releasability.
      *
-     * @param newValues The new components.
+     * @param  newValues  the new components.
      */
     public void getDisseminationConstraints(final Collection<? extends Restriction> newValues) {
         disseminationConstraints = writeCollection(newValues, disseminationConstraints, Restriction.class);

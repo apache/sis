@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.iso;
 
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -24,9 +25,6 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.TypeName;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -70,9 +68,9 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
     /**
      * Constructs a member name from the given character sequence and attribute type.
      *
-     * @param scope The scope of this name, or {@code null} for a global scope.
-     * @param name  The local name (never {@code null}).
-     * @param attributeType The type of the data associated with the record member (can not be {@code null}).
+     * @param scope          the scope of this name, or {@code null} for a global scope.
+     * @param name           the local name (never {@code null}).
+     * @param attributeType  the type of the data associated with the record member (can not be {@code null}).
      */
     protected DefaultMemberName(final NameSpace scope, final CharSequence name, final TypeName attributeType) {
         super(scope, name);
@@ -92,8 +90,8 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
      *       with the same values than the given name.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      *
      * @since 0.5
@@ -108,7 +106,7 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
     /**
      * Returns the type of the data associated with the record member.
      *
-     * @return The type of the data associated with the record member.
+     * @return the type of the data associated with the record member.
      */
     @Override
     public TypeName getAttributeType() {
@@ -118,7 +116,7 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
     /**
      * Compares this member name with the specified object for equality.
      *
-     * @param object The object to compare with this name for equality.
+     * @param  object  the object to compare with this name for equality.
      * @return {@code true} if the given object is equal to this name.
      */
     @Override

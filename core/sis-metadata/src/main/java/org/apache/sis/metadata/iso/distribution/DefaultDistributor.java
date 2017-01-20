@@ -47,6 +47,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Distributor_Type", propOrder = {
     "distributorContact",
     "distributionOrderProcesses",
@@ -90,7 +91,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Creates a distributor with the specified contact.
      *
-     * @param distributorContact Party from whom the resource may be obtained, or {@code null}.
+     * @param distributorContact  party from whom the resource may be obtained, or {@code null}.
      */
     public DefaultDistributor(final ResponsibleParty distributorContact) {
         this.distributorContact = distributorContact;
@@ -101,7 +102,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Distributor)
      */
@@ -129,8 +130,8 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultDistributor castOrCopy(final Distributor object) {
@@ -148,7 +149,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * This change may be applied in GeoAPI 4.0.
      * </div>
      *
-     * @return Party from whom the resource may be obtained, or {@code null}.
+     * @return party from whom the resource may be obtained, or {@code null}.
      */
     @Override
     @XmlElement(name = "distributorContact", required = true)
@@ -164,7 +165,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * This change may be applied in GeoAPI 4.0.
      * </div>
      *
-     * @param newValue The new distributor contact.
+     * @param  newValue  the new distributor contact.
      */
     public void setDistributorContact(final ResponsibleParty newValue) {
         checkWritePermission();
@@ -175,7 +176,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * Provides information about how the resource may be obtained,
      * and related instructions and fee information.
      *
-     * @return Information about how the resource may be obtained.
+     * @return information about how the resource may be obtained.
      */
     @Override
     @XmlElement(name = "distributionOrderProcess")
@@ -187,7 +188,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * Sets information about how the resource may be obtained,
      * and related instructions and fee information.
      *
-     * @param newValues The new distribution order processes.
+     * @param  newValues  the new distribution order processes.
      */
     public void setDistributionOrderProcesses(final Collection<? extends StandardOrderProcess> newValues) {
         distributionOrderProcesses = writeCollection(newValues, distributionOrderProcesses, StandardOrderProcess.class);
@@ -196,7 +197,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Provides information about the format used by the distributor.
      *
-     * @return Information about the format used by the distributor.
+     * @return information about the format used by the distributor.
      */
     @Override
     @XmlElement(name = "distributorFormat")
@@ -207,7 +208,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Sets information about the format used by the distributor.
      *
-     * @param newValues The new distributor formats.
+     * @param  newValues  the new distributor formats.
      */
     public void setDistributorFormats(final Collection<? extends Format> newValues) {
         distributorFormats = writeCollection(newValues, distributorFormats, Format.class);
@@ -216,7 +217,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Provides information about the technical means and media used by the distributor.
      *
-     * @return Information about the technical means and media used by the distributor.
+     * @return information about the technical means and media used by the distributor.
      */
     @Override
     @XmlElement(name = "distributorTransferOptions")
@@ -227,7 +228,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Provides information about the technical means and media used by the distributor.
      *
-     * @param newValues The new distributor transfer options.
+     * @param  newValues  the new distributor transfer options.
      */
     public void setDistributorTransferOptions(final Collection<? extends DigitalTransferOptions> newValues) {
         distributorTransferOptions = writeCollection(newValues, distributorTransferOptions, DigitalTransferOptions.class);

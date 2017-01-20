@@ -95,12 +95,13 @@ final class LegacyTelephones extends LegacyPropertyAdapter<String,Telephone> {
      * will be set in that element. We test only the first element because {@link DefaultTelephone#getOwner()}
      * initialize new collections as collection containing {@code DefaultTelephone.this}.
      *
-     * @param  value The telephone number to add.
+     * @param  value  the telephone number to add.
      * @return {@code true} if the element has been added.
      */
     @Override
     public boolean add(final String value) {
-        if (value == null || value.isEmpty()) { // Null value happen with empty XML elements like <gco:CharacterString/>
+        // Null value happen with empty XML elements like <gco:CharacterString/>
+        if (value == null || value.isEmpty()) {
             return false;
         }
         final Iterator<Telephone> it = elements.iterator();

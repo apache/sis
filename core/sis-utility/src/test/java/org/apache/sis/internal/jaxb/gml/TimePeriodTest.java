@@ -65,7 +65,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * Creates the XML (un)marshaller pool to be shared by all test methods.
      * The (un)marshallers locale and timezone will be set to fixed values.
      *
-     * @throws JAXBException If an error occurred while creating the pool.
+     * @throws JAXBException if an error occurred while creating the pool.
      *
      * @see #disposeMarshallerPool()
      */
@@ -89,8 +89,8 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
     /**
      * Tests time instant. The test is executed using an arbitrary locale and timezone.
      *
-     * @throws JAXBException If an error occurred while marshalling.
-     * @throws DatatypeConfigurationException Should never happen.
+     * @throws JAXBException if an error occurred while marshalling.
+     * @throws DatatypeConfigurationException should never happen.
      */
     @Test
     public void testTimeInstant() throws JAXBException, DatatypeConfigurationException {

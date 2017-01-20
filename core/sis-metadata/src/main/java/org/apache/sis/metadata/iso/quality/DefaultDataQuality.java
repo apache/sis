@@ -49,6 +49,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "DQ_DataQuality_Type", propOrder = {
     "scope",
     "reports",
@@ -89,7 +90,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     /**
      * Creates a data quality initialized to the given scope.
      *
-     * @param scope The specific data to which the data quality information applies, or {@code null}.
+     * @param scope  the specific data to which the data quality information applies, or {@code null}.
      */
     public DefaultDataQuality(final Scope scope) {
         this.scope = scope;
@@ -100,7 +101,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(DataQuality)
      */
@@ -127,8 +128,8 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultDataQuality castOrCopy(final DataQuality object) {
@@ -141,7 +142,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     /**
      * Returns the specific data to which the data quality information applies.
      *
-     * @return The specific data to which the data quality information applies, or {@code null}.
+     * @return the specific data to which the data quality information applies, or {@code null}.
      */
     @Override
     @XmlElement(name = "scope", required = true)
@@ -152,7 +153,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     /**
      * Sets the specific data to which the data quality information applies.
      *
-     * @param newValue The new scope.
+     * @param  newValue  the new scope.
      */
     public void setScope(final Scope newValue) {
         checkWritePermission();
@@ -162,7 +163,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     /**
      * Returns the quantitative quality information for the data specified by the scope.
      *
-     * @return Quantitative quality information for the data.
+     * @return quantitative quality information for the data.
      */
     @Override
     @XmlElement(name = "report")
@@ -173,7 +174,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     /**
      * Sets the quantitative quality information for the data specified by the scope.
      *
-     * @param newValues The new reports.
+     * @param  newValues  the new reports.
      */
     public void setReports(final Collection<? extends Element> newValues) {
         reports = writeCollection(newValues, reports, Element.class);
@@ -182,7 +183,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     /**
      * Returns non-quantitative quality information about the lineage of the data specified by the scope.
      *
-     * @return Non-quantitative quality information about the lineage of the data specified, or {@code null}.
+     * @return non-quantitative quality information about the lineage of the data specified, or {@code null}.
      */
     @Override
     @XmlElement(name = "lineage")
@@ -193,7 +194,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     /**
      * Sets the non-quantitative quality information about the lineage of the data specified by the scope.
      *
-     * @param newValue The new lineage.
+     * @param  newValue  the new lineage.
      */
     public void setLineage(final Lineage newValue) {
         checkWritePermission();

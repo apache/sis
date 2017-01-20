@@ -52,6 +52,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_Operation_Type", propOrder = {
     "description",
     "citation",
@@ -133,7 +134,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Operation)
      */
@@ -168,8 +169,8 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultOperation castOrCopy(final Operation object) {
@@ -183,7 +184,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * Returns the description of the mission on which the platform observations are made and the
      * objectives of that mission. {@code null} if unspecified.
      *
-     * @return Description of the mission, or {@code null}.
+     * @return description of the mission, or {@code null}.
      */
     @Override
     @XmlElement(name = "description")
@@ -195,7 +196,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * Sets the description of the mission on which the platform observations are made and the
      * objectives of that mission.
      *
-     * @param newValue The new description value.
+     * @param  newValue  the new description value.
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -205,7 +206,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Returns the identification of the mission. {@code null} if unspecified.
      *
-     * @return Identification of the mission, or {@code null}.
+     * @return identification of the mission, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation")
@@ -216,7 +217,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Sets the identification of the mission.
      *
-     * @param newValue The new citation value.
+     * @param  newValue  the new citation value.
      */
     public void setCitation(final Citation newValue) {
         checkWritePermission();
@@ -226,7 +227,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Returns the unique identification of the operation.
      *
-     * @return Unique identification of the operation, or {@code null}.
+     * @return unique identification of the operation, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -237,7 +238,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Sets the unique identification of the operation.
      *
-     * @param newValue The new identifier value.
+     * @param  newValue  the new identifier value.
      */
     public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
@@ -248,7 +249,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Returns the status of the data acquisition.
      *
-     * @return Status of the data acquisition, or {@code null}.
+     * @return status of the data acquisition, or {@code null}.
      */
     @Override
     @XmlElement(name = "status", required = true)
@@ -259,7 +260,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Sets the status of the data acquisition.
      *
-     * @param newValue The new status value.
+     * @param  newValue  the new status value.
      */
     public void setStatus(final Progress newValue) {
         checkWritePermission();
@@ -269,7 +270,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Returns the collection technique for the operation.
      *
-     * @return Collection technique for the operation, or {@code null}.
+     * @return collection technique for the operation, or {@code null}.
      */
     @Override
     @XmlElement(name = "type")
@@ -280,7 +281,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Sets the collection technique for the operation.
      *
-     * @param newValue The new type value.
+     * @param  newValue  the new type value.
      */
     public void setType(final OperationType newValue) {
         checkWritePermission();
@@ -290,7 +291,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Returns the sub-missions that make up part of a larger mission.
      *
-     * @return Sub-missions.
+     * @return sub-missions.
      */
     @Override
     @XmlElement(name = "childOperation")
@@ -301,7 +302,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Sets the sub-missions that make up part of a larger mission.
      *
-     * @param newValues The new child operations values.
+     * @param  newValues  the new child operations values.
      */
     public void setChildOperations(final Collection<? extends Operation> newValues) {
         childOperations = writeCollection(newValues, childOperations, Operation.class);
@@ -310,7 +311,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Returns object(s) or area(s) of interest to be sensed.
      *
-     * @return Object(s) or area(s) of interest.
+     * @return object(s) or area(s) of interest.
      */
     @Override
     @XmlElement(name = "objective")
@@ -321,7 +322,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Sets Object(s) or area(s) of interest to be sensed.
      *
-     * @param newValues The new objectives values.
+     * @param  newValues  the new objectives values.
      */
     public void setObjectives(final Collection<? extends Objective> newValues) {
         objectives = writeCollection(newValues, objectives, Objective.class);
@@ -330,7 +331,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Returns the heritage of the operation.
      *
-     * @return Heritage of the operation, or {@code null}.
+     * @return heritage of the operation, or {@code null}.
      */
     @Override
     @XmlElement(name = "parentOperation", required = true)
@@ -341,7 +342,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Sets the heritage of the operation.
      *
-     * @param newValue The new parent operation value.
+     * @param  newValue  the new parent operation value.
      */
     public void setParentOperation(final Operation newValue) {
         checkWritePermission();
@@ -351,7 +352,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Returns the plan satisfied by the operation.
      *
-     * @return Plan satisfied by the operation, or {@code null}.
+     * @return plan satisfied by the operation, or {@code null}.
      */
     @Override
     @XmlElement(name = "plan")
@@ -362,7 +363,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Sets the plan satisfied by the operation.
      *
-     * @param newValue The new plan value.
+     * @param  newValue  the new plan value.
      */
     public void setPlan(final Plan newValue) {
         checkWritePermission();
@@ -372,7 +373,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Returns the platform (or platforms) used in the operation.
      *
-     * @return Platforms used in the operation.
+     * @return platforms used in the operation.
      */
     @Override
     @XmlElement(name = "platform")
@@ -383,7 +384,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Sets the platform (or platforms) used in the operation.
      *
-     * @param newValues The new platforms values.
+     * @param  newValues  the new platforms values.
      */
     public void setPlatforms(final Collection<? extends Platform> newValues) {
         platforms = writeCollection(newValues, platforms, Platform.class);
@@ -392,7 +393,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Returns the record of an event occurring during an operation.
      *
-     * @return Record of an event occurring during an operation.
+     * @return record of an event occurring during an operation.
      */
     @Override
     @XmlElement(name = "significantEvent")
@@ -403,7 +404,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Sets the record of an event occurring during an operation.
      *
-     * @param newValues The new significant events value.
+     * @param  newValues  the new significant events value.
      */
     public void setSignificantEvents(final Collection<? extends Event> newValues) {
         significantEvents = writeCollection(newValues, significantEvents, Event.class);

@@ -61,7 +61,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
     /**
      * Creates a citation with an arbitrary title, presentation form and other properties.
      *
-     * @return An arbitrary citation.
+     * @return an arbitrary citation.
      *
      * @since 0.7
      */
@@ -128,7 +128,7 @@ public final strictfp class DefaultCitationTest extends XMLTestCase {
     @Test
     public void testFreeze() {
         final DefaultCitation original = create();
-        final DefaultCitation clone = (DefaultCitation) original.unmodifiable();  // This will invoke 'freeze()'.
+        final DefaultCitation clone = (DefaultCitation) original.unmodifiable();    // This will invoke 'freeze()'.
         assertNotSame(original, clone);
         assertTrue ("original.isModifiable",        original.isModifiable());
         assertFalse(   "clone.isModifiable",           clone.isModifiable());

@@ -61,6 +61,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @see org.apache.sis.storage.FeatureNaming
  * @see org.apache.sis.feature.DefaultFeatureType
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_FeatureTypeInfo", propOrder = {
     "featureTypeName",
     "featureInstanceCount"

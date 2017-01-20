@@ -279,8 +279,10 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                  * differ from its parent in the way dates and numbers are formatted.
                  */
                 if (resources == null) {
-                    // If we get a NullPointerException or ClassCastException here,
-                    // it would be a bug in the way we create the chain of parents.
+                    /*
+                     * If we get a NullPointerException or ClassCastException here,
+                     * it would be a bug in the way we create the chain of parents.
+                     */
                     values = ((IndexedResourceBundle) parent).ensureLoaded(key);
                 } else {
                     /*
@@ -348,7 +350,9 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      */
     @Override
     protected final Object handleGetObject(final String key) {
-        // Synchronization performed by 'ensureLoaded'
+        /*
+         * Note: Synchronization is performed by 'ensureLoaded'
+         */
         final String[] values = ensureLoaded(key);
         int keyID;
         try {
@@ -415,8 +419,10 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
             } else if (element instanceof CodeList<?>) {
                 replacement = Types.getCodeTitle((CodeList<?>) element).toString(getLocale());
             }
-            // No need to check for Numbers or Dates instances, since they are
-            // properly formatted in the ResourceBundle locale by MessageFormat.
+            /*
+             * No need to check for Numbers or Dates instances, since they are
+             * properly formatted in the ResourceBundle locale by MessageFormat.
+             */
             if (replacement != element) {
                 if (array == arguments) {
                     array = array.clone();                  // Protect the user-provided array from change.
@@ -461,7 +467,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * A space may or may not be added before ":", depending on the locale.
      * No space is added after the string; it is up to the caller to add such space if needed.
      *
-     * @param  key The key for the desired string.
+     * @param  key  the key for the desired string.
      * @return the string for the given key.
      * @throws MissingResourceException if no object for the given key can be found.
      */

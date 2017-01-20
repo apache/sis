@@ -52,6 +52,7 @@ import org.apache.sis.util.iso.Types;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_KeywordClass_Type", propOrder = {
     "className",
     "conceptIdentifier",
@@ -89,8 +90,8 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Creates keyword class initialized to the given key name and ontology.
      *
-     * @param className A character string to label the keyword category in natural language.
-     * @param ontology  Reference that binds the keyword class to a formal conceptualization of a knowledge domain.
+     * @param className  a character string to label the keyword category in natural language.
+     * @param ontology   reference that binds the keyword class to a formal conceptualization of a knowledge domain.
      */
     public DefaultKeywordClass(final CharSequence className, final Citation ontology) {
         this.className = Types.toInternationalString(className);
@@ -102,7 +103,7 @@ public class DefaultKeywordClass extends ISOMetadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(KeywordClass)
      */
@@ -118,7 +119,7 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Returns a label for the keyword category in natural language.
      *
-     * @return The keyword category in natural language.
+     * @return the keyword category in natural language.
      */
     @XmlElement(name = "className", required = true)
     public InternationalString getClassName() {
@@ -128,7 +129,7 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Sets a label for the keyword category in natural language.
      *
-     * @param newValue The new keyword category in natural language.
+     * @param  newValue  the new keyword category in natural language.
      */
     public void setClassName(final InternationalString newValue) {
         checkWritePermission();
@@ -148,7 +149,7 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Sets the URI of concept in the ontology specified by the {@linkplain #getOntology() ontology} citation.
      *
-     * @param newValue The new URI of concept in the ontology.
+     * @param  newValue  the new URI of concept in the ontology.
      */
     public void setConceptIdentifier(final URI newValue) {
         checkWritePermission();
@@ -158,7 +159,7 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Returns a reference that binds the keyword class to a formal conceptualization of a knowledge domain.
      *
-     * @return A reference that binds the keyword class to a formal conceptualization.
+     * @return a reference that binds the keyword class to a formal conceptualization.
      */
     @XmlElement(name = "ontology", required = true)
     public Citation getOntology() {
@@ -168,7 +169,7 @@ public class DefaultKeywordClass extends ISOMetadata {
     /**
      * Sets a reference that binds the keyword class to a formal conceptualization of a knowledge domain.
      *
-     * @param newValue The new reference that binds the keyword class to a formal conceptualization.
+     * @param  newValue  the new reference that binds the keyword class to a formal conceptualization.
      */
     public void setOntology(final Citation newValue) {
         checkWritePermission();

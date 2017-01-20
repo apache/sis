@@ -33,7 +33,7 @@ final class SingleCharAppendable extends Appender {
     /**
      * Constructs a {@code SingleCharAppendable} object delegating to the given {@code Appendable}.
      *
-     * @param out The underlying stream or buffer.
+     * @param  out  the underlying stream or buffer.
      */
     public SingleCharAppendable(final Appendable out) {
         super(out);
@@ -51,10 +51,10 @@ final class SingleCharAppendable extends Appender {
     /**
      * Writes a portion of a character sequence.
      *
-     * @param  sequence The character sequence to be written.
-     * @param  start    Index from which to start reading characters.
-     * @param  end      Index of the character following the last character to read.
-     * @throws IOException If an I/O error occurs.
+     * @param  sequence  the character sequence to be written.
+     * @param  start     index from which to start reading characters.
+     * @param  end       index of the character following the last character to read.
+     * @throws IOException if an I/O error occurs.
      */
     @Override
     public Appendable append(final CharSequence sequence, int start, final int end) throws IOException {

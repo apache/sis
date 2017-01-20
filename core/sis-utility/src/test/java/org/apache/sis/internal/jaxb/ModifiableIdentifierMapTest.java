@@ -57,8 +57,8 @@ public final strictfp class ModifiableIdentifierMapTest extends TestCase {
      * compare with the map content. This is needed because the "special case rules" cause the {@code "href"}
      * identifier to be replaced by {@code "xlink:href"}.
      *
-     * @param  expected The expected content.
-     * @return The map to compare with the expected content.
+     * @param  expected  the expected content.
+     * @return the map to compare with the expected content.
      */
     private static void assertMapEquals(String expected, final Map<Citation,String> map) {
         final int start = expected.indexOf(TO_REPLACE);

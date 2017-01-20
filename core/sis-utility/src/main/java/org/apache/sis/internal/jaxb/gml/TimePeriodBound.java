@@ -54,7 +54,7 @@ public abstract class TimePeriodBound {
     /**
      * Returns a string representation of this bound for debugging purpose.
      *
-     * @return A string representation of the time currently set.
+     * @return a string representation of the time currently set.
      */
     @Override
     public String toString() {
@@ -100,8 +100,8 @@ public abstract class TimePeriodBound {
         /**
          * Creates a bound initialized to the given instant.
          *
-         * @param instant The instant of the new bound, or {@code null}.
-         * @param indeterminate The value to give to {@link #indeterminatePosition} if the date is null.
+         * @param instant        the instant of the new bound, or {@code null}.
+         * @param indeterminate  the value to give to {@link #indeterminatePosition} if the date is null.
          */
         GML3(final Instant instant, final String indeterminate) {
             value = TimeInstant.toXML(instant);

@@ -84,8 +84,8 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
      * warning occurred before this method call (i.e. each test is allowed to cause at most one warning), then
      * remember the warning parameters for verification by the test method.
      *
-     * @param source  Ignored.
-     * @param warning The warning.
+     * @param source   ignored.
+     * @param warning  the warning.
      */
     @Override
     public void warningOccured(final Object source, final LogRecord warning) {
@@ -111,7 +111,7 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
      * Tests unmarshalling of a metadata having a collection that contains no element.
      * This was used to cause a {@code NullPointerException} prior SIS-139 fix.
      *
-     * @throws JAXBException If an error occurred during the during unmarshalling processes.
+     * @throws JAXBException if an error occurred during the during unmarshalling processes.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-139">SIS-139</a>
      */
@@ -327,7 +327,7 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
     /**
      * Tests {@link DefaultMetadata#getDataSetUri()}.
      *
-     * @throws URISyntaxException Should not happen.
+     * @throws URISyntaxException if the URI used in this test is malformed.
      */
     @Test
     @SuppressWarnings("deprecation")

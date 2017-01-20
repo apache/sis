@@ -50,8 +50,8 @@ class FormatField extends Format.Field {
     /**
      * Creates a new field of the given name.
      *
-     * @param name  The name, which shall be identical to the name of the public static constant.
-     * @param field The numeric identifier of this field.
+     * @param name   the name, which shall be identical to the name of the public static constant.
+     * @param field  the numeric identifier of this field.
      */
     FormatField(final String name, final int field) {
         super(name);
@@ -61,7 +61,7 @@ class FormatField extends Format.Field {
     /**
      * Invoked on deserialization for resolving this instance to one of the predefined constants.
      *
-     * @return One of the predefined constants.
+     * @return one of the predefined constants.
      * @throws InvalidObjectException if this instance can not be resolved.
      */
     @Override

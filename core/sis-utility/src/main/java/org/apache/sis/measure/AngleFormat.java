@@ -432,8 +432,8 @@ public class AngleFormat extends Format implements Localized {
      * Constructs a new {@code AngleFormat} using the specified pattern and locale.
      *
      * @param  pattern  the pattern to use for parsing and formatting angles.
-     *         See class description for an explanation of pattern syntax.
-     * @param  locale Locale to use.
+     *                  See class description for an explanation of pattern syntax.
+     * @param  locale   the locale to use.
      * @throws IllegalArgumentException if the specified pattern is illegal.
      */
     public AngleFormat(final String pattern, final Locale locale) throws IllegalArgumentException {
@@ -699,7 +699,7 @@ public class AngleFormat extends Format implements Localized {
                 buffer.appendCodePoint(symbols[OPTIONAL_FIELD]);
             }
             if (width <= 0) {
-                break; // The "if" case above has been executed for writing the fractional part, so we are done.
+                break;      // The "if" case above has been executed for writing the fractional part, so we are done.
             }
             /*
              * This is the main part of the loop, before the final fractional part handled in the above "if" case.
@@ -941,9 +941,11 @@ public class AngleFormat extends Format implements Localized {
                 minutes = 0;
                 degrees += Math.signum(angle);
             }
-            // Note: a previous version was doing a unconditional addition to the 'degrees' variable,
-            // in the form 'degrees += correction'. However -0.0 + 0 == +0.0, while we really need to
-            // preserve the sign of negative zero. See [SIS-120].
+            /*
+             * Note: a previous version was doing a unconditional addition to the 'degrees' variable,
+             * in the form 'degrees += correction'. However -0.0 + 0 == +0.0, while we really need to
+             * preserve the sign of negative zero. See [SIS-120].
+             */
         }
         /*
          * Avoid formatting values like 12.01°N as 12°36″N because of the risk of confusion.
@@ -1039,9 +1041,11 @@ public class AngleFormat extends Format implements Localized {
                 if (hasMore) {
                     userObject = JDK8.toIntExact(Math.round(value));
                 } else {
-                    // Use Float instead of Double because we don't want to give a false impression of accuracy
-                    // (when formatting the seconds field, at least the 10 last bits of the 'double' value are
-                    // non-significant).
+                    /*
+                     * Use Float instead of Double because we don't want to give a false impression of accuracy
+                     * (when formatting the seconds field, at least the 10 last bits of the 'double' value are
+                     * non-significant).
+                     */
                     userObject = (float) value;
                 }
                 it.addFieldLimit(Field.forCode(field), userObject, startPosition);
@@ -1594,7 +1598,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
             double facteur = pow10(secondsFieldWidth);
             if (degreesSuffix == null && minutesFieldWidth != 0 && isNaN(minutes)) {
                 ///////////////////
-                //// DDDMMSS.s ////
+                //   DDDMMSS.s   //
                 ///////////////////
                 seconds  = degrees;
                 minutes  = truncate(degrees / facteur);
@@ -1604,7 +1608,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                 minutes  -= degrees * facteur;
             } else {
                 ////////////////////
-                //// DDD°MMSS.s ////
+                //   DDD°MMSS.s   //
                 ////////////////////
                 seconds  = minutes;
                 minutes  = truncate(minutes / facteur);
@@ -1612,7 +1616,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
             }
         } else if (degreesSuffix == null && minutesFieldWidth != 0 && isNaN(minutes)) {
             /////////////////
-            //// DDDMM.m ////
+            //   DDDMM.m   //
             /////////////////
             final double facteur = pow10(minutesFieldWidth);
             minutes  = degrees;

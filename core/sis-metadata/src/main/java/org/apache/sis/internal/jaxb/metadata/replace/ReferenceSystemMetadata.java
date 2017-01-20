@@ -16,15 +16,13 @@
  */
 package org.apache.sis.internal.jaxb.metadata.replace;
 
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.util.ComparisonMode;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -62,7 +60,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     /**
      * Creates a new reference system from the given one.
      *
-     * @param crs The reference system to partially copy.
+     * @param  crs  the reference system to partially copy.
      */
     public ReferenceSystemMetadata(final ReferenceSystem crs) {
         super(crs);
@@ -71,7 +69,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     /**
      * Creates a new reference system from the given identifier.
      *
-     * @param name The primary name by which this object is identified.
+     * @param  name  the primary name by which this object is identified.
      */
     public ReferenceSystemMetadata(final ReferenceIdentifier name) {
         super(name);
@@ -80,7 +78,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     /**
      * Returns the primary name by which this object is identified.
      *
-     * @return The identifier given at construction time.
+     * @return the identifier given at construction time.
      */
     @Override
     @XmlElement(name = "referenceSystemIdentifier")
@@ -91,7 +89,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     /**
      * Sets the primary name by which this object is identified.
      *
-     * @param name The new primary name.
+     * @param  name  the new primary name.
      */
     public final void setName(final ReferenceIdentifier name) {
         this.name = name;
@@ -100,8 +98,8 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     /**
      * Compares this object with the given one for equality.
      *
-     * @param  object The object to compare with this reference system.
-     * @param  mode The strictness level of the comparison.
+     * @param  object  the object to compare with this reference system.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */
     @Override

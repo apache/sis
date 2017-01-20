@@ -22,6 +22,7 @@ import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import org.opengis.util.MemberName;
@@ -32,9 +33,6 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.AbstractMapEntry;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -84,7 +82,7 @@ public class DefaultRecord implements Record, Serializable {
      * The initial values are unspecified - they may be null or zero.
      * Callers can assign values by a call to {@link #setAll(Object[])}.
      *
-     * @param type The type definition of the new record.
+     * @param type  the type definition of the new record.
      */
     public DefaultRecord(final RecordType type) {
         ArgumentChecks.ensureNonNull("type", type);
@@ -99,7 +97,7 @@ public class DefaultRecord implements Record, Serializable {
     /**
      * Returns the type definition of this record.
      *
-     * @return The type definition of this record.
+     * @return the type definition of this record.
      */
     @Override
     public RecordType getRecordType() {
@@ -111,7 +109,7 @@ public class DefaultRecord implements Record, Serializable {
      * This method returns a view which will delegate all {@code get} and {@code put} operations to
      * the {@link #locate(MemberName)} and {@link #set(MemberName, Object)} methods respectively.
      *
-     * @return The dictionary of all (<var>name</var>, <var>value</var>) pairs in this record.
+     * @return the dictionary of all (<var>name</var>, <var>value</var>) pairs in this record.
      *
      * @see RecordType#getMemberTypes()
      */
@@ -234,8 +232,8 @@ public class DefaultRecord implements Record, Serializable {
     /**
      * Returns the value for an attribute of the specified name.
      *
-     * @param name The name of the attribute to lookup.
-     * @return The value of the attribute for the given name.
+     * @param  name  the name of the attribute to lookup.
+     * @return the value of the attribute for the given name.
      */
     @Override
     public Object locate(final MemberName name) {
@@ -246,8 +244,8 @@ public class DefaultRecord implements Record, Serializable {
     /**
      * Sets the value for the attribute of the specified name.
      *
-     * @param  name  The name of the attribute to modify.
-     * @param  value The new value for the attribute.
+     * @param  name   the name of the attribute to modify.
+     * @param  value  the new value for the attribute.
      * @throws IllegalArgumentException if the given name is not a member of this record.
      * @throws ClassCastException if the given value is not an instance of the expected type for this record.
      */
@@ -271,7 +269,7 @@ public class DefaultRecord implements Record, Serializable {
     /**
      * Sets all attribute values in this record, in attribute order.
      *
-     * @param  newValues The attribute values.
+     * @param  newValues  the attribute values.
      * @throws IllegalArgumentException if the given number of values does not match the expected number.
      * @throws ClassCastException if a value is not an instance of the expected type for this record.
      */
@@ -298,13 +296,13 @@ public class DefaultRecord implements Record, Serializable {
     /**
      * Compares this record with the given object for equality.
      *
-     * @param  object The object to compare with this record for equality.
+     * @param  object the object to compare with this record for equality.
      * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object object) {
         if (object == this) {
-            return true; // Slight optimization for a common case.
+            return true;                            // Slight optimization for a common case.
         }
         if (object != null && object.getClass() == getClass()) {
             final DefaultRecord that = (DefaultRecord) object;
@@ -317,7 +315,7 @@ public class DefaultRecord implements Record, Serializable {
     /**
      * Returns a hash code value for this record.
      *
-     * @return A hash code value for this record.
+     * @return a hash code value for this record.
      */
     @Override
     public int hashCode() {
@@ -328,7 +326,7 @@ public class DefaultRecord implements Record, Serializable {
      * Returns a string representation of this record.
      * The string representation is for debugging purpose and may change in any future SIS version.
      *
-     * @return A string representation of this record.
+     * @return a string representation of this record.
      */
     @Debug
     @Override

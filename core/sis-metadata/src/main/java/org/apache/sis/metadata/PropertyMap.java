@@ -92,6 +92,7 @@ abstract class PropertyMap<V> extends AbstractMap<String,V> {
      * if they define a different entries set class than the default {@link Entries} inner class.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Intentionally modifiable set.
     public Set<Map.Entry<String,V>> entrySet() {
         if (entrySet == null) {
             entrySet = new Entries();

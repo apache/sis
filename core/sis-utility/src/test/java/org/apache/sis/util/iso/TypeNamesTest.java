@@ -73,7 +73,7 @@ public final strictfp class TypeNamesTest extends TestCase {
     /**
      * Tests the mapping of basic types like strings, URI, dates and numbers.
      *
-     * @throws ClassNotFoundException Should not happen since we do invoke {@link Class#forName(String)} in this test.
+     * @throws ClassNotFoundException should not happen since we do invoke {@link Class#forName(String)} in this test.
      */
     @Test
     public void testBasicTypes() throws ClassNotFoundException {
@@ -102,7 +102,7 @@ public final strictfp class TypeNamesTest extends TestCase {
     /**
      * Tests the mapping of more complex object that are not basic types.
      *
-     * @throws ClassNotFoundException Should not happen since we do invoke {@link Class#forName(String)} in this test.
+     * @throws ClassNotFoundException should not happen since we do invoke {@link Class#forName(String)} in this test.
      */
     @Test
     public void testMetadataClasses() throws ClassNotFoundException {
@@ -113,7 +113,7 @@ public final strictfp class TypeNamesTest extends TestCase {
     /**
      * Tests the mapping of objects not defined by OGC.
      *
-     * @throws ClassNotFoundException If the call to {@link Class#forName(String)} failed.
+     * @throws ClassNotFoundException if the call to {@link Class#forName(String)} failed.
      */
     @Test
     public void testOtherClasses() throws ClassNotFoundException {
@@ -123,7 +123,7 @@ public final strictfp class TypeNamesTest extends TestCase {
     /**
      * Checks for the sentinel values in case of invalid names.
      *
-     * @throws ClassNotFoundException Should not happen since we do invoke {@link Class#forName(String)} in this test.
+     * @throws ClassNotFoundException should not happen since we do invoke {@link Class#forName(String)} in this test.
      */
     @Test
     public void testInvalidNames() throws ClassNotFoundException {

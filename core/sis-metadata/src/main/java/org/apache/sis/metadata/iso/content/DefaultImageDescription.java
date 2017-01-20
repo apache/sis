@@ -48,6 +48,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_ImageDescription_Type", propOrder = {
     "illuminationElevationAngle",
     "illuminationAzimuthAngle",

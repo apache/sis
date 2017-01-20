@@ -44,6 +44,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
  */
 @Deprecated
 @XmlTransient
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.DefaultScope implements Scope {
     /**
      * Serial number for inter-operability with different versions.
@@ -70,7 +71,7 @@ public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.Defaul
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Scope)
      */
@@ -92,8 +93,8 @@ public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.Defaul
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultScope castOrCopy(final Scope object) {

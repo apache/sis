@@ -44,6 +44,7 @@ import org.opengis.metadata.spatial.VectorSpatialRepresentation;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_VectorSpatialRepresentation_Type", propOrder = {
     "topologyLevel",
     "geometricObjects"
@@ -78,7 +79,7 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(VectorSpatialRepresentation)
      */
@@ -104,8 +105,8 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultVectorSpatialRepresentation castOrCopy(final VectorSpatialRepresentation object) {
@@ -118,7 +119,7 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
     /**
      * Returns the code which identifies the degree of complexity of the spatial relationships.
      *
-     * @return The degree of complexity of the spatial relationships, or {@code null}.
+     * @return the degree of complexity of the spatial relationships, or {@code null}.
      */
     @Override
     @XmlElement(name = "topologyLevel")
@@ -129,7 +130,7 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
     /**
      * Sets the code which identifies the degree of complexity of the spatial relationships.
      *
-     * @param newValue The new topology level.
+     * @param  newValue  the new topology level.
      */
     public void setTopologyLevel(final TopologyLevel newValue) {
         checkWritePermission();
@@ -139,7 +140,7 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
     /**
      * Returns information about the geometric objects used in the dataset.
      *
-     * @return Information about the geometric objects used in the dataset, or {@code null}.
+     * @return information about the geometric objects used in the dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "geometricObjects")
@@ -150,7 +151,7 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
     /**
      * Sets information about the geometric objects used in the dataset.
      *
-     * @param newValues The new geometric objects.
+     * @param  newValues  the new geometric objects.
      */
     public void setGeometricObjects(final Collection<? extends GeometricObjects> newValues) {
         geometricObjects = writeCollection(newValues, geometricObjects, GeometricObjects.class);

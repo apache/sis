@@ -68,6 +68,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @see org.apache.sis.referencing.AbstractReferenceSystem#getDomainOfValidity()
  * @see org.apache.sis.referencing.datum.AbstractDatum#getDomainOfValidity()
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_Extent_Type", propOrder = {
     "description",
     "geographicElements",

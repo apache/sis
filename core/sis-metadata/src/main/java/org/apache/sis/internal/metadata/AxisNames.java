@@ -177,9 +177,9 @@ public final class AxisNames {
     /**
      * Returns the given axis name in upper case without punctuation characters.
      *
-     * @param  name   The axis name to return in upper-case.
-     * @param  buffer A temporary buffer to use. Must be initially empty.
-     * @return The given name converted to upper-case.
+     * @param  name    the axis name to return in upper-case.
+     * @param  buffer  a temporary buffer to use. Must be initially empty.
+     * @return the given name converted to upper-case.
      */
     private static String toUpperCase(final String name, final StringBuilder buffer) {
         for (int i=0; i<name.length(); i++) {
@@ -200,8 +200,8 @@ public final class AxisNames {
      * SIS does not put restriction on axis names, but we nevertheless try to use a unique
      * name when we recognize it.</div>
      *
-     * @param  name The name in any case.
-     * @return The given name in camel case.
+     * @param  name  the name in any case.
+     * @return the given name in camel case.
      */
     public static String toCamelCase(final String name) {
         return JDK8.getOrDefault(VALUES, toUpperCase(name, new StringBuilder(name.length())), name);

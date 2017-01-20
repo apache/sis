@@ -44,6 +44,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractMD_ContentInformation_Type")
 @XmlRootElement(name = "MD_ContentInformation")
 @XmlSeeAlso({

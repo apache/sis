@@ -46,6 +46,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MI_PlatformPass_Type", propOrder = {
     "identifier",
     "extent",
@@ -79,7 +80,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(PlatformPass)
      */
@@ -106,8 +107,8 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultPlatformPass castOrCopy(final PlatformPass object) {
@@ -120,7 +121,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
     /**
      * Returns the unique name of the pass.
      *
-     * @return Unique name of the pass, or {@code null}.
+     * @return unique name of the pass, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -131,7 +132,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
     /**
      * Sets the unique name of the pass.
      *
-     * @param newValue The new identifier value.
+     * @param  newValue  the new identifier value.
      */
     public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
@@ -142,7 +143,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
     /**
      * Returns the area covered by the pass. {@code null} if unspecified.
      *
-     * @return Area covered by the pass, or {@code null}.
+     * @return area covered by the pass, or {@code null}.
      */
     @Override
     @XmlElement(name = "extent")
@@ -153,7 +154,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
     /**
      * Sets the area covered by the pass.
      *
-     * @param newValue The new extent value.
+     * @param  newValue  the new extent value.
      */
     public void setExtent(final Geometry newValue) {
         checkWritePermission();
@@ -163,7 +164,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
     /**
      * Returns the occurrence of one or more events for a pass.
      *
-     * @return Occurrence of one or more events for a pass.
+     * @return occurrence of one or more events for a pass.
      */
     @Override
     @XmlElement(name = "relatedEvent")
@@ -174,7 +175,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
     /**
      * Sets the occurrence of one or more events for a pass.
      *
-     * @param newValues The new related events values.
+     * @param  newValues  the new related events values.
      */
     public void setRelatedEvents(final Collection<? extends Event> newValues) {
         relatedEvents = writeCollection(newValues, relatedEvents, Event.class);

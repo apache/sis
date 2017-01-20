@@ -96,10 +96,10 @@ public final strictfp class CitationsTest extends TestCase {
         assertEquals("MapInfo",     getIdentifier(MAP_INFO));
         assertEquals("ISBN",        getIdentifier(ISBN));
         assertEquals("ISSN",        getIdentifier(ISSN));
-        assertEquals("Proj.4",      getIdentifier(PROJ4));  // Not a valid Unicode identifier.
-        assertEquals("S-57",        getIdentifier(S57));    // Not a valid Unicode identifier.
-        assertEquals("ISO:19115-1", getIdentifier(ISO_19115.get(0)));  // The ':' separator is not usual in ISO references
-        assertEquals("ISO:19115-2", getIdentifier(ISO_19115.get(1)));  // and could be changed in future SIS versions.
+        assertEquals("Proj.4",      getIdentifier(PROJ4));              // Not a valid Unicode identifier.
+        assertEquals("S-57",        getIdentifier(S57));                // Not a valid Unicode identifier.
+        assertEquals("ISO:19115-1", getIdentifier(ISO_19115.get(0)));   // The ':' separator is not usual in ISO references
+        assertEquals("ISO:19115-2", getIdentifier(ISO_19115.get(1)));   // and could be changed in future SIS versions.
         assertEquals("OGC:WMS",     getIdentifier(WMS));
         assertIdentifierEquals("OGC:06-042", null, "OGC", null, "06-042",
                 (ReferenceIdentifier) ((List<? extends Identifier>) WMS.getIdentifiers()).get(1));

@@ -499,13 +499,14 @@ class TreeNode implements Node {
             final Collection<?> values = (Collection<?>) super.getUserObject();
             if (!(values instanceof List<?>)) {
                 // 'setValue' is the public method which invoked this one.
-                throw new UnsupportedOperationException(Errors.format(
-                        Errors.Keys.UnsupportedOperation_1, "setValue"));
+                throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedOperation_1, "setValue"));
             }
             final Class<?> targetType;
             if (values instanceof CheckedContainer<?>) {
-                // Typically the same than getElementType(), but let be safe
-                // in case some implementations have stricter requirements.
+                /*
+                 * Typically the same than getElementType(), but let be safe
+                 * in case some implementations have stricter requirements.
+                 */
                 targetType = ((CheckedContainer<?>) values).getElementType();
             } else {
                 targetType = baseType;

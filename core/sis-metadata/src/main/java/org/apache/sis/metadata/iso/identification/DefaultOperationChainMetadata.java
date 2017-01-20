@@ -58,6 +58,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "SV_OperationChainMetadata_Type", namespace = Namespaces.SRV, propOrder = {
     "name",
     "description",
@@ -95,7 +96,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
     /**
      * Constructs a new operation chain metadata initialized to the specified name.
      *
-     * @param name The name as used by the service for this chain.
+     * @param  name  the name as used by the service for this chain.
      */
     public DefaultOperationChainMetadata(final CharSequence name) {
         this.name = Types.toInternationalString(name);
@@ -106,7 +107,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(OperationChainMetadata)
      */
@@ -122,7 +123,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
     /**
      * Returns the name as used by the service for this chain.
      *
-     * @return Name as used by the service for this chain.
+     * @return name as used by the service for this chain.
      */
     @XmlElement(name = "name", namespace = Namespaces.SRV, required = true)
     @UML(identifier="name", obligation=MANDATORY, specification=ISO_19115)
@@ -133,7 +134,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
     /**
      * Sets the name used by the service for this chain.
      *
-     * @param newValue The new name used by the service for this chain.
+     * @param  newValue  the new name used by the service for this chain.
      */
     public void setName(final InternationalString newValue) {
         checkWritePermission();
@@ -143,7 +144,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
     /**
      * Returns a narrative explanation of the services in the chain and resulting output.
      *
-     * @return Narrative explanation of the services in the chain and resulting output, or {@code null} if none.
+     * @return narrative explanation of the services in the chain and resulting output, or {@code null} if none.
      */
     @XmlElement(name = "description", namespace = Namespaces.SRV)
     @UML(identifier="description", obligation=OPTIONAL, specification=ISO_19115)
@@ -154,7 +155,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
     /**
      * Sets the narrative explanation of the services in the chain and resulting output.
      *
-     * @param newValue The new a narrative explanation of the services in the chain and resulting output
+     * @param  newValue  the new a narrative explanation of the services in the chain and resulting output
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -169,7 +170,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @return Information about the operations applied by the chain.
+     * @return information about the operations applied by the chain.
      */
     @XmlElement(name = "operation", namespace = Namespaces.SRV, required = true)
     @UML(identifier="operation", obligation=MANDATORY, specification=ISO_19115)
@@ -185,7 +186,7 @@ public class DefaultOperationChainMetadata extends ISOMetadata {
      * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
      * </div>
      *
-     * @param newValues The new information about the operations applied by the chain.
+     * @param  newValues  the new information about the operations applied by the chain.
      */
     public void setOperations(final List<? extends DefaultOperationMetadata> newValues) {
         operations = writeList(newValues, operations, DefaultOperationMetadata.class);

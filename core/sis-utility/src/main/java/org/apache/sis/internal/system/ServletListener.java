@@ -37,7 +37,7 @@ public final class ServletListener implements ServletContextListener {
     /**
      * Receives notification that the web application initialization process is starting.
      *
-     * @param event The context of the servlet being initialized.
+     * @param  event  the context of the servlet being initialized.
      */
     @Override
     public void contextInitialized(final ServletContextEvent event) {
@@ -48,7 +48,7 @@ public final class ServletListener implements ServletContextListener {
     /**
      * Receives notification that the application is about to be shutdown.
      *
-     * @param event The context of the servlet being shutdown.
+     * @param  event  the context of the servlet being shutdown.
      */
     @Override
     public void contextDestroyed(final ServletContextEvent event) {

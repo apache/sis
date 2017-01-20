@@ -62,6 +62,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "LI_ProcessStep_Type", propOrder = {
     "description",
     "rationale",
@@ -144,7 +145,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Creates a process step initialized to the given description.
      *
-     * @param description Description of the event, including related parameters or tolerances.
+     * @param description  description of the event, including related parameters or tolerances.
      */
     public DefaultProcessStep(final CharSequence description) {
         this.description = Types.toInternationalString(description);
@@ -155,7 +156,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ProcessStep)
      */
@@ -191,8 +192,8 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultProcessStep castOrCopy(final ProcessStep object) {
@@ -205,7 +206,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Returns the description of the event, including related parameters or tolerances.
      *
-     * @return Description of the event, or {@code null}.
+     * @return description of the event, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", required = true)
@@ -216,7 +217,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Sets the description of the event, including related parameters or tolerances.
      *
-     * @param newValue The new description.
+     * @param  newValue  the new description.
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -226,7 +227,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Returns the requirement or purpose for the process step.
      *
-     * @return Requirement or purpose for the process step, or {@code null}.
+     * @return requirement or purpose for the process step, or {@code null}.
      */
     @Override
     @XmlElement(name = "rationale")
@@ -237,7 +238,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Sets the requirement or purpose for the process step.
      *
-     * @param newValue The new rationale.
+     * @param  newValue  the new rationale.
      */
     public void setRationale(final InternationalString newValue) {
         checkWritePermission();
@@ -247,7 +248,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Returns the date and time or range of date and time on or over which the process step occurred.
      *
-     * @return Date on or over which the process step occurred, or {@code null}.
+     * @return date on or over which the process step occurred, or {@code null}.
      */
     @Override
     @XmlElement(name = "dateTime")
@@ -258,7 +259,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Sets the date and time or range of date and time on or over which the process step occurred.
      *
-     * @param newValue The new date.
+     * @param  newValue  the new date.
      */
     public void setDate(final Date newValue) {
         checkWritePermission();
@@ -274,7 +275,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * This change may be applied in GeoAPI 4.0.
      * </div>
      *
-     * @return Means of communication with person(s) and organization(s) associated with the process step.
+     * @return means of communication with person(s) and organization(s) associated with the process step.
      */
     @Override
     @XmlElement(name = "processor")
@@ -291,7 +292,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * This change may be applied in GeoAPI 4.0.
      * </div>
      *
-     * @param newValues The new processors.
+     * @param  newValues  the new processors.
      */
     public void setProcessors(final Collection<? extends ResponsibleParty> newValues) {
         processors = writeCollection(newValues, processors, ResponsibleParty.class);
@@ -300,7 +301,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Returns the process step documentation.
      *
-     * @return Process step documentation.
+     * @return process step documentation.
      *
      * @since 0.5
      */
@@ -313,7 +314,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Sets the process step documentation.
      *
-     * @param newValues The new documentation.
+     * @param  newValues  the new documentation.
      *
      * @since 0.5
      */
@@ -324,7 +325,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Returns the type of resource and / or extent to which the process step applies.
      *
-     * @return Type of resource, or {@code null} if none.
+     * @return type of resource, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -337,7 +338,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Sets the type of resource and / or extent to which the process step applies.
      *
-     * @param newValue The new type of resource.
+     * @param  newValue  the new type of resource.
      *
      * @since 0.5
      */
@@ -349,7 +350,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Returns the information about the source data used in creating the data specified by the scope.
      *
-     * @return Information about the source data used in creating the data.
+     * @return information about the source data used in creating the data.
      */
     @Override
     @XmlElement(name = "source")
@@ -360,7 +361,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Information about the source data used in creating the data specified by the scope.
      *
-     * @param newValues The new sources.
+     * @param  newValues  the new sources.
      */
     public void setSources(final Collection<? extends Source> newValues) {
         sources = writeCollection(newValues, sources, Source.class);
@@ -369,7 +370,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Returns the description of the product generated as a result of the process step.
      *
-     * @return Product generated as a result of the process step.
+     * @return product generated as a result of the process step.
      */
     @Override
     @XmlElement(name = "output", namespace = Namespaces.GMI)
@@ -380,7 +381,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Sets the description of the product generated as a result of the process step.
      *
-     * @param newValues The new output values.
+     * @param  newValues  the new output values.
      */
     public void setOutputs(final Collection<? extends Source> newValues) {
         outputs = writeCollection(newValues, outputs, Source.class);
@@ -391,7 +392,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * was applied to derive geographic data from the raw instrument measurements, such
      * as datasets, software used, and the processing environment.
      *
-     * @return Procedure by which the algorithm was applied to derive geographic data, or {@code null}.
+     * @return procedure by which the algorithm was applied to derive geographic data, or {@code null}.
      */
     @Override
     @XmlElement(name = "processingInformation", namespace = Namespaces.GMI)
@@ -404,7 +405,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * applied to derive geographic data from the raw instrument measurements, such as
      * datasets, software used, and the processing environment.
      *
-     * @param newValue The new processing information value.
+     * @param  newValue  the new processing information value.
      */
     public void setProcessingInformation(final Processing newValue) {
         checkWritePermission();
@@ -414,7 +415,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Returns the report generated by the process step.
      *
-     * @return Report generated by the process step.
+     * @return report generated by the process step.
      */
     @Override
     @XmlElement(name = "report", namespace = Namespaces.GMI)
@@ -425,7 +426,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Sets the report generated by the process step.
      *
-     * @param newValues The new process step report values.
+     * @param  newValues  the new process step report values.
      */
     public void setReports(final Collection<? extends ProcessStepReport> newValues) {
         reports = writeCollection(newValues, reports, ProcessStepReport.class);

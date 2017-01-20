@@ -83,7 +83,7 @@ public final strictfp class LoggingWatcher extends TestWatchman implements Filte
     /**
      * Creates a new watcher for the given logger.
      *
-     * @param logger The logger to watch.
+     * @param logger  the logger to watch.
      */
     public LoggingWatcher(final Logger logger) {
         this.logger = logger;
@@ -92,7 +92,7 @@ public final strictfp class LoggingWatcher extends TestWatchman implements Filte
     /**
      * Creates a new watcher for the given logger.
      *
-     * @param logger The name of logger to watch.
+     * @param logger  the name of logger to watch.
      */
     public LoggingWatcher(final String logger) {
         this.logger = Logger.getLogger(logger);
@@ -103,7 +103,7 @@ public final strictfp class LoggingWatcher extends TestWatchman implements Filte
      * for the log messages before the tests are run. This installation will cause the
      * {@link #isLoggable(LogRecord)} method to be invoked when a message is logged.
      *
-     * @param description A description of the JUnit test which is starting.
+     * @param  description  a description of the JUnit test which is starting.
      *
      * @see #isLoggable(LogRecord)
      */
@@ -117,7 +117,7 @@ public final strictfp class LoggingWatcher extends TestWatchman implements Filte
      * Invoked when a test method finishes (whether passing or failing)
      * This method removes the filter which had been set for testing purpose.
      *
-     * @param description A description of the JUnit test that finished.
+     * @param  description  a description of the JUnit test that finished.
      */
     @Override
     public final void finished(final FrameworkMethod description) {
@@ -141,8 +141,8 @@ public final strictfp class LoggingWatcher extends TestWatchman implements Filte
      * This method is used instead of {@link #assertNextLogContains(String...)} when a log message may or
      * may not be emitted during a test, depending on circumstances that the test method does not control.
      *
-     * @param keywords The keywords that are expected to exist in the next log message
-     *        if that log message has been emitted.
+     * @param  keywords  the keywords that are expected to exist in the next log message
+     *                   if that log message has been emitted.
      */
     public void skipNextLogIfContains(final String... keywords) {
         final String message = messages.peek();
@@ -162,7 +162,7 @@ public final strictfp class LoggingWatcher extends TestWatchman implements Filte
      * Verifies that the next logging message contains the given keywords.
      * Each call of this method advances to the next log message.
      *
-     * @param keywords The keywords that are expected to exist in the next log message.
+     * @param  keywords  the keywords that are expected to exist in the next log message.
      */
     public void assertNextLogContains(final String... keywords) {
         if (messages.isEmpty()) {

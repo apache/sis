@@ -115,7 +115,7 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
     /**
      * Tests marshalling of a few locales.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testMarshalling() throws JAXBException {
@@ -127,7 +127,7 @@ public final strictfp class PT_LocaleTest extends XMLTestCase {
     /**
      * Tests unmarshalling of a few locales.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testUnmarshalling() throws JAXBException {

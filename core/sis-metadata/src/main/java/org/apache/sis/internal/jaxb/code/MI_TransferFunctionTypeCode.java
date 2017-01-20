@@ -52,7 +52,7 @@ public final class MI_TransferFunctionTypeCode
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
     protected MI_TransferFunctionTypeCode wrap(final CodeListUID value) {
@@ -62,7 +62,7 @@ public final class MI_TransferFunctionTypeCode
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<TransferFunctionType> getCodeListClass() {
@@ -72,7 +72,7 @@ public final class MI_TransferFunctionTypeCode
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "MI_TransferFunctionTypeCode", namespace = Namespaces.GMI)
@@ -83,7 +83,7 @@ public final class MI_TransferFunctionTypeCode
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param value The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
         identifier = value;

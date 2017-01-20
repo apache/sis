@@ -487,8 +487,10 @@ public class MetadataStandard implements Serializable {
                 if (!it.hasNext()) {
                     return candidate;
                 }
-                // Found more than one interface; we don't know which one to pick.
-                // Returns 'null' for now; the caller will thrown an exception.
+                /*
+                 * Found more than one interface; we don't know which one to pick.
+                 * Returns 'null' for now; the caller will thrown an exception.
+                 */
             } else if (IMPLEMENTATION_CAN_ALTER_API && isPendingAPI(key.type)) {
                 /*
                  * Found no interface. According to our method contract we should return null.

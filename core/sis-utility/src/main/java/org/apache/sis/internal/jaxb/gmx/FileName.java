@@ -50,8 +50,8 @@ public final class FileName {
     private String src;
 
     /**
-     * A human-readable description of the filename. If {@link #src} is null,
-     * then this will be taken as the file path.
+     * A human-readable description of the filename.
+     * If {@link #src} is null, then this will be taken as the file path.
      */
     @XmlValue
     private String value;
@@ -65,7 +65,7 @@ public final class FileName {
     /**
      * Creates a new {@code <gml:FileName>} for the given URI.
      *
-     * @param uri The string representation of the URI.
+     * @param uri  the string representation of the URI.
      */
     public FileName(final String uri) {
         src   = uri;
@@ -79,7 +79,7 @@ public final class FileName {
      * Returning {@code null} is usually not recommended for a {@code toString()} method,
      * but this class is for internal usage only.</div>
      *
-     * @return The file path, or {@code null} if none.
+     * @return the file path, or {@code null} if none.
      */
     @Override
     public String toString() {

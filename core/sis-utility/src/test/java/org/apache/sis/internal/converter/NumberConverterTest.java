@@ -37,6 +37,7 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 @DependsOn(SystemRegistryTest.class)
+@SuppressWarnings("UnnecessaryBoxing")
 public final strictfp class NumberConverterTest extends TestCase {
     /**
      * Creates a {@link NumberConverter} for the given source and target classes.

@@ -56,6 +56,7 @@ import org.apache.sis.util.iso.Types;
  * @version 0.6
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_GeographicDescription_Type")
 @XmlRootElement(name = "EX_GeographicDescription")
 public class DefaultGeographicDescription extends AbstractGeographicExtent implements GeographicDescription {
@@ -87,8 +88,8 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      * <code>new DefaultGeographicDescription({@link org.apache.sis.metadata.iso.citation.Citations#EPSG}, "1731")</code>
      * can stand for <cite>“France – mainland north of 48.15°N”</cite>.</div>
      *
-     * @param authority The authority of the identifier code, or {@code null} if none.
-     * @param code The identifier code used to represent a geographic area, or {@code null} if none.
+     * @param authority  the authority of the identifier code, or {@code null} if none.
+     * @param code       the identifier code used to represent a geographic area, or {@code null} if none.
      */
     public DefaultGeographicDescription(final Citation authority, final String code) {
         super(true);
@@ -109,7 +110,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      *       of the given {@code description}.</li>
      * </ul>
      *
-     * @param description The natural language description of the meaning of the code value, or {@code null} if none.
+     * @param description  the natural language description of the meaning of the code value, or {@code null} if none.
      *
      * @since 0.6
      */
@@ -135,7 +136,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GeographicDescription)
      */
@@ -160,8 +161,8 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGeographicDescription castOrCopy(final GeographicDescription object) {
@@ -182,7 +183,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      *   <li>the <cite>“France – mainland north of 48.15°N”</cite> description.</li>
      * </ul></div>
      *
-     * @return The identifier used to represent a geographic area, or {@code null}.
+     * @return the identifier used to represent a geographic area, or {@code null}.
      */
     @Override
     @XmlElement(name = "geographicIdentifier", required = true)
@@ -193,7 +194,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
     /**
      * Sets the identifier used to represent a geographic area.
      *
-     * @param newValue The new geographic identifier.
+     * @param  newValue  the new geographic identifier.
      */
     public void setGeographicIdentifier(final Identifier newValue) {
         checkWritePermission();

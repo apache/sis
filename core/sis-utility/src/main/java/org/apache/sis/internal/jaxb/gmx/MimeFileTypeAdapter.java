@@ -41,8 +41,8 @@ public final class MimeFileTypeAdapter extends StringAdapter {
      * Converts a MIME type to the object to be marshalled in a XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The MIME type, or {@code null}.
-     * @return The wrapper for the given MIME type, or {@code null}.
+     * @param  value  the MIME type, or {@code null}.
+     * @return the wrapper for the given MIME type, or {@code null}.
      */
     @Override
     public GO_CharacterString marshal(final String value) {

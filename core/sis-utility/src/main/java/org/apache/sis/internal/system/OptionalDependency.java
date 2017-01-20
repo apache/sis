@@ -42,8 +42,8 @@ public abstract class OptionalDependency extends SystemListener {
     /**
      * Creates a new optional dependency.
      *
-     * @param module A constant from the {@link Modules} class which identify the module that need the optional dependency.
-     * @param dependency The Maven artifact name (<strong>not</strong> a name from the {@link Modules} class)
+     * @param module  a constant from the {@link Modules} class which identify the module that need the optional dependency.
+     * @param dependency  the Maven artifact name (<strong>not</strong> a name from the {@link Modules} class)
      *        of the optional module on which the {@code module} depend.
      */
     protected OptionalDependency(final String module, final String dependency) {
@@ -75,12 +75,12 @@ public abstract class OptionalDependency extends SystemListener {
      * Returns the optional dependency, or {@code null} if not found.
      * This is a helper method for implementation of {@code getInstance()} static method in subclasses.
      *
-     * @param <T>            Compile-time type of the {@code type} argument.
-     * @param type           The subclass type.
-     * @param module         Same argument value than the one given to the {@linkplain #OptionalDependency constructor}.
-     * @param dependency     Same argument value than the one given to the {@linkplain #OptionalDependency constructor}.
-     * @param implementation The fully-qualified name of the class to instantiate by reflection.
-     * @return An instance of the {@code implementation} class, or {@code null} if not found.
+     * @param  <T>             compile-time type of the {@code type} argument.
+     * @param  type            the subclass type.
+     * @param  module          same argument value than the one given to the {@linkplain #OptionalDependency constructor}.
+     * @param  dependency      same argument value than the one given to the {@linkplain #OptionalDependency constructor}.
+     * @param  implementation  the fully-qualified name of the class to instantiate by reflection.
+     * @return an instance of the {@code implementation} class, or {@code null} if not found.
      */
     protected static <T extends OptionalDependency> T getInstance(final Class<T> type,
             final String module, final String dependency, final String implementation)
@@ -103,7 +103,7 @@ public abstract class OptionalDependency extends SystemListener {
      * Returns the exception to throw when a method requiring the optional dependency is invoked
      * but that module is not on the classpath.
      *
-     * @return The exception to throw.
+     * @return the exception to throw.
      */
     protected final UnsupportedOperationException moduleNotFound() {
         return new UnsupportedOperationException(Errors.format(Errors.Keys.MissingRequiredModule_1, dependency));

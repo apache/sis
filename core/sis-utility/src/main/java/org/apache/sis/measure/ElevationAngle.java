@@ -16,7 +16,7 @@
  */
 package org.apache.sis.measure;
 
-import org.opengis.referencing.cs.AxisDirection; // For javadoc
+import org.opengis.referencing.cs.AxisDirection;        // For javadoc
 
 
 /**
@@ -60,7 +60,7 @@ public final class ElevationAngle extends Angle {
     /**
      * Constructs a new elevation angle with the specified angular value.
      *
-     * @param ε Elevation angle value in decimal degrees.
+     * @param  ε  elevation angle value in decimal degrees.
      */
     public ElevationAngle(final double ε) {
         super(ε);
@@ -71,7 +71,7 @@ public final class ElevationAngle extends Angle {
      * represented by the string. The string should represent an angle in either fractional degrees
      * (e.g. 45.5°) or degrees with minutes and seconds (e.g. 45°30').
      *
-     * @param  string A string to be converted to an {@code ElevationAngle}.
+     * @param  string  a string to be converted to an {@code ElevationAngle}.
      * @throws NumberFormatException if the string does not contain a parsable angle,
      *         or represents an elevation angle.
      */

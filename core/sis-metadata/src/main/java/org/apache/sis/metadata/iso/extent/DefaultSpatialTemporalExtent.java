@@ -54,6 +54,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_SpatialTemporalExtent_Type")
 @XmlRootElement(name = "EX_SpatialTemporalExtent")
 public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implements SpatialTemporalExtent {
@@ -82,9 +83,9 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
     /**
      * Constructs a new spatial-temporal extent initialized to the specified values.
      *
-     * @param spatialExtent  The spatial extent component of composite spatial and temporal extent.
-     * @param verticalExtent The vertical extent component, or {@code null} if none.
-     * @param extent         The date and time for the content of the dataset, or {@code null} if unspecified.
+     * @param spatialExtent   the spatial extent component of composite spatial and temporal extent.
+     * @param verticalExtent  the vertical extent component, or {@code null} if none.
+     * @param extent          the date and time for the content of the dataset, or {@code null} if unspecified.
      *
      * @since 0.5
      */
@@ -102,7 +103,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(SpatialTemporalExtent)
      */
@@ -130,8 +131,8 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultSpatialTemporalExtent castOrCopy(final SpatialTemporalExtent object) {
@@ -144,7 +145,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
     /**
      * Returns the spatial extent component of composite spatial and temporal extent.
      *
-     * @return The list of geographic extents (never {@code null}).
+     * @return the list of geographic extents (never {@code null}).
      */
     @Override
     @XmlElement(name = "spatialExtent", required = true)
@@ -155,7 +156,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
     /**
      * Sets the spatial extent component of composite spatial and temporal extent.
      *
-     * @param newValues The new spatial extent.
+     * @param  newValues  the new spatial extent.
      */
     public void setSpatialExtent(final Collection<? extends GeographicExtent> newValues) {
         spatialExtent = writeCollection(newValues, spatialExtent, GeographicExtent.class);
@@ -164,7 +165,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
     /**
      * Returns the vertical extent component.
      *
-     * @return Vertical extent component, or {@code null} if none.
+     * @return vertical extent component, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -177,7 +178,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
     /**
      * Sets the vertical extent component.
      *
-     * @param newValue The new vertical extent component.
+     * @param  newValue  the new vertical extent component.
      *
      * @since 0.5
      */
@@ -216,7 +217,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      * <b>Note:</b> This method is available only if the {@code sis-referencing} module is
      * available on the classpath.
      *
-     * @param  envelope The envelope to use for setting this spatio-temporal extent.
+     * @param  envelope  the envelope to use for setting this spatio-temporal extent.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
      * @throws TransformException if the envelope can not be transformed to a temporal extent.
      */

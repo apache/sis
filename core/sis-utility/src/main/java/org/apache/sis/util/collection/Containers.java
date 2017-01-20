@@ -54,7 +54,7 @@ public final class Containers extends Static {
      * pattern. In such cases, null collections (i.e. collections not yet instantiated) are typically
      * considered as {@linkplain Collection#isEmpty() empty}.</p>
      *
-     * @param  collection the collection to test, or {@code null}.
+     * @param  collection  the collection to test, or {@code null}.
      * @return {@code true} if the given collection is null or empty, or {@code false} otherwise.
      */
     public static boolean isNullOrEmpty(final Collection<?> collection) {

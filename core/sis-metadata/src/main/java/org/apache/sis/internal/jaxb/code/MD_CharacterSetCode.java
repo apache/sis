@@ -65,7 +65,7 @@ public final class MD_CharacterSetCode extends CodeListAdapter<MD_CharacterSetCo
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "MD_CharacterSetCode")
@@ -76,7 +76,7 @@ public final class MD_CharacterSetCode extends CodeListAdapter<MD_CharacterSetCo
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param value The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
         identifier = value;

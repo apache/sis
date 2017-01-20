@@ -40,7 +40,7 @@ public final strictfp class EnumMarshallingTest extends XMLTestCase {
     /**
      * Tests (un)marshaling of an enumeration.
      *
-     * @throws JAXBException If an error occurred while (un)marshaling the XML.
+     * @throws JAXBException if an error occurred while (un)marshaling the XML.
      */
     @Test
     public void testTopicCategories() throws JAXBException {
