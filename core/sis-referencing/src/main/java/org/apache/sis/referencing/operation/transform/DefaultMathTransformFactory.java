@@ -329,9 +329,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * The returned set may conservatively contain more {@code OperationMethod} elements than requested
      * if this {@code MathTransformFactory} does not support filtering by the given type.
      *
-     * @param  type <code>{@linkplain SingleOperation}.class</code> for fetching all operation methods,
-     *         <code>{@linkplain org.opengis.referencing.operation.Projection}.class</code> for fetching
-     *         only map projection methods, <i>etc</i>.
+     * @param  type  <code>{@linkplain SingleOperation}.class</code> for fetching all operation methods,
+     *               <code>{@linkplain org.opengis.referencing.operation.Projection}.class</code> for
+     *               fetching only map projection methods, <i>etc</i>.
      * @return methods available in this factory for coordinate operations of the given type.
      *
      * @see #getDefaultParameters(String)
@@ -536,8 +536,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * of prime meridian), see {@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory}.
          * This policy helps to enforce a separation of concerns.</div>
          *
-         * @param  cs        the coordinate system to set as the source, or {@code null}.
-         * @param ellipsoid  the ellipsoid associated to the given coordinate system, or {@code null}.
+         * @param  cs         the coordinate system to set as the source, or {@code null}.
+         * @param  ellipsoid  the ellipsoid associated to the given coordinate system, or {@code null}.
          */
         public void setSource(final EllipsoidalCS cs, final Ellipsoid ellipsoid) {
             sourceCS = cs;
@@ -692,9 +692,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * parameter value validity. This may result in an {@link InvalidParameterNameException}
          * or {@link InvalidParameterValueException} to be thrown.</p>
          *
-         * @param  writable  {@code true} if this method should also check that the parameters group is not
-         *         an instance of {@link UnmodifiableParameterValueGroup}. Current implementation assumes
-         *         that modifiable parameters are instances of {@link DefaultParameterValueGroup}.
+         * @param  writable  {@code true} if this method should also check that the parameters group is not an
+         *                   instance of {@link UnmodifiableParameterValueGroup}. Current implementation assumes
+         *                   that modifiable parameters are instances of {@link DefaultParameterValueGroup}.
          * @throws IllegalArgumentException if the copy can not be performed because a parameter has
          *         a unrecognized name or an illegal value.
          */
@@ -754,10 +754,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * if available. This method writes semi-major and semi-minor parameter values only if they do not
          * already exists in the given parameters.
          *
-         * @param  ellipsoid  the ellipsoid from which to get axis lengths of flattening factor, or {@code null}.
-         * @param  semiMajor  {@code "semi_major}, {@code "src_semi_major} or {@code "tgt_semi_major} parameter name.
-         * @param  semiMinor  {@code "semi_minor}, {@code "src_semi_minor} or {@code "tgt_semi_minor} parameter name.
-         * @param  inverseFlattening {@code true} if this method can try to set the {@code "inverse_flattening"} parameter.
+         * @param  ellipsoid          the ellipsoid from which to get axis lengths of flattening factor, or {@code null}.
+         * @param  semiMajor          {@code "semi_major}, {@code "src_semi_major} or {@code "tgt_semi_major} parameter name.
+         * @param  semiMinor          {@code "semi_minor}, {@code "src_semi_minor} or {@code "tgt_semi_minor} parameter name.
+         * @param  inverseFlattening  {@code true} if this method can try to set the {@code "inverse_flattening"} parameter.
          * @return the exception if the operation failed, or {@code null} if none. This exception is not thrown now
          *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
          *         informative exception.

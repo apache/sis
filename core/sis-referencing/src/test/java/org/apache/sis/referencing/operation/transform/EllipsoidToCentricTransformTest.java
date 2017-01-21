@@ -164,9 +164,9 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
     /**
      * Executes the derivative test using the given ellipsoid.
      *
-     * @param  ellipsoid The ellipsoid to use for the test.
-     * @param  hasHeight {@code true} if geographic coordinates include an ellipsoidal height (i.e. are 3-D),
-     *         or {@code false} if they are only 2-D.
+     * @param  ellipsoid  the ellipsoid to use for the test.
+     * @param  hasHeight  {@code true} if geographic coordinates include an ellipsoidal height (i.e. are 3-D),
+     *                    or {@code false} if they are only 2-D.
      * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException should never happen.
      */
@@ -177,7 +177,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
          * Derivative of the direct transform.
          */
         tolerance = 1E-2;
-        derivativeDeltas = new double[] {toRadians(1.0 / 60) / 1852}; // Approximatively one metre.
+        derivativeDeltas = new double[] {toRadians(1.0 / 60) / 1852};           // Approximatively one metre.
         verifyDerivative(point.getCoordinate());
         /*
          * Derivative of the inverse transform.
@@ -185,7 +185,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
         point = transform.transform(point, null);
         transform = transform.inverse();
         tolerance = 1E-8;
-        derivativeDeltas = new double[] {1}; // Approximatively one metre.
+        derivativeDeltas = new double[] {1};                                    // Approximatively one metre.
         verifyDerivative(point.getCoordinate());
     }
 

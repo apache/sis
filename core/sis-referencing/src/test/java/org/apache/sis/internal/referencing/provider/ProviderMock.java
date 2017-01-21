@@ -52,9 +52,9 @@ abstract strictfp class ProviderMock extends AbstractProvider {
     /**
      * Not yet supported.
      *
-     * @param  factory    Ignored.
-     * @param  parameters Ignored.
-     * @return A dummy math transform.
+     * @param  factory     ignored.
+     * @param  parameters  ignored.
+     * @return a dummy math transform.
      */
     @Override
     public final MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {

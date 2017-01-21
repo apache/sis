@@ -52,7 +52,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * {@linkplain org.apache.sis.referencing.operation.DefaultConversion conversion} from another CRS
  * (not by a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}).
  *
- * @param <C> The conversion type, either {@code Conversion} or {@code Projection}.
+ * @param  <C>  the conversion type, either {@code Conversion} or {@code Projection}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
@@ -87,11 +87,11 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractCRS#AbstractCRS(Map, CoordinateSystem) super-class constructor}.
      *
-     * @param  properties The properties to be given to the new derived CRS object.
-     * @param  baseCRS    Coordinate reference system to base the derived CRS on.
-     * @param  conversion The defining conversion from a normalized base to a normalized derived CRS.
-     * @param  derivedCS  The coordinate system for the derived CRS. The number of axes
-     *         must match the target dimension of the {@code baseToDerived} transform.
+     * @param  properties  the properties to be given to the new derived CRS object.
+     * @param  baseCRS     coordinate reference system to base the derived CRS on.
+     * @param  conversion  the defining conversion from a normalized base to a normalized derived CRS.
+     * @param  derivedCS   the coordinate system for the derived CRS. The number of axes must match
+     *                     the target dimension of the {@code baseToDerived} transform.
      * @throws MismatchedDimensionException if the source and target dimensions of {@code baseToDerived}
      *         do not match the dimensions of {@code base} and {@code derivedCS} respectively.
      */
@@ -140,7 +140,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      */
     AbstractDerivedCRS(final GeneralDerivedCRS crs) {
         super(crs);
@@ -190,7 +190,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     /**
      * Returns the datum of the {@linkplain #getBaseCRS() base CRS}.
      *
-     * @return The datum of the base CRS.
+     * @return the datum of the base CRS.
      */
     @Override
     public abstract Datum getDatum();
@@ -198,7 +198,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     /**
      * Returns the conversion from the {@linkplain #getBaseCRS() base CRS} to this CRS.
      *
-     * @return The conversion to this CRS.
+     * @return the conversion to this CRS.
      */
     @Override
     @XmlElement(name = "conversion", required = true)
@@ -209,10 +209,10 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     /**
      * Compares this coordinate reference system with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -310,8 +310,8 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * before we can set the {@code baseCRS} in its final location, but the CS is not yet known
      * when this method is invoked.</p>
      *
-     * @param  name The property name, used only in case of error message to format.
-     * @throws IllegalStateException If the base CRS can not be set.
+     * @param  name  the property name, used only in case of error message to format.
+     * @throws IllegalStateException if the base CRS can not be set.
      */
     @SuppressWarnings("unchecked")
     final void setBaseCRS(final String name, final SingleCRS baseCRS) {

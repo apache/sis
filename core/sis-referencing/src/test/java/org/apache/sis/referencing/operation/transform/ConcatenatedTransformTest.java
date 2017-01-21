@@ -41,7 +41,7 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
      * Tests the concatenation of two affine transforms than can be represented
      * as a {@link ConcatenatedTransformDirect2D}.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException if an error occurred while transforming the test coordinate.
      */
     @Test
     public void testDirect2D() throws TransformException {
@@ -82,8 +82,8 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
      * Tests the concatenation of two affine transforms than can not be represented as a
      * {@link ConcatenatedTransformDirect}. The slower {@link ConcatenatedTransform} shall be used.
      *
-     * @throws FactoryException Should never happen.
-     * @throws TransformException Should never happen.
+     * @throws FactoryException if an error occurred while creating the math transform to test.
+     * @throws TransformException if an error occurred while transforming the test coordinate.
      */
     @Test
     @org.junit.Ignore("Missing implementation of DimensionFilter.")
@@ -96,7 +96,7 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
         isInverseTransformSupported = false;
         validate();
         final double[] source = generateRandomCoordinates(CoordinateDomain.PROJECTED, 0);
-        final double[] target = new double[source.length / 2]; // Going from 4 to 2 dimensions.
+        final double[] target = new double[source.length / 2];                  // Going from 4 to 2 dimensions.
         first .transform(source, 0, target, 0, target.length/2);
         second.transform(target, 0, target, 0, target.length/2);
         verifyTransform(source, target);
@@ -113,11 +113,11 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
      * The {@link ConcatenatedTransform#create(MathTransform, MathTransform)} method
      * should optimize this case.
      *
-     * @throws FactoryException Should never happen.
+     * @throws FactoryException if an error occurred while creating the math transform to test.
      */
     @Test
     public void testPassthrough() throws FactoryException {
-        final MathTransform kernel = new PseudoTransform(2, 3); // Any non-linear transform.
+        final MathTransform kernel = new PseudoTransform(2, 3);                     // Any non-linear transform.
         final MathTransform passth = PassThroughTransform.create(0, kernel, 1);
         final Matrix4 matrix = new Matrix4();
         transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth, null);

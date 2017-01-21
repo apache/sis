@@ -181,8 +181,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param components The sequence of coordinate reference systems making this compound CRS.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  components  the sequence of coordinate reference systems making this compound CRS.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createCompoundCRS(Map, CoordinateReferenceSystem...)
      */
@@ -195,9 +195,9 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
      * Returns a compound coordinate system for the specified array of CRS objects.
      *
-     * @param  properties The properties given to the constructor, or {@code null} if unknown.
-     * @param  components The CRS components, usually singles but not necessarily.
-     * @return The coordinate system for the given components.
+     * @param  properties  the properties given to the constructor, or {@code null} if unknown.
+     * @param  components  the CRS components, usually singles but not necessarily.
+     * @return the coordinate system for the given components.
      */
     private static CoordinateSystem createCoordinateSystem(final Map<String,?> properties,
             final CoordinateReferenceSystem[] components)
@@ -223,7 +223,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      */
     protected DefaultCompoundCRS(final CompoundCRS crs) {
         super(crs);
@@ -242,8 +242,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultCompoundCRS castOrCopy(final CompoundCRS object) {
@@ -281,10 +281,10 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * This list may contains other {@code CompoundCRS} instances, as described in class Javadoc.
      * For a flattened list of {@link SingleCRS} instances, see {@link #getSingleComponents()}.
      *
-     * @return The coordinate reference systems as an unmodifiable list.
+     * @return the coordinate reference systems as an unmodifiable list.
      */
     @Override
-    @SuppressWarnings("unchecked") // We are safe if the list is read-only.
+    @SuppressWarnings("unchecked")                           // We are safe if the list is read-only.
     public List<CoordinateReferenceSystem> getComponents() {
         return (List<CoordinateReferenceSystem>) components;
     }
@@ -298,7 +298,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     @SuppressWarnings("SuspiciousToArrayCall")
     private void setComponents(final List<? extends CoordinateReferenceSystem> crs) {
         if (setSingleComponents(crs)) {
-            components = singles; // Shares the same list.
+            components = singles;                           // Shares the same list.
         } else {
             components = UnmodifiableArrayList.wrap(crs.toArray(new CoordinateReferenceSystem[crs.size()]));
         }
@@ -309,7 +309,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * other compound CRS, then all of them are flattened in a sequence of {@code SingleCRS} objects.
      * See class Javadoc for more information.
      *
-     * @return The single coordinate reference systems as an unmodifiable list.
+     * @return the single coordinate reference systems as an unmodifiable list.
      *
      * @see org.apache.sis.referencing.CRS#getSingleComponents(CoordinateReferenceSystem)
      */
@@ -337,9 +337,9 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
      * Computes the single CRS list on deserialization.
      *
-     * @param  in The input stream from which to deserialize a compound CRS.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize a compound CRS.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     @SuppressWarnings("unchecked")
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -455,7 +455,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             }
             if (changed) {
                 if (reorderCRS) {
-                    Arrays.sort(newComponents, SubTypes.BY_TYPE); // This array typically has less than 4 elements.
+                    Arrays.sort(newComponents, SubTypes.BY_TYPE);   // This array typically has less than 4 elements.
                 }
                 crs = new DefaultCompoundCRS(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY), newComponents);
             }
@@ -475,16 +475,16 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
      * Compares this coordinate reference system with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                            // Slight optimization.
         }
         if (super.equals(object, mode)) {
             switch (mode) {

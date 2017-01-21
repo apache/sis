@@ -126,8 +126,8 @@ public final strictfp class TimeDependentBWPTest extends TestCase {
      * EPSG documentation truncates the numerical values given in their example, so it is normal that we have a
      * slight difference.
      *
-     * @param actual The coordinates calculated by the matrix, or {@code null} for comparing against
-     *        the EPSG expected values.
+     * @param  actual  the coordinates calculated by the matrix, or {@code null} for comparing against
+     *                 the EPSG expected values.
      */
     private void compareWithExplicitCalculation(final Matrix actual) {
         /*
@@ -166,7 +166,7 @@ public final strictfp class TimeDependentBWPTest extends TestCase {
             assertEquals("Y", Yt, actual.getElement(1, 0), 0.0005);
             assertEquals("Z", Zt, actual.getElement(2, 0), 0.0005);
         } else {
-            assertEquals("X", -3789470.008, Xt, 0.013); // Smallest tolerance value such as the test do not fail.
+            assertEquals("X", -3789470.008, Xt, 0.013);     // Smallest tolerance value such as the test do not fail.
             assertEquals("Y",  4841770.685, Yt, 0.009);
             assertEquals("Z", -1690895.103, Zt, 0.003);
         }

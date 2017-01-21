@@ -124,9 +124,9 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum  the datum.
+     * @param  cs  the coordinate system.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalCRS(Map, VerticalDatum, VerticalCS)
      */
@@ -146,7 +146,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(VerticalCRS)
      */
@@ -161,8 +161,8 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultVerticalCRS castOrCopy(final VerticalCRS object) {
@@ -189,7 +189,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     /**
      * Returns the datum.
      *
-     * @return The datum.
+     * @return the datum.
      */
     @Override
     @XmlElement(name = "verticalDatum", required = true)
@@ -200,7 +200,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     /**
      * Returns the coordinate system.
      *
-     * @return The coordinate system.
+     * @return the coordinate system.
      */
     @Override
     @XmlElement(name = "verticalCS", required = true)

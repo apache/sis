@@ -97,8 +97,8 @@ final class CacheRecord implements Comparable<CacheRecord> {
     /**
      * Implementation of the public {@link ConcurrentAuthorityFactory#printCacheContent()} method.
      *
-     * @param cache The cache.
-     * @param out The output writer, or {@code null} for the standard output stream.
+     * @param cache  the cache.
+     * @param out    the output writer, or {@code null} for the standard output stream.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     static void printCacheContent(final Map<?,?> cache, PrintWriter out) {

@@ -72,10 +72,10 @@ public final strictfp class Geographic3Dto2DTest extends TestCase {
      * Creates a "Geographic 2D to 3D → Geocentric → Affine → Geographic → Geographic 3D to 2D" chain.
      * This method is used for integration tests.
      *
-     * @param  factory The math transform factory to use for creating and concatenating the transform.
-     * @param  affine  The math transform for the operation in geocentric Cartesian domain.
-     * @param  pv      The parameters for the operation in geographic coordinates.
-     * @return The chain of transforms.
+     * @param  factory  the math transform factory to use for creating and concatenating the transform.
+     * @param  affine   the math transform for the operation in geocentric Cartesian domain.
+     * @param  pv       the parameters for the operation in geographic coordinates.
+     * @return the chain of transforms.
      * @throws FactoryException if an error occurred while creating a transform.
      *
      * @see GeocentricTranslationTest#createDatumShiftForGeographic2D(MathTransformFactory)

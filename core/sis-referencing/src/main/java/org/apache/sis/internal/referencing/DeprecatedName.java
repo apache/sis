@@ -73,7 +73,7 @@ public final class DeprecatedName extends NamedIdentifier implements Deprecable 
      *
      * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
      *
-     * @return Information about the replacement for this name, or {@code null} if none.
+     * @return information about the replacement for this name, or {@code null} if none.
      */
     @Override
     public InternationalString getRemarks() {

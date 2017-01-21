@@ -78,8 +78,8 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
      * Creates a new instance of {@link LambertConicConformal}. See the class javadoc for an explanation
      * about why we ask only for the latitude of origin and not the standard parallels.
      *
-     * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
-     * @param latitudeOfOrigin The latitude of origin, in decimal degrees.
+     * @param  ellipse           {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     * @param  latitudeOfOrigin  the latitude of origin, in decimal degrees.
      */
     private void createNormalizedProjection(final boolean ellipse, final double latitudeOfOrigin) {
         final LambertConformal1SP method = new LambertConformal1SP();
@@ -317,7 +317,7 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
     @Test
     @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
     public void testSphericalCase() throws FactoryException, TransformException {
-        createNormalizedProjection(false, 40); // Spherical case
+        createNormalizedProjection(false, 40);                  // Spherical case
         testSpecialLatitudes();
         testDerivative();
 

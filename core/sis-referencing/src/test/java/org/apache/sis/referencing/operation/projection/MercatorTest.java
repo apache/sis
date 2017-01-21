@@ -55,7 +55,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      * Creates a new instance of {@link Mercator} for a sphere or an ellipsoid.
      * The new instance is stored in the inherited {@link #transform} field.
      *
-     * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     * @param  ellipse  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
     private void createNormalizedProjection(final boolean ellipse) {
         final Mercator2SP method = new Mercator2SP();
@@ -134,7 +134,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      */
     @Test
     public void testSpecialLatitudes() throws ProjectionException {
-        if (transform == null) {    // May have been initialized by 'testSphericalCase'.
+        if (transform == null) {                    // May have been initialized by 'testSphericalCase'.
             createNormalizedProjection(true);       // Elliptical case
         }
         assertEquals ("Not a number",     NaN,                    transform(NaN),           tolerance);

@@ -144,13 +144,13 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * with different source and target datum, it does not accept to use such instances for
      * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived CRS} construction.
      *
-     * @param properties  the properties to be given to the identified object.
-     * @param sourceCRS   the source CRS.
-     * @param targetCRS   the target CRS, which shall use a datum
-     *                    {@linkplain Utilities#equalsIgnoreMetadata equals (ignoring metadata)} to the source CRS datum.
+     * @param properties        the properties to be given to the identified object.
+     * @param sourceCRS         the source CRS.
+     * @param targetCRS         the target CRS, which shall use a datum {@linkplain Utilities#equalsIgnoreMetadata
+     *                          equals (ignoring metadata)} to the source CRS datum.
      * @param interpolationCRS  the CRS of additional coordinates needed for the operation, or {@code null} if none.
-     * @param method      the coordinate operation method (mandatory in all cases).
-     * @param transform   transform from positions in the source CRS to positions in the target CRS.
+     * @param method            the coordinate operation method (mandatory in all cases).
+     * @param transform         transform from positions in the source CRS to positions in the target CRS.
      */
     public DefaultConversion(final Map<String,?>             properties,
                              final CoordinateReferenceSystem sourceCRS,

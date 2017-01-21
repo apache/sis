@@ -139,14 +139,14 @@ public final strictfp class BuilderTest extends TestCase {
      *
      * @param  withNames       {@code true} for adding the names in the builder.
      * @param  withIdentifiers {@code true} for adding the identifiers in the builder.
-     * @return The builder with Mercator names and/or identifiers.
+     * @return the builder with Mercator names and/or identifiers.
      */
     private static BuilderMock createMercator(final boolean withNames, final boolean withIdentifiers) {
         final BuilderMock builder = new BuilderMock();
         assertSame(builder, builder.setCodeSpace(Citations.EPSG, "EPSG"));
         if (withNames) {
-            assertSame(builder, builder.addName(                   "Mercator (variant A)")); // EPSG version 7.6 and later.
-            assertSame(builder, builder.addName(                   "Mercator (1SP)"));       // EPSG before version 7.6.
+            assertSame(builder, builder.addName(                   "Mercator (variant A)"));    // EPSG version 7.6 and later.
+            assertSame(builder, builder.addName(                   "Mercator (1SP)"));          // EPSG before version 7.6.
             assertSame(builder, builder.addName(Citations.OGC,     "Mercator_1SP"));
             assertSame(builder, builder.addName(Citations.GEOTIFF, "CT_Mercator"));
         }

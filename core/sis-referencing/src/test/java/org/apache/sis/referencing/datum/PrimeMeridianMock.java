@@ -48,7 +48,7 @@ final strictfp class PrimeMeridianMock extends IdentifiedObjectMock implements P
     /**
      * Returns the longitude of this prime meridian relative to Greenwich.
      *
-     * @return The prime meridian longitude.
+     * @return the prime meridian longitude.
      */
     @Override
     public double getGreenwichLongitude() {

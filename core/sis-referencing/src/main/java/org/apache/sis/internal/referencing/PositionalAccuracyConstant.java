@@ -50,6 +50,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @see org.opengis.referencing.operation.Transformation#getCoordinateOperationAccuracy()
  */
 @XmlTransient
+@SuppressWarnings("CloneableClassWithoutClone")       // ModifiableMetadata needs shallow clones.
 public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPositionalAccuracy {
     /**
      * Serial number for inter-operability with different versions.
@@ -145,8 +146,8 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      *
      * If the above is modified, please update {@code AbstractCoordinateOperation.getLinearAccuracy()} javadoc.
      *
-     * @param  operation The operation to inspect for accuracy.
-     * @return The accuracy estimate (always in meters), or NaN if unknown.
+     * @param  operation  the operation to inspect for accuracy.
+     * @return the accuracy estimate (always in meters), or NaN if unknown.
      *
      * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy()
      */

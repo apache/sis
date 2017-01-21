@@ -127,12 +127,12 @@ final class SubTypes {
      * a more specific GeoAPI interface if this method has been able to infer the type from the
      * {@code conversion} argument.
      *
-     * @param  baseType   The base GeoAPI interface to be implemented by the conversion to return.
-     * @param  definition The defining conversion.
-     * @param  sourceCRS  The source CRS.
-     * @param  targetCRS  The target CRS.
-     * @param  factory    The factory to use for creating a transform from the parameters or for performing axis changes.
-     * @return The conversion of the given type between the given CRS.
+     * @param  baseType    the base GeoAPI interface to be implemented by the conversion to return.
+     * @param  definition  the defining conversion.
+     * @param  sourceCRS   the source CRS.
+     * @param  targetCRS   the target CRS.
+     * @param  factory     the factory to use for creating a transform from the parameters or for performing axis changes.
+     * @return the conversion of the given type between the given CRS.
      * @throws ClassCastException if a contradiction is found between the given {@code baseType},
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
      *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
@@ -144,14 +144,14 @@ final class SubTypes {
         Class<? extends T> type = baseType;
         if (definition instanceof AbstractIdentifiedObject) {
             final Class<?> c = ((AbstractIdentifiedObject) definition).getInterface();
-            if (!c.isAssignableFrom(baseType)) {  // Do nothing if c is a parent type.
+            if (!c.isAssignableFrom(baseType)) {                        // Do nothing if c is a parent type.
                 type = c.asSubclass(type);
             }
         }
         final OperationMethod method = definition.getMethod();
         if (method instanceof DefaultOperationMethod) {
             final Class<? extends SingleOperation> c = ((DefaultOperationMethod) method).getOperationType();
-            if (!c.isAssignableFrom(baseType)) {  // Do nothing if c is a parent type.
+            if (!c.isAssignableFrom(baseType)) {                        // Do nothing if c is a parent type.
                 type = c.asSubclass(type);
             }
         }

@@ -149,10 +149,10 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     /**
      * Implementation of {@link #testExact1D()} and {@link #testNonExact1D()}.
      *
-     * @param rd        The random number generator to use.
-     * @param numPts    The number of points to generate.
-     * @param addErrors {@code true} for adding a random error in the target points.
-     * @param scaleTolerance Tolerance threshold for floating point comparisons.
+     * @param  rd              the random number generator to use.
+     * @param  numPts          the number of points to generate.
+     * @param  addErrors       {@code true} for adding a random error in the target points.
+     * @param  scaleTolerance  tolerance threshold for floating point comparisons.
      */
     private static void test1D(final Random rd, final int numPts, final boolean addErrors,
             final double scaleTolerance, final double translationTolerance)
@@ -185,10 +185,10 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     /**
      * Implementation of {@link #testExact2D()} and {@link #testNonExact2D()}.
      *
-     * @param rd        The random number generator to use.
-     * @param numPts    The number of points to generate.
-     * @param addErrors {@code true} for adding a random error in the target points.
-     * @param scaleTolerance Tolerance threshold for floating point comparisons.
+     * @param  rd              the random number generator to use.
+     * @param  numPts          the number of points to generate.
+     * @param  addErrors       {@code true} for adding a random error in the target points.
+     * @param  scaleTolerance  tolerance threshold for floating point comparisons.
      */
     private static void test2D(final Random rd, final int numPts, final boolean addErrors,
             final double scaleTolerance, final double translationTolerance)

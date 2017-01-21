@@ -134,14 +134,14 @@ public class MolodenskyTransform extends MolodenskyFormula {
      * <code>{@linkplain #getContextualParameters()}.{@linkplain ContextualParameters#completeTransform
      * completeTransform}(factory, this)}</code>.
      *
-     * @param source      The source ellipsoid.
-     * @param isSource3D  {@code true} if the source coordinates have a height.
-     * @param target      The target ellipsoid.
-     * @param isTarget3D  {@code true} if the target coordinates have a height.
-     * @param tX          The geocentric <var>X</var> translation in same units than the source ellipsoid axes.
-     * @param tY          The geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
-     * @param tZ          The geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
-     * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
+     * @param source       the source ellipsoid.
+     * @param isSource3D   {@code true} if the source coordinates have a height.
+     * @param target       the target ellipsoid.
+     * @param isTarget3D   {@code true} if the target coordinates have a height.
+     * @param tX           the geocentric <var>X</var> translation in same units than the source ellipsoid axes.
+     * @param tY           the geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
+     * @param tZ           the geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
+     * @param isAbridged   {@code true} for the abridged formula, or {@code false} for the complete one.
      *
      * @see #createGeodeticTransformation(MathTransformFactory, Ellipsoid, boolean, Ellipsoid, boolean, double, double, double, boolean)
      */
@@ -162,9 +162,9 @@ public class MolodenskyTransform extends MolodenskyFormula {
     /**
      * Constructs the inverse of a Molodensky transform.
      *
-     * @param inverse The transform for which to create the inverse.
-     * @param source  The source ellipsoid of the given {@code inverse} transform.
-     * @param target  The target ellipsoid of the given {@code inverse} transform.
+     * @param inverse  the transform for which to create the inverse.
+     * @param source   the source ellipsoid of the given {@code inverse} transform.
+     * @param target   the target ellipsoid of the given {@code inverse} transform.
      */
     MolodenskyTransform(final MolodenskyTransform inverse, final Ellipsoid source, final Ellipsoid target) {
         super(inverse, source, target, inverse.context.getDescriptor());
@@ -174,10 +174,10 @@ public class MolodenskyTransform extends MolodenskyFormula {
     /**
      * Invoked by constructor and by {@link #getParameterValues()} for setting all parameters other than axis lengths.
      *
-     * @param pg         Where to set the parameters.
-     * @param semiMinor  Ignored.
-     * @param unit       The unit of measurement to declare.
-     * @param Δf         The flattening difference to set, or NaN if this method should fetch that value itself.
+     * @param  pg         where to set the parameters.
+     * @param  semiMinor  ignored.
+     * @param  unit       the unit of measurement to declare.
+     * @param  Δf         the flattening difference to set, or NaN if this method should fetch that value itself.
      */
     @Override
     final void completeParameters(final Parameters pg, final double semiMinor, final Unit<?> unit, double Δf) {
@@ -206,16 +206,16 @@ public class MolodenskyTransform extends MolodenskyFormula {
      *   <li>optionally heights above the ellipsoid, in same units than the source ellipsoids axes.</li>
      * </ol>
      *
-     * @param factory     The factory to use for creating the transform.
-     * @param source      The source ellipsoid.
-     * @param isSource3D  {@code true} if the source coordinates have a height.
-     * @param target      The target ellipsoid.
-     * @param isTarget3D  {@code true} if the target coordinates have a height.
-     * @param tX          The geocentric <var>X</var> translation in same units than the source ellipsoid axes.
-     * @param tY          The geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
-     * @param tZ          The geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
-     * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
-     * @return The transformation between geographic coordinates in degrees.
+     * @param  factory      the factory to use for creating the transform.
+     * @param  source       the source ellipsoid.
+     * @param  isSource3D   {@code true} if the source coordinates have a height.
+     * @param  target       the target ellipsoid.
+     * @param  isTarget3D   {@code true} if the target coordinates have a height.
+     * @param  tX           the geocentric <var>X</var> translation in same units than the source ellipsoid axes.
+     * @param  tY           the geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
+     * @param  tZ           the geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
+     * @param  isAbridged   {@code true} for the abridged formula, or {@code false} for the complete one.
+     * @return the transformation between geographic coordinates in degrees.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform createGeodeticTransformation(final MathTransformFactory factory,
@@ -372,7 +372,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
      * Returns the inverse of this Molodensky transform. The source ellipsoid of the returned transform will
      * be the target ellipsoid of this transform, and conversely.
      *
-     * @return A Molodensky transform from the target ellipsoid to the source ellipsoid of this transform.
+     * @return a Molodensky transform from the target ellipsoid to the source ellipsoid of this transform.
      */
     @Override
     public MathTransform inverse() {
@@ -389,7 +389,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
      * contextual parameters}.</div>
      *
-     * @return A description of the internal parameters.
+     * @return a description of the internal parameters.
      */
     @Debug
     @Override

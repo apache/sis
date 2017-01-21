@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
@@ -70,7 +71,6 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import java.util.Objects;
 
 
 /**

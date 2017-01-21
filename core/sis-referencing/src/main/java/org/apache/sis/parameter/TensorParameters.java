@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
@@ -46,9 +47,6 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -309,11 +307,11 @@ public class TensorParameters<E> implements Serializable {
     /**
      * Constructs a descriptors provider.
      *
-     * @param elementType The type of tensor element values.
-     * @param prefix      The prefix to insert in front of parameter name for each tensor elements.
-     * @param separator   The separator between dimension (row, column, …) indices in parameter names.
-     * @param dimensions  The parameter for the size of each dimension, usually in an array of length 2.
-     *                    Length may be different if the caller wants to generalize usage of this class to tensors.
+     * @param elementType  the type of tensor element values.
+     * @param prefix       the prefix to insert in front of parameter name for each tensor elements.
+     * @param separator    the separator between dimension (row, column, …) indices in parameter names.
+     * @param dimensions   the parameter for the size of each dimension, usually in an array of length 2.
+     *                     Length may be different if the caller wants to generalize usage of this class to tensors.
      */
     @SafeVarargs
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -362,7 +360,7 @@ public class TensorParameters<E> implements Serializable {
     /**
      * Returns the type of tensor element values.
      *
-     * @return The type of tensor element values.
+     * @return the type of tensor element values.
      */
     public final Class<E> getElementType() {
         return elementType;
@@ -381,7 +379,7 @@ public class TensorParameters<E> implements Serializable {
      *   <tr><td><var>k</var></td><td>rank <var>k</var> tensor</td></tr>
      * </table>
      *
-     * @return The rank of the tensors for which to create parameters.
+     * @return the rank of the tensors for which to create parameters.
      */
     public final int rank() {
         return dimensions.length;
@@ -400,8 +398,8 @@ public class TensorParameters<E> implements Serializable {
     /**
      * Returns the parameter descriptor for the dimension at the given index.
      *
-     * @param  i The dimension index, from 0 inclusive to {@link #rank()} exclusive.
-     * @return The parameter descriptor for the dimension at the given index.
+     * @param  i  the dimension index, from 0 inclusive to {@link #rank()} exclusive.
+     * @return the parameter descriptor for the dimension at the given index.
      *
      * @see #getElementDescriptor(int...)
      * @see #getAllDescriptors(int...)
@@ -416,9 +414,9 @@ public class TensorParameters<E> implements Serializable {
      * That length is usually 2, where {@code indices[0]} is the <var>row</var> index and {@code indices[1]}
      * is the <var>column</var> index.
      *
-     * @param  indices The indices of the tensor element for which to get the descriptor.
-     * @return The parameter descriptor for the given tensor element.
-     * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
+     * @param  indices  the indices of the tensor element for which to get the descriptor.
+     * @return the parameter descriptor for the given tensor element.
+     * @throws IllegalArgumentException if the given array does not have the expected length or have illegal value.
      *
      * @see #getDimensionDescriptor(int)
      * @see #getAllDescriptors(int...)
@@ -488,9 +486,9 @@ public class TensorParameters<E> implements Serializable {
      * Subclasses can override this method if they want more control on descriptor properties
      * like identification information, aliases or value domain.
      *
-     * @param  indices The indices of the tensor element for which to create a parameter.
-     * @return The parameter descriptor for the given tensor element.
-     * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
+     * @param  indices  the indices of the tensor element for which to create a parameter.
+     * @return the parameter descriptor for the given tensor element.
+     * @throws IllegalArgumentException if the given array does not have the expected length or have illegal value.
      *
      * @see #indicesToName(int[])
      * @see #getDefaultValue(int[])
@@ -517,9 +515,9 @@ public class TensorParameters<E> implements Serializable {
      * If a subclass overrides this method for creating different names, then that subclass shall
      * also override {@link #nameToIndices(String)} for parsing those names.
      *
-     * @param  indices The indices of the tensor element for which to create a parameter name.
-     * @return The parameter descriptor name for the tensor element at the given indices.
-     * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
+     * @param  indices  the indices of the tensor element for which to create a parameter name.
+     * @return the parameter descriptor name for the tensor element at the given indices.
+     * @throws IllegalArgumentException if the given array does not have the expected length or have illegal value.
      */
     protected String indicesToName(final int[] indices) throws IllegalArgumentException {
         verifyRank(indices);
@@ -541,9 +539,9 @@ public class TensorParameters<E> implements Serializable {
      * <var>column</var> + …” pattern and returns an array containing the <var>row</var>, <var>column</var> and other
      * indices, in that order.
      *
-     * @param  name The parameter name to parse.
-     * @return Indices of the tensor element of the given name, or {@code null} if the name is not recognized.
-     * @throws IllegalArgumentException If the name has been recognized but an error occurred while parsing it
+     * @param  name  the parameter name to parse.
+     * @return indices of the tensor element of the given name, or {@code null} if the name is not recognized.
+     * @throws IllegalArgumentException if the name has been recognized but an error occurred while parsing it
      *         (e.g. an {@link NumberFormatException}, which is an {@code IllegalArgumentException} subclass).
      */
     protected int[] nameToIndices(final String name) throws IllegalArgumentException {
@@ -569,8 +567,8 @@ public class TensorParameters<E> implements Serializable {
      * Returns the default value for the parameter descriptor at the given indices.
      * The default implementation returns 1 if all indices are equals, or 0 otherwise.
      *
-     * @param  indices The indices of the tensor element for which to get the default value.
-     * @return The default value for the tensor element at the given indices, or {@code null} if none.
+     * @param  indices  the indices of the tensor element for which to get the default value.
+     * @return the default value for the tensor element at the given indices, or {@code null} if none.
      *
      * @see DefaultParameterDescriptor#getDefaultValue()
      *
@@ -588,10 +586,10 @@ public class TensorParameters<E> implements Serializable {
     /**
      * Returns the descriptor in this group for the specified name.
      *
-     * @param  caller     The {@link TensorValues} instance invoking this method, used only in case of errors.
-     * @param  name       The case insensitive name of the parameter to search for.
-     * @param  actualSize The current values of parameters that define the matrix (or tensor) dimensions.
-     * @return The parameter for the given name.
+     * @param  caller      the {@link TensorValues} instance invoking this method, used only in case of errors.
+     * @param  name        the case insensitive name of the parameter to search for.
+     * @param  actualSize  the current values of parameters that define the matrix (or tensor) dimensions.
+     * @return the parameter for the given name.
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     final ParameterDescriptor<?> descriptor(final ParameterDescriptorGroup caller,
@@ -624,8 +622,8 @@ public class TensorParameters<E> implements Serializable {
     /**
      * Returns {@code true} if the given indices are not out-of-bounds.
      *
-     * @param indices    The indices parsed from a parameter name.
-     * @param actualSize The current values of parameters that define the matrix (or tensor) dimensions.
+     * @param  indices     the indices parsed from a parameter name.
+     * @param  actualSize  the current values of parameters that define the matrix (or tensor) dimensions.
      */
     static boolean isInBounds(final int[] indices, final int[] actualSize) {
         for (int i=0; i<indices.length; i++) {
@@ -655,8 +653,8 @@ public class TensorParameters<E> implements Serializable {
      * The returned array contains all descriptors returned by {@link #getDimensionDescriptor(int)}
      * and {@link #getElementDescriptor(int...)}.
      *
-     * @param  actualSize The matrix (or tensor) dimensions for which to get the parameters.
-     * @return The tensor parameters, including all elements.
+     * @param  actualSize  the matrix (or tensor) dimensions for which to get the parameters.
+     * @return the tensor parameters, including all elements.
      *
      * @see #getDimensionDescriptor(int)
      * @see #getElementDescriptor(int...)
@@ -724,8 +722,8 @@ public class TensorParameters<E> implements Serializable {
      *   </tr>
      * </table>
      *
-     * @param  properties The properties to be given to the identified object.
-     * @return A new parameter group initialized to the default values.
+     * @param  properties  the properties to be given to the identified object.
+     * @return a new parameter group initialized to the default values.
      */
     public ParameterValueGroup createValueGroup(final Map<String,?> properties) {
         return new TensorValues<>(properties, this);
@@ -735,9 +733,9 @@ public class TensorParameters<E> implements Serializable {
      * Creates a new instance of parameter group initialized to the given matrix.
      * This operation is allowed only for tensors of {@linkplain #rank() rank} 2.
      *
-     * @param  properties The properties to be given to the identified object.
-     * @param  matrix The matrix to copy in the new parameter group.
-     * @return A new parameter group initialized to the given matrix.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  matrix      the matrix to copy in the new parameter group.
+     * @return a new parameter group initialized to the given matrix.
      *
      * @see #toMatrix(ParameterValueGroup)
      */
@@ -755,8 +753,8 @@ public class TensorParameters<E> implements Serializable {
      * Constructs a matrix from a group of parameters.
      * This operation is allowed only for tensors of {@linkplain #rank() rank} 2.
      *
-     * @param  parameters The group of parameters.
-     * @return A matrix constructed from the specified group of parameters.
+     * @param  parameters  the group of parameters.
+     * @return a matrix constructed from the specified group of parameters.
      * @throws InvalidParameterNameException if a parameter name was not recognized.
      *
      * @see #createValueGroup(Map, Matrix)
@@ -800,7 +798,7 @@ public class TensorParameters<E> implements Serializable {
     /**
      * Returns a hash code value for this object.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {
@@ -810,7 +808,7 @@ public class TensorParameters<E> implements Serializable {
     /**
      * Compares this object with the given object for equality.
      *
-     * @param other The other object to compare with this object.
+     * @param  other  the other object to compare with this object.
      * @return {@code true} if both object are equal.
      */
     @Override
@@ -831,9 +829,9 @@ public class TensorParameters<E> implements Serializable {
     /**
      * Invoked on deserialization for restoring the {@link #parameters} array.
      *
-     * @param  in The input stream from which to deserialize a group of tensor parameters.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize a group of tensor parameters.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

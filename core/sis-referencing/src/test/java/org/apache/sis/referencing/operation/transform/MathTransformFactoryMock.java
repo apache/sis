@@ -59,8 +59,8 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Returns the singleton method, if assignable to the given type.
      *
-     * @param  type The type of operation methods to get.
-     * @return The singleton method, or an empty set.
+     * @param  type  the type of operation methods to get.
+     * @return the singleton method, or an empty set.
      */
     @Override
     public Set<OperationMethod> getAvailableMethods(Class<? extends SingleOperation> type) {
@@ -70,7 +70,7 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Returns the last method used, which can only be null or the method given at construction time.
      *
-     * @return The method given at construction time.
+     * @return the method given at construction time.
      */
     @Override
     public OperationMethod getLastMethodUsed() {
@@ -80,8 +80,8 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Returns the parameters for the operation method.
      *
-     * @param name Shall be the operation method name.
-     * @return The parameters.
+     * @param  name  shall be the operation method name.
+     * @return the parameters.
      * @throws NoSuchIdentifierException if the given name is not the name
      *         of the operation method known to this factory.
      */
@@ -96,8 +96,8 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Delegates to the method given at construction time.
      *
-     * @param  parameters The parameters to give to the math transform provider.
-     * @return The transform created by the provider.
+     * @param  parameters  the parameters to give to the math transform provider.
+     * @return the transform created by the provider.
      * @throws FactoryException if the provider can not create the transform.
      */
     @Override
@@ -108,8 +108,8 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Delegates to {@link MathTransforms}.
      *
-     * @param  matrix Matrix representing the affine transform.
-     * @return Affine transform for the given matrix.
+     * @param  matrix  matrix representing the affine transform.
+     * @return affine transform for the given matrix.
      */
     @Override
     public MathTransform createAffineTransform(final Matrix matrix) {
@@ -119,9 +119,9 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Delegates to {@link MathTransforms}.
      *
-     * @param  transform1 First transform to concatenate.
-     * @param  transform2 Second transform to concatenate.
-     * @return Result of concatenation.
+     * @param  transform1  first transform to concatenate.
+     * @param  transform2  second transform to concatenate.
+     * @return result of concatenation.
      */
     @Override
     public MathTransform createConcatenatedTransform(MathTransform transform1, MathTransform transform2) {
@@ -131,10 +131,10 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Unimplemented method.
      *
-     * @param  firstAffectedOrdinate Ignored.
-     * @param  subTransform          Ignored.
-     * @param  numTrailingOrdinates  Ignored.
-     * @return Never returned.
+     * @param  firstAffectedOrdinate  ignored.
+     * @param  subTransform           ignored.
+     * @param  numTrailingOrdinates   ignored.
+     * @return never returned.
      */
     @Override
     public MathTransform createPassThroughTransform(int firstAffectedOrdinate, MathTransform subTransform, int numTrailingOrdinates) {
@@ -144,10 +144,10 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Unimplemented method.
      *
-     * @param  baseCRS    Ignored.
-     * @param  parameters Ignored.
-     * @param  derivedCS  Ignored.
-     * @return Never returned.
+     * @param  baseCRS     ignored.
+     * @param  parameters  ignored.
+     * @param  derivedCS   ignored.
+     * @return never returned.
      */
     @Override
     public MathTransform createBaseToDerived(CoordinateReferenceSystem baseCRS,
@@ -159,8 +159,8 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Unimplemented method.
      *
-     * @param xml Ignored.
-     * @return Never returned.
+     * @param  xml  ignored.
+     * @return never returned.
      */
     @Override
     public MathTransform createFromXML(String xml) {
@@ -170,8 +170,8 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Unimplemented method.
      *
-     * @param wkt Ignored.
-     * @return Never returned.
+     * @param  wkt  ignored.
+     * @return never returned.
      */
     @Override
     public MathTransform createFromWKT(String wkt) {
@@ -181,7 +181,7 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Unimplemented method.
      *
-     * @return null.
+     * @return {@code null}.
      */
     @Override
     public Citation getVendor() {

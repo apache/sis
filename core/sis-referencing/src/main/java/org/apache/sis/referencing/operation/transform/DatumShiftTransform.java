@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Objects;
 import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
@@ -30,9 +31,6 @@ import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
-
-// Branch-specific imports
-import java.util.Objects;
 
 
 /**
@@ -100,8 +98,8 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
      * Creates a datum shift transform for direct interpolations in a grid.
      * It is caller responsibility to initialize the {@link #context} parameters.
      *
-     * @param descriptor  The contextual parameter descriptor.
-     * @param grid        Interpolation grid.
+     * @param descriptor  the contextual parameter descriptor.
+     * @param grid        interpolation grid.
      */
     DatumShiftTransform(ParameterDescriptorGroup descriptor, final DatumShiftGrid<?,?> grid) {
         final int size = grid.getTranslationDimensions() + 1;
@@ -113,8 +111,8 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
      * Creates a datum shift transform for interpolations in geocentric domain.
      * It is caller responsibility to initialize the {@link #context} parameters.
      *
-     * @param descriptor  The contextual parameter descriptor.
-     * @param grid        Interpolation grid in geocentric coordinates, or {@code null} if none.
+     * @param descriptor  the contextual parameter descriptor.
+     * @param grid        interpolation grid in geocentric coordinates, or {@code null} if none.
      * @param isSource3D  {@code true} if the source coordinates have a height.
      * @param isTarget3D  {@code true} if the target coordinates have a height.
      */
@@ -132,8 +130,8 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
      * <p>This method is defined here in order to ensure a consistent behavior of
      * {@link InterpolatedGeocentricTransform} with {@link InterpolatedMolodenskyTransform}.</p>
      *
-     * @param  grid  The grid to validate.
-     * @param  unit  The unit of semi-axis length of the <strong>source</strong> ellipsoid.
+     * @param  grid  the grid to validate.
+     * @param  unit  the unit of semi-axis length of the <strong>source</strong> ellipsoid.
      * @throws IllegalArgumentException if the given grid is not valid.
      */
     static void ensureGeocentricTranslation(final DatumShiftGrid<?,?> grid, final Unit<Length> unit)
@@ -153,10 +151,10 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
      * Sets the semi-axis length in the {@link #context} parameters.
      * This is a helper method for constructors in some (not all) subclasses.
      *
-     * @param semiMajor The semi-major axis length of the source ellipsoid.
-     * @param semiMinor The semi-minor axis length of the source ellipsoid.
-     * @param unit      The unit of measurement of source ellipsoid axes.
-     * @param target    The target ellipsoid.
+     * @param  semiMajor  the semi-major axis length of the source ellipsoid.
+     * @param  semiMinor  the semi-minor axis length of the source ellipsoid.
+     * @param  unit       the unit of measurement of source ellipsoid axes.
+     * @param  target     the target ellipsoid.
      */
     final void setContextParameters(final double semiMajor, final double semiMinor, final Unit<Length> unit, final Ellipsoid target) {
         final UnitConverter c = target.getAxisUnit().getConverterTo(unit);
@@ -199,7 +197,7 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
      * {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}.
      * The parameters that describe the process as a whole are rather given by {@link #getContextualParameters()}.
      *
-     * @return The internal parameter values for this transform.
+     * @return the internal parameter values for this transform.
      */
     @Debug
     @Override
@@ -213,7 +211,7 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
      * including {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
      * Those parameters are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
      *
-     * @return The parameters values for the sequence of
+     * @return the parameters values for the sequence of
      *         <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms.
      */
     @Override

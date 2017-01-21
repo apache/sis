@@ -418,10 +418,10 @@ public class ObliqueStereographic extends NormalizedProjection {
             final double sinφsinφ0 = sinφ * sinχ0;
             final double cosφcosφ0 = cosφ * cosχ0;
             final double cosφsinλ  = cosφ * sinλ;
-            final double B = 1 + sinφsinφ0 + cosφcosφ0*cosλ;            // Synder 21-4
+            final double B = 1 + sinφsinφ0 + cosφcosφ0*cosλ;                    // Synder 21-4
             if (dstPts != null) {
-                dstPts[dstOff  ] = cosφsinλ / B;                        // Synder 21-2
-                dstPts[dstOff+1] = (sinφ*cosχ0 - cosφ*sinχ0*cosλ) / B;  // Synder 21-3
+                dstPts[dstOff  ] = cosφsinλ / B;                                // Synder 21-2
+                dstPts[dstOff+1] = (sinφ*cosχ0 - cosφ*sinχ0*cosλ) / B;          // Synder 21-3
             }
             if (!derivate) {
                 return null;

@@ -77,7 +77,7 @@ public final class Geographic2Dto3D extends AbstractProvider {
     /**
      * Returns the operation type.
      *
-     * @return Interface implemented by all coordinate operations that use this method.
+     * @return interface implemented by all coordinate operations that use this method.
      */
     @Override
     public Class<Conversion> getOperationType() {
@@ -87,9 +87,9 @@ public final class Geographic2Dto3D extends AbstractProvider {
     /**
      * Returns the transform.
      *
-     * @param  factory The factory for creating affine transforms.
-     * @param  values The parameter values.
-     * @return The math transform for the given parameter values.
+     * @param  factory  the factory for creating affine transforms.
+     * @param  values   the parameter values.
+     * @return the math transform for the given parameter values.
      * @throws FactoryException if an error occurred while creating the transform.
      */
     @Override

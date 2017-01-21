@@ -154,8 +154,8 @@ public abstract class MapProjection extends AbstractProvider {
      * were instances of {@code DefaultParameterValue}, or that the descriptor associated to
      * the user-specified {@code ParameterValue} has sufficient information.
      *
-     * @param  descriptor The descriptor that specify the parameter to validate.
-     * @param  value The parameter value in the units given by the descriptor.
+     * @param  descriptor  the descriptor that specify the parameter to validate.
+     * @param  value       the parameter value in the units given by the descriptor.
      * @throws IllegalArgumentException if the given value is out of bounds.
      *
      * @see #createZeroConstant(ParameterBuilder)
@@ -191,9 +191,9 @@ public abstract class MapProjection extends AbstractProvider {
     /**
      * Creates a map projection from the specified group of parameter values.
      *
-     * @param  factory The factory to use for creating and concatenating the (de)normalization transforms.
-     * @param  parameters The group of parameter values.
-     * @return The map projection created from the given parameter values.
+     * @param  factory     the factory to use for creating and concatenating the (de)normalization transforms.
+     * @param  parameters  the group of parameter values.
+     * @return the map projection created from the given parameter values.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws FactoryException if the map projection can not be created.
      */
@@ -207,8 +207,8 @@ public abstract class MapProjection extends AbstractProvider {
     /**
      * Creates a map projection on an ellipsoid having a semi-major axis length of 1.
      *
-     * @param  parameters The group of parameter values.
-     * @return The map projection created from the given parameter values.
+     * @param  parameters  the group of parameter values.
+     * @return the map projection created from the given parameter values.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     protected abstract NormalizedProjection createProjection(final Parameters parameters) throws ParameterNotFoundException;

@@ -18,6 +18,7 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.EnumMap;
+import java.util.Objects;
 import java.util.ConcurrentModificationException;
 import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
@@ -43,9 +44,6 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -171,8 +169,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param cs The coordinate system.
+     * @param properties  The properties to be given to the coordinate reference system.
+     * @param cs          the coordinate system.
      */
     public AbstractCRS(final Map<String,?> properties, final CoordinateSystem cs) {
         super(properties);
@@ -187,7 +185,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(CoordinateReferenceSystem)
      */
@@ -222,8 +220,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractCRS castOrCopy(final CoordinateReferenceSystem object) {
@@ -235,7 +233,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * The default implementation returns {@code CoordinateReferenceSystem.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The coordinate reference system interface implemented by this class.
+     * @return the coordinate reference system interface implemented by this class.
      */
     @Override
     public Class<? extends CoordinateReferenceSystem> getInterface() {
@@ -251,18 +249,20 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * Subclasses implementing {@code SingleCRS} (basically all SIS subclasses except {@link DefaultCompoundCRS})
      * will override this method with public access and more specific return type.
      *
-     * @return The datum, or {@code null} if none.
+     * @return the datum, or {@code null} if none.
      */
     Datum getDatum() {
-        // User could provide his own CRS implementation outside this SIS package, so we have
-        // to check for SingleCRS interface. But all SIS classes override this implementation.
+        /*
+         * User could provide his own CRS implementation outside this SIS package, so we have
+         * to check for SingleCRS interface. But all SIS classes override this implementation.
+         */
         return (this instanceof SingleCRS) ? ((SingleCRS) this).getDatum() : null;
     }
 
     /**
      * Returns the coordinate system.
      *
-     * @return The coordinate system.
+     * @return the coordinate system.
      */
     @Override
     public CoordinateSystem getCoordinateSystem() {
@@ -296,8 +296,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     /**
      * Sets the CRS for the given axes convention.
      *
-     * @param crs The CRS to cache.
-     * @return The cached CRS. May be different than the given {@code crs} if an existing instance has been found.
+     * @param  crs  the CRS to cache.
+     * @return the cached CRS. May be different than the given {@code crs} if an existing instance has been found.
      */
     final AbstractCRS setCached(final AxesConvention convention, AbstractCRS crs) {
         assert Thread.holdsLock(this);
@@ -312,7 +312,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             }
         }
         if (forConvention.put(convention, crs) != null) {
-            throw new ConcurrentModificationException(); // Should never happen, unless we have a synchronization bug.
+            throw new ConcurrentModificationException();    // Should never happen, unless we have a synchronization bug.
         }
         return crs;
     }
@@ -321,8 +321,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * Returns a coordinate reference system equivalent to this one but with axes rearranged according the given
      * convention. If this CRS is already compatible with the given convention, then this method returns {@code this}.
      *
-     * @param  convention The axes convention for which a coordinate reference system is desired.
-     * @return A coordinate reference system compatible with the given convention (may be {@code this}).
+     * @param  convention  the axes convention for which a coordinate reference system is desired.
+     * @return a coordinate reference system compatible with the given convention (may be {@code this}).
      *
      * @see AbstractCS#forConvention(AxesConvention)
      */
@@ -357,10 +357,10 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * compared including the {@linkplain #getDomainOfValidity() domain of validity} and
      * the {@linkplain #getScope() scope}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -387,7 +387,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -457,10 +457,10 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * <div class="note"><b>Note:</b> the {@code unit} and {@code isWKT1} arguments could be computed by this method,
      * but are requested in order to avoid computing them twice, because the caller usually have them anyway.</div>
      *
-     * @param formatter The formatter where to append the coordinate system.
-     * @param cs        The coordinate system to append.
-     * @param unit      The value of {@code ReferencingUtilities.getUnit(cs)}.
-     * @param isWKT1    {@code true} if formatting WKT 1, or {@code false} for WKT 2.
+     * @param  formatter  the formatter where to append the coordinate system.
+     * @param  cs         the coordinate system to append.
+     * @param  unit       the value of {@code ReferencingUtilities.getUnit(cs)}.
+     * @param  isWKT1    { @code true} if formatting WKT 1, or {@code false} for WKT 2.
      */
     final void formatCS(final Formatter formatter, final CoordinateSystem cs, final Unit<?> unit, final boolean isWKT1) {
         assert unit == ReferencingUtilities.getUnit(cs) : unit;
@@ -468,17 +468,17 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         assert isWKT1 || !isBaseCRS(formatter) || formatter.getConvention() == Convention.INTERNAL;    // Condition documented in javadoc.
 
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
-        if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
+        if (isWKT1) {                               // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
             formatter.append(unit);
             if (unit == null) {
                 formatter.setInvalidWKT(this, null);
             }
         } else {
-            formatter.append(toFormattable(cs)); // WKT2 only, since the concept of CoordinateSystem was not explicit in WKT 1.
+            formatter.append(toFormattable(cs));    // WKT2 only, since the concept of CoordinateSystem was not explicit in WKT 1.
             formatter.indent(+1);
         }
         if (!isWKT1 || formatter.getConvention() != Convention.WKT1_IGNORE_AXES) {
-            if (cs != null) { // Should never be null, except sometime temporarily during construction.
+            if (cs != null) {                       // Should never be null, except sometime temporarily during construction.
                 final int dimension = cs.getDimension();
                 for (int i=0; i<dimension; i++) {
                     formatter.newLine();
@@ -486,13 +486,13 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
                 }
             }
         }
-        if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
+        if (!isWKT1) {                              // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
             formatter.newLine();
             formatter.append(unit);
             formatter.indent(-1);
         }
         formatter.restoreContextualUnit(unit, oldUnit);
-        formatter.newLine(); // For writing the ID[…] element on its own line.
+        formatter.newLine();                        // For writing the ID[…] element on its own line.
     }
 
 
@@ -528,8 +528,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * Sets the coordinate system to the given value.
      * This method is indirectly invoked by JAXB at unmarshalling time.
      *
-     * @param  name The property name, used only in case of error message to format. Can be null for auto-detect.
-     * @throws IllegalStateException If the coordinate system has already been set.
+     * @param  name  the property name, used only in case of error message to format. Can be null for auto-detect.
+     * @throws IllegalStateException if the coordinate system has already been set.
      */
     final void setCoordinateSystem(String name, final CoordinateSystem cs) {
         if (coordinateSystem == null) {

@@ -139,7 +139,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     /**
      * Computes {@link ConformalProjection#expOfNorthing(double, double)} for the given latitude.
      *
-     * @param  φ The latitude in radians.
+     * @param  φ  the latitude in radians.
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
      */
     private double expOfNorthing(final double φ) {
@@ -149,8 +149,8 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     /**
      * Computes {@link ConformalProjection#expOfNorthing(double, double)} for the given latitude.
      *
-     * @param  projection The projection on which to invoke {@code expOfNorthing(…)}.
-     * @param  φ The latitude in radians.
+     * @param  projection  the projection on which to invoke {@code expOfNorthing(…)}.
+     * @param  φ           the latitude in radians.
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
      */
     private static double expOfNorthing(final ConformalProjection projection, final double φ) {
@@ -168,10 +168,10 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     @Test
     @DependsOnMethod("testMath")
     public void testExpOfNorthing() {
-        transform = new NoOp(false);   // Spherical case
+        transform = new NoOp(false);                            // Spherical case
         tolerance = TOLERANCE;
         doTestExpOfNorthing();
-        transform = new NoOp(true);    // Ellipsoidal case
+        transform = new NoOp(true);                             // Ellipsoidal case
         doTestExpOfNorthing();
     }
 
@@ -184,8 +184,8 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     @DependsOnMethod("testExpOfNorthing")
     public void test_dy_dφ() throws TransformException {
         tolerance = 1E-7;
-        doTest_dy_dφ(new NoOp(false));      // Spherical case
-        doTest_dy_dφ(new NoOp(true));       // Ellipsoidal case
+        doTest_dy_dφ(new NoOp(false));                          // Spherical case
+        doTest_dy_dφ(new NoOp(true));                           // Ellipsoidal case
     }
 
     /**
@@ -207,8 +207,8 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     /**
      * Computes {@link ConformalProjection#φ(double)}.
      *
-     * @param  expOfSouthing The reciprocal of the value returned by {@link #expOfNorthing(double)}.
-     * @return The latitude in radians.
+     * @param  expOfSouthing  the reciprocal of the value returned by {@link #expOfNorthing(double)}.
+     * @return the latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
      */
     private double φ(final double expOfSouthing) throws ProjectionException {
@@ -226,10 +226,10 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     @Test
     @DependsOnMethod("testExpOfNorthing")
     public void test_φ() throws ProjectionException {
-        transform = new NoOp(false);   // Spherical case
+        transform = new NoOp(false);                            // Spherical case
         tolerance = TOLERANCE;
         doTest_φ();
-        transform = new NoOp(true);    // Ellipsoidal case
+        transform = new NoOp(true);                             // Ellipsoidal case
         tolerance = NormalizedProjection.ITERATION_TOLERANCE;
         doTest_φ();
     }

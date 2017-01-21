@@ -22,6 +22,7 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Arrays;
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -39,9 +40,6 @@ import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.internal.referencing.Formulas.isPoleToPole;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -84,7 +82,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * the given reference directly; it does <strong>not</strong> clone the given array. This is
      * the desired behavior for proper working of {@link SubEnvelope}.
      *
-     * @param ordinates The array of ordinate values to store directly (not cloned).
+     * @param  ordinates  the array of ordinate values to store directly (not cloned).
      */
     ArrayEnvelope(final double[] ordinates) {
         this.ordinates = ordinates;
@@ -100,10 +98,10 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * If at least one corner is associated to a CRS, then the new envelope will also
      * be associated to that CRS.
      *
-     * @param  lowerCorner The limits in the direction of decreasing ordinate values for each dimension.
-     * @param  upperCorner The limits in the direction of increasing ordinate values for each dimension.
-     * @throws MismatchedDimensionException If the two positions do not have the same dimension.
-     * @throws MismatchedReferenceSystemException If the CRS of the two position are not equal.
+     * @param  lowerCorner  the limits in the direction of decreasing ordinate values for each dimension.
+     * @param  upperCorner  the limits in the direction of increasing ordinate values for each dimension.
+     * @throws MismatchedDimensionException if the two positions do not have the same dimension.
+     * @throws MismatchedReferenceSystemException if the CRS of the two position are not equal.
      */
     public ArrayEnvelope(final DirectPosition lowerCorner, final DirectPosition upperCorner)
             throws MismatchedDimensionException, MismatchedReferenceSystemException
@@ -124,9 +122,9 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * Constructs an envelope defined by two corners given as sequences of ordinate values.
      * The Coordinate Reference System is initially {@code null}.
      *
-     * @param  lowerCorner The limits in the direction of decreasing ordinate values for each dimension.
-     * @param  upperCorner The limits in the direction of increasing ordinate values for each dimension.
-     * @throws MismatchedDimensionException If the two sequences do not have the same length.
+     * @param  lowerCorner  the limits in the direction of decreasing ordinate values for each dimension.
+     * @param  upperCorner  the limits in the direction of increasing ordinate values for each dimension.
+     * @throws MismatchedDimensionException if the two sequences do not have the same length.
      */
     public ArrayEnvelope(final double[] lowerCorner, final double[] upperCorner) throws MismatchedDimensionException {
         ensureNonNull("lowerCorner", lowerCorner);
@@ -140,7 +138,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * Constructs an empty envelope of the specified dimension. All ordinates
      * are initialized to 0 and the coordinate reference system is undefined.
      *
-     * @param dimension The envelope dimension.
+     * @param  dimension  the envelope dimension.
      */
     public ArrayEnvelope(final int dimension) {
         ordinates = new double[dimension * 2];
@@ -150,7 +148,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * Constructs an empty envelope with the specified coordinate reference system.
      * All ordinate values are initialized to 0.
      *
-     * @param crs The coordinate reference system.
+     * @param  crs  the coordinate reference system.
      */
     public ArrayEnvelope(final CoordinateReferenceSystem crs) {
         ensureNonNull("crs", crs);
@@ -161,7 +159,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     /**
      * Constructs a new envelope with the same data than the specified envelope.
      *
-     * @param envelope The envelope to copy.
+     * @param envelope  the envelope to copy.
      */
     public ArrayEnvelope(final Envelope envelope) {
         ensureNonNull("envelope", envelope);
@@ -183,7 +181,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.
      * Axis order is (<var>longitude</var>, <var>latitude</var>).
      *
-     * @param box The bounding box to copy.
+     * @param box  the bounding box to copy.
      */
     public ArrayEnvelope(final GeographicBoundingBox box) {
         ensureNonNull("box", box);
@@ -216,8 +214,8 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(CharSequence) GeneralEnvelope}
      * constructor for more information.
      *
-     * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
-     * @throws IllegalArgumentException If the given string can not be parsed.
+     * @param  wkt  the {@code BOX}, {@code POLYGON} or other kind of element to parse.
+     * @throws IllegalArgumentException if the given string can not be parsed.
      */
     public ArrayEnvelope(final CharSequence wkt) throws IllegalArgumentException {
         ensureNonNull("wkt", wkt);
@@ -343,8 +341,8 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      *   <li>{@link SubEnvelope#setRange(int, double, double)}</li>
      * </ul>
      *
-     * @param crs The coordinate reference system, or {@code null}.
-     * @param ordinates The array of ordinate values to verify.
+     * @param  crs        the coordinate reference system, or {@code null}.
+     * @param  ordinates  the array of ordinate values to verify.
      */
     static void verifyRanges(final CoordinateReferenceSystem crs, final double[] ordinates) {
         if (crs != null) {
@@ -411,7 +409,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      * This information is available even when the {@linkplain #getCoordinateReferenceSystem()
      * coordinate reference system} is unknown.
      *
-     * @return The dimensionality of this envelope.
+     * @return the dimensionality of this envelope.
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public int getDimension() {
@@ -423,7 +421,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      * If non-null, it shall be the same as {@linkplain #getLowerCorner() lower corner}
      * and {@linkplain #getUpperCorner() upper corner} CRS.
      *
-     * @return The envelope CRS, or {@code null} if unknown.
+     * @return the envelope CRS, or {@code null} if unknown.
      */
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {

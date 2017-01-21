@@ -42,6 +42,7 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.Containers;
@@ -150,10 +151,10 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * for any property not present in the map provided to a {@code createFoo(Map<String,?>, …)} method.
      *
      * @param properties  the default properties, or {@code null} if none.
-     * @param factory     the factory to use for creating
-     *        {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transforms},
-     *        or {@code null} for the default factory.
+     * @param factory     the factory to use for creating {@linkplain AbstractMathTransform math transforms},
+     *                    or {@code null} for the default factory.
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public DefaultCoordinateOperationFactory(Map<String,?> properties, final MathTransformFactory factory) {
         if (properties == null || properties.isEmpty()) {
             properties = Collections.emptyMap();
@@ -430,7 +431,7 @@ next:   for (int i=components.size(); --i >= 0;) {
             final Datum d = components.get(i).getDatum();
             for (int j=n; --j >= 0;) {
                 if (Utilities.equalsIgnoreMetadata(d, datum[j])) {
-                    System.arraycopy(datum, j+1, datum, j, --n - j);  // Remove the datum from the list.
+                    System.arraycopy(datum, j+1, datum, j, --n - j);    // Remove the datum from the list.
                     continue next;
                 }
             }

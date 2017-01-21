@@ -18,6 +18,7 @@ package org.apache.sis.parameter;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.bind.JAXBException;
@@ -39,9 +40,6 @@ import org.apache.sis.xml.XML;
 import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -70,8 +68,8 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
     /**
      * Marshals the given object, then unmarshals it and compare with the original value.
      *
-     * @param parameter The parameter to marshal.
-     * @param expected  The expected XML (ignoring {@code xmlns}).
+     * @param  parameter  the parameter to marshal.
+     * @param  expected   the expected XML (ignoring {@code xmlns}).
      */
     private static void testMarshallAndUnmarshall(final DefaultParameterValue<?> parameter, final String expected)
             throws JAXBException
@@ -127,7 +125,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
          * change in any future Apache SIS version.
          */
         assertNull("valueDomain", r.getValueDomain());
-        assertNull("valueClass",  r.getValueClass());   // May change in any future SIS release.
+        assertNull("valueClass",  r.getValueClass());               // May change in any future SIS release.
     }
 
     /**
@@ -318,11 +316,11 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
     /**
      * Verifies that the given parameter descriptor has the expected EPSG code, name and OGC alias.
      *
-     * @param code       The expected EPSG code.
-     * @param name       The expected EPSG name.
-     * @param alias      The expected OGC alias.
-     * @param required   {@code true} if the parameter should be mandatory, or {@code false} if optional.
-     * @param descriptor The parameter descriptor to verify.
+     * @param  code        the expected EPSG code.
+     * @param  name        the expected EPSG name.
+     * @param  alias       the expected OGC alias.
+     * @param  required    {@code true} if the parameter should be mandatory, or {@code false} if optional.
+     * @param  descriptor  the parameter descriptor to verify.
      */
     private static void verifyDescriptor(final int code, final String name, final String alias,
             final boolean required, final GeneralParameterDescriptor descriptor)
@@ -336,13 +334,13 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
     /**
      * Verifies that the given parameter value has the expected value and descriptor properties.
      *
-     * @param code       The expected EPSG code.
-     * @param name       The expected EPSG name.
-     * @param alias      The expected OGC alias.
-     * @param value      The expected value.
-     * @param unit       The expected unit of measurement for both the value and the descriptor.
-     * @param descriptor The expected parameter descriptor associated to the parameter value.
-     * @param parameter  The parameter value to verify.
+     * @param  code        the expected EPSG code.
+     * @param  name        the expected EPSG name.
+     * @param  alias       the expected OGC alias.
+     * @param  value       the expected value.
+     * @param  unit        the expected unit of measurement for both the value and the descriptor.
+     * @param  descriptor  the expected parameter descriptor associated to the parameter value.
+     * @param  parameter   the parameter value to verify.
      */
     private static void verifyParameter(final int code, final String name, final String alias,
             final double value, final Unit<?> unit, final GeneralParameterDescriptor descriptor,

@@ -231,10 +231,10 @@ public strictfp class CoordinateDomain {
     /**
      * Generates random input coordinates.
      *
-     * @param  random    The random number generator to use.
-     * @param  dimension The number of dimension of the points to generate.
-     * @param  numPts    The number of points to generate.
-     * @return An array of length {@code numPts*dimension} filled with random input ordinate values.
+     * @param  random     the random number generator to use.
+     * @param  dimension  the number of dimension of the points to generate.
+     * @param  numPts     the number of points to generate.
+     * @return an array of length {@code numPts*dimension} filled with random input ordinate values.
      */
     public double[] generateRandomInput(final Random random, final int dimension, final int numPts) {
         final double[] ordinates = new double[numPts * dimension];

@@ -204,7 +204,7 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     /**
      * Tests marshalling.
      *
-     * @throws JAXBException If an error occurred during marshalling.
+     * @throws JAXBException if an error occurred during marshalling.
      */
     @Test
     public void testMarshalling() throws JAXBException {
@@ -238,8 +238,8 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
      * <p>This method is part of a chain.
      * The next method is {@link #testUnmarshalledWKT()}.</p>
      *
-     * @return The unmarshalled datum.
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @return the unmarshalled datum.
+     * @throws JAXBException if an error occurred during unmarshalling.
      */
     @TestStep
     public DefaultGeodeticDatum testUnmarshalling() throws JAXBException {
@@ -265,7 +265,7 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     /**
      * Tests the WKT formatting of the datum created by {@link #testUnmarshalling()}.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
     @DependsOnMethod("testToWKT")

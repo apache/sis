@@ -48,7 +48,7 @@ public final strictfp class MathTransformsTest extends TestCase {
      *   <li>The transform in the middle (at dimension 1) is non-linear.</li>
      * </ul>
      *
-     * @return The dummy math transform.
+     * @return the dummy math transform.
      */
     public static MathTransform createConcatenateAndPassThrough() {
         return createConcatenateAndPassThrough(new Matrix4(), new Matrix4());
@@ -62,8 +62,8 @@ public final strictfp class MathTransformsTest extends TestCase {
      * <p><b>Implementation note:</b> we do not use {@code MathTransforms.concatenate(…)} for
      * preventing the optimization performed for the {@link PassThroughTransform} special case.</p>
      *
-     * @param scale The matrix applying a scale along at least one axis.
-     * @param swap  The matrix swapping two matrices.
+     * @param  scale  the matrix applying a scale along at least one axis.
+     * @param  swap   the matrix swapping two matrices.
      */
     private static MathTransform createConcatenateAndPassThrough(final Matrix4 scale, final Matrix4 swap) {
         scale.m11 = 3;
@@ -71,7 +71,7 @@ public final strictfp class MathTransformsTest extends TestCase {
         swap.m10 = 1; swap.m11 = 0;
         MathTransform tr = ExponentialTransform1D.create(10, 1);
         tr = PassThroughTransform.create(1, tr, 1);
-        tr = new ConcatenatedTransformDirect(MathTransforms.linear(scale), tr); // See "implementation note" above.
+        tr = new ConcatenatedTransformDirect(MathTransforms.linear(scale), tr);     // See "implementation note" above.
         tr = new ConcatenatedTransformDirect(tr, MathTransforms.linear(swap));
         return tr;
     }
@@ -81,8 +81,8 @@ public final strictfp class MathTransformsTest extends TestCase {
      */
     @Test
     public void testGetSteps() {
-        final Matrix4 scale = new Matrix4(); // Scales a value.
-        final Matrix4 swap  = new Matrix4(); // Swaps two dimensions.
+        final Matrix4 scale = new Matrix4();                    // Scales a value.
+        final Matrix4 swap  = new Matrix4();                    // Swaps two dimensions.
         final List<MathTransform> steps = MathTransforms.getSteps(createConcatenateAndPassThrough(scale, swap));
         assertEquals(3, steps.size());
         assertMatrixEquals("Step 1", scale, MathTransforms.getMatrix(steps.get(0)), STRICT);
@@ -98,7 +98,7 @@ public final strictfp class MathTransformsTest extends TestCase {
     @Test
     public void testCompound() {
         final MathTransform t1 = MathTransforms.linear(new Matrix2(
-            3, -1,   // Random numbers (no real meaning)
+            3, -1,                                                          // Random numbers (no real meaning)
             0,  1));
         final MathTransform t2 = MathTransforms.linear(new Matrix4(
             0,  8,  0,  9,

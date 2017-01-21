@@ -96,7 +96,7 @@ public final class ObliqueStereographic extends AbstractStereographic {
     /**
      * {@inheritDoc}
      *
-     * @return The map projection created from the given parameter values.
+     * @return the map projection created from the given parameter values.
      */
     @Override
     protected NormalizedProjection createProjection(Parameters parameters) throws ParameterNotFoundException {

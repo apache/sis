@@ -90,7 +90,7 @@ public final strictfp class ContextualParametersTest extends TestCase {
      * with identity normalization / denormalization transform. The complete transform should be
      * equals to the kernel (often the same instance, but not necessarily because of caching).
      *
-     * @throws FactoryException Should never happen.
+     * @throws FactoryException should never happen.
      */
     @Test
     public void testSameTransform() throws FactoryException {
@@ -112,7 +112,7 @@ public final strictfp class ContextualParametersTest extends TestCase {
      * Tests {@link ContextualParameters#completeTransform(MathTransformFactory, MathTransform)}
      * with non-identity normalization transforms.
      *
-     * @throws FactoryException Should never happen.
+     * @throws FactoryException should never happen.
      */
     @Test
     @DependsOnMethod("testSameTransform")

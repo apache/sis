@@ -129,9 +129,9 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      * {@code org.opengis.referencing.datum.ParametricDatum} and {@code org.opengis.referencing.cs.ParametricCS}
      * Those change are pending GeoAPI revision.</div>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum       the datum.
+     * @param  cs          the coordinate system.
      */
     public DefaultParametricCRS(final Map<String,?> properties,
                                 final DefaultParametricDatum datum,
@@ -152,7 +152,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      * <div class="warning"><b>Warning:</b> in a future SIS version, the parameter type may be changed
      * to {@code org.opengis.referencing.crs.ParametricCRS}. This change is pending GeoAPI revision.</div>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      */
     protected DefaultParametricCRS(final DefaultParametricCRS crs) {
         super(crs);
@@ -162,7 +162,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     /**
      * Returns the datum.
      *
-     * @return The datum.
+     * @return the datum.
      */
     @Override
     @XmlElement(name = "parametricDatum", required = true)
@@ -173,7 +173,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     /**
      * Returns the coordinate system.
      *
-     * @return The coordinate system.
+     * @return the coordinate system.
      */
     @Override
     @XmlElement(name = "parametricCS", required = true)

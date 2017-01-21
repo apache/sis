@@ -56,10 +56,10 @@ public strictfp class MatrixParametersTest extends TensorParametersTest {
     /**
      * Creates a new test case for a {@link MatrixParameters} defined by the subclass.
      *
-     * @param param       The instance tested by this class.
-     * @param names       The expected parameter names for all matrix elements.
-     * @param aliases     The expected parameter aliases for all matrix elements, or {@code null} for no alias.
-     * @param identifiers The expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
+     * @param  param        the instance tested by this class.
+     * @param  names        the expected parameter names for all matrix elements.
+     * @param  aliases      the expected parameter aliases for all matrix elements, or {@code null} for no alias.
+     * @param  identifiers  the expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
      */
     MatrixParametersTest(TensorParameters<Double> param, String[][] names, String[][] aliases, short[][] identifiers) {
         super(param, names, aliases, identifiers);

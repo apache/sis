@@ -90,8 +90,8 @@ public final class NilReferencingObject implements NilObject, ReferenceSystem {
     /**
      * Throws the exception in all cases.
      *
-     * @return Never return.
-     * @throws UnformattableObjectException Always thrown.
+     * @return never return.
+     * @throws UnformattableObjectException always thrown.
      */
     @Override
     public String toWKT() throws UnformattableObjectException {

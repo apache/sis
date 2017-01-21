@@ -140,10 +140,10 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
     /**
      * Constructs the inverse of a Molodensky transform.
      *
-     * @param inverse     The transform for which to create the inverse.
-     * @param source      The source ellipsoid of the given {@code inverse} transform.
-     * @param target      The target ellipsoid of the given {@code inverse} transform.
-     * @param descriptor  The contextual parameter descriptor.
+     * @param inverse     the transform for which to create the inverse.
+     * @param source      the source ellipsoid of the given {@code inverse} transform.
+     * @param target      the target ellipsoid of the given {@code inverse} transform.
+     * @param descriptor  the contextual parameter descriptor.
      */
     MolodenskyFormula(final MolodenskyFormula inverse, final Ellipsoid source, final Ellipsoid target,
             final ParameterDescriptorGroup descriptor)
@@ -157,16 +157,16 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
      * Creates a Molodensky transform from the specified parameters.
      * If a non-null {@code grid} is specified, it is caller's responsibility to verify its validity.
      *
-     * @param source      The source ellipsoid.
+     * @param source      the source ellipsoid.
      * @param isSource3D  {@code true} if the source coordinates have a height.
-     * @param target      The target ellipsoid.
+     * @param target      the target ellipsoid.
      * @param isTarget3D  {@code true} if the target coordinates have a height.
-     * @param tX          The geocentric <var>X</var> translation in same units than the source ellipsoid axes.
-     * @param tY          The geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
-     * @param tZ          The geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
-     * @param grid        Interpolation grid in geocentric coordinates, or {@code null} if none.
+     * @param tX          the geocentric <var>X</var> translation in same units than the source ellipsoid axes.
+     * @param tY          the geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
+     * @param tZ          the geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
+     * @param grid        interpolation grid in geocentric coordinates, or {@code null} if none.
      * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
-     * @param descriptor  The contextual parameter descriptor.
+     * @param descriptor  the contextual parameter descriptor.
      */
     @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
     MolodenskyFormula(final Ellipsoid source, final boolean isSource3D,
@@ -221,7 +221,7 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
      * contextual parameters}.</div>
      *
-     * @return A copy of the internal parameter values for this transform.
+     * @return a copy of the internal parameter values for this transform.
      */
     @Debug
     @Override
@@ -260,10 +260,10 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
      *   <li><cite>"Flattening difference"</cite> (Always for Molodensky, internal WKT only for geocentric interpolations)</li>
      * </ul>
      *
-     * @param pg         Where to set the parameters.
-     * @param semiMinor  The semi minor axis length, in unit of {@code unit}.
-     * @param unit       The unit of measurement to declare.
-     * @param Δf         The flattening difference to set, or NaN if this method should fetch that value itself.
+     * @param  pg         where to set the parameters.
+     * @param  semiMinor  the semi minor axis length, in unit of {@code unit}.
+     * @param  unit       the unit of measurement to declare.
+     * @param  Δf         the flattening difference to set, or NaN if this method should fetch that value itself.
      */
     void completeParameters(final Parameters pg, final double semiMinor, final Unit<?> unit, final double Δf) {
         /*
@@ -278,7 +278,7 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
     /**
      * Gets the dimension of input points.
      *
-     * @return The input dimension, which is 2 or 3.
+     * @return the input dimension, which is 2 or 3.
      */
     @Override
     public final int getSourceDimensions() {
@@ -288,7 +288,7 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
     /**
      * Gets the dimension of output points.
      *
-     * @return The output dimension, which is 2 or 3.
+     * @return the output dimension, which is 2 or 3.
      */
     @Override
     public final int getTargetDimensions() {
@@ -306,16 +306,16 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
      *       may be slightly different when this method is invoked by {@link InterpolatedMolodenskyTransform}.</li>
      * </ul>
      *
-     * @param λ           Longitude (radians).
-     * @param φ           Latitude (radians).
-     * @param h           Height above the ellipsoid in unit of semi-major axis.
-     * @param dstPts      The array into which the transformed coordinate is returned, or {@code null}.
-     * @param dstOff      The offset to the location of the transformed point that is stored in the destination array.
-     * @param tX          The {@link #tX} field value (or a slightly different value during geocentric interpolation).
-     * @param tY          The {@link #tY} field value (or a slightly different value during geocentric interpolation).
-     * @param tZ          The {@link #tZ} field value (or a slightly different value during geocentric interpolation).
-     * @param offset      An array of length 3 if this method should use the interpolation grid, or {@code null} otherwise.
-     * @param derivate    {@code true} for computing the derivative, or {@code false} if not needed.
+     * @param  λ           longitude (radians).
+     * @param  φ           latitude (radians).
+     * @param  h           height above the ellipsoid in unit of semi-major axis.
+     * @param  dstPts      the array into which the transformed coordinate is returned, or {@code null}.
+     * @param  dstOff      the offset to the location of the transformed point that is stored in the destination array.
+     * @param  tX          the {@link #tX} field value (or a slightly different value during geocentric interpolation).
+     * @param  tY          the {@link #tY} field value (or a slightly different value during geocentric interpolation).
+     * @param  tZ          the {@link #tZ} field value (or a slightly different value during geocentric interpolation).
+     * @param  offset      an array of length 3 if this method should use the interpolation grid, or {@code null} otherwise.
+     * @param  derivate    {@code true} for computing the derivative, or {@code false} if not needed.
      * @throws TransformException if a point can not be transformed.
      */
     final Matrix transform(final double λ, final double φ, final double h, final double[] dstPts, int dstOff,
@@ -364,8 +364,9 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
             λt = λ + (cmsλ * scaleX);
             φt = φ + (cmsφ * scaleY);
             if (offset == null) break;
-
-            // Following is executed only in InterpolatedMolodenskyTransform case.
+            /*
+             * Following is executed only in InterpolatedMolodenskyTransform case.
+             */
             grid.interpolateInCell(grid.normalizedToGridX(λt), grid.normalizedToGridY(φt), offset);
             tX = -offset[0];
             tY = -offset[1];
