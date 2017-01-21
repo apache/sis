@@ -30,9 +30,10 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
-
-// We really want to use doubleToRawLongBits, not doubleToLongBits, because the
-// coverage module needs the raw bits for differentiating various NaN values.
+/*
+ * We really want to use doubleToRawLongBits, not doubleToLongBits, because the
+ * coverage module needs the raw bits for differentiating various NaN values.
+ */
 import static java.lang.Double.doubleToRawLongBits;
 
 
@@ -84,8 +85,8 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      * Instances should be created using the {@linkplain #create(double, double) factory method},
      * which may returns optimized implementations for some particular argument values.
      *
-     * @param scale  The {@code scale}  term in the linear equation.
-     * @param offset The {@code offset} term in the linear equation.
+     * @param scale   the {@code scale}  term in the linear equation.
+     * @param offset  the {@code offset} term in the linear equation.
      *
      * @see #create(double, double)
      */
@@ -97,9 +98,9 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     /**
      * Constructs a new linear transform.
      *
-     * @param  scale  The {@code scale}  term in the linear equation.
-     * @param  offset The {@code offset} term in the linear equation.
-     * @return The linear transform for the given scale and offset.
+     * @param  scale   the {@code scale}  term in the linear equation.
+     * @param  offset  the {@code offset} term in the linear equation.
+     * @return the linear transform for the given scale and offset.
      *
      * @see MathTransforms#linear(double, double)
      */
@@ -142,7 +143,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      * depends on the matrix size. Only matrix elements different from their default value
      * will be included in this group.
      *
-     * @return The parameter values for this math transform.
+     * @return the parameter values for this math transform.
      */
     @Override
     public ParameterValueGroup getParameterValues() {
@@ -177,7 +178,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
                 inverse.inverse = this;
                 this.inverse = inverse;
             } else {
-                inverse = super.inverse();      // Throws NoninvertibleTransformException
+                inverse = super.inverse();              // Throws NoninvertibleTransformException
             }
         }
         return (LinearTransform1D) inverse;
@@ -207,8 +208,8 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     /**
      * Gets the derivative of this transform at a point.
      *
-     * @param point Ignored for a linear transform. Can be null.
-     * @return The derivative at the given point.
+     * @param  point  ignored for a linear transform. Can be null.
+     * @return the derivative at the given point.
      */
     @Override
     public Matrix derivative(final DirectPosition point) throws TransformException {
@@ -218,8 +219,8 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     /**
      * Gets the derivative of this function at a value.
      *
-     * @param  value Ignored for a linear transform. Can be {@link Double#NaN NaN}.
-     * @return The derivative at the given point.
+     * @param  value  ignored for a linear transform. Can be {@link Double#NaN NaN}.
+     * @return the derivative at the given point.
      */
     @Override
     public double derivative(final double value) {
@@ -356,7 +357,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Slight optimization
+        if (object == this) {                                               // Slight optimization
             return true;
         }
         if (mode != ComparisonMode.STRICT) {

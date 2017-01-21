@@ -164,12 +164,12 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * for performing {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes unit
      * conversions and change of axis order} since those operations will be inferred by this constructor.
      *
-     * @param  properties The properties to be given to the new derived CRS object.
-     * @param  baseCRS    Coordinate reference system to base the derived CRS on.
-     * @param  conversion The defining conversion from a {@linkplain AxesConvention#NORMALIZED normalized} base
-     *                    to a normalized derived CRS.
-     * @param  derivedCS  The coordinate system for the derived CRS. The number of axes
-     *         must match the target dimension of the {@code baseToDerived} transform.
+     * @param  properties  the properties to be given to the new derived CRS object.
+     * @param  baseCRS     coordinate reference system to base the derived CRS on.
+     * @param  conversion  the defining conversion from a {@linkplain AxesConvention#NORMALIZED normalized}
+     *                     base to a normalized derived CRS.
+     * @param  derivedCS   the coordinate system for the derived CRS. The number of axes must match
+     *                     the target dimension of the {@code baseToDerived} transform.
      * @throws MismatchedDimensionException if the source and target dimensions of {@code baseToDerived}
      *         do not match the dimensions of {@code base} and {@code derivedCS} respectively.
      *
@@ -229,13 +229,13 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      *   </tr>
      * </table>
      *
-     * @param  properties       The properties to be given to the {@link DefaultConversion} object
-     *                          (with keys prefixed by {@code "conversion."}) and to the new derived CRS object.
-     * @param  baseCRS          Coordinate reference system to base the derived CRS on.
-     * @param  interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
-     * @param  method           The coordinate operation method (mandatory in all cases).
-     * @param  baseToDerived    Transform from positions in the base CRS to positions in this target CRS.
-     * @param  derivedCS        The coordinate system for the derived CRS.
+     * @param  properties        the properties to be given to the {@link DefaultConversion} object
+     *                           (with keys prefixed by {@code "conversion."}) and to the new derived CRS object.
+     * @param  baseCRS           coordinate reference system to base the derived CRS on.
+     * @param  interpolationCRS  the CRS of additional coordinates needed for the operation, or {@code null} if none.
+     * @param  method            the coordinate operation method (mandatory in all cases).
+     * @param  baseToDerived     transform from positions in the base CRS to positions in this target CRS.
+     * @param  derivedCS         the coordinate system for the derived CRS.
      * @throws IllegalArgumentException if at least one argument has an incompatible number of dimensions.
      *
      * @see #create(Map, SingleCRS, CoordinateReferenceSystem, OperationMethod, MathTransform, CoordinateSystem)
@@ -257,7 +257,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(DerivedCRS)
      */
@@ -274,12 +274,12 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * {@link EngineeringCRS} interface.
      * See the class javadoc for more information.
      *
-     * @param  properties The properties to be given to the new derived CRS object.
-     * @param  baseCRS    Coordinate reference system to base the derived CRS on.
-     * @param  conversion The defining conversion from a normalized base to a normalized derived CRS.
-     * @param  derivedCS  The coordinate system for the derived CRS. The number of axes
-     *         must match the target dimension of the {@code baseToDerived} transform.
-     * @return The newly created derived CRS, potentially implementing an additional CRS interface.
+     * @param  properties  the properties to be given to the new derived CRS object.
+     * @param  baseCRS     coordinate reference system to base the derived CRS on.
+     * @param  conversion  the defining conversion from a normalized base to a normalized derived CRS.
+     * @param  derivedCS   the coordinate system for the derived CRS. The number of axes
+     *                     must match the target dimension of the {@code baseToDerived} transform.
+     * @return the newly created derived CRS, potentially implementing an additional CRS interface.
      * @throws MismatchedDimensionException if the source and target dimensions of {@code baseToDerived}
      *         do not match the dimensions of {@code base} and {@code derivedCS} respectively.
      *
@@ -328,14 +328,14 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * {@link EngineeringCRS} interface.
      * See the class javadoc for more information.
      *
-     * @param  properties       The properties to be given to the {@link DefaultConversion} object
-     *                          (with keys prefixed by {@code "conversion."}) and to the new derived CRS object.
-     * @param  baseCRS          Coordinate reference system to base the derived CRS on.
-     * @param  interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
-     * @param  method           The coordinate operation method (mandatory in all cases).
-     * @param  baseToDerived    Transform from positions in the base CRS to positions in this target CRS.
-     * @param  derivedCS        The coordinate system for the derived CRS.
-     * @return The newly created derived CRS, potentially implementing an additional CRS interface.
+     * @param  properties        the properties to be given to the {@link DefaultConversion} object
+     *                           (with keys prefixed by {@code "conversion."}) and to the new derived CRS object.
+     * @param  baseCRS           coordinate reference system to base the derived CRS on.
+     * @param  interpolationCRS  the CRS of additional coordinates needed for the operation, or {@code null} if none.
+     * @param  method            the coordinate operation method (mandatory in all cases).
+     * @param  baseToDerived     transform from positions in the base CRS to positions in this target CRS.
+     * @param  derivedCS         the coordinate system for the derived CRS.
+     * @return the newly created derived CRS, potentially implementing an additional CRS interface.
      * @throws IllegalArgumentException if at least one argument has an incompatible number of dimensions.
      *
      * @see #DefaultDerivedCRS(Map, SingleCRS, CoordinateReferenceSystem, OperationMethod, MathTransform, CoordinateSystem)
@@ -372,8 +372,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultDerivedCRS castOrCopy(final DerivedCRS object) {
@@ -420,7 +420,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     /**
      * Returns the datum of the {@linkplain #getBaseCRS() base CRS}.
      *
-     * @return The datum of the base CRS.
+     * @return the datum of the base CRS.
      */
     @Override
     public Datum getDatum() {
@@ -433,7 +433,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * the {@linkplain DefaultConversion#getSourceCRS() source} of
      * the {@linkplain #getConversionFromBase() conversion from base}.
      *
-     * @return The base coordinate reference system.
+     * @return the base coordinate reference system.
      */
     @Override
     @XmlElement(name = "baseCRS", required = true)
@@ -455,7 +455,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * <div class="note"><b>Note:</b>
      * This is different than ISO 19111, which allows source and target CRS to be {@code null}.</div>
      *
-     * @return The conversion to this CRS.
+     * @return the conversion to this CRS.
      */
     @Override
     public Conversion getConversionFromBase() {
@@ -465,7 +465,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     /**
      * Returns the coordinate system.
      *
-     * @return The coordinate system.
+     * @return the coordinate system.
      */
     @Override
     @XmlElement(name = "coordinateSystem", required = true)
@@ -502,10 +502,10 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * then axis order of the base CRS are ignored
      * (but <strong>not</strong> axis order of <strong>this</strong> derived CRS).
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -615,8 +615,10 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     static String getType(final SingleCRS baseCRS, final CoordinateSystem derivedCS) {
         final Class<?> type;
         if (baseCRS instanceof AbstractIdentifiedObject) {
-            // For avoiding ambiguity if a user chooses to implement more
-            // than 1 CRS interface (not recommended, but may happen).
+            /*
+             * For avoiding ambiguity if a user chooses to implement more
+             * than 1 CRS interface (not recommended, but may happen).
+             */
             type = ((AbstractIdentifiedObject) baseCRS).getInterface();
         } else if (baseCRS != null) {
             type = baseCRS.getClass();

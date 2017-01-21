@@ -45,7 +45,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
     /**
      * Creates a new instance of {@link TransverseMercator}.
      *
-     * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     * @param  ellipse  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
     private void createNormalizedProjection(final boolean ellipse, final double latitudeOfOrigin) {
         final org.apache.sis.internal.referencing.provider.TransverseMercator method =

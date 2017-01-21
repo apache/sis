@@ -145,9 +145,9 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum       the datum.
+     * @param  cs          the coordinate system.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalCRS(Map, TemporalDatum, TimeCS)
      */
@@ -167,7 +167,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(TemporalCRS)
      */
@@ -182,8 +182,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultTemporalCRS castOrCopy(final TemporalCRS object) {
@@ -218,7 +218,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     /**
      * Returns the datum.
      *
-     * @return The datum.
+     * @return the datum.
      */
     @Override
     @XmlElement(name = "temporalDatum", required = true)
@@ -229,7 +229,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     /**
      * Returns the coordinate system.
      *
-     * @return The coordinate system.
+     * @return the coordinate system.
      */
     @Override
     @XmlElement(name = "timeCS", required = true)
@@ -261,8 +261,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * <p>This method is the converse of {@link #toValue(Date)}.</p>
      *
-     * @param  value A value in this axis unit.
-     * @return The value as a {@linkplain Date date}, or {@code null} if the given value is NaN or infinite.
+     * @param  value  a value in this axis unit.
+     * @return the value as a {@linkplain Date date}, or {@code null} if the given value is NaN or infinite.
      */
     public Date toDate(final double value) {
         if (Double.isNaN(value) || Double.isInfinite(value)) {
@@ -280,8 +280,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * <p>This method is the converse of {@link #toDate(double)}.</p>
      *
-     * @param  time The value as a {@linkplain Date date}, or {@code null}.
-     * @return value A value in this axis unit, or {@link Double#NaN NaN} if the given time is {@code null}.
+     * @param  time  the value as a {@linkplain Date date}, or {@code null}.
+     * @return the value in this axis unit, or {@link Double#NaN NaN} if the given time is {@code null}.
      */
     public double toValue(final Date time) {
         if (time == null) {

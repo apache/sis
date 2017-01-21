@@ -66,8 +66,8 @@ public final class RS_Identifier extends XmlAdapter<Code, Identifier> {
      * Substitutes the wrapper value read from an XML stream by the object which will
      * represents the identifier. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  value The wrapper for this metadata value.
-     * @return An identifier which represents the value.
+     * @param  value  the wrapper for this metadata value.
+     * @return an identifier which represents the value.
      */
     @Override
     public Identifier unmarshal(final Code value) {
@@ -78,8 +78,8 @@ public final class RS_Identifier extends XmlAdapter<Code, Identifier> {
      * Substitutes the identifier by the wrapper to be marshalled into an XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The metadata value.
-     * @return The adapter for the given metadata.
+     * @param  value  the metadata value.
+     * @return the adapter for the given metadata.
      */
     @Override
     public Code marshal(final Identifier value) {

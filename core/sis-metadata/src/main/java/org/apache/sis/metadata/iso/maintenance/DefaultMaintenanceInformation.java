@@ -464,7 +464,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * person(s) and organization(s) with responsibility for maintaining the resource.
      *
      * @param  newValues  the new identification of person(s) and organization(s)
-     *                  with responsibility for maintaining the resource.
+     *                    with responsibility for maintaining the resource.
      */
     public void setContacts(final Collection<? extends Responsibility> newValues) {
         contacts = writeCollection(newValues, contacts, Responsibility.class);

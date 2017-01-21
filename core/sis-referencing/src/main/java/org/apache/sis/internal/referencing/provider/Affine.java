@@ -191,9 +191,9 @@ public final class Affine extends AbstractProvider {
     /**
      * Creates a projective transform from the specified group of parameter values.
      *
-     * @param  factory Ignored (can be null).
-     * @param  values The group of parameter values.
-     * @return The created math transform.
+     * @param  factory  ignored (can be null).
+     * @param  values   the group of parameter values.
+     * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
@@ -210,9 +210,9 @@ public final class Affine extends AbstractProvider {
     /**
      * Returns the same operation method, but for different dimensions.
      *
-     * @param  sourceDimensions The desired number of input dimensions.
-     * @param  targetDimensions The desired number of output dimensions.
-     * @return The redimensioned operation method, or {@code this} if no change is needed.
+     * @param  sourceDimensions  the desired number of input dimensions.
+     * @param  targetDimensions  the desired number of output dimensions.
+     * @return the redimensioned operation method, or {@code this} if no change is needed.
      */
     @Override
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
@@ -287,8 +287,8 @@ public final class Affine extends AbstractProvider {
      * Returns the parameter values for the given matrix. This method is invoked by implementations of
      * {@link org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues()}.
      *
-     * @param  matrix The matrix for which to get parameter values.
-     * @return The parameters of the given matrix.
+     * @param  matrix  the matrix for which to get parameter values.
+     * @return the parameters of the given matrix.
      */
     public static ParameterValueGroup parameters(final Matrix matrix) {
         final int sourceDimensions = matrix.getNumCol() - 1;

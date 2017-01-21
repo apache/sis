@@ -107,10 +107,10 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
-     * @param axis2 The third axis.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  axis0       the first axis.
+     * @param  axis1       the second axis.
+     * @param  axis2       the third axis.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createCylindricalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
      */
@@ -129,7 +129,7 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param cs The coordinate system to copy.
+     * @param  cs  the coordinate system to copy.
      *
      * @see #castOrCopy(CylindricalCS)
      */
@@ -143,8 +143,8 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultCylindricalCS castOrCopy(final CylindricalCS object) {

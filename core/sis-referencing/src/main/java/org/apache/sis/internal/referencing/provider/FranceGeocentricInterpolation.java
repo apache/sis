@@ -25,6 +25,8 @@ import java.util.logging.LogRecord;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -55,8 +57,6 @@ import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTran
 import static java.lang.Float.parseFloat;
 
 // Branch-specific imports
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.apache.sis.internal.jdk8.JDK8;
 
 

@@ -77,9 +77,9 @@ public final class VerticalOffset extends GeographicOffsets {
      * Creates a transform from the specified group of parameter values.
      * The parameter value is unconditionally converted to metres.
      *
-     * @param  factory Ignored (can be null).
-     * @param  values The group of parameter values.
-     * @return The created math transform.
+     * @param  factory  ignored (can be null).
+     * @param  values   the group of parameter values.
+     * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
@@ -105,9 +105,9 @@ public final class VerticalOffset extends GeographicOffsets {
      * then we should make this method non-static and declare an overrideable {@code postCreate} method
      * in {@link AbstractProvider} instead.</div>
      *
-     * @param  parameterized The transform created by {@code createMathTransform(…)}.
-     * @param  after The matrix for the operation to be concatenated after {@code parameterized}.
-     * @return The transform to use instead of {@code parameterized}.
+     * @param  parameterized  the transform created by {@code createMathTransform(…)}.
+     * @param  after  the matrix for the operation to be concatenated after {@code parameterized}.
+     * @return the transform to use instead of {@code parameterized}.
      * @throws FactoryException if an error occurred while creating the new transform.
      */
     public static MathTransform postCreate(MathTransform parameterized, final Matrix after) throws FactoryException {

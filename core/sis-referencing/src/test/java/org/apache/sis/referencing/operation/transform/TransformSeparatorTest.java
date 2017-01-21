@@ -110,7 +110,7 @@ public final strictfp class TransformSeparatorTest extends TestCase {
     @Test
     public void testLinearTransform() throws FactoryException {
         Matrix matrix = Matrices.create(4, 4, new double[] {
-            2, 0, 0, 7,     // Some random values.
+            2, 0, 0, 7,                                         // Some random values.
             0, 5, 0, 6,
             1, 0, 3, 8,
             0, 0, 0, 1

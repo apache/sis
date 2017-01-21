@@ -82,7 +82,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
     /**
      * Transforms the specified value.
      *
-     * @param  value The value to transform.
+     * @param  value  the value to transform.
      * @return the transformed value.
      * @throws TransformException if the value can not be transformed.
      */
@@ -113,8 +113,8 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
      * Gets the derivative of this function at a value. The derivative is the 1×1 matrix
      * of the non-translating portion of the approximate affine map at the value.
      *
-     * @param  value The value where to evaluate the derivative.
-     * @return The derivative at the specified point.
+     * @param  value  the value where to evaluate the derivative.
+     * @return the derivative at the specified point.
      * @throws TransformException if the derivative can not be evaluated at the specified point.
      */
     @Override
@@ -124,8 +124,8 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
      * Gets the derivative of this transform at a point. The default implementation ensures that
      * {@code point} is one-dimensional, then delegates to {@link #derivative(double)}.
      *
-     * @param  point The coordinate point where to evaluate the derivative, or {@code null}.
-     * @return The derivative at the specified point (never {@code null}).
+     * @param  point  the coordinate point where to evaluate the derivative, or {@code null}.
+     * @return the derivative at the specified point (never {@code null}).
      * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
      * @throws TransformException if the derivative can not be evaluated at the specified point.
      */
@@ -211,8 +211,8 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
          * Gets the derivative of this transform at a point. The default implementation ensures that
          * {@code point} is one-dimensional, then delegates to {@link #derivative(double)}.
          *
-         * @param  point The coordinate point where to evaluate the derivative, or {@code null}.
-         * @return The derivative at the specified point (never {@code null}).
+         * @param  point  the coordinate point where to evaluate the derivative, or {@code null}.
+         * @return the derivative at the specified point (never {@code null}).
          * @throws MismatchedDimensionException if {@code point} does not have the expected dimension.
          * @throws TransformException if the derivative can not be evaluated at the specified point.
          */

@@ -53,12 +53,12 @@ public final strictfp class DefaultOperationMethodTest extends TestCase {
     /**
      * Creates a new two-dimensional operation method for an operation of the given name and identifier.
      *
-     * @param  method     The operation name (example: "Mercator (variant A)").
-     * @param  identifier The EPSG numeric identifier (example: "9804").
-     * @param  formula    Formula citation (example: "EPSG guidance note #7-2").
-     * @param  dimension  The number of input and output dimension, or {@code null}.
-     * @param  parameters The parameters (can be empty).
-     * @return The operation method.
+     * @param  method      the operation name (example: "Mercator (variant A)").
+     * @param  identifier  the EPSG numeric identifier (example: "9804").
+     * @param  formula     formula citation (example: "EPSG guidance note #7-2").
+     * @param  dimension   the number of input and output dimension, or {@code null}.
+     * @param  parameters  the parameters (can be empty).
+     * @return the operation method.
      */
     static DefaultOperationMethod create(final String method, final String identifier, final String formula,
             final Integer dimension, final ParameterDescriptor<?>... parameters)

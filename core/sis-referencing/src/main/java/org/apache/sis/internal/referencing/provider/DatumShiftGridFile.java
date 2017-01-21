@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.Arrays;
 import java.lang.reflect.Array;
+import java.nio.file.Path;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import org.opengis.parameter.ParameterDescriptor;
@@ -31,10 +32,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 
-// Branch-specific imports
-import java.nio.file.Path;
 import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * A datum shift grid loaded from a file.
@@ -110,12 +108,12 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
      * Creates a new datum shift grid for the given grid geometry.
      * The actual offset values need to be provided by subclasses.
      *
-     * @param x0  Longitude in degrees of the center of the cell at grid index (0,0).
-     * @param y0  Latitude in degrees of the center of the cell at grid index (0,0).
-     * @param Δx  Increment in <var>x</var> value between cells at index <var>gridX</var> and <var>gridX</var> + 1.
-     * @param Δy  Increment in <var>y</var> value between cells at index <var>gridY</var> and <var>gridY</var> + 1.
-     * @param nx  Number of cells along the <var>x</var> axis in the grid.
-     * @param ny  Number of cells along the <var>y</var> axis in the grid.
+     * @param x0  longitude in degrees of the center of the cell at grid index (0,0).
+     * @param y0  latitude in degrees of the center of the cell at grid index (0,0).
+     * @param Δx  increment in <var>x</var> value between cells at index <var>gridX</var> and <var>gridX</var> + 1.
+     * @param Δy  increment in <var>y</var> value between cells at index <var>gridY</var> and <var>gridY</var> + 1.
+     * @param nx  number of cells along the <var>x</var> axis in the grid.
+     * @param ny  number of cells along the <var>y</var> axis in the grid.
      */
     DatumShiftGridFile(final Unit<C> coordinateUnit,
                        final Unit<T> translationUnit,
@@ -140,7 +138,7 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
     /**
      * Creates a new datum shift grid with the same grid geometry than the given grid.
      *
-     * @param other The other datum shift grid from which to copy the grid geometry.
+     * @param  other  the other datum shift grid from which to copy the grid geometry.
      */
     DatumShiftGridFile(final DatumShiftGridFile<C,T> other) {
         super(other);
@@ -154,7 +152,7 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
      * Suggests a precision for the translation values in this grid.
      * The default implementation returns a value smaller than the accuracy.
      *
-     * @return A precision for the translation values in this grid.
+     * @return a precision for the translation values in this grid.
      */
     @Override
     public double getCellPrecision() {
@@ -193,7 +191,7 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
     /**
      * Sets all parameters for a value of type {@link Path} to the values given to th constructor.
      *
-     * @param parameters The parameter group where to set the values.
+     * @param  parameters  the parameter group where to set the values.
      */
     public final void setFileParameters(final Parameters parameters) {
         int i = 0;  // The 'files' array should always contains at least one element.
@@ -223,13 +221,13 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
     /**
      * Returns {@code true} if the given object is a grid containing the same data than this grid.
      *
-     * @param  other The other object to compare with this datum shift grid.
+     * @param  other  the other object to compare with this datum shift grid.
      * @return {@code true} if the given object is non-null, of the same class than this {@code DatumShiftGrid}
      *         and contains the same data.
      */
     @Override
     public boolean equals(final Object other) {
-        if (other == this) {    // Optimization for a common case.
+        if (other == this) {                        // Optimization for a common case.
             return true;
         }
         if (super.equals(other)) {
@@ -252,7 +250,7 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
     /**
      * Returns a string representation of this grid.
      *
-     * @return A string representation for debugging purpose.
+     * @return a string representation for debugging purpose.
      */
     @Debug
     @Override
@@ -343,10 +341,10 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
          * (not the <em>binary</em> digits) to 0. This is on the assumption that the {@code float} values were parsed
          * from an ASCII file, or any other medium that format numbers in base 10.
          *
-         * @param dim    The dimension for which to get an average value.
-         * @param gridX  The grid index along the <var>x</var> axis, from 0 inclusive to {@link #nx} exclusive.
-         * @param gridY  The grid index along the <var>y</var> axis, from 0 inclusive to {@link #ny} exclusive.
-         * @return The offset at the given dimension in the grid cell at the given index.
+         * @param  dim    the dimension for which to get an average value.
+         * @param  gridX  the grid index along the <var>x</var> axis, from 0 inclusive to {@link #nx} exclusive.
+         * @param  gridY  the grid index along the <var>y</var> axis, from 0 inclusive to {@link #ny} exclusive.
+         * @return the offset at the given dimension in the grid cell at the given index.
          */
         @Override
         public final double getCellValue(final int dim, final int gridX, final int gridY) {

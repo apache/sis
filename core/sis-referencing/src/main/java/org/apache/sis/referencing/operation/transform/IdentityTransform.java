@@ -57,7 +57,7 @@ final class IdentityTransform extends AbstractLinearTransform {
     /**
      * Constructs an identity transform of the specified dimension.
      *
-     * @param dimension The dimension of the transform to be created.
+     * @param  dimension  the dimension of the transform to be created.
      *
      * @see MathTransforms#identity(int)
      */
@@ -70,8 +70,8 @@ final class IdentityTransform extends AbstractLinearTransform {
      * dimension 1 and 2, this method returns instances of {@link LinearTransform1D} or
      * {@link AffineTransform2D} respectively.
      *
-     * @param dimension The dimension of the transform to be returned.
-     * @return An identity transform of the specified dimension.
+     * @param  dimension  the dimension of the transform to be returned.
+     * @return an identity transform of the specified dimension.
      *
      * @see MathTransforms#identity(int)
      */

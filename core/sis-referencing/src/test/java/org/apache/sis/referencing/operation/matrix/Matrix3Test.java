@@ -76,7 +76,7 @@ public final strictfp class Matrix3Test extends MatrixTestCase {
      * Verifies our claim that {@code A.solve(B)} is equivalent to {@code A.inverse().multiply(B)}.
      * This claim is documented in {@link MatrixSIS#solve(Matrix)} javadoc.
      *
-     * @throws NoninvertibleMatrixException Should not happen.
+     * @throws NoninvertibleMatrixException should not happen.
      */
     @Test
     public void testSolveEquivalence() throws NoninvertibleMatrixException {

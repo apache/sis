@@ -81,8 +81,8 @@ public class AlbersEqualArea extends EqualAreaProjection {
     /**
      * Creates an Albers Equal Area projection from the given parameters.
      *
-     * @param method     Description of the projection parameters.
-     * @param parameters The parameter values of the projection to create.
+     * @param method      description of the projection parameters.
+     * @param parameters  the parameter values of the projection to create.
      */
     public AlbersEqualArea(final OperationMethod method, final Parameters parameters) {
         this(initializer(method, parameters));
@@ -200,7 +200,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
      * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
      *
      * @param  factory The factory to use for creating the transform.
-     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override
@@ -216,7 +216,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
      * Converts the specified (θ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
      *
-     * @return The matrix of the projection derivative at the given source position,
+     * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
      * @throws ProjectionException if the coordinate can not be converted.
      */

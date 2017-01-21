@@ -192,8 +192,8 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     /**
      * Returns the parameter descriptor in this group for the specified name.
      *
-     * @param  name The name of the parameter to search for.
-     * @return The parameter descriptor for the given name.
+     * @param  name  the name of the parameter to search for.
+     * @return the parameter descriptor for the given name.
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override
@@ -206,8 +206,8 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     /**
      * Returns the parameter value in this group for the specified name.
      *
-     * @param  name The name of the parameter to search for.
-     * @return The parameter value for the given name.
+     * @param  name  the name of the parameter to search for.
+     * @return the parameter value for the given name.
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override
@@ -347,7 +347,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     private static boolean isOmitted(final ParameterValue<?> parameter) {
         final Object value = parameter.getValue();
-        if (value == null) { // Implies that the default value is also null.
+        if (value == null) {                        // Implies that the default value is also null.
             return true;
         }
         final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
@@ -374,7 +374,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * Creates a matrix from this group of parameters.
      * This operation is allowed only for tensors of {@linkplain #rank() rank} 2.
      *
-     * @return A matrix created from this group of parameters.
+     * @return a matrix created from this group of parameters.
      */
     final Matrix toMatrix() {
         final int numRow = dimensions[0].intValue();
@@ -401,7 +401,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * After this method call, {@link #values} will returns only the elements
      * different from the default value.
      *
-     * @param matrix The matrix to copy in this group of parameters.
+     * @param  matrix  the matrix to copy in this group of parameters.
      */
     final void setMatrix(final Matrix matrix) {
         final int numRow = matrix.getNumRow();
@@ -440,7 +440,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                            // Slight optimization.
         }
         if (super.equals(object, mode)) {
             final TensorValues<?> that = (TensorValues<?>) object;
@@ -464,7 +464,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     /**
      * Formats this group as a pseudo-<cite>Well Known Text</cite> element.
      *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ParameterGroup"}.
      */
     @Override

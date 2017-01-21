@@ -192,8 +192,8 @@ final class Normalizer implements Comparable<Normalizer> {
      * The sorting is performed in place. This method returns {@code true} if
      * at least one axis moved as result of this method call.
      *
-     * @param axes The axes to sort.
-     * @param angularUnitOrder -1 for sorting angular units first, +1 for sorting them last, or 0 if neutral.
+     * @param axes              the axes to sort.
+     * @param angularUnitOrder  -1 for sorting angular units first, +1 for sorting them last, or 0 if neutral.
      */
     static boolean sort(final CoordinateSystemAxis[] axes, final int angularUnitOrder) {
         final Normalizer[] wrappers = new Normalizer[axes.length];
@@ -214,9 +214,9 @@ final class Normalizer implements Comparable<Normalizer> {
      * Returns a new axis with the same properties (except identifiers) than given axis,
      * but with normalized axis direction and unit of measurement.
      *
-     * @param  axis    The axis to normalize.
-     * @param  changes The change to apply on axis direction and units.
-     * @return An axis using normalized direction and units, or {@code axis} if there is no change.
+     * @param  axis     the axis to normalize.
+     * @param  changes  the change to apply on axis direction and units.
+     * @return an axis using normalized direction and units, or {@code axis} if there is no change.
      */
     static CoordinateSystemAxis normalize(final CoordinateSystemAxis axis, final AxisFilter changes) {
         final Unit<?>       unit      = axis.getUnit();
@@ -274,10 +274,10 @@ final class Normalizer implements Comparable<Normalizer> {
      * Optionally normalizes and reorders the axes in an attempt to get a right-handed system.
      * If no axis change is needed, then this method returns {@code null}.
      *
-     * @param  cs      The coordinate system to normalize.
-     * @param  changes The change to apply on axis direction and units.
-     * @param  reorder {@code true} for reordering the axis for a right-handed coordinate system.
-     * @return The normalized coordinate system, or {@code null} if no normalization is needed.
+     * @param  cs       the coordinate system to normalize.
+     * @param  changes  the change to apply on axis direction and units.
+     * @param  reorder  {@code true} for reordering the axis for a right-handed coordinate system.
+     * @return the normalized coordinate system, or {@code null} if no normalization is needed.
      */
     static AbstractCS normalize(final CoordinateSystem cs, final AxisFilter changes, final boolean reorder) {
         boolean changed = false;
@@ -352,7 +352,7 @@ final class Normalizer implements Comparable<Normalizer> {
      * of -60° still locate the same point in the old and the new coordinate system. But the preferred way
      * to locate that point become the 300° value if the longitude range has been shifted to positive values.</p>
      *
-     * @return A coordinate system using the given kind of longitude range, or {@code null} if no change is needed.
+     * @return a coordinate system using the given kind of longitude range, or {@code null} if no change is needed.
      */
     private static AbstractCS shiftAxisRange(final CoordinateSystem cs) {
         boolean changed = false;
@@ -402,8 +402,8 @@ final class Normalizer implements Comparable<Normalizer> {
      * Returns a coordinate system equivalent to the given one but with axes rearranged according the given convention.
      * If the given coordinate system is already compatible with the given convention, then returns {@code null}.
      *
-     * @param  convention The axes convention for which a coordinate system is desired.
-     * @return A coordinate system compatible with the given convention, or {@code null} if no change is needed.
+     * @param  convention  the axes convention for which a coordinate system is desired.
+     * @return a coordinate system compatible with the given convention, or {@code null} if no change is needed.
      *
      * @see AbstractCS#forConvention(AxesConvention)
      */

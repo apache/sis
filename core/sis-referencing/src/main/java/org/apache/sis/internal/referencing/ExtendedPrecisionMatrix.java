@@ -44,7 +44,7 @@ public interface ExtendedPrecisionMatrix extends Matrix {
      * The first half contains {@link org.apache.sis.internal.util.DoubleDouble#value}, and the second half contains
      * the {@link org.apache.sis.internal.util.DoubleDouble#error} for each value in the first half.</p>
      *
-     * @return A copy of matrix elements, potentially followed by error terms.
+     * @return a copy of matrix elements, potentially followed by error terms.
      */
     double[] getExtendedElements();
 }

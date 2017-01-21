@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.IdentityHashMap;
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -33,9 +34,6 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -73,8 +71,8 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
     /**
      * Creates a new unmodifiable parameter group.
      *
-     * @param group The group of values to copy.
-     * @param done  An initially empty map used for protection against circular references.
+     * @param group  the group of values to copy.
+     * @param done   an initially empty map used for protection against circular references.
      *
      * @see #create(ParameterValueGroup)
      */
@@ -101,8 +99,8 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
     /**
      * Creates a new unmodifiable parameter group.
      *
-     * @param  group The group of values to copy, or {@code null}.
-     * @return The unmodifiable parameter group, or {@code null} if the given argument was null.
+     * @param  group  the group of values to copy, or {@code null}.
+     * @return the unmodifiable parameter group, or {@code null} if the given argument was null.
      */
     static UnmodifiableParameterValueGroup create(final ParameterValueGroup group) {
         if (group == null || group instanceof UnmodifiableParameterValueGroup) {
@@ -204,15 +202,14 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
      *       ignore the order of parameter values (but not necessarily the order of parameter descriptors).</li>
      * </ul>
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode The strictness level of the comparison.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal according the given comparison mode.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            // Slight optimization
-            return true;
+            return true;                            // Slight optimization
         }
         if (object != null) {
             if (mode == ComparisonMode.STRICT) {
@@ -231,7 +228,7 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
     /**
      * Compares the specified object with this parameter for equality.
      *
-     * @param  object The object to compare to {@code this}.
+     * @param  object  the object to compare to {@code this}.
      * @return {@code true} if both objects are equal.
      */
     @Override

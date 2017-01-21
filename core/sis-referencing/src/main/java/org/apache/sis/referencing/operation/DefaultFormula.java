@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
@@ -27,9 +28,6 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -79,7 +77,7 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     /**
      * Creates a new formula from the given string.
      *
-     * @param formula The formula.
+     * @param formula  the formula.
      */
     public DefaultFormula(final CharSequence formula) {
         ensureNonNull("formula", formula);
@@ -90,7 +88,7 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     /**
      * Creates a new formula from the given citation.
      *
-     * @param citation The citation.
+     * @param citation  the citation.
      */
     public DefaultFormula(final Citation citation) {
         ensureNonNull("citation", citation);
@@ -105,7 +103,7 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param formula The formula to copy.
+     * @param formula  the formula to copy.
      *
      * @see #castOrCopy(Formula)
      */
@@ -121,8 +119,8 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultFormula castOrCopy(final Formula object) {
@@ -161,7 +159,7 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     /**
      * Compares this formula with the given object for equality.
      *
-     * @param  object The object to compare with this formula.
+     * @param  object  the object to compare with this formula.
      * @return {@code true} if both objects are equal.
      */
     @Override

@@ -76,9 +76,9 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * but with the prime meridian optionally set to Greenwich. Such CRS is not in real usage, but this is convenient
      * for testing a conversion consisting of only a longitude rotation, which is a very simple operation easy to test.
      *
-     * @param isSource {@code true} if creating the source CRS, or {@code false} if creating the target CRS.
-     * @param cs {@link HardCodedCS#GEODETIC_2D}, {@link HardCodedCS#GEODETIC_φλ} or other compatible coordinate system.
-     * @param useGreenwich {@code true} for using Greenwich prime meridian, or {@code false} for staying on the Paris one.
+     * @param  isSource      {@code true} if creating the source CRS, or {@code false} if creating the target CRS.
+     * @param  cs            {@link HardCodedCS#GEODETIC_2D}, {@link HardCodedCS#GEODETIC_φλ} or other compatible coordinate system.
+     * @param  useGreenwich  {@code true} for using Greenwich prime meridian, or {@code false} for staying on the Paris one.
      *
      * @see HardCodedCRS#NTF
      */
@@ -110,8 +110,8 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * change the prime meridian). However we handle them as conversions for testing purpose only, because the
      * longitude rotation is a very simple operation easy to test.</p>
      *
-     * @param  useGreenwich {@code true} for using Greenwich prime meridian in the {@code targetCRS},
-     *         or {@code false} for staying on the Paris one.
+     * @param  useGreenwich  {@code true} for using Greenwich prime meridian in the {@code targetCRS},
+     *                       or {@code false} for staying on the Paris one.
      * @return a pseudo-conversion performing a longitude rotation.
      */
     public static DefaultConversion createLongitudeRotation(final boolean useGreenwich) {

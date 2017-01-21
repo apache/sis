@@ -44,7 +44,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * This base class allows us to perform the same tests on both kind of objects.
  * All tests performed by this class are two-dimensional.
  *
- * @param <G> the type of geometric objects, either {@link GeneralEnvelope} or {@link java.awt.geom.Rectangle2D}.
+ * @param  <G>  the type of geometric objects, either {@link GeneralEnvelope} or {@link java.awt.geom.Rectangle2D}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.8

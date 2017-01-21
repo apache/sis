@@ -77,8 +77,8 @@ final class ProjectiveTransform2D extends ProjectiveTransform implements LinearT
     /**
      * Gets the derivative of this transform at a point.
      *
-     * @param  point Ignored, since derivative of a linear transform is the same everywhere.
-     * @return The derivative at the specified point as a 2×2 matrix.
+     * @param  point  ignored, since derivative of a linear transform is the same everywhere.
+     * @return the derivative at the specified point as a 2×2 matrix.
      */
     @Override
     public Matrix derivative(final Point2D point) {

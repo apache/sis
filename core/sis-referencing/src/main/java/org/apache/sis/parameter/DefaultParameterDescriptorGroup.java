@@ -149,14 +149,14 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *   </tr>
      * </table>
      *
-     * @param properties    The properties to be given to the new parameter group.
-     * @param minimumOccurs The {@linkplain #getMinimumOccurs() minimum number of times} that values
-     *                      for this parameter group are required, or 0 if no restriction.
-     * @param maximumOccurs The {@linkplain #getMaximumOccurs() maximum number of times} that values
-     *                      for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
-     * @param parameters    The {@linkplain #descriptors() parameter descriptors} for this group.
+     * @param properties     the properties to be given to the new parameter group.
+     * @param minimumOccurs  the {@linkplain #getMinimumOccurs() minimum number of times} that values
+     *                       for this parameter group are required, or 0 if no restriction.
+     * @param maximumOccurs  the {@linkplain #getMaximumOccurs() maximum number of times} that values
+     *                       for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
+     * @param parameters     the {@linkplain #descriptors() parameter descriptors} for this group.
      *
-     * @throws InvalidParameterNameException If a parameter name is duplicated.
+     * @throws InvalidParameterNameException if a parameter name is duplicated.
      */
     public DefaultParameterDescriptorGroup(final Map<String,?> properties,
             final int minimumOccurs, final int maximumOccurs, GeneralParameterDescriptor... parameters)
@@ -176,8 +176,8 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * expect the same parameters than their <cite>"Position Vector transformation"</cite> counterpart
      * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.</div>
      *
-     * @param properties The properties to be given to the new parameter group.
-     * @param parameters The existing group from which to copy the {@linkplain #descriptors() parameter descriptors}.
+     * @param properties  the properties to be given to the new parameter group.
+     * @param parameters  the existing group from which to copy the {@linkplain #descriptors() parameter descriptors}.
      *
      * @since 0.7
      */
@@ -207,7 +207,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     /**
      * Ensures that the given name array does not contain duplicate values.
      *
-     * @param properties The properties given to the constructor, or {@code null} if unknown.
+     * @param  properties  the properties given to the constructor, or {@code null} if unknown.
      */
     private static void verifyNames(final Map<String,?> properties, final GeneralParameterDescriptor[] parameters) {
         for (int i=0; i<parameters.length; i++) {
@@ -231,7 +231,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param descriptor The descriptor to shallow copy.
+     * @param  descriptor  the descriptor to shallow copy.
      *
      * @see #castOrCopy(ParameterDescriptorGroup)
      */
@@ -281,7 +281,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
         @Override public boolean contains(final Object object) {
             Set<GeneralParameterDescriptor> s = asSet;
             if (s == null) {
-                asSet = s = new HashSet<>(this); // No synchronization: not a big problem if created twice.
+                asSet = s = new HashSet<>(this);        // No synchronization: not a big problem if created twice.
             }
             return s.contains(object);
         }
@@ -293,8 +293,8 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultParameterDescriptorGroup castOrCopy(final ParameterDescriptorGroup object) {
@@ -322,7 +322,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * Returns an indication if all parameters in this group are inputs to the service, outputs or both.
      * If this group contains parameters with different direction, then this method returns {@code null}.
      *
-     * @return Indication if all parameters are inputs or outputs to the service, or {@code null} if undetermined.
+     * @return indication if all parameters are inputs or outputs to the service, or {@code null} if undetermined.
      */
     @Override
     public ParameterDirection getDirection() {
@@ -346,7 +346,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     /**
      * Returns all parameters in this group.
      *
-     * @return The parameter descriptors in this group.
+     * @return the parameter descriptors in this group.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -358,8 +358,8 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * Returns the first parameter in this group for the specified name.
      * This method does not search in sub-groups.
      *
-     * @param  name The name of the parameter to search for.
-     * @return The parameter for the given identifier name.
+     * @param  name  the name of the parameter to search for.
+     * @return the parameter for the given identifier name.
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override
@@ -399,7 +399,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * The {@linkplain DefaultParameterValueGroup#getDescriptor() parameter descriptor} for the
      * created group will be {@code this} object.
      *
-     * @return A new parameter instance initialized to the default value.
+     * @return a new parameter instance initialized to the default value.
      */
     @Override
     public ParameterValueGroup createValue() {
@@ -413,8 +413,8 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Optimization for a common case.
-            return true;
+        if (object == this) {
+            return true;                                    // Optimization for a common case.
         }
         if (super.equals(object, mode)) {
             switch (mode) {
@@ -498,9 +498,9 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *       {@code valueClass} information, so we want to use them in replacement of descriptors of step 1.</li>
      * </ol>
      *
-     * @param fromValues Descriptors declared in the {@code ParameterValue} instances of a {@code ParameterValueGroup}.
-     * @param replacements An {@code IdentityHashMap} where to store the replacements that the caller needs
-     *                     to apply in the {@code GeneralParameterValue} instances.
+     * @param fromValues    descriptors declared in the {@code ParameterValue} instances of a {@code ParameterValueGroup}.
+     * @param replacements  an {@code IdentityHashMap} where to store the replacements that the caller needs to apply in
+     *                      the {@code GeneralParameterValue} instances.
      */
     final void merge(GeneralParameterDescriptor[] fromValues,
             final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements)

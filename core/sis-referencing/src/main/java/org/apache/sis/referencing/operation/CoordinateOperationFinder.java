@@ -735,10 +735,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * various combinations of source and target components. A preference is given for components of the same
      * type (e.g. source {@link GeodeticCRS} with target {@code GeodeticCRS}, <i>etc.</i>).
      *
-     * @param  sourceCRS        input coordinate reference system.
-     * @param  sourceComponents components of the source CRS.
-     * @param  targetCRS        output coordinate reference system.
-     * @param  targetComponents components of the target CRS.
+     * @param  sourceCRS         input coordinate reference system.
+     * @param  sourceComponents  components of the source CRS.
+     * @param  targetCRS         output coordinate reference system.
+     * @param  targetComponents  components of the target CRS.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation can not be constructed.
      */
@@ -883,11 +883,11 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * where the {@code name} identifier is {@link #DATUM_SHIFT} or {@link #ELLIPSOID_CHANGE},
      * the operation will be a {@link Transformation} instance instead of {@link Conversion}.
      *
-     * @param  name      The identifier for the operation to be created.
-     * @param  sourceCRS The source coordinate reference system.
-     * @param  targetCRS The target coordinate reference system.
-     * @param  matrix    The matrix which describe an affine transform operation.
-     * @return The conversion or transformation.
+     * @param  name       the identifier for the operation to be created.
+     * @param  sourceCRS  the source coordinate reference system.
+     * @param  targetCRS  the target coordinate reference system.
+     * @param  matrix     the matrix which describe an affine transform operation.
+     * @return the conversion or transformation.
      * @throws FactoryException if the operation can not be created.
      */
     private CoordinateOperation createFromAffineTransform(final Identifier                name,
@@ -908,9 +908,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * If one of the given operation steps performs a change of axis order or units,
      * then that change will be merged with the other operation instead of creating an {@link ConcatenatedOperation}.
      *
-     * @param  step1 The first  step, or {@code null} for the identity operation.
-     * @param  step2 The second step, or {@code null} for the identity operation.
-     * @return A concatenated operation, or {@code null} if all arguments were null.
+     * @param  step1  the first  step, or {@code null} for the identity operation.
+     * @param  step2  the second step, or {@code null} for the identity operation.
+     * @return a concatenated operation, or {@code null} if all arguments were null.
      * @throws FactoryException if the operation can't be constructed.
      */
     private CoordinateOperation concatenate(final CoordinateOperation step1,
@@ -972,10 +972,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * then it will be included as part of the second operation instead of creating a {@link ConcatenatedOperation}.
      * If a concatenated operation is created, it will get an automatically generated name.
      *
-     * @param  step1 The first  step, or {@code null} for the identity operation.
-     * @param  step2 The second step, or {@code null} for the identity operation.
-     * @param  step3 The third  step, or {@code null} for the identity operation.
-     * @return A concatenated operation, or {@code null} if all arguments were null.
+     * @param  step1  the first  step, or {@code null} for the identity operation.
+     * @param  step2  the second step, or {@code null} for the identity operation.
+     * @param  step3  the third  step, or {@code null} for the identity operation.
+     * @return a concatenated operation, or {@code null} if all arguments were null.
      * @throws FactoryException if the operation can not be constructed.
      */
     private CoordinateOperation concatenate(final CoordinateOperation step1,
@@ -1057,9 +1057,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * Returns an error message for "No path found from sourceCRS to targetCRS".
      * This is used for the construction of {@link OperationNotFoundException}.
      *
-     * @param  source the source CRS.
-     * @param  target the target CRS.
-     * @return A default error message.
+     * @param  source  the source CRS.
+     * @param  target  the target CRS.
+     * @return a default error message.
      */
     private static String notFoundMessage(final IdentifiedObject source, final IdentifiedObject target) {
         return Resources.format(Resources.Keys.CoordinateOperationNotFound_2, CRSPair.label(source), CRSPair.label(target));
@@ -1070,7 +1070,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * This is used for the construction of {@link OperationNotFoundException}.
      *
      * @param  crs  the CRS having a conversion that can not be inverted.
-     * @return A default error message.
+     * @return a default error message.
      */
     private static String canNotInvert(final GeneralDerivedCRS crs) {
         return Resources.format(Resources.Keys.NonInvertibleOperation_1, crs.getConversionFromBase().getName().getCode());

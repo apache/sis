@@ -139,7 +139,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * invoking <code>descriptor.{@linkplain DefaultParameterDescriptorGroup#createValue() createValue()}</code>
      * on a descriptor supplied by a map projection or process provider.</p>
      *
-     * @param descriptor The descriptor for this group.
+     * @param  descriptor  the descriptor for this group.
      */
     public DefaultParameterValueGroup(final ParameterDescriptorGroup descriptor) {
         ArgumentChecks.ensureNonNull("descriptor", descriptor);
@@ -176,7 +176,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     /**
      * Returns the abstract definition of this group of parameters.
      *
-     * @return The abstract definition of this group of parameters.
+     * @return the abstract definition of this group of parameters.
      */
     @Override
     @XmlElement(name = "group")
@@ -202,7 +202,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * {@link org.opengis.parameter.InvalidParameterCardinalityException} or other runtime exceptions if a condition
      * is not meet.
      *
-     * @return The values in this group.
+     * @return the values in this group.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -241,8 +241,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * may exist for the same {@linkplain ParameterDescriptorGroup descriptor}. The user have to
      * {@linkplain #groups(String) query all subgroups} and select explicitly the appropriate one.
      *
-     * @param  name The name of the parameter to search for.
-     * @return The parameter value for the given name.
+     * @param  name  the name of the parameter to search for.
+     * @return the parameter value for the given name.
      * @throws ParameterNotFoundException if there is no parameter value for the given name.
      *
      * @see #getValue(ParameterDescriptor)
@@ -333,8 +333,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * <code>{@linkplain DefaultParameterDescriptor#getMinimumOccurs() minimumOccurs} == 0</code>)
      * and no value were defined previously, then this method returns an empty set.</p>
      *
-     * @param  name The name of the parameter to search for.
-     * @return The set of all parameter group for the given name.
+     * @param  name  the name of the parameter to search for.
+     * @return the set of all parameter group for the given name.
      * @throws ParameterNotFoundException if no descriptor was found for the given name.
      */
     @Override
@@ -376,8 +376,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * {@link #values()} list, decide which occurrences to remove if there is many of them for the
      * same name, and whether to iterate recursively into sub-groups or not.</div>
      *
-     * @param  name The name of the parameter group to create.
-     * @return A newly created parameter group for the given name.
+     * @param  name  the name of the parameter group to create.
+     * @return a newly created parameter group for the given name.
      * @throws ParameterNotFoundException if no descriptor was found for the given name.
      * @throws InvalidParameterCardinalityException if this parameter group already contains the
      *         {@linkplain ParameterDescriptorGroup#getMaximumOccurs() maximum number of occurrences}
@@ -410,8 +410,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      *       ignore the order of parameter values (but not necessarily the order of parameter descriptors).</li>
      * </ul>
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode The strictness level of the comparison.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode  the strictness level of the comparison.
      * @return {@code true} if both objects are equal according the given comparison mode.
      */
     @Override
@@ -468,7 +468,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
      *
      * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead than this method.
      *
-     * @param  object The object to compare to {@code this}.
+     * @param  object  the object to compare to {@code this}.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -479,7 +479,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
     /**
      * Returns a hash value for this parameter.
      *
-     * @return The hash code value. This value does not need to be the same
+     * @return the hash code value. This value does not need to be the same
      *         in past or future versions of this class.
      */
     @Override
@@ -491,7 +491,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
      * Returns a deep copy of this group of parameter values.
      * Included parameter values and subgroups are cloned recursively.
      *
-     * @return A copy of this group of parameter values.
+     * @return a copy of this group of parameter values.
      *
      * @see #copy(ParameterValueGroup, ParameterValueGroup)
      */
