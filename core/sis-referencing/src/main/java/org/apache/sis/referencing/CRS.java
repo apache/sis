@@ -297,6 +297,7 @@ public final class CRS extends Static {
     public static CoordinateReferenceSystem suggestTargetCRS(GeographicBoundingBox regionOfInterest,
                                                              CoordinateReferenceSystem... sourceCRS)
     {
+        CoordinateReferenceSystem bestCRS = null;
         /*
          * Compute the union of the domain of validity of all CRS. If a CRS does not specify a domain of validity,
          * then assume that the CRS is valid for the whole world if the CRS is geodetic or return null otherwise.
@@ -307,7 +308,7 @@ public final class CRS extends Static {
         final GeographicBoundingBox[] domains = new GeographicBoundingBox[sourceCRS.length];
         for (int i=0; i < sourceCRS.length; i++) {
             final CoordinateReferenceSystem crs = sourceCRS[i];
-            GeographicBoundingBox bbox = getGeographicBoundingBox(crs);
+            final GeographicBoundingBox bbox = getGeographicBoundingBox(crs);
             if (bbox == null) {
                 /*
                  * If no domain of validity is specified and we can not fallback
@@ -317,28 +318,22 @@ public final class CRS extends Static {
                     return null;
                 }
                 /*
-                 * If no region of interest has been specified, conservatively assume that the caller is
-                 * interested in a worldwide area. Since we have a Geodetic CRS, we will not find better.
-                 */
-                if (regionOfInterest == null) {
-                    return crs;
-                }
-                /*
                  * Geodetic CRS (geographic or geocentric) can generally be presumed valid in a worldwide area.
-                 * Since the caller has specified an area of interest, that will be taken as our validity domain.
                  * The 'worldwide' flag is a little optimization for remembering that we do not need to compute
                  * the union anymore, but we still need to continue the loop for fetching all bounding boxes.
                  */
-                bbox = regionOfInterest;
+                bestCRS = crs;
                 worldwide = true;
-            } else if (!worldwide) {
-                if (domain == null) {
-                    domain = new DefaultGeographicBoundingBox(bbox);
-                } else {
-                    domain.add(bbox);
+            } else {
+                domains[i] = bbox;
+                if (!worldwide) {
+                    if (domain == null) {
+                        domain = new DefaultGeographicBoundingBox(bbox);
+                    } else {
+                        domain.add(bbox);
+                    }
                 }
             }
-            domains[i] = bbox;
         }
         /*
          * At this point we got the union of the domain of validity of all CRS. We are interested only in the
@@ -370,7 +365,6 @@ public final class CRS extends Static {
          *   - Otherwise (i.e. if the region of interest is likely to be wider than the projected CRS
          *     domain of validity), then the geographic CRS will be returned.
          */
-        CoordinateReferenceSystem bestCRS = null;
         final double roiArea  = Extents.area(regionOfInterest);   // NaN if 'regionOfInterest' is null.
         double maxInsideArea  = 0;
         double minOutsideArea = Double.POSITIVE_INFINITY;
@@ -378,23 +372,25 @@ public final class CRS extends Static {
         do {
             for (int i=0; i < domains.length; i++) {
                 final GeographicBoundingBox bbox = domains[i];
-                double insideArea  = Extents.area(bbox);
-                double outsideArea = 0;
-                if (regionOfInterest != null) {
-                    if (domain == null) {
-                        domain = new DefaultGeographicBoundingBox(bbox);
-                    } else {
-                        domain.setBounds(bbox);
+                if (bbox != null) {
+                    double insideArea  = Extents.area(bbox);
+                    double outsideArea = 0;
+                    if (regionOfInterest != null) {
+                        if (domain == null) {
+                            domain = new DefaultGeographicBoundingBox(bbox);
+                        } else {
+                            domain.setBounds(bbox);
+                        }
+                        domain.intersect(regionOfInterest);
+                        final double area = insideArea;
+                        insideArea = Extents.area(domain);
+                        outsideArea = area - insideArea;
                     }
-                    domain.intersect(regionOfInterest);
-                    final double area = insideArea;
-                    insideArea = Extents.area(domain);
-                    outsideArea = area - insideArea;
-                }
-                if (insideArea > maxInsideArea || (insideArea == maxInsideArea && outsideArea < minOutsideArea)) {
-                    maxInsideArea  = insideArea;
-                    minOutsideArea = outsideArea;
-                    bestCRS        = sourceCRS[i];
+                    if (insideArea > maxInsideArea || (insideArea == maxInsideArea && outsideArea < minOutsideArea)) {
+                        maxInsideArea  = insideArea;
+                        minOutsideArea = outsideArea;
+                        bestCRS        = sourceCRS[i];
+                    }
                 }
             }
             /*
@@ -411,8 +407,8 @@ public final class CRS extends Static {
                     if (crs instanceof GeneralDerivedCRS) {
                         final CoordinateReferenceSystem baseCRS = ((GeneralDerivedCRS) crs).getBaseCRS();
                         bbox = getGeographicBoundingBox(baseCRS);
-                        if (bbox == null) {
-                            bbox = regionOfInterest;
+                        if (bbox == null && bestCRS == null && baseCRS instanceof GeodeticCRS) {
+                            bestCRS = baseCRS;
                         }
                         tryDerivedCRS = true;
                         derivedCRS[i] = baseCRS;
