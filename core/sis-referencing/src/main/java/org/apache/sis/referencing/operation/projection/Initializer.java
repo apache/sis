@@ -185,7 +185,7 @@ final class Initializer {
                     eccentricitySquared.subtract(f);
                 } else {
                     final DoubleDouble rs = new DoubleDouble(b);
-                    rs.divide(k);    // rs = b/a
+                    rs.divide(k);                                       // rs = b/a
                     rs.square();
                     eccentricitySquared.value = 1;
                     eccentricitySquared.subtract(rs);
@@ -321,9 +321,10 @@ final class Initializer {
         final DoubleDouble t = verbatim(sinφ);
         t.square();
         t.multiply(eccentricitySquared);
-
-        // Compute 1 - ℯ²⋅sin²φ.  Since  ℯ²⋅sin²φ  may be small,
-        // this is where double-double arithmetic has more value.
+        /*
+         * Compute 1 - ℯ²⋅sin²φ.  Since  ℯ²⋅sin²φ  may be small,
+         * this is where double-double arithmetic has more value.
+         */
         t.negate();
         t.add(1,0);
         return t;

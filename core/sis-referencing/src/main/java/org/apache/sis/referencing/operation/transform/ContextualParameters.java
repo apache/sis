@@ -242,7 +242,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * See class javadoc for more information.
      *
-     * @param method The non-linear operation method for which to define the parameter values.
+     * @param  method  the non-linear operation method for which to define the parameter values.
      */
     public ContextualParameters(final OperationMethod method) {
         ensureNonNull("method", method);
@@ -255,9 +255,9 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * Equivalent to the public constructor, but avoid the need for an {@link OperationMethod} instance.
      *
-     * @param descriptor The parameter descriptor.
-     * @param srcSize    Size of the normalization matrix: source dimensions + 1.
-     * @param tgtSize    Size of the denormalization matrix: target dimensions + 1.
+     * @param  descriptor  the parameter descriptor.
+     * @param  srcSize     size of the normalization matrix: source dimensions + 1.
+     * @param  tgtSize     size of the denormalization matrix: target dimensions + 1.
      */
     ContextualParameters(final ParameterDescriptorGroup descriptor, final int srcSize, final int tgtSize) {
         this.descriptor  = descriptor;
@@ -269,8 +269,8 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * Creates a {@code ContextualParameters} for the inverse operation.
      *
-     * @param  desc    Descriptor of the inverse operation.
-     * @param  forward The parameters created for the forward operation.
+     * @param  desc     descriptor of the inverse operation.
+     * @param  forward  the parameters created for the forward operation.
      */
     private ContextualParameters(final ParameterDescriptorGroup desc, final ContextualParameters forward) {
         descriptor  = desc;
@@ -297,8 +297,8 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * Creates a {@code ContextualParameters} for the inverse operation.
      *
-     * @param  desc Descriptor of the inverse operation.
-     * @return Parameters for the inverse operation.
+     * @param  desc  descriptor of the inverse operation.
+     * @return parameters for the inverse operation.
      */
     final synchronized ContextualParameters inverse(final ParameterDescriptorGroup desc) {
         if (inverse == null) {
@@ -326,7 +326,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * kernels are instances of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
      * Other "kernels" in SIS are {@link EllipsoidToCentricTransform} and {@link MolodenskyTransform}.</div>
      *
-     * @return The description of the parameters.
+     * @return the description of the parameters.
      */
     @Override
     public final ParameterDescriptorGroup getDescriptor() {
@@ -387,10 +387,10 @@ public class ContextualParameters extends Parameters implements Serializable {
      * </table>
      * </div>
      *
-     * @param  role {@code NORMALIZATION} for fetching the <cite>normalization</cite> transform to apply before the kernel,
-     *         {@code DENORMALIZATION} for the <cite>denormalization</cite> transform to apply after the kernel,
-     *         or {@code INVERSE_*} for the inverse of the above-cited matrices.
-     * @return The matrix for the requested normalization or denormalization affine transform.
+     * @param  role  {@code NORMALIZATION} for fetching the <cite>normalization</cite> transform to apply before the kernel,
+     *               {@code DENORMALIZATION} for the <cite>denormalization</cite> transform to apply after the kernel, or
+     *               {@code INVERSE_*} for the inverse of the above-cited matrices.
+     * @return the matrix for the requested normalization or denormalization affine transform.
      *
      * @since 0.7
      */
@@ -432,8 +432,8 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * <center>{@include formulas.html#NormalizeGeographic}</center>
      *
-     * @param  λ0 Longitude of the central meridian, in degrees.
-     * @return The normalization affine transform as a matrix.
+     * @param  λ0  longitude of the central meridian, in degrees.
+     * @return the normalization affine transform as a matrix.
      *         Callers can change that matrix directly if they want to apply additional normalization operations.
      * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
      */
@@ -466,8 +466,8 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * <center>{@include formulas.html#DenormalizeGeographic}</center>
      *
-     * @param  λ0 Longitude of the central meridian, in degrees.
-     * @return The denormalization affine transform as a matrix.
+     * @param  λ0  longitude of the central meridian, in degrees.
+     * @return the denormalization affine transform as a matrix.
      *         Callers can change that matrix directly if they want to apply additional denormalization operations.
      * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
      */
@@ -492,10 +492,10 @@ public class ContextualParameters extends Parameters implements Serializable {
      * outside {@code ContextualParameters}. Efficient concatenation of those steps will happen "under
      * the hood".</p>
      *
-     * @param  factory The factory to use for creating math transform instances.
-     * @param  kernel The (usually non-linear) kernel.
-     *         This is often a {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
-     * @return The concatenation of <cite>normalize</cite> → <cite>the given kernel</cite> → <cite>denormalize</cite>
+     * @param  factory  the factory to use for creating math transform instances.
+     * @param  kernel   the (usually non-linear) kernel.
+     *                  This is often a {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
+     * @return the concatenation of <cite>normalize</cite> → <cite>the given kernel</cite> → <cite>denormalize</cite>
      *         transforms.
      * @throws FactoryException if an error occurred while creating a math transform instance.
      *
@@ -581,8 +581,8 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * After the call to {@code completeTransform(…)}, the returned parameters are read-only.
      *
-     * @param  name The name of the parameter to search.
-     * @return The parameter value for the given name.
+     * @param  name  the name of the parameter to search.
+     * @return the parameter value for the given name.
      * @throws ParameterNotFoundException if there is no parameter of the given name.
      */
     @Override
@@ -628,7 +628,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * Returns an unmodifiable list containing all parameters in this group.
      * Callers should not attempt to modify the parameter values in this list.
      *
-     * @return All parameter values.
+     * @return all parameter values.
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -643,8 +643,8 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * Unsupported operation, since {@code ContextualParameters} groups do not contain sub-groups.
      *
-     * @param name Ignored.
-     * @return Never returned.
+     * @param  name  ignored.
+     * @return never returned.
      */
     @Override
     public List<ParameterValueGroup> groups(final String name) {
@@ -654,8 +654,8 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * Unsupported operation, since {@code ContextualParameters} groups do not contain sub-groups.
      *
-     * @param name Ignored.
-     * @return Never returned.
+     * @param  name  ignored.
+     * @return never returned.
      */
     @Override
     public ParameterValueGroup addGroup(final String name) {
@@ -673,7 +673,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * Returns a modifiable clone of this parameter value group.
      *
-     * @return A clone of this parameter value group.
+     * @return a clone of this parameter value group.
      */
     @Override
     public synchronized ContextualParameters clone() {
@@ -712,7 +712,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * Compares the given object with the parameters for equality.
      *
-     * @param  object The object to compare with the parameters.
+     * @param  object  the object to compare with the parameters.
      * @return {@code true} if the given object is equal to this one.
      */
     @Override
@@ -794,10 +794,10 @@ public class ContextualParameters extends Parameters implements Serializable {
      * <p>This method is invoked (indirectly) only by {@link ConcatenatedTransform#getPseudoSteps()} in order
      * to get the {@link ParameterValueGroup} of a map projection, or to format a {@code ProjectedCRS} WKT.</p>
      *
-     * @param  transforms The full chain of concatenated transforms.
-     * @param  index      The index of this transform in the {@code transforms} chain.
-     * @param  inverse    Always {@code false}, except if we are formatting the inverse transform.
-     * @return Index of this transform in the {@code transforms} chain after processing.
+     * @param  transforms  the full chain of concatenated transforms.
+     * @param  index       the index of this transform in the {@code transforms} chain.
+     * @param  inverse     always {@code false}, except if we are formatting the inverse transform.
+     * @return index of this transform in the {@code transforms} chain after processing.
      *
      * @see ConcatenatedTransform#getPseudoSteps()
      * @see AbstractMathTransform#beforeFormat(List, int, boolean)
@@ -836,8 +836,10 @@ public class ContextualParameters extends Parameters implements Serializable {
         try {
             userDefined = getMatrix(inverse ? MatrixRole.DENORMALIZATION : MatrixRole.INVERSE_NORMALIZATION);
         } catch (IllegalStateException e) {
-            // Should never happen. But if it does, we abandon the attempt to change
-            // the list elements and will format the objects in their "raw" format.
+            /*
+             * Should never happen. But if it does, we abandon the attempt to change
+             * the list elements and will format the objects in their "raw" format.
+             */
             unexpectedException(e);
             return index;
         }

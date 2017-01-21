@@ -90,7 +90,7 @@ public final class Formulas extends Static {
      * Returns 3ⁿ for very small (less than 10) positive values of <var>n</var>.
      * Note that this method overflow for any value equals or greater than 20.
      *
-     * @param n The exponent.
+     * @param  n  the exponent.
      * @return 3ⁿ
      *
      * @see org.apache.sis.math.DecimalFunctions#pow10(int)
@@ -109,8 +109,8 @@ public final class Formulas extends Static {
     /**
      * Returns {@code true} if {@code ymin} is the south pole and {@code ymax} is the north pole.
      *
-     * @param ymin The minimal latitude to test.
-     * @param ymax The maximal latitude to test.
+     * @param  ymin  the minimal latitude to test.
+     * @param  ymax  the maximal latitude to test.
      * @return {@code true} if the given latitudes are south pole to north pole respectively.
      */
     public static boolean isPoleToPole(final double ymin, final double ymax) {
@@ -122,9 +122,9 @@ public final class Formulas extends Static {
      * Returns the radius of a hypothetical sphere having the same surface than the ellipsoid
      * specified by the given axis length.
      *
-     * @param  a The semi-major axis length.
-     * @param  b The semi-minor axis length.
-     * @return The radius of a sphere having the same surface than the specified ellipsoid.
+     * @param  a  the semi-major axis length.
+     * @param  b  the semi-minor axis length.
+     * @return the radius of a sphere having the same surface than the specified ellipsoid.
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
      */
@@ -141,9 +141,9 @@ public final class Formulas extends Static {
     /**
      * Computes the semi-minor axis length from the given semi-major axis and inverse flattening factor.
      *
-     * @param  semiMajorAxis     The semi-major axis length.
-     * @param  inverseFlattening The inverse flattening factor.
-     * @return The semi-minor axis length.
+     * @param  semiMajorAxis      the semi-major axis length.
+     * @param  inverseFlattening  the inverse flattening factor.
+     * @return the semi-minor axis length.
      */
     public static double getSemiMinor(final double semiMajorAxis, final double inverseFlattening) {
         /*
@@ -156,9 +156,9 @@ public final class Formulas extends Static {
     /**
      * Computes the inverse flattening factor from the given axis lengths.
      *
-     * @param  semiMajorAxis The semi-major axis length.
-     * @param  semiMinorAxis The semi-minor axis length.
-     * @return The inverse flattening factor.
+     * @param  semiMajorAxis  the semi-major axis length.
+     * @param  semiMinorAxis  the semi-minor axis length.
+     * @return the inverse flattening factor.
      */
     public static double getInverseFlattening(final double semiMajorAxis, final double semiMinorAxis) {
         /*

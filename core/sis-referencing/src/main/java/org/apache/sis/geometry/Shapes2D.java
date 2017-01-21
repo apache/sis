@@ -62,8 +62,8 @@ public final class Shapes2D extends Static {
      * if the intersection does not occur between the ending points {@linkplain Line2D#getP1() P1} and
      * {@linkplain Line2D#getP2() P2} of the two line segments, then this method returns {@code null}.
      *
-     * @param  a the first line segment.
-     * @param  b the second line segment.
+     * @param  a  the first line segment.
+     * @param  b  the second line segment.
      * @return the intersection point, or {@code null} if none.
      */
     public static Point2D intersectionPoint(final Line2D a, final Line2D b) {
@@ -130,9 +130,9 @@ public final class Shapes2D extends Static {
     /**
      * Returns a circle passing by the 3 given points.
      *
-     * @param  P1 the first point.
-     * @param  P2 the second point.
-     * @param  P3 the third point.
+     * @param  P1  the first point.
+     * @param  P2  the second point.
+     * @param  P3  the third point.
      * @return a circle passing by the given points.
      */
     public static Ellipse2D circle(final Point2D P1, final Point2D P2, final Point2D P3) {
@@ -155,9 +155,9 @@ public final class Shapes2D extends Static {
      * For a more robust rectangle transformation, use {@link #transform(CoordinateOperation, Rectangle2D, Rectangle2D)}
      * instead.</p>
      *
-     * @param  transform   the transform to use. Source and target dimension must be 2.
-     * @param  envelope    the rectangle to transform (may be {@code null}).
-     * @param  destination the destination rectangle (may be {@code envelope}).
+     * @param  transform    the transform to use. Source and target dimension must be 2.
+     * @param  envelope     the rectangle to transform (may be {@code null}).
+     * @param  destination  the destination rectangle (may be {@code envelope}).
      *         If {@code null}, a new rectangle will be created and returned.
      * @return {@code destination}, or a new rectangle if {@code destination} was non-null and {@code envelope} was null.
      * @throws TransformException if a transform failed.

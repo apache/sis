@@ -127,8 +127,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * then it is returned as-is. Otherwise this method copies all parameter values in a new,
      * unmodifiable, parameter group instance.
      *
-     * @param  parameters The parameters to make unmodifiable, or {@code null}.
-     * @return An unmodifiable group with the same parameters than the given group,
+     * @param  parameters  the parameters to make unmodifiable, or {@code null}.
+     * @return an unmodifiable group with the same parameters than the given group,
      *         or {@code null} if the given argument was null.
      *
      * @since 0.7
@@ -147,8 +147,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * <p>This method provides a way to get access to the non-static {@code Parameters} methods, like
      * {@link #getValue(ParameterDescriptor)}, for an arbitrary {@code ParameterValueGroup} instance.</p>
      *
-     * @param  parameters The object to cast or wrap, or {@code null}.
-     * @return The given argument as an instance of {@code Parameters} (may be the same reference),
+     * @param  parameters  the object to cast or wrap, or {@code null}.
+     * @return the given argument as an instance of {@code Parameters} (may be the same reference),
      *         or {@code null} if the given argument was null.
      */
     public static Parameters castOrWrap(final ParameterValueGroup parameters) {
@@ -179,10 +179,10 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * An exception is thrown immediately if the parameter does not have the expected
      * {@linkplain DefaultParameterDescriptor#getValueClass() value class}.
      *
-     * @param  <T>        The expected value class.
-     * @param  descriptor The descriptor to cast, or {@code null}.
-     * @param  valueClass The expected value class.
-     * @return The descriptor casted to the given value class, or {@code null} if the given descriptor was null.
+     * @param  <T>         the expected value class.
+     * @param  descriptor  the descriptor to cast, or {@code null}.
+     * @param  valueClass  the expected value class.
+     * @return the descriptor casted to the given value class, or {@code null} if the given descriptor was null.
      * @throws ClassCastException if the given descriptor does not have the expected value class.
      *
      * @see Class#cast(Object)
@@ -196,8 +196,10 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
         ArgumentChecks.ensureNonNull("valueClass", valueClass);
         if (descriptor != null) {
             final Class<?> actual = descriptor.getValueClass();
-            // We require a strict equality - not type.isAssignableFrom(actual) - because in
-            // the later case we could have (to be strict) to return a <? extends T> type.
+            /*
+             * We require a strict equality - not type.isAssignableFrom(actual) - because in
+             * the later case we could have (to be strict) to return a <? extends T> type.
+             */
             if (!valueClass.equals(actual)) {
                 throw new ClassCastException(Resources.format(Resources.Keys.IllegalParameterType_2,
                         Verifier.getDisplayName(descriptor), actual));
@@ -210,10 +212,10 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * Casts the given parameter value to the given type.
      * An exception is thrown immediately if the parameter does not have the expected value class.
      *
-     * @param  <T>        The expected value class.
-     * @param  parameter  The parameter to cast, or {@code null}.
-     * @param  valueClass The expected value class.
-     * @return The value casted to the given type, or {@code null} if the given value was null.
+     * @param  <T>         the expected value class.
+     * @param  parameter   the parameter to cast, or {@code null}.
+     * @param  valueClass  the expected value class.
+     * @return the value casted to the given type, or {@code null} if the given value was null.
      * @throws ClassCastException if the given value doesn't have the expected value class.
      *
      * @see Class#cast(Object)
@@ -246,8 +248,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      *       element of the returned array is also {@code null}.</li>
      * </ul>
      *
-     * @param  parameters The parameter values from which to get the descriptors, or {@code null}.
-     * @return The descriptors of the given parameter values, or {@code null} if the {@code parameters} argument was null.
+     * @param  parameters  the parameter values from which to get the descriptors, or {@code null}.
+     * @return the descriptors of the given parameter values, or {@code null} if the {@code parameters} argument was null.
      *
      * @since 0.6
      */
@@ -283,8 +285,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * defined by ISO 19111 (namely {@code CC_OperationParameter}) and the one
      * defined by ISO 19115 (namely {@code SV_Parameter}).
      *
-     * @param  parameter The parameter from which to get the name (may be {@code null}).
-     * @return The member name, or {@code null} if none.
+     * @param  parameter  the parameter from which to get the name (may be {@code null}).
+     * @return the member name, or {@code null} if none.
      *
      * @see org.apache.sis.util.iso.Names#createMemberName(CharSequence, String, CharSequence, Class)
      *
@@ -306,8 +308,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      *       the {@linkplain DefaultParameterDescriptor#getUnit() unit}.</li>
      * </ul>
      *
-     * @param  descriptor The parameter descriptor, or {@code null}.
-     * @return The domain of valid values, or {@code null} if none.
+     * @param  descriptor  the parameter descriptor, or {@code null}.
+     * @return the domain of valid values, or {@code null} if none.
      *
      * @see DefaultParameterDescriptor#getValueDomain()
      */
@@ -344,8 +346,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * Returns the name or alias of the given parameter for the authority code space expected by this group.
      * If no name or alias for this group's authority can be found, then the primary name will be returned.
      *
-     * @param  source The parameter for which the name is wanted.
-     * @return The name of the given parameter.
+     * @param  source  the parameter for which the name is wanted.
+     * @return the name of the given parameter.
      */
     private String getName(final GeneralParameterDescriptor source) {
         final ParameterDescriptorGroup descriptor = getDescriptor();
@@ -401,8 +403,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * This method tries to do the same work than {@link #parameter(String)} but without
      * instantiating optional parameters if that parameter was not already instantiated.
      *
-     * @param  parameter The parameter to search.
-     * @return The requested parameter value, or {@code null} if none.
+     * @param  parameter  the parameter to search.
+     * @return the requested parameter value, or {@code null} if none.
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      */
     private ParameterValue<?> getParameter(final ParameterDescriptor<?> parameter) throws ParameterNotFoundException {
@@ -466,9 +468,9 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * operation method}. If the caller has no such {@code ParameterDescriptor} at hand, then the
      * {@link DefaultParameterValueGroup#parameter(String) parameter(String)} method is probably more convenient.
      *
-     * @param  <T> The type of the parameter value.
-     * @param  parameter The name or alias of the parameter to look for, together with the desired type and unit of value.
-     * @return The requested parameter value if it exists, or the {@linkplain DefaultParameterDescriptor#getDefaultValue()
+     * @param  <T>        the type of the parameter value.
+     * @param  parameter  the name or alias of the parameter to look for, together with the desired type and unit of value.
+     * @return the requested parameter value if it exists, or the {@linkplain DefaultParameterDescriptor#getDefaultValue()
      *         default value} otherwise (which may be {@code null}).
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      *
@@ -502,9 +504,9 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * The default implementation invokes {@link #getValue(ParameterDescriptor)} and verifies that the returned
      * value is non-null.
      *
-     * @param  <T> The type of the parameter value.
-     * @param  parameter The name or alias of the parameter to look for, together with the desired type and unit of value.
-     * @return The requested parameter value if it exists, or the {@linkplain DefaultParameterDescriptor#getDefaultValue()
+     * @param  <T>        the type of the parameter value.
+     * @param  parameter  the name or alias of the parameter to look for, together with the desired type and unit of value.
+     * @return the requested parameter value if it exists, or the {@linkplain DefaultParameterDescriptor#getDefaultValue()
      *         default value} otherwise provided that it is not {@code null}.
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      * @throws IllegalStateException if the value is not defined and there is no default value.
@@ -541,8 +543,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * See {@link #getValue(ParameterDescriptor)} for more information about how this
      * method uses the given {@code parameter} argument.
      *
-     * @param  parameter The name or alias of the parameter to look for.
-     * @return The requested parameter value if it exists, or the <strong>non-null</strong>
+     * @param  parameter  the name or alias of the parameter to look for.
+     * @return the requested parameter value if it exists, or the <strong>non-null</strong>
      *         {@linkplain DefaultParameterDescriptor#getDefaultValue() default value} otherwise.
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      * @throws IllegalStateException if the value is not defined and there is no default value.
@@ -561,8 +563,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * See {@link #getValue(ParameterDescriptor)} for more information about how this
      * method uses the given {@code parameter} argument.
      *
-     * @param  parameter The name or alias of the parameter to look for.
-     * @return The requested parameter value if it exists, or the <strong>non-null</strong>
+     * @param  parameter  the name or alias of the parameter to look for.
+     * @return the requested parameter value if it exists, or the <strong>non-null</strong>
      *         {@linkplain DefaultParameterDescriptor#getDefaultValue() default value} otherwise.
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      * @throws IllegalStateException if the value is not defined and there is no default value.
@@ -581,8 +583,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * See {@link #getValue(ParameterDescriptor)} for more information about how this
      * method uses the given {@code parameter} argument.
      *
-     * @param  parameter The name or alias of the parameter to look for.
-     * @return The requested parameter values if they exist, or the <strong>non-null</strong>
+     * @param  parameter  the name or alias of the parameter to look for.
+     * @return the requested parameter values if they exist, or the <strong>non-null</strong>
      *         {@linkplain DefaultParameterDescriptor#getDefaultValue() default value} otherwise.
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      * @throws IllegalStateException if the value is not defined and there is no default value.
@@ -604,8 +606,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * <p>If the given descriptor supplies a {@linkplain DefaultParameterDescriptor#getUnit()
      * unit of measurement}, then the returned value will be converted into that unit.</p>
      *
-     * @param  parameter The name or alias of the parameter to look for.
-     * @return The requested parameter value if it exists, or the <strong>non-null</strong>
+     * @param  parameter  the name or alias of the parameter to look for.
+     * @return the requested parameter value if it exists, or the <strong>non-null</strong>
      *         {@linkplain DefaultParameterDescriptor#getDefaultValue() default value} otherwise.
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      * @throws IllegalStateException if the value is not defined and there is no default value.
@@ -632,8 +634,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * <p>If the given descriptor supplies a {@linkplain DefaultParameterDescriptor#getUnit()
      * unit of measurement}, then the returned values will be converted into that unit.</p>
      *
-     * @param  parameter The name or alias of the parameter to look for.
-     * @return The requested parameter values if they exists, or the <strong>non-null</strong>
+     * @param  parameter  the name or alias of the parameter to look for.
+     * @return the requested parameter values if they exists, or the <strong>non-null</strong>
      *         {@linkplain DefaultParameterDescriptor#getDefaultValue() default value} otherwise.
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      * @throws IllegalStateException if the value is not defined and there is no default value.
@@ -657,8 +659,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * See {@link #getValue(ParameterDescriptor)} for more information about how this
      * method uses the given {@code parameter} argument.
      *
-     * @param  parameter The name or alias of the parameter to look for.
-     * @return The requested parameter value if it exists, or the <strong>non-null</strong>
+     * @param  parameter  the name or alias of the parameter to look for.
+     * @return the requested parameter value if it exists, or the <strong>non-null</strong>
      *         {@linkplain DefaultParameterDescriptor#getDefaultValue() default value} otherwise.
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      * @throws IllegalStateException if the value is not defined and there is no default value.
@@ -686,9 +688,9 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * or {@linkplain DefaultParameterDescriptor#getAlias() alias} chosen by the same algorithm than
      * {@link #getValue(ParameterDescriptor)}.
      *
-     * @param  <T> The type of the parameter value.
-     * @param  parameter The parameter to look for.
-     * @return The requested parameter instance.
+     * @param  <T>        the type of the parameter value.
+     * @param  parameter  the parameter to look for.
+     * @return the requested parameter instance.
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
      *
      * @see DefaultParameterValueGroup#parameter(String)
@@ -704,7 +706,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * The default implementation performs a <em>shallow</em> copy,
      * but subclasses are encouraged to perform a <em>deep</em> copy.
      *
-     * @return A copy of this group of parameter values.
+     * @return a copy of this group of parameter values.
      *
      * @see #copy(ParameterValueGroup, ParameterValueGroup)
      */
@@ -713,7 +715,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
         try {
             return (Parameters) super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e);   // Should never happen since we are Cloneable
+            throw new AssertionError(e);            // Should never happen since we are Cloneable.
         }
     }
 
@@ -727,8 +729,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * to some specific implementation, or to a parameter group using a different but compatible
      * {@linkplain DefaultParameterValueGroup#getDescriptor() descriptor}.</p>
      *
-     * @param  values The parameters values to copy.
-     * @param  destination Where to copy the values.
+     * @param  values       the parameters values to copy.
+     * @param  destination  where to copy the values.
      * @throws InvalidParameterNameException if a {@code source} parameter name is unknown to the {@code destination}.
      * @throws InvalidParameterValueException if the value of a {@code source} parameter is invalid for the {@code destination}.
      *
@@ -793,10 +795,10 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * (this is a SIS-specific flexibility). Current implementation is not very efficient, but it should
      * not be an issue if this method is rarely invoked.
      *
-     * @param  values The group from which to get or create a value
-     * @param  name   The name of the parameter to fetch. An exact match will be required.
-     * @param  n      Number of occurrences to skip before to return or create the parameter.
-     * @return The <var>n</var>th occurrence (zero-based) of the parameter of the given name.
+     * @param  values  the group from which to get or create a value
+     * @param  name    the name of the parameter to fetch. An exact match will be required.
+     * @param  n       number of occurrences to skip before to return or create the parameter.
+     * @return the <var>n</var>th occurrence (zero-based) of the parameter of the given name.
      * @throws IndexOutOfBoundsException if {@code n} is greater than the current number of
      *         parameters of the given name.
      */
@@ -813,8 +815,10 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             values.values().add(value);
             return value;
         } else {
-            // We do not botter formatting a good error message for now, because
-            // this method is currently invoked only with increasing index values.
+            /*
+             * We do not botter formatting a good error message for now, because
+             * this method is currently invoked only with increasing index values.
+             */
             throw new IndexOutOfBoundsException(name);
         }
     }

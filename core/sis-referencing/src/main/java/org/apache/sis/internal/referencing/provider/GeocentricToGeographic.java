@@ -90,9 +90,9 @@ public final class GeocentricToGeographic extends AbstractProvider {
     /**
      * Creates a transform from the specified group of parameter values.
      *
-     * @param  factory The factory to use for creating the transform.
-     * @param  values The parameter values that define the transform to create.
-     * @return The conversion from geocentric to geographic coordinates.
+     * @param  factory  the factory to use for creating the transform.
+     * @param  values   the parameter values that define the transform to create.
+     * @return the conversion from geocentric to geographic coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override

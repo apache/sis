@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.List;
 import java.util.IdentityHashMap;
+import java.util.Objects;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -56,9 +57,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.Utilities.deepEquals;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**

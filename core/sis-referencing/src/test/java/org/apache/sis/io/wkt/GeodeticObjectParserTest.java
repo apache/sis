@@ -769,9 +769,9 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * This is used by the methods in this class which test a CRS using less frequently used units and prime
      * meridian.
      *
-     * @param  datum The datum to verify.
+     * @param  datum  the datum to verify.
      * @param  hasToWGS84 Whether the datum is expected to have a {@code TOWGS84[…]} element.
-     * @return The prime meridian, to be verified by the caller because the unit of measurement depends on the test.
+     * @return the prime meridian, to be verified by the caller because the unit of measurement depends on the test.
      */
     private static PrimeMeridian verifyNTF(final GeodeticDatum datum, final boolean hasToWGS84) {
         assertNameAndIdentifierEqual("Nouvelle Triangulation Française (Paris)", 0, datum);
@@ -796,7 +796,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * Verifies the parameter values for a projected CRS which is expected to be “NTF (Paris) / Lambert zone II”.
      * This is used by the methods in this class which test a CRS using less frequently used units and prime meridian.
      *
-     * @return The latitude of origin, to be verified by the caller because the unit of measurement depends on the test.
+     * @return the latitude of origin, to be verified by the caller because the unit of measurement depends on the test.
      */
     private static ParameterValue<?> verifyNTF(final ParameterValueGroup param) {
         assertEquals("Lambert Conic Conformal (1SP)", param.getDescriptor().getName().getCode());

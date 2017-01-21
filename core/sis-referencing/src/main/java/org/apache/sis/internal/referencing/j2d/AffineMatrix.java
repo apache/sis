@@ -76,8 +76,8 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
     /**
      * Creates a new matrix wrapping the given transform.
      *
-     * @param transform The transform to wrap.
-     * @param elements The elements used for creating the matrix (optionally with error terms), or {@code null}.
+     * @param transform  the transform to wrap.
+     * @param elements   the elements used for creating the matrix (optionally with error terms), or {@code null}.
      */
     AffineMatrix(final AffineTransform transform, final double[] elements) {
         this.transform = transform;
@@ -183,7 +183,7 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
     /**
      * Returns a string representation of this matrix.
      *
-     * @return String representation of this matrix.
+     * @return a string representation of this matrix.
      */
     @Override
     public String toString() {

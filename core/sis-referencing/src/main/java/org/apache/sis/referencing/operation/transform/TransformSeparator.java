@@ -147,7 +147,7 @@ public class TransformSeparator {
         assert ArraysExt.isSorted(sequence, true);
         int i = Arrays.binarySearch(sequence, dimension);
         if (i < 0) {
-            i = ~i;   // Tild, not the minus sign.
+            i = ~i;                                                 // Tild, not the minus sign.
             sequence = ArraysExt.insert(sequence, i, 1);
             sequence[i] = dimension;
         }
@@ -457,7 +457,7 @@ public class TransformSeparator {
      *       {@code step.getTargetDimensions()} exclusive.</li>
      * </ul>
      *
-     * @param  step  the transform for which to retain only a subset of the source dimensions.
+     * @param  step        the transform for which to retain only a subset of the source dimensions.
      * @param  dimensions  indices of the source dimensions of {@code step} to retain.
      * @return a transform expecting only the given source dimensions.
      * @throws FactoryException if the given transform is not separable.
@@ -508,8 +508,10 @@ public class TransformSeparator {
                     }
                     dim += numNewDim;
                 }
-                // Dimension n belong to heading or trailing dimensions.
-                // Passthrough, after adjustment for trailing dimensions.
+                /*
+                 * Dimension n belong to heading or trailing dimensions.
+                 * Passthrough, after adjustment for trailing dimensions.
+                 */
                 targetDimensions = insert(targetDimensions, dim);
             }
             subDimensions = ArraysExt.resize(subDimensions, n);
@@ -566,8 +568,10 @@ reduce:     for (int j=0; j <= numTgt; j++) {
                     if (filteredColumn < dimensions.length && dimensions[filteredColumn] == i) {
                         elements[startOfRow + filteredColumn++] = element;
                     } else if (element != 0) {
-                        // Output dimension 'j' depends on one of discarded input dimension 'i'.
-                        // The whole row will be discarded.
+                        /*
+                         * Output dimension 'j' depends on one of discarded input dimension 'i'.
+                         * The whole row will be discarded.
+                         */
                         continue reduce;
                     }
                 }
@@ -575,8 +579,10 @@ reduce:     for (int j=0; j <= numTgt; j++) {
                 assert filteredColumn == numFilteredColumns : filteredColumn;            // We should have used all values in the 'dimensions' array.
                 startOfRow += numFilteredColumns;
                 if (j == numTgt) {
-                    // In an affine transform, the last row is usually [0 0 0 … 1].
-                    // This is not a real dimension, but nevertheless mandatory.
+                    /*
+                     * In an affine transform, the last row is usually [0 0 0 … 1].
+                     * This is not a real dimension, but nevertheless mandatory.
+                     */
                     isLastRowAccepted = true;
                 } else {
                     targetDimensions = insert(targetDimensions, j);
@@ -614,7 +620,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
      * transform may keep only the (<var>longitude</var>, <var>latitude</var>) part for the same inputs.
      * In most cases, the filtered transform is non-invertible since it loose informations.
      *
-     * @param  step  the transform for which to retain only a subset of the target dimensions.
+     * @param  step        the transform for which to retain only a subset of the target dimensions.
      * @param  dimensions  indices of the target dimensions of {@code step} to retain.
      * @return a transform producing only the given target dimensions.
      * @throws FactoryException if the given transform is not separable.
@@ -707,7 +713,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
             if (index >= 0) {
                 return true;
             }
-            index = ~index;    // Tild, not minus sign.
+            index = ~index;                                                 // Tild, not minus sign.
             return (index < sequence.length) && (sequence[index] < upper);
         }
         return false;

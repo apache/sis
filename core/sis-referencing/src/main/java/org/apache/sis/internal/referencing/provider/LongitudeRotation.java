@@ -96,9 +96,9 @@ public final class LongitudeRotation extends GeographicOffsets {
      * does not, so maybe our unconditional conversion to degrees would be more surprising for the user if the
      * operation was shown as a "Longitude rotation".</p>
      *
-     * @param  factory Ignored (can be null).
-     * @param  values The group of parameter values.
-     * @return The created math transform.
+     * @param  factory  ignored (can be null).
+     * @param  values   the group of parameter values.
+     * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override

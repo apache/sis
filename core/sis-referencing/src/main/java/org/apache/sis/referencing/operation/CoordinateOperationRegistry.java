@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.measure.IncommensurableException;
@@ -76,7 +77,6 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
 
 // Branch-dependent imports
-import java.util.Objects;
 import java.util.function.Predicate;
 
 

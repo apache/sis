@@ -17,6 +17,7 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -35,9 +36,6 @@ import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -168,11 +166,11 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      *   </tr>
      * </table>
      *
-     * @param properties    The properties to be given to the identified object.
-     * @param minimumOccurs The {@linkplain #getMinimumOccurs() minimum number of times} that values
-     *                      for this parameter group are required, or 0 if no restriction.
-     * @param maximumOccurs The {@linkplain #getMaximumOccurs() maximum number of times} that values
-     *                      for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
+     * @param properties     the properties to be given to the identified object.
+     * @param minimumOccurs  the {@linkplain #getMinimumOccurs() minimum number of times} that values
+     *                       for this parameter group are required, or 0 if no restriction.
+     * @param maximumOccurs  the {@linkplain #getMaximumOccurs() maximum number of times} that values
+     *                       for this parameter group are required, or {@link Integer#MAX_VALUE} if no restriction.
      */
     protected AbstractParameterDescriptor(final Map<String,?> properties,
             final int minimumOccurs, final int maximumOccurs)
@@ -197,7 +195,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param descriptor The object to shallow copy.
+     * @param  descriptor  the object to shallow copy.
      */
     protected AbstractParameterDescriptor(final GeneralParameterDescriptor descriptor) {
         super(descriptor);
@@ -221,7 +219,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * The default implementation returns {@code GeneralParameterDescriptor.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The parameter descriptor interface implemented by this class.
+     * @return the parameter descriptor interface implemented by this class.
      */
     @Override
     public Class<? extends GeneralParameterDescriptor> getInterface() {
@@ -232,7 +230,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * Returns an indication if the parameter is an input to the service, an output or both.
      * The default implementation returns {@link ParameterDirection#IN}.
      *
-     * @return Indication if the parameter is an input or output to the service, or {@code null} if unspecified.
+     * @return indication if the parameter is an input or output to the service, or {@code null} if unspecified.
      */
     @Override
     public ParameterDirection getDirection() {
@@ -243,7 +241,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * The minimum number of times that values for this parameter group or parameter are required.
      * A value of 0 means an optional parameter.
      *
-     * @return The minimum occurrence.
+     * @return the minimum occurrence.
      */
     @Override
     public int getMinimumOccurs() {
@@ -254,7 +252,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * The maximum number of times that values for this parameter group or parameter can be included.
      * A value greater than 1 means a repeatable parameter.
      *
-     * @return The maximum occurrence.
+     * @return the maximum occurrence.
      */
     @Override
     public int getMaximumOccurs() {
@@ -326,7 +324,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * {@linkplain DefaultParameterDescriptor#formatTo(Formatter) descriptors}.
      * The text formatted by this method is {@linkplain Formatter#setInvalidWKT flagged as invalid WKT}.
      *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "Parameter"} or {@code "ParameterGroup"}.
      */
     @Override

@@ -589,9 +589,11 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             throws TransformException
     {
         assert isValid();
-        //  Note: If we know that the transfer dimension is the same than source
-        //        and target dimension, then we don't need to use an intermediate
-        //        point. This optimization is done in ConcatenatedTransformDirect.
+        /*
+         * Note: If we know that the transfer dimension is the same than source
+         *       and target dimension, then we don't need to use an intermediate
+         *       point. This optimization is done in ConcatenatedTransformDirect.
+         */
         return transform2.transform(transform1.transform(ptSrc, null), ptDst);
     }
 
@@ -829,8 +831,10 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                           final double[] dstPts, int dstOff, int numPts)
             throws TransformException
     {
-        // Same code than transform(double[], ..., double[], ...) but the method calls
-        // are actually different because of overloading of the "transform" methods.
+        /*
+         * Same code than transform(double[], ..., double[], ...) but the method calls
+         * are actually different because of overloading of the "transform" methods.
+         */
         assert isValid();
         final int bufferDim = transform2.getSourceDimensions();
         final int targetDim = transform2.getTargetDimensions();
@@ -942,8 +946,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * <div class="note"><b>Compatibility note:</b>
      * {@code Concat_MT} is defined in the WKT 1 specification only.</div>
      *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "Concat_MT"}.
+     * @param  formatter  the formatter to use.
+     * @return the WKT element name, which is {@code "Concat_MT"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {

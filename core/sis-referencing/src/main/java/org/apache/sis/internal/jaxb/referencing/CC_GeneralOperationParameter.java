@@ -117,8 +117,8 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value in a
      * {@code <gml:OperationParameter>} or {@code <gml:OperationParameterGroup>} XML element.
      *
-     * @param  parameter The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  parameter  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CC_GeneralOperationParameter wrap(final GeneralParameterDescriptor parameter) {
@@ -130,7 +130,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * inside the {@code <gml:parameter>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      *
      * @see CC_GeneralParameterValue#getElement()
      */
@@ -152,7 +152,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param parameter The unmarshalled element.
+     * @param  parameter  the unmarshalled element.
      */
     public void setElement(final AbstractParameterDescriptor parameter) {
         metadata = parameter;
@@ -205,9 +205,9 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      *   <li>A pre-defined parameter descriptor from the {@link org.apache.sis.internal.referencing.provider} package.</li>
      * </ul>
      *
-     * @param  provided The descriptor unmarshalled from the GML document.
-     * @param  complete The descriptor to use for completing missing information.
-     * @return The descriptor to use. May be one of the arguments given to this method, or a new instance.
+     * @param  provided  the descriptor unmarshalled from the GML document.
+     * @param  complete  the descriptor to use for completing missing information.
+     * @return the descriptor to use. May be one of the arguments given to this method, or a new instance.
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
      */
@@ -276,15 +276,15 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * Returns a descriptor with the given properties, completed with information not found in GML.
      * Those extra information are given by the {@code complete} descriptor.
      *
-     * @param  caller        The public source class to report if a log message need to be emitted.
-     * @param  properties    Properties as declared in the GML document, to be used if {@code complete} is incompatible.
-     * @param  merged        More complete properties, to be used if {@code complete} is compatible.
-     * @param  minimumOccurs Value to assign to {@link DefaultParameterDescriptorGroup#getMinimumOccurs()}.
-     * @param  maximumOccurs Value to assign to {@link DefaultParameterDescriptorGroup#getMaximumOccurs()}.
-     * @param  provided      Parameter descriptors declared in the GML document. This array will be overwritten.
-     * @param  complete      More complete parameter descriptors.
-     * @param  canSubstitute {@code true} if this method is allowed to return {@code complete}.
-     * @return The parameter descriptor group to use (may be the {@code complete} instance).
+     * @param  caller         the public source class to report if a log message need to be emitted.
+     * @param  properties     properties as declared in the GML document, to be used if {@code complete} is incompatible.
+     * @param  merged         more complete properties, to be used if {@code complete} is compatible.
+     * @param  minimumOccurs  value to assign to {@link DefaultParameterDescriptorGroup#getMinimumOccurs()}.
+     * @param  maximumOccurs  value to assign to {@link DefaultParameterDescriptorGroup#getMaximumOccurs()}.
+     * @param  provided       parameter descriptors declared in the GML document. This array will be overwritten.
+     * @param  complete       more complete parameter descriptors.
+     * @param  canSubstitute  {@code true} if this method is allowed to return {@code complete}.
+     * @return the parameter descriptor group to use (may be the {@code complete} instance).
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
      */
@@ -385,9 +385,9 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * collection, where each element have been converted to the canonical {@link NamedIdentifier} implementation
      * for comparison purpose.
      *
-     * @param  <T>      The type of elements in the collection.
-     * @param  complete The collection which is expected to contains all elements.
-     * @param  provided The collection which may be a subset of {@code complete}.
+     * @param  <T>       the type of elements in the collection.
+     * @param  complete  the collection which is expected to contains all elements.
+     * @param  provided  the collection which may be a subset of {@code complete}.
      * @return {@code true} if {@code complete} contains all {@code provided} elements.
      */
     private static <T> boolean containsAll(final Collection<T> complete, final Collection<T> provided) {
@@ -413,11 +413,11 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * Merges the property of type {@code Collection} identified by the given key.
      * This is used when we can not just substitute one collection by the other.
      *
-     * @param <T>           The type of elements in the array or collection.
-     * @param key           The key where to fetch or store the array in the {@code merged} map.
-     * @param componentType The type of elements in the array or collection.
-     * @param provided      The elements unmarshalled from the XML document.
-     * @param merged        The map used for completing missing information.
+     * @param <T>            the type of elements in the array or collection.
+     * @param key            the key where to fetch or store the array in the {@code merged} map.
+     * @param componentType  the type of elements in the array or collection.
+     * @param provided       the elements unmarshalled from the XML document.
+     * @param merged         the map used for completing missing information.
      */
     @SuppressWarnings("unchecked")
     private static <T> void mergeArrays(final String key, final Class<T> componentType,

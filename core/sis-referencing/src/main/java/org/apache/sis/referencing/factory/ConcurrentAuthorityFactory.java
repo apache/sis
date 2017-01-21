@@ -91,7 +91,7 @@ import org.apache.sis.util.resources.Messages;
  * {@link CRSAuthorityFactory} and {@link CoordinateOperationAuthorityFactory} interfaces.
  * Subclasses should select the interfaces that they choose to implement.
  *
- * @param <DAO> the type of factory used as Data Access Object (DAO)
+ * @param  <DAO>  the type of factory used as Data Access Object (DAO)
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -261,9 +261,9 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * If a number of object greater than {@code maxStrongReferences} are created, then the strong references
      * for the eldest objects will be replaced by weak references.
      *
-     * @param dataAccessClass The class of Data Access Object (DAO) created by {@link #newDataAccess()}.
-     * @param maxStrongReferences The maximum number of objects to keep by strong reference.
-     * @param maxConcurrentQueries The maximal amount of Data Access Objects to use concurrently.
+     * @param dataAccessClass       the class of Data Access Object (DAO) created by {@link #newDataAccess()}.
+     * @param maxStrongReferences   the maximum number of objects to keep by strong reference.
+     * @param maxConcurrentQueries  the maximal amount of Data Access Objects to use concurrently.
      *        If more than this amount of threads are querying this {@code ConcurrentAuthorityFactory} concurrently,
      *        additional threads will be blocked until a Data Access Object become available.
      */
@@ -375,7 +375,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                  * creates a new one. We do not add it to the queue now; it will be done by the release(…) method.
                  */
                 usage = availableDAOs.pollLast();
-                remainingDAOs--;       // Should be done last when we are sure to not fail.
+                remainingDAOs--;                            // Should be done last when we are sure to not fail.
             }
             /*
              * If there is a need to create a new factory, do that outside the synchronized block because this
@@ -636,7 +636,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * <p>The default implementation always returns {@code true}.</p>
      *
-     * @param factory The Data Access Object which is about to be closed.
+     * @param  factory  the Data Access Object which is about to be closed.
      * @return {@code true} if the given Data Access Object can be closed.
      */
     protected boolean canClose(DAO factory) {
@@ -647,7 +647,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * Returns the amount of time that {@code ConcurrentAuthorityFactory} will wait before to close a Data Access Object.
      * This delay is measured from the last time the Data Access Object has been used by a {@code createFoo(String)} method.
      *
-     * @param unit The desired unit of measurement for the timeout.
+     * @param  unit  the desired unit of measurement for the timeout.
      * @return the current timeout in the given unit of measurement.
      */
     public long getTimeout(final TimeUnit unit) {
@@ -698,8 +698,10 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         if (c == null) try {
             final DAO factory = getDataAccess();
             try {
-                // Cache only in case of success. If we failed, we
-                // will try again next time this method is invoked.
+                /*
+                 * Cache only in case of success. If we failed, we
+                 * will try again next time this method is invoked.
+                 */
                 authority = c = factory.getAuthority();
             } finally {
                 release("getAuthority", Citation.class, null);
@@ -1610,7 +1612,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             final StringBuilder buffer = new StringBuilder();
             if (type instanceof Class<?>) {
                 buffer.append("Code[“").append(code);
-                if (buffer.length() > 15) { // Arbitrary limit in string length.
+                if (buffer.length() > 15) {                     // Arbitrary limit in string length.
                     buffer.setLength(15);
                     buffer.append('…');
                 }
@@ -1632,7 +1634,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @param  proxy The proxy to use for creating the object.
      * @param  code  The code of the object to create.
      * @return the object extracted from the cache or created.
-     * @throws FactoryException If an error occurred while creating the object.
+     * @throws FactoryException if an error occurred while creating the object.
      */
     private <T> T create(final AuthorityFactoryProxy<T> proxy, final String code) throws FactoryException {
         ArgumentChecks.ensureNonNull("code", code);
@@ -1651,7 +1653,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                     } finally {
                         release(null, type, code);
                     }
-                    value = result;     // For the finally block below.
+                    value = result;                                     // For the finally block below.
                     return result;
                 }
             } finally {
@@ -1849,7 +1851,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             synchronized (findPool) {
                 final FindEntry c = findPool.putIfAbsent(object, entry);
                 if (c != null) {
-                    entry = c;      // May happen if the same set has been computed in another thread.
+                    entry = c;          // May happen if the same set has been computed in another thread.
                 }
                 // 'finder' should never be null since this method is not invoked directly by this Finder.
                 result = entry.set(finder.isIgnoringAxes(), result, object == searching);
@@ -1935,7 +1937,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * Keys are sorted by numerical order if possible, or alphabetical order otherwise.
      * This method is used for debugging purpose only.
      *
-     * @param out The output printer, or {@code null} for the {@linkplain System#out standard output stream}.
+     * @param  out  the output printer, or {@code null} for the {@linkplain System#out standard output stream}.
      */
     @Debug
     public void printCacheContent(final PrintWriter out) {
@@ -2002,7 +2004,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * Clears the given queue and returns all DAO instances that it contained.
      * The given queue shall be the {@link ConcurrentAuthorityFactory#availableDAOs} queue.
      *
-     * @param availableDAOs The queue of factories to close.
+     * @param  availableDAOs  the queue of factories to close.
      */
     static <DAO extends GeodeticAuthorityFactory> List<DAO> clear(final Deque<DataAccessRef<DAO>> availableDAOs) {
         assert Thread.holdsLock(availableDAOs);
@@ -2018,8 +2020,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * Invokes {@link AutoCloseable#close()} on all the given factories.
      * Exceptions will be collected and rethrown only after all factories have been closed.
      *
-     * @param  factories The factories to close.
-     * @param  count Number of valid elements in the {@code factories} array.
+     * @param  factories  the factories to close.
+     * @param  count      number of valid elements in the {@code factories} array.
      * @throws Exception the exception thrown by the first factory that failed to close.
      */
     static <DAO extends GeodeticAuthorityFactory> void close(final List<DAO> factories) throws Exception {

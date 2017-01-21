@@ -258,8 +258,8 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Implementation of {@link #testGeocentricTranslationInGeographic2D()}
      * and {@link #testGeocentricTranslationInGeographic3D()}.
      *
-     * @param sourceCRS The NAD27 geographic CRS.
-     * @param targetCRS Either the two-dimensional or the three-dimensional geographic CRS using WGS84 datum.
+     * @param  sourceCRS  the NAD27 geographic CRS.
+     * @param  targetCRS  either the two-dimensional or the three-dimensional geographic CRS using WGS84 datum.
      */
     private void testGeocentricTranslationInGeographicDomain(final String method,
             final GeographicCRS sourceCRS, final GeographicCRS targetCRS)

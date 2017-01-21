@@ -83,8 +83,8 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
      *   <b>Step 4:</b> Target point in ED50:   53°48'36.565"N,  02'07"51.477"E,  28.02 metres.
      * </pre>
      *
-     * @param  step The step as a value from 1 to 5 inclusive.
-     * @return The sample point at the given step.
+     * @param  step  the step as a value from 1 to 5 inclusive.
+     * @return the sample point at the given step.
      */
     public static double[] samplePoint(final int step) {
         switch (step) {
@@ -120,8 +120,8 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     /**
      * Returns the sample point precision for the given step.
      *
-     * @param  step The step as a value from 1 to 4 inclusive.
-     * @return The sample point precision for the given step.
+     * @param  step  the step as a value from 1 to 4 inclusive.
+     * @return the sample point precision for the given step.
      */
     public static double precision(final int step) {
         switch (step) {
@@ -137,7 +137,7 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     /**
      * Creates a transformation for the given method.
      *
-     * @param method The method to test.
+     * @param method  the method to test.
      */
     private void create(final GeocentricAffine method) throws FactoryException {
         final ParameterValueGroup values = method.getParameters().createValue();
@@ -154,13 +154,13 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
      * steps are created without the use of any {@link ParameterValueGroup}. This way to create the
      * datum shift is provided for better separation of aspects being tested.
      *
-     * @param factory  The factory to use for creating the transforms.
-     * @param source   The source ellipsoid.
-     * @param target   The target ellipsoid.
-     * @param tX       Geocentric translation on the X axis.
-     * @param tY       Geocentric translation on the Y axis.
-     * @param tZ       Geocentric translation on the Z axis.
-     * @return Transform performing the datum shift.
+     * @param  factory  the factory to use for creating the transforms.
+     * @param  source   the source ellipsoid.
+     * @param  target   the target ellipsoid.
+     * @param  tX       geocentric translation on the X axis.
+     * @param  tY       geocentric translation on the Y axis.
+     * @param  tZ       geocentric translation on the Z axis.
+     * @return transform performing the datum shift.
      * @throws FactoryException if an error occurred while creating the transform.
      * @throws NoninvertibleTransformException if an error occurred while creating the transform.
      *
@@ -187,8 +187,8 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
      * Creates a "Geographic 2D to 3D → Geocentric → Affine → Geographic → Geographic 3D to 2D" chain
      * using EPSG or OGC standard operation methods and parameters. This is used for integration tests.
      *
-     * @param  factory The math transform factory to use for creating and concatenating the transform.
-     * @return The chain of transforms.
+     * @param  factory  the math transform factory to use for creating and concatenating the transform.
+     * @return the chain of transforms.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform createDatumShiftForGeographic2D(final MathTransformFactory factory) throws FactoryException {
@@ -225,8 +225,8 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     /**
      * Tests transformation of the sample point from WGS84 to ED50.
      *
-     * @param sourceStep The {@link #samplePoint(int)} to use as the source coordinate.
-     * @param targetStep The {@link #samplePoint(int)} expected as a result of the transformation.
+     * @param  sourceStep  the {@link #samplePoint(int)} to use as the source coordinate.
+     * @param  targetStep  the {@link #samplePoint(int)} expected as a result of the transformation.
      */
     private void datumShift(final int sourceStep, final int targetStep) throws TransformException {
         tolerance = precision(targetStep);
@@ -244,7 +244,7 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     public void testGeocentricDomain() throws FactoryException, TransformException {
         create(new GeocentricTranslation());
         assertTrue(transform instanceof LinearTransform);
-        derivativeDeltas = new double[] {100, 100, 100};    // In metres
+        derivativeDeltas = new double[] {100, 100, 100};                // In metres
         datumShift(2, 3);
     }
 
@@ -286,10 +286,10 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
                 -FranceGeocentricInterpolation.TY,
                 -FranceGeocentricInterpolation.TZ);
 
-        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres
-        derivativeDeltas = new double[] {delta, delta, 100};    // (Δλ, Δφ, Δh)
+        final double delta = toRadians(100.0 / 60) / 1852;                  // Approximatively 100 metres
+        derivativeDeltas = new double[] {delta, delta, 100};                // (Δλ, Δφ, Δh)
         tolerance  = FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE;
-        zTolerance = 0.005;             // Half the precision of the target[2] value set below.
+        zTolerance = 0.005;                       // Half the precision of the target[2] value set below.
         zDimension = new int[] {2};
 
         final double[] source   = Arrays.copyOf(FranceGeocentricInterpolationTest.samplePoint(1), 3);
@@ -308,7 +308,7 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     @Test
     @DependsOnMethod("testGeographicDomain")
     public void testRandomPoints() throws FactoryException, TransformException {
-        testGeographicDomain();     // For creating the transform.
+        testGeographicDomain();                     // For creating the transform.
         tolerance = Formulas.LINEAR_TOLERANCE;
         toleranceModifier = ToleranceModifier.GEOGRAPHIC;
         verifyInDomain(CoordinateDomain.GEOGRAPHIC, 831342815);

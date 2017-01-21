@@ -38,6 +38,7 @@ import org.opengis.referencing.operation.Matrix;
  * @see Matrix2
  * @see Matrix4
  */
+@SuppressWarnings("CloneableClassWithoutClone")             // No field in this class needs clone.
 public final class Matrix3 extends MatrixSIS {
     /**
      * Serial number for inter-operability with different versions.
@@ -69,7 +70,7 @@ public final class Matrix3 extends MatrixSIS {
     /**
      * Creates a new matrix filled with only zero values.
      *
-     * @param ignore Shall always be {@code false} in current version.
+     * @param ignore  shall always be {@code false} in current version.
      */
     Matrix3(final boolean ignore) {
     }
@@ -77,15 +78,15 @@ public final class Matrix3 extends MatrixSIS {
     /**
      * Creates a new matrix initialized to the specified values.
      *
-     * @param m00 The first matrix element in the first row.
-     * @param m01 The second matrix element in the first row.
-     * @param m02 The third matrix element in the first row.
-     * @param m10 The first matrix element in the second row.
-     * @param m11 The second matrix element in the second row.
-     * @param m12 The third matrix element in the second row.
-     * @param m20 The first matrix element in the third row.
-     * @param m21 The second matrix element in the third row.
-     * @param m22 The third matrix element in the third row.
+     * @param m00  the first matrix element in the first row.
+     * @param m01  the second matrix element in the first row.
+     * @param m02  the third matrix element in the first row.
+     * @param m10  the first matrix element in the second row.
+     * @param m11  the second matrix element in the second row.
+     * @param m12  the third matrix element in the second row.
+     * @param m20  the first matrix element in the third row.
+     * @param m21  the second matrix element in the third row.
+     * @param m22  the third matrix element in the third row.
      */
     public Matrix3(final double m00, final double m01, final double m02,
                    final double m10, final double m11, final double m12,
@@ -100,8 +101,8 @@ public final class Matrix3 extends MatrixSIS {
      * Creates a new matrix initialized to the specified values.
      * The length of the given array must be 9 and the values in the same order than the above constructor.
      *
-     * @param elements Elements of the matrix. Column indices vary fastest.
-     * @throws IllegalArgumentException If the given array does not have the expected length.
+     * @param  elements  elements of the matrix. Column indices vary fastest.
+     * @throws IllegalArgumentException if the given array does not have the expected length.
      *
      * @see #setElements(double[])
      * @see Matrices#create(int, int, double[])
@@ -115,7 +116,7 @@ public final class Matrix3 extends MatrixSIS {
      * The specified matrix size must be {@value #SIZE}×{@value #SIZE}.
      * This is not verified by this constructor, since it shall be verified by {@link Matrices}.
      *
-     * @param matrix The matrix to copy.
+     * @param matrix  the matrix to copy.
      */
     Matrix3(final Matrix matrix) {
         for (int j=0; j<SIZE; j++) {
@@ -130,10 +131,10 @@ public final class Matrix3 extends MatrixSIS {
      * is already an instance of {@code Matrix3}, then it is returned unchanged. Otherwise this method
      * verifies the matrix size, then copies all elements in a new {@code Matrix3} object.
      *
-     * @param  matrix The matrix to cast or copy, or {@code null}.
-     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     * @param  matrix  the matrix to cast or copy, or {@code null}.
+     * @return the matrix argument if it can be safely casted (including {@code null} argument),
      *         or a copy of the given matrix otherwise.
-     * @throws MismatchedMatrixSizeException If the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
+     * @throws MismatchedMatrixSizeException if the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
      */
     public static Matrix3 castOrCopy(final Matrix matrix) throws MismatchedMatrixSizeException {
         if (matrix == null || matrix instanceof Matrix3) {
@@ -155,7 +156,7 @@ public final class Matrix3 extends MatrixSIS {
     /**
      * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return Always {@value #SIZE}.
+     * @return always {@value #SIZE}.
      */
     @Override
     public final int getNumRow() {
@@ -165,7 +166,7 @@ public final class Matrix3 extends MatrixSIS {
     /**
      * Returns the number of columns in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return Always {@value #SIZE}.
+     * @return always {@value #SIZE}.
      */
     @Override
     public final int getNumCol() {
@@ -178,9 +179,9 @@ public final class Matrix3 extends MatrixSIS {
      * If the matrix is known to be an instance of {@code Matrix3},
      * then the {@link #m00} … {@link #m22} fields can be read directly for efficiency.
      *
-     * @param row    The row index, from 0 inclusive to {@value #SIZE} exclusive.
-     * @param column The column index, from 0 inclusive to {@value #SIZE} exclusive.
-     * @return       The current value at the given row and column.
+     * @param  row     the row index, from 0 inclusive to {@value #SIZE} exclusive.
+     * @param  column  the column index, from 0 inclusive to {@value #SIZE} exclusive.
+     * @return the current value at the given row and column.
      */
     @Override
     public final double getElement(final int row, final int column) {
@@ -206,9 +207,9 @@ public final class Matrix3 extends MatrixSIS {
      * If the matrix is known to be an instance of {@code Matrix3},
      * then the {@link #m00} … {@link #m22} fields can be set directly for efficiency.
      *
-     * @param row    The row index, from 0 inclusive to {@value #SIZE} exclusive.
-     * @param column The column index, from 0 inclusive to {@value #SIZE} exclusive.
-     * @param value  The new value to set at the given row and column.
+     * @param  row     the row index, from 0 inclusive to {@value #SIZE} exclusive.
+     * @param  column  the column index, from 0 inclusive to {@value #SIZE} exclusive.
+     * @param  value   the new value to set at the given row and column.
      */
     @Override
     public final void setElement(final int row, final int column, final double value) {

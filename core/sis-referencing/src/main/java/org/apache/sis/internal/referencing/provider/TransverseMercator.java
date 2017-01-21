@@ -130,7 +130,7 @@ public final class TransverseMercator extends AbstractMercator {
     /**
      * {@inheritDoc}
      *
-     * @return The map projection created from the given parameter values.
+     * @return the map projection created from the given parameter values.
      */
     @Override
     protected NormalizedProjection createProjection(final Parameters parameters) {
@@ -150,11 +150,11 @@ public final class TransverseMercator extends AbstractMercator {
      *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
      * </table></blockquote>
      *
-     * @param  group      The parameters for which to set the values.
+     * @param  group      the parameters for which to set the values.
      * @param  isUTM      {@code true} for Universal Transverse Mercator (UTM) projection.
-     * @param  latitude   The latitude in the center of the desired projection.
-     * @param  longitude  The longitude in the center of the desired projection.
-     * @return A name like <cite>"Transverse Mercator"</cite> or <cite>"UTM zone 10N"</cite>,
+     * @param  latitude   the latitude in the center of the desired projection.
+     * @param  longitude  the longitude in the center of the desired projection.
+     * @return a name like <cite>"Transverse Mercator"</cite> or <cite>"UTM zone 10N"</cite>,
      *         depending on the arguments given to this method.
      *
      * @since 0.7
@@ -185,9 +185,9 @@ public final class TransverseMercator extends AbstractMercator {
     /**
      * Computes the UTM zone from a meridian in the zone.
      *
-     * @param  longitude A meridian inside the desired zone, in degrees relative to Greenwich.
-     *         Positive longitudes are toward east, and negative longitudes toward west.
-     * @return The UTM zone number numbered from 1 to 60 inclusive, or 0 if the given central meridian was NaN.
+     * @param  longitude  a meridian inside the desired zone, in degrees relative to Greenwich.
+     *                    Positive longitudes are toward east, and negative longitudes toward west.
+     * @return the UTM zone number numbered from 1 to 60 inclusive, or 0 if the given central meridian was NaN.
      *
      * @since 0.7
      */
@@ -205,8 +205,8 @@ public final class TransverseMercator extends AbstractMercator {
     /**
      * Computes the central meridian of a given UTM zone.
      *
-     * @param zone The UTM zone as a number in the [1 … 60] range.
-     * @return The central meridian of the given UTM zone.
+     * @param  zone  the UTM zone as a number in the [1 … 60] range.
+     * @return the central meridian of the given UTM zone.
      *
      * @since 0.7
      */

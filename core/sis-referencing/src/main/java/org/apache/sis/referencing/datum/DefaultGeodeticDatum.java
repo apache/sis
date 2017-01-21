@@ -19,6 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -50,9 +51,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -250,9 +248,9 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * If the target prime meridian is Greenwich, then the datum shift will be applied in a coordinate
      * system having Greenwich as the prime meridian.
      *
-     * @param properties    The properties to be given to the identified object.
-     * @param ellipsoid     The ellipsoid.
-     * @param primeMeridian The prime meridian.
+     * @param  properties     the properties to be given to the identified object.
+     * @param  ellipsoid      the ellipsoid.
+     * @param  primeMeridian  the prime meridian.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticDatum(Map, Ellipsoid, PrimeMeridian)
      */
@@ -285,7 +283,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param datum The datum to copy.
+     * @param  datum  the datum to copy.
      *
      * @see #castOrCopy(GeodeticDatum)
      */
@@ -303,8 +301,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGeodeticDatum castOrCopy(final GeodeticDatum object) {
@@ -331,7 +329,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Returns the ellipsoid given at construction time.
      *
-     * @return The ellipsoid.
+     * @return the ellipsoid.
      */
     @Override
     @XmlElement(name = "ellipsoid", required = true)
@@ -342,7 +340,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Returns the prime meridian given at construction time.
      *
-     * @return The prime meridian.
+     * @return the prime meridian.
      */
     @Override
     @XmlElement(name = "primeMeridian", required = true)
@@ -354,7 +352,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * Returns all Bursa-Wolf parameters specified in the {@code properties} map at construction time.
      * See class javadoc for a discussion about Bursa-Wolf parameters.
      *
-     * @return The Bursa-Wolf parameters, or an empty array if none.
+     * @return the Bursa-Wolf parameters, or an empty array if none.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public BursaWolfParameters[] getBursaWolfParameters() {
@@ -410,9 +408,9 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * then the instant located midway between start and end time will be taken as the date where to evaluate the
      * Bursa-Wolf parameters. This is relevant only to {@linkplain TimeDependentBWP time-dependent parameters}.
      *
-     * @param  targetDatum The target datum.
-     * @param  areaOfInterest The geographic and temporal extent where the transformation should be valid, or {@code null}.
-     * @return An affine transform from {@code this} to {@code target} in geocentric space, or {@code null} if none.
+     * @param  targetDatum     the target datum.
+     * @param  areaOfInterest  the geographic and temporal extent where the transformation should be valid, or {@code null}.
+     * @return an affine transform from {@code this} to {@code target} in geocentric space, or {@code null} if none.
      *
      * @see BursaWolfParameters#getPositionVectorTransformation(Date)
      */
@@ -502,7 +500,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.
      *
-     * @param  name The name to compare.
+     * @param  name  the name to compare.
      * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      *
      * @since 0.7
@@ -537,10 +535,10 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Compare this datum with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -577,7 +575,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -632,9 +630,10 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 }
             }
         }
-        // For the WKT 2 case, the ANCHOR[…] element is added by Formatter itself.
-
-        formatter.newLine(); // For writing the ID[…] element on its own line.
+        /*
+         * For the WKT 2 case, the ANCHOR[…] element is added by Formatter itself.
+         */
+        formatter.newLine();                            // For writing the ID[…] element on its own line.
         if (!isWKT1) {
             /*
              * In WKT 2, both "Datum" and "GeodeticDatum" keywords are permitted. The standard recommends

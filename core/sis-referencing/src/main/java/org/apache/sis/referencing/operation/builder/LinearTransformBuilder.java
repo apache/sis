@@ -88,8 +88,8 @@ public class LinearTransformBuilder {
     /**
      * Extracts the ordinate values of the given points into separated arrays, one for each dimension.
      *
-     * @param points The points from which to extract the ordinate values.
-     * @param dimension The expected number of dimensions.
+     * @param  points     the points from which to extract the ordinate values.
+     * @param  dimension  the expected number of dimensions.
      */
     private static double[][] toArrays(final DirectPosition[] points, final int dimension) {
         final int length = points.length;
@@ -114,7 +114,7 @@ public class LinearTransformBuilder {
      * <p><b>Limitation:</b> in current implementation, the source points must be one or two-dimensional.
      * This restriction may be removed in a future SIS version.</p>
      *
-     * @param  points The source points, assumed precise.
+     * @param  points  the source points, assumed precise.
      * @throws MismatchedDimensionException if at least one point does not have the expected number of dimensions.
      */
     public void setSourcePoints(final DirectPosition... points) throws MismatchedDimensionException {
@@ -133,7 +133,7 @@ public class LinearTransformBuilder {
      * Target points can have any number of dimensions (not necessarily 2), but all points shall have
      * the same number of dimensions.
      *
-     * @param  points The target points, assumed uncertain.
+     * @param  points  the target points, assumed uncertain.
      * @throws MismatchedDimensionException if not all points have the same number of dimensions.
      */
     public void setTargetPoints(final DirectPosition... points) throws MismatchedDimensionException {
@@ -156,11 +156,11 @@ public class LinearTransformBuilder {
      * Creates a linear transform approximation from the source points to the target points.
      * This method assumes that source points are precise and all uncertainty is in the target points.
      *
-     * @return The fitted linear transform.
+     * @return the fitted linear transform.
      */
     public LinearTransform create() {
         if (transform == null) {
-            final double[][] sources = this.sources;  // Protect from changes.
+            final double[][] sources = this.sources;                    // Protect from changes.
             final double[][] targets = this.targets;
             if (sources == null || targets == null) {
                 throw new IllegalStateException(Errors.format(
@@ -174,7 +174,7 @@ public class LinearTransformBuilder {
             switch (sourceDim) {
                 case 1: {
                     final Line line = new Line();
-                    for (int j=0; j<targets.length; j++) {
+                    for (int j=0; j < targets.length; j++) {
                         correlation[j] = line.fit(sources[0], targets[j]);
                         matrix.setElement(j, 0, line.slope());
                         matrix.setElement(j, 1, line.y0());
@@ -183,7 +183,7 @@ public class LinearTransformBuilder {
                 }
                 case 2: {
                     final Plane plan = new Plane();
-                    for (int j=0; j<targets.length; j++) {
+                    for (int j=0; j < targets.length; j++) {
                         correlation[j] = plan.fit(sources[0], sources[1], targets[j]);
                         matrix.setElement(j, 0, plan.slopeX());
                         matrix.setElement(j, 1, plan.slopeY());
@@ -191,7 +191,7 @@ public class LinearTransformBuilder {
                     }
                     break;
                 }
-                default: throw new AssertionError(sourceDim); // Should have been verified by setSourcePoints(…) method.
+                default: throw new AssertionError(sourceDim);   // Should have been verified by setSourcePoints(…) method.
             }
             transform = MathTransforms.linear(matrix);
         }
@@ -203,7 +203,7 @@ public class LinearTransformBuilder {
      * or {@code null} if none. If non-null, the array length is equals to the number of target
      * dimensions.
      *
-     * @return Estimation of correlation coefficients for each target dimension, or {@code null}.
+     * @return estimation of correlation coefficients for each target dimension, or {@code null}.
      */
     public double[] correlation() {
         return (correlation != null) ? correlation.clone() : null;
@@ -212,7 +212,7 @@ public class LinearTransformBuilder {
     /**
      * Returns a string representation of this builder for debugging purpose.
      *
-     * @return A string representation of this builder.
+     * @return a string representation of this builder.
      */
     @Debug
     @Override
@@ -238,7 +238,7 @@ public class LinearTransformBuilder {
             try {
                 table.flush();
             } catch (IOException e) {
-                throw new AssertionError(e); // Should never happen since we wrote into a StringBuilder.
+                throw new AssertionError(e);        // Should never happen since we wrote into a StringBuilder.
             }
         }
         return buffer.toString();

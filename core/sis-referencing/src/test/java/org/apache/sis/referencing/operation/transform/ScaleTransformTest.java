@@ -44,9 +44,9 @@ public final strictfp class ScaleTransformTest extends MathTransformTestCase {
     /**
      * Sets the {@link #transform} field to the {@link ScaleTransform} instance to test.
      *
-     * @param sourceDimensions  expected number of source dimensions.
-     * @param targetDimensions  expected number of source dimensions.
-     * @param matrix            the data to use for creating the transform.
+     * @param  sourceDimensions  expected number of source dimensions.
+     * @param  targetDimensions  expected number of source dimensions.
+     * @param  matrix            the data to use for creating the transform.
      */
     private void create(final int sourceDimensions, final int targetDimensions, final MatrixSIS matrix) {
         final double[] elements = matrix.getElements();
@@ -86,7 +86,7 @@ public final strictfp class ScaleTransformTest extends MathTransformTestCase {
     @Test
     @DependsOnMethod("testConstantDimension")
     public void testDimensionReduction() throws TransformException {
-        isInverseTransformSupported = false;    // Because matrix is not square.
+        isInverseTransformSupported = false;                            // Because matrix is not square.
         create(3, 2, Matrices.create(3, 4, new double[] {
                 2, 0, 0, 0,
                 0, 3, 0, 0,

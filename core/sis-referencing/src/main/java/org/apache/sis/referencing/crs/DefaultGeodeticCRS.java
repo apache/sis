@@ -94,9 +94,9 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      *
      * <p>This constructor is not public because it does not verify the {@code cs} type.</p>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum       the datum.
+     * @param  cs          the coordinate system.
      */
     DefaultGeodeticCRS(final Map<String,?> properties,
                        final GeodeticDatum datum,
@@ -114,7 +114,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      */
     protected DefaultGeodeticCRS(final GeodeticCRS crs) {
         super(crs);
@@ -126,7 +126,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      * The SIS implementation returns {@code GeodeticCRS.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The coordinate reference system interface implemented by this class.
+     * @return the coordinate reference system interface implemented by this class.
      */
     @Override
     public Class<? extends GeodeticCRS> getInterface() {
@@ -141,7 +141,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      * If {@code DefaultGeodeticCRS} is made public in a future SIS version, then we could remove
      * the overridden methods.
      *
-     * @return The datum.
+     * @return the datum.
      */
     @Override
     @XmlElement(name = "geodeticDatum", required = true)

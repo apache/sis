@@ -78,11 +78,11 @@ final class BursaWolfInfo {
      * This method does not recognize the time-dependent parameters (EPSG:1040 to 1046) because
      * they are not used in WKT 1 {@code TOWGS84} elements.
      *
-     * @param  parameters The Bursa-Wolf parameters to modify.
-     * @param  code       The EPSG code for a parameter from the [PARAMETER_CODE] column.
-     * @param  value      The value of the parameter from the [PARAMETER_VALUE] column.
-     * @param  unit       The unit of the parameter value from the [UOM_CODE] column.
-     * @param  locale     The locale, used only if an error message need to be formatted.
+     * @param  parameters  the Bursa-Wolf parameters to modify.
+     * @param  code        the EPSG code for a parameter from the [PARAMETER_CODE] column.
+     * @param  value       the value of the parameter from the [PARAMETER_VALUE] column.
+     * @param  unit        the unit of the parameter value from the [UOM_CODE] column.
+     * @param  locale      the locale, used only if an error message need to be formatted.
      * @throws FactoryDataException if the code is unrecognized.
      */
     static void setBursaWolfParameter(final BursaWolfParameters parameters, final int code,
@@ -175,7 +175,7 @@ final class BursaWolfInfo {
     /**
      * Gets the domain of validity. The result is cached.
      *
-     * @param factory The factory to use for creating {@code Extent} instances.
+     * @param  factory  the factory to use for creating {@code Extent} instances.
      */
     Extent getDomainOfValidity(final GeodeticAuthorityFactory factory) throws FactoryException {
         if (extent == null && domainOfValidity != 0) {
@@ -190,9 +190,9 @@ final class BursaWolfInfo {
      * first one is retained. This presume that the instances have already been sorted for preference order
      * before to invoke this method.
      *
-     * @param factory     The factory to use for creating {@code Extent} instances.
-     * @param candidates  The Bursa-Wolf parameters candidates.
-     * @param addTo       Where to add the instances retained by this method.
+     * @param  factory     the factory to use for creating {@code Extent} instances.
+     * @param  candidates  the Bursa-Wolf parameters candidates.
+     * @param  addTo       where to add the instances retained by this method.
      */
     static void filter(final GeodeticAuthorityFactory factory, final BursaWolfInfo[] candidates,
             final List<BursaWolfInfo> addTo) throws FactoryException

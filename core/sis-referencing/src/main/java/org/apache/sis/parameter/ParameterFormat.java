@@ -242,7 +242,7 @@ public class ParameterFormat extends TabularFormat<Object> {
 
     /**
      * If the identifier should be written only for some code spaces, those code spaces.
-     * Otherwise {@code null}.
+     * Otherwise {@code null}. This set should not be modified; new set are created if needed.
      *
      * @see #getPreferredCodespaces()
      */
@@ -267,8 +267,8 @@ public class ParameterFormat extends TabularFormat<Object> {
     /**
      * Creates a new formatter for the given locale and timezone.
      *
-     * @param locale   The locale, or {@code null} for {@code Locale.ROOT}.
-     * @param timezone The timezone, or {@code null} for UTC.
+     * @param locale    the locale, or {@code null} for {@code Locale.ROOT}.
+     * @param timezone  the timezone, or {@code null} for UTC.
      */
     public ParameterFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
@@ -295,8 +295,8 @@ public class ParameterFormat extends TabularFormat<Object> {
      *   <li>{@link java.util.Locale.Category#DISPLAY} specifies the locale to use for labels.</li>
      * </ul>
      *
-     * @param  category The category for which a locale is desired.
-     * @return The locale for the given category (never {@code null}).
+     * @param  category  the category for which a locale is desired.
+     * @return the locale for the given category (never {@code null}).
      */
     @Override
     public Locale getLocale(final Locale.Category category) {
@@ -307,7 +307,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      * Returns the amount of information to put in the table.
      * The default value is {@link ContentLevel#BRIEF}.
      *
-     * @return The table content.
+     * @return the table content.
      */
     public ContentLevel getContentLevel() {
         return contentLevel;
@@ -316,7 +316,7 @@ public class ParameterFormat extends TabularFormat<Object> {
     /**
      * Sets the amount of information to put in the table.
      *
-     * @param level The amount of information to put in the table.
+     * @param  level  the amount of information to put in the table.
      */
     public void setContentLevel(final ContentLevel level) {
         ArgumentChecks.ensureNonNull("level", level);
@@ -330,10 +330,11 @@ public class ParameterFormat extends TabularFormat<Object> {
      *
      * <p>The default value is {@code null}.</p>
      *
-     * @return The code spaces of names and identifiers to show, or {@code null} if no restriction.
+     * @return the code spaces of names and identifiers to show, or {@code null} if no restriction.
      */
     public String[] getPreferredCodespaces() {
-        return (preferredCodespaces != null) ? preferredCodespaces.toArray(new String[preferredCodespaces.size()]) : null;
+        final Set<String> p = preferredCodespaces;
+        return (p != null) ? p.toArray(new String[p.size()]) : null;
     }
 
     /**
@@ -342,7 +343,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      * {@link ScopedName#head()} or {@link GenericName#scope()} value in the given list, unless no name or alias
      * matches this criterion.
      *
-     * @param codespaces The preferred code spaces of names, aliases and identifiers to format, or {@code null}
+     * @param codespaces  the preferred code spaces of names, aliases and identifiers to format, or {@code null}
      *        for accepting all of them. Some typical values are {@code "EPSG"}, {@code "OGC"} or {@code "GeoTIFF"}.
      */
     public void setPreferredCodespaces(final String... codespaces) {
@@ -357,14 +358,15 @@ public class ParameterFormat extends TabularFormat<Object> {
      * Returns {@code true} if a name, alias or identifier in the given codespace should be formatted.
      */
     private boolean isPreferredCodespace(final String codespace) {
-        return (preferredCodespaces == null) || preferredCodespaces.contains(codespace);
+        final Set<String> p = preferredCodespaces;
+        return (p == null) || p.contains(codespace);
     }
 
     /**
      * Returns the colors for an output on X3.64 compatible terminal, or {@code null} if none.
      * The default value is {@code null}.
      *
-     * @return The colors for an output on X3.64 compatible terminal, or {@code null} if none.
+     * @return the colors for an output on X3.64 compatible terminal, or {@code null} if none.
      */
     public Colors getColors() {
         return colors;
@@ -373,7 +375,7 @@ public class ParameterFormat extends TabularFormat<Object> {
     /**
      * Sets the colors for an output on X3.64 compatible terminal.
      *
-     * @param colors The colors for an output on X3.64 compatible terminal, or {@code null} if none.
+     * @param  colors  the colors for an output on X3.64 compatible terminal, or {@code null} if none.
      */
     public void setColors(final Colors colors) {
         this.colors = colors;
@@ -398,7 +400,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      *   <li><code>{@linkplain IdentifiedObject}[]</code> — accepted only for {@link ContentLevel#NAME_SUMMARY}.</li>
      * </ul>
      *
-     * @throws IOException If an error occurred while writing to the given appendable.
+     * @throws IOException if an error occurred while writing to the given appendable.
      */
     @Override
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
@@ -439,10 +441,10 @@ public class ParameterFormat extends TabularFormat<Object> {
     /**
      * Implementation of public {@code format(…)} methods for all content levels except {@code NAME_SUMMARY}.
      *
-     * @param  name       The group name, usually {@code descriptor.getName().getCode()}.
-     * @param  descriptor The parameter descriptor, usually {@code values.getDescriptor()}.
-     * @param  values     The parameter values, or {@code null} if none.
-     * @throws IOException If an error occurred while writing to the given appendable.
+     * @param  name        the group name, usually {@code descriptor.getName().getCode()}.
+     * @param  descriptor  the parameter descriptor, usually {@code values.getDescriptor()}.
+     * @param  values      the parameter values, or {@code null} if none.
+     * @throws IOException if an error occurred while writing to the given appendable.
      */
     private void format(final String name, final ParameterDescriptorGroup group,
             final ParameterValueGroup values, final Appendable out) throws IOException
@@ -464,7 +466,7 @@ public class ParameterFormat extends TabularFormat<Object> {
         final Collection<?> elements = (values != null) ? values.values() : group.descriptors();
         final Map<GeneralParameterDescriptor, ParameterTableRow> descriptorValues =
                 new LinkedHashMap<>(hashMapCapacity(elements.size()));
-        List<Object> deferredGroups = null; // To be created only if needed (it is usually not).
+        List<Object> deferredGroups = null;                 // To be created only if needed (it is usually not).
         for (final Object element : elements) {
             final GeneralParameterValue parameter;
             final GeneralParameterDescriptor descriptor;
@@ -768,8 +770,8 @@ public class ParameterFormat extends TabularFormat<Object> {
      * Transverse Mercator projections is 0.9996 (4 digits), and the scale factor of "NTF (Paris) / Lambert zone II"
      * projection is 0.99987742 (8 digits).
      *
-     * @param format The format to configure.
-     * @param m The absolute value (magnitude) of the value to write.
+     * @param  format  the format to configure.
+     * @param  m       the absolute value (magnitude) of the value to write.
      */
     private static void configure(final NumberFormat format, final double m) {
         if (format.getMaximumFractionDigits() <= 9) {
@@ -800,8 +802,8 @@ public class ParameterFormat extends TabularFormat<Object> {
     /**
      * Implementation of public {@code format(…)} methods for {@code NAME_SUMMARY} content level.
      *
-     * @param  objects The collection of objects to format.
-     * @param  out The stream or buffer where to write the summary.
+     * @param  objects  the collection of objects to format.
+     * @param  out      the stream or buffer where to write the summary.
      * @throws IOException if an error occurred will writing to the given appendable.
      */
     private void formatSummary(final IdentifiedObject[] objects, final Appendable out) throws IOException {
@@ -819,29 +821,29 @@ public class ParameterFormat extends TabularFormat<Object> {
         boolean hasIdentifiers = false;
         final List<String[]> rows = new ArrayList<>();
         final Map<String,Integer> columnIndices = new LinkedHashMap<>();
-        columnIndices.put(null, 0); // See above comment for the meaning of "null" here.
+        columnIndices.put(null, 0);                 // See above comment for the meaning of "null" here.
         if (preferredCodespaces != null) {
             for (final String codespace : preferredCodespaces) {
                 columnIndices.put(codespace, columnIndices.size());
             }
         }
         for (final IdentifiedObject object : objects) {
-            String[] row = new String[columnIndices.size()]; // Will growth later if needed.
+            String[] row = new String[columnIndices.size()];            // Will growth later if needed.
             /*
              * Put the first identifier in the first column. If no identifier has a codespace in the list
              * supplied by the user, then we will use the first identifier (any codespace) as a fallback.
              */
             final Set<Identifier> identifiers = object.getIdentifiers();
-            if (identifiers != null) { // Paranoiac check.
+            if (identifiers != null) {                                              // Paranoiac check.
                 Identifier identifier = null;
                 for (final Identifier candidate : identifiers) {
-                    if (candidate != null) { // Paranoiac check.
+                    if (candidate != null) {                                        // Paranoiac check.
                         if (isPreferredCodespace(candidate.getCodeSpace())) {
                             identifier = candidate;
-                            break; // Format now.
+                            break;                                                  // Format now.
                         }
                         if (identifier == null) {
-                            identifier = candidate; // To be used as a fallback if we find nothing better.
+                            identifier = candidate;     // To be used as a fallback if we find nothing better.
                         }
                     }
                 }
@@ -933,10 +935,10 @@ public class ParameterFormat extends TabularFormat<Object> {
      * Stores a value in the given position of the given row, expanding the array if needed.
      * This operation is performed only if no value already exists in the cell.
      *
-     * @param  row           All columns in a single row.
-     * @param  columnIndices Indices of columns for each codespace.
-     * @param  codespace     The codespace of the name or alias to add.
-     * @param  name          The code of the name or alias to add.
+     * @param  row            all columns in a single row.
+     * @param  columnIndices  indices of columns for each codespace.
+     * @param  codespace      the codespace of the name or alias to add.
+     * @param  name           the code of the name or alias to add.
      * @return {@code row}, or a new array if it was necessary to expand the row.
      */
     private static String[] putIfAbsent(final Vocabulary resources, String[] row,
@@ -996,7 +998,7 @@ public class ParameterFormat extends TabularFormat<Object> {
         try {
             f.format(object, out);
         } catch (IOException e) {
-            throw new AssertionError(e); // Should never happen, since we are writing to stdout.
+            throw new AssertionError(e);    // Should never happen, since we are writing to stdout.
         }
         INSTANCE.set(f);
     }
@@ -1004,12 +1006,25 @@ public class ParameterFormat extends TabularFormat<Object> {
     /**
      * Not yet supported.
      *
-     * @return Currently never return.
-     * @throws ParseException Currently always thrown.
+     * @return currently never return.
+     * @throws ParseException currently always thrown.
      */
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
         throw new ParseException(Errors.getResources(displayLocale)
                 .getString(Errors.Keys.UnsupportedOperation_1, "parse"), 0);
+    }
+
+    /**
+     * Returns a clone of this format.
+     *
+     * @return a clone of this format.
+     */
+    @Override
+    public ParameterFormat clone() {
+        final ParameterFormat clone = (ParameterFormat) super.clone();
+        // No need to clone 'preferredCodespaces'.
+        clone.colors = clone.colors.clone();
+        return clone;
     }
 }

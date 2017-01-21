@@ -72,8 +72,8 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
     /**
      * Creates an EPSG name or alias.
      *
-     * @param code The EPSG name to be returned by {@link NamedIdentifier#getCode()}.
-     * @return An EPSG name or alias for the given string.
+     * @param  code  the EPSG name to be returned by {@link NamedIdentifier#getCode()}.
+     * @return an EPSG name or alias for the given string.
      */
     public static NamedIdentifier create(final String code) {
         return new NamedIdentifier(Citations.EPSG, Constants.EPSG, code, VERSION, REMARKS);
@@ -82,8 +82,8 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
     /**
      * Creates an EPSG identifier.
      *
-     * @param  code The EPSG code.
-     * @return The EPSG identifier for the given numerical value.
+     * @param  code  the EPSG code.
+     * @return the EPSG identifier for the given numerical value.
      */
     public static Identifier identifier(final int code) {
         return new ImmutableIdentifier(Citations.EPSG, Constants.EPSG, String.valueOf(code).intern(), VERSION, REMARKS);
@@ -93,10 +93,10 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
      * Creates a map of properties to be given to the construction of an operation method.
      * The returned map is modifiable - callers can add or remove entries after this method call.
      *
-     * @param  identifier The EPSG code.
-     * @param  name       The EPSG name.
-     * @param  nameOGC    The OGC name, or {@code null} if none.
-     * @return A map of properties for building the operation method.
+     * @param  identifier  the EPSG code.
+     * @param  name        the EPSG name.
+     * @param  nameOGC     the OGC name, or {@code null} if none.
+     * @return a map of properties for building the operation method.
      */
     public static Map<String,Object> properties(final int identifier, final String name, final String nameOGC) {
         return properties(identifier, name, (nameOGC == null) ? null :
@@ -108,10 +108,10 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
      * Creates a map of properties to be given to the construction of an operation method.
      * The returned map is modifiable - callers can add or remove entries after this method call.
      *
-     * @param  identifier The EPSG code.
-     * @param  name       The EPSG name.
-     * @param  nameOGC    The OGC name, or {@code null} if none.
-     * @return A map of properties for building the operation method.
+     * @param  identifier  the EPSG code.
+     * @param  name        the EPSG name.
+     * @param  nameOGC     the OGC name, or {@code null} if none.
+     * @return a map of properties for building the operation method.
      */
     public static Map<String,Object> properties(final int identifier, final String name, final GenericName nameOGC) {
         final Map<String,Object> properties = new HashMap<>(4);

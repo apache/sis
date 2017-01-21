@@ -55,7 +55,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      * A subclass of {@code DefaultParameterValue} which store the value converted by {@link Verifier}.
      * This allows {@link DefaultParameterValueTest} methods to verify the conversion result.
      */
-    @SuppressWarnings("serial")
+    @SuppressWarnings({"serial", "CloneableClassWithoutClone"})
     private static final strictfp class Watcher<T> extends DefaultParameterValue<T> {
         /** The value converted by {@link Verifier}. */
         T convertedValue;
@@ -87,9 +87,9 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      * Constructs an optional parameter initialized to the given value.
      * The descriptor has no default value, no minimum and no maximum.
      *
-     * @param  name  The parameter name.
-     * @param  value The parameter value.
-     * @return A new parameter instance for the given name and value.
+     * @param  name   the parameter name.
+     * @param  value  the parameter value.
+     * @return a new parameter instance for the given name and value.
      */
     private static Watcher<Integer> createOptional(final String name, final int value) {
         final Watcher<Integer> parameter = new Watcher<>(
@@ -101,10 +101,10 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     /**
      * Constructs a mandatory parameter initialize to the given value and unit.
      *
-     * @param name  The parameter name.
-     * @param value The parameter value.
-     * @param unit  The unit for the parameter value.
-     * @return A new parameter instance for the given name and value.
+     * @param  name   the parameter name.
+     * @param  value  the parameter value.
+     * @param  unit   the unit for the parameter value.
+     * @return a new parameter instance for the given name and value.
      */
     private static Watcher<Double> create(final String name, final double value, final Unit<?> unit) {
         final Watcher<Double> parameter = new Watcher<>(DefaultParameterDescriptorTest.create(

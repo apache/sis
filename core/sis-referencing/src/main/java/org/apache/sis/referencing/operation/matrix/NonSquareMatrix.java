@@ -41,11 +41,11 @@ final class NonSquareMatrix extends GeneralMatrix {
      * If {@code setToIdentity} is {@code true}, then the elements
      * on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      *
-     * @param numRow Number of rows.
-     * @param numCol Number of columns.
-     * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
-     *        or {@code false} for leaving it initialized to zero.
-     * @param precision 1 for normal precision, or 2 for extended precision.
+     * @param numRow         number of rows.
+     * @param numCol         number of columns.
+     * @param setToIdentity  {@code true} for initializing the matrix to the identity matrix,
+     *                       or {@code false} for leaving it initialized to zero.
+     * @param precision      1 for normal precision, or 2 for extended precision.
      */
     NonSquareMatrix(final int numRow, final int numCol, final boolean setToIdentity, final int precision) {
         super(numRow, numCol, setToIdentity, precision);
@@ -56,9 +56,9 @@ final class NonSquareMatrix extends GeneralMatrix {
      * The array values are copied in one row at a time in row major fashion.
      * The array shall be exactly {@code numRow*numCol} in length.
      *
-     * @param numRow Number of rows.
-     * @param numCol Number of columns.
-     * @param elements Initial values.
+     * @param numRow    number of rows.
+     * @param numCol    number of columns.
+     * @param elements  initial values.
      */
     NonSquareMatrix(final int numRow, final int numCol, final double[] elements) {
         super(numRow, numCol, elements);
@@ -67,7 +67,7 @@ final class NonSquareMatrix extends GeneralMatrix {
     /**
      * Constructs a new matrix and copies the initial values from the given matrix.
      *
-     * @param matrix The matrix to copy.
+     * @param matrix  the matrix to copy.
      */
     NonSquareMatrix(final Matrix matrix) {
         super(matrix);
@@ -85,9 +85,9 @@ final class NonSquareMatrix extends GeneralMatrix {
      */
     @Override
     public void transpose() {
-        final short numRow = this.numRow; // Protection against accidental changes before we are done.
+        final short numRow = this.numRow;                 // Protection against accidental changes before we are done.
         final short numCol = this.numCol;
-        final int   errors = indexOfErrors(numRow, numCol, elements); // Where error values start, or 0 if none.
+        final int   errors = indexOfErrors(numRow, numCol, elements);       // Where error values start, or 0 if none.
         final double[] copy = elements.clone();
         int k = 0;
         for (int j=0; j<numRow; j++) {
@@ -178,22 +178,22 @@ final class NonSquareMatrix extends GeneralMatrix {
      * like time.
      */
     private MatrixSIS inverseDimensionReduction() throws NoninvertibleMatrixException {
-        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numRow = this.numRow;                         // Protection against accidental changes.
         final int numCol = this.numCol;
         final int length = numRow * numCol;
         int i  = numCol;
-        int oi = numCol - numRow; // Initialized to the maximal amount of columns that we may omit.
+        int oi = numCol - numRow;       // Initialized to the maximal amount of columns that we may omit.
         final int[] omitted = new int[oi];
 next:   do {
             if (--i < 0) {
-                throw nonInvertible(); // Not enough columns that we can omit.
+                throw nonInvertible();                            // Not enough columns that we can omit.
             }
             for (int j=length + i; (j -= numCol) >= 0;) {
                 if (elements[j] != 0) {
                     continue next;
                 }
             }
-            omitted[--oi] = i; // Found a column which contains only 0 elements.
+            omitted[--oi] = i;                          // Found a column which contains only 0 elements.
         } while (oi != 0);
         /*
          * Found enough columns containing only zero elements. Create a square matrix omitting those columns,
@@ -203,7 +203,7 @@ next:   do {
         int j = 0;
         for (i=0; i<numCol; i++) {
             if (oi != omitted.length && i == omitted[oi]) oi++;
-            else copyColumn(this, i, squareMatrix, j++); // Copy only if not skipped.
+            else copyColumn(this, i, squareMatrix, j++);                     // Copy only if not skipped.
         }
         // If the source matrix does not use double-double arithmetic, infer the error terms.
         if (indexOfErrors(numRow, numCol, elements) == 0) {
@@ -217,7 +217,7 @@ next:   do {
         final NonSquareMatrix inverse = new NonSquareMatrix(numCol, numRow, false, 2);
         for (oi=0, j=0, i=0; i<numCol; i++) {
             if (oi != omitted.length && i == omitted[oi]) {
-                inverse.setElement(i, numRow-1, Double.NaN); // Translation term to NaN, remaining to 0.
+                inverse.setElement(i, numRow-1, Double.NaN);  // Translation term to NaN, remaining to 0.
                 oi++;
             } else {
                 copyRow(squareMatrix, j++, inverse, i);
@@ -292,10 +292,10 @@ next:   do {
      * The target matrix must have the same number of rows than the source matrix, and must have enough
      * room for error terms (this is not verified).
      *
-     * @param source    The matrix from which to copy a column.
-     * @param srcIndex  Index of the column to copy from the source matrix.
-     * @param target    The matrix where to copy the column.
-     * @param dstIndex  Index of the column where to copy in the target matrix.
+     * @param  source     the matrix from which to copy a column.
+     * @param  srcIndex   index of the column to copy from the source matrix.
+     * @param  target     the matrix where to copy the column.
+     * @param  dstIndex   index of the column where to copy in the target matrix.
      */
     private static void copyColumn(final GeneralMatrix source, int srcIndex, final GeneralMatrix target, int dstIndex) {
         assert target.numRow == source.numRow;
@@ -311,10 +311,10 @@ next:   do {
      * The target matrix must have the same number of columns than the source matrix, and must have
      * enough room for error terms (this is not verified).
      *
-     * @param source    The matrix from which to copy a row.
-     * @param srcIndex  Index of the row to copy from the source matrix.
-     * @param target    The matrix where to copy the row.
-     * @param dstIndex  Index of the row where to copy in the target matrix.
+     * @param  source     the matrix from which to copy a row.
+     * @param  srcIndex   index of the row to copy from the source matrix.
+     * @param  target     the matrix where to copy the row.
+     * @param  dstIndex   index of the row where to copy in the target matrix.
      */
     private static void copyRow(final GeneralMatrix source, int srcIndex, final GeneralMatrix target, int dstIndex) {
         final int numCol = target.numCol;

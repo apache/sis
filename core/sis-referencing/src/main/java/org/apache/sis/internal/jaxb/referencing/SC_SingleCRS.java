@@ -63,8 +63,8 @@ public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:AbstractSingleCRS>} XML element.
      *
-     * @param  crs The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  crs  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected SC_SingleCRS wrap(final SingleCRS crs) {
@@ -76,7 +76,7 @@ public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {
      * inside the {@code <gml:AbstractSingleCRS>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElementRef
     public AbstractCRS getElement() {
@@ -90,7 +90,7 @@ public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {
      * the unmarshalled CRS may be of {@code GeodeticCRS} type, which is not the most specific GeoAPI type.
      * See {@link SC_CRS#setElement(AbstractCRS)} for more discussion.</div>
      *
-     * @param crs The unmarshalled element.
+     * @param  crs  the unmarshalled element.
      * @throws IllegalArgumentException if the unmarshalled CRS is not a single CRS.
      */
     public void setElement(final AbstractCRS crs) {

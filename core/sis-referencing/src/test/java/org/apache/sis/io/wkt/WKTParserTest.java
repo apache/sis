@@ -63,8 +63,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * ({@code “} and {@code ”}) by straight quotation marks ({@code "}).
      * The Apache SIS parser should understand both forms transparently.
      *
-     * @param  wkt The Well-Known Text to pre-process.
-     * @return The Well-Known Text to parse.
+     * @param  wkt  the Well-Known Text to pre-process.
+     * @return the Well-Known Text to parse.
      */
     @Override
     protected String preprocessWKT(String wkt) {

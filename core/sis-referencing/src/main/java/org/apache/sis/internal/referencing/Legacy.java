@@ -70,8 +70,8 @@ public final class Legacy {
     /**
      * The standard three-dimensional Cartesian CS as defined by ISO 19111.
      *
-     * @param  unit The linear unit of the desired coordinate system, or {@code null} for metres.
-     * @return The ISO 19111 coordinate system.
+     * @param  unit  the linear unit of the desired coordinate system, or {@code null} for metres.
+     * @return the ISO 19111 coordinate system.
      */
     public static CartesianCS standard(final Unit<?> unit) {
         return replaceUnit((CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem(), unit);
@@ -81,10 +81,10 @@ public final class Legacy {
      * Returns the axes to use instead of the ones in the given coordinate system.
      * If the coordinate system axes should be used as-is, returns {@code cs}.
      *
-     * @param  cs The coordinate system for which to compare the axis directions.
+     * @param  cs  the coordinate system for which to compare the axis directions.
      * @param  toLegacy {@code true} for replacing ISO directions by the legacy ones,
      *         or {@code false} for the other way around.
-     * @return The axes to use instead of the ones in the given CS,
+     * @return the axes to use instead of the ones in the given CS,
      *         or {@code cs} if the CS axes should be used as-is.
      */
     public static CartesianCS forGeocentricCRS(final CartesianCS cs, final boolean toLegacy) {
@@ -106,9 +106,9 @@ public final class Legacy {
      * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
      * This method presumes that the given {@code cs} uses {@link Units#METRE} (this is not verified).
      *
-     * @param  cs The coordinate system for which to perform the unit replacement.
-     * @param  unit The unit of measurement for the geocentric CRS axes.
-     * @return The coordinate system for a geocentric CRS with axes using the given unit of measurement.
+     * @param  cs    the coordinate system for which to perform the unit replacement.
+     * @param  unit  the unit of measurement for the geocentric CRS axes.
+     * @return the coordinate system for a geocentric CRS with axes using the given unit of measurement.
      *
      * @since 0.6
      */

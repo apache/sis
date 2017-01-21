@@ -82,7 +82,7 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
      * Tests the pass through transform using an identity transform.
      * The "pass-through" of such transform shall be itself the identity transform.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException should never happen.
      */
     @Test
     public void testIdentity() throws TransformException {
@@ -94,7 +94,7 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
      * Tests the pass-through transform using an affine transform.
      * The "pass-through" of such transforms are optimized using matrix arithmetic.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException should never happen.
      */
     @Test
     public void testLinear() throws TransformException {
@@ -109,7 +109,7 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
      * Tests the general pass-through transform.
      * This test uses a non-linear sub-transform for preventing the factory method to optimize.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException should never happen.
      */
     @Test
     public void testPassthrough() throws TransformException {
@@ -119,9 +119,9 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
     /**
      * Tests a pass-through transform built using the given sub-transform.
      *
-     * @param  subTransform  The sub-transform to use for building pass-through transform.
-     * @param  expectedClass The expected implementation class of pass-through transforms.
-     * @throws TransformException If a transform failed.
+     * @param  subTransform   the sub-transform to use for building pass-through transform.
+     * @param  expectedClass  the expected implementation class of pass-through transforms.
+     * @throws TransformException if a transform failed.
      */
     private void runTest(final MathTransform subTransform, final Class<? extends MathTransform> expectedClass)
             throws TransformException
@@ -154,9 +154,9 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
      * Tests the current {@linkplain #transform transform} using an array of random coordinate values,
      * and compares the result against the expected ones. This method computes itself the expected results.
      *
-     * @param  subTransform The sub transform used by the current pass-through transform.
-     * @param  firstAffectedOrdinate First input/output dimension used by {@code subTransform}.
-     * @throws TransformException If a transform failed.
+     * @param  subTransform           the sub transform used by the current pass-through transform.
+     * @param  firstAffectedOrdinate  first input/output dimension used by {@code subTransform}.
+     * @throws TransformException if a transform failed.
      */
     private void verifyTransform(final MathTransform subTransform, final int firstAffectedOrdinate)
             throws TransformException
@@ -192,7 +192,7 @@ public final strictfp class PassThroughTransformTest extends MathTransformTestCa
         /*
          * Now process to the transform and compares the results with the expected ones.
          */
-        tolerance         = 0; // Results should be strictly identical because we used the same inputs.
+        tolerance         = 0;          // Results should be strictly identical because we used the same inputs.
         toleranceModifier = null;
         final double[] transformedData = new double[expectedData.length];
         transform.transform(passthroughData, 0, transformedData, 0, numPts);

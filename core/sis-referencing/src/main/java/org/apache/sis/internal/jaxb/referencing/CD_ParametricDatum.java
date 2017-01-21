@@ -62,8 +62,8 @@ public final class CD_ParametricDatum extends PropertyType<CD_ParametricDatum, P
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:ParametricDatum>} XML element.
      *
-     * @param  datum The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  datum  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CD_ParametricDatum wrap(final ParametricDatum datum) {
@@ -75,7 +75,7 @@ public final class CD_ParametricDatum extends PropertyType<CD_ParametricDatum, P
      * inside the {@code <gml:ParametricDatum>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "ParametricDatum")
     public DefaultParametricDatum getElement() {
@@ -85,7 +85,7 @@ public final class CD_ParametricDatum extends PropertyType<CD_ParametricDatum, P
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param datum The unmarshalled element.
+     * @param  datum  the unmarshalled element.
      */
     public void setElement(final DefaultParametricDatum datum) {
         metadata = datum;

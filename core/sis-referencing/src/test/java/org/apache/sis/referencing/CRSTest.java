@@ -73,7 +73,7 @@ public final strictfp class CRSTest extends TestCase {
     /**
      * Tests {@link CRS#forCode(String)} with EPSG codes.
      *
-     * @throws FactoryException If a CRS can not be constructed.
+     * @throws FactoryException if a CRS can not be constructed.
      *
      * @see CommonCRSTest#testForCode()
      */
@@ -102,7 +102,7 @@ public final strictfp class CRSTest extends TestCase {
     /**
      * Tests {@link CRS#forCode(String)} with CRS codes.
      *
-     * @throws FactoryException If a CRS can not be constructed.
+     * @throws FactoryException if a CRS can not be constructed.
      *
      * @see CommonCRSTest#testForCode()
      */
@@ -177,7 +177,7 @@ public final strictfp class CRSTest extends TestCase {
                     null, new DefaultGeographicBoundingBox(-1, +1, ymin, ymax), null, null));
             crs[i] = new DefaultProjectedCRS(properties, baseCRS.geographic(), HardCodedConversions.MERCATOR, cs);
         }
-        final ProjectedCRS[] overlappingCRS = Arrays.copyOf(crs, 3);   // Exclude the last CRS only.
+        final ProjectedCRS[] overlappingCRS = Arrays.copyOf(crs, 3);        // Exclude the last CRS only.
         /*
          * Test between the 3 overlapping CRS without region of interest. We expect the CRS having a domain
          * of validity large enough for all CRS; this is the second CRS created in above 'switch' statement.
@@ -285,20 +285,20 @@ public final strictfp class CRSTest extends TestCase {
     @Test
     public void testGetComponentAt() {
         testGetComponentAt(
-                null, // Null because our CRS has no component for the 'x' axis alone.
-                null, // Null because our CRS has no component for the 'y' axis alone.
+                null,                                 // Null because our CRS has no component for the 'x' axis alone.
+                null,                                 // Null because our CRS has no component for the 'y' axis alone.
                 HardCodedCRS.GRAVITY_RELATED_HEIGHT,
                 HardCodedCRS.TIME,
                 HardCodedCRS.WGS84,
-                null, // Null because our CRS has no (x,y,z) component.
+                null,                                 // Null because our CRS has no (x,y,z) component.
                 HardCodedCRS.GEOID_4D);
         /*
          * The above tests was for the standard (x,y,z,t) flat view.
          * Now test again, but with a more hierarchical structure: ((x,y,z),t)
          */
         testGetComponentAt(
-                null, // Null because our CRS has no component for the 'x' axis alone.
-                null, // Null because our CRS has no component for the 'y' axis alone.
+                null,                                 // Null because our CRS has no component for the 'x' axis alone.
+                null,                                 // Null because our CRS has no component for the 'y' axis alone.
                 HardCodedCRS.GRAVITY_RELATED_HEIGHT,
                 HardCodedCRS.TIME,
                 HardCodedCRS.WGS84,

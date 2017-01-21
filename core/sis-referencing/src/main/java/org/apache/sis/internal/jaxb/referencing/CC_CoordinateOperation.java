@@ -63,8 +63,8 @@ public final class CC_CoordinateOperation extends PropertyType<CC_CoordinateOper
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:CoordinateOperation>} XML element.
      *
-     * @param  conversion The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  conversion  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CC_CoordinateOperation wrap(final CoordinateOperation conversion) {
@@ -76,7 +76,7 @@ public final class CC_CoordinateOperation extends PropertyType<CC_CoordinateOper
      * inside the {@code <gml:CoordinateOperation>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElementRef
     public AbstractCoordinateOperation getElement() {
@@ -86,7 +86,7 @@ public final class CC_CoordinateOperation extends PropertyType<CC_CoordinateOper
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param operation The unmarshalled element.
+     * @param  operation  the unmarshalled element.
      */
     public void setElement(final AbstractCoordinateOperation operation) {
         metadata = operation;

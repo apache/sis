@@ -75,9 +75,9 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     /**
      * Constructs a new logarithmic transform which add the given offset after the logarithm.
      *
-     * @param  base    The base of the logarithm (typically 10).
-     * @param  offset  The offset to add to the logarithm.
-     * @return The math transform.
+     * @param  base    the base of the logarithm (typically 10).
+     * @param  offset  the offset to add to the logarithm.
+     * @return the math transform.
      */
     public static MathTransform1D create(final double base, final double offset) {
         ArgumentChecks.ensureStrictlyPositive("base", base);
@@ -113,11 +113,11 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
      * {@code MathTransform}. This implementation can optimize some concatenation with
      * {@link LinearTransform1D} and {@link ExponentialTransform1D}.
      *
-     * @param  other The math transform to apply.
-     * @param  applyOtherFirst {@code true} if the transformation order is {@code other} followed by {@code this},
-     *         or {@code false} if the transformation order is {@code this} followed by {@code other}.
-     * @param  factory The factory which is (indirectly) invoking this method, or {@code null} if none.
-     * @return The combined math transform, or {@code null} if no optimized combined transform is available.
+     * @param  other            the math transform to apply.
+     * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
+     *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @param  factory          the factory which is (indirectly) invoking this method, or {@code null} if none.
+     * @return the combined math transform, or {@code null} if no optimized combined transform is available.
      */
     @Override
     final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst,
@@ -186,8 +186,8 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     /**
      * Returns the base of this logarithmic transform raised to the given power.
      *
-     * @param value The power to raise the base.
-     * @return The base of this transform raised to the given power.
+     * @param  value  the power to raise the base.
+     * @return the base of this transform raised to the given power.
      */
     double pow(final double value) {
         return Math.exp(value);
@@ -197,8 +197,8 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
      * Returns the logarithm of the given value in the base of this logarithmic transform.
      * This method is similar to {@link #transform(double)} except that the offset is not added.
      *
-     * @param  value The value for which to compute the log.
-     * @return The log of the given value in the base used by this transform.
+     * @param  value  the value for which to compute the log.
+     * @return the log of the given value in the base used by this transform.
      */
     double log(final double value) {
         return Math.log(value);

@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.AbstractSet;
 import java.util.LinkedHashMap;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -42,9 +43,6 @@ import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
