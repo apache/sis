@@ -154,10 +154,10 @@ abstract class AuthorityFactoryProxy<T> {
     /**
      * Creates the object for the given code.
      *
-     * @param  factory The factory to use for creating the object.
-     * @param  code    The code for which to create an object.
-     * @return The object created from the given code.
-     * @throws FactoryException If an error occurred while creating the object.
+     * @param  factory  the factory to use for creating the object.
+     * @param  code     the code for which to create an object.
+     * @return the object created from the given code.
+     * @throws FactoryException if an error occurred while creating the object.
      */
     T create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
         return createFromAPI(factory, code);
@@ -167,10 +167,10 @@ abstract class AuthorityFactoryProxy<T> {
      * Creates the object for the given code using only GeoAPI interfaces.
      * This method is slightly less efficient than the above {@link #create} method.
      *
-     * @param  factory The factory to use for creating the object.
-     * @param  code    The code for which to create an object.
-     * @return The object created from the given code.
-     * @throws FactoryException If an error occurred while creating the object.
+     * @param  factory  the factory to use for creating the object.
+     * @param  code     the code for which to create an object.
+     * @return the object created from the given code.
+     * @throws FactoryException if an error occurred while creating the object.
      */
     abstract T createFromAPI(AuthorityFactory factory, String code) throws FactoryException;
 
@@ -589,8 +589,8 @@ abstract class AuthorityFactoryProxy<T> {
      * or some implementation class like {@link org.apache.sis.referencing.crs.DefaultProjectedCRS}.
      * This method returns the most specific proxy for the given type.
      *
-     * @param  type The GeoAPI or implementation class.
-     * @return The most specific proxy for the given {@code type}.
+     * @param  type  the GeoAPI or implementation class.
+     * @return the most specific proxy for the given {@code type}.
      * @throws IllegalArgumentException if the type does not implement a valid interface.
      */
     @SuppressWarnings("unchecked")
@@ -610,8 +610,8 @@ abstract class AuthorityFactoryProxy<T> {
      * The proxy to use for a given type declared in a URN.
      * For example in the {@code "urn:ogc:def:crs:EPSG::4326"} URN, the proxy to use is {@link #CRS}.
      *
-     * @param  typeName The URN type.
-     * @return The proxy for the given type, or {@code null} if the given type is illegal.
+     * @param  typeName  the URN type.
+     * @return the proxy for the given type, or {@code null} if the given type is illegal.
      */
     @SuppressWarnings("unchecked")
     AuthorityFactoryProxy<? extends T> specialize(final String typeName) {

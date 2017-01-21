@@ -110,7 +110,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
     /**
      * Returns the namespace of EPSG codes.
      *
-     * @return The {@code "EPSG"} string in a singleton map.
+     * @return the {@code "EPSG"} string in a singleton map.
      */
     @Override
     public Set<String> getCodeSpaces() {

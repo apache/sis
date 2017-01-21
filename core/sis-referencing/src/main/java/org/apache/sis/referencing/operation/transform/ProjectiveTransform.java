@@ -68,7 +68,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      * Constructs a transform from the specified matrix.
      * The matrix is usually square and affine, but this is not enforced.
      *
-     * @param matrix The matrix.
+     * @param matrix  the matrix.
      */
     protected ProjectiveTransform(final Matrix matrix) {
         numRow = matrix.getNumRow();
@@ -98,7 +98,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
         final int n = (numRow - 1) * numCol;
         for (int i = 0; i != numCol;) {
             if (elt[n + i] != (++i == numCol ? 1 : 0)) {
-                return this;    // Transform is not affine (ignoring if square or not).
+                return this;            // Transform is not affine (ignoring if square or not).
             }
         }
         /*
@@ -212,12 +212,12 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      *        x₁, y₁, z₁...,
      *        x<sub>n</sub>, y<sub>n</sub>, z<sub>n</sub>]</code>.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the
-     *               destination array. The source and destination array sections can overlap.
-     * @param numPts The number of points to be transformed.
+     * @param srcPts  the array containing the source point coordinates.
+     * @param srcOff  the offset to the first point to be transformed in the source array.
+     * @param dstPts  the array into which the transformed point coordinates are returned.
+     * @param dstOff  the offset to the location of the first transformed point that is stored in the
+     *                destination array. The source and destination array sections can overlap.
+     * @param numPts  the number of points to be transformed.
      */
     @Override
     public final void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
@@ -283,12 +283,12 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      *        x₁, y₁, z₁...,
      *        x<sub>n</sub>, y<sub>n</sub>, z<sub>n</sub>]</code>.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the
-     *               destination array. The source and destination array sections can overlap.
-     * @param numPts The number of points to be transformed.
+     * @param srcPts  the array containing the source point coordinates.
+     * @param srcOff  the offset to the first point to be transformed in the source array.
+     * @param dstPts  the array into which the transformed point coordinates are returned.
+     * @param dstOff  the offset to the location of the first transformed point that is stored in the
+     *                destination array. The source and destination array sections can overlap.
+     * @param numPts  the number of points to be transformed.
      */
     @Override
     public final void transform(float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
@@ -340,11 +340,11 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     /**
      * Transforms an array of floating point coordinates by this matrix.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the destination array.
-     * @param numPts The number of points to be transformed.
+     * @param srcPts  the array containing the source point coordinates.
+     * @param srcOff  the offset to the first point to be transformed in the source array.
+     * @param dstPts  the array into which the transformed point coordinates are returned.
+     * @param dstOff  the offset to the location of the first transformed point that is stored in the destination array.
+     * @param numPts  the number of points to be transformed.
      */
     @Override
     public final void transform(final double[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
@@ -357,7 +357,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                 double sum = elt[mix + srcDim];
                 for (int i=0; i<srcDim; i++) {
                     final double e = elt[mix++];
-                    if (e != 0) { // See comment in transform(double[], ...)
+                    if (e != 0) {                                   // See comment in transform(double[], ...)
                         sum += srcPts[srcOff + i] * e;
                     }
                 }
@@ -375,11 +375,11 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     /**
      * Transforms an array of floating point coordinates by this matrix.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the destination array.
-     * @param numPts The number of points to be transformed.
+     * @param srcPts  the array containing the source point coordinates.
+     * @param srcOff  the offset to the first point to be transformed in the source array.
+     * @param dstPts  the array into which the transformed point coordinates are returned.
+     * @param dstOff  the offset to the location of the first transformed point that is stored in the destination array.
+     * @param numPts  the number of points to be transformed.
      */
     @Override
     public final void transform(final float[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
@@ -392,7 +392,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                 double sum = elt[mix + srcDim];
                 for (int i=0; i<srcDim; i++) {
                     final double e = elt[mix++];
-                    if (e != 0) { // See comment in transform(double[], ...)
+                    if (e != 0) {                                   // See comment in transform(double[], ...)
                         sum += srcPts[srcOff + i] * e;
                     }
                 }
@@ -411,7 +411,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      * Gets the derivative of this transform at a point.
      * For a matrix transform, the derivative is the same everywhere.
      *
-     * @param point Ignored (can be {@code null}).
+     * @param  point  ignored (can be {@code null}).
      */
     @Override
     public final Matrix derivative(final DirectPosition point) {
@@ -423,7 +423,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
             for (int i=0; i<srcDim; i++) {
                 matrix.setElement(j, i, elt[mix++]);
             }
-            mix++; // Skip translation column.
+            mix++;                                      // Skip translation column.
         }
         return matrix;
     }

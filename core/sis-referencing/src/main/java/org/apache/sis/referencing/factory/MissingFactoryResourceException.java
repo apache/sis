@@ -54,8 +54,7 @@ public class MissingFactoryResourceException extends FactoryException {
     /**
      * Construct an exception with the specified detail message.
      *
-     * @param  message The detail message. The detail message is saved
-     *         for later retrieval by the {@link #getMessage()} method.
+     * @param  message  the detail message, saved for later retrieval by the {@link #getMessage()} method.
      */
     public MissingFactoryResourceException(String message) {
         super(message);
@@ -66,10 +65,8 @@ public class MissingFactoryResourceException extends FactoryException {
      * The cause is the exception thrown in the underlying database
      * (e.g. {@link java.io.IOException} or {@link java.sql.SQLException}).
      *
-     * @param  message The detail message. The detail message is saved
-     *         for later retrieval by the {@link #getMessage()} method.
-     * @param  cause The cause for this exception. The cause is saved
-     *         for later retrieval by the {@link #getCause()} method.
+     * @param  message  the detail message, saved for later retrieval by the {@link #getMessage()} method.
+     * @param  cause    the cause for this exception, saved for later retrieval by the {@link #getCause()} method.
      */
     public MissingFactoryResourceException(String message, Throwable cause) {
         super(message, cause);

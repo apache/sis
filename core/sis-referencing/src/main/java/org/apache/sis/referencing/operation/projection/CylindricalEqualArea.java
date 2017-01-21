@@ -188,8 +188,8 @@ public class CylindricalEqualArea extends EqualAreaProjection {
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
      * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
      *
-     * @param  factory The factory to use for creating the transform.
-     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @param  factory  the factory to use for creating the transform.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override
@@ -206,7 +206,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
      * (linear distance on a unit sphere). In addition, opportunistically computes the projection derivative
      * if {@code derivate} is {@code true}.
      *
-     * @return The matrix of the projection derivative at the given source position,
+     * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
      * @throws ProjectionException if the coordinate can not be converted.
      */
@@ -295,7 +295,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         /**
          * Constructs a new map projection from the parameters of the given projection.
          *
-         * @param other The other projection (usually ellipsoidal) from which to copy the parameters.
+         * @param  other  the other projection (usually ellipsoidal) from which to copy the parameters.
          */
         Spherical(final CylindricalEqualArea other) {
             super(other);

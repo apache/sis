@@ -268,8 +268,8 @@ public final strictfp class CommonCRSTest extends TestCase {
             final TemporalCRS   crs    = e.crs();
             final Date          origin = datum.getOrigin();
             Validators.validate(crs);
-            assertSame  (name, datum,          e.datum()); // Datum before CRS creation.
-            assertSame  (name, crs.getDatum(), e.datum()); // Datum after CRS creation.
+            assertSame  (name, datum,          e.datum());              // Datum before CRS creation.
+            assertSame  (name, crs.getDatum(), e.datum());              // Datum after CRS creation.
             assertEquals(name, epoch, format(origin));
             assertEquals(name, days, origin.getTime() / DAY_LENGTH - julianEpoch, 0);
         }

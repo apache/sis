@@ -465,7 +465,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
      * Tests (un)marshalling of a projected coordinate reference system.
      *
      * @throws FactoryException if the CRS creation failed.
-     * @throws JAXBException If an error occurred during (un)marshalling.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testXML() throws FactoryException, JAXBException {

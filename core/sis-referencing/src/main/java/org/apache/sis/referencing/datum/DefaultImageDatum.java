@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -32,9 +33,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -127,8 +125,8 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      *   </tr>
      * </table>
      *
-     * @param properties  The properties to be given to the identified object.
-     * @param pixelInCell The way the image grid is associated with the image data attributes.
+     * @param  properties   the properties to be given to the identified object.
+     * @param  pixelInCell  the way the image grid is associated with the image data attributes.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createImageDatum(Map, PixelInCell)
      */
@@ -145,7 +143,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param datum The datum to copy.
+     * @param  datum  the datum to copy.
      *
      * @see #castOrCopy(ImageDatum)
      */
@@ -160,8 +158,8 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultImageDatum castOrCopy(final ImageDatum object) {
@@ -188,7 +186,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     /**
      * Specification of the way the image grid is associated with the image data attributes.
      *
-     * @return The way image grid is associated with image data attributes.
+     * @return the way image grid is associated with image data attributes.
      */
     @Override
     @XmlElement(required = true)
@@ -199,7 +197,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     /**
      * Compares this datum with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
+     * @param  object  the object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
      *         relevant to coordinate transformations.
@@ -208,7 +206,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                                // Slight optimization.
         }
         if (!super.equals(object, mode)) {
             return false;
@@ -228,7 +226,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {

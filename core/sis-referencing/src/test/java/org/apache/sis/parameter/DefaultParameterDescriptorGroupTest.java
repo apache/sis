@@ -83,6 +83,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
      * Ensures that the constructor detects duplicated names.
      */
     @Test
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testConstruction() {
         final Class<Integer> type = Integer.class;
         final Map<String,Object> properties = new HashMap<>(4);

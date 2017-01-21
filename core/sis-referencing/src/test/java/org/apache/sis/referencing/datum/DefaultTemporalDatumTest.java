@@ -95,7 +95,7 @@ public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
     /**
      * Tests XML marshalling.
      *
-     * @throws JAXBException If an error occurred during marshalling.
+     * @throws JAXBException if an error occurred during marshalling.
      */
     @Test
     public void testMarshalling() throws JAXBException {
@@ -106,7 +106,7 @@ public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
     /**
      * Tests XML unmarshalling.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
     public void testUnmarshalling() throws JAXBException {

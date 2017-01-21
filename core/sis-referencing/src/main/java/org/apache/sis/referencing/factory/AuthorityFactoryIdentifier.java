@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.metadata.citation.Citation;
@@ -33,9 +34,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.referencing.Resources;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -282,10 +280,11 @@ final class AuthorityFactoryIdentifier {
 
     /**
      * Do the logging of the warning prepared by the above methods.
+     * This method declares {@code MultiAuthoritiesFactory.getAuthorityFactory(…)}
+     * as the source of the log since it is the nearest public API.
      */
     private void log(final LogRecord record) {
         record.setLoggerName(Loggers.CRS_FACTORY);
-        // MultiAuthoritiesFactory.getAuthorityFactory(…) is the nearest public API.
         Logging.log(MultiAuthoritiesFactory.class, "getAuthorityFactory", record);
     }
 

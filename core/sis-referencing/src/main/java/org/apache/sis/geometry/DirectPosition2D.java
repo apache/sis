@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometry;
 
+import java.util.Objects;
 import java.awt.geom.Point2D;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -27,9 +28,6 @@ import org.apache.sis.util.resources.Errors;
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -89,7 +87,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     /**
      * Constructs a position initialized to (0,0) with the specified coordinate reference system.
      *
-     * @param crs The coordinate reference system, or {@code null}.
+     * @param  crs  the coordinate reference system, or {@code null}.
      */
     public DirectPosition2D(final CoordinateReferenceSystem crs) {
         ensureDimensionMatches("crs", 2, crs);
@@ -103,8 +101,8 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * Those parameter names simply match the {@linkplain #x x} and {@linkplain #y y} fields.
      * See the <a href="#skip-navbar_top">class javadoc</a> for details.
      *
-     * @param x The first ordinate value (not necessarily horizontal).
-     * @param y The second ordinate value (not necessarily vertical).
+     * @param x  the first ordinate value (not necessarily horizontal).
+     * @param y  the second ordinate value (not necessarily vertical).
      */
     public DirectPosition2D(final double x, final double y) {
         super(x, y);
@@ -118,9 +116,9 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * The actual axis orientations are determined by the specified CRS.
      * See the <a href="#skip-navbar_top">class javadoc</a> for details.
      *
-     * @param crs The coordinate reference system, or {@code null}.
-     * @param x   The first ordinate value (not necessarily horizontal).
-     * @param y   The second ordinate value (not necessarily vertical).
+     * @param crs  the coordinate reference system, or {@code null}.
+     * @param x    the first ordinate value (not necessarily horizontal).
+     * @param y    the second ordinate value (not necessarily vertical).
      */
     public DirectPosition2D(final CoordinateReferenceSystem crs, final double x, final double y) {
         super(x, y);
@@ -131,7 +129,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     /**
      * Constructs a position initialized to the same values than the specified point.
      *
-     * @param  position The position to copy.
+     * @param  position  the position to copy.
      * @throws MismatchedDimensionException if the given position is not two-dimensional.
      *
      * @see #setLocation(Point2D)
@@ -153,9 +151,9 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      *     POINT(6 10)
      * }
      *
-     * @param  wkt The {@code POINT} or other kind of element to parse.
-     * @throws IllegalArgumentException If the given string can not be parsed.
-     * @throws MismatchedDimensionException If the given point is not two-dimensional.
+     * @param  wkt  the {@code POINT} or other kind of element to parse.
+     * @throws IllegalArgumentException if the given string can not be parsed.
+     * @throws MismatchedDimensionException if the given point is not two-dimensional.
      *
      * @see #toString()
      * @see org.apache.sis.measure.CoordinateFormat
@@ -184,7 +182,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * The length of coordinate sequence (the number of entries).
      * This is always 2 for {@code DirectPosition2D} objects.
      *
-     * @return The dimensionality of this position.
+     * @return the dimensionality of this position.
      */
     @Override
     public final int getDimension() {
@@ -196,7 +194,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * May be {@code null} if this particular {@code DirectPosition} is included
      * in a larger object with such a reference to a CRS.
      *
-     * @return The coordinate reference system, or {@code null}.
+     * @return the coordinate reference system, or {@code null}.
      */
     @Override
     public final CoordinateReferenceSystem getCoordinateReferenceSystem() {
@@ -206,7 +204,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     /**
      * Sets the coordinate reference system in which the coordinate is given.
      *
-     * @param crs The new coordinate reference system, or {@code null}.
+     * @param  crs  the new coordinate reference system, or {@code null}.
      */
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
         ensureDimensionMatches("crs", 2, crs);
@@ -219,7 +217,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * <div class="note"><b>API note:</b>
      * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
      *
-     * @return The coordinate.
+     * @return the coordinate.
      */
     @Override
     public final double[] getCoordinate() {
@@ -232,8 +230,8 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * <div class="note"><b>API note:</b>
      * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
      *
-     * @param  dimension The dimension in the range 0 to 1 inclusive.
-     * @return The coordinate at the specified dimension.
+     * @param  dimension  the dimension in the range 0 to 1 inclusive.
+     * @return the coordinate at the specified dimension.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override
@@ -248,8 +246,8 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     /**
      * Sets the ordinate value along the specified dimension.
      *
-     * @param  dimension the dimension for the ordinate of interest.
-     * @param  value the ordinate value of interest.
+     * @param  dimension  the dimension for the ordinate of interest.
+     * @param  value      the ordinate value of interest.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override
@@ -266,7 +264,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * {@code DirectPosition} containing a non-null coordinate reference system (CRS),
      * then the CRS for this position will be set to the CRS of the given point.
      *
-     * @param position The new position for this point.
+     * @param position  the new position for this point.
      */
     @Override
     public void setLocation(final Point2D position) {
@@ -299,7 +297,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * Returns a hash value for this coordinate. This method implements the
      * {@link DirectPosition#hashCode()} contract, not the {@link Point2D#hashCode()} contract.
      *
-     * @return A hash code value for this position.
+     * @return a hash code value for this position.
      */
     @Override
     public int hashCode() {
@@ -314,7 +312,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * {@link DirectPosition#equals(Object)} contract. Otherwise the comparison is performed as
      * specified in the {@link Point2D#equals(Object)} contract.
      *
-     * @param object The object to compare with this position.
+     * @param  object  the object to compare with this position.
      * @return {@code true} if the given object is equal to this position.
      */
     @Override
@@ -346,7 +344,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     /**
      * Returns a clone of this point.
      *
-     * @return A clone of this position.
+     * @return a clone of this position.
      */
     @Override
     public DirectPosition2D clone() {

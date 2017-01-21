@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Objects;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import org.opengis.metadata.Identifier;
@@ -53,9 +54,6 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -401,10 +399,10 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * this constructor. But those values will be converted to the units of measurement specified by the parameter
      * descriptors in the {@code roles} map, which must be the above-cited units.
      *
-     * @param method     Description of the map projection parameters.
-     * @param parameters The parameters of the projection to be created.
-     * @param roles Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
-     *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
+     * @param method      description of the map projection parameters.
+     * @param parameters  the parameters of the projection to be created.
+     * @param roles       parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
+     *                    <cite>false easting</cite>, <cite>false northing</cite> and other values.
      */
     protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles)
@@ -415,12 +413,12 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     /**
      * Creates a new normalized projection from the parameters computed by the given initializer.
      *
-     * @param initializer The initializer for computing map projection internal parameters.
+     * @param initializer  the initializer for computing map projection internal parameters.
      */
     NormalizedProjection(final Initializer initializer) {
         context             = initializer.context;
         eccentricitySquared = initializer.eccentricitySquared.value;
-        eccentricity        = sqrt(eccentricitySquared);  // DoubleDouble.sqrt() does not make any difference here.
+        eccentricity        = sqrt(eccentricitySquared);    // DoubleDouble.sqrt() does not make any difference here.
         inverse             = new Inverse();
     }
 
@@ -447,9 +445,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * fallback if the descriptor does not contain EPSG identifier, which should be rare. Usually, the regular
      * expression will never be compiled.</div>
      *
-     * @param  parameters The user-specified parameters.
-     * @param  regex      The regular expression to use when using the operation name as the criterion.
-     * @param  identifier The identifier to compare against the operation method name.
+     * @param  parameters  the user-specified parameters.
+     * @param  regex       the regular expression to use when using the operation name as the criterion.
+     * @param  identifier  the identifier to compare against the operation method name.
      * @return {@code true} if the name of the given operation method contains the given keyword
      *         or has an EPSG identifier equals to the given identifier.
      */
@@ -480,8 +478,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * For example many subclasses will replace {@code this} by a specialized implementation if they detect that the
      * ellipsoid is actually spherical.
      *
-     * @param  factory The factory to use for creating the transform.
-     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @param  factory  the factory to use for creating the transform.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      *
      * @see ContextualParameters#completeTransform(MathTransformFactory, MathTransform)
@@ -504,9 +502,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * It is caller's responsibility to choose an alternative method that can understand the parameters which were
      * given to this original projection.
      *
-     * @param  factory The factory given to {@link #createMapProjection(MathTransformFactory)}.
-     * @param  name    The name of the alternative map projection to use.
-     * @return The alternative projection.
+     * @param  factory  the factory given to {@link #createMapProjection(MathTransformFactory)}.
+     * @param  name     the name of the alternative map projection to use.
+     * @return the alternative projection.
      * @throws FactoryException if an error occurred while creating the alternative projection.
      *
      * @since 0.7
@@ -535,7 +533,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Subclasses shall not use the values defined in the returned object for computation purpose,
      * except at construction time.
      *
-     * @return The parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     * @return the parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
      *         transforms, or {@code null} if unspecified.
      */
     @Override
@@ -556,7 +554,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
      * contextual parameters}.</div>
      *
-     * @return A copy of the internal parameter values for this normalized projection.
+     * @return a copy of the internal parameter values for this normalized projection.
      */
     @Debug
     @Override
@@ -580,7 +578,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * not for inspecting the {@linkplain #getContextualParameters() contextual parameters}.
      * Inspecting the kernel parameter values is usually for debugging purpose only.</p>
      *
-     * @return A description of the internal parameters.
+     * @return a description of the internal parameters.
      */
     @Debug
     @Override
@@ -653,14 +651,14 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * If this assumption is not applicable to a particular subclass, then it is implementor's responsibility to check
      * the range.
      *
-     * @param srcPts   The array containing the source point coordinate, as (<var>longitude</var>, <var>latitude</var>)
-     *                 angles in <strong>radians</strong>.
-     * @param srcOff   The offset of the single coordinate to be converted in the source array.
-     * @param dstPts   The array into which the converted coordinate is returned (may be the same than {@code srcPts}).
-     *                 Ordinates will be expressed in a dimensionless unit, as a linear distance on a unit sphere or ellipse.
-     * @param dstOff   The offset of the location of the converted coordinate that is stored in the destination array.
-     * @param derivate {@code true} for computing the derivative, or {@code false} if not needed.
-     * @return The matrix of the projection derivative at the given source position,
+     * @param  srcPts    the array containing the source point coordinate, as (<var>longitude</var>, <var>latitude</var>)
+     *                   angles in <strong>radians</strong>.
+     * @param  srcOff    the offset of the single coordinate to be converted in the source array.
+     * @param  dstPts    the array into which the converted coordinate is returned (may be the same than {@code srcPts}).
+     *                   Ordinates will be expressed in a dimensionless unit, as a linear distance on a unit sphere or ellipse.
+     * @param  dstOff    the offset of the location of the converted coordinate that is stored in the destination array.
+     * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
+     * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
      * @throws ProjectionException if the coordinate can not be converted.
      */
@@ -683,11 +681,11 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <div class="note"><b>Note:</b> in <a href="http://trac.osgeo.org/proj/">Proj.4</a>, the same standardization,
      * described above, is handled by {@code pj_inv.c}.</div>
      *
-     * @param srcPts The array containing the source point coordinate, as linear distance on a unit sphere or ellipse.
-     * @param srcOff The offset of the point to be converted in the source array.
-     * @param dstPts The array into which the converted point coordinate is returned (may be the same than {@code srcPts}).
-     *               Ordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
-     * @param dstOff The offset of the location of the converted point that is stored in the destination array.
+     * @param  srcPts  the array containing the source point coordinate, as linear distance on a unit sphere or ellipse.
+     * @param  srcOff  the offset of the point to be converted in the source array.
+     * @param  dstPts  the array into which the converted point coordinate is returned (may be the same than {@code srcPts}).
+     *                 Ordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
+     * @param  dstOff  the offset of the location of the converted point that is stored in the destination array.
      * @throws ProjectionException if the point can not be converted.
      */
     protected abstract void inverseTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff)
@@ -698,7 +696,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Subclasses do not need to override this method, as they should override
      * {@link #inverseTransform(double[], int, double[], int) inverseTransform(…)} instead.
      *
-     * @return The inverse of this map projection.
+     * @return the inverse of this map projection.
      */
     @Override
     public MathTransform2D inverse() {
@@ -753,7 +751,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     /**
      * Computes a hash code value for this {@code NormalizedProjection}.
      *
-     * @return The hash code value.
+     * @return the hash code value.
      */
     @Override
     protected int computeHashCode() {
@@ -784,8 +782,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * equivalent allows the referencing module to transform coordinates between those two projections more efficiently.
      * </div>
      *
-     * @param object The object to compare with this map projection for equivalence.
-     * @param mode The strictness level of the comparison. Default to {@link ComparisonMode#STRICT}.
+     * @param  object  the object to compare with this map projection for equivalence.
+     * @param  mode    the strictness level of the comparison. Default to {@link ComparisonMode#STRICT}.
      * @return {@code true} if the given object is equivalent to this map projection.
      */
     @Override

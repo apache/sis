@@ -138,8 +138,8 @@ public class Mercator extends ConformalProjection {
      *   <li><cite>"Miller Cylindrical"</cite>.</li>
      * </ul>
      *
-     * @param method     Description of the projection parameters.
-     * @param parameters The parameter values of the projection to create.
+     * @param method      description of the projection parameters.
+     * @param parameters  the parameter values of the projection to create.
      */
     public Mercator(final OperationMethod method, final Parameters parameters) {
         this(initializer(method, parameters));
@@ -310,8 +310,8 @@ public class Mercator extends ConformalProjection {
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
      * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
      *
-     * @param  factory The factory to use for creating the transform.
-     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @param  factory  the factory to use for creating the transform.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override
@@ -328,7 +328,7 @@ public class Mercator extends ConformalProjection {
      * (linear distance on a unit sphere). In addition, opportunistically computes the projection derivative
      * if {@code derivate} is {@code true}.
      *
-     * @return The matrix of the projection derivative at the given source position,
+     * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
      * @throws ProjectionException if the coordinate can not be converted.
      */
@@ -349,8 +349,10 @@ public class Mercator extends ConformalProjection {
             if (φ == 0) {
                 y = φ;
             } else {
-                // See the javadoc of the Spherical inner class for a note
-                // about why we perform explicit checks for the pole cases.
+                /*
+                 * See the javadoc of the Spherical inner class for a note
+                 * about why we perform explicit checks for the pole cases.
+                 */
                 final double a = abs(φ);
                 if (a < PI/2) {
                     y = log(expOfNorthing(φ, eccentricity * sinφ));                 // Snyder (7-7)
@@ -391,8 +393,10 @@ public class Mercator extends ConformalProjection {
             while (--numPts >= 0) {
                 final double φ = dstPts[dstOff += 2];                           // Same as srcPts[srcOff + 1].
                 if (φ != 0) {
-                    // See the javadoc of the Spherical inner class for a note
-                    // about why we perform explicit checks for the pole cases.
+                    /*
+                     * See the javadoc of the Spherical inner class for a note
+                     * about why we perform explicit checks for the pole cases.
+                     */
                     final double a = abs(φ);
                     final double y;
                     if (a < PI/2) {
@@ -459,7 +463,7 @@ public class Mercator extends ConformalProjection {
         /**
          * Constructs a new map projection from the parameters of the given projection.
          *
-         * @param other The other projection (usually ellipsoidal) from which to copy the parameters.
+         * @param  other  the other projection (usually ellipsoidal) from which to copy the parameters.
          */
         Spherical(final Mercator other) {
             super(other);

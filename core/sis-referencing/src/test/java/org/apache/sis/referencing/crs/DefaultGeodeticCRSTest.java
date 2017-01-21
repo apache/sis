@@ -50,7 +50,7 @@ public final strictfp class DefaultGeodeticCRSTest extends XMLTestCase {
     /**
      * Tests (un)marshalling of a geodetic coordinate reference system.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
     public void testXML() throws JAXBException {

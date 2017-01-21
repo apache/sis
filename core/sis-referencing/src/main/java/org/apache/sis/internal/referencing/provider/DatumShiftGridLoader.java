@@ -21,6 +21,8 @@ import java.util.logging.LogRecord;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.nio.file.NoSuchFileException;
 import java.nio.channels.ReadableByteChannel;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.resources.Errors;
@@ -29,10 +31,6 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
-
-// Branch-dependent imports
-import java.nio.file.Path;
-import java.nio.file.NoSuchFileException;
 
 
 /**

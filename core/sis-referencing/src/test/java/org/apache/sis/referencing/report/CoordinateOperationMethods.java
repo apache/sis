@@ -71,8 +71,8 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
     /**
      * Generates the HTML report.
      *
-     * @param  args No argument expected.
-     * @throws IOException If an error occurred while writing the HTML file.
+     * @param  args  no argument expected.
+     * @throws IOException if an error occurred while writing the HTML file.
      */
     public static void main(final String[] args) throws IOException {
         final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
@@ -175,7 +175,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
     /**
      * Writes a table of content.
      *
-     * @param  methods The methods to write to the HTML file.
+     * @param  methods  the methods to write to the HTML file.
      * @throws IOException if an error occurred while writing to the file.
      */
     public void writeIndex(final Iterable<? extends OperationMethod> methods) throws IOException {
@@ -207,7 +207,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
     /**
      * Writes identification info and parameters for the given method.
      *
-     * @param  method The method to write to the HTML file.
+     * @param  method  the method to write to the HTML file.
      * @throws IOException if an error occurred while writing to the file.
      */
     public void write(final OperationMethod method) throws IOException {
@@ -321,7 +321,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
         final Map<String, Integer> footnotes = new LinkedHashMap<>();
         for (final GeneralParameterDescriptor gp : group.descriptors()) {
             if (isDeprecated(gp)) {
-                continue;   // Hide deprecated parameters.
+                continue;                                                       // Hide deprecated parameters.
             }
             final ParameterDescriptor<?> param = (ParameterDescriptor<?>) gp;
             reopenTag("tr");
@@ -401,9 +401,9 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
      *
      * @todo This method is not yet used. This is pending the implementation of {@code CRSAuthorityFactory} is SIS.
      *
-     * @param  factory The factory to use for getting CRS.
-     * @return The union of domain of validity of all map projections using a method of the given name.
-     * @throws FactoryException If an error occurred while fetching the list of CRS.
+     * @param  factory  the factory to use for getting CRS.
+     * @return the union of domain of validity of all map projections using a method of the given name.
+     * @throws FactoryException if an error occurred while fetching the list of CRS.
      */
     public static Map<String, DefaultGeographicBoundingBox> computeUnionOfAllDomainOfValidity(
             final CRSAuthorityFactory factory) throws FactoryException
@@ -414,7 +414,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
             try {
                 crs = factory.createCoordinateReferenceSystem(code);
             } catch (FactoryException e) {
-                continue; // Ignore and inspect the next element.
+                continue;                                                   // Ignore and inspect the next element.
             }
             if (crs instanceof GeneralDerivedCRS) {
                 final GeographicBoundingBox candidate = CRS.getGeographicBoundingBox(crs);

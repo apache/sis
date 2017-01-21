@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
@@ -65,9 +66,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**

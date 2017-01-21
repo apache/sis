@@ -18,6 +18,7 @@ package org.apache.sis.parameter;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import javax.measure.Unit;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
@@ -32,9 +33,6 @@ import org.apache.sis.util.ArraysExt;
 
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.metadata.iso.citation.Citations.NETCDF;
-
-// Branch-specific imports
-import java.util.Objects;
 
 
 /**
@@ -100,8 +98,8 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
      * "invisible" parameters, returns a dynamic parameter view without adding it to the list
      * of real parameter values.
      *
-     * @param  name The case insensitive name of the parameter to search for.
-     * @return The parameter value for the given name.
+     * @param  name  the case insensitive name of the parameter to search for.
+     * @return the parameter value for the given name.
      * @throws ParameterNotFoundException if there is no parameter value for the given name.
      */
     @Override
@@ -156,6 +154,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
      */
+    @SuppressWarnings("CloneableClassWithoutClone")
     static final class EarthRadius extends DefaultParameterValue<Double> {
         /**
          * For cross-version compatibility. Actually instances of this class
@@ -240,6 +239,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getInverseFlattening()
      */
+    @SuppressWarnings("CloneableClassWithoutClone")
     static final class InverseFlattening extends DefaultParameterValue<Double> {
         /**
          * For cross-version compatibility. Actually instances of this class
@@ -315,8 +315,8 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          */
         @Override
         protected void setValue(final Object value, final Unit<?> unit) {
-            super.setValue(value, unit);        // Perform argument check.
-            final double ivf = (Double) value;  // At this point, can not be anything else than Double.
+            super.setValue(value, unit);                        // Perform argument check.
+            final double ivf = (Double) value;                  // At this point, can not be anything else than Double.
             final Number ca = (Number) semiMajor.getValue();
             if (ca != null) {
                 a = ca.doubleValue();
@@ -359,6 +359,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#isIvfDefinitive()
      */
+    @SuppressWarnings("CloneableClassWithoutClone")
     static final class IsIvfDefinitive extends DefaultParameterValue<Boolean> {
         /**
          * For cross-version compatibility. Actually instances of this class
@@ -391,7 +392,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          */
         @Override
         protected void setValue(final Object value, final Unit<?> unit) {
-            super.setValue(value, unit);   // Perform argument check.
+            super.setValue(value, unit);                                    // Perform argument check.
             if (!(Boolean) value) {
                 inverseFlattening.invalidate();
             }
@@ -422,6 +423,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
      * from the {@code "standard_parallel_1"} and {@code "standard_parallel_1"} standard parameters. When this
      * non-standard parameter is explicitely set, the array elements are given to the above-cited standard parameters.
      */
+    @SuppressWarnings("CloneableClassWithoutClone")
     static final class StandardParallel extends DefaultParameterValue<double[]> {
         /**
          * For cross-version compatibility. Actually instances of this class
@@ -459,7 +461,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
         @Override
         @SuppressWarnings("fallthrough")
         protected void setValue(final Object value, final Unit<?> unit) {
-            super.setValue(value, unit);   // Perform argument check.
+            super.setValue(value, unit);                                    // Perform argument check.
             double p1 = Double.NaN;
             double p2 = Double.NaN;
             if (value != null) {
@@ -469,8 +471,8 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
                         throw new IllegalArgumentException(Errors.format(
                                 Errors.Keys.UnexpectedArrayLength_2, 2, values.length));
                     }
-                    case 2: p2 = values[1]; // Fallthrough
-                    case 1: p1 = values[0]; // Fallthrough
+                    case 2: p2 = values[1];                                 // Fallthrough
+                    case 1: p1 = values[0];                                 // Fallthrough
                     case 0: break;
                 }
             }
@@ -494,5 +496,21 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
             }
             return new double[] {(p1 != null) ? p1.doubleValue() : Double.NaN, p2.doubleValue()};
         }
+    }
+
+    /**
+     * Returns a deep copy of this group of parameter values.
+     * Included parameter values and subgroups are cloned recursively.
+     *
+     * @return a copy of this group of parameter values.
+     */
+    @Override
+    public MapProjectionParameters clone() {
+        final MapProjectionParameters copy = (MapProjectionParameters) super.clone();
+        copy.earthRadius       = null;
+        copy.inverseFlattening = null;
+        copy.standardParallel  = null;
+        copy.isIvfDefinitive   = null;
+        return copy;
     }
 }

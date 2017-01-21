@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Arrays;
 import java.io.Serializable;
-import java.awt.geom.AffineTransform;   // For javadoc
+import java.awt.geom.AffineTransform;                       // For javadoc
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.util.DoubleDouble;
@@ -273,17 +273,17 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     /**
      * Sets elements in a sub-region of this matrix, optionally including error terms.
      *
-     * @param  source     row-major values as given by {@link ExtendedPrecisionMatrix#getExtendedElements()}.
-     * @param  length     number of elements ({@code numRow} × {@code numCol}) in the source matrix, not including error terms.
-     * @param  stride     number of columns in the source matrix, used for computing indices in {@code source} array.
-     * @param  srcRow     index of the first row from the {@code source} to copy in {@code this}.
-     * @param  srcCol     index of the first column from the {@code source} to copy in {@code this}.
-     * @param  dstRow     index of the first row in {@code this} where to copy the {@code source} values.
-     * @param  dstCol     index of the first column in {@code this} where to copy the {@code source} values.
-     * @param  numRow     number of rows to copy.
-     * @param  numCol     number of columns to copy.
-     * @param  transfer   if both {@code source} and {@code this} use extended precision,
-     *                    the temporary object to use for transferring values. Otherwise {@code null}.
+     * @param  source    row-major values as given by {@link ExtendedPrecisionMatrix#getExtendedElements()}.
+     * @param  length    number of elements ({@code numRow} × {@code numCol}) in the source matrix, not including error terms.
+     * @param  stride    number of columns in the source matrix, used for computing indices in {@code source} array.
+     * @param  srcRow    index of the first row from the {@code source} to copy in {@code this}.
+     * @param  srcCol    index of the first column from the {@code source} to copy in {@code this}.
+     * @param  dstRow    index of the first row in {@code this} where to copy the {@code source} values.
+     * @param  dstCol    index of the first column in {@code this} where to copy the {@code source} values.
+     * @param  numRow    number of rows to copy.
+     * @param  numCol    number of columns to copy.
+     * @param  transfer  if both {@code source} and {@code this} use extended precision,
+     *                   the temporary object to use for transferring values. Otherwise {@code null}.
      */
     final void setElements(final double[] source, final int length, final int stride, final DoubleDouble transfer,
                            int srcRow, final int srcCol,

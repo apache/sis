@@ -79,7 +79,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * Reminder: the eccentricity of a sphere is 0.
      */
     public MercatorMethodComparison() {
-        this(0.00669437999014133);  // Squared eccentricity.
+        this(0.00669437999014133);                      // Squared eccentricity.
     }
 
     /**
@@ -94,7 +94,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     /**
      * Creates a new instance for the given squared eccentricity.
      *
-     * @param e2 the square of the eccentricity.
+     * @param  e2  the square of the eccentricity.
      */
     public MercatorMethodComparison(final double e2) {
         eccentricity = sqrt(e2);
@@ -120,7 +120,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      */
     public double bySeriesExpansion(final double t) {
         final double χ = PI/2 - 2*atan(t);
-        return c8χ * sin(8*χ) +   // Add the smallest values first for reducing rounding errors.
+        return c8χ * sin(8*χ) +             // Add the smallest values first for reducing rounding errors.
                c6χ * sin(6*χ) +
                c4χ * sin(4*χ) +
                c2χ * sin(2*χ) + χ;

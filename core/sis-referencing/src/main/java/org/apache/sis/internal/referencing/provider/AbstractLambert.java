@@ -72,7 +72,7 @@ class AbstractLambert extends MapProjection {
     /**
      * {@inheritDoc}
      *
-     * @return The map projection created from the given parameter values.
+     * @return the map projection created from the given parameter values.
      */
     @Override
     protected final NormalizedProjection createProjection(final Parameters parameters) {

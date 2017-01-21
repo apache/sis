@@ -61,8 +61,8 @@ public final class CS_CoordinateSystem extends PropertyType<CS_CoordinateSystem,
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:AbstractCS>} XML element.
      *
-     * @param  cs The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  cs  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CS_CoordinateSystem wrap(final CoordinateSystem cs) {
@@ -74,7 +74,7 @@ public final class CS_CoordinateSystem extends PropertyType<CS_CoordinateSystem,
      * inside the {@code <gml:AbstractCS>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElementRef
     public AbstractCS getElement() {
@@ -84,7 +84,7 @@ public final class CS_CoordinateSystem extends PropertyType<CS_CoordinateSystem,
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param cs The unmarshalled element.
+     * @param  cs  the unmarshalled element.
      */
     public void setElement(final AbstractCS cs) {
         metadata = cs;

@@ -75,8 +75,8 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
      * <p>This constructor assumes that the {@code values} array have already be clones,
      * so it will not clone it again.</p>
      *
-     * @param values the <var>y</var> values in <var>y=f(x)</var> where <var>x</var> = {0, 1, … , {@code values.length-1}}.
-     * @param slope  the value to use for extrapolation.
+     * @param values  the <var>y</var> values in <var>y=f(x)</var> where <var>x</var> = {0, 1, … , {@code values.length-1}}.
+     * @param slope   the value to use for extrapolation.
      */
     private LinearInterpolator1D(final double[] values, final double slope) {
         this.values = values;                           // Cloning this array is caller's responsibility.
@@ -95,7 +95,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
      * Creates a transform for the given values. This method returns an affine transform instead than an
      * interpolator if the given values form a series with a constant increment.
      *
-     * @param values a <strong>copy</strong> of the user-provided values. This array may be modified.
+     * @param  values  a <strong>copy</strong> of the user-provided values. This array may be modified.
      */
     private static MathTransform1D create(final double[] values) {
         final int n = values.length - 1;

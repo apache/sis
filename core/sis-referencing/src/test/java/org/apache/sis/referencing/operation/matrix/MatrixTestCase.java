@@ -335,7 +335,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
                 final double element = clone.getElement(j,i);
-                clone.setElement(j, i, random.nextDouble() - 2); // Negative value is guaranteed to be different.
+                clone.setElement(j, i, random.nextDouble() - 2);    // Negative value is guaranteed to be different.
                 assertFalse(matrix.equals(clone));
                 assertFalse(clone.equals(matrix));
                 clone.setElement(j, i, element);
@@ -398,7 +398,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      *
      * @param  matrix     the matrix of size 3×3 to test.
      * @param  withShear  {@code true} for including shear in the matrix to test.
-     *         This value can be set to {@code false} if the subclass want to test a simpler case.
+     *                    This value can be set to {@code false} if the subclass want to test a simpler case.
      *
      * @since 0.6
      */

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.test.integration;
 
+import java.nio.file.Path;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
@@ -28,9 +29,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assume.*;
-
-// Branch-specific imports
-import java.nio.file.Path;
 
 
 /**

@@ -89,8 +89,8 @@ public final class CC_OperationParameter extends PropertyType<CC_OperationParame
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:OperationParameter>} XML element.
      *
-     * @param  parameter The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  parameter  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CC_OperationParameter wrap(final ParameterDescriptor<?> parameter) {
@@ -102,7 +102,7 @@ public final class CC_OperationParameter extends PropertyType<CC_OperationParame
      * inside the {@code <gml:OperationParameter>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "OperationParameter")
     public DefaultParameterDescriptor<?> getElement() {
@@ -112,7 +112,7 @@ public final class CC_OperationParameter extends PropertyType<CC_OperationParame
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param parameter The unmarshalled element.
+     * @param  parameter  the unmarshalled element.
      */
     public void setElement(final DefaultParameterDescriptor<?> parameter) {
         metadata = parameter;
@@ -124,8 +124,8 @@ public final class CC_OperationParameter extends PropertyType<CC_OperationParame
      * the unit of measurement of the parameter descriptor to create. Those information will
      * be used by the {@link DefaultParameterDescriptor} private constructor.
      *
-     * @param unmarshaller The unmarshaller.
-     * @param parent The enclosing {@link ParameterValue} instance being unmarshalled.
+     * @param  unmarshaller  the unmarshaller.
+     * @param  parent        the enclosing {@link ParameterValue} instance being unmarshalled.
      */
     private void beforeUnmarshal(final Unmarshaller unmarshaller, final Object parent) {
         if (parent instanceof ParameterValue<?>) {

@@ -68,7 +68,7 @@ final strictfp class BuilderMock extends Builder<BuilderMock> {
     /**
      * Convenience accessor for aliases or identifiers as strings.
      *
-     * @param kind 0 for identifiers, or 1 for names.
+     * @param  kind  0 for identifiers, or 1 for names.
      */
     String[] getAsStrings(final int kind) {
         final Object[] values = (kind == 0) ? getIdentifiers() : getAliases();

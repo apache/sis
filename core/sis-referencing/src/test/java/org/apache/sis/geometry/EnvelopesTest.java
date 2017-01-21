@@ -102,7 +102,7 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
      * Tests {@link Envelopes#fromWKT(CharSequence)}. This test is provided as a matter of principle,
      * but the real test is done by {@link GeneralEnvelopeTest#testWktParsing()}.
      *
-     * @throws FactoryException Should never happen.
+     * @throws FactoryException if an error occurred during WKT parsing.
      */
     @Test
     public void testFromWKT() throws FactoryException {

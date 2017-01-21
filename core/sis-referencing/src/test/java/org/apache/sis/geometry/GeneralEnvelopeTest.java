@@ -87,11 +87,11 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      *
      * <p>This method assumes that only the <var>x</var> axis may be a wraparound axis.</p>
      *
-     * @param test   The actual envelope to verify.
-     * @param xLower The expected first   <var>x</var> ordinate value. May  be greater than {@code xUpper}.
-     * @param xUpper The expected last    <var>x</var> ordinate value. May  be less    than {@code xLower}.
-     * @param ymin   The expected minimal <var>y</var> ordinate value. Must be less    than {@code ymax}.
-     * @param ymax   The expected maximal <var>y</var> ordinate value. Must be greater than {@code ymax}.
+     * @param  test    the actual envelope to verify.
+     * @param  xLower  the expected first   <var>x</var> ordinate value. May  be greater than {@code xUpper}.
+     * @param  xUpper  the expected last    <var>x</var> ordinate value. May  be less    than {@code xLower}.
+     * @param  ymin    the expected minimal <var>y</var> ordinate value. Must be less    than {@code ymax}.
+     * @param  ymax    the expected maximal <var>y</var> ordinate value. Must be greater than {@code ymax}.
      */
     private static void assertEnvelopeEquals(final Envelope test,
             final double xLower, final double ymin, final double xUpper, final double ymax)
@@ -131,7 +131,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     private static void assertIntersectEquals(final GeneralEnvelope e1, final GeneralEnvelope e2,
             final double xmin, final double ymin, final double xmax, final double ymax)
     {
-        final boolean isEmpty = !(((xmax - xmin) * (ymax - ymin)) != 0); // Use ! for catching NaN.
+        final boolean isEmpty = !(((xmax - xmin) * (ymax - ymin)) != 0);        // Use ! for catching NaN.
         final Envelope2D r1 = new Envelope2D(e1);
         final Envelope2D r2 = new Envelope2D(e2);
         final Envelope2D ri = r1.createIntersection(r2);
@@ -350,25 +350,25 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      */
     @Test
     public void testAddPoint() {
-        final double ymin=-20, ymax=30; // Will not change anymore
+        final double ymin=-20, ymax=30;                             // Will not change anymore
         final GeneralEnvelope  e = create(20, ymin,  80, ymax);
         final DirectPosition2D p = new DirectPosition2D(40, 15);
         assertAddEquals(e, p, 20, ymin, 80, ymax);
 
-        p.x = 100; // Add on the right side.
+        p.x = 100;                                                  // Add on the right side.
         assertAddEquals(e, p, 20, ymin, 100, ymax);
 
-        p.x = -10; // Add on the left side.
+        p.x = -10;                                                  // Add on the left side.
         assertAddEquals(e, p, -10, ymin, 80, ymax);
 
         e.setRange(0,  80, 20);
-        p.x = 100; // No change expected.
+        p.x = 100;                                                  // No change expected.
         assertAddEquals(e, p, 80, ymin, 20, ymax);
 
-        p.x = 70; // Add on the right side.
+        p.x = 70;                                                   // Add on the right side.
         assertAddEquals(e, p, 70, ymin, 20, ymax);
 
-        p.x = 30; // Add on the left side.
+        p.x = 30;                                                   // Add on the left side.
         assertAddEquals(e, p, 80, ymin, 30, ymax);
 
         verifyInvariants(e);
@@ -405,7 +405,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      */
     @Test
     public void testNormalizeWorld() {
-        GeneralEnvelope e = create(-195, -90, +170, +90); // -195° is equivalent to 165°
+        GeneralEnvelope e = create(-195, -90, +170, +90);       // -195° is equivalent to 165°
         assertTrue(e.normalize());
         assertEnvelopeEquals(e, -180, -90, +180, +90);
         verifyInvariants(e);
@@ -558,6 +558,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testToString")
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testWktParsing() {
         GeneralEnvelope envelope = new GeneralEnvelope("BOX(-180 -90,180 90)");
         assertEquals(2, envelope.getDimension());

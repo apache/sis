@@ -54,8 +54,8 @@ public final strictfp class PositionVector7ParamTest extends MathTransformTestCa
      * IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015
      * </blockquote>
      *
-     * @param  step The step as a value from 1 to 4 inclusive.
-     * @return The sample point at the given step.
+     * @param  step  the step as a value from 1 to 4 inclusive.
+     * @return the sample point at the given step.
      */
     static double[] samplePoint(final int step) {
         switch (step) {
@@ -86,8 +86,8 @@ public final strictfp class PositionVector7ParamTest extends MathTransformTestCa
     /**
      * Creates the transformation from WGS 72 to WGS 84.
      *
-     * @param method The operation method to use.
-     * @param rotationSign {@code +1} for Position Vector, or -1 for Frame Rotation.
+     * @param  method        the operation method to use.
+     * @param  rotationSign  {@code +1} for Position Vector, or -1 for Frame Rotation.
      */
     static MathTransform createTransform(final GeocentricAffine method, final int rotationSign) throws FactoryException {
         final ParameterValueGroup values = method.getParameters().createValue();
@@ -118,7 +118,7 @@ public final strictfp class PositionVector7ParamTest extends MathTransformTestCa
     @Test
     public void testGeocentricDomain() throws FactoryException, TransformException {
         createTransform(new PositionVector7Param());
-        tolerance = 0.01;  // Precision for (X,Y,Z) values given by EPSG
+        tolerance = 0.01;                                   // Precision for (X,Y,Z) values given by EPSG
         derivativeDeltas = new double[] {100, 100, 100};    // In metres
         assertTrue(transform instanceof LinearTransform);
         verifyTransform(samplePoint(2), samplePoint(3));

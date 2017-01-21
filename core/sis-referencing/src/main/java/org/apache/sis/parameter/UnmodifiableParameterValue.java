@@ -81,9 +81,9 @@ final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
      * Returns an unmodifiable implementation of the given parameter value.
      * See class javadoc for more information.
      *
-     * @param  <T> The type of the value stored in the given parameter.
-     * @param  parameter The parameter to make unmodifiable, or {@code null}.
-     * @return An unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
+     * @param  <T>        the type of the value stored in the given parameter.
+     * @param  parameter  the parameter to make unmodifiable, or {@code null}.
+     * @return an unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
      */
     static <T> UnmodifiableParameterValue<T> create(final ParameterValue<T> parameter) {
         if (parameter == null || parameter instanceof UnmodifiableParameterValue<?>) {

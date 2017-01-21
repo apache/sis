@@ -25,6 +25,9 @@ import java.util.logging.LogRecord;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -53,11 +56,6 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
 
 import static java.lang.Float.parseFloat;
-
-// Branch-specific imports
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 
 
 /**

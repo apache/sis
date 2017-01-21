@@ -63,8 +63,8 @@ public final class SC_DerivedCRSType {
      *   <li>{@code EngineeringCRS}</li>
      * </ul>
      *
-     * @param  keyword The ISO 19162 (WKT 2) keyword, or {@code null}.
-     * @return The pseudo code list with ISO 19111 keyword, or {@code null}.
+     * @param  keyword  the ISO 19162 (WKT 2) keyword, or {@code null}.
+     * @return the pseudo code list with ISO 19111 keyword, or {@code null}.
      */
     public static SC_DerivedCRSType fromWKT(final String keyword) {
         if (keyword != null) {
@@ -79,7 +79,7 @@ public final class SC_DerivedCRSType {
     /**
      * Creates a pseudo code list for the given value.
      *
-     * @param type The ISO 19111 code.
+     * @param type  the ISO 19111 code.
      */
     public SC_DerivedCRSType(final String type) {
         codeSpace = "EPSG";

@@ -90,7 +90,7 @@ public interface LinearTransform extends MathTransform {
      * returned matrix by a vector containing the ordinate values with an additional 1 in the last row.
      * See {@link LinearTransform} class Javadoc for more details.
      *
-     * @return The coefficients of this linear transform as a matrix.
+     * @return the coefficients of this linear transform as a matrix.
      *
      * @see MathTransforms#getMatrix(MathTransform)
      */
@@ -106,11 +106,11 @@ public interface LinearTransform extends MathTransform {
      *  <var>Δx₁</var>,<var>Δy₁</var>,<var>Δz₁</var> …).
      * </div>
      *
-     * @param  srcPts The array containing the source vectors.
-     * @param  srcOff The offset to the first vector to be transformed in the source array.
-     * @param  dstPts The array into which the transformed vectors are returned. Can be the same than {@code srcPts}.
-     * @param  dstOff The offset to the location of the first transformed vector that is stored in the destination array.
-     * @param  numPts The number of vector objects to be transformed.
+     * @param  srcPts  the array containing the source vectors.
+     * @param  srcOff  the offset to the first vector to be transformed in the source array.
+     * @param  dstPts  the array into which the transformed vectors are returned. Can be the same than {@code srcPts}.
+     * @param  dstOff  the offset to the location of the first transformed vector that is stored in the destination array.
+     * @param  numPts  the number of vector objects to be transformed.
      * @throws TransformException if a vector can not be transformed.
      *
      * @see java.awt.geom.AffineTransform#deltaTransform(double[], int, double[], int, int)
@@ -124,7 +124,7 @@ public interface LinearTransform extends MathTransform {
      * The target of the inverse transform is the source of the original.
      * The source of the inverse transform is the target of the original.
      *
-     * @return The inverse transform.
+     * @return the inverse transform.
      * @throws NoninvertibleTransformException if the transform can not be inverted.
      *
      * @see java.awt.geom.AffineTransform#createInverse()

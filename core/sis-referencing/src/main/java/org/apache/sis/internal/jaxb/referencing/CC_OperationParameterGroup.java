@@ -69,8 +69,8 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:OperationParameterGroup>} XML element.
      *
-     * @param  parameter The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  parameter  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CC_OperationParameterGroup wrap(final ParameterDescriptorGroup parameter) {
@@ -82,7 +82,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      * inside the {@code <gml:OperationParameter>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "OperationParameterGroup")
     public DefaultParameterDescriptorGroup getElement() {
@@ -92,7 +92,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param parameter The unmarshalled element.
+     * @param  parameter  the unmarshalled element.
      */
     public void setElement(final DefaultParameterDescriptorGroup parameter) {
         metadata = parameter;
@@ -127,12 +127,12 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      * {@link DefaultParameterDescriptorGroup} class in the hope to reduce the amount of code
      * processed by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
      *
-     * @param  descriptors  The descriptors declared in the {@code ParameterDescriptorGroup}.
-     * @param  fromValues   The descriptors declared in the {@code ParameterValue} instances.
-     *                      They are said "valid" because they contain the mandatory {@code valueClass} property.
-     * @param  replacements An {@code IdentityHashMap} where to store the replacements that the caller needs
-     *                      to apply in the {@code GeneralParameterValue} instances.
-     * @return A sequence containing the merged set of parameter descriptors.
+     * @param  descriptors   the descriptors declared in the {@code ParameterDescriptorGroup}.
+     * @param  fromValues    the descriptors declared in the {@code ParameterValue} instances.
+     *                       They are said "valid" because they contain the mandatory {@code valueClass} property.
+     * @param  replacements  an {@code IdentityHashMap} where to store the replacements that the caller needs to
+     *                       apply in the {@code GeneralParameterValue} instances.
+     * @return a sequence containing the merged set of parameter descriptors.
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
      */

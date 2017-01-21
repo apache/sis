@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -40,9 +41,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -156,12 +154,12 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * since we are adding accuracy informations to a concatenated operation. This departure should be considered
      * as a convenience feature only; accuracies are really relevant in transformations only.</div>
      *
-     * @param  properties  the properties specified at construction time, or {@code null} if unknown.
-     * @param  operations  the operations to concatenate.
-     * @param  flattened   the destination list in which to add the {@code SingleOperation} instances.
-     * @param  mtFactory   the math transform factory to use, or {@code null} for not performing concatenation.
-     * @param  setAccuracy {@code true} for setting the {@link #coordinateOperationAccuracy} field.
-     * @param  setDomain   {@code true} for setting the {@link #domainOfValidity} field.
+     * @param  properties   the properties specified at construction time, or {@code null} if unknown.
+     * @param  operations   the operations to concatenate.
+     * @param  flattened    the destination list in which to add the {@code SingleOperation} instances.
+     * @param  mtFactory    the math transform factory to use, or {@code null} for not performing concatenation.
+     * @param  setAccuracy  {@code true} for setting the {@link #coordinateOperationAccuracy} field.
+     * @param  setDomain    {@code true} for setting the {@link #domainOfValidity} field.
      * @throws FactoryException if the factory can not concatenate the math transforms.
      */
     private void initialize(final Map<String,?>             properties,

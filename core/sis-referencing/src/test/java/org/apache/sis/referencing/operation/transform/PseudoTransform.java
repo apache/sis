@@ -59,8 +59,8 @@ strictfp class PseudoTransform extends AbstractMathTransform {
     /**
      * Creates a transform for the given dimensions.
      *
-     * @param sourceDimension The source dimension.
-     * @param targetDimension The target dimension.
+     * @param  sourceDimension  the source dimension.
+     * @param  targetDimension  the target dimension.
      */
     public PseudoTransform(final int sourceDimension, final int targetDimension) {
         this.sourceDimension = sourceDimension;
@@ -88,7 +88,7 @@ strictfp class PseudoTransform extends AbstractMathTransform {
      * Pseudo-transform a point in the given array.
      *
      * @throws TransformException should never occurs in this class,
-     *         but can occur in method overridden in subclasses.
+     *         but can occur in method overridden by subclasses.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,

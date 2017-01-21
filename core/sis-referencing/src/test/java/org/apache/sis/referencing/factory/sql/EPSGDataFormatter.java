@@ -27,6 +27,7 @@ import java.io.Writer;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -36,9 +37,6 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.TestDatabase;
-
-// Branch-dependent imports
-import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -131,7 +129,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
      *   <li>{@code core/sis-referencing/src/main/resources/org/apache/sis/referencing/factory/sql/Data.sql}</li>
      * </ol>
      *
-     * @param  arguments The source files and the destination file.
+     * @param  arguments  the source files and the destination file.
      * @throws Exception if an error occurred while reading of writing the file.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")

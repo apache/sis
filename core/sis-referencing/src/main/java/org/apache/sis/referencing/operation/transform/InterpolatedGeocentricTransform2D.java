@@ -97,9 +97,9 @@ final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTran
         /**
          * Constructs the inverse of an interpolated geocentric transform.
          *
-         * @param inverse The transform for which to create the inverse.
-         * @param source  The source ellipsoid of the given {@code inverse} transform.
-         * @param target  The target ellipsoid of the given {@code inverse} transform.
+         * @param inverse  the transform for which to create the inverse.
+         * @param source   the source ellipsoid of the given {@code inverse} transform.
+         * @param target   the target ellipsoid of the given {@code inverse} transform.
          */
         Inverse(final InterpolatedGeocentricTransform inverse, final Ellipsoid source, final Ellipsoid target) {
            super(inverse, source, target);

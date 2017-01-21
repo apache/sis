@@ -117,7 +117,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
      * Returns the value to which this map maps the specified index.
      * Returns null if the map contains no mapping for the given index.
      *
-     * @param key The property index, as one of the values in the {@link #INDICES} map.
+     * @param  key  the property index, as one of the values in the {@link #INDICES} map.
      */
     final Object getAt(final int key) {
         if ((excludeMask & (1 << key)) == 0) {

@@ -197,7 +197,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
+     * @param  properties  the properties to be given to the identified object.
      */
     public AbstractDatum(final Map<String,?> properties) {
         super(properties);
@@ -214,7 +214,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param datum The datum to copy.
+     * @param  datum  the datum to copy.
      */
     protected AbstractDatum(final Datum datum) {
         super(datum);
@@ -247,8 +247,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractDatum castOrCopy(final Datum object) {
@@ -260,7 +260,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * The default implementation returns {@code Datum.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The datum interface implemented by this class.
+     * @return the datum interface implemented by this class.
      */
     @Override
     public Class<? extends Datum> getInterface() {
@@ -285,7 +285,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *       {@linkplain DefaultTemporalDatum#getOrigin() origin} instead.</li>
      * </ul>
      *
-     * @return Description, possibly including coordinates, of the point or points used to anchor the datum to the Earth.
+     * @return description, possibly including coordinates, of the point or points used to anchor the datum to the Earth.
      */
     @Override
     @XmlElement(name = "anchorDefinition")
@@ -300,7 +300,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * <p>If an old datum is superseded by a new datum, then the realization epoch for the new datum
      * defines the upper limit for the validity of the old datum.</p>
      *
-     * @return The time after which this datum definition is valid, or {@code null} if none.
+     * @return the time after which this datum definition is valid, or {@code null} if none.
      */
     @Override
     @XmlSchemaType(name = "date")
@@ -312,7 +312,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Returns the region or timeframe in which this datum is valid, or {@code null} if unspecified.
      *
-     * @return Area or region or timeframe in which this datum is valid, or {@code null}.
+     * @return area or region or timeframe in which this datum is valid, or {@code null}.
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */
@@ -325,7 +325,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Returns the domain or limitations of usage, or {@code null} if unspecified.
      *
-     * @return Description of domain of usage, or limitations of usage, for which this datum object is valid.
+     * @return description of domain of usage, or limitations of usage, for which this datum object is valid.
      */
     @Override
     @XmlElement(name = "scope", required = true)
@@ -352,7 +352,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.
      *
-     * @param  name The name to compare.
+     * @param  name  the name to compare.
      * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      */
     @Override
@@ -389,10 +389,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * {@linkplain #getAnchorPoint() anchor point}, {@linkplain #getRealizationEpoch() realization epoch},
      * {@linkplain #getDomainOfValidity() domain of validity} and the {@linkplain #getScope() scope}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -441,7 +441,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -452,8 +452,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation for this datum.
      * See {@link AbstractIdentifiedObject#formatTo(Formatter)} for more information.
      *
-     * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return The {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
+     * @return the {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
      *         for the WKT element, or {@code null} if unknown.
      */
     @Override
