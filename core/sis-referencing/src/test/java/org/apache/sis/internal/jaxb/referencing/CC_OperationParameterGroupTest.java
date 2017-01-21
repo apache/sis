@@ -190,8 +190,8 @@ public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
     /**
      * Verifies the properties of an operation method parameter.
      *
-     * @param expected A parameter descriptor containing the expected properties (except remarks).
-     * @param actual   The parameter descriptor to verify.
+     * @param  expected  a parameter descriptor containing the expected properties (except remarks).
+     * @param  actual    the parameter descriptor to verify.
      */
     public static void verifyMethodParameter(final ParameterDescriptor<?> expected,
                                              final ParameterDescriptor<?> actual)
@@ -207,9 +207,9 @@ public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
     /**
      * Same verification than {@link #verifyMethodParameter(ParameterDescriptor, ParameterDescriptor)}, but stricter.
      *
-     * @param expected A parameter descriptor containing the expected properties (except remarks).
-     * @param remarks  The expected remarks, or {@code null} for fetching this information from {@code expected}.
-     * @param actual   The parameter descriptor to verify.
+     * @param  expected  a parameter descriptor containing the expected properties (except remarks).
+     * @param  remarks   the expected remarks, or {@code null} for fetching this information from {@code expected}.
+     * @param  actual    the parameter descriptor to verify.
      */
     private static void verifyMethodParameter(final ParameterDescriptor<?> expected,
             final String remarks, final ParameterDescriptor<?> actual)

@@ -138,9 +138,9 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system, which must be three-dimensional.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum       the datum.
+     * @param  cs          the coordinate system, which must be three-dimensional.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeocentricCRS(Map, GeodeticDatum, CartesianCS)
      */
@@ -156,9 +156,9 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * The properties given in argument are the same than for the
      * {@linkplain #DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS) above constructor}.
      *
-     * @param properties The properties to be given to the coordinate reference system.
-     * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param  properties  the properties to be given to the coordinate reference system.
+     * @param  datum       the datum.
+     * @param  cs          the coordinate system.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeocentricCRS(Map, GeodeticDatum, SphericalCS)
      */
@@ -176,7 +176,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param crs The coordinate reference system to copy.
+     * @param  crs  the coordinate reference system to copy.
      *
      * @see #castOrCopy(GeocentricCRS)
      */
@@ -190,8 +190,8 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGeocentricCRS castOrCopy(final GeocentricCRS object) {
@@ -219,7 +219,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * Returns the geodetic datum associated to this geocentric CRS.
      * This is the datum given at construction time.
      *
-     * @return The geodetic datum associated to this geocentric CRS.
+     * @return the geodetic datum associated to this geocentric CRS.
      */
     @Override
     public final GeodeticDatum getDatum() {

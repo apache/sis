@@ -134,7 +134,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * the given reference directly; it does <strong>not</strong> clone the given array. This is
      * the desired behavior for proper working of {@link SubEnvelope}.
      *
-     * @param ordinates The array of ordinate values to store directly (not cloned).
+     * @param ordinates  the array of ordinate values to store directly (not cloned).
      */
     GeneralEnvelope(final double[] ordinates) {
         super(ordinates);
@@ -145,10 +145,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * If at least one corner is associated to a CRS, then the new envelope will also
      * be associated to that CRS.
      *
-     * @param  lowerCorner The limits in the direction of decreasing ordinate values for each dimension.
-     * @param  upperCorner The limits in the direction of increasing ordinate values for each dimension.
-     * @throws MismatchedDimensionException If the two positions do not have the same dimension.
-     * @throws MismatchedReferenceSystemException If the CRS of the two position are not equal.
+     * @param  lowerCorner  the limits in the direction of decreasing ordinate values for each dimension.
+     * @param  upperCorner  the limits in the direction of increasing ordinate values for each dimension.
+     * @throws MismatchedDimensionException if the two positions do not have the same dimension.
+     * @throws MismatchedReferenceSystemException if the CRS of the two position are not equal.
      */
     public GeneralEnvelope(final DirectPosition lowerCorner, final DirectPosition upperCorner)
             throws MismatchedDimensionException, MismatchedReferenceSystemException
@@ -160,9 +160,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Constructs an envelope defined by two corners given as sequences of ordinate values.
      * The Coordinate Reference System is initially {@code null}.
      *
-     * @param  lowerCorner The limits in the direction of decreasing ordinate values for each dimension.
-     * @param  upperCorner The limits in the direction of increasing ordinate values for each dimension.
-     * @throws MismatchedDimensionException If the two sequences do not have the same length.
+     * @param  lowerCorner  the limits in the direction of decreasing ordinate values for each dimension.
+     * @param  upperCorner  the limits in the direction of increasing ordinate values for each dimension.
+     * @throws MismatchedDimensionException if the two sequences do not have the same length.
      */
     public GeneralEnvelope(final double[] lowerCorner, final double[] upperCorner) throws MismatchedDimensionException {
         super(lowerCorner, upperCorner);
@@ -172,7 +172,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Constructs an empty envelope of the specified dimension. All ordinates
      * are initialized to 0 and the coordinate reference system is undefined.
      *
-     * @param dimension The envelope dimension.
+     * @param  dimension  the envelope dimension.
      */
     public GeneralEnvelope(final int dimension) {
         super(dimension);
@@ -182,7 +182,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Constructs an empty envelope with the specified coordinate reference system.
      * All ordinate values are initialized to 0.
      *
-     * @param crs The coordinate reference system.
+     * @param  crs  the coordinate reference system.
      */
     public GeneralEnvelope(final CoordinateReferenceSystem crs) {
         super(crs);
@@ -191,7 +191,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     /**
      * Constructs a new envelope with the same data than the specified envelope.
      *
-     * @param envelope The envelope to copy.
+     * @param envelope  the envelope to copy.
      *
      * @see #castOrCopy(Envelope)
      */
@@ -205,7 +205,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.
      * Axis order is (<var>longitude</var>, <var>latitude</var>).
      *
-     * @param box The bounding box to copy.
+     * @param box  the bounding box to copy.
      */
     public GeneralEnvelope(final GeographicBoundingBox box) {
         super(box);
@@ -246,8 +246,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *   <li>{@code GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))}</li>
      * </ul></div>
      *
-     * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
-     * @throws IllegalArgumentException If the given string can not be parsed.
+     * @param  wkt  the {@code BOX}, {@code POLYGON} or other kind of element to parse.
+     * @throws IllegalArgumentException if the given string can not be parsed.
      *
      * @see Envelopes#fromWKT(CharSequence)
      * @see Envelopes#toString(Envelope)
@@ -262,8 +262,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Otherwise the coordinate values and the CRS of the given envelope are
      * {@linkplain #GeneralEnvelope(Envelope) copied} in a new {@code GeneralEnvelope}.
      *
-     * @param  envelope The envelope to cast, or {@code null}.
-     * @return The values of the given envelope as a {@code GeneralEnvelope} instance.
+     * @param  envelope  the envelope to cast, or {@code null}.
+     * @return the values of the given envelope as a {@code GeneralEnvelope} instance.
      *
      * @see AbstractEnvelope#castOrCopy(Envelope)
      * @see ImmutableEnvelope#castOrCopy(Envelope)
@@ -283,7 +283,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * <p>If the envelope coordinates need to be transformed to the new CRS, consider
      * using {@link Envelopes#transform(Envelope, CoordinateReferenceSystem)} instead.</p>
      *
-     * @param  crs The new coordinate reference system, or {@code null}.
+     * @param  crs  the new coordinate reference system, or {@code null}.
      * @throws MismatchedDimensionException if the specified CRS doesn't have the expected number of dimensions.
      * @throws IllegalStateException if a range of ordinate values in this envelope is compatible with the given CRS.
      *         See <cite>Envelope validation</cite> in class javadoc for more details.
@@ -318,11 +318,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     /**
      * Sets the envelope range along the specified dimension.
      *
-     * @param  dimension The dimension to set.
-     * @param  lower     The limit in the direction of decreasing ordinate values.
-     * @param  upper     The limit in the direction of increasing ordinate values.
-     * @throws IndexOutOfBoundsException If the given index is out of bounds.
-     * @throws IllegalArgumentException If {@code lower > upper} and the axis range meaning at the given dimension
+     * @param  dimension  the dimension to set.
+     * @param  lower      the limit in the direction of decreasing ordinate values.
+     * @param  upper      the limit in the direction of increasing ordinate values.
+     * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     * @throws IllegalArgumentException if {@code lower > upper} and the axis range meaning at the given dimension
      *         is not "wraparound". See <cite>Envelope validation</cite> in class javadoc for more details.
      */
     @Override                                                           // Must also be overridden in SubEnvelope
@@ -353,7 +353,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *  <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>, <var>z</var><sub>max</sub>)
      * </div>
      *
-     * @param corners Ordinates of the new lower corner followed by the new upper corner.
+     * @param corners  ordinates of the new lower corner followed by the new upper corner.
      */
     public void setEnvelope(final double... corners) {
         verifyArrayLength(ordinates.length >>> 1, corners);
@@ -365,8 +365,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Verifies that the given array of ordinate values has the expected length
      * for the given number of dimensions.
      *
-     * @param dimension The dimension of the envelope.
-     * @param corners The user-provided array of ordinate values.
+     * @param  dimension  the dimension of the envelope.
+     * @param  corners    the user-provided array of ordinate values.
      */
     static void verifyArrayLength(final int dimension, final double[] corners) {
         if ((corners.length & 1) != 0) {
@@ -385,7 +385,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * If the given envelope has a non-null Coordinate Reference System (CRS), then
      * the CRS of this envelope will be set to the CRS of the given envelope.
      *
-     * @param  envelope The envelope to copy coordinates from.
+     * @param  envelope  the envelope to copy coordinates from.
      * @throws MismatchedDimensionException if the specified envelope doesn't have
      *         the expected number of dimensions.
      */
@@ -446,8 +446,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * (e.g. [-180 … +180]° of longitude). Callers can normalize the envelope when desired by call to
      * the {@link #normalize()} method.</p>
      *
-     * @param vector The translation vector. The length of this array shall be equal to this envelope
-     *        {@linkplain #getDimension() dimension}.
+     * @param vector  the translation vector. The length of this array shall be equal to this envelope
+     *                {@linkplain #getDimension() dimension}.
      *
      * @since 0.5
      */
@@ -468,8 +468,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * This method does not check for anti-meridian spanning. It is invoked only
      * by the {@link Envelopes} transform methods, which build "normal" envelopes.
      *
-     * @param  array The array which contains the ordinate values.
-     * @param  offset Index of the first valid ordinate value in the given array.
+     * @param  array   the array which contains the ordinate values.
+     * @param  offset  index of the first valid ordinate value in the given array.
      */
     final void addSimple(final double[] array, final int offset) {
         final int d = ordinates.length >>> 1;
@@ -504,9 +504,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * The default implementation moves only the border which is closest to the given point.
      *
-     * @param  position The point to add.
-     * @throws MismatchedDimensionException If the given point does not have the expected number of dimensions.
-     * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     * @param  position  the point to add.
+     * @throws MismatchedDimensionException if the given point does not have the expected number of dimensions.
+     * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      */
     public void add(final DirectPosition position) throws MismatchedDimensionException {
         ensureNonNull("position", position);
@@ -546,10 +546,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *    ─────┘     └─────
      * }
      *
-     * @param  i     The dimension of the ordinate
-     * @param  value The ordinate value to add to this envelope.
-     * @param  left  The border on the left side,  which is the <em>max</em> value (yes, this is confusing!)
-     * @param  right The border on the right side, which is the <em>min</em> value (yes, this is confusing!)
+     * @param  i      the dimension of the ordinate
+     * @param  value  the ordinate value to add to this envelope.
+     * @param  left   the border on the left side,  which is the <em>max</em> value (yes, this is confusing!)
+     * @param  right  the border on the right side, which is the <em>min</em> value (yes, this is confusing!)
      */
     private void addToClosest(int i, final double value, double left, double right) {
         left = value - left;
@@ -578,9 +578,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * to infinities. In such case, the ordinate range will be either [−∞…∞] or [0…−0] depending on
      * whatever the original range span the anti-meridian or not.
      *
-     * @param  envelope the {@code Envelope} to add to this envelope.
-     * @throws MismatchedDimensionException If the given envelope does not have the expected number of dimensions.
-     * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     * @param  envelope  the {@code Envelope} to add to this envelope.
+     * @throws MismatchedDimensionException if the given envelope does not have the expected number of dimensions.
+     * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add(GeographicBoundingBox)
      */
@@ -703,9 +703,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * This method supports envelopes spanning the anti-meridian.
      *
-     * @param  envelope the {@code Envelope} to intersect to this envelope.
-     * @throws MismatchedDimensionException If the given envelope does not have the expected number of dimensions.
-     * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     * @param  envelope  the {@code Envelope} to intersect to this envelope.
+     * @throws MismatchedDimensionException if the given envelope does not have the expected number of dimensions.
+     * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#intersect(GeographicBoundingBox)
      */
@@ -796,9 +796,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                     case 2: if (min1 > min0) ordinates[iLower] = min1; break;
                     case 3: // Fall through
                     case 0: {
-                        // Before to declare the intersection as invalid, verify if the envelope
-                        // actually span the whole Earth. In such case, the intersection is a no-
-                        // operation (or a copy operation).
+                        /*
+                         * Before to declare the intersection as invalid, verify if the envelope actually spans
+                         * the whole Earth. In such case, the intersection is a no-operation (or a copy operation).
+                         */
                         final double min, max;
                         final double csSpan = getSpan(getAxis(crs, i));
                         if (span1 >= csSpan) {
@@ -955,7 +956,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * @return {@code true} if this envelope has been modified as a result of this method call,
      *         or {@code false} if no change has been done.
-     * @throws IllegalStateException If a upper ordinate value is less than a lower ordinate
+     * @throws IllegalStateException if a upper ordinate value is less than a lower ordinate
      *         value on an axis which does not have the {@code WRAPAROUND} range meaning.
      *
      * @see #toSimpleEnvelopes()
@@ -1007,10 +1008,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * This method does not compute a sub-CRS because it may not be needed, or the sub-CRS may be already
      * known by the caller.
      *
-     * @param  beginIndex The index of the first valid ordinate value of the corners.
-     * @param  endIndex   The index after the last valid ordinate value of the corners.
-     * @return The sub-envelope of dimension {@code endIndex - beginIndex}.
-     * @throws IndexOutOfBoundsException If an index is out of bounds.
+     * @param  beginIndex  the index of the first valid ordinate value of the corners.
+     * @param  endIndex    the index after the last valid ordinate value of the corners.
+     * @return the sub-envelope of dimension {@code endIndex - beginIndex}.
+     * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
      * @see org.apache.sis.referencing.CRS#getComponentAt(CoordinateReferenceSystem, int, int)
      */
@@ -1018,14 +1019,16 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     public GeneralEnvelope subEnvelope(final int beginIndex, final int endIndex) throws IndexOutOfBoundsException {
         ensureValidIndexRange(ordinates.length >>> 1, beginIndex, endIndex);
         return new SubEnvelope(ordinates, beginIndex, endIndex);
-        // Do check if we could return "this" as an optimization, in order to keep the
-        // method contract simpler (i.e. the returned envelope CRS is always null).
+        /*
+         * Do not check if we could return "this" as an optimization, in order to keep
+         * the method contract simpler (i.e. the returned envelope CRS is always null).
+         */
     }
 
     /**
      * Returns a deep copy of this envelope.
      *
-     * @return A clone of this envelope.
+     * @return a clone of this envelope.
      */
     @Override
     public GeneralEnvelope clone() {
@@ -1038,8 +1041,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             field.set(e, ordinates.clone());
             return e;
         } catch (CloneNotSupportedException | ReflectiveOperationException exception) {
-            // Should not happen, since we are cloneable, the
-            // field is known to exist and we made it accessible.
+            /*
+             * Should not happen, since we are cloneable, the
+             * field is known to exist and we made it accessible.
+             */
             throw new AssertionError(exception);
         }
     }

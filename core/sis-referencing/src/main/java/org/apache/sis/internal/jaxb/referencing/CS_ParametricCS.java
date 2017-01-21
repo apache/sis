@@ -60,8 +60,8 @@ public final class CS_ParametricCS extends PropertyType<CS_ParametricCS, Default
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:ParametricCS>} XML element.
      *
-     * @param  cs The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  cs  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CS_ParametricCS wrap(final DefaultParametricCS cs) {
@@ -73,7 +73,7 @@ public final class CS_ParametricCS extends PropertyType<CS_ParametricCS, Default
      * inside the {@code <gml:ParametricCS>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "ParametricCS")
     public DefaultParametricCS getElement() {
@@ -83,7 +83,7 @@ public final class CS_ParametricCS extends PropertyType<CS_ParametricCS, Default
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param cs The unmarshalled element.
+     * @param  cs  the unmarshalled element.
      */
     public void setElement(final DefaultParametricCS cs) {
         metadata = cs;

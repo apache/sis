@@ -101,9 +101,9 @@ public final class AbridgedMolodensky extends GeocentricAffineBetweenGeographic 
     /**
      * Creates an Abridged Molodensky transform from the specified group of parameter values.
      *
-     * @param  factory The factory to use for creating concatenated transforms.
-     * @param  values  The group of parameter values.
-     * @return The created Abridged Molodensky transform.
+     * @param  factory  the factory to use for creating concatenated transforms.
+     * @param  values   the group of parameter values.
+     * @return the created Abridged Molodensky transform.
      * @throws FactoryException if a transform can not be created.
      */
     @Override

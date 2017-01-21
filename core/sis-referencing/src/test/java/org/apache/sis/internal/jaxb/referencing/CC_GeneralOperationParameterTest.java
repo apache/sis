@@ -103,11 +103,11 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
      * Creates a parameter descriptor from the given properties.
      * All properties except {@code defaultValue} can be part of GML documents.
      *
-     * @param  name          The parameter descriptor name.
-     * @param  remarks       The remarks, or {@code null} if none.
+     * @param  name          the parameter descriptor name.
+     * @param  remarks       the remarks, or {@code null} if none.
      * @param  mandatory     {@code true} for a mandatory parameter, or {@code false} for an optional one.
-     * @param  defaultValue  The default value, or {@code null} if none.
-     * @return The parameter descriptor.
+     * @param  defaultValue  the default value, or {@code null} if none.
+     * @return the parameter descriptor.
      */
     private static DefaultParameterDescriptor<Integer> create(final String name, final String remarks,
             final boolean mandatory, final Integer defaultValue)

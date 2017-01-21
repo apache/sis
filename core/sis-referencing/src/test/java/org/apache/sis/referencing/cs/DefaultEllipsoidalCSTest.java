@@ -116,7 +116,7 @@ public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
     /**
      * Tests (un)marshalling of an ellipsoidal coordinate system.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
     public void testXML() throws JAXBException {

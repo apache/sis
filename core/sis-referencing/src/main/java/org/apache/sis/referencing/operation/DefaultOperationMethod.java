@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -60,9 +61,6 @@ import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
 
 import static org.apache.sis.util.ArgumentChecks.*;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -236,10 +234,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The source and target dimensions may be {@code null} if this method can work
      * with any number of dimensions (e.g. <cite>Affine Transform</cite>).
      *
-     * @param properties       Set of properties. Shall contain at least {@code "name"}.
-     * @param sourceDimensions Number of dimensions in the source CRS of this operation method, or {@code null}.
-     * @param targetDimensions Number of dimensions in the target CRS of this operation method, or {@code null}.
-     * @param parameters       Description of parameters expected by this operation.
+     * @param  properties        set of properties. Shall contain at least {@code "name"}.
+     * @param  sourceDimensions  number of dimensions in the source CRS of this operation method, or {@code null}.
+     * @param  targetDimensions  number of dimensions in the target CRS of this operation method, or {@code null}.
+     * @param  parameters        description of parameters expected by this operation.
      */
     public DefaultOperationMethod(final Map<String,?> properties,
                                   final Integer sourceDimensions,
@@ -272,7 +270,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The information provided in the newly created object are approximative, and
      * usually acceptable only as a fallback when no other information are available.
      *
-     * @param transform The math transform to describe.
+     * @param  transform  the math transform to describe.
      */
     public DefaultOperationMethod(final MathTransform transform) {
         super(getProperties(transform));
@@ -317,10 +315,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * This method returns a mutable map. Consequently, callers can add their own identifiers
      * directly to this map if they wish.
      *
-     * @param  info The identified object to view as a properties map.
-     * @param  authority The new authority for the object to be created,
-     *         or {@code null} if it is not going to have any declared authority.
-     * @return The identified object properties in a mutable map.
+     * @param  info       the identified object to view as a properties map.
+     * @param  authority  the new authority for the object to be created,
+     *                    or {@code null} if it is not going to have any declared authority.
+     * @return the identified object properties in a mutable map.
      */
     private static Map<String,Object> getProperties(final IdentifiedObject info, final Citation authority) {
         final Map<String,Object> properties = new HashMap<String,Object>(IdentifiedObjects.getProperties(info));
@@ -336,7 +334,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param method The operation method to copy.
+     * @param  method  the operation method to copy.
      *
      * @see #castOrCopy(OperationMethod)
      */
@@ -354,8 +352,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultOperationMethod castOrCopy(final OperationMethod object) {
@@ -368,9 +366,9 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The source and target dimensions may be {@code null} if this method can work with any number of dimensions
      * (e.g. <cite>Affine Transform</cite>).
      *
-     * @param method           The operation method to copy.
-     * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions Number of dimensions in the target CRS of this operation method.
+     * @param  method            the operation method to copy.
+     * @param  sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param  targetDimensions  number of dimensions in the target CRS of this operation method.
      */
     private DefaultOperationMethod(final OperationMethod method,
                                    final Integer sourceDimensions,
@@ -388,11 +386,11 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * This method accepts to change a dimension only if the value specified by the original method
      * is {@code null}. Otherwise an {@link IllegalArgumentException} is thrown.
      *
-     * @param method           The operation method to redimension.
-     * @param sourceDimensions The desired new source dimensions.
-     * @param methodSource     The current number of source dimensions (may be {@code null}).
-     * @param targetDimensions The desired new target dimensions.
-     * @param methodTarget     The current number of target dimensions (may be {@code null}).
+     * @param  method            the operation method to redimension.
+     * @param  sourceDimensions  the desired new source dimensions.
+     * @param  methodSource      the current number of source dimensions (may be {@code null}).
+     * @param  targetDimensions  the desired new target dimensions.
+     * @param  methodTarget      the current number of target dimensions (may be {@code null}).
      * @throws IllegalArgumentException if the given dimensions are illegal for this operation method.
      */
     private static OperationMethod redimension(final OperationMethod method,
@@ -445,10 +443,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *   </li>
      * </ul>
      *
-     * @param  method           The operation method to redimension, or {@code null}.
-     * @param  sourceDimensions The desired number of input dimensions.
-     * @param  targetDimensions The desired number of output dimensions.
-     * @return The redimensioned operation method, or {@code null} if the given method was null,
+     * @param  method            the operation method to redimension, or {@code null}.
+     * @param  sourceDimensions  the desired number of input dimensions.
+     * @param  targetDimensions  the desired number of output dimensions.
+     * @return the redimensioned operation method, or {@code null} if the given method was null,
      *         or {@code method} if no change is needed.
      * @throws IllegalArgumentException if the given dimensions are illegal for the given operation method.
      */
@@ -484,9 +482,9 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * but can also work in a two-dimensional space by assuming that the ellipsoidal height is zero
      * everywhere.
      *
-     * @param  sourceDimensions The desired number of input dimensions.
-     * @param  targetDimensions The desired number of output dimensions.
-     * @return The redimensioned operation method, or {@code this} if no change is needed.
+     * @param  sourceDimensions  the desired number of input dimensions.
+     * @param  targetDimensions  the desired number of output dimensions.
+     * @return the redimensioned operation method, or {@code this} if no change is needed.
      * @throws IllegalArgumentException if the given dimensions are illegal for this operation method.
      *
      * @since 0.6
@@ -536,7 +534,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The default implementation returns {@code SingleOperation.class},
      * which is the most conservative return value.
      *
-     * @return Interface implemented by all coordinate operations that use this method.
+     * @return interface implemented by all coordinate operations that use this method.
      *
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getAvailableMethods(Class)
      */
@@ -552,7 +550,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * <div class="note"><b>Departure from the ISO 19111 standard:</b>
      * this property is mandatory according ISO 19111, but optional in Apache SIS.</div>
      *
-     * @return The formula used by this method, or {@code null} if unknown.
+     * @return the formula used by this method, or {@code null} if unknown.
      *
      * @see DefaultFormula
      * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
@@ -566,7 +564,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Number of dimensions in the source CRS of this operation method.
      * May be null if unknown, as in an <cite>Affine Transform</cite>.
      *
-     * @return The dimension of source CRS, or {@code null} if unknown.
+     * @return the dimension of source CRS, or {@code null} if unknown.
      *
      * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getSourceDimensions()
      */
@@ -581,7 +579,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Number of dimensions in the target CRS of this operation method.
      * May be null if unknown, as in an <cite>Affine Transform</cite>.
      *
-     * @return The dimension of target CRS, or {@code null} if unknown.
+     * @return the dimension of target CRS, or {@code null} if unknown.
      *
      * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getTargetDimensions()
      */
@@ -600,7 +598,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it
      * or if this {@code OperationMethod} has been read from an incomplete GML document.</div>
      *
-     * @return The parameters, or {@code null} if unknown.
+     * @return the parameters, or {@code null} if unknown.
      *
      * @see DefaultConversion#getParameterDescriptors()
      * @see DefaultConversion#getParameterValues()
@@ -616,16 +614,16 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties
      * are compared including the {@linkplain #getFormula() formula}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                                // Slight optimization.
         }
         if (super.equals(object, mode)) {
             switch (mode) {
@@ -680,7 +678,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {

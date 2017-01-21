@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.Arrays;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -39,11 +40,8 @@ import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
-// Branch-dependent imports
-import java.util.Objects;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
-
 
 /**
  * Specifies that a subset of a coordinate tuple is subject to a specific coordinate operation.
@@ -100,12 +98,12 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param sourceCRS  The source CRS.
-     * @param targetCRS  The target CRS.
-     * @param operation  The operation to apply on the subset of a coordinate tuple.
-     * @param firstAffectedOrdinate Index of the first affected ordinate.
-     * @param numTrailingOrdinates Number of trailing ordinates to pass through.
+     * @param  properties             the properties to be given to the identified object.
+     * @param  sourceCRS              the source CRS.
+     * @param  targetCRS              the target CRS.
+     * @param  operation              the operation to apply on the subset of a coordinate tuple.
+     * @param  firstAffectedOrdinate  index of the first affected ordinate.
+     * @param  numTrailingOrdinates   number of trailing ordinates to pass through.
      */
     public DefaultPassThroughOperation(final Map<String,?>            properties,
                                        final CoordinateReferenceSystem sourceCRS,
@@ -127,7 +125,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param operation The coordinate operation to copy.
+     * @param  operation  the coordinate operation to copy.
      *
      * @see #castOrCopy(PassThroughOperation)
      */
@@ -144,8 +142,8 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * Note that this is a <cite>shallow</cite> copy operation, since the other properties contained in the given
      * object are not recursively copied.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultPassThroughOperation castOrCopy(final PassThroughOperation object) {
@@ -200,7 +198,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * This is necessary for supporting usage of {@code PassThroughOperation} with {@link ConcatenatedOperation}.
      * </div>
      *
-     * @return The operation to apply on the subset of a coordinate tuple.
+     * @return the operation to apply on the subset of a coordinate tuple.
      *
      * @see PassThroughTransform#getSubTransform()
      */
@@ -214,7 +212,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * Returns the ordered sequence of indices in a source coordinate tuple of the coordinates
      * affected by this pass-through operation.
      *
-     * @return Zero-based indices of the modified source coordinates.
+     * @return zero-based indices of the modified source coordinates.
      *
      * @see PassThroughTransform#getModifiedCoordinates()
      */
@@ -260,7 +258,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                                    // Slight optimization.
         }
         if (super.equals(object, mode)) {
             if (mode == ComparisonMode.STRICT) {
@@ -287,8 +285,8 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * Current format is specific to Apache SIS and may change in any future version
      * if a standard format for pass through operations is defined.
      *
-     * @param  formatter The formatter to use.
-     * @return Currently {@code "PassThroughOperation"} (may change in any future version).
+     * @param  formatter  the formatter to use.
+     * @return currently {@code "PassThroughOperation"} (may change in any future version).
      *
      * @since 0.7
      */

@@ -766,8 +766,8 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * For API stability, use the {@link #contains(Envelope)} method instead.
      * See <a href="http://issues.apache.org/jira/browse/SIS-172">SIS-172</a> for more information.</div>
      *
-     * @param  envelope  the envelope to test for inclusion.
-     * @param  edgesInclusive {@code true} if this envelope edges are inclusive.
+     * @param  envelope        the envelope to test for inclusion.
+     * @param  edgesInclusive  {@code true} if this envelope edges are inclusive.
      * @return {@code true} if this envelope completely encloses the specified one.
      * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
      * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
@@ -880,8 +880,8 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * For API stability, use the {@link #intersects(Envelope)} method instead.
      * See <a href="http://issues.apache.org/jira/browse/SIS-172">SIS-172</a> for more information.</div>
      *
-     * @param  envelope  the envelope to test for intersection.
-     * @param  edgesInclusive {@code true} if this envelope edges are inclusive.
+     * @param  envelope        the envelope to test for intersection.
+     * @param  edgesInclusive  {@code true} if this envelope edges are inclusive.
      * @return {@code true} if this envelope intersects the specified one.
      * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
      * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
@@ -1114,9 +1114,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * Implementation of the public {@link #toString()} and {@link Envelopes#toString(Envelope)}
      * methods for formatting a {@code BOX} element from an envelope.
      *
-     * @param  envelope The envelope to format.
-     * @param  isSimplePrecision {@code true} if every lower and upper corner values can be casted to {@code float}.
-     * @return This envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
+     * @param  envelope           the envelope to format.
+     * @param  isSimplePrecision  {@code true} if every lower and upper corner values can be casted to {@code float}.
+     * @return this envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      *
      * @see GeneralEnvelope#GeneralEnvelope(CharSequence)
      * @see org.apache.sis.measure.CoordinateFormat
@@ -1235,8 +1235,8 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * preserving the immutable aspect of {@link ImmutableEnvelope} subclass among others.</p>
      *
      * @param  dimension  the dimension to set.
-     * @param  lower     The limit in the direction of decreasing ordinate values.
-     * @param  upper     The limit in the direction of increasing ordinate values.
+     * @param  lower      the limit in the direction of decreasing ordinate values.
+     * @param  upper      the limit in the direction of increasing ordinate values.
      * @throws UnmodifiableGeometryException if this envelope is not modifiable.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws IllegalArgumentException if {@code lower > upper}, this envelope has a CRS

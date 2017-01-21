@@ -62,8 +62,8 @@ public final class CS_AffineCS extends PropertyType<CS_AffineCS, AffineCS> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:AffineCS>} XML element.
      *
-     * @param  cs The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  cs  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CS_AffineCS wrap(final AffineCS cs) {
@@ -75,7 +75,7 @@ public final class CS_AffineCS extends PropertyType<CS_AffineCS, AffineCS> {
      * inside the {@code <gml:AffineCS>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "AffineCS")
     public DefaultAffineCS getElement() {
@@ -85,7 +85,7 @@ public final class CS_AffineCS extends PropertyType<CS_AffineCS, AffineCS> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param cs The unmarshalled element.
+     * @param  cs  the unmarshalled element.
      */
     public void setElement(final DefaultAffineCS cs) {
         metadata = cs;

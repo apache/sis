@@ -102,8 +102,8 @@ public class DefaultCompoundCS extends AbstractCS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param components The set of coordinate system.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  components  the set of coordinate system.
      */
     public DefaultCompoundCS(final Map<String,?> properties, CoordinateSystem... components) {
         super(properties, getAxes(components = clone(components)));
@@ -114,7 +114,7 @@ public class DefaultCompoundCS extends AbstractCS {
      * Constructs a compound coordinate system from a sequence of coordinate systems.
      * A default name for this CS will be inferred from the names of all specified CS.
      *
-     * @param components The set of coordinate system.
+     * @param  components  the set of coordinate system.
      */
     public DefaultCompoundCS(CoordinateSystem... components) {
         this(components = clone(components), getAxes(components));
@@ -124,7 +124,7 @@ public class DefaultCompoundCS extends AbstractCS {
      * This is a work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      *
-     * @param components The coordinate systems.
+     * @param  components  the coordinate systems.
      */
     @Workaround(library="JDK", version="1.7")
     private DefaultCompoundCS(final CoordinateSystem[] components, final CoordinateSystemAxis[] axes) {
@@ -168,7 +168,7 @@ public class DefaultCompoundCS extends AbstractCS {
     /**
      * Returns all coordinate systems in this compound CS.
      *
-     * @return All coordinate systems in this compound CS.
+     * @return all coordinate systems in this compound CS.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<CoordinateSystem> getComponents() {
@@ -188,10 +188,10 @@ public class DefaultCompoundCS extends AbstractCS {
     /**
      * Compares this coordinate system with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override

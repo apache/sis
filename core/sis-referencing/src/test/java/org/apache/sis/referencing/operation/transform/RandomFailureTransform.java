@@ -77,7 +77,7 @@ final strictfp class RandomFailureTransform extends PseudoTransform {
     /**
      * Fills the given array with random number.
      *
-     * @param array The array to fill.
+     * @param  array  the array to fill.
      */
     public void fill(final double[] array) {
         for (int i=0; i<array.length; i++) {
@@ -88,7 +88,7 @@ final strictfp class RandomFailureTransform extends PseudoTransform {
     /**
      * Fills the given array with random number.
      *
-     * @param array The array to fill.
+     * @param  array  the array to fill.
      */
     public void fill(final float[] array) {
         for (int i=0; i<array.length; i++) {
@@ -99,7 +99,7 @@ final strictfp class RandomFailureTransform extends PseudoTransform {
     /**
      * Pseudo-transform a point in the given array, with intentional random failures.
      *
-     * @throws TransformException Throws randomly at the frequency given at construction time.
+     * @throws TransformException thrown randomly at the frequency given at construction time.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,

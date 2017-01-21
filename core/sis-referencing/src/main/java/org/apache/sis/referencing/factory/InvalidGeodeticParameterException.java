@@ -49,8 +49,7 @@ public class InvalidGeodeticParameterException extends FactoryException {
     /**
      * Construct an exception with the specified detail message.
      *
-     * @param  message  the detail message. The detail message is saved
-     *         for later retrieval by the {@link #getMessage()} method.
+     * @param  message  the detail message, saved for later retrieval by the {@link #getMessage()} method.
      */
     public InvalidGeodeticParameterException(String message) {
         super(message);
@@ -62,8 +61,7 @@ public class InvalidGeodeticParameterException extends FactoryException {
      * <p>This constructor is not public because its behavior is slightly different than the default JDK behavior:
      * the message is set to the throwable message instead than to {@code throwable.toString()}.</p>
      *
-     * @param  cause  the cause for this exception. The cause is saved
-     *         for later retrieval by the {@link #getCause()} method.
+     * @param  cause  the cause for this exception, saved for later retrieval by the {@link #getCause()} method.
      */
     InvalidGeodeticParameterException(Throwable cause) {
         super(cause.getLocalizedMessage(), cause);
@@ -72,10 +70,8 @@ public class InvalidGeodeticParameterException extends FactoryException {
     /**
      * Construct an exception with the specified detail message and cause.
      *
-     * @param  message  the detail message. The detail message is saved
-     *         for later retrieval by the {@link #getMessage()} method.
-     * @param  cause  the cause for this exception. The cause is saved
-     *         for later retrieval by the {@link #getCause()} method.
+     * @param  message  the detail message, saved for later retrieval by the {@link #getMessage()} method.
+     * @param  cause    the cause for this exception, saved for later retrieval by the {@link #getCause()} method.
      */
     public InvalidGeodeticParameterException(String message, Throwable cause) {
         super(message, cause);

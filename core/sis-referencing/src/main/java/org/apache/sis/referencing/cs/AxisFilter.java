@@ -51,7 +51,7 @@ public interface AxisFilter {
     /**
      * Returns {@code true} if the given axis shall be included in the new coordinate system.
      *
-     * @param  axis The axis to test.
+     * @param  axis  the axis to test.
      * @return {@code true} if the given axis shall be included in the new coordinate system.
      */
     boolean accept(CoordinateSystemAxis axis);
@@ -74,9 +74,9 @@ public interface AxisFilter {
      * }
      * </div>
      *
-     * @param  axis The axis for which to change axis direction, if desired.
-     * @param  direction The original axis direction.
-     * @return The new axis direction, or {@code direction} if there is no change.
+     * @param  axis       the axis for which to change axis direction, if desired.
+     * @param  direction  the original axis direction.
+     * @return the new axis direction, or {@code direction} if there is no change.
      *
      * @since 0.7
      */
@@ -100,9 +100,9 @@ public interface AxisFilter {
      * }
      * </div>
      *
-     * @param  axis The axis for which to change unit, if desired.
-     * @param  unit The original axis unit.
-     * @return The new axis unit, or {@code unit} if there is no change.
+     * @param  axis  the axis for which to change unit, if desired.
+     * @param  unit  the original axis unit.
+     * @return the new axis unit, or {@code unit} if there is no change.
      *
      * @since 0.7
      */

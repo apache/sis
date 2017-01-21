@@ -399,7 +399,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * of the "{@linkplain #getCoordinateToGrid() coordinate to grid}" transform.
      * The number of translation dimensions is usually 2 or 3, but other values are allowed.
      *
-     * @return Number of dimensions of translation vectors.
+     * @return number of dimensions of translation vectors.
      */
     public abstract int getTranslationDimensions();
 

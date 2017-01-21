@@ -62,11 +62,11 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
      *
      * The {@link #transform} field must be set before to invoke this method.
      *
-     * @param expectedType The expected base type of the math transform.
-     * @param base         The exponent base given to the {@link LogarithmicTransform1D} constructor.
-     * @param offset       The offset given to the {@link LogarithmicTransform1D} constructor.
-     * @param preAffine    {@code true} for applying an additional affine transform before the transform.
-     * @param postAffine   {@code true} for applying an additional affine transform after the transform.
+     * @param  expectedType  the expected base type of the math transform.
+     * @param  base          the exponent base given to the {@link LogarithmicTransform1D} constructor.
+     * @param  offset        the offset given to the {@link LogarithmicTransform1D} constructor.
+     * @param  preAffine     {@code true} for applying an additional affine transform before the transform.
+     * @param  postAffine    {@code true} for applying an additional affine transform after the transform.
      */
     private void run(final Class<? extends MathTransform1D> expectedType, final double base, final double offset,
             final boolean preAffine, final boolean postAffine) throws TransformException
@@ -79,7 +79,7 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
         final double[] expected = new double[values.length];
         final double lnBase = log(base);
         for (int i=0; i<values.length; i++) {
-            double value = abs(values[i]) + 0.001; // Makes the values valid for logarithms.
+            double value = abs(values[i]) + 0.001;                      // Makes the values valid for logarithms.
             values[i] = value;
             if (preAffine) {
                 value = C0 + C1*value;
@@ -214,7 +214,7 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
         final double[] values = generateRandomCoordinates(CoordinateDomain.RANGE_10, 0);
         final double[] expected = new double[values.length];
         for (int i=0; i<values.length; i++) {
-            final double value = abs(values[i]) + 0.001; // Makes the values valid for logarithms.
+            final double value = abs(values[i]) + 0.001;        // Makes the values valid for logarithms.
             values[i] = value;
             expected[i] = ExponentialTransform1DTest.SCALE * pow(10, log(value) / lnBase + C0);
         }

@@ -19,7 +19,6 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.Collections;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -113,7 +112,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      * This is similar to the standard parameters except that the redundant target axes
      * lengths are omitted.
      *
-     * @return Internal parameter descriptor.
+     * @return internal parameter descriptor.
      */
     @Debug
     public static ParameterDescriptorGroup internal() {
@@ -165,9 +164,9 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     /**
      * Creates a Molodensky transform from the specified group of parameter values.
      *
-     * @param  factory The factory to use for creating concatenated transforms.
-     * @param  values  The group of parameter values.
-     * @return The created Molodensky transform.
+     * @param  factory  the factory to use for creating concatenated transforms.
+     * @param  values   the group of parameter values.
+     * @return the created Molodensky transform.
      * @throws FactoryException if a transform can not be created.
      */
     @Override
@@ -182,12 +181,12 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      * Creates a (potentially abridged) Molodensky transform from the specified group of parameter values.
      * The specified number of dimensions are <em>default</em> values; they may be overridden by user parameters.
      *
-     * @param  factory          The factory to use for creating concatenated transforms.
-     * @param  values           The group of parameter values specified by the users.
-     * @param  sourceDimensions Number of source dimensions (2 or 3) of the operation method.
-     * @param  targetDimensions Number of target dimensions (2 or 3) of the operation method.
-     * @param  isAbridged       {@code true} for the abridged form.
-     * @return The created (abridged) Molodensky transform.
+     * @param  factory           the factory to use for creating concatenated transforms.
+     * @param  values            the group of parameter values specified by the users.
+     * @param  sourceDimensions  number of source dimensions (2 or 3) of the operation method.
+     * @param  targetDimensions  number of target dimensions (2 or 3) of the operation method.
+     * @param  isAbridged        {@code true} for the abridged form.
+     * @return the created (abridged) Molodensky transform.
      * @throws FactoryException if a transform can not be created.
      */
     static MathTransform createMathTransform(final MathTransformFactory factory, final Parameters values,
@@ -195,7 +194,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     {
         final Integer dim = values.getValue(DIMENSION);
         if (dim != null) {
-            final int n = dim;  // Unboxing.
+            final int n = dim;                            // Unboxing.
             if (n != 2 && n != 3) {
                 throw new InvalidParameterValueException(Errors.format(
                         Errors.Keys.IllegalArgumentValue_2, "dim", dim), "dim", dim);

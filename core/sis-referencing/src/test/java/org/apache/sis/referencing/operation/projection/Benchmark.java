@@ -174,8 +174,8 @@ public final class Benchmark {
         /**
          * Creates a decomposition of the given map projection.
          *
-         * @param label       a label for display purpose.
-         * @param projection  the map projection to benchmark.
+         * @param  label       a label for display purpose.
+         * @param  projection  the map projection to benchmark.
          */
         private Transforms(final String label, final MathTransform projection) {
             this.projection = projection;
@@ -245,8 +245,8 @@ public final class Benchmark {
     /**
      * Runs the benchmark.
      *
-     * @param kernelOnly {@code true} for measuring the performance of only the non-linear part,
-     *                   or {@code false} for measuring the performance of the whole projection.
+     * @param  kernelOnly  {@code true} for measuring the performance of only the non-linear part,
+     *                     or {@code false} for measuring the performance of the whole projection.
      */
     private void run(final boolean kernelOnly) throws TransformException {
         if (kernelOnly) {

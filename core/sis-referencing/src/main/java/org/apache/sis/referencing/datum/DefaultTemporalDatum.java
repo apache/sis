@@ -18,6 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlElement;
@@ -35,9 +36,6 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -153,8 +151,8 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param origin The date and time origin of this temporal datum.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  origin      the date and time origin of this temporal datum.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalDatum(Map, Date)
      */
@@ -171,7 +169,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param datum The datum to copy.
+     * @param  datum  the datum to copy.
      *
      * @see #castOrCopy(TemporalDatum)
      */
@@ -186,8 +184,8 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultTemporalDatum castOrCopy(final TemporalDatum object) {
@@ -214,7 +212,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     /**
      * Returns the date and time origin of this temporal datum.
      *
-     * @return The date and time origin of this temporal datum.
+     * @return the date and time origin of this temporal datum.
      */
     @Override
     @XmlSchemaType(name = "dateTime")
@@ -227,16 +225,16 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     /**
      * Compares this temporal datum with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                                    // Slight optimization.
         }
         if (!super.equals(object, mode)) {
             return false;
@@ -256,7 +254,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {

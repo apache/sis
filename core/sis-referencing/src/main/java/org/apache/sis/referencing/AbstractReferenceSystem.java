@@ -145,7 +145,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to this object.
+     * @param properties  the properties to be given to this object.
      */
     public AbstractReferenceSystem(final Map<String,?> properties) {
         super(properties);
@@ -160,7 +160,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param object The reference system to copy.
+     * @param object  the reference system to copy.
      */
     protected AbstractReferenceSystem(final ReferenceSystem object) {
         super(object);
@@ -173,7 +173,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      * The default implementation returns {@code ReferenceSystem.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The GeoAPI interface implemented by this class.
+     * @return the GeoAPI interface implemented by this class.
      */
     @Override
     public Class<? extends ReferenceSystem> getInterface() {
@@ -183,7 +183,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     /**
      * Returns the region or timeframe in which this reference system is valid, or {@code null} if unspecified.
      *
-     * @return Area or region or timeframe in which this (coordinate) reference system is valid, or {@code null}.
+     * @return area or region or timeframe in which this (coordinate) reference system is valid, or {@code null}.
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */
@@ -199,7 +199,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     /**
      * Returns the domain or limitations of usage, or {@code null} if unspecified.
      *
-     * @return Description of domain of usage, or limitations of usage, for which this
+     * @return description of domain of usage, or limitations of usage, for which this
      *         (coordinate) reference system object is valid, or {@code null}.
      */
     @Override
@@ -215,10 +215,10 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      * compared including the {@linkplain #getDomainOfValidity() domain of validity} and
      * the {@linkplain #getScope() scope}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -249,7 +249,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {

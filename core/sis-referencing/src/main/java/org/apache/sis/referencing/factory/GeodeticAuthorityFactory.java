@@ -1317,7 +1317,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Returns a string representation of this factory for debugging purpose only.
      * The string returned by this method may change in any future SIS version.
      *
-     * @return A string representation for debugging purpose.
+     * @return a string representation for debugging purpose.
      */
     @Debug
     @Override

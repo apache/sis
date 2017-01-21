@@ -62,8 +62,8 @@ public final class CS_VerticalCS extends PropertyType<CS_VerticalCS, VerticalCS>
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:VerticalCS>} XML element.
      *
-     * @param  cs The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  cs  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CS_VerticalCS wrap(final VerticalCS cs) {
@@ -75,7 +75,7 @@ public final class CS_VerticalCS extends PropertyType<CS_VerticalCS, VerticalCS>
      * inside the {@code <gml:VerticalCS>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "VerticalCS")
     public DefaultVerticalCS getElement() {
@@ -85,7 +85,7 @@ public final class CS_VerticalCS extends PropertyType<CS_VerticalCS, VerticalCS>
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param cs The unmarshalled element.
+     * @param  cs  the unmarshalled element.
      */
     public void setElement(final DefaultVerticalCS cs) {
         metadata = cs;

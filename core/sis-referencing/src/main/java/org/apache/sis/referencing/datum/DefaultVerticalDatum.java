@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -34,9 +35,6 @@ import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -154,8 +152,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param type       The type of this vertical datum.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  type        the type of this vertical datum.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalDatum(Map, VerticalDatumType)
      */
@@ -172,7 +170,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param datum The datum to copy.
+     * @param  datum  the datum to copy.
      *
      * @see #castOrCopy(VerticalDatum)
      */
@@ -187,8 +185,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultVerticalDatum castOrCopy(final VerticalDatum object) {
@@ -244,7 +242,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * This property provides an information similar to the {@linkplain #getAnchorPoint() anchor definition},
      * but in a programmatic way more suitable to coordinate transformation engines.</div>
      *
-     * @return The type of this vertical datum.
+     * @return the type of this vertical datum.
      */
     @Override
     public VerticalDatumType getVerticalDatumType() {
@@ -254,10 +252,10 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     /**
      * Compare this vertical datum with the specified object for equality.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -292,7 +290,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {

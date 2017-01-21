@@ -67,8 +67,8 @@ public final strictfp class GeodeticObjectVerifier {
      * <p><b>Note:</b> a future version of this method may accept other kinds of extent,
      * for example a polygon encompassing the world.</p>
      *
-     * @param extent The extent to verify, or {@code null} if none.
-     * @param isMandatory {@code true} if an absence of world extent is a failure.
+     * @param  extent       the extent to verify, or {@code null} if none.
+     * @param  isMandatory  {@code true} if an absence of world extent is a failure.
      */
     private static void assertIsWorld(final Extent extent, boolean isMandatory) {
         if (extent != null) {
@@ -98,7 +98,7 @@ public final strictfp class GeodeticObjectVerifier {
      * <tr><td>{@linkplain GeographicBoundingBox#getNorthBoundLatitude() North bound latitude}</td><td> +90</td></tr>
      * </table>
      *
-     * @param box The geographic bounding box to verify.
+     * @param  box  the geographic bounding box to verify.
      */
     public static void assertIsWorld(final GeographicBoundingBox box) {
         final Boolean inclusion = box.getInclusion();
@@ -126,7 +126,7 @@ public final strictfp class GeodeticObjectVerifier {
      *     <td>{@link Units#DEGREE}</td></tr>
      * </table>
      *
-     * @param meridian The prime meridian to verify.
+     * @param  meridian  the prime meridian to verify.
      */
     public static void assertIsGreenwich(final PrimeMeridian meridian) {
         assertEquals("name",               "Greenwich",        meridian.getName().getCode());
@@ -149,7 +149,7 @@ public final strictfp class GeodeticObjectVerifier {
      *     <td>{@link Units#GRAD}</td></tr>
      * </table>
      *
-     * @param meridian The prime meridian to verify.
+     * @param  meridian  the prime meridian to verify.
      */
     public static void assertIsParis(final PrimeMeridian meridian) {
         assertEquals("name",               "Paris",    meridian.getName().getCode());
@@ -178,7 +178,7 @@ public final strictfp class GeodeticObjectVerifier {
      *     <td>{@code true}</td></tr>
      * </table>
      *
-     * @param ellipsoid The ellipsoid to verify.
+     * @param  ellipsoid  the ellipsoid to verify.
      */
     public static void assertIsWGS84(final Ellipsoid ellipsoid) {
         assertEquals("name",              "WGS 84",          ellipsoid.getName().getCode());
@@ -206,9 +206,9 @@ public final strictfp class GeodeticObjectVerifier {
      *     <td>{@linkplain #assertIsWGS84(Ellipsoid) Is WGS84}</td></tr>
      * </table>
      *
-     * @param datum The datum to verify.
-     * @param isExtentMandatory {@code true} if the domain of validity is required to contain an {@code Extent} element
-     *        for the world, or {@code false} if optional.
+     * @param  datum              the datum to verify.
+     * @param  isExtentMandatory  {@code true} if the domain of validity is required to contain an
+     *                            {@code Extent} element for the world, or {@code false} if optional.
      */
     public static void assertIsWGS84(final GeodeticDatum datum, final boolean isExtentMandatory) {
         assertEquals("name", "World Geodetic System 1984", datum.getName().getCode());
@@ -234,11 +234,11 @@ public final strictfp class GeodeticObjectVerifier {
      *     <td>{@linkplain #assertIsGeodetic2D(EllipsoidalCS, boolean) Is for a 2D geodetic CRS}</td></tr>
      * </table>
      *
-     * @param crs The coordinate reference system to verify.
-     * @param isExtentMandatory {@code true} if the CRS and datum domains of validity are required to contain an
-     *        {@code Extent} element for the world, or {@code false} if optional.
-     * @param isRangeMandatory {@code true} if the coordinate system axes range and range meaning properties
-     *        shall be defined, or {@code false} if they are optional.
+     * @param  crs                the coordinate reference system to verify.
+     * @param  isExtentMandatory  {@code true} if the CRS and datum domains of validity are required to contain an
+     *                            {@code Extent} element for the world, or {@code false} if optional.
+     * @param  isRangeMandatory   {@code true} if the coordinate system axes range and range meaning properties
+     *                            shall be defined, or {@code false} if they are optional.
      */
     public static void assertIsWGS84(final GeodeticCRS crs, final boolean isExtentMandatory, final boolean isRangeMandatory) {
         assertEquals("name", "WGS 84", crs.getName().getCode());
@@ -262,9 +262,9 @@ public final strictfp class GeodeticObjectVerifier {
      *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world} or absent</td></tr>
      * </table>
      *
-     * @param datum The datum to verify.
-     * @param isExtentMandatory {@code true} if the domain of validity is required to contain an {@code Extent} element
-     *        for the world, or {@code false} if optional.
+     * @param  datum              the datum to verify.
+     * @param  isExtentMandatory  {@code true} if the domain of validity is required to contain an
+     *                            {@code Extent} element for the world, or {@code false} if optional.
      */
     public static void assertIsMeanSeaLevel(final VerticalDatum datum, final boolean isExtentMandatory) {
         assertEquals("name", "Mean Sea Level", datum.getName().getCode());
@@ -300,7 +300,7 @@ public final strictfp class GeodeticObjectVerifier {
      *     <td>{@code null}</td>
      * </table>
      *
-     * @param cs The coordinate system to verify.
+     * @param  cs  the coordinate system to verify.
      */
     public static void assertIsProjected2D(final CartesianCS cs) {
         assertEquals("dimension", 2, cs.getDimension());
@@ -353,9 +353,9 @@ public final strictfp class GeodeticObjectVerifier {
      *       because the classical symbols (φ,λ) are often replaced by (lat,long).</li>
      * </ul>
      *
-     * @param cs The coordinate system to verify.
-     * @param isRangeMandatory {@code true} if the axes range and range meaning properties shall be defined,
-     *        or {@code false} if they are optional.
+     * @param  cs               the coordinate system to verify.
+     * @param  isRangeMandatory  {@code true} if the axes range and range meaning properties shall be defined,
+     *                           or {@code false} if they are optional.
      */
     public static void assertIsGeodetic2D(final EllipsoidalCS cs, final boolean isRangeMandatory) {
         assertEquals("dimension", 2, cs.getDimension());

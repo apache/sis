@@ -396,7 +396,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * as a concatenation of the specified {@code name} with {@code this}.
      *
      * @param scope The name to use as prefix.
-     * @return A concatenation of the given scope with this name.
+     * @return a concatenation of the given scope with this name.
      */
     @Override
     public ScopedName push(final GenericName scope) {

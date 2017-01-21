@@ -116,7 +116,7 @@ public class DefaultParametricDatum extends AbstractDatum {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
+     * @param  properties  the properties to be given to the identified object.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createParametricDatum(Map)
      */
@@ -134,7 +134,7 @@ public class DefaultParametricDatum extends AbstractDatum {
      * <div class="warning"><b>Warning:</b> in a future SIS version, the parameter type may be changed
      * to {@code org.opengis.referencing.datum.ParametricDatum}. This change is pending GeoAPI revision.</div>
      *
-     * @param datum The datum to copy.
+     * @param  datum  the datum to copy.
      */
     protected DefaultParametricDatum(final DefaultParametricDatum datum) {
         super(datum);

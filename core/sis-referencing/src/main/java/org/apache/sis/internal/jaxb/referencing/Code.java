@@ -73,7 +73,7 @@ public final class Code {
      * The {@link #getIdentifier()} method shall be able to perform the opposite operation (split the
      * above in separated codespace and version attributes).
      *
-     * @param identifier The identifier from which to get the values.
+     * @param identifier  the identifier from which to get the values.
      */
     Code(final ReferenceIdentifier identifier) {
         code      = identifier.getCode();
@@ -94,7 +94,7 @@ public final class Code {
      * will be taken as the authority version number. This is for consistency with what the
      * constructor does.
      *
-     * @return The identifier, or {@code null} if none.
+     * @return the identifier, or {@code null} if none.
      */
     public ReferenceIdentifier getIdentifier() {
         String c = code;
@@ -160,9 +160,9 @@ public final class Code {
      *   <li>The first identifier in other codespace, converted to the {@code "urn:} syntax if possible.</li>
      * </ul>
      *
-     * @param  type The type of the identified object.
-     * @param  identifiers The object identifiers, or {@code null} if none.
-     * @return The {@code <gml:identifier>} as a {@code Code} instance, or {@code null} if none.
+     * @param  type         the type of the identified object.
+     * @param  identifiers  the object identifiers, or {@code null} if none.
+     * @return the {@code <gml:identifier>} as a {@code Code} instance, or {@code null} if none.
      */
     public static Code forIdentifiedObject(final Class<?> type, final Iterable<? extends ReferenceIdentifier> identifiers) {
         if (identifiers != null) {

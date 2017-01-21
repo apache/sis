@@ -90,12 +90,12 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      * The default implementation invokes {@link #transform(double[], int, double[], int, boolean)}
      * using a temporary array of doubles.
      *
-     * @param  ptSrc The coordinate point to be transformed.
-     * @param  ptDst The coordinate point that stores the result of transforming {@code ptSrc},
-     *               or {@code null} if a new point shall be created.
-     * @return The coordinate point after transforming {@code ptSrc} and storing the result in {@code ptDst},
+     * @param  ptSrc  the coordinate point to be transformed.
+     * @param  ptDst  the coordinate point that stores the result of transforming {@code ptSrc},
+     *                or {@code null} if a new point shall be created.
+     * @return the coordinate point after transforming {@code ptSrc} and storing the result in {@code ptDst},
      *         or in a new point if {@code ptDst} was null.
-     * @throws TransformException If the point can not be transformed.
+     * @throws TransformException if the point can not be transformed.
      *
      * @see MathTransform2D#transform(Point2D, Point2D)
      */
@@ -124,8 +124,8 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      * a {@link Path2D}, but may also be a {@link Line2D} or a {@link QuadCurve2D} if such
      * simplification is possible.
      *
-     * @param  shape Shape to transform.
-     * @return Transformed shape, or {@code shape} if this transform is the identity transform.
+     * @param  shape  shape to transform.
+     * @return transformed shape, or {@code shape} if this transform is the identity transform.
      * @throws TransformException if a transform failed.
      */
     @Override
@@ -138,16 +138,15 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      * The new object is often a {@link Path2D}, but may also be a {@link Line2D} or a {@link QuadCurve2D}
      * if such simplification is possible.
      *
-     * @param  mt            The math transform to use.
-     * @param  shape         The geometric shape to transform.
-     * @param  preTransform  An optional affine transform to apply <em>before</em> the
-     *                       transformation using {@code this}, or {@code null} if none.
-     * @param  postTransform An optional affine transform to apply <em>after</em> the transformation
-     *                       using {@code this}, or {@code null} if none.
-     * @param  horizontal    {@code true} for forcing parabolic equation.
-     *
-     * @return The transformed geometric shape.
-     * @throws TransformException If a transformation failed.
+     * @param  mt             the math transform to use.
+     * @param  shape          the geometric shape to transform.
+     * @param  preTransform   an optional affine transform to apply <em>before</em> the
+     *                        transformation using {@code this}, or {@code null} if none.
+     * @param  postTransform  an optional affine transform to apply <em>after</em> the transformation
+     *                        using {@code this}, or {@code null} if none.
+     * @param  horizontal     {@code true} for forcing parabolic equation.
+     * @return the transformed geometric shape.
+     * @throws TransformException if a transformation failed.
      */
     static Shape createTransformedShape(final MathTransform2D mt,
                                         final Shape           shape,
@@ -160,8 +159,8 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
         final Path2D.Double  path = new Path2D.Double(it.getWindingRule());
         final double[]     buffer = new double[6];
 
-        double ax=0, ay=0;  // Coordinate of the last point before transform.
-        double px=0, py=0;  // Coordinate of the last point after  transform.
+        double ax=0, ay=0;                                  // Coordinate of the last point before transform.
+        double px=0, py=0;                                  // Coordinate of the last point after  transform.
         for (; !it.isDone(); it.next()) {
             switch (it.currentSegment(buffer)) {
                 default: {
@@ -284,8 +283,8 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      *       Otherwise throws {@link TransformException}.</li>
      * </ul>
      *
-     * @param  point The coordinate point where to evaluate the derivative.
-     * @return The derivative at the specified point as a 2×2 matrix.
+     * @param  point  the coordinate point where to evaluate the derivative.
+     * @return the derivative at the specified point as a 2×2 matrix.
      * @throws TransformException if the derivative can not be evaluated at the specified point.
      */
     @Override
@@ -356,12 +355,12 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
          * The default implementation invokes {@link #transform(double[], int, double[], int, boolean)}
          * using a temporary array of doubles.
          *
-         * @param  ptSrc The coordinate point to be transformed.
-         * @param  ptDst The coordinate point that stores the result of transforming {@code ptSrc},
-         *               or {@code null} if a new point shall be created.
-         * @return The coordinate point after transforming {@code ptSrc} and storing the result in {@code ptDst},
+         * @param  ptSrc  the coordinate point to be transformed.
+         * @param  ptDst  the coordinate point that stores the result of transforming {@code ptSrc},
+         *                or {@code null} if a new point shall be created.
+         * @return the coordinate point after transforming {@code ptSrc} and storing the result in {@code ptDst},
          *         or in a new point if {@code ptDst} was null.
-         * @throws TransformException If the point can not be transformed.
+         * @throws TransformException if the point can not be transformed.
          *
          * @see MathTransform2D#transform(Point2D, Point2D)
          */
@@ -376,8 +375,8 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
          * a {@link Path2D}, but may also be a {@link Line2D} or a {@link QuadCurve2D} if such
          * simplification is possible.
          *
-         * @param  shape Shape to transform.
-         * @return Transformed shape, or {@code shape} if this transform is the identity transform.
+         * @param  shape  shape to transform.
+         * @return transformed shape, or {@code shape} if this transform is the identity transform.
          * @throws TransformException if a transform failed.
          */
         @Override
@@ -397,8 +396,8 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
          *       Otherwise throws {@link TransformException}.</li>
          * </ul>
          *
-         * @param  point The coordinate point where to evaluate the derivative.
-         * @return The derivative at the specified point as a 2×2 matrix.
+         * @param  point  the coordinate point where to evaluate the derivative.
+         * @return the derivative at the specified point as a 2×2 matrix.
          * @throws TransformException if the derivative can not be evaluated at the specified point.
          */
         @Override

@@ -118,8 +118,8 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis       The single axis (e.g. “height” or “depth”).
+     * @param  properties  the properties to be given to the identified object.
+     * @param  axis        the single axis (e.g. “height” or “depth”).
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalCS(Map, CoordinateSystemAxis)
      */
@@ -134,7 +134,7 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param cs The coordinate system to copy.
+     * @param  cs  the coordinate system to copy.
      *
      * @see #castOrCopy(VerticalCS)
      */
@@ -148,8 +148,8 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultVerticalCS castOrCopy(final VerticalCS object) {
@@ -169,10 +169,10 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
             return INVALID_DIRECTION;
         }
         unit = unit.getSystemUnit();
-        if (unit.equals(Units.METRE)   ||   // Most usual case.
-            unit.equals(Units.PASCAL)  ||   // Height or depth estimated by the atmospheric or ocean pressure.
-            unit.equals(Units.SECOND)  ||   // Depth estimated by the time needed for an echo to travel.
-            unit.equals(Units.UNITY))         // Sigma-level (percentage from sea surface to ocean floor).
+        if (unit.equals(Units.METRE)   ||       // Most usual case.
+            unit.equals(Units.PASCAL)  ||       // Height or depth estimated by the atmospheric or ocean pressure.
+            unit.equals(Units.SECOND)  ||       // Depth estimated by the time needed for an echo to travel.
+            unit.equals(Units.UNITY))           // Sigma-level (percentage from sea surface to ocean floor).
         {
             return VALID;
         }

@@ -392,7 +392,7 @@ public class LambertConicConformal extends ConformalProjection {
      * Converts the specified (θ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
      *
-     * @return The matrix of the projection derivative at the given source position,
+     * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
      * @throws ProjectionException if the coordinate can not be converted.
      */
@@ -503,7 +503,7 @@ public class LambertConicConformal extends ConformalProjection {
         /**
          * Constructs a new map projection from the parameters of the given projection.
          *
-         * @param other The other projection (usually ellipsoidal) from which to copy the parameters.
+         * @param  other  the other projection (usually ellipsoidal) from which to copy the parameters.
          */
         protected Spherical(final LambertConicConformal other) {
             super(other);

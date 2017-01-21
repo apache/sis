@@ -21,6 +21,10 @@ import java.net.URISyntaxException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import javax.measure.quantity.Angle;
@@ -35,12 +39,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-
-// Branch-dependent imports
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 
 
 /**

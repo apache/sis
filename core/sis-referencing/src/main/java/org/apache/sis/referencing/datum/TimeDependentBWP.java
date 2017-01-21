@@ -64,6 +64,7 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
  * @version 0.6
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // Fields in this class do not need cloning.
 public class TimeDependentBWP extends BursaWolfParameters {
     /**
      * Serial number for inter-operability with different versions.
@@ -118,10 +119,10 @@ public class TimeDependentBWP extends BursaWolfParameters {
      * All numerical parameters are initialized to 0, which correspond to an identity transform.
      * Callers can assign numerical values to the public fields of interest after construction.
      *
-     * @param targetDatum The target datum (usually WGS 84) for this set of parameters.
-     * @param domainOfValidity Area or region in which a coordinate transformation based on those Bursa-Wolf parameters
-     *        is valid, or {@code null} is unspecified.
-     * @param timeReference The reference epoch for time-dependent parameters.
+     * @param targetDatum       the target datum (usually WGS 84) for this set of parameters.
+     * @param domainOfValidity  area or region in which a coordinate transformation based on those Bursa-Wolf parameters
+     *                          is valid, or {@code null} is unspecified.
+     * @param timeReference     the reference epoch for time-dependent parameters.
      */
     public TimeDependentBWP(final GeodeticDatum targetDatum, final Extent domainOfValidity, final Date timeReference) {
         super(targetDatum, domainOfValidity);
@@ -146,7 +147,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
     /**
      * Returns the reference epoch for time-dependent parameters.
      *
-     * @return The reference epoch for time-dependent parameters.
+     * @return the reference epoch for time-dependent parameters.
      */
     public Date getTimeReference() {
         return new Date(timeReference);
@@ -173,8 +174,8 @@ public class TimeDependentBWP extends BursaWolfParameters {
      * Returns the parameter at the given index. If this {@code BursaWolfParameters} is time-dependent,
      * then the returned value shall be corrected for the given period.
      *
-     * @param index  0 for {@code tX}, 1 for {@code tY}, <i>etc.</i> in {@code TOWGS84[…]} order.
-     * @param period The value computed by {@link #period(Date)}, or {@code null}.
+     * @param  index   0 for {@code tX}, 1 for {@code tY}, <i>etc.</i> in {@code TOWGS84[…]} order.
+     * @param  period  the value computed by {@link #period(Date)}, or {@code null}.
      */
     @Override
     final DoubleDouble param(final int index, final DoubleDouble period) {
@@ -206,7 +207,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
      * {@link #rX rX}, {@link #rY rY}, {@link #rZ rZ}, {@link #dS dS}, {@link #dtX}, {@link #dtY}, {@link #dtZ},
      * {@link #drX}, {@link #drY}, {@link #drZ} and {@link #ddS} in that order.
      *
-     * @return The parameter values as an array of length 14.
+     * @return the parameter values as an array of length 14.
      *
      * @since 0.6
      */
@@ -221,7 +222,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
      * {@link #dS dS}, {@link #dtX}, {@link #dtY}, {@link #dtZ}, {@link #drX}, {@link #drY}, {@link #drZ} and
      * {@link #ddS} fields in that order.
      *
-     * @param elements The new parameter values, as an array of any length.
+     * @param  elements  the new parameter values, as an array of any length.
      *
      * @since 0.6
      */
@@ -289,7 +290,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
     /**
      * {@inheritDoc}
      *
-     * @return The hash code value. This value does not need to be the same in past or future versions of this class.
+     * @return the hash code value. This value does not need to be the same in past or future versions of this class.
      */
     @Override
     public int hashCode() {

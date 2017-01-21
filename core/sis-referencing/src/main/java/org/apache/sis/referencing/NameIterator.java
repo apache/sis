@@ -140,12 +140,12 @@ final class NameIterator implements Iterator<ReferenceIdentifier> {
      * Consecutive invocations of this method do not need to return the same value,
      * since it may depends on the marshalling context.</p>
      *
-     * @param  context     The (un)marshalling context.
-     * @param  object      The object for which to get a {@code gml:id}.
-     * @param  name        The identified object name, or {@code null} if none.
-     * @param  alias       The identified object aliases, or {@code null} if none.
-     * @param  identifiers The identifiers, or {@code null} if none.
-     * @return Proposed value for {@code gml:id} attribute, or {@code null} if none.
+     * @param  context      the (un)marshalling context.
+     * @param  object       the object for which to get a {@code gml:id}.
+     * @param  name         the identified object name, or {@code null} if none.
+     * @param  alias        the identified object aliases, or {@code null} if none.
+     * @param  identifiers  the identifiers, or {@code null} if none.
+     * @return proposed value for {@code gml:id} attribute, or {@code null} if none.
      */
     static String getID(final Context context, final IdentifiedObject object, final ReferenceIdentifier name,
             final Collection<? extends GenericName> alias, final Collection<? extends ReferenceIdentifier> identifiers)
@@ -172,7 +172,7 @@ final class NameIterator implements Iterator<ReferenceIdentifier> {
                             return candidate;
                         }
                     }
-                    id.setLength(0);    // Clear the buffer for another try.
+                    id.setLength(0);                            // Clear the buffer for another try.
                 }
             }
             /*
@@ -194,7 +194,7 @@ final class NameIterator implements Iterator<ReferenceIdentifier> {
                     final int s = id.append('-').length();
                     int n = 0;
                     do {
-                        if (++n == 100) return null;    //  Arbitrary limit.
+                        if (++n == 100) return null;                        //  Arbitrary limit.
                         candidate = id.append(n).toString();
                         id.setLength(s);
                     } while (!Context.setObjectForID(context, object, candidate));

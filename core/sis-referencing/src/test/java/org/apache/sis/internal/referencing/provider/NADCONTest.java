@@ -21,6 +21,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
@@ -35,8 +37,6 @@ import org.junit.Test;
 import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.apache.sis.internal.jdk8.JDK8;
 
 
@@ -61,7 +61,7 @@ public final strictfp class NADCONTest extends TestCase {
      * <a href="http://www.ngs.noaa.gov/cgi-bin/nadcon.prl">NADCON tools on NOAA website.</a></p>
      *
      * @param  step The step as a value from 1 to 3 inclusive.
-     * @return The sample point at the given step.
+     * @return the sample point at the given step.
      */
     public static double[] samplePoint(final int step) {
         switch (step) {
@@ -119,8 +119,8 @@ public final strictfp class NADCONTest extends TestCase {
      * not redistribute the datum shift grid files. But developers can invoke this method explicitely if they can
      * provide a path to those files.
      *
-     * @param  latitudeShifts  Path to the official {@code "conus.las"} file.
-     * @param  longitudeShifts Path to the official {@code "conus.los"} file.
+     * @param  latitudeShifts   path to the official {@code "conus.las"} file.
+     * @param  longitudeShifts  path to the official {@code "conus.los"} file.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
      * @throws TransformException if an error occurred while computing the envelope or testing the point.
@@ -134,10 +134,10 @@ public final strictfp class NADCONTest extends TestCase {
     /**
      * Implementation of {@link #testLoader()} and {@link #testNADCON(Path)}.
      *
-     * @param xmin Westmost longitude.
-     * @param xmax Eastmost longitude.
-     * @param ymin Southmost latitude.
-     * @param ymax Northmost latitude.
+     * @param  xmin  westmost longitude.
+     * @param  xmax  eastmost longitude.
+     * @param  ymin  southmost latitude.
+     * @param  ymax  northmost latitude.
      */
     private static void testNADCON(final Path latitudeShifts, final Path longitudeShifts,
             final double xmin, final double xmax, final double ymin, final double ymax)
@@ -219,13 +219,13 @@ public final strictfp class NADCONTest extends TestCase {
      * This ensure that the grid indices (129.83277, 76.89632) is included in the test file.
      * Those grid indices is the location of the (39°13′26.71″N, 98°32′31.75″W) test point to interpolate.
      *
-     * @param grid   The full grid from which to extract a few values.
-     * @param file   Where to write the test file.
-     * @param dim    0 for writing longitudes, or 1 for writing latitudes.
-     * @param gridX  Index along the longitude axis of the first cell to write.
-     * @param gridY  Index along the latitude axis of the first cell to write.
-     * @param nx     Number of cells to write along the longitude axis.
-     * @param ny     Number of cells to write along the latitude axis.
+     * @param  grid   the full grid from which to extract a few values.
+     * @param  file   where to write the test file.
+     * @param  dim    0 for writing longitudes, or 1 for writing latitudes.
+     * @param  gridX  index along the longitude axis of the first cell to write.
+     * @param  gridY  index along the latitude axis of the first cell to write.
+     * @param  nx     number of cells to write along the longitude axis.
+     * @param  ny     number of cells to write along the latitude axis.
      * @throws TransformException if an error occurred while computing the envelope.
      * @throws IOException if an error occurred while writing the test file.
      */

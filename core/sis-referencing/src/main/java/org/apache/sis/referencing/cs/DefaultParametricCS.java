@@ -102,8 +102,8 @@ public class DefaultParametricCS extends AbstractCS {
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axis       The axis.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  axis        the axis.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createParametricCS(Map, CoordinateSystemAxis)
      */
@@ -121,7 +121,7 @@ public class DefaultParametricCS extends AbstractCS {
      * <div class="warning"><b>Warning:</b> in a future SIS version, the parameter type may be changed
      * to {@code org.opengis.referencing.cs.ParametricCS}. This change is pending GeoAPI revision.</div>
      *
-     * @param cs The coordinate system to copy.
+     * @param  cs  the coordinate system to copy.
      */
     protected DefaultParametricCS(final DefaultParametricCS cs) {
         super(cs);

@@ -43,7 +43,7 @@ final strictfp class NoOp extends ConformalProjection {
     /**
      * Creates a new "no-operation".
      *
-     * @param ellipsoidal {@code true} for an ellipsoidal case, or {@code false} for a spherical case.
+     * @param  ellipsoidal  {@code true} for an ellipsoidal case, or {@code false} for a spherical case.
      */
     NoOp(final boolean ellipsoidal) {
         this(ellipsoidal, ellipsoidal);
@@ -52,8 +52,8 @@ final strictfp class NoOp extends ConformalProjection {
     /**
      * Creates a new "no-operation".
      *
-     * @param ellipsoidal {@code true} for an ellipsoidal case, or {@code false} for a spherical case.
-     * @param declareIvf  {@code true} for declaring the inverse flattening factor.
+     * @param  ellipsoidal  {@code true} for an ellipsoidal case, or {@code false} for a spherical case.
+     * @param  declareIvf   {@code true} for declaring the inverse flattening factor.
      */
     NoOp(final boolean ellipsoidal, final boolean declareIvf) {
         this(parameters((ellipsoidal ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid(), declareIvf));

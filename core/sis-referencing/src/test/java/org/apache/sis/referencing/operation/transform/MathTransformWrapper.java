@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -27,9 +28,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.UnformattableObjectException;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -192,7 +190,7 @@ public strictfp class MathTransformWrapper extends FormattableObject implements 
     /**
      * Returns a <cite>Well Known Text</cite> (WKT) for this transform.
      *
-     * @throws UnsupportedOperationException If this object can't be formatted as WKT.
+     * @throws UnsupportedOperationException if this object can't be formatted as WKT.
      */
     @Override
     public final String toWKT() throws UnsupportedOperationException {

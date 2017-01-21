@@ -83,7 +83,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      * in a {@code <gml:OperationMethod>} XML element.
      *
      * @param  method The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CC_OperationMethod wrap(final OperationMethod method) {
@@ -95,7 +95,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      * inside the {@code <gml:OperationMethod>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElement(name = "OperationMethod")
     public DefaultOperationMethod getElement() {
@@ -105,7 +105,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param method The unmarshalled element.
+     * @param  method  the unmarshalled element.
      */
     public void setElement(final DefaultOperationMethod method) {
         if (!CC_GeneralOperationParameter.isValid(method.getParameters())) {
@@ -121,8 +121,8 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
     /**
      * Returns the given descriptors, excluding the implicit {@link MapProjection} parameters.
      *
-     * @param  array The parameters to filter.
-     * @return The filtered parameters.
+     * @param  array  the parameters to filter.
+     * @return the filtered parameters.
      */
     public static GeneralParameterValue[] filterImplicit(final GeneralParameterValue[] array) {
         int n = 0;
@@ -137,8 +137,8 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
     /**
      * Returns the given descriptors, excluding the implicit {@link MapProjection} parameters.
      *
-     * @param  array The parameters to filter.
-     * @return The filtered parameters.
+     * @param  array  the parameters to filter.
+     * @return the filtered parameters.
      */
     public static GeneralParameterDescriptor[] filterImplicit(final GeneralParameterDescriptor[] array) {
         int n = 0;
@@ -153,7 +153,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
     /**
      * Returns {@code true} if the given descriptor is for an implicit parameter which should be excluded from GML.
      *
-     * @param  descriptor The parameter descriptor to test.
+     * @param  descriptor  the parameter descriptor to test.
      * @return {@code true} if the given parameter should be omitted in the GML document.
      */
     static boolean isImplicitParameter(final GeneralParameterDescriptor descriptor) {
@@ -174,9 +174,9 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      * {@link DefaultOperationMethod} class in the hope to reduce the amount of code processed
      * by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
      *
-     * @param  name        The operation method name, to be also given to the descriptor group.
-     * @param  descriptors The parameter descriptors to wrap in a group. This array will be modified in-place.
-     * @return A parameter group containing at least the given descriptors, or equivalent descriptors.
+     * @param  name         the operation method name, to be also given to the descriptor group.
+     * @param  descriptors  the parameter descriptors to wrap in a group. This array will be modified in-place.
+     * @return a parameter group containing at least the given descriptors, or equivalent descriptors.
      */
     public static ParameterDescriptorGroup group(final Identifier name, final GeneralParameterDescriptor[] descriptors) {
         OperationMethod method;
@@ -212,9 +212,9 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      * {@link DefaultOperationMethod} class in the hope to reduce the amount of code processed
      * by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
      *
-     * @param parameters   The parameters to add to the {@code addTo} collection.
-     * @param addTo        Where to store the {@code parameters}.
-     * @param replacements The replacements to apply in the {@code GeneralParameterValue} instances.
+     * @param  parameters    the parameters to add to the {@code addTo} collection.
+     * @param  addTo         where to store the {@code parameters}.
+     * @param  replacements  the replacements to apply in the {@code GeneralParameterValue} instances.
      */
     public static void store(final GeneralParameterValue[] parameters,
                              final Collection<GeneralParameterValue> addTo,
