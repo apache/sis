@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.AbstractSet;
 import java.util.LinkedHashMap;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -43,10 +44,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
 
-// Branch-dependent imports
-import java.util.Objects;
 import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * A lazy set of {@code IdentifiedObject} instances created from their authority codes only when first needed.

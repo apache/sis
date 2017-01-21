@@ -31,6 +31,7 @@ import org.apache.sis.internal.referencing.Resources;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")    // No additional fields compared to parent.
 public class ImmutableAffineTransform extends AffineTransform {
     /**
      * Serial number for inter-operability with different versions.
@@ -296,7 +297,7 @@ public class ImmutableAffineTransform extends AffineTransform {
     /**
      * Checks for {@linkplain #checkPermission() permission} before inverting this transform.
      *
-     * @throws java.awt.geom.NoninvertibleTransformException If the matrix can not be inverted.
+     * @throws java.awt.geom.NoninvertibleTransformException if the matrix can not be inverted.
      */
     @Override
     public final void invert() throws NoninvertibleTransformException {

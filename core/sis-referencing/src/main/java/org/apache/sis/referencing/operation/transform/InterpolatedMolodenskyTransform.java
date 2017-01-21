@@ -99,9 +99,9 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
     /**
      * Constructs the inverse of an interpolated Molodensky transform.
      *
-     * @param inverse The transform for which to create the inverse.
-     * @param source  The source ellipsoid of the given {@code inverse} transform.
-     * @param target  The target ellipsoid of the given {@code inverse} transform.
+     * @param inverse  the transform for which to create the inverse.
+     * @param source   the source ellipsoid of the given {@code inverse} transform.
+     * @param target   the target ellipsoid of the given {@code inverse} transform.
      */
     InterpolatedMolodenskyTransform(final InterpolatedMolodenskyTransform inverse, Ellipsoid source, Ellipsoid target) {
         super(inverse, source, target, INVERSE);
@@ -134,11 +134,11 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
      * <code>{@linkplain #getContextualParameters()}.{@linkplain ContextualParameters#completeTransform
      * completeTransform}(factory, this)}</code>.
      *
-     * @param source      The source ellipsoid.
+     * @param source      the source ellipsoid.
      * @param isSource3D  {@code true} if the source coordinates have a height.
-     * @param target      The target ellipsoid.
+     * @param target      the target ellipsoid.
      * @param isTarget3D  {@code true} if the target coordinates have a height.
-     * @param grid        The grid of datum shifts from source to target datum.
+     * @param grid        the grid of datum shifts from source to target datum.
      *                    The {@link DatumShiftGrid#interpolateInCell DatumShiftGrid.interpolateInCell(…)} method
      *                    shall compute (ΔX, ΔY, ΔZ) translations from <em>source</em> to <em>target</em> in the
      *                    unit of source ellipsoid axes.
@@ -178,16 +178,16 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
      * Note however that the given {@code grid} instance shall expect geographic coordinates (λ,φ)
      * in <strong>radians</strong>.
      *
-     * @param factory     The factory to use for creating the transform.
-     * @param source      The source ellipsoid.
+     * @param factory     the factory to use for creating the transform.
+     * @param source      the source ellipsoid.
      * @param isSource3D  {@code true} if the source coordinates have a height.
-     * @param target      The target ellipsoid.
+     * @param target      the target ellipsoid.
      * @param isTarget3D  {@code true} if the target coordinates have a height.
-     * @param grid        The grid of datum shifts from source to target datum.
+     * @param grid        the grid of datum shifts from source to target datum.
      *                    The {@link DatumShiftGrid#interpolateInCell DatumShiftGrid.interpolateInCell(…)} method
      *                    shall compute (ΔX, ΔY, ΔZ) translations from <em>source</em> to <em>target</em> in the
      *                    unit of source ellipsoid axes.
-     * @return The transformation between geographic coordinates in degrees.
+     * @return the transformation between geographic coordinates in degrees.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform createGeodeticTransformation(final MathTransformFactory factory,
@@ -209,10 +209,10 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
     /**
      * Invoked by constructor and by {@link #getParameterValues()} for setting all parameters other than axis lengths.
      *
-     * @param pg         Where to set the parameters.
-     * @param semiMinor  The semi minor axis length, in unit of {@code unit}.
-     * @param unit       The unit of measurement to declare.
-     * @param Δf         Ignored.
+     * @param  pg         where to set the parameters.
+     * @param  semiMinor  the semi minor axis length, in unit of {@code unit}.
+     * @param  unit       the unit of measurement to declare.
+     * @param  Δf         ignored.
      */
     @Override
     final void completeParameters(final Parameters pg, final double semiMinor, final Unit<?> unit, double Δf) {
@@ -315,7 +315,7 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
      * Returns the inverse of this interpolated Molodensky transform.
      * The source ellipsoid of the returned transform will be the target ellipsoid of this transform, and conversely.
      *
-     * @return A transform from the target ellipsoid to the source ellipsoid of this transform.
+     * @return a transform from the target ellipsoid to the source ellipsoid of this transform.
      */
     @Override
     public MathTransform inverse() {
@@ -351,9 +351,9 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
         /**
          * Constructs the inverse of an interpolated Molodensky transform.
          *
-         * @param inverse The transform for which to create the inverse.
-         * @param source  The source ellipsoid of the given {@code inverse} transform.
-         * @param target  The target ellipsoid of the given {@code inverse} transform.
+         * @param inverse  the transform for which to create the inverse.
+         * @param source   the source ellipsoid of the given {@code inverse} transform.
+         * @param target   the target ellipsoid of the given {@code inverse} transform.
          */
         Inverse(final InterpolatedMolodenskyTransform inverse, final Ellipsoid source, final Ellipsoid target) {
            super(inverse, source, target);
@@ -438,7 +438,7 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
      * contextual parameters}.</div>
      *
-     * @return A description of the internal parameters.
+     * @return a description of the internal parameters.
      */
     @Debug
     @Override

@@ -81,10 +81,10 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
      * Tries to compress the given grid. If this operation succeed, a new grid is returned.
      * Otherwise this method returns the given {@code grid} unchanged.
      *
-     * @param  grid      The grid to compress.
-     * @param  averages  An "average" value for the offset in each dimension, or {@code null} if unknown.
-     * @param  scale     The factor by which to multiply each compressed value before to add to the average value.
-     * @return The grid to use (may or may not be compressed).
+     * @param  grid      the grid to compress.
+     * @param  averages  an "average" value for the offset in each dimension, or {@code null} if unknown.
+     * @param  scale     the factor by which to multiply each compressed value before to add to the average value.
+     * @return the grid to use (may or may not be compressed).
      */
     static <C extends Quantity<C>, T extends Quantity<T>> DatumShiftGridFile<C,T> compress(
             final DatumShiftGridFile.Float<C,T> grid, double[] averages, final double scale)
@@ -130,7 +130,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
     /**
      * Suggests a precision for the translation values in this grid.
      *
-     * @return A precision for the translation values in this grid.
+     * @return a precision for the translation values in this grid.
      */
     @Override
     public double getCellPrecision() {
@@ -159,8 +159,8 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
     /**
      * Returns the average translation parameters from source to target.
      *
-     * @param dim The dimension for which to get an average value.
-     * @return A value close to the average for the given dimension.
+     * @param  dim  the dimension for which to get an average value.
+     * @return a value close to the average for the given dimension.
      */
     @Override
     public double getCellMean(final int dim) {
@@ -212,7 +212,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
     /**
      * Returns {@code true} if the given object is a grid containing the same data than this grid.
      *
-     * @param  other The other object to compare with this datum shift grid.
+     * @param  other  the other object to compare with this datum shift grid.
      * @return {@code true} if the given object is non-null, an instance of {@code DatumShiftGridCompressed}
      *         and contains the same data.
      */

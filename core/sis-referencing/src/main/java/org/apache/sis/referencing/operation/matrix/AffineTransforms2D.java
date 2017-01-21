@@ -97,11 +97,10 @@ public final class AffineTransforms2D extends Static {
      *   <li>It tries to recycle the given object if {@code overwrite} is {@code true}.</li>
      * </ul>
      *
-     * @param transform       the affine transform to use.
-     * @param shape           the shape to transform, or {@code null}.
-     * @param allowOverwrite  if {@code true}, this method is allowed to overwrite {@code shape} with the
-     *                        transform result. If {@code false}, then {@code shape} is never modified.
-     *
+     * @param  transform       the affine transform to use.
+     * @param  shape           the shape to transform, or {@code null}.
+     * @param  allowOverwrite  if {@code true}, this method is allowed to overwrite {@code shape} with the
+     *                         transform result. If {@code false}, then {@code shape} is never modified.
      * @return the transform of the given shape, or {@code null} if the given shape was null.
      *         May or may not be the same instance than the given shape.
      *
@@ -116,16 +115,20 @@ public final class AffineTransforms2D extends Static {
         if (type == TYPE_IDENTITY) {
             return shape;
         }
-        // If there is only scale, flip, quadrant rotation or translation,
-        // then we can optimize the transformation of rectangular shapes.
+        /*
+         * If there is only scale, flip, quadrant rotation or translation,
+         * then we can optimize the transformation of rectangular shapes.
+         */
         if ((type & (TYPE_GENERAL_ROTATION | TYPE_GENERAL_TRANSFORM)) == 0) {
             // For a Rectangle input, the output should be a rectangle as well.
             if (shape instanceof Rectangle2D) {
                 final Rectangle2D rect = (Rectangle2D) shape;
                 return transform(transform, rect, allowOverwrite ? rect : null);
             }
-            // For other rectangular shapes, we restrict to cases without
-            // rotation or flip because we don't know if the shape is symmetric.
+            /*
+             * For other rectangular shapes, we restrict to cases without
+             * rotation or flip because we don't know if the shape is symmetric.
+             */
             if ((type & (TYPE_FLIP | TYPE_MASK_ROTATION)) == 0) {
                 if (shape instanceof RectangularShape) {
                     RectangularShape rect = (RectangularShape) shape;
@@ -171,11 +174,10 @@ public final class AffineTransforms2D extends Static {
      * <strong>upper-left corner</strong> of pixels (as in Java2D usage), not the center of pixels
      * (OGC usage).
      *
-     * @param transform  the affine transform to use.
-     * @param bounds     the rectangle to transform, or {@code null}.
-     *                   this rectangle will not be modified except if {@code dest} references the same object.
-     * @param dest       rectangle in which to place the result. If {@code null}, a new rectangle will be created.
-     *
+     * @param  transform  the affine transform to use.
+     * @param  bounds     the rectangle to transform, or {@code null}.
+     *                    this rectangle will not be modified except if {@code dest} references the same object.
+     * @param  dest       rectangle in which to place the result. If {@code null}, a new rectangle will be created.
      * @return the direct transform of the {@code bounds} rectangle, or {@code null} if {@code bounds} was null.
      *
      * @see org.apache.sis.geometry.Shapes2D#transform(MathTransform2D, Rectangle2D, Rectangle2D)
@@ -217,11 +219,10 @@ public final class AffineTransforms2D extends Static {
      *     return createInverse().createTransformedShape(bounds).getBounds2D();
      * }
      *
-     * @param transform  the affine transform to use.
-     * @param bounds     the rectangle to transform, or {@code null}.
-     *                   this rectangle will not be modified except if {@code dest} references the same object.
-     * @param dest       rectangle in which to place the result. If {@code null}, a new rectangle will be created.
-     *
+     * @param  transform  the affine transform to use.
+     * @param  bounds     the rectangle to transform, or {@code null}.
+     *                    this rectangle will not be modified except if {@code dest} references the same object.
+     * @param  dest       rectangle in which to place the result. If {@code null}, a new rectangle will be created.
      * @return the inverse transform of the {@code bounds} rectangle, or {@code null} if {@code bounds} was null.
      * @throws NoninvertibleTransformException if the affine transform can't be inverted.
      */
@@ -257,11 +258,10 @@ public final class AffineTransforms2D extends Static {
      * Calculates the inverse transform of a point without applying the translation components.
      * In other words, calculates the inverse transform of a displacement vector.
      *
-     * @param transform  the affine transform to use.
-     * @param vector     the vector to transform stored as a point.
-     *                   this point will not be modified except if {@code dest} references the same object.
-     * @param dest       point in which to place the result. If {@code null}, a new point will be created.
-     *
+     * @param  transform  the affine transform to use.
+     * @param  vector     the vector to transform stored as a point.
+     *                    this point will not be modified except if {@code dest} references the same object.
+     * @param  dest       point in which to place the result. If {@code null}, a new point will be created.
      * @return the inverse transform of the {@code vector}, or {@code null} if {@code source} was null.
      * @throws NoninvertibleTransformException if the affine transform can't be inverted.
      */
@@ -365,7 +365,7 @@ public final class AffineTransforms2D extends Static {
      *     boolean flipped = (tr.getType() & TYPE_FLIP) != 0;
      * }
      *
-     * @param transform  the affine transform to inspect.
+     * @param  transform  the affine transform to inspect.
      * @return -1 if an axis has been flipped, +1 if no flipping, or 0 if unknown.
      */
     public static int getFlip(final AffineTransform transform) {

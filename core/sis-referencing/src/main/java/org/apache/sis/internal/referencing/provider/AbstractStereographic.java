@@ -76,7 +76,7 @@ abstract class AbstractStereographic extends MapProjection {
      * The default implementation creates a projection for the <cite>"Polar Stereographic"</cite> case only.
      * Subclasses need to override if they want to support other cases (oblique and equatorial).
      *
-     * @return The map projection created from the given parameter values.
+     * @return the map projection created from the given parameter values.
      */
     @Override
     protected NormalizedProjection createProjection(Parameters parameters) throws ParameterNotFoundException {

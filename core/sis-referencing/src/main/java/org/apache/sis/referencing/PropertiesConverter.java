@@ -102,7 +102,7 @@ final class PropertiesConverter extends SurjectiveConverter<String,String> {
                 return rename ? CODE_KEY : null;
             }
             if (key.startsWith(REMARKS_KEY)) {
-                return null; // Instructs the map to exclude all remarks.
+                return null;                            // Instructs the map to exclude all remarks.
             }
         }
         return key;

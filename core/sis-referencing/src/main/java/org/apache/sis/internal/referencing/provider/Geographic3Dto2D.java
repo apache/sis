@@ -72,7 +72,7 @@ public final class Geographic3Dto2D extends AbstractProvider {
     /**
      * Returns the operation type.
      *
-     * @return Interface implemented by all coordinate operations that use this method.
+     * @return interface implemented by all coordinate operations that use this method.
      */
     @Override
     public Class<Conversion> getOperationType() {
@@ -92,9 +92,9 @@ public final class Geographic3Dto2D extends AbstractProvider {
      * <p>This work with SIS implementation, but is not guaranteed to work with other implementations.
      * For that reason, this method does not use the given {@code factory}.</p></div>
      *
-     * @param  factory Ignored (can be null).
-     * @param  values Ignored.
-     * @return The math transform.
+     * @param  factory  ignored (can be null).
+     * @param  values   ignored.
+     * @return the math transform.
      * @throws FactoryException should never happen.
      */
     @Override

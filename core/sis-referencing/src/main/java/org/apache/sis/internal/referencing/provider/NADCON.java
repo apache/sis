@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.nio.channels.ReadableByteChannel;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Angle;
@@ -41,11 +44,6 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.measure.Units;
-
-// Branch-dependent imports
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 
 
 /**
@@ -113,7 +111,7 @@ public final class NADCON extends AbstractProvider {
     /**
      * Returns the base interface of the {@code CoordinateOperation} instances that use this method.
      *
-     * @return Fixed to {@link Transformation}.
+     * @return fixed to {@link Transformation}.
      */
     @Override
     public Class<Transformation> getOperationType() {
@@ -123,9 +121,9 @@ public final class NADCON extends AbstractProvider {
     /**
      * Creates a transform from the specified group of parameter values.
      *
-     * @param  factory The factory to use if this constructor needs to create other math transforms.
-     * @param  values The group of parameter values.
-     * @return The created math transform.
+     * @param  factory  the factory to use if this constructor needs to create other math transforms.
+     * @param  values   the group of parameter values.
+     * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws FactoryException if an error occurred while loading the grid.
      */
@@ -142,8 +140,8 @@ public final class NADCON extends AbstractProvider {
      * Returns the grid of the given name. This method returns the cached instance if it still exists,
      * or load the grid otherwise.
      *
-     * @param latitudeShifts   Name of the grid file for latitude shifts.
-     * @param longitudeShifts  Name of the grid file for longitude shifts.
+     * @param latitudeShifts   name of the grid file for latitude shifts.
+     * @param longitudeShifts  name of the grid file for longitude shifts.
      */
     @SuppressWarnings("null")
     static DatumShiftGridFile<Angle,Angle> getOrLoad(final Path latitudeShifts, final Path longitudeShifts)
@@ -265,10 +263,10 @@ public final class NADCON extends AbstractProvider {
          * Creates a new reader for the given channel. The file can be binary or ASCII.
          * This constructor parses the header immediately, but does not read any grid.
          *
-         * @param  channel Where to read data from.
-         * @param  buffer  The buffer to use. That buffer must use little endian byte order
+         * @param channel  where to read data from.
+         * @param buffer   the buffer to use. That buffer must use little endian byte order
          *                 and have a capacity divisible by the size of the {@code float} type.
-         * @param  file    Path to the longitude or latitude difference file. Used only for error reporting.
+         * @param file     path to the longitude or latitude difference file. Used only for error reporting.
          */
         Loader(final ReadableByteChannel channel, final ByteBuffer buffer, final Path file)
                 throws IOException, FactoryException
@@ -323,21 +321,21 @@ public final class NADCON extends AbstractProvider {
             int newLine = 0;
             while (buffer.hasRemaining()) {
                 final char c = (char) buffer.get();
-                if (c != ' ' && !(c >= '+' && c <= '9' && c != ',' && c != '/')) {  // (space) + - . [0-9]
+                if (c != ' ' && !(c >= '+' && c <= '9' && c != ',' && c != '/')) {          // (space) + - . [0-9]
                     if (c == '\r' || c == '\n') {
                         if (newLine == 0) {
                             newLine = buffer.position();
                         }
                     } else {
                         if (newLine == 0 && c >= 32 & c <= 126) {
-                            continue;   // Accept other US-ASCII characters ony on the first line.
+                            continue;                   // Accept other US-ASCII characters ony on the first line.
                         }
                         return false;
                     }
                 }
             }
             if (newLine == 0) {
-                return false;   // If it was an ASCII file, we would have found at least one EOL character.
+                return false;          // If it was an ASCII file, we would have found at least one EOL character.
             }
             buffer.position(newLine);
             return true;
@@ -380,9 +378,9 @@ public final class NADCON extends AbstractProvider {
          *
          * The result is stored in the {@link #grid} field.
          *
-         * @param fb              A {@code FloatBuffer} view over the full {@link #buffer} range.
-         * @param latitudeShifts  The previously loaded latitude shifts, or {@code null} if not yet loaded.
-         * @param longitudeShifts The file for the longitude grid, or {@code null} if identical to {@link #file}.
+         * @param fb               a {@code FloatBuffer} view over the full {@link #buffer} range.
+         * @param latitudeShifts   the previously loaded latitude shifts, or {@code null} if not yet loaded.
+         * @param longitudeShifts  the file for the longitude grid, or {@code null} if identical to {@link #file}.
          */
         final void readGrid(final FloatBuffer fb, final Loader latitudeShifts, final Path longitudeShifts)
                 throws IOException, FactoryException, NoninvertibleTransformException
@@ -390,8 +388,8 @@ public final class NADCON extends AbstractProvider {
             final int dim;
             final double scale;
             if (latitudeShifts == null) {
-                dim   = 1;                          // Dimension of latitudes.
-                scale = DEGREES_TO_SECONDS * Δy;    // NADCON shifts are positive north.
+                dim   = 1;                                              // Dimension of latitudes.
+                scale = DEGREES_TO_SECONDS * Δy;                        // NADCON shifts are positive north.
                 grid  = new DatumShiftGridFile.Float<>(2, Units.DEGREE, Units.DEGREE,
                         true, x0, y0, Δx, Δy, nx, ny, PARAMETERS, file, longitudeShifts);
                 grid.accuracy = SECOND_PRECISION / DEGREES_TO_SECONDS;
@@ -402,9 +400,9 @@ public final class NADCON extends AbstractProvider {
                     throw new FactoryException(Errors.format(Errors.Keys.MismatchedGridGeometry_2,
                             latitudeShifts.file.getFileName(), file.getFileName()));
                 }
-                dim   = 0;                          // Dimension of longitudes
-                scale = -DEGREES_TO_SECONDS * Δx;   // NADCON shifts are positive west.
-                grid  = latitudeShifts.grid;        // Continue writing in existing grid.
+                dim   = 0;                                              // Dimension of longitudes
+                scale = -DEGREES_TO_SECONDS * Δx;                       // NADCON shifts are positive west.
+                grid  = latitudeShifts.grid;                            // Continue writing in existing grid.
             }
             final float[] array = grid.offsets[dim];
             if (ascii != null) {
@@ -465,7 +463,7 @@ public final class NADCON extends AbstractProvider {
          */
         private void syncView(final FloatBuffer fb) {
             if ((buffer.position() % DATA_SIZE) != 0) {
-                buffer.compact();   // For bytes alignment with FloatBuffer.
+                buffer.compact();                               // For bytes alignment with FloatBuffer.
             }
             fb.limit(buffer.limit() / DATA_SIZE).position(buffer.position() / DATA_SIZE);
         }

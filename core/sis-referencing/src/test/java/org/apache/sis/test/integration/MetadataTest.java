@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Locale;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
@@ -85,9 +86,6 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-
-// Branch-dependent imports
-import java.nio.charset.StandardCharsets;
 
 
 /**

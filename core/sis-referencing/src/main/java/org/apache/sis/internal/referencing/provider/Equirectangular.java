@@ -232,10 +232,10 @@ public final class Equirectangular extends AbstractProvider {
      * This method performs the same work than {@code Initializer.getAndStore(ParameterDescriptor)} in the
      * {@link org.apache.sis.referencing.operation.projection} package.
      *
-     * @param  source     The parameters from which to read the value.
-     * @param  target     Where to store the parameter values.
-     * @param  descriptor The descriptor that specify the parameter names and desired units.
-     * @return The parameter value in the units given by the descriptor.
+     * @param  source      the parameters from which to read the value.
+     * @param  target      where to store the parameter values.
+     * @param  descriptor  the descriptor that specify the parameter names and desired units.
+     * @return the parameter value in the units given by the descriptor.
      * @throws IllegalArgumentException if the given value is out of bounds.
      */
     private static double getAndStore(final Parameters source, final ParameterValueGroup target,
@@ -255,9 +255,9 @@ public final class Equirectangular extends AbstractProvider {
      * reproduced in this method because we will create an affine transform instead than the usual projection
      * classes.
      *
-     * @param  factory The factory to use if this constructor needs to create other math transforms.
-     * @param  parameters The parameter values that define the transform to create.
-     * @return The map projection created from the given parameter values.
+     * @param  factory     the factory to use if this constructor needs to create other math transforms.
+     * @param  parameters  the parameter values that define the transform to create.
+     * @return the map projection created from the given parameter values.
      * @throws FactoryException if an error occurred while creating the math transform.
      */
     @Override

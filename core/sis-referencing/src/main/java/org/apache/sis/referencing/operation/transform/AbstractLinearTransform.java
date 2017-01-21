@@ -112,7 +112,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      * Creates the inverse transform of this object.
      */
     @Override
-    @SuppressWarnings("DoubleCheckedLocking")  // Okay since 'inverse' is volatile.
+    @SuppressWarnings("DoubleCheckedLocking")                           // Okay since 'inverse' is volatile.
     public LinearTransform inverse() throws NoninvertibleTransformException {
         LinearTransform inv = inverse;
         if (inv == null) {
@@ -153,7 +153,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      * Returns the matrix elements as a group of parameters values. The number of parameters depends on the
      * matrix size. Only matrix elements different from their default value will be included in this group.
      *
-     * @return The parameter values for this math transform.
+     * @return the parameter values for this math transform.
      */
     @Override
     public ParameterValueGroup getParameterValues() {
@@ -231,7 +231,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      * Compares this math transform with an object which is known to be of the same class.
      * Implementors can safely cast the {@code object} argument to their subclass.
      *
-     * @param  object The object to compare with this transform.
+     * @param  object  the object to compare with this transform.
      * @return {@code true} if the given object is considered equals to this math transform.
      */
     protected abstract boolean equalsSameClass(final Object object);
@@ -245,14 +245,14 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      *   <li>In other modes, the matrix are equals or approximatively equals (depending on the mode).</li>
      * </ul>
      *
-     * @param  object The object to compare with this transform.
-     * @param  mode The strictness level of the comparison. Default to {@link ComparisonMode#STRICT STRICT}.
+     * @param  object  the object to compare with this transform.
+     * @param  mode    the strictness level of the comparison. Default to {@link ComparisonMode#STRICT STRICT}.
      * @return {@code true} if the given object is considered equals to this math transform.
      */
     @Override
     public final boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Slight optimization
-            return true;
+        if (object == this) {
+            return true;                                    // Slight optimization
         }
         if (object == null) {
             return false;

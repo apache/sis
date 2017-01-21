@@ -92,8 +92,8 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
     /**
      * Creates a direction.
      *
-     * @param baseDirection The base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
-     * @param  meridian The meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
+     * @param  baseDirection  the base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
+     * @param  meridian       the meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
      *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
      */
     DirectionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
@@ -131,8 +131,8 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * If the specified name is a direction along some specific meridian,
      * returns information about that. Otherwise returns {@code null}.
      *
-     * @param  name The name to parse.
-     * @return The parsed name, or {@code null} if it is not a direction along a meridian.
+     * @param  name  the name to parse.
+     * @return the parsed name, or {@code null} if it is not a direction along a meridian.
      * @throws IllegalArgumentException if the given name looks like a direction along a meridian,
      *         but an error occurred during parsing.
      */
@@ -143,14 +143,14 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
             return null;
         }
         final AxisDirection baseDirection = AxisDirections.find(m.group(1), NORTH_SOUTH);
-        if (baseDirection == null) { // We require "North" or "South" direction.
+        if (baseDirection == null) {                        // We require "North" or "South" direction.
             return null;
         }
         double meridian = Double.parseDouble(m.group(2));
         final String group = m.group(3);
         if (group != null) {
             final AxisDirection sgn = AxisDirections.find(group, EAST_WEST);
-            if (sgn == null) {  // We require "East" or "West" direction.
+            if (sgn == null) {                              // We require "East" or "West" direction.
                 return null;
             }
             if (sgn != AxisDirections.absolute(sgn)) {
@@ -224,8 +224,8 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
             return c;
         }
         final double angle = angle(that);
-        if (angle < 0) return +1;  // Really the opposite sign.
-        if (angle > 0) return -1;  // Really the opposite sign.
+        if (angle < 0) return +1;               // Really the opposite sign.
+        if (angle > 0) return -1;               // Really the opposite sign.
         return 0;
     }
 

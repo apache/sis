@@ -310,8 +310,8 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
     /**
      * Verifies a coordinate operation which is expected to be <cite>"NTF (Paris) to WGS 84 (1)"</cite> (EPSG:8094).
      *
-     * @param domain  either {@code "geog2D domain"} or either {@code "geog3D domain"}.
-     * @param isEPSG  {@code true} if the coordinate operation is expected to contain EPSG identifiers.
+     * @param  domain  either {@code "geog2D domain"} or either {@code "geog3D domain"}.
+     * @param  isEPSG  {@code true} if the coordinate operation is expected to contain EPSG identifiers.
      */
     private static void verifyNTF(final CoordinateOperation operation, final String domain, final boolean isEPSG) {
         assertInstanceOf("Operation should have two steps.", ConcatenatedOperation.class, operation);
@@ -351,8 +351,8 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
      * or the addition of height. In such case the modified object is not allowed to have the EPSG identifier of the
      * original object.
      *
-     * @param name    The expected EPSG name.
-     * @param object  The object to verify.
+     * @param  name    the expected EPSG name.
+     * @param  object  the object to verify.
      */
     private static void assertEpsgNameWithoutIdentifierEqual(final String name, final IdentifiedObject object) {
         assertNotNull(name, object);

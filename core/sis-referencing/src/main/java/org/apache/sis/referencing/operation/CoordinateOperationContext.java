@@ -84,8 +84,8 @@ public class CoordinateOperationContext implements Serializable {
     /**
      * Creates a new context with the given area of interest and desired accuracy.
      *
-     * @param area     The area of interest, or {@code null} if none.
-     * @param accuracy The desired accuracy in metres, or 0 for the best accuracy available.
+     * @param area      the area of interest, or {@code null} if none.
+     * @param accuracy  the desired accuracy in metres, or 0 for the best accuracy available.
      * See {@link #getDesiredAccuracy()} for more details about what we mean by <cite>"best accuracy"</cite>.
      */
     public CoordinateOperationContext(final Extent area, final double accuracy) {
@@ -97,7 +97,7 @@ public class CoordinateOperationContext implements Serializable {
     /**
      * Returns the spatio-temporal area of interest, or {@code null} if none.
      *
-     * @return The spatio-temporal area of interest, or {@code null} if none.
+     * @return the spatio-temporal area of interest, or {@code null} if none.
      *
      * @see Extents#getGeographicBoundingBox(Extent)
      */
@@ -108,7 +108,7 @@ public class CoordinateOperationContext implements Serializable {
     /**
      * Sets the spatio-temporal area of interest, or {@code null} if none.
      *
-     * @param area The spatio-temporal area of interest, or {@code null} if none.
+     * @param  area  the spatio-temporal area of interest, or {@code null} if none.
      */
     public void setAreaOfInterest(Extent area) {
         if (area != null) {
@@ -124,7 +124,7 @@ public class CoordinateOperationContext implements Serializable {
      * <p>The reverse operation can be done with <code>{@linkplain Extents#getGeographicBoundingBox(Extent)
      * Extents.getGeographicBoundingBox}({@linkplain #getAreaOfInterest()})</code>.</p>
      *
-     * @param area The geographic area of interest, or {@code null} if none.
+     * @param  area  the geographic area of interest, or {@code null} if none.
      */
     public void setAreaOfInterest(final GeographicBoundingBox area) {
         areaOfInterest = setGeographicBoundingBox(areaOfInterest, area);
@@ -153,7 +153,7 @@ public class CoordinateOperationContext implements Serializable {
      * But if all coordinate operations defined by the authority use the Abridged Molodensky method, then SIS will ignore
      * the Molodensky one.</p>
      *
-     * @return The desired accuracy in metres.
+     * @return the desired accuracy in metres.
      */
     public double getDesiredAccuracy() {
         return desiredAccuracy;
@@ -164,7 +164,7 @@ public class CoordinateOperationContext implements Serializable {
      * A value of 0 means to search for the most accurate operation.
      * See {@link #getDesiredAccuracy()} for more details about what we mean by <cite>"most accurate"</cite>.
      *
-     * @param accuracy The desired accuracy in metres.
+     * @param  accuracy  the desired accuracy in metres.
      */
     public void setDesiredAccuracy(final double accuracy) {
         ArgumentChecks.ensurePositive("accuracy", accuracy);

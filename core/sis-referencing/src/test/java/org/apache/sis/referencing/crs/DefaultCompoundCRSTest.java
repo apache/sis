@@ -96,9 +96,9 @@ public final strictfp class DefaultCompoundCRSTest extends XMLTestCase {
     /**
      * Verifies the components of the CRS created by {@link #testConstructionAndSerialization()}.
      *
-     * @param crs2 The expected two-dimensional component (for the 2 first axes).
-     * @param crs3 The expected three-dimensional component.
-     * @param crs4 The four-dimensional compound CRS to test.
+     * @param  crs2  the expected two-dimensional component (for the 2 first axes).
+     * @param  crs3  the expected three-dimensional component.
+     * @param  crs4  the four-dimensional compound CRS to test.
      */
     private static void verifyComponents(final DefaultGeographicCRS crs2,
                                          final DefaultCompoundCRS   crs3,
@@ -262,7 +262,7 @@ public final strictfp class DefaultCompoundCRSTest extends XMLTestCase {
     /**
      * Tests (un)marshalling of a derived coordinate reference system.
      *
-     * @throws JAXBException If an error occurred during (un)marshalling.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      *
      * @since 0.7
      */

@@ -52,7 +52,7 @@ public final strictfp class DefaultPassThroughOperationTest extends XMLTestCase 
     /**
      * Tests (un)marshalling of a concatenated operation.
      *
-     * @throws JAXBException If an error occurred during (un)marshalling.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testXML() throws JAXBException {

@@ -2215,9 +2215,9 @@ addURIs:    for (int i=0; ; i++) {
      * <p><strong>WARNING:</strong> The EPSG database uses "{@code ORDER}" as a column name.
      * This is tolerated by Access, but MySQL does not accept that name.</p>
      *
-     * @param  cs the EPSG code for the coordinate system.
-     * @param  dimension of the coordinate system, which is also the size of the returned array.
-     * @return An array of coordinate system axis.
+     * @param  cs         the EPSG code for the coordinate system.
+     * @param  dimension  of the coordinate system, which is also the size of the returned array.
+     * @return an array of coordinate system axis.
      * @throws SQLException if an error occurred during database access.
      * @throws FactoryException if the code has not been found.
      */
@@ -2732,8 +2732,8 @@ next:               while (r.next()) {
      *   <tr><td>6326</td> <td>NAD83(2011) to NAVD88 height (1)</td></tr>
      * </table></div>
      *
-     * @param  code Value allocated by EPSG.
-     * @return The operation for the given code.
+     * @param  code  value allocated by EPSG.
+     * @return the operation for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      */

@@ -51,7 +51,7 @@ public final strictfp class MapProjectionParametersTest extends TestCase {
      * Creates a map projection descriptor with semi-major/minor axis lengths
      * and the given amount of standard parallels.
      *
-     * @param numStandardParallels 1 or 2 for including the standard parallels.
+     * @param  numStandardParallels  1 or 2 for including the standard parallels.
      */
     @SuppressWarnings("fallthrough")
     private static MapProjectionDescriptor createDescriptor(final int numStandardParallels) {

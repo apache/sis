@@ -194,7 +194,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
     /**
      * Paints the visual test.
      *
-     * @param graphics Where to paint the test.
+     * @param  graphics  where to paint the test.
      */
     @Override
     protected void paintComponent(final Graphics graphics) {
@@ -229,7 +229,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
     /**
      * Shows the viewer.
      *
-     * @param args Ignored.
+     * @param  args  ignored.
      */
     public static void main(final String[] args) {
         final ShapeUtilitiesViewer viewer = new ShapeUtilitiesViewer();

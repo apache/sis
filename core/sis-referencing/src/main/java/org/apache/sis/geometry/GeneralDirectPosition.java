@@ -22,6 +22,7 @@ package org.apache.sis.geometry;
  * to force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Arrays;
+import java.util.Objects;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.security.AccessController;
@@ -32,9 +33,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -87,7 +85,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * Constructs a position using the specified coordinate reference system.
      * The number of dimensions is inferred from the coordinate reference system.
      *
-     * @param crs The coordinate reference system to be given to this position.
+     * @param  crs  the coordinate reference system to be given to this position.
      */
     public GeneralDirectPosition(final CoordinateReferenceSystem crs) {
         this(crs.getCoordinateSystem().getDimension());
@@ -97,7 +95,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * Constructs a position with the specified number of dimensions.
      *
-     * @param  dimension Number of dimensions.
+     * @param  dimension  number of dimensions.
      * @throws NegativeArraySizeException if {@code dimension} is negative.
      */
     public GeneralDirectPosition(final int dimension) throws NegativeArraySizeException {
@@ -114,7 +112,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * argument lengths since the array is often created implicitly. Furthermore the {@link #ordinates}
      * field is public, so cloning the array would not protect the state of this object anyway.</div>
      *
-     * @param ordinates The ordinate values. This array is <strong>not</strong> cloned.
+     * @param ordinates  the ordinate values. This array is <strong>not</strong> cloned.
      */
     public GeneralDirectPosition(final double... ordinates) {
         this.ordinates = ordinates;
@@ -124,7 +122,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * Constructs a position initialized to the same values than the specified point.
      * This is a copy constructor.
      *
-     * @param point The position to copy.
+     * @param point  the position to copy.
      */
     public GeneralDirectPosition(final DirectPosition point) {
         ordinates = point.getCoordinate();                              // Should already be cloned.
@@ -143,8 +141,8 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      *
      * However this constructor is lenient to other types like {@code POINT ZM}.
      *
-     * @param  wkt The {@code POINT} or other kind of element to parse.
-     * @throws IllegalArgumentException If the given string can not be parsed.
+     * @param  wkt  the {@code POINT} or other kind of element to parse.
+     * @throws IllegalArgumentException if the given string can not be parsed.
      *
      * @see #toString()
      * @see org.apache.sis.measure.CoordinateFormat
@@ -160,7 +158,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * The length of ordinate sequence (the number of entries).
      * This is always equals to the length of the {@link #ordinates} array.
      *
-     * @return The dimensionality of this position.
+     * @return the dimensionality of this position.
      */
     @Override
     public final int getDimension() {
@@ -172,7 +170,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * May be {@code null} if this particular {@code DirectPosition} is included
      * in a larger object with such a reference to a CRS.
      *
-     * @return The coordinate reference system, or {@code null}.
+     * @return the coordinate reference system, or {@code null}.
      */
     @Override
     public final CoordinateReferenceSystem getCoordinateReferenceSystem() {
@@ -182,9 +180,8 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * Sets the coordinate reference system in which the coordinate is given.
      *
-     * @param crs The new coordinate reference system, or {@code null}.
-     * @throws MismatchedDimensionException if the specified CRS doesn't have the expected
-     *         number of dimensions.
+     * @param  crs  the new coordinate reference system, or {@code null}.
+     * @throws MismatchedDimensionException if the specified CRS does not have the expected number of dimensions.
      */
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs)
             throws MismatchedDimensionException
@@ -199,7 +196,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * <div class="note"><b>API note:</b>
      * This method is final for ensuring consistency with the {@link #ordinates}, array field, which is public.</div>
      *
-     * @return A copy of the {@linkplain #ordinates ordinates} array.
+     * @return a copy of the {@linkplain #ordinates ordinates} array.
      */
     @Override
     public final double[] getCoordinate() {
@@ -209,9 +206,9 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * Sets the ordinate values along all dimensions.
      *
-     * @param  ordinates The new ordinates values, or a {@code null} array
-     *         for setting all ordinate values to {@link Double#NaN NaN}.
-     * @throws MismatchedDimensionException If the length of the specified array is not
+     * @param  ordinates  the new ordinates values, or a {@code null} array for
+     *                    setting all ordinate values to {@link Double#NaN NaN}.
+     * @throws MismatchedDimensionException if the length of the specified array is not
      *         equals to the {@linkplain #getDimension() dimension} of this position.
      */
     public void setCoordinate(final double... ordinates) throws MismatchedDimensionException {
@@ -229,8 +226,8 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * <div class="note"><b>API note:</b>
      * This method is final for ensuring consistency with the {@link #ordinates}, array field, which is public.</div>
      *
-     * @param  dimension The dimension in the range 0 to {@linkplain #getDimension() dimension}-1.
-     * @return The ordinate at the specified dimension.
+     * @param  dimension  the dimension in the range 0 to {@linkplain #getDimension() dimension}-1.
+     * @return the ordinate at the specified dimension.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override
@@ -241,8 +238,8 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * Sets the ordinate value along the specified dimension.
      *
-     * @param dimension The dimension for the ordinate of interest.
-     * @param value The ordinate value of interest.
+     * @param  dimension  the dimension for the ordinate of interest.
+     * @param  value      the ordinate value of interest.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override
@@ -255,9 +252,9 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * contains a coordinate reference system (CRS), then the CRS for this position will
      * be set to the CRS of the specified position.
      *
-     * @param  position The new position for this point, or {@code null} for setting all ordinate
-     *         values to {@link Double#NaN NaN}.
-     * @throws MismatchedDimensionException if the given position doesn't have the expected dimension.
+     * @param  position  the new position for this point,
+     *                   or {@code null} for setting all ordinate values to {@link Double#NaN NaN}.
+     * @throws MismatchedDimensionException if the given position does not have the expected dimension.
      */
     @Override
     public void setLocation(final DirectPosition position) throws MismatchedDimensionException {
@@ -298,7 +295,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * Returns a deep copy of this position.
      *
-     * @return A copy of this direct position.
+     * @return a copy of this direct position.
      */
     @Override
     public GeneralDirectPosition clone() {

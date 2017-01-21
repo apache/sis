@@ -55,7 +55,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      * Creates a map of properties to be given to the {@link AbstractIdentifiedObject} constructor.
      * The values in the map are consistent with the values expected by the {@link #validate} method.
      *
-     * @param identifier The value for the {@code "identifiers"} property.
+     * @param  identifier  the value for the {@code "identifiers"} property.
      */
     private static Map<String,Object> properties(final Set<Identifier> identifiers) {
         final Map<String,Object> properties = new HashMap<>(8);
@@ -72,10 +72,10 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     /**
      * Validates the given object created by {@link #testCreateFromMap()}.
      *
-     * @param  object      The object to validate.
-     * @param  identifiers The expected value of {@link AbstractIdentifiedObject#getIdentifiers()}.
-     * @param  gmlID       The expected value of {@link AbstractIdentifiedObject#getID()}.
-     * @return The value of {@link AbstractIdentifiedObject#getIdentifier()}.
+     * @param  object       the object to validate.
+     * @param  identifiers  the expected value of {@link AbstractIdentifiedObject#getIdentifiers()}.
+     * @param  gmlID        the expected value of {@link AbstractIdentifiedObject#getID()}.
+     * @return the value of {@link AbstractIdentifiedObject#getIdentifier()}.
      */
     private static Identifier validate(final AbstractIdentifiedObject object,
             final Set<Identifier> identifiers, final String gmlID)
@@ -108,8 +108,10 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
             new AbstractIdentifiedObject(properties);
             fail("Should not allow unnamed object.");
         } catch (IllegalArgumentException e) {
-            // The message may be in any language, but shall
-            // contain at least the missing property name.
+            /*
+             * The message may be in any language, but shall
+             * contain at least the missing property name.
+             */
             final String message = e.getMessage();
             assertTrue(message, message.contains("name"));
         }

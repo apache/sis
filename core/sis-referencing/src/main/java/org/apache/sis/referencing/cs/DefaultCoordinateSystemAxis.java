@@ -287,10 +287,10 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * <p>If no minimum, maximum and range meaning are specified, then this constructor will infer them
      * from the axis unit and direction.</p>
      *
-     * @param properties   The properties to be given to the identified object.
-     * @param abbreviation The {@linkplain #getAbbreviation() abbreviation} used for this coordinate system axis.
-     * @param direction    The {@linkplain #getDirection() direction} of this coordinate system axis.
-     * @param unit         The {@linkplain #getUnit() unit of measure} used for this coordinate system axis.
+     * @param properties    the properties to be given to the identified object.
+     * @param abbreviation  the {@linkplain #getAbbreviation() abbreviation} used for this coordinate system axis.
+     * @param direction     the {@linkplain #getDirection() direction} of this coordinate system axis.
+     * @param unit          the {@linkplain #getUnit() unit of measure} used for this coordinate system axis.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createCoordinateSystemAxis(Map, String, AxisDirection, Unit)
      */
@@ -355,7 +355,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param axis The coordinate system axis to copy.
+     * @param  axis  the coordinate system axis to copy.
      *
      * @see #castOrCopy(CoordinateSystemAxis)
      */
@@ -375,8 +375,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultCoordinateSystemAxis castOrCopy(final CoordinateSystemAxis object) {
@@ -411,7 +411,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * {@linkplain AxisDirection#EAST  east}  or {@linkplain AxisDirection#WEST  west},
      * {@linkplain AxisDirection#UP    up}    or {@linkplain AxisDirection#DOWN  down}.</p>
      *
-     * @return The direction of this coordinate system axis.
+     * @return the direction of this coordinate system axis.
      */
     @Override
     @XmlElement(name = "axisDirection", required = true)
@@ -423,7 +423,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Returns the abbreviation used for this coordinate system axes.
      * Examples are <cite>"X"</cite> and <cite>"Y"</cite>.
      *
-     * @return The coordinate system axis abbreviation.
+     * @return the coordinate system axis abbreviation.
      */
     @Override
     @XmlElement(name = "axisAbbrev", required = true)
@@ -436,7 +436,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * was given by <code>{@link AbstractCS#getAxis(int) CoordinateSystem.getAxis}(i)</code>, then all ordinate
      * values at dimension <var>i</var> in a coordinate tuple shall be recorded using this unit of measure.
      *
-     * @return The unit of measure used for ordinate values along this coordinate system axis.
+     * @return the unit of measure used for ordinate values along this coordinate system axis.
      */
     @Override
     @XmlAttribute(name= "uom", required = true)
@@ -449,7 +449,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * unit of measure for the axis}. If there is no minimum value, then this method returns
      * {@linkplain Double#NEGATIVE_INFINITY negative infinity}.
      *
-     * @return The minimum value normally allowed for this axis.
+     * @return the minimum value normally allowed for this axis.
      */
     @Override
     public double getMinimumValue() {
@@ -461,7 +461,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * unit of measure for the axis}. If there is no maximum value, then this method returns
      * {@linkplain Double#POSITIVE_INFINITY negative infinity}.
      *
-     * @return The maximum value normally allowed for this axis.
+     * @return the maximum value normally allowed for this axis.
      */
     @Override
     public double getMaximumValue() {
@@ -471,9 +471,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     /**
      * Invoked at unmarshalling time if a minimum or maximum value is out of range.
      *
-     * @param name  The property name. Will also be used as "method" name for logging purpose,
-     *              since the setter method "conceptually" do not exist (it is only for JAXB).
-     * @param value The invalid value.
+     * @param  name   the property name. Will also be used as "method" name for logging purpose,
+     *                since the setter method "conceptually" do not exist (it is only for JAXB).
+     * @param  value  the invalid value.
      */
     private static void outOfRange(final String name, final Double value) {
         Context.warningOccured(Context.current(), DefaultCoordinateSystemAxis.class, name,
@@ -486,7 +486,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * (i.e. if those values are {@linkplain Double#NEGATIVE_INFINITY negative infinity} and
      * {@linkplain Double#POSITIVE_INFINITY positive infinity} respectively), then this method returns {@code null}.
      *
-     * @return The meaning of axis value range, or {@code null} if unspecified.
+     * @return the meaning of axis value range, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "rangeMeaning")
@@ -517,7 +517,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.
      *
-     * @param  name The name to compare.
+     * @param  name  the name to compare.
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
      */
     @Override
@@ -540,8 +540,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * but the converse is not true. Note: by avoiding to put "x" in the {@link #ALIASES} map, we
      * avoid undesirable side effects like considering "Easting" as equivalent to "Westing".
      *
-     * @param  xy   The name which may be "x" or "y".
-     * @param  name The second name to compare with.
+     * @param  xy    the name which may be "x" or "y".
+     * @param  name  the second name to compare with.
      * @return {@code true} if the second name is equivalent to "x" or "y"
      *         (depending on the {@code xy} value), or {@code false} otherwise.
      */
@@ -566,8 +566,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * The range minimum and maximum values are compared only if {@code cr} is {@code true},
      * i.e. it is caller responsibility to determine if range shall be considered as metadata.
      *
-     * @param  that The axis to compare with this axis.
-     * @param  cr {@code true} for comparing also the range minimum and maximum values.
+     * @param  that  the axis to compare with this axis.
+     * @param  cr    {@code true} for comparing also the range minimum and maximum values.
      * @return {@code true} if unit, direction and optionally range extremum are equal.
      */
     private boolean equalsIgnoreMetadata(final CoordinateSystemAxis that, final boolean cr) {
@@ -592,16 +592,16 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * and {@link #getMaximumValue()} are considered non-ignorable metadata and will be compared for every modes.
      * All other properties are compared only for modes stricter than {@link ComparisonMode#IGNORE_METADATA}.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                                // Slight optimization.
         }
         if (!super.equals(object, mode)) {
             return false;
@@ -680,7 +680,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
