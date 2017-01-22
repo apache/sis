@@ -60,7 +60,7 @@ public final strictfp class EnvelopeOperationTest extends TestCase {
      *   <li>{@code bounds} as the feature envelope attribute.</li>
      * </ul>
      *
-     * @param  defaultGeometry 1 for using "classes" as the default geometry, or 3 for "gymnasium".
+     * @param  defaultGeometry  1 for using "classes" as the default geometry, or 3 for "gymnasium".
      * @return the feature for a school.
      */
     private static DefaultFeatureType school(final int defaultGeometry) throws FactoryException {

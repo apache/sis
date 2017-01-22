@@ -134,7 +134,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      * @param  <V>    the type of attribute values.
      * @param  type   information about the attribute (base Java class, domain of values, <i>etc.</i>).
      * @param  value  the initial value (may be {@code null}).
-     * @return The new attribute.
+     * @return the new attribute.
      */
     static <V> AbstractAttribute<V> create(final DefaultAttributeType<V> type, final Object value) {
         ArgumentChecks.ensureNonNull("type", type);

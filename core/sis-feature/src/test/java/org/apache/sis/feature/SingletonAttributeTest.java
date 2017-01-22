@@ -112,9 +112,9 @@ public final strictfp class SingletonAttributeTest extends TestCase {
     /**
      * Verifies that the given element reports a validation failure with the given explanation.
      *
-     * @param propertyName The name of the property that failed validation.
-     * @param explanation  The expected explanation.
-     * @param consistency  The report element to test.
+     * @param  propertyName  the name of the property that failed validation.
+     * @param  explanation   the expected explanation.
+     * @param  consistency   the report element to test.
      */
     private static void assertDomainConsistencyEquals(final String propertyName, final String explanation,
             final DomainConsistency consistency)
@@ -152,7 +152,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
     /**
      * Tests {@link SingletonAttribute#clone()}.
      *
-     * @throws CloneNotSupportedException Should never happen.
+     * @throws CloneNotSupportedException should never happen.
      */
     @Test
     @DependsOnMethod("testEquals")

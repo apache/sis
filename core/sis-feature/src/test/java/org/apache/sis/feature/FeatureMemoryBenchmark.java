@@ -64,8 +64,8 @@ public final class FeatureMemoryBenchmark {
     /**
      * Creates a new benchmark.
      *
-     * @param useSIS {@code true} for using SIS implementation, or {@code false} for {@link HashMap}.
-     * @param isSimple In the case of non-SIS implementation, whether we use simple features or complex features.
+     * @param useSIS    {@code true} for using SIS implementation, or {@code false} for {@link HashMap}.
+     * @param isSimple  in the case of non-SIS implementation, whether we use simple features or complex features.
      */
     private FeatureMemoryBenchmark(final boolean useSIS, final boolean isSimple) {
         features = new ArrayList<>(100000);
@@ -166,7 +166,7 @@ public final class FeatureMemoryBenchmark {
     /**
      * Runs from the command line. This method expect one argument, which is "sis", "simple" or "complex".
      *
-     * @param arguments Command line arguments.
+     * @param  arguments  command line arguments.
      */
     public static void main(final String[] arguments) {
         if (arguments.length == 1) {

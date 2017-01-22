@@ -258,7 +258,7 @@ public abstract class TypeBuilder implements Localized {
     /**
      * Sets a concise definition of the element.
      *
-     * @param  definition a concise definition of the element, or {@code null} if none.
+     * @param  definition  a concise definition of the element, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getDefinition()
@@ -287,7 +287,7 @@ public abstract class TypeBuilder implements Localized {
      * Sets a natural language designator for the element.
      * This can be used as an alternative to the {@linkplain #getName() name} in user interfaces.
      *
-     * @param  designation a natural language designator for the element, or {@code null} if none.
+     * @param  designation  a natural language designator for the element, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getDesignation()
@@ -437,8 +437,8 @@ public abstract class TypeBuilder implements Localized {
      * Same as {@link org.apache.sis.util.ArgumentChecks#ensureNonNull(String, Object)},
      * but uses the current locale in case of error.
      *
-     * @param  name the name of the argument to be checked. Used only if an exception is thrown.
-     * @param  object the user argument to check against null value.
+     * @param  name    the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  object  the user argument to check against null value.
      * @throws NullArgumentException if {@code object} is null.
      */
     final void ensureNonNull(final String name, final Object value) {
@@ -462,8 +462,8 @@ public abstract class TypeBuilder implements Localized {
      * Same as {@link org.apache.sis.util.ArgumentChecks#ensureNonEmpty(String, CharSequence)},
      * but uses the current locale in case of error.
      *
-     * @param  name the name of the argument to be checked. Used only if an exception is thrown.
-     * @param  text the user argument to check against null value and empty sequences.
+     * @param  name  the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  text  the user argument to check against null value and empty sequences.
      * @throws NullArgumentException if {@code text} is null.
      * @throws IllegalArgumentException if {@code text} is empty.
      */

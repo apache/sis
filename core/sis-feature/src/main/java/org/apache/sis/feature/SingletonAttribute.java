@@ -16,8 +16,9 @@
  */
 package org.apache.sis.feature;
 
-// Branch-dependent imports
 import java.util.Objects;
+
+// Branch-dependent imports
 
 
 /**

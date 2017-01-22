@@ -78,10 +78,10 @@ public abstract strictfp class FeatureTestCase extends TestCase {
      * without overriding {@code setProperty(Property)}.
      * Consequently, this assertion needs to be relaxed by {@link AbstractFeatureTest}.
      *
-     * @param name      the property name to check.
-     * @param expected  the expected property instance.
-     * @param modified  {@code true} if {@code expected} has been modified <strong>after</strong> it has been set
-     *                  to the {@link #feature} instance. Not all feature implementations can see such changes.
+     * @param  name      the property name to check.
+     * @param  expected  the expected property instance.
+     * @param  modified  {@code true} if {@code expected} has been modified <strong>after</strong> it has been set
+     *                   to the {@link #feature} instance. Not all feature implementations can see such changes.
      * @return {@code true} if the property is the expected instance, or {@code false} if it is another instance.
      */
     boolean assertSameProperty(final String name, final Property expected, final boolean modified) {
@@ -124,9 +124,9 @@ public abstract strictfp class FeatureTestCase extends TestCase {
      * First, this method verifies that the previous value is equals to the given one.
      * Then, this method set the attribute to the given value and check if the result.
      *
-     * @param name      the name of the attribute to set.
-     * @param oldValue  the expected old value (may be {@code null}).
-     * @param newValue  the new value to set.
+     * @param  name      the name of the attribute to set.
+     * @param  oldValue  the expected old value (may be {@code null}).
+     * @param  newValue  the new value to set.
      */
     private void setAttributeValue(final String name, final Object oldValue, final Object newValue) {
         assertEquals(name, oldValue, getAttributeValue(name));
