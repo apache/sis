@@ -39,8 +39,8 @@ public class InvalidCommandException extends Exception {
     /**
      * Constructs an exception with the specified detail message.
      *
-     * @param message The detail message.
-     * @param command The name of the invalid command.
+     * @param message  the detail message.
+     * @param command  the name of the invalid command.
      */
     public InvalidCommandException(final String message, final String command) {
         super(message);
@@ -50,7 +50,7 @@ public class InvalidCommandException extends Exception {
     /**
      * Returns the name of the invalid command.
      *
-     * @return The name of the invalid command.
+     * @return the name of the invalid command.
      */
     public String getCommand() {
         return command;

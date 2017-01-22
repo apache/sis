@@ -75,9 +75,9 @@ final class HelpCommand extends CommandRunner {
     /**
      * Implementation of {@link #run()}, also shared by {@link CommandRunner#help(String)}.
      *
-     * @param showHeader   {@code true} for printing the "Apache SIS" header.
-     * @param commandNames The names of the commands to list.
-     * @param validOptions The options to list.
+     * @param  showHeader    {@code true} for printing the "Apache SIS" header.
+     * @param  commandNames  the names of the commands to list.
+     * @param  validOptions  the options to list.
      */
     void help(final boolean showHeader, final String[] commandNames, final EnumSet<Option> validOptions) {
         final ResourceBundle commands = ResourceBundle.getBundle("org.apache.sis.console.Commands", locale);
@@ -118,7 +118,7 @@ final class HelpCommand extends CommandRunner {
             }
             table.flush();
         } catch (IOException e) {
-            throw new AssertionError(e); // Should never happen, because we are writing to a PrintWriter.
+            throw new AssertionError(e);            // Should never happen, because we are writing to a PrintWriter.
         }
     }
 }

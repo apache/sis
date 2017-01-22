@@ -78,7 +78,7 @@ public final class Doclet extends HtmlDoclet {
     /**
      * Invoked by Javadoc for starting the doclet.
      *
-     * @param  root The root document.
+     * @param  root  the root document.
      * @return {@code true} on success, or {@code false} on failure.
      */
     public static boolean start(final RootDoc root) {
@@ -151,9 +151,9 @@ public final class Doclet extends HtmlDoclet {
      * Copies the standard CSS file, then copies the custom CSS file.
      * If the {@value #RENAMED_CSS} file already exists, it will not be overwritten.
      *
-     * @param  inputFile        The custom CSS file to copy in the destination directory.
-     * @param  outputDirectory  The directory where to copy the CSS file.
-     * @throws IOException      If an error occurred while reading or writing.
+     * @param  inputFile        the custom CSS file to copy in the destination directory.
+     * @param  outputDirectory  the directory where to copy the CSS file.
+     * @throws IOException      if an error occurred while reading or writing.
      */
     private static void copyStylesheet(final File inputFile, final File outputDirectory) throws IOException {
         final File stylesheetFile = new File(outputDirectory, STYLESHEET);
@@ -197,9 +197,9 @@ public final class Doclet extends HtmlDoclet {
      * directory can be specified with {@code <javadocResourcesDirectory>}, I have been unable to make it work even
      * with absolute paths.
      *
-     * @param  inputFile        The directory containing resources.
-     * @param  outputDirectory  The directory where to copy the resource files.
-     * @throws IOException      If an error occurred while reading or writing.
+     * @param  inputFile        the directory containing resources.
+     * @param  outputDirectory  the directory where to copy the resource files.
+     * @throws IOException      if an error occurred while reading or writing.
      */
     private static void copyResources(final File inputDirectory, final File outputDirectory) throws IOException {
         final File[] inputFiles = inputDirectory.listFiles((final File dir, final String name) ->

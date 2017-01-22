@@ -54,7 +54,7 @@ public final class Include extends InlineTaglet {
     /**
      * Register this taglet.
      *
-     * @param tagletMap the map to register this tag to.
+     * @param  tagletMap  the map to register this tag to.
      */
     public static void register(final Map<String,Taglet> tagletMap) {
        final Include tag = new Include();
@@ -71,7 +71,7 @@ public final class Include extends InlineTaglet {
     /**
      * Returns the name of this custom tag.
      *
-     * @return The tag name.
+     * @return the tag name.
      */
     @Override
     public String getName() {
@@ -81,8 +81,8 @@ public final class Include extends InlineTaglet {
     /**
      * Given the <code>Tag</code> representation of this custom tag, return its string representation.
      *
-     * @param tag The tag to format.
-     * @return A string representation of the given tag.
+     * @param  tag  the tag to format.
+     * @return a string representation of the given tag.
      */
     @Override
     public String toString(final Tag tag) {
@@ -122,7 +122,7 @@ public final class Include extends InlineTaglet {
                 }
                 start = line.indexOf(ANCHOR_START);
                 if (start >= 0 && line.lastIndexOf(ANCHOR_END) >= start) {
-                    break; // Found the next section - stop this one.
+                    break;                              // Found the next section - stop this one.
                 }
                 if (line.contains(DOCUMENT_END)) {
                     break;

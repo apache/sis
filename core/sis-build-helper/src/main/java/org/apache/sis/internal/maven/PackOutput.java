@@ -98,8 +98,8 @@ final class PackOutput implements Closeable {
     /**
      * Creates an output jar.
      *
-     * @param inputJARs The input JAR filenames together with their {@code PackInput} helpers.
-     * @param outputJAR The output JAR filename.
+     * @param  inputJARs  the input JAR filenames together with their {@code PackInput} helpers.
+     * @param  outputJAR  the output JAR filename.
      */
     PackOutput(final Map<File,PackInput> inputJARs, final File outputJAR) {
         this.inputJARs = inputJARs;
@@ -117,8 +117,8 @@ final class PackOutput implements Closeable {
     /**
      * Opens the given JAR file for writing and creates its manifest.
      *
-     * @param  projectName The project name, or {@code null} if none.
-     * @param  version     The project version, or {@code null} if none.
+     * @param  projectName  the project name, or {@code null} if none.
+     * @param  version      the project version, or {@code null} if none.
      * @throws IOException if the file can't be open.
      */
     void open(final String projectName, final String version) throws IOException {
@@ -249,9 +249,9 @@ final class PackOutput implements Closeable {
      * Copies fully the given input stream to the given destination.
      * The given input stream is closed after the copy.
      *
-     * @param  in     The input stream from which to get the the content to copy.
-     * @param  buffer Temporary buffer to reuse at each method call.
-     * @throws IOException If an error occurred during the copy.
+     * @param  in      the input stream from which to get the the content to copy.
+     * @param  buffer  temporary buffer to reuse at each method call.
+     * @throws IOException if an error occurred during the copy.
      */
     void copy(final InputStream in, final byte[] buffer) throws IOException {
         int n;
@@ -309,7 +309,7 @@ final class PackOutput implements Closeable {
     /**
      * Creates a Pack200 file from the output JAR, then delete the JAR.
      *
-     * @param  out Where to write the Pack200. This stream will be closed by this method.
+     * @param  out  where to write the Pack200. This stream will be closed by this method.
      * @throws IOException if an error occurred while packing the JAR.
      */
     void pack(final OutputStream out) throws IOException {

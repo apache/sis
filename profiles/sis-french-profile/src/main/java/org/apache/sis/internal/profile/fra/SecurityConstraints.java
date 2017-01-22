@@ -50,6 +50,7 @@ import org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints;
  * @since   0.4
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "FRA_SecurityConstraints_Type")
 @XmlRootElement(name = "FRA_SecurityConstraints")
 public class SecurityConstraints extends DefaultSecurityConstraints {
@@ -73,7 +74,7 @@ public class SecurityConstraints extends DefaultSecurityConstraints {
      * Constructs an instance initialized to a copy of the given object.
      * This constructor does <strong>not</strong> copy the FRA-specific properties.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public SecurityConstraints(final org.opengis.metadata.constraint.SecurityConstraints object) {
         super(object);
@@ -82,7 +83,7 @@ public class SecurityConstraints extends DefaultSecurityConstraints {
     /**
      * Returns the documents that specifies the nature of the constraints.
      *
-     * @return Citations to the current documents.
+     * @return citations to the current documents.
      */
     @XmlElement(name = "citation")
     public Collection<Citation> getCitations() {
@@ -92,7 +93,7 @@ public class SecurityConstraints extends DefaultSecurityConstraints {
     /**
      * Sets the documents that specifies the nature of the constraints.
      *
-     * @param newValues Citation to the new documents.
+     * @param  newValues  citation to the new documents.
      */
     public void setCitations(final Collection<? extends Citation> newValues) {
         citations = writeCollection(newValues, citations, Citation.class);

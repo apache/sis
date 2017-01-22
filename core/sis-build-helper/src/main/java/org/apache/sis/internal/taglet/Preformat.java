@@ -78,7 +78,7 @@ public final class Preformat extends InlineTaglet {
     /**
      * Returns the name of this custom tag.
      *
-     * @return The tag name.
+     * @return the tag name.
      */
     @Override
     public String getName() {
@@ -88,7 +88,7 @@ public final class Preformat extends InlineTaglet {
     /**
      * Returns {@code false} since <code>@preformat</code> can not be used in overview.
      *
-     * @return Always {@code false}.
+     * @return always {@code false}.
      */
     @Override
     public boolean inOverview() {
@@ -99,7 +99,7 @@ public final class Preformat extends InlineTaglet {
      * Given the <code>Tag</code> representation of this custom tag, return its string representation.
      *
      * @param tag The tag to format.
-     * @return A string representation of the given tag.
+     * @return a string representation of the given tag.
      */
     @Override
     public String toString(final Tag tag) {
@@ -209,7 +209,7 @@ all:    while (tk.hasMoreTokens()) {
                         }
                         break;
                     }
-                    case '\'': // fall through
+                    case '\'':                                 // fall through
                     case '"': {
                         quote = c;
                         buffer.append("<font color=\"orangered\">").append(c);
