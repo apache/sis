@@ -60,7 +60,7 @@ public class DirectReferenceSystem extends ReferenceSystemMetadata {
     /**
      * Creates a new reference system from the given one.
      *
-     * @param crs The reference system to partially copy.
+     * @param  crs  the reference system to partially copy.
      */
     public DirectReferenceSystem(final ReferenceSystem crs) {
         super(crs);
@@ -69,7 +69,7 @@ public class DirectReferenceSystem extends ReferenceSystemMetadata {
     /**
      * Creates a new reference system from the given code.
      *
-     * @param identifier The reference system identifier.
+     * @param  identifier  the reference system identifier.
      */
     public DirectReferenceSystem(final ReferenceIdentifier identifier) {
         super(identifier);
@@ -78,8 +78,8 @@ public class DirectReferenceSystem extends ReferenceSystemMetadata {
     /**
      * Compares this object with the given one for equality.
      *
-     * @param  object The object to compare with this reference system.
-     * @param  mode The strictness level of the comparison.
+     * @param  object  the object to compare with this reference system.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */
     @Override

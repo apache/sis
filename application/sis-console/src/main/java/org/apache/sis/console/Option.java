@@ -159,9 +159,9 @@ enum Option {
     /**
      * Parses the given value as a boolean.
      *
-     * @param  value The value to parse.
-     * @return The value as a boolean.
-     * @throws InvalidOptionException If the given value is not recognized as a boolean.
+     * @param  value  the value to parse.
+     * @return the value as a boolean.
+     * @throws InvalidOptionException if the given value is not recognized as a boolean.
      */
     boolean parseBoolean(final String value) throws InvalidOptionException {
         for (int i=0; i<BOOLEAN_VALUES.length; i++) {

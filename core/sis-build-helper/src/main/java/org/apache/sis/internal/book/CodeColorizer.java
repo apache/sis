@@ -100,7 +100,7 @@ public final class CodeColorizer {
     /**
      * Creates a new color colorizer.
      *
-     * @param document the object to use for creating nodes.
+     * @param  document  the object to use for creating nodes.
      * @throws IOException if an error occurred while reading the list of pre-defined identifiers.
      * @throws BookException if an identifier is defined twice.
      */
@@ -244,16 +244,16 @@ public final class CodeColorizer {
     /**
      * Applies emphasing on the words found in all text node of the given node.
      *
-     * @param  parent the root element where to put Java keywords in bold characters.
-     *         This is typically a {@code <pre>} or {@code <code>} element.
-     * @param  type {@code "xml"} if the element to process is XML rather than Java code.
+     * @param  parent  the root element where to put Java keywords in bold characters.
+     *                 This is typically a {@code <pre>} or {@code <code>} element.
+     * @param  type    {@code "xml"} if the element to process is XML rather than Java code.
      * @throws BookException if an element can not be processed.
      */
     public void highlight(final Node parent, final String type) throws BookException {
         final boolean isXML = "xml".equals(type);
-        final boolean isJava = !isXML;   // Future version may add more choices.
-        Element syntaticElement = null;  // E.g. comment block or a String.
-        String  stopCondition   = null;  // Identify 'syntaticElement' end.
+        final boolean isJava = !isXML;                              // Future version may add more choices.
+        Element syntaticElement = null;                             // E.g. comment block or a String.
+        String  stopCondition   = null;                             // Identify 'syntaticElement' end.
         for (final Node node : toArray(parent.getChildNodes())) {
             /*
              * The following condition happen only if a quoted string or a comment started in a previous

@@ -135,7 +135,7 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      *     }
      * }
      *
-     * @param  locale The locale for which to get the resource bundle.
+     * @param  locale  the locale for which to get the resource bundle.
      * @return the resource bundle for the given locale.
      *
      * @see ResourceBundle#getBundle(String, Locale, ClassLoader)

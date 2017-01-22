@@ -49,6 +49,7 @@ import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
  * @since   0.4
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "FRA_DataIdentification_Type")
 @XmlRootElement(name ="FRA_DataIdentification")
 public class DataIdentification extends DefaultDataIdentification {
@@ -72,7 +73,7 @@ public class DataIdentification extends DefaultDataIdentification {
      * Constructs an instance initialized to a copy of the given object.
      * This constructor does <strong>not</strong> copy the FRA-specific properties.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public DataIdentification(final org.opengis.metadata.identification.DataIdentification object) {
         super(object);
@@ -81,7 +82,7 @@ public class DataIdentification extends DefaultDataIdentification {
     /**
      * Returns the documents at the origin of the creation of the identified resources.
      *
-     * @return Citations to the current documents.
+     * @return citations to the current documents.
      */
     @XmlElement(name = "relatedCitation")
     public Collection<Citation> getRelatedCitations() {
@@ -91,7 +92,7 @@ public class DataIdentification extends DefaultDataIdentification {
     /**
      * Sets the documents at the origin of the creation of the identified resources.
      *
-     * @param newValues Citation to the new documents.
+     * @param  newValues  citation to the new documents.
      */
     public void setRelatedCitations(final Collection<? extends Citation> newValues) {
         relatedCitations = writeCollection(newValues, relatedCitations, Citation.class);

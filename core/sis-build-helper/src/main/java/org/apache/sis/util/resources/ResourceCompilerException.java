@@ -32,7 +32,7 @@ final class ResourceCompilerException extends MojoExecutionException {
     /**
      * Creates an exception with the given detail message.
      *
-     * @param message The detail message.
+     * @param message  the detail message.
      */
     ResourceCompilerException(final String message) {
         super(message);
@@ -41,7 +41,7 @@ final class ResourceCompilerException extends MojoExecutionException {
     /**
      * Creates an exception with the given cause.
      *
-     * @param cause The cause of this exception.
+     * @param cause  the cause of this exception.
      */
     ResourceCompilerException(final Throwable cause) {
         super(cause.getLocalizedMessage(), cause);

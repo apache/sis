@@ -55,9 +55,9 @@ public abstract class NamedElement {
      * <p>Code searching in the returned map shall ask for the original (non lower-case) name
      * <strong>before</strong> to ask for the lower-cases version of that name.</p>
      *
-     * @param  <E>           the type of elements.
-     * @param  elements      the elements to store in the map, or {@code null} if none.
-     * @param  namesLocale   the locale to use for creating the "all lower cases" names.
+     * @param  <E>          the type of elements.
+     * @param  elements     the elements to store in the map, or {@code null} if none.
+     * @param  namesLocale  the locale to use for creating the "all lower cases" names.
      * @return a (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
      * @throws InvalidParameterCardinalityException if the same name is used for more than one element.
      */
