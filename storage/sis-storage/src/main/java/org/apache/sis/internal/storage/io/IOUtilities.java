@@ -129,7 +129,8 @@ public final class IOUtilities extends Static {
         }
         if (extension) {
             fromIndex = CharSequences.lastIndexOf(name, '.', fromIndex, name.length()) + 1;
-            if (fromIndex <= 1) { // If the dot is the first character, do not consider as a filename extension.
+            if (fromIndex <= 1) {
+                // If the dot is the first character, do not consider as a filename extension.
                 return "";
             }
         }
@@ -144,13 +145,17 @@ public final class IOUtilities extends Static {
      * @return the string representation, or {@code null} if none.
      */
     public static String toString(final Object path) {
-        // For the following types, the string that we want can be obtained only by toString(),
-        // or the class is final so we know that the toString(à behavior can not be changed.
+        /*
+         * For the following types, the string that we want can be obtained only by toString(),
+         * or the class is final so we know that the toString(à behavior can not be changed.
+         */
         if (path instanceof CharSequence || path instanceof Path || path instanceof URL || path instanceof URI) {
             return path.toString();
         }
-        // While toString() would work too on the default implementation, the following
-        // type is not final. So we are better to invoke the dedicated method.
+        /*
+         * While toString() would work too on the default implementation, the following
+         * type is not final. So we are better to invoke the dedicated method.
+         */
         if (path instanceof File) {
             return ((File) path).getPath();
         }

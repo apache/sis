@@ -29,7 +29,7 @@ public class BookException extends Exception {
     /**
      * Creates an exception with the given message.
      *
-     * @param message The exception message.
+     * @param message  the exception message.
      */
     public BookException(final String message) {
         super(message);

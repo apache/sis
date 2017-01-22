@@ -19,6 +19,7 @@ package org.apache.sis.storage.geotiff;
 import java.util.Arrays;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.DecimalFunctions;
@@ -26,10 +27,7 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 
-// Branch-dependent imports
-import java.nio.charset.StandardCharsets;
 import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * The types of values in a TIFF header. Provides also some support for reading a value of a given type.

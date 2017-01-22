@@ -20,16 +20,14 @@ import java.net.URI;
 import java.util.EnumSet;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import org.apache.sis.storage.DataStores;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.CharSequences;
-
-// Branch-dependent imports
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.FileSystemNotFoundException;
+import org.apache.sis.storage.DataStores;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -60,7 +58,7 @@ final class MimeTypeCommand extends CommandRunner {
     /**
      * Prints mime-type information.
      *
-     * @throws IOException If an error occurred while reading the file.
+     * @throws IOException if an error occurred while reading the file.
      */
     @Override
     public int run() throws InvalidOptionException, IOException, DataStoreException, URISyntaxException {
@@ -90,8 +88,10 @@ final class MimeTypeCommand extends CommandRunner {
             }
             String type;
             if (!uri.isAbsolute()) {
-                // If the URI is not absolute, we will not be able to convert to Path.
-                // Open as a String, leaving the conversion to DataStore implementations.
+                /*
+                 * If the URI is not absolute, we will not be able to convert to Path.
+                 * Open as a String, leaving the conversion to DataStore implementations.
+                 */
                 type = DataStores.probeContentType(file);
             } else try {
                 type = Files.probeContentType(Paths.get(uri));

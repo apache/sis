@@ -108,7 +108,7 @@ public enum CodeType {
     /**
      * Infers the type for the given authority code.
      *
-     * @param  codeOrPath the code or file path.
+     * @param  codeOrPath  the code or file path.
      * @return whether the given argument seems to be a file path, URL, URN of authority code.
      */
     public static CodeType guess(final String codeOrPath) {

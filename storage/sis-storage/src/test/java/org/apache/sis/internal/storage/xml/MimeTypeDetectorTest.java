@@ -19,14 +19,13 @@ package org.apache.sis.internal.storage.xml;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
-import org.apache.sis.xml.Namespaces;
-import static org.apache.sis.xml.Namespaces.GMD;
 import static org.junit.Assert.*;
 
 
@@ -69,7 +68,7 @@ public final strictfp class MimeTypeDetectorTest extends TestCase {
         final StringReader in = new StringReader(xml);
         assertEquals('<', in.read());
         assertEquals('?', in.read());
-        final MimeTypeDetector detector = new MimeTypeDetector(singletonMap(GMD, "application/vnd.iso.19139+xml")) {
+        final MimeTypeDetector detector = new MimeTypeDetector(singletonMap(Namespaces.GMD, "application/vnd.iso.19139+xml")) {
             @Override int read() throws IOException {
                 return in.read();
             }
@@ -91,7 +90,7 @@ public final strictfp class MimeTypeDetectorTest extends TestCase {
         try (InputStream in = DefaultExtentTest.getResource("Extent.xml").openStream()) {
             assertEquals('<', in.read());
             assertEquals('?', in.read());
-            final MimeTypeDetector detector = new MimeTypeDetector(singletonMap(GMD, "application/vnd.iso.19139+xml")) {
+            final MimeTypeDetector detector = new MimeTypeDetector(singletonMap(Namespaces.GMD, "application/vnd.iso.19139+xml")) {
                 @Override int read() throws IOException {
                     return in.read();
                 }

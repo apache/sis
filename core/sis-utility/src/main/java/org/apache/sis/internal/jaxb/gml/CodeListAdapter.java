@@ -61,7 +61,7 @@ public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> ext
      * Substitutes the adapter value read from an XML stream by the object which will
      * contain the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  identifier The code space and identifier.
+     * @param  identifier  the code space and identifier.
      * @return a code list which represents the GML value.
      */
     @Override

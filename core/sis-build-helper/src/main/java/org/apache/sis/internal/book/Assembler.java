@@ -142,8 +142,8 @@ public final class Assembler {
     /**
      * Creates a new assembler for the given input and output files.
      *
-     * @param  input  the input file (e.g. {@code "site/book/en/body.html"}).
-     * @param  locale the locale for the message to generates in HTML code.
+     * @param  input   the input file (e.g. {@code "site/book/en/body.html"}).
+     * @param  locale  the locale for the message to generates in HTML code.
      * @throws ParserConfigurationException if this constructor can not build the XML document.
      * @throws IOException if an error occurred while reading the file.
      * @throws SAXException if an error occurred while parsing the XML.
@@ -216,7 +216,7 @@ public final class Assembler {
                 CharSequence  text    = node.getTextContent();
                 for (int i=0; i<text.length(); i++) {
                     switch (text.charAt(i)) {
-                        case '\r': break;  // Delete all occurrences of '\r'.
+                        case '\r': break;                       // Delete all occurrences of '\r'.
                         case '\n': newLine = true;  continue;
                         default  : newLine = false; continue;
                         case ' ' : if (newLine) break; else continue;
@@ -289,8 +289,8 @@ public final class Assembler {
      * Performs on the given node the processing documented in the class javadoc.
      * This method invokes itself recursively.
      *
-     * @param index {@code true} for including the {@code <h1>}, <i>etc.</i> texts in the Table Of Content (TOC).
-     *        This is set to {@code false} when parsing the content of {@code <aside>} or {@code <article>} elements.
+     * @param  index  {@code true} for including the {@code <h1>}, <i>etc.</i> texts in the Table Of Content (TOC).
+     *         This is set to {@code false} when parsing the content of {@code <aside>} or {@code <article>} elements.
      */
     private void process(final Node node, boolean index) throws IOException, SAXException, BookException {
         Node[] childNodes = toArray(node.getChildNodes());
@@ -378,8 +378,8 @@ public final class Assembler {
      * Prepend the current section numbers to the given node.
      * The given node shall be a {@code <h1>}, {@code <h2>}, <i>etc.</i> element.
      *
-     * @param level 1 if {@code head} is {@code <h1>}, 2 if {@code head} is {@code <h2>}, <i>etc.</i>
-     * @param head  the {@code <h1>}, {@code <h2>}, {@code <h3>}, {@code <h4>}, <i>etc.</i> element.
+     * @param  level  1 if {@code head} is {@code <h1>}, 2 if {@code head} is {@code <h2>}, <i>etc.</i>
+     * @param  head   the {@code <h1>}, {@code <h2>}, {@code <h3>}, {@code <h4>}, <i>etc.</i> element.
      */
     private void prependSectionNumber(final int level, final Node head) {
         final Element number = document.createElement("span");
@@ -396,9 +396,9 @@ public final class Assembler {
     /**
      * Appends the given header to the table of content.
      *
-     * @param appendTo   The root node of the table of content where to append a new line.
-     * @param level      Level of the {@code <h1>}, {@code <h2>}, {@code <h3>}, <i>etc.</i> element found.
-     * @param referenced The {@code <h1>}, {@code <h2>}, {@code <h3>}, <i>etc.</i> element to reference.
+     * @param  appendTo    the root node of the table of content where to append a new line.
+     * @param  level       level of the {@code <h1>}, {@code <h2>}, {@code <h3>}, <i>etc.</i> element found.
+     * @param  referenced  the {@code <h1>}, {@code <h2>}, {@code <h3>}, <i>etc.</i> element to reference.
      */
     private void appendToTableOfContent(Node appendTo, int level, final Element referenced) throws BookException {
         final String id = referenced.getAttribute("id");
@@ -428,7 +428,7 @@ public final class Assembler {
      * Generates a {@code <nav>} element below the given {@code <h1>} element with navigation links
      * to previous and next chapters.
      *
-     * @param head the {@code <h1>} element.
+     * @param  head  the {@code <h1>} element.
      */
     private void linkToSiblingChapters(final Element head) throws BookException {
         final Element links = document.createElement("div");
@@ -533,7 +533,7 @@ public final class Assembler {
     /**
      * Assembles the document and writes to the destination.
      *
-     * @param  output the output file (e.g. {@code "site/content/en/developer-guide.html"}).
+     * @param  output  the output file (e.g. {@code "site/content/en/developer-guide.html"}).
      * @throws IOException if an error occurred while reading or writing file.
      * @throws SAXException if an error occurred while parsing an input XML.
      * @throws BookException if an error was found in the content of the XML file.
@@ -556,7 +556,7 @@ public final class Assembler {
      * The only argument expected by this method is the language: {@code "en"} or {@code "fr"}.
      * The current directory shall be the parent directory of {@code "book"} and {@code "content"}.
      *
-     * @param  args command-line arguments. Should contain exactly on value, which is the language.
+     * @param  args  command-line arguments. Should contain exactly on value, which is the language.
      * @throws Exception if an I/O error, a XML parsing error or other kinds of error occurred.
      *
      * @since 0.8

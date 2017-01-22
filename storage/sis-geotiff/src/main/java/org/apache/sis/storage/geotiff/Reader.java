@@ -201,7 +201,7 @@ final class Reader extends GeoTIFF {
      * Reads the {@code int} or {@code long} value (depending if the file is
      * a standard of big TIFF) at the current {@linkplain #input} position.
      *
-     * @return The next pointer value.
+     * @return the next pointer value.
      */
     private long readUnsignedInt() throws IOException, DataStoreException {
         if (intSizeExpansion == 0) {
@@ -218,7 +218,7 @@ final class Reader extends GeoTIFF {
      * Reads the {@code short} or {@code long} value (depending if the file is
      * standard of big TIFF) at the current {@linkplain #input} position.
      *
-     * @return The next directory entry value.
+     * @return the next directory entry value.
      */
     private long readUnsignedShort() throws IOException, DataStoreException {
         if (intSizeExpansion == 0) {

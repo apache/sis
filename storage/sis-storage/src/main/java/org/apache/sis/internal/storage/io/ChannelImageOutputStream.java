@@ -49,10 +49,10 @@ public class ChannelImageOutputStream extends ChannelDataOutput implements DataO
     /**
      * Creates a new output stream for the given channel and using the given buffer.
      *
-     * @param  filename A file identifier used only for formatting error message.
-     * @param  channel  The channel where to write data.
-     * @param  buffer   The buffer from where to read the data.
-     * @throws IOException If an error occurred while writing into channel.
+     * @param  filename  a file identifier used only for formatting error message.
+     * @param  channel   the channel where to write data.
+     * @param  buffer    the buffer from where to read the data.
+     * @throws IOException if an error occurred while writing into channel.
      */
     public ChannelImageOutputStream(final String filename, final WritableByteChannel channel, final ByteBuffer buffer)
             throws IOException
@@ -65,8 +65,8 @@ public class ChannelImageOutputStream extends ChannelDataOutput implements DataO
      * This constructor is invoked when we need to change the implementation class
      * from {@code ChannelDataOutput} to {@code ChannelImageOutputStream}.
      *
-     * @param  output The existing instance from which to takes the channel and buffer.
-     * @throws IOException If an error occurred while writing into channel.
+     * @param  output  the existing instance from which to takes the channel and buffer.
+     * @throws IOException if an error occurred while writing into channel.
      */
     public ChannelImageOutputStream(final ChannelDataOutput output) throws IOException {
         super(output.filename, output.channel, output.buffer);
@@ -76,7 +76,7 @@ public class ChannelImageOutputStream extends ChannelDataOutput implements DataO
      * Writes a single byte to the stream at the current position.
      * The 24 high-order bits of {@code v} are ignored.
      *
-     * @param  v an integer whose lower 8 bits are to be written.
+     * @param  v  an integer whose lower 8 bits are to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
     @Override
@@ -89,7 +89,7 @@ public class ChannelImageOutputStream extends ChannelDataOutput implements DataO
      * If boolean {@code v} is {@code true} the byte value 1 is written whereas if boolean is {@code false}
      * zero is written.
      *
-     * @param  v boolean to be written.
+     * @param  v  boolean to be written.
      * @throws IOException if some I/O exception occurs during writing.
      */
     @Override
@@ -104,8 +104,8 @@ public class ChannelImageOutputStream extends ChannelDataOutput implements DataO
      * <p>This method is provided because required by the {@link DataOutput} interface, but its
      * usage should generally be avoided.</p>
      *
-     * @param  s the string to be written.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  s  the string to be written.
+     * @throws IOException if an error occurred while writing the stream.
      */
     @Override
     public void writeBytes(final String s) throws IOException {
@@ -119,8 +119,8 @@ public class ChannelImageOutputStream extends ChannelDataOutput implements DataO
     /**
      * Writes all characters from the source into the stream.
      *
-     * @param  s A String consider as an array of characters to be written into stream.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  s  a String consider as an array of characters to be written into stream.
+     * @throws IOException if an error occurred while writing the stream.
      */
     @Override
     public final void writeChars(final String s) throws IOException {
@@ -132,8 +132,8 @@ public class ChannelImageOutputStream extends ChannelDataOutput implements DataO
      * of every character in the {@code str} string. Each character is converted to a group of one, two, or three
      * bytes, depending on the character code point value.
      *
-     * @param  s the string to be written.
-     * @throws IOException If an error occurred while writing the stream.
+     * @param  s  the string to be written.
+     * @throws IOException if an error occurred while writing the stream.
      */
     @Override
     public void writeUTF(final String s) throws IOException {
@@ -155,7 +155,7 @@ public class ChannelImageOutputStream extends ChannelDataOutput implements DataO
     /**
      * Closes the {@linkplain #channel}.
      *
-     * @throws IOException If an error occurred while closing the channel.
+     * @throws IOException if an error occurred while closing the channel.
      */
     @Override
     public final void close() throws IOException {

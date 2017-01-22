@@ -145,7 +145,7 @@ final class IdentifierCommand extends MetadataCommand {
      * Creates an identifier row for the given CRS.
      * This method gives precedence to {@code "urn:ogc:def:"} identifiers if possible.
      *
-     * @return The row, or {@code null} if no identifier has been found.
+     * @return the row, or {@code null} if no identifier has been found.
      */
     static Row create(ReferenceSystem rs) throws FactoryException {
         String identifier = IdentifiedObjects.lookupURN(rs, null);

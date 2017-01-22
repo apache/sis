@@ -58,9 +58,9 @@ final class Packer implements FilenameFilter {
     /**
      * Creates a packer.
      *
-     * @param  projectName     The project name to declare in the manifest file, or {@code null} if none.
-     * @param  version         The project version to declare in the manifest file, or {@code null} if none.
-     * @param  targetDirectory The Maven target directory.
+     * @param  projectName      the project name to declare in the manifest file, or {@code null} if none.
+     * @param  version          the project version to declare in the manifest file, or {@code null} if none.
+     * @param  targetDirectory  the Maven target directory.
      * @throws FileNotFoundException if the {@code target/binaries} directory is not found.
      */
     Packer(final String projectName, final String version, final File targetDirectory) throws FileNotFoundException {
@@ -76,8 +76,8 @@ final class Packer implements FilenameFilter {
     /**
      * Filter the input JAR files. This is for internal usage by {@link #createOutputJAR(String)} only.
      *
-     * @param  directory The directory (ignored).
-     * @param  name The filename.
+     * @param  directory  the directory (ignored).
+     * @param  name       the filename.
      * @return {@code true} if the given filename ends with {@code ".jar"}.
      */
     @Override
@@ -115,8 +115,8 @@ final class Packer implements FilenameFilter {
      *
      * <p>Callers needs to invoke one of the {@code PackOutput.pack(…)} methods on the returned object.</p>
      *
-     * @param  outputJAR The name of the JAR file to create before the Pack200 creation.
-     * @throws IOException If an error occurred while collecting the target directory content.
+     * @param  outputJAR  the name of the JAR file to create before the Pack200 creation.
+     * @throws IOException if an error occurred while collecting the target directory content.
      */
     PackOutput preparePack200(final String outputJAR) throws IOException {
         /*

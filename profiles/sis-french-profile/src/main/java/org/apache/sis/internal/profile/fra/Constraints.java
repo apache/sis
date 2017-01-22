@@ -50,6 +50,7 @@ import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
  * @since   0.4
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "FRA_Constraints_Type")
 @XmlRootElement(name= "FRA_Constraints")
 public class Constraints extends DefaultConstraints {
@@ -73,7 +74,7 @@ public class Constraints extends DefaultConstraints {
      * Constructs an instance initialized to a copy of the given object.
      * This constructor does <strong>not</strong> copy the FRA-specific properties.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public Constraints(final org.opengis.metadata.constraint.Constraints object) {
         super(object);
@@ -82,7 +83,7 @@ public class Constraints extends DefaultConstraints {
     /**
      * Returns the documents that specifies the nature of the constraints.
      *
-     * @return Citations to the current documents.
+     * @return citations to the current documents.
      */
     @XmlElement(name = "citation")
     public Collection<Citation> getCitations() {
@@ -92,7 +93,7 @@ public class Constraints extends DefaultConstraints {
     /**
      * Sets the documents that specifies the nature of the constraints.
      *
-     * @param newValues Citation to the new documents.
+     * @param  newValues  citation to the new documents.
      */
     public void setCitations(final Collection<? extends Citation> newValues) {
         citations = writeCollection(newValues, citations, Citation.class);
