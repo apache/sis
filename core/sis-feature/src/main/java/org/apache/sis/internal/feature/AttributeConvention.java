@@ -249,7 +249,7 @@ public final class AttributeConvention extends Static {
      * This method gets the value or default value from the characteristic named {@link #CRS_CHARACTERISTIC}.
      *
      * @param  attribute  the attribute for which to get the CRS, or {@code null}.
-     * @return The Coordinate Reference System characteristic of the given attribute, or {@code null} if none.
+     * @return the Coordinate Reference System characteristic of the given attribute, or {@code null} if none.
      * @throws ClassCastException if {@link #CRS_CHARACTERISTIC} has been found but is associated
      *         to an object which is not a {@link CoordinateReferenceSystem} instance.
      *
@@ -276,7 +276,7 @@ public final class AttributeConvention extends Static {
      * This method gets the value or default value from the characteristic named {@link #MAXIMAL_LENGTH_CHARACTERISTIC}.
      *
      * @param  attribute  the attribute for which to get the CRS, or {@code null}.
-     * @return The Coordinate Reference System characteristic of the given attribute, or {@code null} if none.
+     * @return the Coordinate Reference System characteristic of the given attribute, or {@code null} if none.
      * @throws ClassCastException if {@link #MAXIMAL_LENGTH_CHARACTERISTIC} has been found but is associated
      *         to an object which is not an {@link Integer} instance.
      *

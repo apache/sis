@@ -60,8 +60,8 @@ final class Validator {
     /**
      * Creates a new validator.
      *
-     * @param feature {@code FEATURE} if the object to validate is a feature,
-     *        or {@code ATTRIBUTE} for an attribute, or {@code null} otherwise.
+     * @param feature  {@code FEATURE} if the object to validate is a feature, or
+     *                 {@code ATTRIBUTE} for an attribute, or {@code null} otherwise.
      */
     Validator(final ScopeCode scope) {
         quality = new DefaultDataQuality();

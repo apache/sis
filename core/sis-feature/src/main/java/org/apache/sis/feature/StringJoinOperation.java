@@ -428,7 +428,7 @@ final class StringJoinOperation extends AbstractOperation {
     /**
      * Appends a string representation of the "formula" used for computing the result.
      *
-     * @param  buffer where to format the "formula".
+     * @param  buffer  where to format the "formula".
      */
     @Override
     void formatResultFormula(final Appendable buffer) throws IOException {

@@ -17,10 +17,10 @@
 package org.apache.sis.filter;
 
 import java.util.Map;
+import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
-import java.util.Objects;
 import org.opengis.feature.Feature;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.expression.ExpressionVisitor;

@@ -16,8 +16,9 @@
  */
 package org.apache.sis.feature;
 
-// Branch-dependent imports
 import java.util.Objects;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.InvalidPropertyValueException;
@@ -42,6 +43,7 @@ import org.opengis.feature.InvalidPropertyValueException;
  *
  * @see DefaultAssociationRole
  */
+@SuppressWarnings("CloneableClassWithoutClone")     // AbstractAssociation.clone() contract is to return a shallow copy.
 final class SingletonAssociation extends AbstractAssociation {
     /**
      * For cross-version compatibility.
@@ -56,7 +58,7 @@ final class SingletonAssociation extends AbstractAssociation {
     /**
      * Creates a new association of the given role.
      *
-     * @param role Information about the association.
+     * @param role  information about the association.
      */
     public SingletonAssociation(final FeatureAssociationRole role) {
         super(role);
@@ -66,8 +68,8 @@ final class SingletonAssociation extends AbstractAssociation {
     /**
      * Creates a new association of the given role initialized to the given value.
      *
-     * @param role  Information about the association.
-     * @param value The initial value (may be {@code null}).
+     * @param role   information about the association.
+     * @param value  the initial value (may be {@code null}).
      */
     SingletonAssociation(final FeatureAssociationRole role, final Feature value) {
         super(role);
@@ -81,7 +83,7 @@ final class SingletonAssociation extends AbstractAssociation {
     /**
      * Returns the associated feature.
      *
-     * @return The associated feature (may be {@code null}).
+     * @return the associated feature (may be {@code null}).
      */
     @Override
     public Feature getValue() {
@@ -91,8 +93,8 @@ final class SingletonAssociation extends AbstractAssociation {
     /**
      * Sets the associated feature.
      *
-     * @param  value The new value, or {@code null}.
-     * @throws InvalidPropertyValueException If the given feature is not valid for this association.
+     * @param  value  the new value, or {@code null}.
+     * @throws InvalidPropertyValueException if the given feature is not valid for this association.
      */
     @Override
     public void setValue(final Feature value) throws InvalidPropertyValueException {
@@ -105,7 +107,7 @@ final class SingletonAssociation extends AbstractAssociation {
     /**
      * Returns a hash code value for this association.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {

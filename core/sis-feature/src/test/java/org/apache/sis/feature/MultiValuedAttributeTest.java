@@ -135,7 +135,7 @@ public final strictfp class MultiValuedAttributeTest extends TestCase {
     /**
      * Tests {@link MultiValuedAttribute#clone()}.
      *
-     * @throws CloneNotSupportedException Should never happen.
+     * @throws CloneNotSupportedException should never happen.
      */
     @Test
     @DependsOnMethod("testEquals")

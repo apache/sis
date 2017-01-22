@@ -153,7 +153,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
     @Override
     public void setValues(final Collection<? extends V> newValues) {
         if (newValues != values) {
-            ArgumentChecks.ensureNonNull("values", newValues);  // The parameter name in public API is "values".
+            ArgumentChecks.ensureNonNull("values", newValues);      // The parameter name in public API is "values".
             values.clear();
             values.addAll(newValues);
         }

@@ -276,7 +276,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * Sets whether the feature type to create will be abstract.
      * If this method is not invoked, then the default value is {@code false}.
      *
-     * @param  isAbstract whether the feature type will be abstract.
+     * @param  isAbstract  whether the feature type will be abstract.
      * @return {@code this} for allowing method calls chaining.
      */
     public FeatureTypeBuilder setAbstract(final boolean isAbstract) {
@@ -433,8 +433,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
         }
         defaultMinimumOccurs = minimumOccurs;
         defaultMaximumOccurs = maximumOccurs;
-        // No need to clear the cache because this change affects only
-        // the next properties to be created, not the existing ones.
+        /*
+         * No need to clear the cache because this change affects only
+         * the next properties to be created, not the existing ones.
+         */
         return this;
     }
 
@@ -512,7 +514,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * The value class can not be {@code Feature.class} since features shall be handled
      * as {@linkplain #addAssociation(FeatureType) associations} instead than attributes.
      *
-     * @param  <V>  the compile-time value of {@code valueClass} argument.
+     * @param  <V>         the compile-time value of {@code valueClass} argument.
      * @param  valueClass  the class of attribute values (can not be {@code Feature.class}).
      * @return a builder for an {@code AttributeType}.
      *
@@ -726,8 +728,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
                  */
                 if (builder == defaultGeometry && geometryIndex >= 0) {
                     if (propertyTypes[geometryIndex] != null) {
-                        // Assuming that there is no bug in our implementation, this error could happen if the user
-                        // has modified this FeatureTypeBuilder in another thread during this build() execution.
+                        /*
+                         * Assuming that there is no bug in our implementation, this error could happen if the user
+                         * has modified this FeatureTypeBuilder in another thread during this build() execution.
+                         */
                         throw new CorruptedObjectException();
                     }
                     propertyTypes[geometryIndex] = FeatureOperations.link(name(AttributeConvention.GEOMETRY_PROPERTY), instance);
@@ -751,8 +755,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
              */
             if (identifierTypes != null) {
                 if (identifierCursor != identifierTypes.length) {
-                    // Assuming that there is no bug in our implementation, this error could happen if the user
-                    // has modified this FeatureTypeBuilder in another thread during this build() execution.
+                    /*
+                     * Assuming that there is no bug in our implementation, this error could happen if the user
+                     * has modified this FeatureTypeBuilder in another thread during this build() execution.
+                     */
                     throw new CorruptedObjectException();
                 }
                 if (AttributeConvention.IDENTIFIER_PROPERTY.equals(identifierTypes[0].getName())) {
@@ -784,14 +790,16 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * Replaces the given builder instance by a new instance, or delete the old instance.
      * This builder should contain exactly one instance of the given {@code old} builder.
      *
-     * @param old  the instance to replace.
+     * @param old          the instance to replace.
      * @param replacement  the replacement, or {@code null} for deleting the old instance.
      */
     final void replace(final PropertyTypeBuilder old, final PropertyTypeBuilder replacement) {
         final int index = properties.lastIndexOf(old);
         if (index < 0 || (replacement != null ? properties.set(index, replacement) : properties.remove(index)) != old) {
-            // Assuming that there is no bug in our algorithm, this exception should never happen
-            // unless builder state has been changed in another thread before this method completed.
+            /*
+             * Assuming that there is no bug in our algorithm, this exception should never happen
+             * unless builder state has been changed in another thread before this method completed.
+             */
             throw new CorruptedObjectException();
         }
         if (old == defaultGeometry) {
