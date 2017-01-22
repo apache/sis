@@ -17,11 +17,13 @@
 package org.apache.sis.filter;
 
 import java.util.Date;
-import static org.apache.sis.test.Assert.*;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.expression.Literal;
+
+import static org.apache.sis.test.Assert.*;
+
 
 /**
  * Tests {@link DefaultLiteral}.
@@ -32,19 +34,17 @@ import org.opengis.filter.expression.Literal;
  * @module
  */
 public class DefaultLiteralTest extends TestCase {
-
     /**
      * Test factory.
      */
     @Test
     public void testConstructor() {
-        final FilterFactory2 FF = new DefaultFilterFactory();
-
-        assertNotNull(FF.literal(true));
-        assertNotNull(FF.literal("a text string"));
-        assertNotNull(FF.literal('x'));
-        assertNotNull(FF.literal(122));
-        assertNotNull(FF.literal(45.56d));
+        final FilterFactory2 factory = new DefaultFilterFactory();
+        assertNotNull(factory.literal(true));
+        assertNotNull(factory.literal("a text string"));
+        assertNotNull(factory.literal('x'));
+        assertNotNull(factory.literal(122));
+        assertNotNull(factory.literal(45.56d));
     }
 
     /**
@@ -52,13 +52,12 @@ public class DefaultLiteralTest extends TestCase {
      */
     @Test
     public void testEvaluate() {
-
-        final Literal literal = new DefaultLiteral(12.45);
+        final Literal literal = new DefaultLiteral<>(12.45);
         assertEquals(12.45, (Double)literal.getValue(), STRICT);
         assertEquals(12.45, (Double)literal.evaluate(null), STRICT);
-        assertEquals(12.45, literal.evaluate(null,Double.class), STRICT);
-        assertEquals("12.45", literal.evaluate(null,String.class));
-        assertEquals(null, literal.evaluate(null,Date.class));
+        assertEquals(12.45, literal.evaluate(null, Double.class), STRICT);
+        assertEquals("12.45", literal.evaluate(null, String.class));
+        assertEquals(null, literal.evaluate(null, Date.class));
     }
 
     /**
@@ -66,12 +65,10 @@ public class DefaultLiteralTest extends TestCase {
      */
     @Test
     public void testSerialize() {
-
-        assertSerializedEquals(new DefaultLiteral(true));
-        assertSerializedEquals(new DefaultLiteral("a text string"));
-        assertSerializedEquals(new DefaultLiteral('x'));
-        assertSerializedEquals(new DefaultLiteral(122));
-        assertSerializedEquals(new DefaultLiteral(45.56d));
+        assertSerializedEquals(new DefaultLiteral<>(true));
+        assertSerializedEquals(new DefaultLiteral<>("a text string"));
+        assertSerializedEquals(new DefaultLiteral<>('x'));
+        assertSerializedEquals(new DefaultLiteral<>(122));
+        assertSerializedEquals(new DefaultLiteral<>(45.56d));
     }
-
 }

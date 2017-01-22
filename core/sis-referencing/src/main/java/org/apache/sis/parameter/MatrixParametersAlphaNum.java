@@ -59,8 +59,8 @@ final class MatrixParametersAlphaNum extends MatrixParameters {
     /**
      * Constructs a descriptors provider.
      *
-     * @param numRow The parameter for the number of rows.
-     * @param numCol The parameter for the number of columns.
+     * @param numRow  the parameter for the number of rows.
+     * @param numCol  the parameter for the number of columns.
      */
     MatrixParametersAlphaNum(final ParameterDescriptor<Integer> numRow, final ParameterDescriptor<Integer> numCol) {
         super(numRow, numCol);
@@ -90,8 +90,10 @@ final class MatrixParametersAlphaNum extends MatrixParameters {
          * while the EPSG parameters are (officially) restricted to 3×3 matrices.
          */
         if (WKT1 == this) {
-            // Should never happen, but still unconditionally tested
-            // (no 'assert' keyword) for preventing stack overflow.
+            /*
+             * Should never happen, but still unconditionally tested
+             * (no 'assert' keyword) for preventing stack overflow.
+             */
             throw new AssertionError();
         }
         final ParameterDescriptor<Double> wkt = WKT1.getElementDescriptor(indices);   // Really 'WKT1', not 'super'.

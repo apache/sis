@@ -52,6 +52,16 @@ abstract class GeoTIFF implements Closeable {
     static final Locale LOCALE = Locale.US;
 
     /**
+     * The magic number for big-endian TIFF files or little-endian TIFF files.
+     */
+    static final short BIG_ENDIAN = 0x4D4D, LITTLE_ENDIAN = 0x4949;
+
+    /**
+     * The magic number for classic (32 bits) or big TIFF files.
+     */
+    static final short CLASSIC = 42, BIG_TIFF= 43;
+
+    /**
      * The store which created this reader or writer.
      */
     final GeoTiffStore owner;

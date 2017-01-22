@@ -63,8 +63,8 @@ public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:AbstractCRS>} XML element.
      *
-     * @param  crs The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  crs  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected SC_CRS wrap(final CoordinateReferenceSystem crs) {
@@ -76,7 +76,7 @@ public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem
      * inside the {@code <gml:AbstractCRS>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      */
     @XmlElementRef
     public AbstractCRS getElement() {
@@ -93,7 +93,7 @@ public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem
      * by {@code xlink:href} attributes. For now we live with the {@code GeodeticCRS} as-is — most of Apache SIS
      * should be able to work with that.</div>
      *
-     * @param crs The unmarshalled element.
+     * @param  crs  the unmarshalled element.
      */
     public void setElement(final AbstractCRS crs) {
         metadata = crs;

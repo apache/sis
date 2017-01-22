@@ -61,7 +61,7 @@ public class Cloner {
      * <p>The default implementation returns {@code true} in every cases.
      * Subclasses can override this method if they need a different behavior.</p>
      *
-     * @param  object The object that can not be cloned.
+     * @param  object  the object that can not be cloned.
      * @return {@code true} if the problem shall be considered a clone failure.
      */
     protected boolean isCloneRequired(final Object object) {
@@ -78,9 +78,9 @@ public class Cloner {
      *   <li>Otherwise the given object is returned.</li>
      * </ul>
      *
-     * @param  object The object to clone, or {@code null}.
-     * @return A clone of the given object, or {@code null} if {@code object} was null.
-     * @throws CloneNotSupportedException If the given object can not be cloned.
+     * @param  object  the object to clone, or {@code null}.
+     * @return a clone of the given object, or {@code null} if {@code object} was null.
+     * @throws CloneNotSupportedException if the given object can not be cloned.
      */
     public Object clone(final Object object) throws CloneNotSupportedException {
         if (object == null) {
@@ -136,7 +136,7 @@ public class Cloner {
      * or an unchecked exception, or do nothing otherwise. If this method returns normally,
      * then it is caller's responsibility to throw an other exception.
      *
-     * @param cause The value of {@link InvocationTargetException#getCause()}.
+     * @param  cause  the value of {@link InvocationTargetException#getCause()}.
      */
     private static void rethrow(final Throwable cause) throws CloneNotSupportedException {
         if (cause instanceof CloneNotSupportedException) {
@@ -154,9 +154,9 @@ public class Cloner {
     /**
      * Returns an exception telling that the object can not be cloned because of the given error.
      *
-     * @param  cause The cause for the failure to clone an object.
-     * @param  type  The type of object that we failed to clone.
-     * @return An exception with an error message and the given cause.
+     * @param  cause  the cause for the failure to clone an object.
+     * @param  type   the type of object that we failed to clone.
+     * @return an exception with an error message and the given cause.
      */
     private static CloneNotSupportedException fail(final Throwable cause, final Class<?> type) {
         return (CloneNotSupportedException) new CloneNotSupportedException(
@@ -168,8 +168,8 @@ public class Cloner {
      * This method may be convenient when there is only one object to clone, otherwise instantiating a new
      * {@code Cloner} object is more efficient.
      *
-     * @param  object The object to clone, or {@code null}.
-     * @return The given object (which may be {@code null}) or a clone of the given object.
+     * @param  object  the object to clone, or {@code null}.
+     * @return the given object (which may be {@code null}) or a clone of the given object.
      * @throws CloneNotSupportedException if the call to {@link Object#clone()} failed.
      *
      * @since 0.6

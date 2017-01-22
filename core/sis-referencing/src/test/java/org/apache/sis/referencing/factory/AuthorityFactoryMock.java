@@ -154,7 +154,7 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
     /**
      * Returns the unit of measurement for the given code.
      *
-     * @return The unit of measurement.
+     * @return the unit of measurement.
      * @throws NoSuchAuthorityCodeException if the given code is unknown.
      */
     @Override
@@ -176,7 +176,7 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
     /**
      * Returns the spatial extent for the given code.
      *
-     * @return The spatial extent.
+     * @return the spatial extent.
      * @throws NoSuchAuthorityCodeException if the given code is unknown.
      */
     @Override

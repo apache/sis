@@ -35,8 +35,8 @@ import java.lang.ref.Reference;
  * <div class="section">Thread safety</div>
  * This class is thread-safe if and only if the {@code Set} given to the constructor is thread-safe.
  *
- * @param <K> The type of key objects.
- * @param <V> The type of value objects.
+ * @param  <K>  the type of key objects.
+ * @param  <V>  the type of value objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -52,7 +52,7 @@ final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
     /**
      * Wraps the given set of entries of a {@link Cache#map}.
      *
-     * @param entries The set of entries. Implementation shall support concurrency.
+     * @param  entries  the set of entries. Implementation shall support concurrency.
      */
     CacheEntries(final Set<Map.Entry<K,Object>> entries) {
         this.entries = entries;
@@ -84,8 +84,8 @@ final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {
     }
 
     /**
-     * An iterator over the entries in the {@link Cache#map}. Handlers will be skipped and the
-     * values of weak references are returned instead of the {@link Reference} object.
+     * An iterator over the entries in the {@link Cache#map}. Handlers will be skipped and
+     * the values of weak references are returned instead of the {@link Reference} object.
      */
     private static final class Iter<K,V> implements Iterator<Map.Entry<K,V>> {
         /**

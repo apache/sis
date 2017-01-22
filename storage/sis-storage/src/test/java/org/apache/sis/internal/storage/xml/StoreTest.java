@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage.xml;
 
 import java.util.Locale;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.*;
 import org.apache.sis.xml.Namespaces;
@@ -29,9 +30,6 @@ import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-
-// Branch-dependent imports
-import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -93,7 +91,7 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testMetadata() throws DataStoreException {
         final Metadata metadata;
-        try (Store store = new Store(new StorageConnector(new StringReader(XML)))) {
+        try (Store store = new Store(null, new StorageConnector(new StringReader(XML)))) {
             metadata = store.getMetadata();
             assertSame("Expected cached value.", metadata, store.getMetadata());
         }

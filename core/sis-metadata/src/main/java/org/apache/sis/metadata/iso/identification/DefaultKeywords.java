@@ -48,6 +48,7 @@ import org.apache.sis.util.iso.Types;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Keywords_Type", propOrder = {
     "keywords",
     "type",

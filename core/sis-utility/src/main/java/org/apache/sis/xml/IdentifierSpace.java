@@ -42,7 +42,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * The values defined in this interface can be used as keys in the map returned by
  * {@link IdentifiedObject#getIdentifierMap()}.
  *
- * @param <T> The type of object used as identifier values.
+ * @param  <T>  the type of object used as identifier values.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -124,7 +124,7 @@ public interface IdentifierSpace<T> extends Citation {
      *       identifiers are marshalled as {@code <MD_Identifier>} XML elements rather than attributes.</li>
      * </ul>
      *
-     * @return The name of this identifier space (may be XML attribute name).
+     * @return the name of this identifier space (may be XML attribute name).
      */
     String getName();
 }

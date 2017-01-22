@@ -22,6 +22,7 @@ import org.opengis.util.CodeList;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.collection.CodeListSet;
+import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 
@@ -393,6 +394,65 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns a unmodifiable version of the given collection.
+     * If the given collection is a {@link Set} or a {@link List}, then this method tries to
+     * return a collection of the same type. Other types are not guaranteed to be preserved.
+     *
+     * <p><em>The collection returned by this method may or may not be a view of the given collection</em>.
+     * Consequently this method shall be used <strong>only</strong> if the given collection will
+     * <strong>not</strong> be modified after this method call. In case of doubt, use the
+     * standard {@link Collections#unmodifiableCollection(Collection)} method instead.</p>
+     *
+     * @param  <E>         the type of elements in the collection.
+     * @param  collection  the collection to make unmodifiable, or {@code null}.
+     * @return a unmodifiable version of the given collection, or {@code null} if the given collection was null.
+     *
+     * @since 0.8
+     */
+    public static <E> Collection<E> unmodifiableOrCopy(Collection<E> collection) {
+        if (collection != null) {
+            if (collection instanceof Set<?>) {
+                return unmodifiableOrCopy((Set<E>) collection);
+            }
+            final int length = collection.size();
+            switch (length) {
+                case 0: {
+                    collection = Collections.emptyList();
+                    break;
+                }
+                case 1: {
+                    collection = Collections.singletonList(collection.iterator().next());
+                    break;
+                }
+                default: {
+                    if (collection instanceof UnmodifiableArrayList<?>) {
+                        break;                                              // List is already unmodifiable.
+                    }
+                    if (collection instanceof CheckedContainer<?>) {
+                        /*
+                         * We use UnmodifiableArrayList for avoiding one level of indirection. The fact that it
+                         * implements CheckedContainer is not a goal here, and is actually unsafe since we have
+                         * no guarantee (except Javadoc contract) that the <E> in CheckedContainer<E> is really
+                         * the same than in Collection<E>.  We tolerate this hole for now because we documented
+                         * the restriction in CheckedContainer javadoc, but future version may replace this block
+                         * by JDK9 collections.
+                         */
+                        @SuppressWarnings("unchecked")       // Okay if collection is compliant with CheckedContainer contract.
+                        final E[] array = (E[]) Array.newInstance(((CheckedContainer<E>) collection).getElementType(), length);
+                        collection = UnmodifiableArrayList.wrap(collection.toArray(array));
+                    } else if (collection instanceof List<?>) {
+                        collection = Collections.unmodifiableList((List<E>) collection);
+                    } else {
+                        collection = Collections.unmodifiableCollection(collection);
+                    }
+                    break;
+                }
+            }
+        }
+        return collection;
+    }
+
+    /**
      * Copies the content of the given collection to a new, unsynchronized, modifiable, in-memory
      * collection. The implementation class of the returned collection may be different than the
      * class of the collection given in argument. The following table gives the types mapping
@@ -498,7 +558,7 @@ public final class CollectionsExt extends Static {
      * Returns a more compact representation of the given map. This method is similar to
      * {@link #unmodifiableOrCopy(Map)} except that it does not wrap the map in an unmodifiable
      * view. The intend is to avoid one level of indirection for performance and memory reasons.
-     * This is okay only if the map is kept in a private field and never escape outside this class.
+     * This is okay only if the map is kept in a private field and never escape outside that class.
      *
      * @param  <K>  the type of keys in the map.
      * @param  <V>  the type of values in the map.

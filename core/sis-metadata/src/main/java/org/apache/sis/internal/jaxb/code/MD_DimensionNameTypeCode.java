@@ -51,7 +51,7 @@ public final class MD_DimensionNameTypeCode
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
     protected MD_DimensionNameTypeCode wrap(final CodeListUID value) {
@@ -61,7 +61,7 @@ public final class MD_DimensionNameTypeCode
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<DimensionNameType> getCodeListClass() {
@@ -71,7 +71,7 @@ public final class MD_DimensionNameTypeCode
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "MD_DimensionNameTypeCode")
@@ -82,7 +82,7 @@ public final class MD_DimensionNameTypeCode
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param value The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
         identifier = value;

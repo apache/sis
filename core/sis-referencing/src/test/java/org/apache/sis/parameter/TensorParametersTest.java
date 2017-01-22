@@ -111,10 +111,10 @@ public strictfp class TensorParametersTest extends TestCase {
     /**
      * Creates a new test case for a {@link MatrixParameters} defined by the subclass.
      *
-     * @param param       The instance tested by this class.
-     * @param names       The expected parameter names for all matrix elements.
-     * @param aliases     The expected parameter aliases for all matrix elements, or {@code null} for no alias.
-     * @param identifiers The expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
+     * @param  param        the instance tested by this class.
+     * @param  names        the expected parameter names for all matrix elements.
+     * @param  aliases      the expected parameter aliases for all matrix elements, or {@code null} for no alias.
+     * @param  identifiers  the expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
      */
     TensorParametersTest(final TensorParameters<Double> param, final String[][] names, final String[][] aliases,
             final short[][] identifiers)
@@ -137,9 +137,9 @@ public strictfp class TensorParametersTest extends TestCase {
     /**
      * Asserts that the given descriptor has the given name.
      *
-     * @param names        The expected parameter name.
-     * @param defaultValue The expected parameter default value.
-     * @param actual       The actual parameter to verify.
+     * @param  names         the expected parameter name.
+     * @param  defaultValue  the expected parameter default value.
+     * @param  actual        the actual parameter to verify.
      */
     private static void verifyDescriptor(final String name, final Number defaultValue,
             final ParameterDescriptor<?> actual)
@@ -151,10 +151,10 @@ public strictfp class TensorParametersTest extends TestCase {
     /**
      * Asserts that the given descriptor has the given name, alias, identifier and default value.
      *
-     * @param defaultValue The expected parameter default value.
-     * @param actual       The actual parameter to verify.
-     * @param row          Row index of the matrix element to test.
-     * @param column       Column index of the matrix element to test.
+     * @param  defaultValue  the expected parameter default value.
+     * @param  actual        the actual parameter to verify.
+     * @param  row           row index of the matrix element to test.
+     * @param  column        column index of the matrix element to test.
      */
     private void verifyDescriptor(final Number defaultValue, final ParameterDescriptor<?> actual,
             final int row, final int column)
@@ -198,7 +198,7 @@ public strictfp class TensorParametersTest extends TestCase {
         verifyDescriptor(N0, e01, 0, 1);
         verifyDescriptor(N0, e10, 1, 0);
         verifyDescriptor(N1, e11, 1, 1);
-        assertSame(e00, param.getElementDescriptor(0, 0)); // Test caching.
+        assertSame(e00, param.getElementDescriptor(0, 0));      // Test caching.
         assertSame(e01, param.getElementDescriptor(0, 1));
         assertSame(e10, param.getElementDescriptor(1, 0));
         assertSame(e11, param.getElementDescriptor(1, 1));

@@ -19,6 +19,7 @@ package org.apache.sis.storage.netcdf;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.NoSuchFileException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -26,7 +27,9 @@ import java.lang.reflect.UndeclaredThrowableException;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.storage.Capabilities;
+import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.storage.DataStore;
@@ -37,9 +40,6 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Version;
-
-// Branch-specific import
-import java.nio.file.NoSuchFileException;
 
 
 /**
@@ -55,11 +55,12 @@ import java.nio.file.NoSuchFileException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  *
  * @see NetcdfStore
  */
+@Capabilities(Capability.READ)
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The MIME type for NetCDF files.
@@ -115,13 +116,23 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     }
 
     /**
+     * Returns a generic name for this data store, used mostly in warnings or error messages.
+     *
+     * @return a short name or abbreviation for the data format.
+     */
+    @Override
+    public String getShortName() {
+        return "NetCDF";
+    }
+
+    /**
      * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by {@link NetcdfStore}.
      * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
      * @param  connector  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @return {@code SUPPORTED} if the given storage seems to be usable by the {@code NetcdfStore} instances.
+     * @return {@code SUPPORTED} if the given storage seems to be usable by {@code NetcdfStore} instances.
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override
@@ -209,7 +220,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new NetcdfStore(connector);
+        return new NetcdfStore(this, connector);
     }
 
     /**

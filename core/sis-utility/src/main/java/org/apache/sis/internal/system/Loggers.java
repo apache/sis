@@ -128,7 +128,7 @@ public final class Loggers extends Static {
      *
      * <p>This method does not report the loggers that have an effective level identical to its parent logger.</p>
      *
-     * @return The effective logging levels of SIS loggers.
+     * @return the effective logging levels of SIS loggers.
      */
     public static SortedMap<String,Level> getEffectiveLevels() {
         final SortedMap<String,Level> levels = new TreeMap<>();

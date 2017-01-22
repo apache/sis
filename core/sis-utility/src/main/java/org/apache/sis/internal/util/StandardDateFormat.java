@@ -36,6 +36,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalQuery;
 import java.time.temporal.TemporalAccessor;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -99,6 +100,32 @@ public final class StandardDateFormat extends DateFormat {
             .toFormatter(Locale.ROOT);
 
     /**
+     * The kind of objects to get from calls to {@link #parseBest(CharSequence)}, in preference order.
+     * The time is converted to UTC timezone if possible.
+     *
+     * Tip: if we want to preserve the timezone instead than converting to UTC, we could try replacing
+     * {@code Instant::from} by {@code ZonedDateTime::from, OffsetDateTime::from}.
+     */
+    private static TemporalQuery<?>[] QUERIES = {
+        Instant::from, LocalDateTime::from, LocalDate::from
+    };
+
+    /**
+     * Parses the given date and/or time, which may have an optional timezone. This method applies heuristic rules
+     * for choosing if the object should be returned as a local date, or a date and time with timezone, <i>etc</i>.
+     *
+     * @param  text  the character string to parse, or {@code null}.
+     * @return a temporal object for the given text, or {@code null} if the given text was null.
+     * @throws DateTimeParseException if the text can not be parsed as a date.
+     *
+     * @since 0.8
+     */
+    public static Temporal parseBest(final CharSequence text) {
+        // Cast is safe if all QUERIES elements return a Temporal subtype.
+        return (text != null) ? (Temporal) FORMAT.parseBest(text, QUERIES) : null;
+    }
+
+    /**
      * The length of a day in number of milliseconds.
      */
     public static final int MILLISECONDS_PER_DAY = 24*60*60*1000;
@@ -116,8 +143,8 @@ public final class StandardDateFormat extends DateFormat {
      *   <li>Otherwise this method returns a {@link LocalDateTime} in the given timezone.</li>
      * </ul>
      *
-     * @param  date the date to convert, or {@code null}.
-     * @param  zone the timezone of the temporal object to obtain, or {@code null} for UTC.
+     * @param  date  the date to convert, or {@code null}.
+     * @param  zone  the timezone of the temporal object to obtain, or {@code null} for UTC.
      * @return the temporal object for the given date, or {@code null} if the given argument was null.
      */
     public static Temporal toHeuristicTemporal(final Date date, ZoneId zone) {
@@ -243,7 +270,7 @@ public final class StandardDateFormat extends DateFormat {
     /**
      * Sets the timezone.
      *
-     * @param zone the new timezone.
+     * @param  zone  the new timezone.
      */
     @Override
     public final void setTimeZone(final TimeZone zone) {
@@ -256,7 +283,7 @@ public final class StandardDateFormat extends DateFormat {
     /**
      * Overridden for compliance with {@code DateFormat} contract, but has no incidence on this format.
      *
-     * @param lenient value forwarded to {@link Calendar#setLenient(boolean)}.
+     * @param  lenient  value forwarded to {@link Calendar#setLenient(boolean)}.
      */
     @Override
     public final void setLenient(boolean lenient) {
@@ -317,9 +344,7 @@ public final class StandardDateFormat extends DateFormat {
         try {
             return toDate(format.parse(text));
         } catch (DateTimeException | ArithmeticException e) {
-            ParseException p = new ParseException(e.getLocalizedMessage(), getErrorIndex(e, null));
-            p.initCause(e);
-            throw p;
+            throw (ParseException) new ParseException(e.getLocalizedMessage(), getErrorIndex(e, null)).initCause(e);
         }
     }
 
@@ -349,7 +374,7 @@ public final class StandardDateFormat extends DateFormat {
     /**
      * Compares this format with the given object for equality.
      *
-     * @param  obj the object to compare with this format.
+     * @param  obj  the object to compare with this format.
      * @return if the two objects format in the same way.
      */
     @Override

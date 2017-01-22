@@ -54,7 +54,7 @@ public final strictfp class CodeListSetTest extends TestCase {
         assertTrue(c.isEmpty());
         switch (n) {
             default: throw new AssertionError(n);
-            case 4: assertTrue(c.add(FUTURE)); // Fallthrough everywhere.
+            case 4: assertTrue(c.add(FUTURE));              // Fallthrough everywhere.
             case 3: assertTrue(c.add(UP));
             case 2: assertTrue(c.add(EAST));
             case 1: assertTrue(c.add(NORTH));

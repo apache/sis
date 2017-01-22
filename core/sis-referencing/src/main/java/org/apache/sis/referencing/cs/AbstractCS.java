@@ -75,7 +75,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
 @XmlRootElement(name = "AbstractCoordinateSystem")
 @XmlSeeAlso({
     DefaultAffineCS.class,
-    DefaultCartesianCS.class, // Not an AffineCS subclass in GML schema.
+    DefaultCartesianCS.class,               // Not an AffineCS subclass in GML schema.
     DefaultSphericalCS.class,
     DefaultEllipsoidalCS.class,
     DefaultCylindricalCS.class,
@@ -150,8 +150,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
-     * @param axes       The sequence of axes.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  axes        the sequence of axes.
      */
     @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
     public AbstractCS(final Map<String,?> properties, CoordinateSystemAxis... axes) {
@@ -208,7 +208,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param cs The coordinate system to copy.
+     * @param  cs  the coordinate system to copy.
      *
      * @see #castOrCopy(CoordinateSystem)
      */
@@ -256,8 +256,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractCS castOrCopy(final CoordinateSystem object) {
@@ -274,8 +274,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * <p><b>Note for implementors:</b> since this method is invoked at construction time, it shall not depend
      * on this object's state. This method is not in public API for that reason.</p>
      *
-     * @param  direction The direction to test for compatibility (never {@code null}).
-     * @param  unit The unit to test for compatibility (never {@code null}).
+     * @param  direction  the direction to test for compatibility (never {@code null}).
+     * @param  unit       the unit to test for compatibility (never {@code null}).
      * @return {@link #VALID} if the given direction and unit are compatible with this coordinate system,
      *         {@link #INVALID_DIRECTION} if the direction is invalid or {@link #INVALID_UNIT} if the unit
      *         is invalid.
@@ -289,7 +289,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * The default implementation returns {@code CoordinateSystem.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The coordinate system interface implemented by this class.
+     * @return the coordinate system interface implemented by this class.
      */
     @Override
     public Class<? extends CoordinateSystem> getInterface() {
@@ -300,7 +300,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * Returns the number of dimensions of this coordinate system.
      * This is the number of axes given at construction time.
      *
-     * @return The number of dimensions of this coordinate system.
+     * @return the number of dimensions of this coordinate system.
      */
     @Override
     public final int getDimension() {
@@ -310,8 +310,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     /**
      * Returns the axis for this coordinate system at the specified dimension.
      *
-     * @param  dimension The zero based index of axis.
-     * @return The axis at the specified dimension.
+     * @param  dimension  the zero based index of axis.
+     * @return the axis at the specified dimension.
      * @throws IndexOutOfBoundsException if {@code dimension} is out of bounds.
      */
     @Override
@@ -323,8 +323,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * Returns a coordinate system equivalent to this one but with axes rearranged according the given convention.
      * If this coordinate system is already compatible with the given convention, then this method returns {@code this}.
      *
-     * @param  convention The axes convention for which a coordinate system is desired.
-     * @return A coordinate system compatible with the given convention (may be {@code this}).
+     * @param  convention  the axes convention for which a coordinate system is desired.
+     * @return a coordinate system compatible with the given convention (may be {@code this}).
      *
      * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
      */
@@ -358,8 +358,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * But if the given {@code axes} array has less elements than this coordinate system dimension, then
      * this method may return an other kind of coordinate system. See {@link AxisFilter} for an example.</p>
      *
-     * @param  axes The set of axes to give to the new coordinate system.
-     * @return A new coordinate system of the same type than {@code this}, but using the given axes.
+     * @param  axes  the set of axes to give to the new coordinate system.
+     * @return a new coordinate system of the same type than {@code this}, but using the given axes.
      */
     AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         return new AbstractCS(properties, axes);
@@ -369,9 +369,9 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * Convenience method for implementations of {@link #createForAxes(Map, CoordinateSystemAxis[])}
      * when the resulting coordinate system would have an unexpected number of dimensions.
      *
-     * @param properties The properties which was supposed to be given to the constructor.
-     * @param axes       The axes which was supposed to be given to the constructor.
-     * @param expected   The minimal expected number of dimensions (may be less than {@link #getDimension()}).
+     * @param  properties  the properties which was supposed to be given to the constructor.
+     * @param  axes        the axes which was supposed to be given to the constructor.
+     * @param  expected    the minimal expected number of dimensions (may be less than {@link #getDimension()}).
      */
     static IllegalArgumentException unexpectedDimension(final Map<String,?> properties,
             final CoordinateSystemAxis[] axes, final int expected)
@@ -383,10 +383,10 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     /**
      * Compares the specified object with this coordinate system for equality.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to coordinate transformations.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
+     *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -434,7 +434,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
-     * @return The hash code value. This value may change in any future Apache SIS version.
+     * @return the hash code value. This value may change in any future Apache SIS version.
      */
     @Override
     protected long computeHashCode() {
@@ -515,7 +515,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      */
     @XmlElement(name = "axis")
     private CoordinateSystemAxis[] getAxis() {
-        return getAxes(this);   // Give a chance to users to override getAxis(int).
+        return getAxes(this);                           // Give a chance to users to override getAxis(int).
     }
 
     /**

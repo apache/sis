@@ -296,7 +296,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *   </li>
      * </ul>
      *
-     * @param methods The operation methods to use, stored by reference (not copied).
+     * @param  methods  the operation methods to use, stored by reference (not copied).
      */
     public DefaultMathTransformFactory(final Iterable<? extends OperationMethod> methods) {
         ArgumentChecks.ensureNonNull("methods", methods);
@@ -326,10 +326,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * The returned set may conservatively contain more {@code OperationMethod} elements than requested
      * if this {@code MathTransformFactory} does not support filtering by the given type.
      *
-     * @param  type <code>{@linkplain SingleOperation}.class</code> for fetching all operation methods,
-     *         <code>{@linkplain org.opengis.referencing.operation.Projection}.class</code> for fetching
-     *         only map projection methods, <i>etc</i>.
-     * @return Methods available in this factory for coordinate operations of the given type.
+     * @param  type  <code>{@linkplain SingleOperation}.class</code> for fetching all operation methods,
+     *               <code>{@linkplain org.opengis.referencing.operation.Projection}.class</code> for
+     *               fetching only map projection methods, <i>etc</i>.
+     * @return methods available in this factory for coordinate operations of the given type.
      *
      * @see #getDefaultParameters(String)
      * @see #createParameterizedTransform(ParameterValueGroup, Context)
@@ -374,8 +374,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * non-{@linkplain org.apache.sis.util.Deprecable#isDeprecated() deprecated} matching method is returned.
      * If all matching methods are deprecated, the first one is returned.</p>
      *
-     * @param  identifier The name or identifier of the operation method to search.
-     * @return The coordinate operation method for the given name or identifier.
+     * @param  identifier  the name or identifier of the operation method to search.
+     * @return the coordinate operation method for the given name or identifier.
      * @throws NoSuchIdentifierException if there is no operation method registered for the specified identifier.
      *
      * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
@@ -414,8 +414,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Parameters are intended to be modified by the user before to be given to the
      * {@link #createParameterizedTransform createParameterizedTransform(…)} method.</p>
      *
-     * @param  method The case insensitive name of the coordinate operation method to search for.
-     * @return A new group of parameter values for the {@code OperationMethod} identified by the given name.
+     * @param  method  the case insensitive name of the coordinate operation method to search for.
+     * @return a new group of parameter values for the {@code OperationMethod} identified by the given name.
      * @throws NoSuchIdentifierException if there is no method registered for the given name or identifier.
      *
      * @see #getAvailableMethods(Class)
@@ -431,9 +431,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Creates a transform from a group of parameters.
      * The set of expected parameters varies for each operation.
      *
-     * @param  parameters The parameter values. The {@linkplain ParameterDescriptorGroup#getName() parameter group name}
+     * @param  parameters  the parameter values. The {@linkplain ParameterDescriptorGroup#getName() parameter group name}
      *         shall be the name of the desired {@linkplain DefaultOperationMethod operation method}.
-     * @return The transform created from the given parameters.
+     * @return the transform created from the given parameters.
      * @throws NoSuchIdentifierException if there is no method for the given parameter group name.
      * @throws FactoryException if the object creation failed. This exception is thrown
      *         if some required parameter has not been supplied, or has illegal value.
@@ -514,7 +514,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * Sets the source coordinate system to the given value.
          * The source ellipsoid is unconditionally set to {@code null}.
          *
-         * @param cs The coordinate system to set as the source (can be {@code null}).
+         * @param  cs  the coordinate system to set as the source (can be {@code null}).
          */
         public void setSource(final CoordinateSystem cs) {
             sourceCS = cs;
@@ -533,8 +533,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * of prime meridian), see {@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory}.
          * This policy helps to enforce a separation of concerns.</div>
          *
-         * @param cs The coordinate system to set as the source, or {@code null}.
-         * @param ellipsoid The ellipsoid associated to the given coordinate system, or {@code null}.
+         * @param  cs         the coordinate system to set as the source, or {@code null}.
+         * @param  ellipsoid  the ellipsoid associated to the given coordinate system, or {@code null}.
          */
         public void setSource(final EllipsoidalCS cs, final Ellipsoid ellipsoid) {
             sourceCS = cs;
@@ -545,7 +545,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * Sets the target coordinate system to the given value.
          * The target ellipsoid is unconditionally set to {@code null}.
          *
-         * @param cs The coordinate system to set as the target (can be {@code null}).
+         * @param  cs  the coordinate system to set as the target (can be {@code null}).
          */
         public void setTarget(final CoordinateSystem cs) {
             targetCS = cs;
@@ -558,8 +558,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * <div class="note"><b>Design note:</b>
          * see {@link #setSource(EllipsoidalCS, Ellipsoid)}.</div>
          *
-         * @param cs The coordinate system to set as the source, or {@code null}.
-         * @param ellipsoid The ellipsoid associated to the given coordinate system, or {@code null}.
+         * @param  cs         the coordinate system to set as the source, or {@code null}.
+         * @param  ellipsoid  the ellipsoid associated to the given coordinate system, or {@code null}.
          */
         public void setTarget(final EllipsoidalCS cs, final Ellipsoid ellipsoid) {
             targetCS = cs;
@@ -569,7 +569,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         /**
          * Returns the source coordinate system, or {@code null} if unspecified.
          *
-         * @return The source coordinate system, or {@code null}.
+         * @return the source coordinate system, or {@code null}.
          */
         public CoordinateSystem getSourceCS() {
             return sourceCS;
@@ -588,7 +588,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         /**
          * Returns the target coordinate system, or {@code null} if unspecified.
          *
-         * @return The target coordinate system, or {@code null}.
+         * @return the target coordinate system, or {@code null}.
          */
         public CoordinateSystem getTargetCS() {
             return targetCS;
@@ -630,8 +630,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * This method is invoked by {@link DefaultMathTransformFactory#swapAndScaleAxes(MathTransform, Context)}.
          * Users an override this method if they need to customize the normalization process.
          *
-         * @param  role Whether the normalization or denormalization matrix is desired.
-         * @return The requested matrix, or {@code null} if this {@code Context} has no information about the coordinate system.
+         * @param  role  whether the normalization or denormalization matrix is desired.
+         * @return the requested matrix, or {@code null} if this {@code Context} has no information about the coordinate system.
          * @throws FactoryException if an error occurred while computing the matrix.
          *
          * @see DefaultMathTransformFactory#createAffineTransform(Matrix)
@@ -668,7 +668,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * Returns the parameter values used for the math transform creation, including the parameters completed
          * by the factory.
          *
-         * @return The parameter values used by the factory.
+         * @return the parameter values used by the factory.
          * @throws IllegalStateException if {@link DefaultMathTransformFactory#createParameterizedTransform(ParameterValueGroup, Context)}
          *         has not yet been invoked.
          */
@@ -689,9 +689,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * parameter value validity. This may result in an {@link InvalidParameterNameException}
          * or {@link InvalidParameterValueException} to be thrown.</p>
          *
-         * @param writable {@code true} if this method should also check that the parameters group is not
-         *        an instance of {@link UnmodifiableParameterValueGroup}. Current implementation assumes
-         *        that modifiable parameters are instances of {@link DefaultParameterValueGroup}.
+         * @param  writable  {@code true} if this method should also check that the parameters group is not an
+         *                   instance of {@link UnmodifiableParameterValueGroup}. Current implementation assumes
+         *                   that modifiable parameters are instances of {@link DefaultParameterValueGroup}.
          * @throws IllegalArgumentException if the copy can not be performed because a parameter has
          *         a unrecognized name or an illegal value.
          */
@@ -726,11 +726,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *       but its value is compared to the given one for consistency.</li>
          * </ul>
          *
-         * @param parameter The parameter which must have a value.
-         * @param actual    The current parameter value, or {@code NaN} if none.
-         * @param expected  The expected parameter value, derived from the ellipsoid.
-         * @param unit      The unit of {@code value}.
-         * @param tolerance Maximal difference (in unit of {@code unit}) for considering the two values as equivalent.
+         * @param  parameter  the parameter which must have a value.
+         * @param  actual     the current parameter value, or {@code NaN} if none.
+         * @param  expected   the expected parameter value, derived from the ellipsoid.
+         * @param  unit       the unit of {@code value}.
+         * @param  tolerance  maximal difference (in unit of {@code unit}) for considering the two values as equivalent.
          * @return {@code true} if there is a mismatch between the actual value and the expected one.
          */
         private static boolean ensureSet(final ParameterValue<?> parameter, final double actual,
@@ -751,11 +751,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * if available. This method writes semi-major and semi-minor parameter values only if they do not
          * already exists in the given parameters.
          *
-         * @param  ellipsoid  The ellipsoid from which to get axis lengths of flattening factor, or {@code null}.
-         * @param  semiMajor  {@code "semi_major}, {@code "src_semi_major} or {@code "tgt_semi_major} parameter name.
-         * @param  semiMinor  {@code "semi_minor}, {@code "src_semi_minor} or {@code "tgt_semi_minor} parameter name.
-         * @param  inverseFlattening {@code true} if this method can try to set the {@code "inverse_flattening"} parameter.
-         * @return The exception if the operation failed, or {@code null} if none. This exception is not thrown now
+         * @param  ellipsoid          the ellipsoid from which to get axis lengths of flattening factor, or {@code null}.
+         * @param  semiMajor          {@code "semi_major}, {@code "src_semi_major} or {@code "tgt_semi_major} parameter name.
+         * @param  semiMinor          {@code "semi_minor}, {@code "src_semi_minor} or {@code "tgt_semi_minor} parameter name.
+         * @param  inverseFlattening  {@code true} if this method can try to set the {@code "inverse_flattening"} parameter.
+         * @return the exception if the operation failed, or {@code null} if none. This exception is not thrown now
          *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
          *         informative exception.
          */
@@ -847,8 +847,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * <p>The given method and parameters are stored in the {@link #provider} and {@link #parameters}
          * fields respectively. The actual stored values may differ from the values given to this method.</p>
          *
-         * @param  method Description of the transform to be created, or {@code null} if unknown.
-         * @return The exception if the operation failed, or {@code null} if none. This exception is not thrown now
+         * @param  method  description of the transform to be created, or {@code null} if unknown.
+         * @return the exception if the operation failed, or {@code null} if none. This exception is not thrown now
          *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
          *         informative exception.
          * @throws IllegalArgumentException if the operation fails because a parameter has a unrecognized name or an
@@ -959,11 +959,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * <p>The {@code OperationMethod} instance used by this constructor can be obtained by a call to
      * {@link #getLastMethodUsed()}.</p>
      *
-     * @param  parameters The parameter values. The {@linkplain ParameterDescriptorGroup#getName() parameter group name}
-     *         shall be the name of the desired {@linkplain DefaultOperationMethod operation method}.
-     * @param  context Information about the context (for example source and target coordinate systems)
-     *         in which the new transform is going to be used, or {@code null} if none.
-     * @return The transform created from the given parameters.
+     * @param  parameters  the parameter values. The {@linkplain ParameterDescriptorGroup#getName() parameter group name}
+     *                     shall be the name of the desired {@linkplain DefaultOperationMethod operation method}.
+     * @param  context     information about the context (for example source and target coordinate systems)
+     *                     in which the new transform is going to be used, or {@code null} if none.
+     * @return the transform created from the given parameters.
      * @throws NoSuchIdentifierException if there is no method for the given parameter group name.
      * @throws FactoryException if the object creation failed. This exception is thrown
      *         if some required parameter has not been supplied, or has illegal value.
@@ -1076,9 +1076,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Users who need a different normalized space than the default one way find more convenient to
      * override the {@link Context#getMatrix Context.getMatrix(ContextualParameters.MatrixRole)} method.
      *
-     * @param  parameterized A transform for normalized input and output coordinates.
-     * @param  context Source and target coordinate systems in which the transform is going to be used.
-     * @return A transform taking in account unit conversions and axis swapping.
+     * @param  parameterized  a transform for normalized input and output coordinates.
+     * @param  context        source and target coordinate systems in which the transform is going to be used.
+     * @return a transform taking in account unit conversions and axis swapping.
      * @throws FactoryException if the object creation failed.
      *
      * @see org.apache.sis.referencing.cs.AxesConvention#NORMALIZED
@@ -1156,10 +1156,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * allowing the caller to get back the complete parameter values.
      * However this method only fills missing values, it never modify existing values.
      *
-     * @param  baseCRS    The source coordinate reference system.
-     * @param  parameters The parameter values for the transform.
-     * @param  derivedCS  The target coordinate system.
-     * @return The parameterized transform from {@code baseCRS} to {@code derivedCS},
+     * @param  baseCRS     the source coordinate reference system.
+     * @param  parameters  the parameter values for the transform.
+     * @param  derivedCS   the target coordinate system.
+     * @return the parameterized transform from {@code baseCRS} to {@code derivedCS},
      *         including unit conversions and axis swapping.
      * @throws NoSuchIdentifierException if there is no transform registered for the coordinate operation method.
      * @throws FactoryException if the object creation failed. This exception is thrown
@@ -1184,8 +1184,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     /**
      * Creates a math transform that represent a change of coordinate system.
      *
-     * @param source the source coordinate system.
-     * @param target the target coordinate system.
+     * @param  source  the source coordinate system.
+     * @param  target  the target coordinate system.
      * @return a conversion from the given source to the given target coordinate system.
      * @throws FactoryException if the conversion can not be created.
      *
@@ -1208,8 +1208,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * {@code [i][N]} element of the matrix will be 0 for <var>i</var> less than {@code M}, and 1
      * for <var>i</var> equals {@code M}.
      *
-     * @param  matrix The matrix used to define the affine transform.
-     * @return The affine transform.
+     * @param  matrix  the matrix used to define the affine transform.
+     * @return the affine transform.
      * @throws FactoryException if the object creation failed.
      *
      * @see MathTransforms#linear(Matrix)
@@ -1231,9 +1231,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * <p>The dimension of the output space of the first transform must match the dimension of the input space
      * in the second transform. In order to concatenate more than two transforms, use this constructor repeatedly.</p>
      *
-     * @param  tr1 The first transform to apply to points.
-     * @param  tr2 The second transform to apply to points.
-     * @return The concatenated transform.
+     * @param  tr1  the first transform to apply to points.
+     * @param  tr2  the second transform to apply to points.
+     * @return the concatenated transform.
      * @throws FactoryException if the object creation failed.
      *
      * @see MathTransforms#concatenate(MathTransform, MathTransform)
@@ -1272,11 +1272,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *     Target: firstAffectedOrdinate + subTransform.getTargetDimensions() + numTrailingOrdinates
      * }
      *
-     * @param  firstAffectedOrdinate The lowest index of the affected ordinates.
-     * @param  subTransform Transform to use for affected ordinates.
-     * @param  numTrailingOrdinates  Number of trailing ordinates to pass through. Affected ordinates will range
+     * @param  firstAffectedOrdinate  the lowest index of the affected ordinates.
+     * @param  subTransform           transform to use for affected ordinates.
+     * @param  numTrailingOrdinates   number of trailing ordinates to pass through. Affected ordinates will range
      *         from {@code firstAffectedOrdinate} inclusive to {@code dimTarget-numTrailingOrdinates} exclusive.
-     * @return A pass through transform.
+     * @return a pass through transform.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1298,7 +1298,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     /**
      * There is no XML format for math transforms.
      *
-     * @param  xml Math transform encoded in XML format.
+     * @param  xml  math transform encoded in XML format.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1313,8 +1313,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
      * Known Text</cite> (WKT)</a>.
      *
-     * @param  text Math transform encoded in Well-Known Text format.
-     * @return The math transform (never {@code null}).
+     * @param  text  math transform encoded in Well-Known Text format.
+     * @return the math transform (never {@code null}).
      * @throws FactoryException if the Well-Known Text can not be parsed,
      *         or if the math transform creation failed from some other reason.
      */
@@ -1355,7 +1355,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             Throwable cause = e.getCause();
             while (cause != null) {
                 if (cause instanceof ParameterNotFoundException) {
-                    throw new InvalidGeodeticParameterException(e.getMessage(), cause);     // More accurate exception.
+                    throw new InvalidGeodeticParameterException(e.getLocalizedMessage(), cause);
                 }
                 cause = cause.getCause();
             }
@@ -1379,7 +1379,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * <p>Invoking {@code getLastMethodUsed()} can be useful after a call to
      * {@link #createParameterizedTransform createParameterizedTransform(…)}.</p>
      *
-     * @return The last method used by a {@code create(…)} constructor, or {@code null} if unknown of unsupported.
+     * @return the last method used by a {@code create(…)} constructor, or {@code null} if unknown of unsupported.
      *
      * @see #createParameterizedTransform(ParameterValueGroup, Context)
      */

@@ -166,7 +166,7 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
     /**
      * Test XML marshalling.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testMarshal() throws JAXBException {

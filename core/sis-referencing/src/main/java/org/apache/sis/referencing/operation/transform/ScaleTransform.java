@@ -188,12 +188,12 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      *        x₁, y₁, z₁...,
      *        x<sub>n</sub>, y<sub>n</sub>, z<sub>n</sub>]</code>.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the
-     *               destination array. The source and destination array sections can overlap.
-     * @param numPts The number of points to be transformed.
+     * @param srcPts  the array containing the source point coordinates.
+     * @param srcOff  the offset to the first point to be transformed in the source array.
+     * @param dstPts  the array into which the transformed point coordinates are returned.
+     * @param dstOff  the offset to the location of the first transformed point that is stored in the
+     *                destination array. The source and destination array sections can overlap.
+     * @param numPts  the number of points to be transformed.
      */
     @Override
     public void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
@@ -222,12 +222,12 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      *        x₁, y₁, z₁...,
      *        x<sub>n</sub>, y<sub>n</sub>, z<sub>n</sub>]</code>.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the
-     *               destination array. The source and destination array sections can overlap.
-     * @param numPts The number of points to be transformed.
+     * @param srcPts  the array containing the source point coordinates.
+     * @param srcOff  the offset to the first point to be transformed in the source array.
+     * @param dstPts  the array into which the transformed point coordinates are returned.
+     * @param dstOff  the offset to the location of the first transformed point that is stored in the
+     *                destination array. The source and destination array sections can overlap.
+     * @param numPts  the number of points to be transformed.
      */
     @Override
     public void transform(float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
@@ -250,11 +250,11 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     /**
      * Transforms an array of floating point coordinates by this matrix.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the destination array.
-     * @param numPts The number of points to be transformed.
+     * @param srcPts  the array containing the source point coordinates.
+     * @param srcOff  the offset to the first point to be transformed in the source array.
+     * @param dstPts  the array into which the transformed point coordinates are returned.
+     * @param dstOff  the offset to the location of the first transformed point that is stored in the destination array.
+     * @param numPts  the number of points to be transformed.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
@@ -269,11 +269,11 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     /**
      * Transforms an array of floating point coordinates by this matrix.
      *
-     * @param srcPts The array containing the source point coordinates.
-     * @param srcOff The offset to the first point to be transformed in the source array.
-     * @param dstPts The array into which the transformed point coordinates are returned.
-     * @param dstOff The offset to the location of the first transformed point that is stored in the destination array.
-     * @param numPts The number of points to be transformed.
+     * @param srcPts  the array containing the source point coordinates.
+     * @param srcOff  the offset to the first point to be transformed in the source array.
+     * @param dstPts  the array into which the transformed point coordinates are returned.
+     * @param dstOff  the offset to the location of the first transformed point that is stored in the destination array.
+     * @param numPts  the number of points to be transformed.
      */
     @Override
     public void transform(final float[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
@@ -289,7 +289,7 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      * Gets the derivative of this transform at a point.
      * For a matrix transform, the derivative is the same everywhere.
      *
-     * @param point Ignored (can be {@code null}).
+     * @param  point  ignored (can be {@code null}).
      */
     @Override
     public Matrix derivative(final DirectPosition point) {

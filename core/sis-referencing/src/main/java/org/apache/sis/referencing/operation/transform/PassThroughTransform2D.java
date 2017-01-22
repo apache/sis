@@ -44,9 +44,9 @@ final class PassThroughTransform2D extends PassThroughTransform implements MathT
     /**
      * Creates a pass through transform.
      *
-     * @param firstAffectedOrdinate Index of the first affected ordinate.
-     * @param subTransform The sub transform.
-     * @param numTrailingOrdinates Number of trailing ordinates to pass through.
+     * @param firstAffectedOrdinate  index of the first affected ordinate.
+     * @param subTransform           the sub transform.
+     * @param numTrailingOrdinates   number of trailing ordinates to pass through.
      */
     PassThroughTransform2D(final int firstAffectedOrdinate,
                            final MathTransform subTransform,
@@ -84,7 +84,7 @@ final class PassThroughTransform2D extends PassThroughTransform implements MathT
      * Gets the derivative of this transform at a point.
      *
      * @return {@inheritDoc}
-     * @throws TransformException If the {@linkplain #getSubTransform() sub-transform} failed.
+     * @throws TransformException if the {@linkplain #getSubTransform() sub-transform} failed.
      */
     @Override
     public Matrix derivative(final Point2D point) throws TransformException {

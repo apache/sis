@@ -35,6 +35,7 @@ import org.apache.sis.util.Classes;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.
 final class ClassFormat extends Format {
     /**
      * For cross-version compatibility.

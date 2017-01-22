@@ -48,8 +48,8 @@ public final class PolarStereographicSouth extends AbstractStereographic {
      * is promoted as the primary name. The old primary name and identifiers (which are usually the
      * EPSG ones) are discarded.
      *
-     * @param  template    the parameter from which to copy the names and identifiers.
-     * @param  builder     an initially clean builder where to add the names.
+     * @param  template  the parameter from which to copy the names and identifiers.
+     * @param  builder   an initially clean builder where to add the names.
      * @return the given {@code builder}, for method call chaining.
      */
     @SuppressWarnings("unchecked")

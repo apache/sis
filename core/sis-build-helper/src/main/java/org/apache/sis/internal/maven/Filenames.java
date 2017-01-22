@@ -95,7 +95,7 @@ final class Filenames {
     /**
      * Returns the distribution directory, creating it if needed.
      *
-     * @param targetDirectory The {@code target} directory.
+     * @param  targetDirectory  the {@code target} directory.
      */
     static File distributionDirectory(final File targetDirectory) throws IOException {
         final File outDirectory = new File(targetDirectory, DISTRIBUTION_DIRECTORY);

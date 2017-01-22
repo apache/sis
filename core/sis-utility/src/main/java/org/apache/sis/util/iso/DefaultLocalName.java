@@ -174,7 +174,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
         final NameSpace scope = object.scope();
         final InternationalString name = object.toInternationalString();
         if (scope instanceof DefaultNameSpace) {
-            return ((DefaultNameSpace) scope).local(name, null); // May return a cached instance.
+            return ((DefaultNameSpace) scope).local(name, null);        // May return a cached instance.
         } else {
             return new DefaultLocalName(scope, name);
         }
@@ -318,6 +318,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * to replace an instance of a user-defined class.</p>
      *
      * @return the unique instance.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
     private Object readResolve() throws ObjectStreamException {
         final DefaultNameSpace ns;

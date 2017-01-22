@@ -52,6 +52,7 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
  * @since   0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "SV_CoupledResource_Type", namespace = Namespaces.SRV, propOrder = {
     "operationName",
     "identifier",
@@ -96,10 +97,10 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     /**
      * Constructs a new coupled resource initialized to the specified values.
      *
-     * @param name       Scoped identifier of the resource in the context of the given service instance.
-     * @param reference  Reference to the reference to the resource on which the services operates.
-     * @param resource   The tightly coupled resource.
-     * @param operation  The service operation.
+     * @param name        scoped identifier of the resource in the context of the given service instance.
+     * @param reference   reference to the reference to the resource on which the services operates.
+     * @param resource    the tightly coupled resource.
+     * @param operation   the service operation.
      */
     public DefaultCoupledResource(final ScopedName name,
                                   final Citation reference,
@@ -117,7 +118,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(CoupledResource)
      */
@@ -145,8 +146,8 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultCoupledResource castOrCopy(final CoupledResource object) {
@@ -171,7 +172,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     /**
      * Sets the identifier of the resource in the context of the given service instance.
      *
-     * @param newValue The new identifier of the resource.
+     * @param  newValue  the new identifier of the resource.
      */
     public void setScopedName(final ScopedName newValue) {
         checkWritePermission();
@@ -181,7 +182,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     /**
      * Returns references to the resource on which the services operates.
      *
-     * @return References to the resource on which the services operates.
+     * @return references to the resource on which the services operates.
      */
     @Override
 /// @XmlElement(name = "resourceReference", namespace = Namespaces.SRV)
@@ -192,7 +193,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     /**
      * Sets references to the resource on which the services operates.
      *
-     * @param newValues The new references to the resource on which the services operates.
+     * @param  newValues  the new references to the resource on which the services operates.
      */
     public void setResourceReferences(final Collection<? extends Citation> newValues) {
         resourceReferences = writeCollection(newValues, resourceReferences, Citation.class);
@@ -212,7 +213,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     /**
      * Sets the tightly coupled resources.
      *
-     * @param newValues The new tightly coupled resources.
+     * @param  newValues  the new tightly coupled resources.
      */
     public void setResources(final Collection<? extends DataIdentification> newValues) {
         resources = writeCollection(newValues, resources, DataIdentification.class);
@@ -221,7 +222,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     /**
      * Returns the service operation.
      *
-     * @return The service operation, or {@code null} if none.
+     * @return the service operation, or {@code null} if none.
      */
     @Override
 /// @XmlElement(name = "operation", namespace = Namespaces.SRV)
@@ -232,7 +233,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
     /**
      * Sets a new service operation.
      *
-     * @param newValue The new service operation.
+     * @param  newValue  the new service operation.
      */
     public void setOperation(final OperationMetadata newValue) {
         checkWritePermission();

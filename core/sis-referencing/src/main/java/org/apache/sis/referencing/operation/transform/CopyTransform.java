@@ -61,10 +61,10 @@ final class CopyTransform extends AbstractLinearTransform {
     /**
      * Creates a new transform.
      *
-     * @param srcDim The dimension of source coordinates.
-     *        Must be greater than the highest value in {@code indices}.
-     * @param indices The indices of ordinates to copy in the source array.
-     *        The length of this array is the target dimension.
+     * @param srcDim   the dimension of source coordinates.
+     *                 Must be greater than the highest value in {@code indices}.
+     * @param indices  the indices of ordinates to copy in the source array.
+     *                 The length of this array is the target dimension.
      */
     CopyTransform(final int srcDim, final int[] indices) {
         this.srcDim  = srcDim;
@@ -314,7 +314,7 @@ final class CopyTransform extends AbstractLinearTransform {
      * Gets the derivative of this transform at a point.
      * For a matrix transform, the derivative is the same everywhere.
      *
-     * @param point Ignored (can be {@code null}).
+     * @param point ignored (can be {@code null}).
      */
     @Override
     public Matrix derivative(final DirectPosition point) {

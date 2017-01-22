@@ -63,11 +63,11 @@ class DefaultProjection extends DefaultConversion implements Projection {
     /**
      * Creates a projection from the given properties.
      *
-     * @param properties The properties to be given to the identified object.
-     * @param sourceCRS  The source CRS.
-     * @param targetCRS  The target CRS.
-     * @param method     The coordinate operation method.
-     * @param transform  Transform from positions in the source CRS to positions in the target CRS.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  sourceCRS   the source CRS.
+     * @param  targetCRS   the target CRS.
+     * @param  method      the coordinate operation method.
+     * @param  transform   transform from positions in the source CRS to positions in the target CRS.
      */
     public DefaultProjection(final Map<String,?>   properties,
                              final GeographicCRS   sourceCRS,
@@ -83,11 +83,11 @@ class DefaultProjection extends DefaultConversion implements Projection {
      * specified source and target CRS. While the source conversion can be an arbitrary one, it
      * is typically a defining conversion.
      *
-     * @param definition The defining conversion.
-     * @param sourceCRS  The source CRS.
-     * @param targetCRS  The target CRS.
-     * @param factory    The factory to use for creating a transform from the parameters or for performing axis changes.
-     * @param actual     An array of length 1 where to store the actual operation method used by the math transform factory.
+     * @param  definition  the defining conversion.
+     * @param  sourceCRS   the source CRS.
+     * @param  targetCRS   the target CRS.
+     * @param  factory     the factory to use for creating a transform from the parameters or for performing axis changes.
+     * @param  actual      an array of length 1 where to store the actual operation method used by the math transform factory.
      */
     DefaultProjection(final Conversion definition,
                       final CoordinateReferenceSystem sourceCRS,
@@ -107,7 +107,7 @@ class DefaultProjection extends DefaultConversion implements Projection {
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param operation The coordinate operation to copy.
+     * @param  operation  the coordinate operation to copy.
      */
     protected DefaultProjection(final Projection operation) {
         super(operation);
@@ -118,7 +118,7 @@ class DefaultProjection extends DefaultConversion implements Projection {
      * The default implementation returns {@code Projection.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
-     * @return The conversion interface implemented by this class.
+     * @return the conversion interface implemented by this class.
      */
     @Override
     public Class<? extends Projection> getInterface() {

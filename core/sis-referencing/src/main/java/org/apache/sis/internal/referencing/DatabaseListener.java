@@ -51,7 +51,7 @@ public final class DatabaseListener extends Initializer {
      * immediately. We rather rely on automatic installation by {@code EPSGInstaller} the first time that a CRS
      * is requested. However we may revisit this policy in a future SIS version.
      *
-     * @param connection Connection to the empty database.
+     * @param  connection  connection to the empty database.
      * @throws SQLException if an error occurred while populating the database.
      */
     @Override

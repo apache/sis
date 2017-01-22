@@ -39,7 +39,7 @@ final class PooledTemplate extends Pooled {
     /**
      * Creates a new template.
      *
-     * @param properties The properties to be given to JAXB (un)marshallers, or {@code null} if none.
+     * @param properties  the properties to be given to JAXB (un)marshallers, or {@code null} if none.
      * @param internal {@code true} if the JAXB implementation is the one bundled in JDK 6,
      *        or {@code false} if this is the external implementation provided as a JAR file
      *        in the endorsed directory.
@@ -62,7 +62,7 @@ final class PooledTemplate extends Pooled {
     @Override
     void setStandardProperty(final String name, final Object value) {
         if (initialProperties.put(name, value) != null) {
-            throw new AssertionError(name); // If non-null, some code has done unexpected changes in the map.
+            throw new AssertionError(name);         // If non-null, some code has done unexpected changes in the map.
         }
     }
 
@@ -83,10 +83,10 @@ final class PooledTemplate extends Pooled {
      * <p>Current implementation expects values of type {@code String}, but this may be generalized
      * in a future SIS version if there is a need for that.</p>
      *
-     * @param  name The name of the property to remove.
-     * @param  defaultValue The default value to return if the given property is not defined in the map.
-     * @return The old value of that property, or {@code defaultValue} if the given property was not defined.
-     * @throws PropertyException If the given property is not of the expected type.
+     * @param  name  the name of the property to remove.
+     * @param  defaultValue  the default value to return if the given property is not defined in the map.
+     * @return the old value of that property, or {@code defaultValue} if the given property was not defined.
+     * @throws PropertyException if the given property is not of the expected type.
      */
     String remove(final String name, final String defaultValue) throws PropertyException {
         final Object value = initialProperties.remove(name);

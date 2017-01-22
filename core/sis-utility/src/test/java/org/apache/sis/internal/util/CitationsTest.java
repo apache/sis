@@ -147,7 +147,7 @@ public final strictfp class CitationsTest extends TestCase {
 
         @Override
         public String getName() {
-            return "TheProj4Space";  // Intentionally a very different name than "Proj4".
+            return "TheProj4Space";         // Intentionally a very different name than "Proj4".
         }
     }
 }

@@ -98,10 +98,10 @@ final class SubOperationInfo {
      * Searches in given list of source components for an operation capable to convert or transform coordinates
      * to the given target CRS. If no such operation can be found, then this method returns {@code null}.
      *
-     * @param  caller       the object which is inferring a coordinate operation.
-     * @param  sourceIsUsed flags for keeping trace of which source has been used.
-     * @param  sources      all components of the source CRS.
-     * @param  target       one component of the target CRS.
+     * @param  caller        the object which is inferring a coordinate operation.
+     * @param  sourceIsUsed  flags for keeping trace of which source has been used.
+     * @param  sources       all components of the source CRS.
+     * @param  target        one component of the target CRS.
      * @return information about a coordinate operation from a source CRS to the given target CRS, or {@code null}.
      * @throws FactoryException if an error occurred while grabbing a coordinate operation.
      */
@@ -182,7 +182,7 @@ final class SubOperationInfo {
      *
      * @param sourceDimensions    number of dimension of the source {@code CompoundCRS}.
      * @param selectedDimensions  number of source dimensions needed by the coordinate operations.
-     * @param selected all {@code SourceComponent} instances needed for the target {@code CompoundCRS}.
+     * @param selected            all {@code SourceComponent} instances needed for the target {@code CompoundCRS}.
      */
     static Matrix sourceToSelected(final int sourceDimensions, final int selectedDimensions, final SubOperationInfo[] selected) {
         final Matrix select = Matrices.createZero(selectedDimensions + 1, sourceDimensions + 1);

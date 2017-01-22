@@ -183,7 +183,7 @@ abstract class Pooled {
      * Creates a {@link PooledMarshaller} or {@link PooledUnmarshaller}. The {@link #initialize(Pooled)}
      * method must be invoked after this constructor for completing the initialization.
      *
-     * @param template The {@link PooledTemplate} from which to get the initial values.
+     * @param template the {@link PooledTemplate} from which to get the initial values.
      */
     Pooled(final Pooled template) {
         initialProperties = new LinkedHashMap<>();
@@ -195,8 +195,8 @@ abstract class Pooled {
      * This method is not invoked in the {@link #Pooled(Pooled)} constructor in order to
      * give to subclasses a chance to complete their construction first.
      *
-     * @param  template The {@link PooledTemplate} from which to get the initial values.
-     * @throws JAXBException If an error occurred while setting a property.
+     * @param  template  the {@link PooledTemplate} from which to get the initial values.
+     * @throws JAXBException if an error occurred while setting a property.
      */
     final void initialize(final Pooled template) throws JAXBException {
         reset(template); // Set the SIS properties first. JAXB properties are set below.
@@ -210,8 +210,8 @@ abstract class Pooled {
      * This method is invoked by {@link MarshallerPool} just before to push a
      * (un)marshaller in the pool after its usage.
      *
-     * @param  template The {@link PooledTemplate} from which to get the initial values.
-     * @throws JAXBException If an error occurred while restoring a property.
+     * @param  template  the {@link PooledTemplate} from which to get the initial values.
+     * @throws JAXBException if an error occurred while restoring a property.
      */
     public final void reset(final Pooled template) throws JAXBException {
         for (final Map.Entry<Object,Object> entry : initialProperties.entrySet()) {
@@ -240,9 +240,9 @@ abstract class Pooled {
      * {@code setProperty(key, value)} method. Otherwise the value shall be given to
      * {@code setFoo(value)} method where {@code "Foo"} is determined from the key.
      *
-     * @param  key   The property to reset.
-     * @param  value The initial value to give to the property.
-     * @throws JAXBException If an error occurred while restoring a property.
+     * @param  key    the property to reset.
+     * @param  value  the initial value to give to the property.
+     * @throws JAXBException if an error occurred while restoring a property.
      */
     protected abstract void reset(final Object key, final Object value) throws JAXBException;
 
@@ -291,8 +291,8 @@ abstract class Pooled {
      * modified for the first time, in order to allow {@link #reset(Pooled)} to restore
      * the (un)marshaller to its initial state.
      *
-     * @param type  The property to save.
-     * @param value The current value of the property.
+     * @param  type   the property to save.
+     * @param  value  the current value of the property.
      */
     final <E> void saveProperty(final Class<E> type, final E value) {
         if (initialProperties.put(type, value) != null) {
@@ -306,8 +306,8 @@ abstract class Pooled {
      * Converts a property key from the JAXB name to the underlying implementation name.
      * This applies only to property keys in the {@code "com.sun.xml.bind"} namespace.
      *
-     * @param  key The JAXB property key.
-     * @return The property key to use.
+     * @param  key  the JAXB property key.
+     * @return the property key to use.
      */
     private String convertPropertyKey(String key) {
         if (internal && key.startsWith(ENDORSED_PREFIX)) {
@@ -419,6 +419,7 @@ abstract class Pooled {
     /**
      * A method which is common to both {@code Marshaller} and {@code Unmarshaller}.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because unmodifiable.
     public final Object getProperty(final String name) throws PropertyException {
         switch (name) {
             case XML.LOCALE:           return locale;

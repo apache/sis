@@ -66,7 +66,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
      * Instances should be created using the {@linkplain #create(double) factory method}, which
      * may returns optimized implementations for some particular argument values.
      *
-     * @param power The power at which to raise the values.
+     * @param power  the power at which to raise the values.
      */
     protected PowerTransform1D(final double power) {
         this.power = power;
@@ -75,8 +75,8 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     /**
      * Constructs a new power transform.
      *
-     * @param power The power at which to raise the values.
-     * @return The math transform.
+     * @param  power  the power at which to raise the values.
+     * @return the math transform.
      */
     public static MathTransform1D create(final double power) {
         if (power == 1) return IdentityTransform1D.INSTANCE;
@@ -171,11 +171,11 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     /**
      * Concatenates in an optimized way a {@link MathTransform} {@code other} to this {@code MathTransform}.
      *
-     * @param  other The math transform to apply.
-     * @param  applyOtherFirst {@code true} if the transformation order is {@code other} followed by {@code this},
-     *         or {@code false} if the transformation order is {@code this} followed by {@code other}.
-     * @param  factory The factory which is (indirectly) invoking this method, or {@code null} if none.
-     * @return The combined math transform, or {@code null} if no optimized combined transform is available.
+     * @param  other            the math transform to apply.
+     * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this},
+     *                          or {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @param  factory          the factory which is (indirectly) invoking this method, or {@code null} if none.
+     * @return the combined math transform, or {@code null} if no optimized combined transform is available.
      */
     @Override
     final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst,
@@ -202,7 +202,7 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true;  // Optimization for a common case.
+            return true;                    // Optimization for a common case.
         }
         if (super.equals(object, mode)) {
             return Numerics.equals(power, ((PowerTransform1D) object).power);

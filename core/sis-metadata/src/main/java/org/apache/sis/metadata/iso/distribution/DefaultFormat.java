@@ -75,6 +75,7 @@ import java.util.function.BiConsumer;
  * @version 0.8
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Format_Type", propOrder = {
     "name",
     "version",

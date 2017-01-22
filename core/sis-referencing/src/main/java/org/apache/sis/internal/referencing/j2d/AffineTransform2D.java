@@ -82,7 +82,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
     /**
      * Constructs a new affine transform with the same coefficients than the specified transform.
      *
-     * @param transform The affine transform to copy.
+     * @param transform  the affine transform to copy.
      */
     public AffineTransform2D(final AffineTransform transform) {
         super(transform);
@@ -93,7 +93,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
     /**
      * Constructs a new {@code AffineTransform2D} from the given 9 or 18 values.
      *
-     * @param elements The matrix elements, optionally with error terms.
+     * @param elements  the matrix elements, optionally with error terms.
      */
     public AffineTransform2D(final double[] elements) {
         super(pz(elements[0]), pz(elements[3]),
@@ -146,7 +146,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * Throws an {@link UnsupportedOperationException} when a mutable method
      * is invoked, since {@code AffineTransform2D} must be immutable.
      *
-     * @throws UnsupportedOperationException Always thrown.
+     * @throws UnsupportedOperationException always thrown.
      */
     @Override
     protected final void checkPermission() throws UnsupportedOperationException {
@@ -243,8 +243,8 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * For example if the given shape is a rectangle and this affine transform has no scale or
      * shear, then the returned shape will be an instance of {@link java.awt.geom.Rectangle2D}.
      *
-     * @param  shape Shape to transform.
-     * @return Transformed shape, or {@code shape} if this transform is the identity transform.
+     * @param  shape  shape to transform.
+     * @return transformed shape, or {@code shape} if this transform is the identity transform.
      */
     @Override
     public final Shape createTransformedShape(final Shape shape) {
@@ -326,8 +326,8 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * to {@link #equals(Object)}. The later method has different rules than the ones documented in the
      * {@code LinearTransform} interface, because of the {@code AffineTransform} inheritance.
      *
-     * @param  object The object to compare to {@code this}.
-     * @param  mode The strictness level of the comparison.
+     * @param  object  the object to compare to {@code this}.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -380,7 +380,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * {@linkplain org.apache.sis.referencing.operation.projection.Equirectangular} map projection,
      * which can be simplified to an affine transform but still needs to remember the projection parameters.</p>
      *
-     * @param  object The object to compare with this affine transform for equality.
+     * @param  object  the object to compare with this affine transform for equality.
      * @return {@code true} if the given object is of appropriate class (as explained in the
      *         above documentation) and the affine transform coefficients are the same.
      */
@@ -406,7 +406,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * returns an instance of {@link AffineTransform}, <strong>not</strong> {@code AffineTransform2D}, because
      * the later is unmodifiable and cloning it make little sense.
      *
-     * @return A modifiable copy of this affine transform.
+     * @return a modifiable copy of this affine transform.
      */
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")

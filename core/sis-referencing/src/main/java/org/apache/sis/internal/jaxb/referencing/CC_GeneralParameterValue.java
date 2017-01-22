@@ -66,8 +66,8 @@ public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParam
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:ParameterValue>} or {@code <gml:ParameterValueGroup>} XML element.
      *
-     * @param  parameter The element to marshall.
-     * @return A {@code PropertyType} wrapping the given the element.
+     * @param  parameter  the element to marshall.
+     * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
     protected CC_GeneralParameterValue wrap(final GeneralParameterValue parameter) {
@@ -79,7 +79,7 @@ public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParam
      * inside the {@code <gml:parameterValue>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
-     * @return The element to be marshalled.
+     * @return the element to be marshalled.
      *
      * @see CC_GeneralOperationParameter#getElement()
      */
@@ -107,7 +107,7 @@ public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParam
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param parameter The unmarshalled element.
+     * @param  parameter  the unmarshalled element.
      */
     public void setElement(final GeneralParameterValue parameter) {
         if (!CC_GeneralOperationParameter.isValid(parameter.getDescriptor())) {

@@ -38,6 +38,7 @@ import org.apache.sis.internal.util.Numerics;
  * @see Matrix3
  * @see Matrix4
  */
+@SuppressWarnings("CloneableClassWithoutClone")             // No field in this class needs clone.
 public final class Matrix1 extends MatrixSIS {
     /**
      * Serial number for inter-operability with different versions.
@@ -64,7 +65,7 @@ public final class Matrix1 extends MatrixSIS {
     /**
      * Creates a new matrix filled with only zero values.
      *
-     * @param ignore Shall always be {@code false} in current version.
+     * @param ignore  shall always be {@code false} in current version.
      */
     Matrix1(final boolean ignore) {
     }
@@ -82,8 +83,8 @@ public final class Matrix1 extends MatrixSIS {
      * Creates a new matrix initialized to the specified values.
      * The length of the given array must be 1.
      *
-     * @param elements Elements of the matrix.
-     * @throws IllegalArgumentException If the given array does not have the expected length.
+     * @param  elements  elements of the matrix.
+     * @throws IllegalArgumentException if the given array does not have the expected length.
      *
      * @see #setElements(double[])
      * @see Matrices#create(int, int, double[])
@@ -97,7 +98,7 @@ public final class Matrix1 extends MatrixSIS {
      * The specified matrix size must be {@value #SIZE}×{@value #SIZE}.
      * This is not verified by this constructor, since it shall be verified by {@link Matrices}.
      *
-     * @param  matrix The matrix to copy.
+     * @param  matrix  the matrix to copy.
      */
     Matrix1(final Matrix matrix) {
         m00 = matrix.getElement(0,0);
@@ -108,10 +109,10 @@ public final class Matrix1 extends MatrixSIS {
      * is already an instance of {@code Matrix1}, then it is returned unchanged. Otherwise this method
      * verifies the matrix size, then copies the element in a new {@code Matrix1} object.
      *
-     * @param  matrix The matrix to cast or copy, or {@code null}.
-     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     * @param  matrix  the matrix to cast or copy, or {@code null}.
+     * @return the matrix argument if it can be safely casted (including {@code null} argument),
      *         or a copy of the given matrix otherwise.
-     * @throws MismatchedMatrixSizeException If the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
+     * @throws MismatchedMatrixSizeException if the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
      */
     public static Matrix1 castOrCopy(final Matrix matrix) throws MismatchedMatrixSizeException {
         if (matrix == null || matrix instanceof Matrix1) {
@@ -133,7 +134,7 @@ public final class Matrix1 extends MatrixSIS {
     /**
      * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return Always {@value #SIZE}.
+     * @return always {@value #SIZE}.
      */
     @Override
     public final int getNumRow() {
@@ -143,7 +144,7 @@ public final class Matrix1 extends MatrixSIS {
     /**
      * Returns the number of columns in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return Always {@value #SIZE}.
+     * @return always {@value #SIZE}.
      */
     @Override
     public final int getNumCol() {
@@ -156,9 +157,9 @@ public final class Matrix1 extends MatrixSIS {
      * If the matrix is known to be an instance of {@code Matrix1},
      * then the {@link #m00} field can be read directly for efficiency.
      *
-     * @param row    The row index, which can only be 0.
-     * @param column The column index, which can only be 0.
-     * @return       The current value.
+     * @param  row     the row index, which can only be 0.
+     * @param  column  the column index, which can only be 0.
+     * @return the current value.
      */
     @Override
     public final double getElement(final int row, final int column) {
@@ -175,9 +176,9 @@ public final class Matrix1 extends MatrixSIS {
      * If the matrix is known to be an instance of {@code Matrix1},
      * then the {@link #m00} field can be set directly for efficiency.
      *
-     * @param row    The row index, which can only be 0.
-     * @param column The column index, which can only be 0.
-     * @param value  The new value to set.
+     * @param  row     the row index, which can only be 0.
+     * @param  column  the column index, which can only be 0.
+     * @param  value   the new value to set.
      */
     @Override
     public final void setElement(final int row, final int column, final double value) {
@@ -261,7 +262,7 @@ public final class Matrix1 extends MatrixSIS {
      * Returns {@code true} if the specified object is of type {@code Matrix1} and
      * all of the data members are equal to the corresponding data members in this matrix.
      *
-     * @param object The object to compare with this matrix for equality.
+     * @param  object  the object to compare with this matrix for equality.
      * @return {@code true} if the given object is equal to this matrix.
      */
     @Override

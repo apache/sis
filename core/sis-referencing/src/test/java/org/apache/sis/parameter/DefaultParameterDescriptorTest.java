@@ -51,8 +51,8 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     /**
      * Creates the map of properties to be given to {@link DefaultParameterDescriptor} constructor.
      *
-     * @param  name The parameter name.
-     * @return The properties to be given to descriptor constructor.
+     * @param  name  the parameter name.
+     * @return the properties to be given to descriptor constructor.
      */
     private static Map<String,Object> properties(final String name) {
         final Map<String,Object> properties = new HashMap<>(4);
@@ -64,9 +64,9 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     /**
      * Creates a descriptor for an optional parameter without default value, minimum or maximum value.
      *
-     * @param  name The parameter name.
-     * @param  type The type of values.
-     * @return The parameter descriptor.
+     * @param  name  the parameter name.
+     * @param  type  the type of values.
+     * @return the parameter descriptor.
      */
     static <T> DefaultParameterDescriptor<T> createSimpleOptional(final String name, final Class<T> type) {
         return new DefaultParameterDescriptor<>(properties(name), 0, 1, type, null, null, null);
@@ -75,11 +75,11 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     /**
      * Creates a descriptor for a mandatory parameter in a range of integer values.
      *
-     * @param  name         The parameter name.
-     * @param  minimumValue The minimum parameter value.
-     * @param  maximumValue The maximum parameter value.
-     * @param  defaultValue The default value for the parameter.
-     * @return The parameter descriptor for the given range of values.
+     * @param  name          the parameter name.
+     * @param  minimumValue  the minimum parameter value.
+     * @param  maximumValue  the maximum parameter value.
+     * @param  defaultValue  the default value for the parameter.
+     * @return the parameter descriptor for the given range of values.
      */
     static DefaultParameterDescriptor<Integer> create(final String name,
             final int minimumValue, final int maximumValue, final int defaultValue)
@@ -91,12 +91,12 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     /**
      * Creates a descriptor for a mandatory parameter in a range of floating point values.
      *
-     * @param  name         The parameter name.
-     * @param  minimumValue The minimum parameter value, or {@link Double#NEGATIVE_INFINITY} if none.
-     * @param  maximumValue The maximum parameter value, or {@link Double#POSITIVE_INFINITY} if none.
-     * @param  defaultValue The default value for the parameter, or {@link Double#NaN} if none.
-     * @param  unit         The unit for default, minimum and maximum values.
-     * @return The parameter descriptor for the given range of values.
+     * @param  name          the parameter name.
+     * @param  minimumValue  the minimum parameter value, or {@link Double#NEGATIVE_INFINITY} if none.
+     * @param  maximumValue  the maximum parameter value, or {@link Double#POSITIVE_INFINITY} if none.
+     * @param  defaultValue  the default value for the parameter, or {@link Double#NaN} if none.
+     * @param  unit          the unit for default, minimum and maximum values.
+     * @return the parameter descriptor for the given range of values.
      */
     static DefaultParameterDescriptor<Double> create(final String name,
             final double minimumValue, final double maximumValue, final double defaultValue, final Unit<?> unit)
@@ -110,11 +110,11 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      * Creates a descriptor for a parameter restricted to a set of valid values.
      * This is typically (but not necessarily) a code list parameter.
      *
-     * @param  name         The parameter name.
-     * @param  type         The type of values.
-     * @param  validValues  The valid values.
-     * @param  defaultValue The default value for the parameter.
-     * @return The parameter descriptor for the given range of values.
+     * @param  name          the parameter name.
+     * @param  type          the type of values.
+     * @param  validValues   the valid values.
+     * @param  defaultValue  the default value for the parameter.
+     * @return the parameter descriptor for the given range of values.
      */
     static <T> DefaultParameterDescriptor<T> create(final String name, final Class<T> type,
             final T[] validValues, final T defaultValue)
@@ -125,11 +125,11 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     /**
      * Creates a descriptor for an array of {@code double[]} values.
      *
-     * @param  name         The parameter name.
-     * @param  minimumValue The minimum parameter value, or {@link Double#NEGATIVE_INFINITY} if none.
-     * @param  maximumValue The maximum parameter value, or {@link Double#POSITIVE_INFINITY} if none.
-     * @param  unit         The unit for minimum and maximum values.
-     * @return The parameter descriptor for the given range of values.
+     * @param  name          the parameter name.
+     * @param  minimumValue  the minimum parameter value, or {@link Double#NEGATIVE_INFINITY} if none.
+     * @param  maximumValue  the maximum parameter value, or {@link Double#POSITIVE_INFINITY} if none.
+     * @param  unit          the unit for minimum and maximum values.
+     * @return the parameter descriptor for the given range of values.
      */
     static DefaultParameterDescriptor<double[]> createForArray(final String name,
             final double minimumValue, final double maximumValue, final Unit<?> unit)
@@ -141,9 +141,9 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     /**
      * Creates a descriptor with the given EPSG identifier.
      *
-     * @param  name The parameter name.
-     * @param  code The parameter identifier.
-     * @return The descriptor with the given EPSG identifier.
+     * @param  name  the parameter name.
+     * @param  code  the parameter identifier.
+     * @return the descriptor with the given EPSG identifier.
      */
     public static DefaultParameterDescriptor<Double> createEPSG(final String name, final short code) {
         final Map<String, Object> properties = properties(name);

@@ -187,7 +187,7 @@ all:    while (tk.hasMoreTokens()) {
                         }
                         break;
                     }
-                    case '\'': // fall through
+                    case '\'':                                 // fall through
                     case '"': {
                         quote = c;
                         buffer.append("<font color=\"orangered\">").append(c);

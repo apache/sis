@@ -47,8 +47,8 @@ public final strictfp class TreeTablesTest extends TestCase {
      * The {@code concatenateSingletons(…)} example documented in the {@link TreeTables} class javadoc.
      * This simple code assumes that the children collection in the given node is a {@link List}.
      *
-     * @param  node The root of the node to simplify.
-     * @return The root of the simplified tree. May be the given {@code node} or a child.
+     * @param  node  the root of the node to simplify.
+     * @return the root of the simplified tree. May be the given {@code node} or a child.
      */
     public static TreeTable.Node concatenateSingletons(final TreeTable.Node node) {
         final List<TreeTable.Node> children = (List<TreeTable.Node>) node.getChildren();
@@ -70,7 +70,7 @@ public final strictfp class TreeTablesTest extends TestCase {
     /**
      * Tests the {@link #concatenateSingletons(TreeTable.Node)} example.
      *
-     * @throws ParseException Should never happen.
+     * @throws ParseException if parsing of test tree failed.
      */
     @Test
     public void testConcatenateSingletons() throws ParseException {

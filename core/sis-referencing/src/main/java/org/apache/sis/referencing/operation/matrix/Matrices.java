@@ -16,10 +16,11 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
+import org.opengis.referencing.cs.CoordinateSystem;             // For javadoc
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -33,9 +34,6 @@ import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -96,10 +94,10 @@ public final class Matrices extends Static {
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
      * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
      *
-     * @param  size Numbers of row and columns. For an affine transform matrix, this is the number of
+     * @param  size  numbers of row and columns. For an affine transform matrix, this is the number of
      *         {@linkplain MathTransform#getSourceDimensions() source} and
      *         {@linkplain MathTransform#getTargetDimensions() target} dimensions + 1.
-     * @return An identity matrix of the given size.
+     * @return an identity matrix of the given size.
      */
     public static MatrixSIS createIdentity(final int size) {
         switch (size) {
@@ -271,8 +269,10 @@ public final class Matrices extends Static {
                      */
                     final boolean same = srcDir.equals(dstDir);
                     if (useEnvelopes) {
-                        // See the comment in transform(Envelope, Envelope) for an explanation about why
-                        // we use the lower/upper corners instead than getMinimum()/getMaximum() methods.
+                        /*
+                         * See the comment in transform(Envelope, Envelope) for an explanation about why
+                         * we use the lower/upper corners instead than getMinimum()/getMaximum() methods.
+                         */
                         final DoubleDouble scale = new DoubleDouble(same ? +1 : -1, 0);
                         scale.multiply(dstEnvelope.getSpan(dstIndex));
                         scale.divide  (srcEnvelope.getSpan(srcIndex));
@@ -544,7 +544,7 @@ public final class Matrices extends Static {
      * @param  sourceDimensions    the number of dimensions in source coordinates.
      * @param  selectedDimensions  the 0-based indices of source ordinate values to keep.
      *         The length of this array will be the number of dimensions in target coordinates.
-     * @return An affine transform matrix keeping only the given source dimensions, and discarding all others.
+     * @return an affine transform matrix keeping only the given source dimensions, and discarding all others.
      * @throws IllegalArgumentException if a value of {@code selectedDimensions} is lower than 0
      *         or not smaller than {@code sourceDimensions}.
      *
@@ -1075,13 +1075,13 @@ public final class Matrices extends Static {
     public static String toString(final Matrix matrix) {
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
-        final String[]  elements            = new String [numCol * numRow]; // String representation of matrix values.
-        final boolean[] noFractionDigits    = new boolean[numCol * numRow]; // Whether to remove the trailing ".0" for a given number.
-        final boolean[] hasDecimalSeparator = new boolean[numCol];          // Whether the column has at least one number where fraction digits are shown.
-        final byte[] maximumFractionDigits  = new byte   [numCol];          // The greatest amount of fraction digits found in a column.
-        final byte[] maximumPaddingZeros    = new byte   [numCol * numRow]; // Maximal amount of zeros that we can append before to exceed the IEEE 754 accuracy.
-        final byte[] widthBeforeFraction    = new byte   [numCol];          // Number of characters before the fraction digits: spacing + ('-') + integerDigits + '.'
-        final byte[] columnWidth            = new byte   [numCol];          // Total column width.
+        final String[]  elements            = new String [numCol * numRow];     // String representation of matrix values.
+        final boolean[] noFractionDigits    = new boolean[numCol * numRow];     // Whether to remove the trailing ".0" for a given number.
+        final boolean[] hasDecimalSeparator = new boolean[numCol];              // Whether the column has at least one number where fraction digits are shown.
+        final byte[] maximumFractionDigits  = new byte   [numCol];              // The greatest amount of fraction digits found in a column.
+        final byte[] maximumPaddingZeros    = new byte   [numCol * numRow];     // Maximal amount of zeros that we can append before to exceed the IEEE 754 accuracy.
+        final byte[] widthBeforeFraction    = new byte   [numCol];              // Number of characters before the fraction digits: spacing + ('-') + integerDigits + '.'
+        final byte[] columnWidth            = new byte   [numCol];              // Total column width.
         int totalWidth = 1;
         /*
          * Create now the string representation of all matrix elements and measure the width

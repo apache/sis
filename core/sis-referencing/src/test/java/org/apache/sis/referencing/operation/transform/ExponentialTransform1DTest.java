@@ -77,11 +77,11 @@ public final strictfp class ExponentialTransform1DTest extends MathTransformTest
      *
      * The {@link #transform} field must be set before to invoke this method.
      *
-     * @param expectedType The expected base type of the math transform.
-     * @param base         The exponent base given to the {@link ExponentialTransform1D} constructor.
-     * @param scale        The scale factor given to the {@link ExponentialTransform1D} constructor.
-     * @param preAffine    {@code true} for applying an additional affine transform before the transform.
-     * @param postAffine   {@code true} for applying an additional affine transform after the transform.
+     * @param  expectedType  the expected base type of the math transform.
+     * @param  base          the exponent base given to the {@link ExponentialTransform1D} constructor.
+     * @param  scale         the scale factor given to the {@link ExponentialTransform1D} constructor.
+     * @param  preAffine     {@code true} for applying an additional affine transform before the transform.
+     * @param  postAffine    {@code true} for applying an additional affine transform after the transform.
      */
     private void run(final Class<? extends MathTransform1D> expectedType, final double base, final double scale,
             final boolean preAffine, final boolean postAffine) throws TransformException
@@ -104,7 +104,7 @@ public final strictfp class ExponentialTransform1DTest extends MathTransformTest
             expected[i] = value;
         }
         verifyTransform(values, expected);
-        verifyDerivative(2.5); // Test at a hard-coded point.
+        verifyDerivative(2.5);                                      // Test at a hard-coded point.
     }
 
     /**

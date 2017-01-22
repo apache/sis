@@ -541,7 +541,7 @@ public class MetadataSource implements AutoCloseable {
      *         of the expected package.
      */
     private Map<String,Object> asMap(final Object metadata) throws ClassCastException {
-        return standard.asValueMap(metadata, KeyNamePolicy.UML_IDENTIFIER, ValueExistencePolicy.ALL);
+        return standard.asValueMap(metadata, null, KeyNamePolicy.UML_IDENTIFIER, ValueExistencePolicy.ALL);
     }
 
     /**
@@ -740,7 +740,7 @@ public class MetadataSource implements AutoCloseable {
      *
      * @param  <T>         the parameterized type of the {@code type} argument.
      * @param  type        the interface to implement (e.g. {@link org.opengis.metadata.citation.Citation}),
-     *                     or the {@link CodeList} value.
+     *                     or the {@link CodeList} type.
      * @param  identifier  the identifier of the record for the metadata entity to be created.
      *                     This is usually the primary key of the record to search for.
      * @return an implementation of the required interface, or the code list element.

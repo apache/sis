@@ -21,6 +21,8 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
 
 
@@ -37,6 +39,7 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  * @version 0.8
  * @module
  */
+@Capabilities(Capability.READ)
 public class LandsatStoreProvider extends DataStoreProvider {
     /**
      * The object to use for verifying if the first keyword is the expected one.
@@ -123,6 +126,16 @@ public class LandsatStoreProvider extends DataStoreProvider {
     }
 
     /**
+     * Returns a generic name for this data store, used mostly in warnings or error messages.
+     *
+     * @return a short name or abbreviation for the data format.
+     */
+    @Override
+    public String getShortName() {
+        return "Landsat";
+    }
+
+    /**
      * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by {@link LandsatStore}.
      * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed, only
      * that there appears to be a reasonable chance of success based on a brief inspection of the storage header.
@@ -144,6 +157,6 @@ public class LandsatStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new LandsatStore(connector);
+        return new LandsatStore(this, connector);
     }
 }

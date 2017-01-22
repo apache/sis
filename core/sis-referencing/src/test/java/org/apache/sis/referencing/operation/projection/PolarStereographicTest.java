@@ -49,8 +49,8 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
     /**
      * Creates a new instance of {@link PolarStereographic}.
      *
-     * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
-     * @param latitudeOfOrigin The latitude of origin, in decimal degrees.
+     * @param  ellipse           {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     * @param  latitudeOfOrigin  the latitude of origin, in decimal degrees.
      */
     private void createNormalizedProjection(final MapProjection method) {
         final Parameters parameters = parameters(method, false);

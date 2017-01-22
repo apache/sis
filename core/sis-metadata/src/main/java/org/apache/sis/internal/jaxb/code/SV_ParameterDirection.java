@@ -48,8 +48,8 @@ public final class SV_ParameterDirection extends EnumAdapter<SV_ParameterDirecti
     /**
      * Returns the wrapped value.
      *
-     * @param wrapper The wrapper.
-     * @return The wrapped value.
+     * @param  wrapper  the wrapper.
+     * @return the wrapped value.
      */
     @Override
     public final ParameterDirection unmarshal(final SV_ParameterDirection wrapper) {
@@ -59,8 +59,8 @@ public final class SV_ParameterDirection extends EnumAdapter<SV_ParameterDirecti
     /**
      * Wraps the given value.
      *
-     * @param  e The value to wrap.
-     * @return The wrapped value.
+     * @param  e  the value to wrap.
+     * @return the wrapped value.
      */
     @Override
     public final SV_ParameterDirection marshal(final ParameterDirection e) {

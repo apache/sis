@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.util.InternationalString;
@@ -36,9 +37,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.system.Modules;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -90,7 +88,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * The string specified to this constructor is the one that will be returned if no localized
      * string is found for the {@code Locale} argument in a call to {@link #toString(Locale)}.
      *
-     * @param string The string in no specific locale, or {@code null} if none.
+     * @param string  the string in no specific locale, or {@code null} if none.
      */
     public DefaultInternationalString(final String string) {
         if (string != null) {
@@ -105,7 +103,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * The content of the given map is copied, so changes to that map after construction
      * will not be reflected into this international string.
      *
-     * @param strings The strings in various locales, or {@code null} if none.
+     * @param strings  the strings in various locales, or {@code null} if none.
      *
      * @see Types#toInternationalString(Map, String)
      */
@@ -132,8 +130,8 @@ public class DefaultInternationalString extends AbstractInternationalString impl
     /**
      * Adds a string for the given locale.
      *
-     * @param  locale The locale for the {@code string} value.
-     * @param  string The localized string.
+     * @param  locale  the locale for the {@code string} value.
+     * @param  string  the localized string.
      * @throws IllegalArgumentException if a different string value was already set for the given locale.
      */
     public synchronized void add(final Locale locale, final String string) throws IllegalArgumentException {
@@ -143,7 +141,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
             case 0: {
                 localeMap = Collections.singletonMap(locale, string);
                 localeSet = null;
-                defaultValue = null; // Will be recomputed when first needed.
+                defaultValue = null;                                // Will be recomputed when first needed.
                 return;
             }
             case 1: {
@@ -162,15 +160,15 @@ public class DefaultInternationalString extends AbstractInternationalString impl
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.ValueAlreadyDefined_1, locale));
         }
-        defaultValue = null; // Will be recomputed when first needed.
+        defaultValue = null;                                        // Will be recomputed when first needed.
     }
 
     /**
      * Adds the given character sequence. If the given sequence is an other {@link InternationalString} instance,
      * then only the string for the given locale is added. This method is for {@link Types} internal usage only.
      *
-     * @param  locale The locale for the {@code string} value.
-     * @param  string The character sequence to add.
+     * @param  locale  the locale for the {@code string} value.
+     * @param  string  the character sequence to add.
      * @throws IllegalArgumentException if a different string value was already set for the given locale.
      */
     final void add(final Locale locale, final CharSequence string) throws IllegalArgumentException {
@@ -194,7 +192,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
     /**
      * Returns the set of locales defined in this international string.
      *
-     * @return The set of locales.
+     * @return the set of locales.
      *
      * @todo Current implementation does not return a synchronized set. We should synchronize
      *       on the same lock than the one used for accessing the internal locale map.
@@ -218,8 +216,8 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * {@linkplain Locale#getCountry() country} part. If none are found, then this method returns
      * {@code null}.
      *
-     * @param  locale The locale to look for, or {@code null}.
-     * @return The string in the specified locale, or {@code null} if none was found.
+     * @param  locale  the locale to look for, or {@code null}.
+     * @return the string in the specified locale, or {@code null} if none was found.
      */
     private String getString(Locale locale) {
         while (locale != null) {
@@ -277,8 +275,8 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * {@code Locale.ROOT}. However subclasses are free to use a different fallback. Client
      * code are encouraged to specify only non-null values for more determinist behavior.
      *
-     * @param  locale The desired locale for the string to be returned.
-     * @return The string in the given locale if available, or in an
+     * @param  locale  the desired locale for the string to be returned.
+     * @return the string in the given locale if available, or in an
      *         implementation-dependent fallback locale otherwise.
      */
     @Override
@@ -302,8 +300,8 @@ public class DefaultInternationalString extends AbstractInternationalString impl
              */
             text = localeMap.get(Locale.ROOT);
             if (text == null) {
-                Locale fallback = Locale.US; // The fallback language for "unlocalized" string.
-                if (fallback != locale) { // Avoid requesting the same locale twice (optimization).
+                Locale fallback = Locale.US;        // The fallback language for "unlocalized" string.
+                if (fallback != locale) {           // Avoid requesting the same locale twice (optimization).
                     text = getString(fallback);
                     if (text != null) {
                         return text;
@@ -316,8 +314,10 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                         return text;
                     }
                 }
-                // Every else failed; pickup a random string.
-                // This behavior may change in future versions.
+                /*
+                 * Every else failed; pickup a random string.
+                 * This behavior may change in future versions.
+                 */
                 final Iterator<String> it = localeMap.values().iterator();
                 if (it.hasNext()) {
                     text = it.next();
@@ -350,9 +350,8 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *   <li>Otherwise, this method returns {@code false}.</li>
      * </ul>
      *
-     * @param  candidate The object which may contains this international string.
-     * @return {@code true} if the given object contains all localized strings found in this
-     *         international string.
+     * @param  candidate  the object which may contains this international string.
+     * @return {@code true} if the given object contains all localized strings found in this international string.
      */
     public synchronized boolean isSubsetOf(final Object candidate) {
         if (candidate instanceof InternationalString) {
@@ -383,7 +382,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
     /**
      * Compares this international string with the specified object for equality.
      *
-     * @param object The object to compare with this international string.
+     * @param  object  the object to compare with this international string.
      * @return {@code true} if the given object is equal to this string.
      */
     @Override
@@ -398,7 +397,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
     /**
      * Returns a hash code value for this international text.
      *
-     * @return A hash code value for this international text.
+     * @return a hash code value for this international text.
      */
     @Override
     public synchronized int hashCode() {
@@ -408,9 +407,9 @@ public class DefaultInternationalString extends AbstractInternationalString impl
     /**
      * Canonicalize the locales after deserialization.
      *
-     * @param  in The input stream from which to deserialize an international string.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize an international string.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
@@ -418,7 +417,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
         if (size == 0) {
             return;
         }
-        @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
+        @SuppressWarnings({"unchecked","rawtypes"})                         // Generic array creation.
         Map.Entry<Locale,String>[] entries = new Map.Entry[size];
         entries = localeMap.entrySet().toArray(entries);
         if (size == 1) {

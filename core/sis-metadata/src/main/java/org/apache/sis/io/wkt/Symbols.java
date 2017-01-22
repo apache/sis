@@ -366,7 +366,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Returns the number of paired quotes. For example if the WKT parser accepts both the
      * {@code "…"} and {@code “…”} quote pairs, then this method returns 2.
      *
-     * @return The number of quote pairs.
+     * @return the number of quote pairs.
      *
      * @see #getOpeningQuote(int)
      * @see #getClosingQuote(int)
@@ -740,6 +740,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * This method also opportunistically recompute the {@link #quote} field if no replacement is done.
      *
      * @return the object to use after deserialization.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
     final Object readResolve() throws ObjectStreamException {
         if (isImmutable) {

@@ -36,7 +36,7 @@ public final strictfp class HelpCommandTest extends TestCase {
     /**
      * Tests the sub-command without option.
      *
-     * @throws InvalidOptionException Should never happen.
+     * @throws InvalidOptionException should never happen.
      */
     @Test
     public void testDefault() throws InvalidOptionException {
@@ -56,7 +56,7 @@ public final strictfp class HelpCommandTest extends TestCase {
      * Tests the sub-command with the {@code --help} option.
      * Shall contain only a subset of {@link #testDefault()}.
      *
-     * @throws InvalidOptionException Should never happen.
+     * @throws InvalidOptionException should never happen.
      */
     @Test
     public void testHelp() throws InvalidOptionException {
@@ -75,7 +75,7 @@ public final strictfp class HelpCommandTest extends TestCase {
     /**
      * Tests the sub-command with the {@code --locale en} option.
      *
-     * @throws InvalidOptionException Should never happen.
+     * @throws InvalidOptionException should never happen.
      */
     @Test
     public void testEnglishLocale() throws InvalidOptionException {
@@ -89,7 +89,7 @@ public final strictfp class HelpCommandTest extends TestCase {
     /**
      * Tests the sub-command with the {@code --locale fr} option.
      *
-     * @throws InvalidOptionException Should never happen.
+     * @throws InvalidOptionException should never happen.
      */
     @Test
     public void testFrenchLocale() throws InvalidOptionException {

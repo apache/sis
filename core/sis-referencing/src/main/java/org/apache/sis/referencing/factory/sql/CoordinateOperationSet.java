@@ -55,8 +55,8 @@ final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperati
     /**
      * Adds the specified authority code.
      *
-     * @param code The code for the {@link CoordinateOperation} to add.
-     * @param crs  The code for the CRS to create instead of the operation, or {@code null} if none.
+     * @param  code  the code for the {@link CoordinateOperation} to add.
+     * @param  crs   the code for the CRS to create instead of the operation, or {@code null} if none.
      */
     final void addAuthorityCode(final String code, final Integer crs) {
         if (crs != null) {

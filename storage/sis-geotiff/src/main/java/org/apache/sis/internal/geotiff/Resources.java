@@ -61,98 +61,113 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * TIFF file “{0}” has circular references in its chain of images.
+         */
+        public static final short CircularImageReference_1 = 1;
+
+        /**
          * No value specified for the “{0}” TIFF tag. Computed the {1} value from other tags.
          */
-        public static final short ComputedValueForAttribute_2 = 0;
+        public static final short ComputedValueForAttribute_2 = 2;
 
         /**
          * Apache SIS implementation requires that all “{0}” elements have the same value, but the
          * element found in “{1}” are {2}.
          */
-        public static final short ConstantValueRequired_3 = 1;
+        public static final short ConstantValueRequired_3 = 3;
 
         /**
          * No value specified for the “{0}” TIFF tag. The {1} default value will be used.
          */
-        public static final short DefaultValueForAttribute_2 = 2;
+        public static final short DefaultValueForAttribute_2 = 4;
 
         /**
          * An ordered dither or halftone technique has been applied to the image data. The dithering or
          * halftoning matrix size is {0}×{1}.
          */
-        public static final short DitheringOrHalftoningApplied_2 = 3;
+        public static final short DitheringOrHalftoningApplied_2 = 5;
 
         /**
-         * The “{0}” GeoTIFF key has been ignored.
+         * The following GeoTIFF keys have been ignored: {0}
          */
-        public static final short IgnoredGeoKey_1 = 16;
+        public static final short IgnoredGeoKeys_1 = 6;
 
         /**
          * The “{0}” TIFF tag has been ignored.
          */
-        public static final short IgnoredTag_1 = 4;
+        public static final short IgnoredTag_1 = 7;
 
         /**
          * TIFF image “{0}” shall be either tiled or organized into strips.
          */
-        public static final short InconsistentTileStrip_1 = 5;
+        public static final short InconsistentTileStrip_1 = 8;
 
         /**
          * “{1}” is not a valid value for the “{0}” GeoTIFF key.
          */
-        public static final short InvalidGeoValue_2 = 12;
+        public static final short InvalidGeoValue_2 = 9;
 
         /**
          * TIFF tag “{0}” shall contain at least {1} values but found only {2}.
          */
-        public static final short ListTooShort_3 = 14;
+        public static final short ListTooShort_3 = 10;
 
         /**
          * TIFF tags “{0}” and “{1}” have values of different lengths. Found “{2}” and “{3}” elements
          * respectively.
          */
-        public static final short MismatchedLength_4 = 6;
+        public static final short MismatchedLength_4 = 11;
 
         /**
          * No value has been found for the “{0}” GeoTIFF key.
          */
-        public static final short MissingGeoValue_1 = 9;
+        public static final short MissingGeoValue_1 = 12;
 
         /**
          * Can not read TIFF image from “{0}” because the “{1}” tag is missing.
          */
-        public static final short MissingValue_2 = 7;
+        public static final short MissingValue_2 = 13;
 
         /**
-         * The file defines “{2}” with a value of {3}{4}, but that value should be {1}{4} for
-         * consistency with {0}.
+         * The file defines “{2}” with value {3}{4}, but that value should be {1}{4} according parent
+         * definition ({0}).
          */
-        public static final short NotTheEpsgValue_5 = 17;
+        public static final short NotTheEpsgValue_5 = 14;
 
         /**
          * A randomized process such as error diffusion has been applied to the image data.
          */
-        public static final short RandomizedProcessApplied = 8;
+        public static final short RandomizedProcessApplied = 15;
 
         /**
          * A single value was expected for the “{0}” key but {1} values have been found.
          */
-        public static final short UnexpectedListOfValues_2 = 15;
+        public static final short UnexpectedListOfValues_2 = 16;
+
+        /**
+         * The “{1}” parameter was not expected for the “{0}” projection method.
+         */
+        public static final short UnexpectedParameter_2 = 17;
 
         /**
          * Found {2} tiles or strips in the “{0}” file while {1} were expected.
          */
-        public static final short UnexpectedTileCount_3 = 10;
+        public static final short UnexpectedTileCount_3 = 18;
 
         /**
          * Coordinate system kind {0} is unsupported.
          */
-        public static final short UnsupportedCoordinateSystemKind_1 = 11;
+        public static final short UnsupportedCoordinateSystemKind_1 = 19;
 
         /**
          * Version {0} of GeoTIFF key directory is not supported.
          */
-        public static final short UnsupportedGeoKeyDirectory_1 = 13;
+        public static final short UnsupportedGeoKeyDirectory_1 = 20;
+
+        /**
+         * Unsupported storage location for the “{0}” GeoTIFF value.
+         */
+        public static final short UnsupportedGeoKeyStorage_1 = 21;
     }
 
     /**

@@ -24,7 +24,7 @@ import org.opengis.filter.expression.Literal;
 /**
  * Immutable literal expression.
  *
- * @param <T> literal value type
+ * @param  <T>  literal value type
  *
  * @author  Johann Sorel (Geomatys)
  * @since   0.8

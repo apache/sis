@@ -43,6 +43,7 @@ import org.apache.sis.util.iso.Types;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Series_Type", propOrder = {
     "name",
     "issueIdentification",
@@ -79,7 +80,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Constructs a series with the specified name.
      *
-     * @param name The name of the series of which the dataset is a part, or {@code null}.
+     * @param  name  the name of the series of which the dataset is a part, or {@code null}.
      */
     public DefaultSeries(final CharSequence name) {
         this.name = Types.toInternationalString(name);
@@ -90,7 +91,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Series)
      */
@@ -117,8 +118,8 @@ public class DefaultSeries extends ISOMetadata implements Series {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultSeries castOrCopy(final Series object) {
@@ -131,7 +132,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Returns the name of the series, or aggregate dataset, of which the dataset is a part.
      *
-     * @return The name of the series or aggregate dataset, or {@code null}.
+     * @return the name of the series or aggregate dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "name")
@@ -142,7 +143,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Sets the name of the series, or aggregate dataset, of which the dataset is a part.
      *
-     * @param newValue The new name, or {@code null} if none.
+     * @param  newValue  the new name, or {@code null} if none.
      */
     public void setName(final InternationalString newValue) {
         checkWritePermission();
@@ -152,7 +153,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Returns information identifying the issue of the series.
      *
-     * @return Information identifying the issue of the series, or {@code null}.
+     * @return information identifying the issue of the series, or {@code null}.
      */
     @Override
     @XmlElement(name = "issueIdentification")
@@ -163,7 +164,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Sets information identifying the issue of the series.
      *
-     * @param newValue The new issue identification, or {@code null} if none.
+     * @param  newValue  the new issue identification, or {@code null} if none.
      */
     public void setIssueIdentification(final InternationalString newValue) {
         checkWritePermission();
@@ -173,7 +174,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Returns details on which pages of the publication the article was published.
      *
-     * @return Details on which pages of the publication the article was published, or {@code null}.
+     * @return details on which pages of the publication the article was published, or {@code null}.
      */
     @Override
     @XmlElement(name = "page")
@@ -184,7 +185,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Sets details on which pages of the publication the article was published.
      *
-     * @param newValue The new page, or {@code null} if none.
+     * @param  newValue  the new page, or {@code null} if none.
      */
     public void setPage(final InternationalString newValue) {
         checkWritePermission();

@@ -24,6 +24,8 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.util.Version;
 
@@ -36,7 +38,8 @@ import org.apache.sis.util.Version;
  * @version 0.8
  * @module
  */
-public class StoreProvider extends DataStoreProvider {
+@Capabilities(Capability.READ)
+public final class StoreProvider extends DataStoreProvider {
     /**
      * The {@value} MIME type.
      */
@@ -143,6 +146,16 @@ public class StoreProvider extends DataStoreProvider {
     }
 
     /**
+     * Returns a generic name for this data store, used mostly in warnings or error messages.
+     *
+     * @return a short name or abbreviation for the data format.
+     */
+    @Override
+    public String getShortName() {
+        return "WKT";
+    }
+
+    /**
      * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by WKT {@link Store}.
      * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the storage
@@ -165,6 +178,6 @@ public class StoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new Store(connector);
+        return new Store(this, connector);
     }
 }

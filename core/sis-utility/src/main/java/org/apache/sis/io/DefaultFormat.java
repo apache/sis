@@ -42,6 +42,7 @@ import org.apache.sis.internal.util.LocalizedParseException;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.
 final class DefaultFormat extends Format {
     /**
      * For cross-version compatibility.
@@ -115,9 +116,7 @@ final class DefaultFormat extends Format {
         try {
             return valueOf(source);
         } catch (NumberFormatException cause) {
-            ParseException e = new LocalizedParseException(null, type, source, null);
-            e.initCause(cause);
-            throw e;
+            throw new LocalizedParseException(null, type, source, null).initCause(cause);
         }
     }
 

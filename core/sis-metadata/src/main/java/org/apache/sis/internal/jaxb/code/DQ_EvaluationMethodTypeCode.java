@@ -51,7 +51,7 @@ public final class DQ_EvaluationMethodTypeCode
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
     protected DQ_EvaluationMethodTypeCode wrap(final CodeListUID value) {
@@ -61,7 +61,7 @@ public final class DQ_EvaluationMethodTypeCode
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<EvaluationMethodType> getCodeListClass() {
@@ -71,7 +71,7 @@ public final class DQ_EvaluationMethodTypeCode
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "DQ_EvaluationMethodTypeCode")
@@ -82,7 +82,7 @@ public final class DQ_EvaluationMethodTypeCode
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param value The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
         identifier = value;

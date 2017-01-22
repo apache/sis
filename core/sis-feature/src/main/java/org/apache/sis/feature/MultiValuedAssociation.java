@@ -89,7 +89,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
     /**
      * Returns the feature, or {@code null} if none.
      *
-     * @return The feature (may be {@code null}).
+     * @return the feature (may be {@code null}).
      * @throws MultiValuedPropertyException if this association contains more than one value.
      */
     @Override
@@ -106,7 +106,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
      * The returned collection is <cite>live</cite>: changes in the returned collection
      * will be reflected immediately in this {@code Association} instance, and conversely.
      *
-     * @return The features in a <cite>live</cite> collection.
+     * @return the features in a <cite>live</cite> collection.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -117,7 +117,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
     /**
      * Sets the feature.
      *
-     * @param value The new value, or {@code null} for removing all values from this association.
+     * @param  value  the new value, or {@code null} for removing all values from this association.
      */
     @Override
     public void setValue(final Feature value) {
@@ -131,7 +131,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
     /**
      * Sets the feature values. All previous values are replaced by the given collection.
      *
-     * @param newValues The new values.
+     * @param  newValues  the new values.
      */
     @Override
     public void setValues(final Collection<? extends Feature> newValues) {
@@ -151,7 +151,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
      * This implementation returns a <em>shallow</em> copy:
      * the association {@linkplain #getValues() values} are <strong>not</strong> cloned.
      *
-     * @return A clone of this association.
+     * @return a clone of this association.
      * @throws CloneNotSupportedException if this association can not be cloned.
      */
     @Override
@@ -165,7 +165,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
     /**
      * Returns a hash code value for this association.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {

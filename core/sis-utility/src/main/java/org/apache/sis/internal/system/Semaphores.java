@@ -112,7 +112,7 @@ public final class Semaphores {
     /**
      * Clears the given flag.
      *
-     * @param flag  one of {@link #CONVERSION_AND_CRS}, {@link #ENCLOSED_IN_OPERATION} or other constants.
+     * @param  flag  one of {@link #CONVERSION_AND_CRS}, {@link #ENCLOSED_IN_OPERATION} or other constants.
      */
     public static void clear(final byte flag) {
         final Semaphores s = FLAGS.get();

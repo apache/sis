@@ -16,6 +16,7 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Objects;
 import java.util.Formatter;
 import java.util.Formattable;
 import java.util.FormattableFlags;
@@ -26,9 +27,6 @@ import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Numbers;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -79,7 +77,7 @@ import java.util.Objects;
  * and thus inherently thread-safe. Other subclasses may or may not be immutable, at implementation choice.
  * But implementors are encouraged to make sure that all subclasses remain immutable for more predictable behavior.
  *
- * @param <E> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
+ * @param  <E>  the type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)

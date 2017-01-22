@@ -81,7 +81,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
     /**
      * Constructs an initially empty parameter list.
      *
-     * @param descriptor The descriptor for this list.
+     * @param  descriptor  the descriptor for this list.
      */
     ParameterValueList(final ParameterDescriptorGroup descriptor) {
         this.descriptor = descriptor;
@@ -179,8 +179,8 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      * parameter would increase the number past what is allowable by {@code maximumOccurs},
      * then an {@link InvalidParameterCardinalityException} will be thrown.
      *
-     * @param  parameter New parameter to be added to this group.
-     * @return Always {@code true} since this object changes as a result of this call.
+     * @param  parameter  new parameter to be added to this group.
+     * @return always {@code true} since this object changes as a result of this call.
      * @throws IllegalArgumentException if the specified parameter is not allowable by the groups descriptor.
      * @throws InvalidParameterCardinalityException if adding this parameter would result in more parameters
      *         than allowed by {@code maximumOccurs}.
@@ -298,8 +298,8 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      * Removes the value at the specified index, provided that this removal is allowed by the
      * parameter cardinality.
      *
-     * @param  index The index of the value to remove.
-     * @return The value removed at the given index.
+     * @param  index  the index of the value to remove.
+     * @return the value removed at the given index.
      */
     @Override
     public GeneralParameterValue remove(final int index) {
@@ -339,8 +339,8 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
     /**
      * Trims the array to its capacity before to serialize.
      *
-     * @param  out The output stream where to serialize this object.
-     * @throws IOException If an I/O error occurred while writing.
+     * @param  out  the output stream where to serialize this object.
+     * @throws IOException if an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         values = ArraysExt.resize(values, size);

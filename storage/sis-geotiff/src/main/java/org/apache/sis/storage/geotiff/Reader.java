@@ -19,14 +19,17 @@ package org.apache.sis.storage.geotiff;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.text.ParseException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -79,8 +82,19 @@ final class Reader extends GeoTIFF {
     /**
      * Offset (relative to the beginning of the TIFF file) of the next Image File Directory (IFD)
      * to read, or 0 if we have finished to read all of them.
+     *
+     * @see #readNextImageOffset()
      */
     private long nextIFD;
+
+    /**
+     * Offsets of all <cite>Image File Directory</cite> (IFD) that have been read so far.
+     * This field is used only as a protection against infinite recursivity, by preventing
+     * the same offset to appear twice.
+     *
+     * @see #readNextImageOffset()
+     */
+    private final Set<Long> doneIFD;
 
     /**
      * Positions of each <cite>Image File Directory</cite> (IFD) in this file.
@@ -113,7 +127,7 @@ final class Reader extends GeoTIFF {
      * Creates a new GeoTIFF reader which will read data from the given input.
      * The input must be at the beginning of the GeoTIFF file.
      *
-     * @throws IOException if an error occurred while reading bytes from the stream.
+     * @throws IOException if an error occurred while reading first bytes from the stream.
      * @throws DataStoreException if the file is not encoded in the TIFF or BigTIFF format.
      */
     Reader(final GeoTiffStore owner, final ChannelDataInput input) throws IOException, DataStoreException {
@@ -121,14 +135,15 @@ final class Reader extends GeoTIFF {
         this.input    = input;
         this.origin   = input.getStreamPosition();
         this.metadata = new MetadataBuilder();
+        this.doneIFD  = new HashSet<>();
         /*
          * A TIFF file begins with either "II" (0x4949) or "MM" (0x4D4D) characters.
          * Those characters identify the byte order. Note that we do not need to care
          * about the byte order for this flag since the two bytes shall have the same value.
          */
         final short order = input.readShort();
-        final boolean isBigEndian = (order == 0x4D4D);
-        if (isBigEndian || order == 0x4949) {
+        final boolean isBigEndian = (order == BIG_ENDIAN);
+        if (isBigEndian || order == LITTLE_ENDIAN) {
             input.buffer.order(isBigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
             /*
              * Magic number of TIFF file is 42, followed by nothing else.
@@ -139,12 +154,12 @@ final class Reader extends GeoTIFF {
              * but a future BigTIFF version may allow 16 bytes wide pointers.
              */
             switch (input.readShort()) {
-                case 42: {                                          // Magic number of classical format.
+                case CLASSIC: {                                     // Magic number of classical format.
                     intSizeExpansion = 0;
-                    nextIFD = input.readUnsignedInt();
+                    readNextImageOffset();
                     return;
                 }
-                case 43: {                                          // Magic number of BigTIFF format.
+                case BIG_TIFF: {                                    // Magic number of BigTIFF format.
                     final int numBits  = input.readUnsignedShort();
                     final int powerOf2 = Integer.numberOfTrailingZeros(numBits);    // In the [0 … 32] range.
                     if (numBits == (1L << powerOf2) && input.readShort() == 0) {
@@ -155,29 +170,34 @@ final class Reader extends GeoTIFF {
                              * one result in the end, but we did that generic computation anyway for keeping the
                              * code almost ready if the BigTIFF specification adds support for 16 bytes pointer.
                              */
-                            nextIFD = readUnsignedInt();
+                            readNextImageOffset();
                             return;
                         }
                     }
                 }
             }
         }
-        // Do not invoke errors() yet because GeoTiffStore construction may not be finished.
-        throw new DataStoreContentException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
+        // Do not invoke this.errors() yet because GeoTiffStore construction may not be finished. Owner.error() is okay.
+        throw new DataStoreContentException(owner.errors().getString(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
     }
 
     /**
-     * Returns a default message for parsing error.
+     * Sets {@link #nextIFD} to the next offset read from the TIFF file
+     * and makes sure that it will not cause an infinite loop.
      */
-    final String canNotDecode() {
-        return errors().getString(Errors.Keys.CanNotParseFile_2, "TIFF", input.filename);
+    private void readNextImageOffset() throws IOException, DataStoreException {
+        nextIFD = readUnsignedInt();
+        if (!doneIFD.add(nextIFD)) {
+            throw new DataStoreContentException(resources().getString(
+                    Resources.Keys.CircularImageReference_1, input.filename));
+        }
     }
 
     /**
      * Reads the {@code int} or {@code long} value (depending if the file is
      * a standard of big TIFF) at the current {@linkplain #input} position.
      *
-     * @return The next pointer value.
+     * @return the next pointer value.
      */
     private long readUnsignedInt() throws IOException, DataStoreException {
         if (intSizeExpansion == 0) {
@@ -187,14 +207,14 @@ final class Reader extends GeoTIFF {
         if (pointer >= 0) {
             return pointer;
         }
-        throw new DataStoreContentException(canNotDecode());
+        throw new DataStoreContentException(owner.getLocale(), "TIFF", input.filename, null);
     }
 
     /**
      * Reads the {@code short} or {@code long} value (depending if the file is
      * standard of big TIFF) at the current {@linkplain #input} position.
      *
-     * @return The next directory entry value.
+     * @return the next directory entry value.
      */
     private long readUnsignedShort() throws IOException, DataStoreException {
         if (intSizeExpansion == 0) {
@@ -204,7 +224,7 @@ final class Reader extends GeoTIFF {
         if (entry >= 0) {
             return entry;
         }
-        throw new DataStoreContentException(canNotDecode());
+        throw new DataStoreContentException(owner.getLocale(), "TIFF", input.filename, null);
     }
 
     /**
@@ -276,7 +296,7 @@ final class Reader extends GeoTIFF {
                 }
             }
             imageFileDirectories.add(dir);
-            nextIFD = readUnsignedInt();                    // Zero if the IFD that we just read was the last one.
+            readNextImageOffset();                          // Zero if the IFD that we just read was the last one.
         }
         /*
          * At this point we got the requested IFD. But maybe some deferred entries need to be read.

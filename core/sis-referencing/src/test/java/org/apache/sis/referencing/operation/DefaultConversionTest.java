@@ -76,9 +76,9 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * but with the prime meridian optionally set to Greenwich. Such CRS is not in real usage, but this is convenient
      * for testing a conversion consisting of only a longitude rotation, which is a very simple operation easy to test.
      *
-     * @param isSource {@code true} if creating the source CRS, or {@code false} if creating the target CRS.
-     * @param cs {@link HardCodedCS#GEODETIC_2D}, {@link HardCodedCS#GEODETIC_φλ} or other compatible coordinate system.
-     * @param useGreenwich {@code true} for using Greenwich prime meridian, or {@code false} for staying on the Paris one.
+     * @param  isSource      {@code true} if creating the source CRS, or {@code false} if creating the target CRS.
+     * @param  cs            {@link HardCodedCS#GEODETIC_2D}, {@link HardCodedCS#GEODETIC_φλ} or other compatible coordinate system.
+     * @param  useGreenwich  {@code true} for using Greenwich prime meridian, or {@code false} for staying on the Paris one.
      *
      * @see HardCodedCRS#NTF
      */
@@ -110,9 +110,9 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * change the prime meridian). However we handle them as conversions for testing purpose only, because the
      * longitude rotation is a very simple operation easy to test.</p>
      *
-     * @param  useGreenwich {@code true} for using Greenwich prime meridian in the {@code targetCRS},
-     *         or {@code false} for staying on the Paris one.
-     * @return A pseudo-conversion performing a longitude rotation.
+     * @param  useGreenwich  {@code true} for using Greenwich prime meridian in the {@code targetCRS},
+     *                       or {@code false} for staying on the Paris one.
+     * @return a pseudo-conversion performing a longitude rotation.
      */
     public static DefaultConversion createLongitudeRotation(final boolean useGreenwich) {
         return createLongitudeRotation(HardCodedCRS.NTF_NORMALIZED_AXES,
@@ -125,9 +125,9 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * at least conceptually. See {@link #createLongitudeRotation(boolean)} for an explanation about why
      * this is not really a valid conversion.
      *
-     * @param sourceCRS A CRS using the Paris prime meridian.
-     * @param targetCRS A CRS using the Greenwich prime meridian.
-     * @param interpolationCRS A dummy interpolation CRS, or {@code null} if none.
+     * @param  sourceCRS         a CRS using the Paris prime meridian.
+     * @param  targetCRS         a CRS using the Greenwich prime meridian.
+     * @param  interpolationCRS  a dummy interpolation CRS, or {@code null} if none.
      */
     private static DefaultConversion createLongitudeRotation(final GeographicCRS sourceCRS,
             final GeographicCRS targetCRS, final TemporalCRS interpolationCRS)
@@ -148,8 +148,8 @@ public final strictfp class DefaultConversionTest extends TestCase {
         final ParameterValueGroup pg = method.getParameters().createValue();
         pg.parameter("Longitude offset").setValue(OFFSET);
         final Matrix rotation = Matrices.createDiagonal(
-                targetDim + interpDim + 1,      // Number of rows.
-                sourceDim + interpDim + 1);     // Number of columns.
+                targetDim + interpDim + 1,                                  // Number of rows.
+                sourceDim + interpDim + 1);                                 // Number of columns.
         rotation.setElement(interpDim, interpDim + sourceDim, OFFSET);
         /*
          * In theory we should not need to provide the parameters explicitly to the constructor since
@@ -218,7 +218,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * <div class="note"><b>Note:</b>
      * By contrast, {@link #testSpecialize()} will test swapping axis order in the <em>target</em> CRS.</div>
      *
-     * @throws FactoryException Should not happen in this test.
+     * @throws FactoryException if an error occurred while creating the conversion.
      */
     @Test
     @DependsOnMethod("testConstruction")
@@ -257,7 +257,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * <div class="note"><b>Note:</b>
      * By contrast, {@link #testDefiningConversion()} tested swapping axis order in the <em>source</em> CRS.</div>
      *
-     * @throws FactoryException Should not happen in this test.
+     * @throws FactoryException if an error occurred while creating the conversion.
      */
     @Test
     @DependsOnMethod("testDefiningConversion")
@@ -300,7 +300,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * staying to a strict interpretation like "the meridian passing through the main telescope",
      * that meridian would indeed more with time.</div>
      *
-     * @throws FactoryException Should not happen in this test.
+     * @throws FactoryException if an error occurred while creating the conversion.
      */
     @Test
     @DependsOnMethod("testDefiningConversion")
@@ -329,7 +329,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
     /**
      * Ensures that {@link DefaultConversion#specialize DefaultConversion.specialize(…)} verifies the datum.
      *
-     * @throws FactoryException Should not happen in this test.
+     * @throws FactoryException if an error occurred while creating the conversion.
      */
     @Test
     public void testDatumCheck() throws FactoryException {

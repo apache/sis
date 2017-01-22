@@ -42,6 +42,7 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.Containers;
@@ -149,11 +150,11 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * {@code DefaultCoordinateOperationFactory} will fallback on the map given to this constructor
      * for any property not present in the map provided to a {@code createFoo(Map<String,?>, …)} method.
      *
-     * @param properties the default properties, or {@code null} if none.
-     * @param factory the factory to use for creating
-     *        {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transforms},
-     *        or {@code null} for the default factory.
+     * @param properties  the default properties, or {@code null} if none.
+     * @param factory     the factory to use for creating {@linkplain AbstractMathTransform math transforms},
+     *                    or {@code null} for the default factory.
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public DefaultCoordinateOperationFactory(Map<String,?> properties, final MathTransformFactory factory) {
         if (properties == null || properties.isEmpty()) {
             properties = Collections.emptyMap();
@@ -196,8 +197,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform)
      * coordinate operation constructor}.</p>
      *
-     * @param  properties The user-supplied properties.
-     * @return The union of the given properties with the default properties.
+     * @param  properties  the user-supplied properties.
+     * @return the union of the given properties with the default properties.
      */
     protected Map<String,?> complete(final Map<String,?> properties) {
         ArgumentChecks.ensureNonNull("properties", properties);
@@ -230,7 +231,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * Returns the underlying math transform factory. This factory is used for constructing {@link MathTransform}
      * dependencies for all {@linkplain AbstractCoordinateOperation coordinate operations} instances.
      *
-     * @return The underlying math transform factory.
+     * @return the underlying math transform factory.
      */
     final MathTransformFactory getMathTransformFactory() {
         MathTransformFactory factory = mtFactory;
@@ -263,8 +264,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * non-{@linkplain org.apache.sis.util.Deprecable#isDeprecated() deprecated} matching method is returned.
      * If all matching methods are deprecated, the first one is returned.</p>
      *
-     * @param  name The name of the operation method to fetch.
-     * @return The operation method of the given name.
+     * @param  name  the name of the operation method to fetch.
+     * @return the operation method of the given name.
      * @throws FactoryException if the requested operation method can not be fetched.
      *
      * @see DefaultMathTransformFactory#getOperationMethod(String)
@@ -324,11 +325,11 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *   </tr>
      * </table>
      *
-     * @param  properties       Set of properties. Shall contain at least {@code "name"}.
-     * @param  sourceDimensions Number of dimensions in the source CRS of this operation method, or {@code null}.
-     * @param  targetDimensions Number of dimensions in the target CRS of this operation method, or {@code null}.
-     * @param  parameters       Description of parameters expected by this operation.
-     * @return The operation method created from the given arguments.
+     * @param  properties        set of properties. Shall contain at least {@code "name"}.
+     * @param  sourceDimensions  number of dimensions in the source CRS of this operation method, or {@code null}.
+     * @param  targetDimensions  number of dimensions in the target CRS of this operation method, or {@code null}.
+     * @param  parameters        description of parameters expected by this operation.
+     * @return the operation method created from the given arguments.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultOperationMethod#DefaultOperationMethod(Map, Integer, Integer, ParameterDescriptorGroup)
@@ -384,10 +385,10 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *   </tr>
      * </table>
      *
-     * @param  properties The properties to be given to the identified object.
-     * @param  method     The operation method.
-     * @param  parameters The parameter values.
-     * @return The defining conversion created from the given arguments.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  method      the operation method.
+     * @param  parameters  the parameter values.
+     * @return the defining conversion created from the given arguments.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultConversion#DefaultConversion(Map, OperationMethod, MathTransform, ParameterValueGroup)
@@ -414,8 +415,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * target CRS exists in the source CRS, but not necessarily in the same order.
      * The target CRS may have less datum than the source CRS.
      *
-     * @param sourceCRS The target CRS.
-     * @param targetCRS The source CRS.
+     * @param  sourceCRS  the target CRS.
+     * @param  targetCRS  the source CRS.
      * @return {@code true} if all datum in the {@code targetCRS} exists in the {@code sourceCRS}.
      */
     private static boolean isConversion(final CoordinateReferenceSystem sourceCRS,
@@ -432,7 +433,7 @@ next:   for (int i=components.size(); --i >= 0;) {
             final Datum d = components.get(i).getDatum();
             for (int j=n; --j >= 0;) {
                 if (Utilities.equalsIgnoreMetadata(d, datum[j])) {
-                    System.arraycopy(datum, j+1, datum, j, --n - j);  // Remove the datum from the list.
+                    System.arraycopy(datum, j+1, datum, j, --n - j);    // Remove the datum from the list.
                     continue next;
                 }
             }
@@ -477,13 +478,13 @@ next:   for (int i=components.size(); --i >= 0;) {
      *   </tr>
      * </table>
      *
-     * @param  properties The properties to be given to the identified object.
-     * @param  sourceCRS  The source CRS.
-     * @param  targetCRS  The target CRS.
-     * @param  interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
-     * @param  method     The coordinate operation method (mandatory in all cases).
-     * @param  transform  Transform from positions in the source CRS to positions in the target CRS.
-     * @return The coordinate operation created from the given arguments.
+     * @param  properties        the properties to be given to the identified object.
+     * @param  sourceCRS         the source CRS.
+     * @param  targetCRS         the target CRS.
+     * @param  interpolationCRS  the CRS of additional coordinates needed for the operation, or {@code null} if none.
+     * @param  method            the coordinate operation method (mandatory in all cases).
+     * @param  transform         transform from positions in the source CRS to positions in the target CRS.
+     * @return the coordinate operation created from the given arguments.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultOperationMethod#getOperationType()
@@ -637,9 +638,9 @@ next:   for (int i=components.size(); --i >= 0;) {
      *   </tr>
      * </table>
      *
-     * @param  properties The properties to be given to the identified object.
-     * @param  operations The sequence of operations. Shall contains at least two operations.
-     * @return The concatenated operation created from the given arguments.
+     * @param  properties  the properties to be given to the identified object.
+     * @param  operations  the sequence of operations. Shall contains at least two operations.
+     * @return the concatenated operation created from the given arguments.
      * @throws FactoryException if the object creation failed.
      */
     @Override

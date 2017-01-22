@@ -78,7 +78,7 @@ public final class JavaMaker extends AbstractMojo {
      * The output directory shall already exists. It should be the case if all
      * sources files have been compiled before this method is invoked.
      *
-     * @return The number of files copied.
+     * @return the number of files copied.
      */
     private static int copyClasses(final File sourceDirectory,
                                    final File outputDirectory) throws IOException

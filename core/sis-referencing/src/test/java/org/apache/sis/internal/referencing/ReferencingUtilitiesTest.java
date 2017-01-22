@@ -58,9 +58,9 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
     /**
      * Asserts that normalization of the given CRS produces {@link HardCodedCRS#WGS84} (ignoring metadata).
      *
-     * @param message The message to show in case of failure.
-     * @param createExpected {@code true} if we expect normalization to create a new CRS object.
-     * @param crs The CRS for which to test normalization.
+     * @param  message         the message to show in case of failure.
+     * @param  createExpected  {@code true} if we expect normalization to create a new CRS object.
+     * @param  crs             the CRS for which to test normalization.
      */
     private static void assertNormalizedEqualsWGS84(final String message, final boolean createExpected,
             final CoordinateReferenceSystem crs)

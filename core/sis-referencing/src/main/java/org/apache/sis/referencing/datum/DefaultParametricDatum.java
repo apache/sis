@@ -119,7 +119,7 @@ public class DefaultParametricDatum extends AbstractDatum implements ParametricD
      *   </tr>
      * </table>
      *
-     * @param properties The properties to be given to the identified object.
+     * @param  properties  the properties to be given to the identified object.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createParametricDatum(Map)
      */
@@ -134,7 +134,7 @@ public class DefaultParametricDatum extends AbstractDatum implements ParametricD
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param datum The datum to copy.
+     * @param  datum  the datum to copy.
      *
      * @see #castOrCopy(ParametricDatum)
      */
@@ -148,8 +148,8 @@ public class DefaultParametricDatum extends AbstractDatum implements ParametricD
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultParametricDatum castOrCopy(final ParametricDatum object) {

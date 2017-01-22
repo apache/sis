@@ -68,9 +68,9 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(crs);
         switch (crs.getCoordinateSystem().getDimension()) {
             default: throw new AssertionError();
-            case 4: envelope.setRange(3, 51000, 52000); // Fall through
-            case 3: envelope.setRange(2, -10, 70); // Fall through
-            case 2: envelope.setRange(1, -20, 30); // Fall through
+            case 4: envelope.setRange(3, 51000, 52000);                 // Fall through
+            case 3: envelope.setRange(2, -10, 70);                      // Fall through
+            case 2: envelope.setRange(1, -20, 30);                      // Fall through
             case 1: envelope.setRange(0, -40, 60);
             case 0: break;
         }

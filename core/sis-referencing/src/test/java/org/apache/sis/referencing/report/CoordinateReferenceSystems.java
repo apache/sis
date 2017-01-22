@@ -471,8 +471,8 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      * Generates the HTML report.
      *
      * @param  args Ignored.
-     * @throws FactoryException If an error occurred while fetching the CRS.
-     * @throws IOException If an error occurred while writing the HTML file.
+     * @throws FactoryException if an error occurred while fetching the CRS.
+     * @throws IOException if an error occurred while writing the HTML file.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void main(final String[] args) throws FactoryException, IOException {
@@ -493,7 +493,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     /**
      * Returns the current Apache SIS version, with the {@code -SNAPSHOT} trailing part omitted.
      *
-     * @return The current Apache SIS version.
+     * @return the current Apache SIS version.
      */
     private static String getVersion() {
         String version = Version.SIS.toString();
@@ -611,9 +611,9 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      * {@link org.opengis.test.report.AuthorityCodesReport.Row} attribute values created
      * by GeoAPI.
      *
-     * @param  code    The authority code of the created object.
-     * @param  object  The object created from the given authority code.
-     * @return The created row, or {@code null} if the row should be ignored.
+     * @param  code    the authority code of the created object.
+     * @param  object  the object created from the given authority code.
+     * @return the created row, or {@code null} if the row should be ignored.
      */
     @Override
     protected Row createRow(final String code, final IdentifiedObject object) {
@@ -670,9 +670,9 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      * {@link org.opengis.test.report.AuthorityCodesReport.Row} attribute values
      * created by GeoAPI.
      *
-     * @param  code      The authority code of the object to create.
-     * @param  exception The exception that occurred while creating the identified object.
-     * @return The created row, or {@code null} if the row should be ignored.
+     * @param  code       the authority code of the object to create.
+     * @param  exception  the exception that occurred while creating the identified object.
+     * @return the created row, or {@code null} if the row should be ignored.
      */
     @Override
     protected Row createRow(final String code, final FactoryException exception) {
@@ -689,7 +689,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
             row.remark = "Projected";
             ((ByName) row).setup(CommonCRS.WGS84.datum(), unusedDatumMapping);
         } else {
-            row.remark = exception.getMessage();
+            row.remark = exception.getLocalizedMessage();
             ((ByName) row).setup(null, unusedDatumMapping);
         }
         return row;
@@ -698,7 +698,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     /**
      * Invoked by {@link AuthorityCodesReport} for creating a new row instance.
      *
-     * @return The new row instance.
+     * @return the new row instance.
      */
     @Override
     protected Row newRow() {

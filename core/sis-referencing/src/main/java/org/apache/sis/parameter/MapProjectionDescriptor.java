@@ -67,8 +67,8 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
     /**
      * Creates a new parameter descriptor from the given properties and parameters.
      *
-     * @param properties Names, aliases and identifiers of the parameter group.
-     * @param parameters The "real" parameters.
+     * @param properties  names, aliases and identifiers of the parameter group.
+     * @param parameters  the "real" parameters.
      */
     MapProjectionDescriptor(final Map<String,?> properties, final ParameterDescriptor<?>[] parameters) {
         super(properties, addAxisLengths(parameters));
@@ -118,8 +118,8 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
      * Returns the parameter descriptor for the given name. If the given name is one of the dynamic parameters,
      * returns a descriptor for that parameter without adding it to the list of parameter values.
      *
-     * @param  name The case insensitive name of the parameter to search for.
-     * @return The parameter for the given name.
+     * @param  name  the case insensitive name of the parameter to search for.
+     * @return the parameter for the given name.
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override

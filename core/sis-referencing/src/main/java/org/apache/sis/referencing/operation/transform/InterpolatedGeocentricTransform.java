@@ -154,9 +154,9 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
     /**
      * Constructs the inverse of an interpolated geocentric transform.
      *
-     * @param inverse The transform for which to create the inverse.
-     * @param source  The source ellipsoid of the given {@code inverse} transform.
-     * @param target  The target ellipsoid of the given {@code inverse} transform.
+     * @param inverse the transform for which to create the inverse.
+     * @param source  the source ellipsoid of the given {@code inverse} transform.
+     * @param target  the target ellipsoid of the given {@code inverse} transform.
      */
     InterpolatedGeocentricTransform(final InterpolatedGeocentricTransform inverse, Ellipsoid source, Ellipsoid target) {
         this(target, inverse.getTargetDimensions() > 2,
@@ -190,11 +190,11 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * <code>{@linkplain #getContextualParameters()}.{@linkplain ContextualParameters#completeTransform
      * completeTransform}(factory, this)}</code>.
      *
-     * @param source      The source ellipsoid.
+     * @param source      the source ellipsoid.
      * @param isSource3D  {@code true} if the source coordinates have a height.
-     * @param target      The target ellipsoid.
+     * @param target      the target ellipsoid.
      * @param isTarget3D  {@code true} if the target coordinates have a height.
-     * @param grid        The grid of datum shifts from source to target datum.
+     * @param grid        the grid of datum shifts from source to target datum.
      *                    The {@link DatumShiftGrid#interpolateInCell DatumShiftGrid.interpolateInCell(…)} method
      *                    shall compute (ΔX, ΔY, ΔZ) translations from <em>source</em> to <em>target</em> in the
      *                    unit of source ellipsoid axes.
@@ -309,16 +309,16 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * Note however that the given {@code grid} instance shall expect geographic coordinates (λ,φ)
      * in <strong>radians</strong>.
      *
-     * @param factory     The factory to use for creating the transform.
-     * @param source      The source ellipsoid.
+     * @param factory     the factory to use for creating the transform.
+     * @param source      the source ellipsoid.
      * @param isSource3D  {@code true} if the source coordinates have a height.
-     * @param target      The target ellipsoid.
+     * @param target      the target ellipsoid.
      * @param isTarget3D  {@code true} if the target coordinates have a height.
-     * @param grid        The grid of datum shifts from source to target datum.
+     * @param grid        the grid of datum shifts from source to target datum.
      *                    The {@link DatumShiftGrid#interpolateInCell DatumShiftGrid.interpolateInCell(…)} method
      *                    shall compute (ΔX, ΔY, ΔZ) translations from <em>source</em> to <em>target</em> in the
      *                    unit of source ellipsoid axes.
-     * @return The transformation between geographic coordinates in degrees.
+     * @return the transformation between geographic coordinates in degrees.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform createGeodeticTransformation(final MathTransformFactory factory,
@@ -339,7 +339,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
     /**
      * Gets the dimension of input points.
      *
-     * @return The input dimension, which is 2 or 3.
+     * @return the input dimension, which is 2 or 3.
      */
     @Override
     public int getSourceDimensions() {
@@ -349,7 +349,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
     /**
      * Gets the dimension of output points.
      *
-     * @return The output dimension, which is 2 or 3.
+     * @return the output dimension, which is 2 or 3.
      */
     @Override
     public int getTargetDimensions() {
@@ -417,9 +417,9 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * But this is a little bit complicated (need to convert to normalized units and divide by the grid
      * cell size) for a very small difference. For now we neglect that part.</div>
      *
-     * @param m1 The derivative computed by the "geographic to geocentric" conversion.
-     * @param m2 The derivative computed by the "geocentric to geographic" conversion.
-     * @return The derivative for the "interpolated geocentric" transformation.
+     * @param  m1  the derivative computed by the "geographic to geocentric" conversion.
+     * @param  m2  the derivative computed by the "geocentric to geographic" conversion.
+     * @return the derivative for the "interpolated geocentric" transformation.
      */
     final Matrix concatenate(final Matrix m1, final Matrix m2) {
         for (int i = m1.getNumCol(); --i >= 0;) {   // Number of columns can be 2 or 3.
@@ -434,7 +434,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * Returns the inverse of this interpolated geocentric transform.
      * The source ellipsoid of the returned transform will be the target ellipsoid of this transform, and conversely.
      *
-     * @return A transform from the target ellipsoid to the source ellipsoid of this transform.
+     * @return a transform from the target ellipsoid to the source ellipsoid of this transform.
      */
     @Override
     public MathTransform inverse() {

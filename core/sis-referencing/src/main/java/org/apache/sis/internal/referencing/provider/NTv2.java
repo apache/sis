@@ -26,7 +26,10 @@ import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
@@ -49,11 +52,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.measure.Units;
-
-// Branch-dependent imports
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -105,7 +103,7 @@ public final class NTv2 extends AbstractProvider {
     /**
      * Returns the base interface of the {@code CoordinateOperation} instances that use this method.
      *
-     * @return Fixed to {@link Transformation}.
+     * @return fixed to {@link Transformation}.
      */
     @Override
     public Class<Transformation> getOperationType() {
@@ -115,9 +113,9 @@ public final class NTv2 extends AbstractProvider {
     /**
      * Creates a transform from the specified group of parameter values.
      *
-     * @param  factory The factory to use if this constructor needs to create other math transforms.
-     * @param  values The group of parameter values.
-     * @return The created math transform.
+     * @param  factory  the factory to use if this constructor needs to create other math transforms.
+     * @param  values   the group of parameter values.
+     * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws FactoryException if an error occurred while loading the grid.
      */
@@ -133,7 +131,7 @@ public final class NTv2 extends AbstractProvider {
      * Returns the grid of the given name. This method returns the cached instance if it still exists,
      * or load the grid otherwise.
      *
-     * @param file Name of the datum shift grid file to load.
+     * @param  file  name of the datum shift grid file to load.
      */
     @SuppressWarnings("null")
     static DatumShiftGridFile<Angle,Angle> getOrLoad(final Path file) throws FactoryException {
@@ -247,8 +245,8 @@ public final class NTv2 extends AbstractProvider {
          * Creates a new reader for the given channel.
          * This constructor parses the header immediately, but does not read any grid.
          *
-         * @param  channel Where to read data from.
-         * @param  file Path to the longitude and latitude difference file. Used only for error reporting.
+         * @param  channel  where to read data from.
+         * @param  file     path to the longitude and latitude difference file. Used only for error reporting.
          * @throws FactoryException if a data record can not be parsed.
          */
         Loader(final ReadableByteChannel channel, final Path file) throws IOException, FactoryException {
@@ -297,7 +295,7 @@ public final class NTv2 extends AbstractProvider {
             final Unit<Angle> unit;
             final double precision;
             final String name = (String) get("GS_TYPE");
-            if (name.equalsIgnoreCase("SECONDS")) {         // Most common value
+            if (name.equalsIgnoreCase("SECONDS")) {                 // Most common value
                 unit = Units.ARC_SECOND;
                 precision = SECOND_PRECISION;                       // Used only as a hint; will not hurt if wrong.
             } else if (name.equalsIgnoreCase("MINUTES")) {
@@ -311,10 +309,10 @@ public final class NTv2 extends AbstractProvider {
             }
             final double  ymin     = (Double)  get("S_LAT");
             final double  ymax     = (Double)  get("N_LAT");
-            final double  xmin     = (Double)  get("E_LONG");    // Sign reversed compared to usual convention.
-            final double  xmax     = (Double)  get("W_LONG");    // Idem.
+            final double  xmin     = (Double)  get("E_LONG");       // Sign reversed compared to usual convention.
+            final double  xmax     = (Double)  get("W_LONG");       // Idem.
             final double  dy       = (Double)  get("LAT_INC");
-            final double  dx       = (Double)  get("LONG_INC");  // Positive toward west.
+            final double  dx       = (Double)  get("LONG_INC");     // Positive toward west.
             final Integer declared = (Integer) header.get("GS_COUNT");
             final int     width    = Math.toIntExact(Math.round((xmax - xmin) / dx + 1));
             final int     height   = Math.toIntExact(Math.round((ymax - ymin) / dy + 1));
@@ -368,8 +366,8 @@ public final class NTv2 extends AbstractProvider {
          * It may be the overview header (in which case we expect {@code NUM_OREC} records)
          * or a sub-grid header (in which case we expect {@code NUM_SREC} records).
          *
-         * @param numRecords Default number of expected records (usually 11).
-         * @param numkey Key of the record giving the number of records: {@code "NUM_OREC"} or {@code "NUM_SREC"}.
+         * @param  numRecords  default number of expected records (usually 11).
+         * @param  numkey      key of the record giving the number of records: {@code "NUM_OREC"} or {@code "NUM_SREC"}.
          */
         private void readHeader(int numRecords, final String numkey) throws IOException, FactoryException {
             int position = buffer.position();

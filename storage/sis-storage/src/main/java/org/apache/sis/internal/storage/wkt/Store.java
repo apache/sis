@@ -58,11 +58,6 @@ final class Store extends DataStore {
     private static final int SIZE_LIMIT = 1000000;
 
     /**
-     * The file name.
-     */
-    private final String name;
-
-    /**
      * The reader, set by the constructor and cleared when no longer needed.
      */
     private Reader source;
@@ -81,16 +76,17 @@ final class Store extends DataStore {
     /**
      * Creates a new WKT store from the given file, URL or stream.
      *
-     * @param  connector information about the storage (URL, stream, <i>etc</i>).
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public Store(final StorageConnector connector) throws DataStoreException {
+    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
         objects = new ArrayList<>();
-        name    = connector.getStorageName();
         source  = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(source);
         if (source == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, name));
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
         }
     }
 
@@ -113,7 +109,7 @@ final class Store extends DataStore {
                     if ((length += n) >= buffer.length) {
                         if (n >= SIZE_LIMIT) {
                             throw new DataStoreContentException(Resources.format(
-                                    Resources.Keys.ExcessiveStringSize_3, name, SIZE_LIMIT, n));
+                                    Resources.Keys.ExcessiveStringSize_3, getDisplayName(), SIZE_LIMIT, n));
                         }
                         buffer = Arrays.copyOf(buffer, n << 1);
                     }
@@ -135,8 +131,10 @@ final class Store extends DataStore {
                     listeners.warning(record);
                 }
             } while (pos.getIndex() < wkt.length());
-        } catch (IOException | ParseException e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotParseFile_2, "WKT", name), e);
+        } catch (ParseException e) {
+            throw new DataStoreContentException(getLocale(), "WKT", getDisplayName(), in).initCause(e);
+        } catch (IOException e) {
+            throw new DataStoreException(getLocale(), "WKT", getDisplayName(), in).initCause(e);
         }
     }
 

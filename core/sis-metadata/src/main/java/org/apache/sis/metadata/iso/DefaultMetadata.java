@@ -97,6 +97,7 @@ import org.apache.sis.xml.Namespaces;
  * @version 0.8
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Metadata_Type", propOrder = {
     "fileIdentifier",
     "language",
@@ -261,9 +262,9 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Creates a meta data initialized to the specified values.
      *
-     * @param contact   Party responsible for the metadata information.
-     * @param dateStamp Date that the metadata was created.
-     * @param identificationInfo Basic information about the resource to which the metadata applies.
+     * @param contact             party responsible for the metadata information.
+     * @param dateStamp           date that the metadata was created.
+     * @param identificationInfo  basic information about the resource to which the metadata applies.
      */
     public DefaultMetadata(final Responsibility contact,
                            final Date           dateStamp,
@@ -281,7 +282,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Metadata)
      */
@@ -329,8 +330,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultMetadata castOrCopy(final Metadata object) {
@@ -356,7 +357,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * of a UUID (Universal Unique Identifier) as specified by <a href="http://www.ietf.org">IETF</a>
      * to ensure identifier’s uniqueness.</div>
      *
-     * @return Unique identifier for this metadata record, or {@code null}.
+     * @return unique identifier for this metadata record, or {@code null}.
      *
      * @since 0.5
      */
@@ -368,7 +369,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the unique identifier for this metadata record.
      *
-     * @param newValue The new identifier, or {@code null} if none.
+     * @param  newValue  the new identifier, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -380,7 +381,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the unique identifier for this metadata file.
      *
-     * @return Unique identifier for this metadata file, or {@code null}.
+     * @return unique identifier for this metadata file, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataIdentifier()}
      *   in order to include the codespace attribute.
@@ -396,7 +397,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the unique identifier for this metadata file.
      *
-     * @param newValue The new identifier, or {@code null} if none.
+     * @param  newValue  the new identifier, or {@code null} if none.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMetadataIdentifier(Identifier)}
      */
@@ -424,7 +425,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * for marshalling {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList} instances
      * in ISO 19115-2 compliant XML documents.
      *
-     * @return Language(s) used for documenting metadata.
+     * @return language(s) used for documenting metadata.
      *
      * @since 0.5
      */
@@ -438,7 +439,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * The first element in iteration order shall be the default language.
      * All other elements, if any, are alternate language(s) used within the resource.
      *
-     * @param newValues The new languages.
+     * @param  newValues  the new languages.
      *
      * @see org.apache.sis.xml.XML#LOCALE
      *
@@ -453,7 +454,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the default language used for documenting metadata.
      *
-     * @return Language used for documenting metadata, or {@code null}.
+     * @return language used for documenting metadata, or {@code null}.
      *
      * @deprecated As of GeoAPI 3.1, replaced by {@link #getLanguages()}.
      */
@@ -462,8 +463,10 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @XmlElement(name = "language")
     public Locale getLanguage() {
         return CollectionsExt.first(getLanguages());
-        // No warning if the collection contains more than one locale, because
-        // this is allowed by the "getLanguage() + getLocales()" contract.
+        /*
+         * No warning if the collection contains more than one locale, because
+         * this is allowed by the "getLanguage() + getLocales()" contract.
+         */
     }
 
     /**
@@ -475,7 +478,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *   <li>Otherwise the first element in the languages collection is replaced by the given {@code newValue}.</li>
      * </ul>
      *
-     * @param newValue The new language.
+     * @param  newValue  the new language.
      *
      * @deprecated As of GeoAPI 3.1, replaced by {@link #setLanguages(Collection)}.
      */
@@ -488,7 +491,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Provides information about an alternatively used localized character string for a linguistic extension.
      *
-     * @return Alternatively used localized character string for a linguistic extension.
+     * @return alternatively used localized character string for a linguistic extension.
      *
      * @deprecated As of GeoAPI 3.1, replaced by {@link #getLanguages()}.
      */
@@ -503,7 +506,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets information about an alternatively used localized character string for a linguistic extension.
      *
-     * @param newValues The new locales.
+     * @param  newValues  the new locales.
      *
      * @deprecated As of GeoAPI 3.1, replaced by {@link #setLanguages(Collection)}.
      */
@@ -527,7 +530,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * {@code Big5}, {@code GB2312}.
      * </div>
      *
-     * @return Character coding standards used for the metadata.
+     * @return character coding standards used for the metadata.
      *
      * @see #getLanguages()
      * @see org.opengis.metadata.identification.DataIdentification#getCharacterSets()
@@ -543,7 +546,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the character coding standard used for the metadata set.
      *
-     * @param newValues The new character coding standards.
+     * @param  newValues  the new character coding standards.
      *
      * @since 0.5
      */
@@ -554,7 +557,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the character coding standard used for the metadata set.
      *
-     * @return Character coding standard used for the metadata, or {@code null}.
+     * @return character coding standard used for the metadata, or {@code null}.
      *
      * @deprecated As of GeoAPI 3.1, replaced by {@link #getCharacterSets()}.
      */
@@ -581,7 +584,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the character coding standard used for the metadata set.
      *
-     * @param newValue The new character set.
+     * @param  newValue  the new character set.
      *
      * @deprecated As of GeoAPI 3.1, replaced by {@link #setCharacterSets(Collection)}.
      */
@@ -594,7 +597,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Returns an identification of the parent metadata record.
      * This is non-null if this metadata is a subset (child) of another metadata that is described elsewhere.
      *
-     * @return Identification of the parent metadata record, or {@code null} if none.
+     * @return identification of the parent metadata record, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -606,7 +609,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets an identification of the parent metadata record.
      *
-     * @param newValue The new identification of the parent metadata record.
+     * @param  newValue  the new identification of the parent metadata record.
      *
      * @since 0.5
      */
@@ -618,7 +621,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the file identifier of the metadata to which this metadata is a subset (child).
      *
-     * @return Identifier of the metadata to which this metadata is a subset, or {@code null}.
+     * @return identifier of the metadata to which this metadata is a subset, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getParentMetadata()}.
      */
@@ -639,7 +642,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the file identifier of the metadata to which this metadata is a subset (child).
      *
-     * @param newValue The new parent identifier.
+     * @param  newValue  the new parent identifier.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getParentMetadata()}.
      */
@@ -657,7 +660,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the scope or type of resource for which metadata is provided.
      *
-     * @return Scope or type of resource for which metadata is provided.
+     * @return scope or type of resource for which metadata is provided.
      *
      * @since 0.5
      */
@@ -669,7 +672,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the scope or type of resource for which metadata is provided.
      *
-     * @param newValues The new scope or type of resource.
+     * @param  newValues  the new scope or type of resource.
      *
      * @since 0.5
      */
@@ -680,7 +683,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the scope to which the metadata applies.
      *
-     * @return Scope to which the metadata applies.
+     * @return scope to which the metadata applies.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataScopes()}
      *   followed by {@link DefaultMetadataScope#getResourceScope()}.
@@ -714,7 +717,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the scope to which the metadata applies.
      *
-     * @param newValues The new hierarchy levels.
+     * @param  newValues  the new hierarchy levels.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMetadataScopes(Collection)}
      *   and {@link DefaultMetadataScope#setResourceScope(ScopeCode)}.
@@ -728,7 +731,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the name of the hierarchy levels for which the metadata is provided.
      *
-     * @return Hierarchy levels for which the metadata is provided.
+     * @return hierarchy levels for which the metadata is provided.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataScopes()}
      *   followed by {@link DefaultMetadataScope#getName()}.
@@ -763,7 +766,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the name of the hierarchy levels for which the metadata is provided.
      *
-     * @param newValues The new hierarchy level names.
+     * @param  newValues  the new hierarchy level names.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMetadataScopes(Collection)}
      *   and {@link DefaultMetadataScope#setName(InternationalString)}.
@@ -777,7 +780,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the parties responsible for the metadata information.
      *
-     * @return Parties responsible for the metadata information.
+     * @return parties responsible for the metadata information.
      */
     @Override
     @XmlElement(name = "contact", required = true)
@@ -788,7 +791,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the parties responsible for the metadata information.
      *
-     * @param newValues The new contacts.
+     * @param  newValues  the new contacts.
      */
     public void setContacts(final Collection<? extends Responsibility> newValues) {
         checkWritePermission();
@@ -798,7 +801,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the date(s) associated with the metadata.
      *
-     * @return Date(s) associated with the metadata.
+     * @return date(s) associated with the metadata.
      *
      * @see Citation#getDates()
      *
@@ -813,7 +816,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Sets the date(s) associated with the metadata.
      * The collection should contains at least an element for {@link DateType#CREATION}.
      *
-     * @param newValues New dates associated with the metadata.
+     * @param  newValues  new dates associated with the metadata.
      *
      * @since 0.5
      */
@@ -824,7 +827,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the date that the metadata was created.
      *
-     * @return Date that the metadata was created, or {@code null}.
+     * @return date that the metadata was created, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getDateInfo()}.
      */
@@ -846,14 +849,14 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the date that the metadata was created.
      *
-     * @param newValue The new date stamp.
+     * @param  newValue  the new date stamp.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setDateInfo(Collection)}.
      */
     @Deprecated
     public void setDateStamp(final Date newValue) {
         checkWritePermission();
-        Collection<CitationDate> newValues = dateInfo; // See "Note about deprecated methods implementation"
+        Collection<CitationDate> newValues = dateInfo;      // See "Note about deprecated methods implementation"
         if (newValues == null) {
             if (newValue == null) {
                 return;
@@ -886,7 +889,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * The collection returned by this method typically contains elements from the
      * {@link org.apache.sis.metadata.iso.citation.Citations#ISO_19115} list.
      *
-     * @return The standard(s) to which the metadata conform.
+     * @return the standard(s) to which the metadata conform.
      *
      * @see #getMetadataProfiles()
      *
@@ -901,7 +904,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Sets the citation(s) for the standard(s) to which the metadata conform.
      * Metadata standard citations should include an identifier.
      *
-     * @param newValues The new standard(s) to which the metadata conform.
+     * @param  newValues  the new standard(s) to which the metadata conform.
      *
      * @since 0.5
      */
@@ -912,7 +915,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the citation(s) for the profile(s) of the metadata standard to which the metadata conform.
      *
-     * @return The profile(s) to which the metadata conform.
+     * @return the profile(s) to which the metadata conform.
      *
      * @see #getMetadataStandards()
      * @see #getMetadataExtensionInfo()
@@ -928,7 +931,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Set the citation(s) for the profile(s) of the metadata standard to which the metadata conform.
      * Metadata profile standard citations should include an identifier.
      *
-     * @param newValues The new profile(s) to which the metadata conform.
+     * @param  newValues  the new profile(s) to which the metadata conform.
      *
      * @since 0.5
      */
@@ -939,7 +942,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns reference(s) to alternative metadata or metadata in a non-ISO standard for the same resource.
      *
-     * @return Reference(s) to alternative metadata (e.g. Dublin core, FGDC).
+     * @return reference(s) to alternative metadata (e.g. Dublin core, FGDC).
      *
      * @since 0.5
      */
@@ -951,7 +954,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Set reference(s) to alternative metadata or metadata in a non-ISO standard for the same resource.
      *
-     * @param newValues The new reference(s) to alternative metadata (e.g. Dublin core, FGDC).
+     * @param  newValues  the new reference(s) to alternative metadata (e.g. Dublin core, FGDC).
      *
      * @since 0.5
      */
@@ -1004,7 +1007,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the name of the metadata standard (including profile name) used.
      *
-     * @return Name of the metadata standard used, or {@code null}.
+     * @return name of the metadata standard used, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
      *   followed by {@link DefaultCitation#getTitle()}.
@@ -1019,7 +1022,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Name of the metadata standard (including profile name) used.
      *
-     * @param newValue The new metadata standard name.
+     * @param  newValue  the new metadata standard name.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
      *   followed by {@link DefaultCitation#setTitle(InternationalString)}.
@@ -1032,7 +1035,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the version (profile) of the metadata standard used.
      *
-     * @return Version of the metadata standard used, or {@code null}.
+     * @return version of the metadata standard used, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
      *   followed by {@link DefaultCitation#getEdition()}.
@@ -1047,7 +1050,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the version (profile) of the metadata standard used.
      *
-     * @param newValue The new metadata standard version.
+     * @param  newValue  the new metadata standard version.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
      *   followed by {@link DefaultCitation#setEdition(InternationalString)}.
@@ -1060,7 +1063,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the online location(s) where the metadata is available.
      *
-     * @return Online location(s) where the metadata is available.
+     * @return online location(s) where the metadata is available.
      *
      * @since 0.5
      */
@@ -1072,7 +1075,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the online location(s) where the metadata is available.
      *
-     * @param newValues The new online location(s).
+     * @param  newValues  the new online location(s).
      *
      * @since 0.5
      */
@@ -1083,7 +1086,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Provides the URI of the dataset to which the metadata applies.
      *
-     * @return Uniformed Resource Identifier of the dataset, or {@code null}.
+     * @return Uniform Resource Identifier of the dataset, or {@code null}.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getIdentificationInfo()} followed by
      *    {@link DefaultDataIdentification#getCitation()} followed by {@link DefaultCitation#getOnlineResources()}.
@@ -1123,8 +1126,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Sets the URI of the dataset to which the metadata applies.
      * This method sets the linkage of the first online resource in the citation of the first identification info.
      *
-     * @param  newValue The new data set URI.
-     * @throws URISyntaxException If the given value can not be parsed as a URI.
+     * @param  newValue  the new data set URI.
+     * @throws URISyntaxException if the given value can not be parsed as a URI.
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getIdentificationInfo()}
      *    followed by {@link DefaultDataIdentification#getCitation()}
@@ -1159,7 +1162,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the digital representation of spatial information in the dataset.
      *
-     * @return Digital representation of spatial information in the dataset.
+     * @return digital representation of spatial information in the dataset.
      */
     @Override
     @XmlElement(name = "spatialRepresentationInfo")
@@ -1170,7 +1173,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the digital representation of spatial information in the dataset.
      *
-     * @param newValues The new spatial representation info.
+     * @param  newValues  the new spatial representation info.
      */
     public void setSpatialRepresentationInfo(final Collection<? extends SpatialRepresentation> newValues) {
         spatialRepresentationInfo = writeCollection(newValues, spatialRepresentationInfo, SpatialRepresentation.class);
@@ -1179,7 +1182,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the description of the spatial and temporal reference systems used in the dataset.
      *
-     * @return Spatial and temporal reference systems used in the dataset.
+     * @return spatial and temporal reference systems used in the dataset.
      */
     @Override
     @XmlElement(name = "referenceSystemInfo")
@@ -1190,7 +1193,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets the description of the spatial and temporal reference systems used in the dataset.
      *
-     * @param newValues The new reference system info.
+     * @param  newValues  the new reference system info.
      */
     public void setReferenceSystemInfo(final Collection<? extends ReferenceSystem> newValues) {
         referenceSystemInfo = writeCollection(newValues, referenceSystemInfo, ReferenceSystem.class);
@@ -1199,7 +1202,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns information describing metadata extensions.
      *
-     * @return Metadata extensions.
+     * @return metadata extensions.
      */
     @Override
     @XmlElement(name = "metadataExtensionInfo")
@@ -1210,7 +1213,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets information describing metadata extensions.
      *
-     * @param newValues The new metadata extension info.
+     * @param  newValues  the new metadata extension info.
      */
     public void setMetadataExtensionInfo(final Collection<? extends MetadataExtensionInformation> newValues) {
         metadataExtensionInfo = writeCollection(newValues, metadataExtensionInfo, MetadataExtensionInformation.class);
@@ -1219,7 +1222,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns basic information about the resource(s) to which the metadata applies.
      *
-     * @return The resource(s) to which the metadata applies.
+     * @return the resource(s) to which the metadata applies.
      */
     @Override
     @XmlElement(name = "identificationInfo", required = true)
@@ -1230,7 +1233,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets basic information about the resource(s) to which the metadata applies.
      *
-     * @param newValues The new identification info.
+     * @param  newValues  the new identification info.
      */
     public void setIdentificationInfo(final Collection<? extends Identification> newValues) {
         identificationInfo = writeCollection(newValues, identificationInfo, Identification.class);
@@ -1240,7 +1243,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Returns information about the feature catalogue and describes the coverage and
      * image data characteristics.
      *
-     * @return The feature catalogue, coverage descriptions and image data characteristics.
+     * @return the feature catalogue, coverage descriptions and image data characteristics.
      */
     @Override
     @XmlElement(name = "contentInfo")
@@ -1252,7 +1255,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Sets information about the feature catalogue and describes the coverage and
      * image data characteristics.
      *
-     * @param newValues The new content info.
+     * @param  newValues  the new content info.
      */
     public void setContentInfo(final Collection<? extends ContentInformation> newValues) {
         contentInfo = writeCollection(newValues, contentInfo, ContentInformation.class);
@@ -1261,7 +1264,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns information about the distributor of and options for obtaining the resource(s).
      *
-     * @return The distributor of and options for obtaining the resource(s).
+     * @return the distributor of and options for obtaining the resource(s).
      */
     @Override
     @XmlElement(name = "distributionInfo")
@@ -1272,7 +1275,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets information about the distributor of and options for obtaining the resource(s).
      *
-     * @param newValues The new distribution info.
+     * @param  newValues  the new distribution info.
      */
     public void setDistributionInfo(final Collection<? extends Distribution> newValues) {
         distributionInfo = writeCollection(newValues, distributionInfo, Distribution.class);
@@ -1281,7 +1284,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns overall assessment of quality of a resource(s).
      *
-     * @return Overall assessment of quality of a resource(s).
+     * @return overall assessment of quality of a resource(s).
      */
     @Override
     @XmlElement(name = "dataQualityInfo")
@@ -1292,7 +1295,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets overall assessment of quality of a resource(s).
      *
-     * @param newValues The new data quality info.
+     * @param  newValues  the new data quality info.
      */
     public void setDataQualityInfo(final Collection<? extends DataQuality> newValues) {
         dataQualityInfo = writeCollection(newValues, dataQualityInfo, DataQuality.class);
@@ -1301,7 +1304,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns information about the catalogue of rules defined for the portrayal of a resource(s).
      *
-     * @return The catalogue of rules defined for the portrayal of a resource(s).
+     * @return the catalogue of rules defined for the portrayal of a resource(s).
      */
     @Override
     @XmlElement(name = "portrayalCatalogueInfo")
@@ -1312,7 +1315,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets information about the catalogue of rules defined for the portrayal of a resource(s).
      *
-     * @param newValues The new portrayal catalog info.
+     * @param  newValues  the new portrayal catalog info.
      */
     public void setPortrayalCatalogueInfo(final Collection<? extends PortrayalCatalogueReference> newValues) {
         portrayalCatalogueInfo = writeCollection(newValues, portrayalCatalogueInfo, PortrayalCatalogueReference.class);
@@ -1321,7 +1324,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns restrictions on the access and use of data.
      *
-     * @return Restrictions on the access and use of data.
+     * @return restrictions on the access and use of data.
      */
     @Override
     @XmlElement(name = "metadataConstraints")
@@ -1332,7 +1335,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets restrictions on the access and use of data.
      *
-     * @param newValues The new metadata constraints.
+     * @param  newValues  the new metadata constraints.
      */
     public void setMetadataConstraints(final Collection<? extends Constraints> newValues) {
         metadataConstraints = writeCollection(newValues, metadataConstraints, Constraints.class);
@@ -1341,7 +1344,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns information about the conceptual schema of a dataset.
      *
-     * @return The conceptual schema of a dataset.
+     * @return the conceptual schema of a dataset.
      */
     @Override
     @XmlElement(name = "applicationSchemaInfo")
@@ -1352,7 +1355,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns information about the conceptual schema of a dataset.
      *
-     * @param newValues The new application schema info.
+     * @param  newValues  the new application schema info.
      */
     public void setApplicationSchemaInfo(final Collection<? extends ApplicationSchemaInformation> newValues) {
         applicationSchemaInfo = writeCollection(newValues, applicationSchemaInfo, ApplicationSchemaInformation.class);
@@ -1361,7 +1364,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns information about the acquisition of the data.
      *
-     * @return The acquisition of data.
+     * @return the acquisition of data.
      */
     @Override
     @XmlElement(name = "acquisitionInformation", namespace = Namespaces.GMI)
@@ -1372,7 +1375,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets information about the acquisition of the data.
      *
-     * @param newValues The new acquisition information.
+     * @param  newValues  the new acquisition information.
      */
     public void setAcquisitionInformation(final Collection<? extends AcquisitionInformation> newValues) {
         acquisitionInformation = writeCollection(newValues, acquisitionInformation, AcquisitionInformation.class);
@@ -1381,7 +1384,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns information about the frequency of metadata updates, and the scope of those updates.
      *
-     * @return The frequency of metadata updates and their scope, or {@code null}.
+     * @return the frequency of metadata updates and their scope, or {@code null}.
      */
     @Override
     @XmlElement(name = "metadataMaintenance")
@@ -1392,7 +1395,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets information about the frequency of metadata updates, and the scope of those updates.
      *
-     * @param newValue The new metadata maintenance.
+     * @param  newValue  the new metadata maintenance.
      */
     public void setMetadataMaintenance(final MaintenanceInformation newValue) {
         checkWritePermission();
@@ -1402,7 +1405,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns information about the provenance, sources and/or the production processes applied to the resource.
      *
-     * @return Information about the provenance, sources and/or the production processes.
+     * @return information about the provenance, sources and/or the production processes.
      *
      * @since 0.5
      */
@@ -1414,7 +1417,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Sets information about the provenance, sources and/or the production processes applied to the resource.
      *
-     * @param newValues New information about the provenance, sources and/or the production processes.
+     * @param newValues new information about the provenance, sources and/or the production processes.
      *
      * @since 0.5
      */

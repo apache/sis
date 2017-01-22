@@ -68,6 +68,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @see org.apache.sis.referencing.AbstractReferenceSystem#getDomainOfValidity()
  * @see org.apache.sis.referencing.datum.AbstractDatum#getDomainOfValidity()
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_Extent_Type", propOrder = {
     "description",
     "geographicElements",
@@ -113,10 +114,10 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * While a valid {@code Extent} requires at least one component to be non-null,
      * this constructor does not perform such verification.
      *
-     * @param description        A description, or {@code null} if none.
-     * @param geographicElements A geographic component, or {@code null} if none.
-     * @param verticalElements   A vertical component, or {@code null} if none.
-     * @param temporalElements   A temporal component, or {@code null} if none.
+     * @param  description         a description, or {@code null} if none.
+     * @param  geographicElements  a geographic component, or {@code null} if none.
+     * @param  verticalElements    a vertical component, or {@code null} if none.
+     * @param  temporalElements    a temporal component, or {@code null} if none.
      */
     public DefaultExtent(final CharSequence     description,
                          final GeographicExtent geographicElements,
@@ -134,7 +135,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Extent)
      */
@@ -162,8 +163,8 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultExtent castOrCopy(final Extent object) {
@@ -176,7 +177,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     /**
      * Returns the spatial and temporal extent for the referring object.
      *
-     * @return The spatial and temporal extent, or {@code null} in none.
+     * @return the spatial and temporal extent, or {@code null} in none.
      */
     @Override
     @XmlElement(name = "description")
@@ -187,7 +188,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     /**
      * Sets the spatial and temporal extent for the referring object.
      *
-     * @param newValue The new description.
+     * @param  newValue  the new description.
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission();
@@ -197,7 +198,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     /**
      * Provides geographic component of the extent of the referring object
      *
-     * @return The geographic extent, or an empty set if none.
+     * @return the geographic extent, or an empty set if none.
      */
     @Override
     @XmlElement(name = "geographicElement")
@@ -208,7 +209,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     /**
      * Sets geographic component of the extent of the referring object.
      *
-     * @param newValues The new geographic elements.
+     * @param  newValues  the new geographic elements.
      */
     public void setGeographicElements(final Collection<? extends GeographicExtent> newValues) {
         geographicElements = writeCollection(newValues, geographicElements, GeographicExtent.class);
@@ -217,7 +218,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     /**
      * Provides vertical component of the extent of the referring object.
      *
-     * @return The vertical extent, or an empty set if none.
+     * @return the vertical extent, or an empty set if none.
      */
     @Override
     @XmlElement(name = "verticalElement")
@@ -228,7 +229,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     /**
      * Sets vertical component of the extent of the referring object.
      *
-     * @param newValues The new vertical elements.
+     * @param  newValues  the new vertical elements.
      */
     public void setVerticalElements(final Collection<? extends VerticalExtent> newValues) {
         verticalElements = writeCollection(newValues, verticalElements, VerticalExtent.class);
@@ -237,7 +238,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     /**
      * Provides temporal component of the extent of the referring object.
      *
-     * @return The temporal extent, or an empty set if none.
+     * @return the temporal extent, or an empty set if none.
      */
     @Override
     @XmlElement(name = "temporalElement")
@@ -248,7 +249,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     /**
      * Sets temporal component of the extent of the referring object.
      *
-     * @param newValues The new temporal elements.
+     * @param  newValues  the new temporal elements.
      */
     public void setTemporalElements(final Collection<? extends TemporalExtent> newValues) {
         temporalElements = writeCollection(newValues, temporalElements, TemporalExtent.class);
@@ -262,7 +263,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      *
      * <p><b>Note:</b> this method is available only if the referencing module is on the classpath.</p>
      *
-     * @param  envelope The envelope to use for inferring the additional extents.
+     * @param  envelope  the envelope to use for inferring the additional extents.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
      * @throws TransformException if a coordinate transformation was required and failed.
      *

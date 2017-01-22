@@ -35,14 +35,32 @@ import org.apache.sis.util.logging.WarningListeners;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  *
  * @see DataStores#open(Object)
  */
 public abstract class DataStore implements Localized, AutoCloseable {
     /**
+     * The factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * This information can be useful for fetching information common to all {@code DataStore}
+     * instances of the same class.
+     *
+     * @since 0.8
+     */
+    protected final DataStoreProvider provider;
+
+    /**
+     * The store name (typically filename) for formatting error messages, or {@code null} if unknown.
+     * Shall <strong>not</strong> be used as an identifier.
+     *
+     * @see #getDisplayName()
+     */
+    private final String name;
+
+    /**
      * The locale to use for formatting warnings.
+     * This is not the locale for formatting data in the storage.
      *
      * @see #getLocale()
      * @see #setLocale(Locale)
@@ -55,16 +73,69 @@ public abstract class DataStore implements Localized, AutoCloseable {
     protected final WarningListeners<DataStore> listeners;
 
     /**
-     * Creates a new instance with initially no listener.
+     * Creates a new instance with no provider and initially no listener.
      */
     protected DataStore() {
-        locale = Locale.getDefault(Locale.Category.DISPLAY);
+        provider  = null;
+        name      = null;
+        locale    = Locale.getDefault(Locale.Category.DISPLAY);
         listeners = new WarningListeners<>(this);
     }
 
     /**
+     * Creates a new instance for the given storage (typically file or database).
+     * The {@code provider} argument is an optional information.
+     * The {@code connector} argument is mandatory.
+     *
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @throws DataStoreException if an error occurred while creating the data store for the given storage.
+     *
+     * @since 0.8
+     */
+    protected DataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("connector", connector);
+        this.provider  = provider;
+        this.name      = connector.getStorageName();
+        this.locale    = Locale.getDefault(Locale.Category.DISPLAY);
+        this.listeners = new WarningListeners<>(this);
+        /*
+         * Above locale is NOT OptionKey.LOCALE because we are not talking about the same locale.
+         * The one in this DataStore is for warning and exception messages, not for parsing data.
+         */
+    }
+
+    /**
+     * Returns a short name or label for this data store.
+     * The returned name can be used in user interfaces or in error messages.
+     * It may be a title in natural language, but should be relatively short.
+     * The name may be localized in the language specified by the value of {@link #getLocale()}
+     * if this data store is capable to produce a name in various languages.
+     *
+     * <p>This name should not be used as an identifier since there is no guarantee that the name
+     * is unique among data stores, and no guarantee that the name is the same in all locales.
+     * The name may also contain any Unicode characters, including characters usually not allowed
+     * in identifiers like white spaces.</p>
+     *
+     * <p>This method should never throw an exception since it may be invoked for producing error
+     * messages, in which case throwing an exception here would mask the original exception.</p>
+     *
+     * <p>Default implementation returns the {@link StorageConnector#getStorageName()} value,
+     * or {@code null} if this data store has been created by the no-argument constructor.
+     * Note that this default value may change in any future SIS version. Subclasses should
+     * override this method if they can provide a better name.</p>
+     *
+     * @return a short name of label for this data store, or {@code null} if unknown.
+     *
+     * @since 0.8
+     */
+    public String getDisplayName() {
+        return name;
+    }
+
+    /**
      * The locale to use for formatting warnings and other messages. This locale if for user interfaces
-     * only - it has no effect on the data to be read or written from/to the data store.
+     * only – it has no effect on the data to be read or written from/to the data store.
      *
      * <p>The default value is the {@linkplain Locale#getDefault() system default locale}.</p>
      */
@@ -75,8 +146,16 @@ public abstract class DataStore implements Localized, AutoCloseable {
 
     /**
      * Sets the locale to use for formatting warnings and other messages.
+     * In a client-server architecture, it should be the locale on the <em>client</em> side.
+     *
+     * <p>This locale is used on a <cite>best-effort</cite> basis; whether messages will honor this locale or not
+     * depends on the code that logged warnings or threw exceptions. In Apache SIS implementation, this locale has
+     * better chances to be honored by the {@link DataStoreException#getLocalizedMessage()} method rather than
+     * {@code getMessage()}. See {@code getLocalizedMessage()} javadoc for more information.</p>
      *
      * @param locale  the new locale to use.
+     *
+     * @see DataStoreException#getLocalizedMessage()
      */
     public synchronized void setLocale(final Locale locale) {
         ArgumentChecks.ensureNonNull("locale", locale);

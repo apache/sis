@@ -27,10 +27,23 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public final strictfp class XPathsTest extends TestCase {
+    /**
+     * Tests the {@link XPaths#endOfURI(CharSequence, int)} method.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testEndOfURI() {
+        assertEquals(26, XPaths.endOfURI("urn:ogc:def:uom:EPSG::9001", 0));
+        assertEquals(97, XPaths.endOfURI("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])", 0));
+        assertEquals(-1, XPaths.endOfURI("m/s", 0));
+        assertEquals(-1, XPaths.endOfURI("m.s", 0));
+    }
+
     /**
      * Tests {@link XPaths#xpointer(String, String)}.
      */

@@ -35,7 +35,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.util.LocalizedParseException;
 
 import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
 
@@ -113,8 +112,8 @@ final class Element implements Serializable {
     /**
      * Constructs a root element.
      *
-     * @param name An arbitrary name for the root element.
-     * @param singleton The only children for this root.
+     * @param name       an arbitrary name for the root element.
+     * @param singleton  the only children for this root.
      */
     Element(final String name, final Element singleton) {
         keyword = name;
@@ -158,10 +157,10 @@ final class Element implements Serializable {
      *     be used for sharing unique instance of each value if possible.</li>
      * </ul>
      *
-     * @param text         The text to parse.
-     * @param position     On input, the position where to start parsing from.
-     *                     On output, the first character after the separator.
-     * @param sharedValues If parsing a fragment, a map with the values found in other elements. Otherwise {@code null}.
+     * @param text          the text to parse.
+     * @param position      on input, the position where to start parsing from.
+     *                      On output, the first character after the separator.
+     * @param sharedValues  if parsing a fragment, a map with the values found in other elements. Otherwise {@code null}.
      */
     Element(final AbstractParser parser, final String text, final ParsePosition position,
             final Map<Object,Object> sharedValues) throws ParseException
@@ -232,7 +231,7 @@ final class Element implements Serializable {
                 if (fragment == null) {
                     position.setIndex(offset);
                     position.setErrorIndex(lower);
-                    throw new LocalizedParseException(locale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
+                    throw new UnparsableObjectException(locale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
                 }
                 if (fragment.list != null) {
                     fragment = new Element(fragment);
@@ -377,11 +376,11 @@ final class Element implements Serializable {
      * <code>"Error in &lt;{@link #keyword}&gt;"</code> will be prepend to the message.
      * The error index will be the starting index of this {@code Element}.
      *
-     * @param  cause The cause of the failure, or {@code null} if none.
-     * @return The exception to be thrown.
+     * @param  cause  the cause of the failure, or {@code null} if none.
+     * @return the exception to be thrown.
      */
     final ParseException parseFailed(final Exception cause) {
-        return (ParseException) new LocalizedParseException(locale, Errors.Keys.ErrorIn_2,
+        return new UnparsableObjectException(locale, Errors.Keys.ErrorIn_2,
                 new String[] {keyword, Exceptions.getLocalizedMessage(cause, locale)}, offset).initCause(cause);
     }
 
@@ -391,9 +390,9 @@ final class Element implements Serializable {
      * Properties {@link ParsePosition#getIndex()} and {@link ParsePosition#getErrorIndex()}
      * must be accurate before this method is invoked.
      *
-     * @param  text The unparsable string.
-     * @param  position The position in the string.
-     * @return An exception with a formatted error message.
+     * @param  text      the unparsable string.
+     * @param  position  the position in the string.
+     * @return an exception with a formatted error message.
      */
     private ParseException unparsableString(final String text, final ParsePosition position) {
         final short errorKey;
@@ -408,43 +407,43 @@ final class Element implements Serializable {
             arguments = new CharSequence[] {keyword, CharSequences.token(text, errorIndex)};
         }
         position.setIndex(offset);
-        return new LocalizedParseException(locale, errorKey, arguments, errorIndex);
+        return new UnparsableObjectException(locale, errorKey, arguments, errorIndex);
     }
 
     /**
      * Returns an exception saying that a character is missing.
      *
-     * @param c          The missing character.
-     * @param errorIndex The error position.
-     * @param position   The position to update with the error index.
+     * @param c           the missing character.
+     * @param errorIndex  the error position.
+     * @param position    the position to update with the error index.
      */
     private ParseException missingCharacter(final int c, final int errorIndex, final ParsePosition position) {
         position.setIndex(offset);
         position.setErrorIndex(errorIndex);
         final StringBuilder buffer = new StringBuilder(2).appendCodePoint(c);
-        return new LocalizedParseException(locale, Errors.Keys.MissingCharacterInElement_2,
+        return new UnparsableObjectException(locale, Errors.Keys.MissingCharacterInElement_2,
                 new CharSequence[] {keyword, buffer}, errorIndex);
     }
 
     /**
      * Returns an exception saying that a sub-element is missing.
      *
-     * @param key The name of the missing sub-element.
+     * @param key  the name of the missing sub-element.
      */
     final ParseException missingComponent(final String key) {
         int error = offset;
         if (keyword != null) {
             error += keyword.length();
         }
-        return new LocalizedParseException(locale, Errors.Keys.MissingComponentInElement_2,
+        return new UnparsableObjectException(locale, Errors.Keys.MissingComponentInElement_2,
                 new String[] {keyword, key}, error);
     }
 
     /**
      * Returns a {@link ParseException} for a child keyword which is unknown.
      *
-     * @param  expected Keyword of a typical element. Used only if this element contains no child element.
-     * @return The exception to be thrown.
+     * @param  expected  keyword of a typical element. Used only if this element contains no child element.
+     * @return the exception to be thrown.
      */
     final ParseException missingOrUnknownComponent(final String expected) {
         String name = null;
@@ -465,7 +464,7 @@ final class Element implements Serializable {
             res  = Errors.Keys.MissingComponentInElement_2;
             args = new String[] {keyword, expected};
         }
-        return new LocalizedParseException(locale, res, args, offset);
+        return new UnparsableObjectException(locale, res, args, offset);
     }
 
     /**
@@ -476,8 +475,8 @@ final class Element implements Serializable {
      * But it would be a {@code CSFactory} contract violation, so the user would get a {@link NullPointerException}
      * later. For making easier to trace the cause, we throw here an exception with a similar error message.</p>
      *
-     * @param  cs The illegal coordinate system.
-     * @return The exception to be thrown.
+     * @param  cs  the illegal coordinate system.
+     * @return the exception to be thrown.
      */
     final ParseException illegalCS(final CoordinateSystem cs) {
         final short key;
@@ -489,7 +488,7 @@ final class Element implements Serializable {
             key   = Errors.Keys.IllegalCoordinateSystem_1;
             value = cs.getName().getCode();
         }
-        return new LocalizedParseException(locale, key, new String[] {value}, offset);
+        return new UnparsableObjectException(locale, key, new String[] {value}, offset);
     }
 
 
@@ -504,7 +503,7 @@ final class Element implements Serializable {
     /**
      * Returns the next value (not a child element) without removing it.
      *
-     * @return The next value, or {@code null} if none.
+     * @return the next value, or {@code null} if none.
      */
     public Object peekValue() {
         final Iterator<Object> iterator = list.iterator();
@@ -520,8 +519,8 @@ final class Element implements Serializable {
     /**
      * Removes the next {@link Date} from the list and returns it.
      *
-     * @param  key The parameter name. Used for formatting an error message if no date is found.
-     * @return The next {@link Date} on the list.
+     * @param  key  the parameter name. Used for formatting an error message if no date is found.
+     * @return the next {@link Date} on the list.
      * @throws ParseException if no more date is available.
      */
     public Date pullDate(final String key) throws ParseException {
@@ -539,8 +538,8 @@ final class Element implements Serializable {
     /**
      * Removes the next {@link Number} from the list and returns it.
      *
-     * @param  key The parameter name. Used for formatting an error message if no number is found.
-     * @return The next {@link Number} on the list as a {@code double}.
+     * @param  key  the parameter name. Used for formatting an error message if no number is found.
+     * @return the next {@link Number} on the list as a {@code double}.
      * @throws ParseException if no more number is available.
      */
     public double pullDouble(final String key) throws ParseException {
@@ -558,8 +557,8 @@ final class Element implements Serializable {
     /**
      * Removes the next {@link Number} from the list and returns it as an integer.
      *
-     * @param  key The parameter name. Used for formatting an error message if no number is found.
-     * @return The next {@link Number} on the list as an {@code int}.
+     * @param  key  the parameter name. Used for formatting an error message if no number is found.
+     * @return the next {@link Number} on the list as an {@code int}.
      * @throws ParseException if no more number is available, or the number is not an integer.
      */
     public int pullInteger(final String key) throws ParseException {
@@ -570,7 +569,7 @@ final class Element implements Serializable {
                 iterator.remove();
                 final Number number = (Number) object;
                 if (number instanceof Float || number instanceof Double) {
-                    throw new LocalizedParseException(locale, Errors.Keys.UnparsableStringForClass_2,
+                    throw new UnparsableObjectException(locale, Errors.Keys.UnparsableStringForClass_2,
                             new Object[] {Integer.class, number}, offset);
                 }
                 return number.intValue();
@@ -582,8 +581,8 @@ final class Element implements Serializable {
     /**
      * Removes the next {@link Boolean} from the list and returns it.
      *
-     * @param  key The parameter name. Used for formatting an error message if no boolean is found.
-     * @return The next {@link Boolean} on the list as a {@code boolean}.
+     * @param  key  the parameter name. Used for formatting an error message if no boolean is found.
+     * @return the next {@link Boolean} on the list as a {@code boolean}.
      * @throws ParseException if no more boolean is available.
      */
     public boolean pullBoolean(final String key) throws ParseException {
@@ -601,8 +600,8 @@ final class Element implements Serializable {
     /**
      * Removes the next {@link String} from the list and returns it.
      *
-     * @param  key The parameter name. Used for formatting an error message if no number is found.
-     * @return The next {@link String} on the list.
+     * @param  key  the parameter name. Used for formatting an error message if no number is found.
+     * @return the next {@link String} on the list.
      * @throws ParseException if no more string is available.
      */
     public String pullString(final String key) throws ParseException {
@@ -620,8 +619,8 @@ final class Element implements Serializable {
     /**
      * Removes the next {@link Object} from the list and returns it.
      *
-     * @param  key The parameter name. Used for formatting an error message if no number is found.
-     * @return The next {@link Object} on the list (never {@code null}).
+     * @param  key  the parameter name. Used for formatting an error message if no number is found.
+     * @return the next {@link Object} on the list (never {@code null}).
      * @throws ParseException if no more object is available.
      */
     public Object pullObject(final String key) throws ParseException {
@@ -649,9 +648,9 @@ final class Element implements Serializable {
      *       does not match.</li>
      * </ul>
      *
-     * @param  mode {@link AbstractParser#FIRST}, {@link AbstractParser#OPTIONAL} or {@link AbstractParser#MANDATORY}.
-     * @param  keys The element names (e.g. {@code "PrimeMeridian"}).
-     * @return The next {@link Element} of the given names found on the list, or {@code null} if none.
+     * @param  mode  {@link AbstractParser#FIRST}, {@link AbstractParser#OPTIONAL} or {@link AbstractParser#MANDATORY}.
+     * @param  keys  the element names (e.g. {@code "PrimeMeridian"}).
+     * @return the next {@link Element} of the given names found on the list, or {@code null} if none.
      * @throws ParseException if {@code mode} is {@code MANDATORY} and no element of the given names was found.
      */
     public Element pullElement(final int mode, final String... keys) throws ParseException {
@@ -684,8 +683,8 @@ final class Element implements Serializable {
      * Removes and returns the next {@link Element} with no bracket.
      * The key is used only for only for formatting an error message.
      *
-     * @param  key The parameter name. Used only for formatting an error message.
-     * @return The next {@link Element} in the list, with no bracket.
+     * @param  key  the parameter name. Used only for formatting an error message.
+     * @return the next {@link Element} in the list, with no bracket.
      * @throws ParseException if no more void element is available.
      */
     public Element pullVoidElement(final String key) throws ParseException {
@@ -706,8 +705,8 @@ final class Element implements Serializable {
     /**
      * Removes the next object of the given type from the list and returns it, if presents.
      *
-     * @param  type The object type.
-     * @return The next object on the list, or {@code null} if none.
+     * @param  type  the object type.
+     * @return the next object on the list, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     public <T> T pullOptional(final Class<T> type) {
@@ -749,8 +748,8 @@ final class Element implements Serializable {
      *       This list is used for helping the users to locate the ignored elements.</li>
      * </ul>
      *
-     * @param  ignoredElements The collection where to declare ignored elements.
-     * @throws ParseException If the list still contains some unprocessed values.
+     * @param  ignoredElements  the collection where to declare ignored elements.
+     * @throws ParseException if the list still contains some unprocessed values.
      */
     final void close(final Map<String, List<String>> ignoredElements) throws ParseException {
         if (list != null) {
@@ -758,7 +757,7 @@ final class Element implements Serializable {
                 if (value instanceof Element) {
                     CollectionsExt.addToMultiValuesMap(ignoredElements, ((Element) value).keyword, keyword);
                 } else {
-                    throw new LocalizedParseException(locale, Errors.Keys.UnexpectedValueInElement_2,
+                    throw new UnparsableObjectException(locale, Errors.Keys.UnexpectedValueInElement_2,
                             new Object[] {keyword, value}, offset + keyword.length());
                 }
             }
@@ -780,8 +779,8 @@ final class Element implements Serializable {
     /**
      * Implementation of {@link #toString()} to be invoked recursively.
      *
-     * @param buffer Where to format.
-     * @param margin Number of space to put in the left margin.
+     * @param  buffer  where to format.
+     * @param  margin  number of spaces to put in the left margin.
      */
     @Debug
     private void format(final StringBuilder buffer, int margin, final String lineSeparator) {

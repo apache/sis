@@ -18,10 +18,12 @@ package org.apache.sis.storage;
 
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -68,6 +70,33 @@ final class DataStoreRegistry {
     public DataStoreRegistry(final ClassLoader loader) {
         ArgumentChecks.ensureNonNull("loader", loader);
         this.loader = ServiceLoader.load(DataStoreProvider.class, loader);
+    }
+
+    /**
+     * Returns the list of data store providers available at this method invocation time.
+     * More providers may be added later if new modules are added on the classpath.
+     *
+     * @return descriptions of available data stores.
+     *
+     * @since 0.8
+     */
+    public Collection<DataStoreProvider> providers() {
+        synchronized (loader) {
+            final Iterator<DataStoreProvider> providers = loader.iterator();
+            return new LazySet<>(new Iterator<DataStoreProvider>() {
+                @Override public boolean hasNext() {
+                    synchronized (loader) {
+                        return providers.hasNext();
+                    }
+                }
+
+                @Override public DataStoreProvider next() {
+                    synchronized (loader) {
+                        return providers.next();
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -212,7 +241,7 @@ search:         while (!deferred.isEmpty() && connector.prefetch()) {
             }
         }
         if (open && selected == null) {
-            throw new UnsupportedStorageException(Resources.format(Resources.Keys.UnknownFormatFor_1, connector.getStorageName()));
+            throw new UnsupportedStorageException(null, Resources.Keys.UnknownFormatFor_1, connector.getStorageName());
         }
         return selected;
     }

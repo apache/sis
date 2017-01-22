@@ -42,7 +42,7 @@ public class UnmodifiableMetadataException extends UnsupportedOperationException
     /**
      * Creates a new exception with the specified detail message.
      *
-     * @param message The detail message.
+     * @param message  the detail message.
      */
     public UnmodifiableMetadataException(final String message) {
         super(message);

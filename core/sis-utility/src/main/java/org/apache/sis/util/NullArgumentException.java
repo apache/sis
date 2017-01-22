@@ -51,7 +51,7 @@ public class NullArgumentException extends NullPointerException {
     /**
      * Constructs an exception with the specified detail message.
      *
-     * @param message The detail message.
+     * @param message  the detail message.
      */
     public NullArgumentException(final String message) {
         super(message);

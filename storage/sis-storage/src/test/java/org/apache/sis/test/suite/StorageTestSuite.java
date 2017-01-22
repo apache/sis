@@ -30,15 +30,15 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.internal.storage.GenericNameMapTest.class,
     org.apache.sis.internal.storage.CodeTypeTest.class,
-    org.apache.sis.internal.storage.IOUtilitiesTest.class,
-    org.apache.sis.internal.storage.ChannelDataInputTest.class,
-    org.apache.sis.internal.storage.ChannelDataOutputTest.class,
-    org.apache.sis.internal.storage.ChannelImageInputStreamTest.class,
-    org.apache.sis.internal.storage.ChannelImageOutputStreamTest.class,
-    org.apache.sis.internal.storage.HyperRectangleReaderTest.class,
+    org.apache.sis.internal.storage.io.IOUtilitiesTest.class,
+    org.apache.sis.internal.storage.io.ChannelDataInputTest.class,
+    org.apache.sis.internal.storage.io.ChannelDataOutputTest.class,
+    org.apache.sis.internal.storage.io.ChannelImageInputStreamTest.class,
+    org.apache.sis.internal.storage.io.ChannelImageOutputStreamTest.class,
+    org.apache.sis.internal.storage.io.HyperRectangleReaderTest.class,
     org.apache.sis.internal.storage.MetadataBuilderTest.class,
+    org.apache.sis.storage.FeatureNamingTest.class,
     org.apache.sis.storage.ProbeResultTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
     org.apache.sis.internal.storage.xml.MimeTypeDetectorTest.class,

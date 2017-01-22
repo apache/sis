@@ -75,6 +75,7 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
      * with invalid input strings.
      */
     @Test
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testWktParsingFailures() {
         try {
             new GeneralDirectPosition("POINT(6 10 2");

@@ -45,6 +45,7 @@ import org.apache.sis.xml.Namespaces;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "LE_Algorithm_Type", propOrder = {
     "citation",
     "description"
@@ -77,7 +78,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Algorithm)
      */
@@ -103,8 +104,8 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultAlgorithm castOrCopy(final Algorithm object) {
@@ -117,7 +118,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
     /**
      * Returns the information identifying the algorithm and version or date.
      *
-     * @return Algorithm and version or date, or {@code null}.
+     * @return algorithm and version or date, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation", namespace = Namespaces.GMI, required = true)
@@ -128,7 +129,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
     /**
      * Sets the information identifying the algorithm and version or date.
      *
-     * @param newValue The new citation value.
+     * @param  newValue  the new citation value.
      */
     public void setCitation(final Citation newValue) {
         checkWritePermission();
@@ -138,7 +139,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
     /**
      * Returns the information describing the algorithm used to generate the data.
      *
-     * @return Algorithm used to generate the data, or {@code null}.
+     * @return algorithm used to generate the data, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", namespace = Namespaces.GMI, required = true)
@@ -149,7 +150,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
     /**
      * Sets the information describing the algorithm used to generate the data.
      *
-     * @param newValue The new description value.
+     * @param  newValue  the new description value.
      */
     public void setDescription(final InternationalString newValue) {
         checkWritePermission();

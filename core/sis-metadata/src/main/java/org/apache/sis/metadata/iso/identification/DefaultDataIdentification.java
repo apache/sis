@@ -50,6 +50,7 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {
     "languages",
     "characterSets",
@@ -95,10 +96,10 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Creates a data identification initialized to the specified values.
      *
-     * @param citation      The citation data for the resource(s), or {@code null} if none.
-     * @param abstracts     A brief narrative summary of the content of the resource(s), or {@code null} if none.
-     * @param language      The language used within the dataset, or {@code null} if none.
-     * @param topicCategory The main theme of the dataset, or {@code null} if none.
+     * @param citation       the citation data for the resource(s), or {@code null} if none.
+     * @param abstracts      a brief narrative summary of the content of the resource(s), or {@code null} if none.
+     * @param language       the language used within the dataset, or {@code null} if none.
+     * @param topicCategory  the main theme of the dataset, or {@code null} if none.
      */
     public DefaultDataIdentification(final Citation citation,
                                      final CharSequence abstracts,
@@ -115,7 +116,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(DataIdentification)
      */
@@ -143,8 +144,8 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultDataIdentification castOrCopy(final DataIdentification object) {
@@ -162,7 +163,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * <p>The language string representations should use ISO 639-2 language code as
      * returned by {@link Locale#getISO3Language()}.</p>
      *
-     * @return Language(s) used.
+     * @return language(s) used.
      *
      * @see Locale#getISO3Language()
      */
@@ -175,7 +176,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Sets the language(s) used within the dataset.
      *
-     * @param newValues The new languages.
+     * @param  newValues  the new languages.
      */
     public void setLanguages(final Collection<? extends Locale> newValues)  {
         languages = writeCollection(newValues, languages, Locale.class);
@@ -184,7 +185,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Returns the character coding standard used for the dataset.
      *
-     * @return Character coding standard(s) used.
+     * @return character coding standard(s) used.
      */
     @Override
     @XmlElement(name = "characterSet")
@@ -195,7 +196,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Sets the character coding standard used for the dataset.
      *
-     * @param newValues The new character sets.
+     * @param  newValues  the new character sets.
      */
     public void setCharacterSets(final Collection<? extends Charset> newValues) {
         characterSets = writeCollection(newValues, characterSets, Charset.class);
@@ -205,7 +206,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * Returns a description of the resource in the producer's processing environment. This includes
      * items such as the software, the computer operating system, file name, and the dataset size.
      *
-     * @return Description of the resource in the producer's processing environment, or {@code null}.
+     * @return description of the resource in the producer's processing environment, or {@code null}.
      */
     @Override
     @XmlElement(name = "environmentDescription")
@@ -216,7 +217,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Sets the description of the resource in the producers processing environment.
      *
-     * @param newValue The new environment description.
+     * @param  newValue  the new environment description.
      */
     public void setEnvironmentDescription(final InternationalString newValue)  {
         checkWritePermission();
@@ -226,7 +227,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Any other descriptive information about the resource.
      *
-     * @return Other descriptive information, or {@code null}.
+     * @return other descriptive information, or {@code null}.
      */
     @Override
     @XmlElement(name = "supplementalInformation")
@@ -237,7 +238,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Sets any other descriptive information about the resource.
      *
-     * @param newValue The new supplemental information.
+     * @param  newValue  the new supplemental information.
      */
     public void setSupplementalInformation(final InternationalString newValue) {
         checkWritePermission();

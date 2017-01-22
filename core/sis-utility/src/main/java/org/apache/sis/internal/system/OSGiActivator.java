@@ -44,7 +44,7 @@ public final class OSGiActivator implements BundleActivator, BundleListener {
     /**
      * Invoked when this bundle is started.
      *
-     * @param context The execution context of the bundle being started.
+     * @param  context  the execution context of the bundle being started.
      */
     @Override
     public void start(final BundleContext context) {
@@ -56,8 +56,8 @@ public final class OSGiActivator implements BundleActivator, BundleListener {
      * Invoked when this bundle is stopped.
      * This method shutdowns the {@code sis-utility} threads.
      *
-     * @param  context The execution context of the bundle being stopped.
-     * @throws Exception If an error occurred during unregistration of the supervisor MBean or resource disposal.
+     * @param  context  the execution context of the bundle being stopped.
+     * @throws Exception if an error occurred during unregistration of the supervisor MBean or resource disposal.
      */
     @Override
     public void stop(final BundleContext context) throws Exception {
@@ -69,7 +69,7 @@ public final class OSGiActivator implements BundleActivator, BundleListener {
      * Invoked when an other module has been installed or un-installed.
      * This method notifies the Apache SIS library that the classpath may have changed.
      *
-     * @param event The event that describe the life-cycle change.
+     * @param  event  the event that describe the life-cycle change.
      */
     @Override
     public void bundleChanged(final BundleEvent event) {

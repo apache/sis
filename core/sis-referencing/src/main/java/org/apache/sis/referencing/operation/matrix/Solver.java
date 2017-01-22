@@ -110,9 +110,9 @@ final class Solver implements Matrix {                          // Not Cloneable
     /**
      * Computes the inverse of the given matrix. This method shall be invoked only for square matrices.
      *
-     * @param  X        The matrix to invert, which must be square.
-     * @param  noChange If {@code true}, do not allow modifications to the {@code X} matrix.
-     * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
+     * @param  X         the matrix to invert, which must be square.
+     * @param  noChange  if {@code true}, do not allow modifications to the {@code X} matrix.
+     * @throws NoninvertibleMatrixException if the {@code X} matrix is not square or singular.
      */
     static MatrixSIS inverse(final Matrix X, final boolean noChange) throws NoninvertibleMatrixException {
         final int size = X.getNumRow();
@@ -127,9 +127,9 @@ final class Solver implements Matrix {                          // Not Cloneable
      * Solves {@code X} × <var>U</var> = {@code Y}.
      * This method is an adaptation of the {@code LUDecomposition} class of the JAMA matrix package.
      *
-     * @param  X The matrix to invert.
-     * @param  Y The desired result of {@code X} × <var>U</var>.
-     * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
+     * @param  X  the matrix to invert.
+     * @param  Y  the desired result of {@code X} × <var>U</var>.
+     * @throws NoninvertibleMatrixException if the {@code X} matrix is not square or singular.
      */
     static MatrixSIS solve(final Matrix X, final Matrix Y) throws NoninvertibleMatrixException {
         final int size   = X.getNumRow();
@@ -170,13 +170,13 @@ final class Solver implements Matrix {                          // Not Cloneable
      *     }
      * }
      *
-     * @param  X         The matrix to invert, which must be square.
-     * @param  Y         The desired result of {@code X} × <var>U</var>.
-     * @param  eltY      Elements and error terms of the {@code Y} matrix, or {@code null} if not available.
-     * @param  size      The value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
-     * @param  innerSize The value of {@code Y.getNumCol()}.
-     * @param  noChange  If {@code true}, do not allow modifications to the {@code X} matrix.
-     * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
+     * @param  X          the matrix to invert, which must be square.
+     * @param  Y          the desired result of {@code X} × <var>U</var>.
+     * @param  eltY       elements and error terms of the {@code Y} matrix, or {@code null} if not available.
+     * @param  size       the value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
+     * @param  innerSize  the value of {@code Y.getNumCol()}.
+     * @param  noChange   if {@code true}, do not allow modifications to the {@code X} matrix.
+     * @throws NoninvertibleMatrixException if the {@code X} matrix is not square or singular.
      */
     private static MatrixSIS solve(final Matrix X, final Matrix Y, final double[] eltY,
             final int size, final int innerSize, final boolean noChange) throws NoninvertibleMatrixException
@@ -210,12 +210,14 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                      * that the column contains only zero values except on the current line.
                      */
                     int columnOfScale = -1;
-                    if (i != lastRowOrColumn) {                // Enter only if this column is not for translations.
-                        columnOfScale = i;                     // The non-translation element is the scale factor.
-                        for (int k=lastRowOrColumn; --k>=0;) { // Scan all other rows in the current column.
+                    if (i != lastRowOrColumn) {                     // Enter only if this column is not for translations.
+                        columnOfScale = i;                          // The non-translation element is the scale factor.
+                        for (int k=lastRowOrColumn; --k>=0;) {      // Scan all other rows in the current column.
                             if (k != j && LU[k*size + i] != 0) {
-                                // Found a non-zero element in the current column.
-                                // We can not proceed - cancel everything.
+                                /*
+                                 * Found a non-zero element in the current column.
+                                 * We can not proceed - cancel everything.
+                                 */
                                 indexOfNaN = null;
                                 indexCount = 0;
                                 break searchNaN;
@@ -230,8 +232,10 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                     for (int k=lastRowOrColumn; --k>=0;) {
                         if (k != i && LU[j*size + k] != 0) {
                             if (columnOfScale >= 0) {
-                                // If there is more than 1 non-zero element,
-                                // abandon the attempt to handle NaN values.
+                                /*
+                                 * If there is more than 1 non-zero element,
+                                 * abandon the attempt to handle NaN values.
+                                 */
                                 indexOfNaN = null;
                                 indexCount = 0;
                                 break searchNaN;
@@ -244,7 +248,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                      * Remember its index; the replacement will be performed later.
                      */
                     if (indexOfNaN == null) {
-                        indexOfNaN = new int[lastRowOrColumn * (2*TUPLE_SIZE)]; // At most one scale and one offset per row.
+                        indexOfNaN = new int[lastRowOrColumn * (2*TUPLE_SIZE)];     // At most one scale and one offset per row.
                     }
                     indexOfNaN[indexCount++] = i;
                     indexOfNaN[indexCount++] = j;
@@ -307,12 +311,12 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
      *   Y.getNumCol() == innerSize;
      * }
      *
-     * @param  LU        Elements of the {@code X} matrix to invert, including error terms.
-     * @param  Y         The desired result of {@code X} × <var>U</var>.
-     * @param  eltY      Elements and error terms of the {@code Y} matrix, or {@code null} if not available.
-     * @param  size      The value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
-     * @param  innerSize The value of {@code Y.getNumCol()}.
-     * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
+     * @param  LU         elements of the {@code X} matrix to invert, including error terms.
+     * @param  Y          the desired result of {@code X} × <var>U</var>.
+     * @param  eltY       elements and error terms of the {@code Y} matrix, or {@code null} if not available.
+     * @param  size       the value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
+     * @param  innerSize  the value of {@code Y.getNumCol()}.
+     * @throws NoninvertibleMatrixException if the {@code X} matrix is not square or singular.
      */
     private static MatrixSIS solve(final double[] LU, final Matrix Y, final double[] eltY,
             final int size, final int innerSize) throws NoninvertibleMatrixException

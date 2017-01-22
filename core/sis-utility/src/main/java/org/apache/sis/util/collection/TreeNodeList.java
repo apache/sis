@@ -102,9 +102,9 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      * Returns {@code true} if the node associated to this list is already the parent of the given
      * node, {@code false} if the given node has no parent, or throws an exception otherwise.
      *
-     * @param  node The node for which to check the parent.
+     * @param  node  the node for which to check the parent.
      * @return {@code true} if the given node already has its parent set, or {@code false} otherwise.
-     * @throws IllegalArgumentException If the given node is the children of another list.
+     * @throws IllegalArgumentException if the given node is the children of another list.
      */
     private boolean isParentOf(final TreeTable.Node node) throws IllegalArgumentException {
         if (node == parent) {
@@ -130,16 +130,16 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      *       do not change the node parent yet.</li>
      * </ul>
      *
-     * @param  node The node on which to set the parent (never {@code null}).
-     * @param  mode One of the {@link #NULL}, {@link #THIS} or {@link #DRY_RUN} constants.
-     * @throws IllegalArgumentException If this method can not set the parent of the given node.
+     * @param  node  the node on which to set the parent (never {@code null}).
+     * @param  mode  one of the {@link #NULL}, {@link #THIS} or {@link #DRY_RUN} constants.
+     * @throws IllegalArgumentException if this method can not set the parent of the given node.
      */
     protected abstract void setParentOf(TreeTable.Node node, int mode) throws IllegalArgumentException;
 
     /**
      * Returns the type of elements in this list.
      *
-     * @return Fixed to {@code TreeTable.Node}.
+     * @return fixed to {@code TreeTable.Node}.
      */
     @Override
     public final Class<TreeTable.Node> getElementType() {
@@ -149,7 +149,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
     /**
      * Returns the number of nodes in this list.
      *
-     * @return The number of nodes.
+     * @return the number of nodes.
      */
     @Override
     public final int size() {
@@ -159,8 +159,8 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
     /**
      * Returns the node at the specified index in this list.
      *
-     * @param  index The index of the node to fetch.
-     * @return The node at the given index (never {@code null}).
+     * @param  index  the index of the node to fetch.
+     * @return the node at the given index (never {@code null}).
      */
     @Override
     public TreeTable.Node get(final int index) {
@@ -171,10 +171,10 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
     /**
      * Sets the node at the specified index in this list.
      *
-     * @param  index The index of the node to set.
-     * @param  node The node to store at the given index (can not be {@code null}).
-     * @return The node which was previously stored at the given index (never {@code null}).
-     * @throws IllegalArgumentException If this list can not add the given node, for example
+     * @param  index  the index of the node to set.
+     * @param  node   the node to store at the given index (can not be {@code null}).
+     * @return the node which was previously stored at the given index (never {@code null}).
+     * @throws IllegalArgumentException if this list can not add the given node, for example
      *         if the node is already an element of another {@code TreeNodeList}.
      */
     @Override
@@ -201,9 +201,9 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      * Adds the given node at the given index in this list, shifting all nodes currently at
      * and after the given index.
      *
-     * @param  index The index where to insert the node.
-     * @param  node The node to store at the given index (can not be {@code null}).
-     * @throws IllegalArgumentException If this list can not add the given node, for example
+     * @param  index  the index where to insert the node.
+     * @param  node   the node to store at the given index (can not be {@code null}).
+     * @throws IllegalArgumentException if this list can not add the given node, for example
      *         if the node is already an element of another {@code TreeNodeList}.
      */
     @Override
@@ -241,8 +241,8 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      * occur either because the node is a custom user implementation with pre-set parent, or
      * because the node is already presents in this list.
      *
-     * @param  node The node to check.
-     * @throws IllegalArgumentException If the given node is already present in this list.
+     * @param  node  the node to check.
+     * @throws IllegalArgumentException if the given node is already present in this list.
      */
     private void ensureNotPresent(final TreeTable.Node node) throws IllegalArgumentException {
         for (int i=size; --i>=0;) {
@@ -257,7 +257,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      * reverse order (last added nodes are removed first). If this method failed to remove a
      * node, then that node and all nodes at lower index will be left in the list.
      *
-     * @throws IllegalArgumentException If this method failed to remove a node in the given range.
+     * @throws IllegalArgumentException if this method failed to remove a node in the given range.
      */
     @Override
     protected void removeRange(final int lower, final int upper) throws IllegalArgumentException {
@@ -266,7 +266,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
         try {
             while (i != lower) {
                 setParentOf(children[i-1], NULL);
-                i--; // Must be decremented only after 'setParentOf' returned successfully.
+                i--;            // Must be decremented only after 'setParentOf' returned successfully.
             }
         } finally {
             modCount++;
@@ -282,8 +282,8 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      * Removes from this list the node at the given index.
      * All nodes after the given index will be shifted by one.
      *
-     * @param  index The index of the node to remove.
-     * @return The node which was previously at the given index (never {@code null}).
+     * @param  index  the index of the node to remove.
+     * @return the node which was previously at the given index (never {@code null}).
      */
     @Override
     public final TreeTable.Node remove(final int index) throws IllegalArgumentException {
@@ -301,10 +301,10 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      * The default implementation searches the node using the {@link #indexOf(Object)},
      * then removes it (if the node has been found) using the {@link #remove(int)} method.
      *
-     * @param  node The node to remove. {@code null} values are ignored.
-     * @return {@code true} if the node has been removed, or {@code false} if this list doesn't
+     * @param  node  the node to remove. {@code null} values are ignored.
+     * @return {@code true} if the node has been removed, or {@code false} if this list does not
      *         contain the given node.
-     * @throws IllegalArgumentException If the node has been found but this list can not remove it.
+     * @throws IllegalArgumentException if the node has been found but this list can not remove it.
      */
     @Override
     public boolean remove(final Object node) throws IllegalArgumentException {
@@ -321,7 +321,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      * if the {@linkplain TreeTable.Node#getParent() node parent} is the {@link #parent} instance.
      * This implementation does not iterate over the children.
      *
-     * @param  node The node to check (can be {@code null}).
+     * @param  node  the node to check (can be {@code null}).
      * @return {@code true} if this list contains the given node.
      */
     @Override
@@ -334,8 +334,8 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      * This method delegates to {@link #lastIndexOf(Object)} because the list is not
      * expected to contain duplicated values.
      *
-     * @param  node The node to search (can be {@code null}).
-     * @return Index of the given node, or -1 if not found.
+     * @param  node  the node to search (can be {@code null}).
+     * @return index of the given node, or -1 if not found.
      */
     @Override
     public final int indexOf(final Object node) {
@@ -345,8 +345,8 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
     /**
      * Returns the index of the last occurrence of the specified node in this list.
      *
-     * @param  node The node to search (can be {@code null}).
-     * @return Index of the given node, or -1 if not found.
+     * @param  node  the node to search (can be {@code null}).
+     * @return index of the given node, or -1 if not found.
      */
     @Override
     public final int lastIndexOf(final Object node) {

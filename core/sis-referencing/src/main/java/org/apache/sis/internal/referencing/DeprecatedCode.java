@@ -51,12 +51,12 @@ public final class DeprecatedCode extends ImmutableIdentifier implements Depreca
     /**
      * Creates a deprecated identifier.
      *
-     * @param authority  Organization or party responsible for definition and maintenance of the code space or code.
-     * @param codeSpace  Name or identifier of the person or organization responsible for namespace.
-     * @param code       Identifier code or name, optionally from a controlled list or pattern defined by a code space.
-     * @param version    The version of the associated code space or code as specified by the code authority, or {@code null} if none.
-     * @param replacedBy The replacement for the deprecated object, or {@code null} if none.
-     * @param remarks    Comments on or information about why this identifier is deprecated, or {@code null} if none.
+     * @param authority   organization or party responsible for definition and maintenance of the code space or code.
+     * @param codeSpace   name or identifier of the person or organization responsible for namespace.
+     * @param code        identifier code or name, optionally from a controlled list or pattern defined by a code space.
+     * @param version     the version of the associated code space or code as specified by the code authority, or {@code null} if none.
+     * @param replacedBy  the replacement for the deprecated object, or {@code null} if none.
+     * @param remarks     comments on or information about why this identifier is deprecated, or {@code null} if none.
      */
     public DeprecatedCode(final Citation authority, final String codeSpace,
             final String code, final String version, final String replacedBy,
@@ -81,7 +81,7 @@ public final class DeprecatedCode extends ImmutableIdentifier implements Depreca
      *
      * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
      *
-     * @return Information about the replacement for this identifier, or {@code null} if none.
+     * @return information about the replacement for this identifier, or {@code null} if none.
      */
     @Override
     public InternationalString getRemarks() {

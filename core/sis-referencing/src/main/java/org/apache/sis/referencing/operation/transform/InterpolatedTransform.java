@@ -198,7 +198,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      *   <li>If the datum shift unit {@linkplain Units#isTemporal(Unit) is temporal}, then the transform
      *       will work with input and output coordinates in seconds.</li>
      *   <li>Generally for all units other than angular, the transform will work with input and output
-     *       coordinates in the unit given by {@link Unit#toSI()}.</li>
+     *       coordinates in the unit given by {@link Unit#getSystemUnit()}.</li>
      * </ul>
      *
      * @param  <T>      dimension of the coordinate and the translation unit.

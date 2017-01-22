@@ -16,6 +16,7 @@
  */
 package org.apache.sis.math;
 
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
@@ -27,7 +28,6 @@ import static java.lang.Double.isNaN;
 import static java.lang.Double.doubleToLongBits;
 
 // Branch-dependent imports
-import java.util.Objects;
 import java.util.function.LongConsumer;
 import java.util.function.DoubleConsumer;
 
@@ -157,9 +157,9 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * If differences or discrete derivatives are wanted, use the {@link #forSeries forSeries(…)}
      * method instead.</p>
      *
-     * @param name The phenomenon for which this object is collecting statistics, or {@code null}
-     *             if none. If non-null, then this name will be shown as column header in the table
-     *             formatted by {@link StatisticsFormat}.
+     * @param  name  the phenomenon for which this object is collecting statistics, or {@code null}
+     *               if none. If non-null, then this name will be shown as column header in the table
+     *               formatted by {@link StatisticsFormat}.
      */
     public Statistics(final CharSequence name) {
         this.name = Types.toInternationalString(name);
@@ -196,12 +196,12 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      *
      *
      *
-     * @param  name  The phenomenon for which this object is collecting statistics, or {@code null}
+     * @param  name  the phenomenon for which this object is collecting statistics, or {@code null}
      *               if none. If non-null, then this name will be shown as column header in the table
      *               formatted by {@link StatisticsFormat}.
-     * @param  differenceNames The names of the statistics on differences.
+     * @param  differenceNames  the names of the statistics on differences.
      *         The given array can not be null, but can contain null elements.
-     * @return The newly constructed, initially empty, set of statistics.
+     * @return the newly constructed, initially empty, set of statistics.
      *
      * @see #differences()
      */
@@ -220,7 +220,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * If non-null, then this name will be shown as column header in the table formatted
      * by {@link StatisticsFormat}.
      *
-     * @return The phenomenon for which this object is collecting statistics, or {@code null} if none.
+     * @return the phenomenon for which this object is collecting statistics, or {@code null} if none.
      */
     public InternationalString name() {
         return name;
@@ -247,7 +247,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * {@link Double#NaN NaN} values increment the {@linkplain #countNaN() NaN count},
      * but are otherwise ignored.
      *
-     * @param sample The sample value (may be NaN).
+     * @param  sample  the sample value (may be NaN).
      *
      * @see #accept(long)
      * @see #combine(Statistics)
@@ -265,13 +265,16 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * Implementation of {@link #accept(double)} for real (non-NaN) numbers.
      */
     private void real(double sample) {
-        // Two next lines use !(a >= b) instead than
-        // (a < b) in order to take NaN in account.
+        /*
+         * Two next lines use !(a >= b) instead than
+         * (a < b) in order to take NaN in account.
+         */
         if (!(minimum <= sample)) minimum = sample;
         if (!(maximum >= sample)) maximum = sample;
-
-        // According algebraic laws, lowBits should always been zero. But it is
-        // not when using floating points with limited precision. Do not simplify!
+        /*
+         * According algebraic laws, 'lowBits' should always been zero. But it is
+         * not when using floating points with limited precision. Do not simplify!
+         */
         double y = sample + lowBits;
         lowBits = y + (sum - (sum += y));
 
@@ -287,7 +290,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * For very large integer values (greater than 2<sup>52</sup> in magnitude),
      * this method may be more accurate than the {@link #accept(double)} version.
      *
-     * @param sample The sample value.
+     * @param  sample  the sample value.
      *
      * @see #accept(double)
      * @see #combine(Statistics)
@@ -302,7 +305,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * Invoking this method is equivalent (except for rounding errors) to invoking
      * {@link #accept(double) accept(…)} for all samples that were added to {@code stats}.
      *
-     * @param stats The statistics to be added to {@code this}.
+     * @param  stats  the statistics to be added to {@code this}.
      */
     public void combine(final Statistics stats) {
         ArgumentChecks.ensureNonNull("stats", stats);
@@ -331,7 +334,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * sample values. See {@link #differences()} or {@link #forSeries forSeries(…)} for more
      * information.</p>
      *
-     * @param factor The factor by which to multiply the statistics.
+     * @param  factor  the factor by which to multiply the statistics.
      */
     public void scale(double factor) {
         ArgumentChecks.ensureFinite("factor", factor);
@@ -356,16 +359,16 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * {@code NaN} samples are ignored in all other statistical computation.
      * This method count them for information purpose only.
      *
-     * @return The number of NaN values.
+     * @return the number of NaN values.
      */
     public int countNaN() {
-        return max(countNaN, 0); // The Delta subclass initializes countNaN to -1.
+        return max(countNaN, 0);                // The Delta subclass initializes countNaN to -1.
     }
 
     /**
      * Returns the number of samples, excluding {@link Double#NaN NaN} values.
      *
-     * @return The number of sample values, excluding NaN.
+     * @return the number of sample values, excluding NaN.
      */
     public int count() {
         return count;
@@ -374,7 +377,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     /**
      * Returns the minimum sample value, or {@link Double#NaN NaN} if none.
      *
-     * @return The minimum sample value, or NaN if none.
+     * @return the minimum sample value, or NaN if none.
      */
     public double minimum() {
         return minimum;
@@ -383,7 +386,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     /**
      * Returns the maximum sample value, or {@link Double#NaN NaN} if none.
      *
-     * @return The maximum sample value, or NaN if none.
+     * @return the maximum sample value, or NaN if none.
      */
     public double maximum() {
         return maximum;
@@ -393,7 +396,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * Equivalents to <code>{@link #maximum() maximum} - {@link #minimum() minimum}</code>.
      * If no samples were added, then returns {@link Double#NaN NaN}.
      *
-     * @return The span of sample values, or NaN if none.
+     * @return the span of sample values, or NaN if none.
      */
     public double span() {
         return maximum - minimum;
@@ -402,7 +405,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     /**
      * Returns the sum, or 0 if none.
      *
-     * @return The sum, or 0 if none.
+     * @return the sum, or 0 if none.
      */
     public double sum() {
         return sum;
@@ -411,7 +414,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     /**
      * Returns the mean value, or {@link Double#NaN NaN} if none.
      *
-     * @return The mean value, or NaN if none.
+     * @return the mean value, or NaN if none.
      */
     public double mean() {
         return sum / count;
@@ -420,7 +423,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     /**
      * Returns the root mean square, or {@link Double#NaN NaN} if none.
      *
-     * @return The root mean square, or NaN if none.
+     * @return the root mean square, or NaN if none.
      */
     public double rms() {
         return sqrt(squareSum / count);
@@ -448,10 +451,9 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      *   <tr><td>3.0</td><td>99.9%</td><td>100%</td></tr>
      * </table>
      *
-     * @param allPopulation
-     *          {@code true} if sample values given to {@code accept(…)} methods were the totality
-     *          of the population under study, or {@code false} if they were only a sampling.
-     * @return  The standard deviation.
+     * @param  allPopulation  {@code true} if sample values given to {@code accept(…)} methods were the totality
+     *                        of the population under study, or {@code false} if they were only a sampling.
+     * @return the standard deviation.
      */
     public double standardDeviation(final boolean allPopulation) {
         return sqrt((squareSum - sum*sum/count) / (allPopulation ? count : count-1));
@@ -479,7 +481,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * More generally, calls to this method can be chained up to {@code differenceNames.length} times for
      * fetching second or higher order derivatives, as in the above example.
      *
-     * @return The statistics on the differences between consecutive sample values,
+     * @return the statistics on the differences between consecutive sample values,
      *         or {@code null} if not calculated by this object.
      *
      * @see #forSeries(CharSequence, CharSequence[])
@@ -502,7 +504,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      *     Standard deviation:  6.489
      * }
      *
-     * @return A string representation of this statistics object.
+     * @return a string representation of this statistics object.
      *
      * @see StatisticsFormat
      */
@@ -514,7 +516,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     /**
      * Returns a clone of this statistics.
      *
-     * @return A clone of this statistics.
+     * @return a clone of this statistics.
      */
     @Override
     public Statistics clone() {
@@ -541,7 +543,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     /**
      * Compares this statistics with the specified object for equality.
      *
-     * @param  object The object to compare with.
+     * @param  object  the object to compare with.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -611,13 +613,13 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
          * consecutive sample values. Other kinds of {@link Statistics} object could be
          * chained as well.
          *
-         * @param name  The phenomenon for which this object is collecting statistics, or {@code null}.
-         * @param delta The object where to stores delta statistics.
+         * @param  name   the phenomenon for which this object is collecting statistics, or {@code null}.
+         * @param  delta  the object where to stores delta statistics.
          */
         WithDelta(final CharSequence name, final Statistics delta) {
             super(name);
             this.delta = delta;
-            delta.decrementCountNaN(); // Do not count the first NaN, which will always be the first value.
+            delta.decrementCountNaN();      // Do not count the first NaN, which will always be the first value.
         }
 
         /**
@@ -627,7 +629,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
         public void reset() {
             super.reset();
             delta.reset();
-            delta.decrementCountNaN(); // Do not count the first NaN, which will always be the first value.
+            delta.decrementCountNaN();      // Do not count the first NaN, which will always be the first value.
             last       = NaN;
             lastAsLong = 0;
         }
@@ -654,12 +656,16 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
         public void accept(final long sample) {
             super.accept(sample);
             if (last == (double) lastAsLong) {
-                // 'lastAsLong' may have more precision than 'last' since the cast to the
-                // 'double' type may loose some digits. Invoke the 'delta.accept(long)' version.
+                /*
+                 * 'lastAsLong' may have more precision than 'last' since the cast to the
+                 * 'double' type may loose some digits. Invoke the 'delta.accept(long)' version.
+                 */
                 delta.accept(sample - lastAsLong);
             } else {
-                // The sample value is either fractional, outside 'long' range,
-                // infinity or NaN. Invoke the 'delta.accept(double)' version.
+                /*
+                 * The sample value is either fractional, outside 'long' range,
+                 * infinity or NaN. Invoke the 'delta.accept(double)' version.
+                 */
                 delta.accept(sample - last);
             }
             last       = sample;
@@ -669,8 +675,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
         /**
          * Update statistics with all samples from the specified {@code stats}.
          *
-         * @throws ClassCastException If {@code stats} is not an instance of
-         *         {@code Statistics.Delta}.
+         * @throws ClassCastException if {@code stats} is not an instance of {@code Statistics.Delta}.
          */
         @Override
         public void combine(final Statistics stats) throws ClassCastException {

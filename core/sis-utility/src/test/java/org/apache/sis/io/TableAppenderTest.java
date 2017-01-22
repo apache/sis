@@ -57,9 +57,10 @@ public final strictfp class TableAppenderTest extends AppenderTestCase {
     void run(String lineSeparator) throws IOException {
         final Appendable out = appender;
         table.nextLine('═');
-
-        // r.e.d. = Equatorial diameter Measured relative to the Earth.
-        // Source: "Planet" on wikipedia on July 25, 2008.
+        /*
+         * r.e.d. = Equatorial diameter Measured relative to the Earth.
+         * Source: "Planet" on wikipedia on July 25, 2008.
+         */
         assertSame(out, out.append("English\tFrench\tr.e.d." + lineSeparator));
         table.appendHorizontalSeparator();
         assertSame(out, out.append("Mercury\tMercure\t0.382" + lineSeparator));
@@ -107,7 +108,7 @@ public final strictfp class TableAppenderTest extends AppenderTestCase {
      * more easily, without having to deal with {@link IOException}.
      */
     @Test
-    public void testToString() { // NO throws IOException
+    public void testToString() {                // NO throws IOException
         /*
          * First, ensure that TableAppender.toString() does not
          * mess with the content of user-supplied Appendable.
@@ -130,8 +131,8 @@ public final strictfp class TableAppenderTest extends AppenderTestCase {
     /**
      * Helper method for {@link #testToString()}.
      *
-     * @param table    Where to format the table.
-     * @param expected The expected string representation of the formatted table.
+     * @param  table     where to format the table.
+     * @param  expected  the expected string representation of the formatted table.
      */
     private static void testToString(final TableAppender table, final String expected) {
         table.nextLine('═');

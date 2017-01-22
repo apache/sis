@@ -50,6 +50,7 @@ import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
  * @since   0.4
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "FRA_LegalConstraints_Type")
 @XmlRootElement(name="FRA_LegalConstraints")
 public class LegalConstraints extends DefaultLegalConstraints {
@@ -73,7 +74,7 @@ public class LegalConstraints extends DefaultLegalConstraints {
      * Constructs an instance initialized to a copy of the given object.
      * This constructor does <strong>not</strong> copy the FRA-specific properties.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     public LegalConstraints(final org.opengis.metadata.constraint.LegalConstraints object) {
         super(object);
@@ -82,7 +83,7 @@ public class LegalConstraints extends DefaultLegalConstraints {
     /**
      * Returns the documents that specifies the nature of the constraints.
      *
-     * @return Citations to the current documents.
+     * @return citations to the current documents.
      */
     @XmlElement(name = "citation")
     public Collection<Citation> getCitations() {
@@ -92,7 +93,7 @@ public class LegalConstraints extends DefaultLegalConstraints {
     /**
      * Sets the documents that specifies the nature of the constraints.
      *
-     * @param newValues Citation to the new documents.
+     * @param  newValues  citation to the new documents.
      */
     public void setCitations(final Collection<? extends Citation> newValues) {
         citations = writeCollection(newValues, citations, Citation.class);

@@ -38,8 +38,8 @@ public class NoSuchAuthorityFactoryException extends NoSuchAuthorityCodeExceptio
     /**
      * Constructs an exception with the specified detail message and authority name.
      *
-     * @param  message   The detail message, saved for later retrieval by the {@link #getMessage()} method.
-     * @param  authority The authority, saved for retrieval by the {@link #getAuthority()} method.
+     * @param  message    the detail message, saved for later retrieval by the {@link #getMessage()} method.
+     * @param  authority  the authority, saved for retrieval by the {@link #getAuthority()} method.
      */
     public NoSuchAuthorityFactoryException(final String message, final String authority) {
         super(message, authority, null, authority);

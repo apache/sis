@@ -141,8 +141,8 @@ public class Colors implements Cloneable, Serializable {
     /**
      * Returns the color for the given syntactic element.
      *
-     * @param key The syntactic element for which to get the color.
-     * @return The color of the specified element, or {@code null} if none.
+     * @param  key  the syntactic element for which to get the color.
+     * @return the color of the specified element, or {@code null} if none.
      */
     public final String getName(final ElementKind key) {      // Declared final for consistency with getAnsiSequence(…)
         final X364 color = map.get(key);
@@ -216,6 +216,7 @@ public class Colors implements Cloneable, Serializable {
      * Replaces the deserialized instance by {@link #DEFAULT} one if possible.
      *
      * @return the object to use after deserialization.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
     final Object readResolve() throws ObjectStreamException {
         return isImmutable && map.equals(DEFAULT.map) ? DEFAULT : this;

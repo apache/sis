@@ -23,11 +23,9 @@ import java.io.InvalidObjectException;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.AbstractInternationalString;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -82,7 +80,7 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
     /**
      * Creates a new international string for the given key and arguments.
      *
-     * @param key  the key for the resource to fetch.
+     * @param key        the key for the resource to fetch.
      * @param arguments  the argument(s).
      */
     protected ResourceInternationalString(final short key, final Object arguments) {
@@ -139,7 +137,7 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
     /**
      * Returns a hash code value for this international text.
      *
-     * @return A hash code value for this international text.
+     * @return a hash code value for this international text.
      */
     @Override
     public final int hashCode() {
@@ -150,7 +148,7 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
      * Serializes this international string using the key name rather than numerical value.
      *
      * @param  out  the output stream where to serialize this object.
-     * @throws IOException If an I/O error occurred while writing.
+     * @throws IOException if an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -169,9 +167,7 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
         try {
             key = getKeyConstants().getKeyValue(in.readUTF());
         } catch (ReflectiveOperationException cause) {
-            InvalidObjectException e = new InvalidObjectException(cause.toString());
-            e.initCause(cause);
-            throw e;
+            throw (InvalidObjectException) new InvalidObjectException(cause.toString()).initCause(cause);
         }
     }
 }

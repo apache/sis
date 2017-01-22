@@ -44,6 +44,7 @@ import org.opengis.metadata.quality.RelativeInternalPositionalAccuracy;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractDQ_PositionalAccuracy_Type")
 @XmlRootElement(name = "DQ_PositionalAccuracy")
 @XmlSeeAlso({
@@ -66,8 +67,8 @@ public class AbstractPositionalAccuracy extends AbstractElement implements Posit
     /**
      * Creates an positional accuracy initialized to the given result.
      *
-     * @param result The value obtained from applying a data quality measure against a specified
-     *               acceptable conformance quality level.
+     * @param result  the value obtained from applying a data quality measure against a specified
+     *                acceptable conformance quality level.
      */
     public AbstractPositionalAccuracy(final Result result) {
         super(result);
@@ -78,7 +79,7 @@ public class AbstractPositionalAccuracy extends AbstractElement implements Posit
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(PositionalAccuracy)
      */
@@ -105,8 +106,8 @@ public class AbstractPositionalAccuracy extends AbstractElement implements Posit
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractPositionalAccuracy castOrCopy(final PositionalAccuracy object) {

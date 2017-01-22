@@ -62,9 +62,12 @@ import org.opengis.feature.MultiValuedPropertyException;
  *   <li><b>Serialization:</b> serialized objects of this class are not guaranteed to be compatible with future
  *       versions. Serialization should be used only for short term storage or RMI between applications running
  *       the same SIS version.</li>
+ *   <li><b>Cloning:</b> despite providing a public {@link #clone()} method, this base class is <strong>not</strong>
+ *       cloneable by default. Subclasses shall implement the {@link Cloneable} interface themselves if they choose
+ *       to support cloning.</li>
  * </ul>
  *
- * @param <V> The type of attribute values.
+ * @param  <V>  the type of attribute values.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -75,7 +78,8 @@ import org.opengis.feature.MultiValuedPropertyException;
  * @see AbstractFeature
  * @see DefaultAttributeType
  */
-public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Cloneable, Serializable {
+@SuppressWarnings("CloneInNonCloneableClass")       // Decision left to subclasses - see javadoc
+public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -136,7 +140,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * @param  <V>    the type of attribute values.
      * @param  type   information about the attribute (base Java class, domain of values, <i>etc.</i>).
      * @param  value  the initial value (may be {@code null}).
-     * @return The new attribute.
+     * @return the new attribute.
      */
     static <V> AbstractAttribute<V> create(final AttributeType<V> type, final Object value) {
         ArgumentChecks.ensureNonNull("type", type);
@@ -177,8 +181,9 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
                 characteristics = newCharacteristicsMap();
                 characteristics.values().addAll(Arrays.asList(characterizedBy));
             }
-        } catch (RuntimeException e) { // At least ClassCastException, NullPointerException, IllegalArgumentException and IllegalStateException.
-            throw (IOException) new InvalidObjectException(e.getMessage()).initCause(e);
+        } catch (RuntimeException e) {
+            // At least ClassCastException, NullPointerException, IllegalArgumentException and IllegalStateException.
+            throw (IOException) new InvalidObjectException(e.getLocalizedMessage()).initCause(e);
         }
     }
 
@@ -478,8 +483,10 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     }
 
     /**
-     * Returns a copy of this attribute.
-     * The default implementation returns a <em>shallow</em> copy:
+     * Returns a copy of this attribute if cloning is supported.
+     * The decision to support cloning or not is left to subclasses. If the subclass does not implement
+     * the {@link Cloneable} interface, then this method throws a {@link CloneNotSupportedException}.
+     * Otherwise the default implementation returns a <em>shallow</em> copy of this {@code Attribute}:
      * the attribute {@linkplain #getValue() value} and {@linkplain #characteristics() characteristics}
      * are <strong>not</strong> cloned.
      * However subclasses may choose to do otherwise.

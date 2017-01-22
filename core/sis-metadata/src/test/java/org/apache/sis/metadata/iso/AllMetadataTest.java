@@ -339,7 +339,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * Returns {@code true} if the given method is a non-standard extension.
      * If {@code true}, then {@code method} does not need to have UML annotation.
      *
-     * @param method The method to verify.
+     * @param  method  the method to verify.
      * @return {@code true} if the given method is an extension, or {@code false} otherwise.
      *
      * @since 0.5

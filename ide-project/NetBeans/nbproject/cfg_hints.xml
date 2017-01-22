@@ -30,7 +30,7 @@
             <attribute name="enabled" value="true"/>
         </node>
         <node name="org.netbeans.modules.java.hints.AssignmentIssues.assignmentToForLoopParam">
-            <attribute name="enabled" value="true"/>
+            <attribute name="enabled" value="false"/>
         </node>
         <node name="org.netbeans.modules.java.hints.SystemOut">
             <attribute name="enabled" value="true"/>
@@ -79,6 +79,8 @@
         </node>
         <node name="org.netbeans.modules.java.hints.SuspiciousNamesCombination">
             <attribute name="groups" value="x, width|y, height"/>
+            <attribute name="enabled" value="true"/>
+            <attribute name="hintSeverity" value="HINT"/>
         </node>
         <node name="org.netbeans.modules.java.hints.finalize.FinalizeNotProtected">
             <attribute name="enabled" value="true"/>
@@ -99,7 +101,7 @@
             <attribute name="enabled" value="true"/>
         </node>
         <node name="org.netbeans.modules.java.hints.AssignmentIssues.assignmentToCatchBlockParameter">
-            <attribute name="enabled" value="true"/>
+            <attribute name="enabled" value="false"/>
         </node>
         <node name="org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.packageField">
             <attribute name="allow.enums" value="false"/>
@@ -130,6 +132,30 @@
         </node>
         <node name="org.netbeans.modules.java.hints.MissingHashCode">
             <attribute name="enabled" value="false"/>
+        </node>
+        <node name="Wrong_String_Comparison">
+            <attribute name="string-literals-first" value="true"/>
+            <attribute name="ternary-null-check" value="true"/>
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.jdk.mapreduce.ForLoopToFunctionalHint">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.jdk.ThrowableInitCause">
+            <attribute name="strict" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.suggestions.ConstantNameHint">
+            <attribute name="immutableClasses" value=""/>
+            <attribute name="namePattern" value="[A-Z]([A-Z\d_]*[A-Z\d])?"/>
+            <attribute name="minLength" value="0"/>
+            <attribute name="onlyCheckImmutables" value="true"/>
+            <attribute name="maxLength" value="35"/>
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.bugs.CollectionRemove">
+            <attribute name="warn-for-castable" value="true"/>
+            <attribute name="enabled" value="true"/>
+            <attribute name="hintSeverity" value="HINT"/>
         </node>
     </tool>
 </configuration>

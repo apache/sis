@@ -106,9 +106,9 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * For example the implementation of the {@link org.opengis.metadata.citation.Citation}
      * interface is the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} class.
      *
-     * @param  <T>  The type represented by the {@code type} argument.
-     * @param  type The GeoAPI interface (never a {@link CodeList} or {@link Enum} type).
-     * @return The SIS implementation for the given interface.
+     * @param  <T>   the type represented by the {@code type} argument.
+     * @param  type  the GeoAPI interface (never a {@link CodeList} or {@link Enum} type).
+     * @return the SIS implementation for the given interface.
      */
     protected abstract <T> Class<? extends T> getImplementation(Class<T> type);
 
@@ -146,9 +146,9 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * <p>In SIS implementation, most wrappers are also {@link javax.xml.bind.annotation.adapters.XmlAdapter}.
      * But this is not a requirement.</p>
      *
-     * @param  type The GeoAPI interface, {@link CodeList} or {@link Enum} type.
-     * @return The wrapper for the given type, or {@code null} if none.
-     * @throws ClassNotFoundException If a wrapper was expected but not found.
+     * @param  type  the GeoAPI interface, {@link CodeList} or {@link Enum} type.
+     * @return the wrapper for the given type, or {@code null} if none.
+     * @throws ClassNotFoundException if a wrapper was expected but not found.
      */
     protected abstract Class<?> getWrapperFor(Class<?> type) throws ClassNotFoundException;
 
@@ -170,10 +170,10 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * Returns the value of {@link #getWrapperFor(Class)} for the given class, or for a parent
      * of the given class if {@code getWrapperFor(Class)} threw {@code ClassNotFoundException}.
      *
-     * @param  type The GeoAPI interface, {@link CodeList} or {@link Enum} type.
-     * @return The wrapper for the given type. {@link WrapperClass#type} is {@code null} if
+     * @param  type  the GeoAPI interface, {@link CodeList} or {@link Enum} type.
+     * @return the wrapper for the given type. {@link WrapperClass#type} is {@code null} if
      *         no wrapper has been found.
-     * @throws ClassNotFoundException If a wrapper was expected but not found in the
+     * @throws ClassNotFoundException if a wrapper was expected but not found in the
      *         given type neither in any of the parent classes.
      */
     private WrapperClass getWrapperInHierarchy(final Class<?> type) throws ClassNotFoundException {
@@ -197,9 +197,9 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * Returns the XML type for an element of the given type. For example in ISO 19139,
      * the XML type of {@code CI_Citation} is {@code CI_Citation_Type}.
      *
-     * @param  type The GeoAPI interface.
-     * @param  impl The implementation class.
-     * @return The name of the XML type for the given element, or {@code null} if none.
+     * @param  type  the GeoAPI interface.
+     * @param  impl  the implementation class.
+     * @return the name of the XML type for the given element, or {@code null} if none.
      *
      * @see #testImplementationAnnotations()
      */
@@ -220,10 +220,10 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * <p>The prefix for the given namespace will be fetched by
      * {@link Namespaces#getPreferredPrefix(String, String)}.</p>
      *
-     * @param  impl The implementation class, {@link CodeList} or {@link Enum} type.
-     * @param  specification The specification that define the type, or {@code null} if unspecified.
-     * @return The expected namespace.
-     * @throws IllegalArgumentException If the given specification is unknown to this method.
+     * @param  impl           the implementation class, {@link CodeList} or {@link Enum} type.
+     * @param  specification  the specification that define the type, or {@code null} if unspecified.
+     * @return the expected namespace.
+     * @throws IllegalArgumentException if the given specification is unknown to this method.
      */
     protected String getExpectedNamespace(final Class<?> impl, final Specification specification) {
         switch (specification) {
@@ -248,9 +248,9 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * The default implementation returns {@link UML#identifier()}. Subclasses shall override this method
      * when mismatches are known to exist between the UML and XML element names.
      *
-     * @param  enclosing The GeoAPI interface which contains the property, or {@code null} if none.
-     * @param  uml The UML element for which to get the corresponding XML element name.
-     * @return The XML element name for the given UML element.
+     * @param  enclosing  the GeoAPI interface which contains the property, or {@code null} if none.
+     * @param  uml        the UML element for which to get the corresponding XML element name.
+     * @return the XML element name for the given UML element.
      */
     protected String getExpectedXmlElementName(final Class<?> enclosing, final UML uml) {
         return uml.identifier();
@@ -266,10 +266,10 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      *   <li>The namespace is equals to the {@linkplain #getExpectedNamespace expected namespace}.</li>
      * </ul>
      *
-     * @param  namespace The namespace given by the {@code @XmlRootElement} or {@code @XmlElement} annotation.
-     * @param  impl      The implementation or wrapper class for which to get the package namespace.
-     * @param  uml       The {@code @UML} annotation, or {@code null} if none.
-     * @return The actual namespace (same as {@code namespace} if it was not {@value #DEFAULT}).
+     * @param  namespace  the namespace given by the {@code @XmlRootElement} or {@code @XmlElement} annotation.
+     * @param  impl       the implementation or wrapper class for which to get the package namespace.
+     * @param  uml        the {@code @UML} annotation, or {@code null} if none.
+     * @return the actual namespace (same as {@code namespace} if it was not {@value #DEFAULT}).
      */
     private String assertExpectedNamespace(String namespace, final Class<?> impl, final UML uml) {
         assertNotNull("Missing namespace.", namespace);
@@ -313,8 +313,8 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * Returns the namespace declared in the {@link XmlSchema} annotation of the given package,
      * or {@code null} if none.
      *
-     * @param p The package, or {@code null}.
-     * @return The namespace, or {@code null} if none.
+     * @param  p  the package, or {@code null}.
+     * @return the namespace, or {@code null} if none.
      */
     private static String getNamespace(final Package p) {
         if (p != null) {
@@ -333,8 +333,8 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * Returns the namespace declared in the {@link XmlRootElement} annotation of the given class,
      * or the package annotation if none is found in the class.
      *
-     * @param  impl The implementation class, or {@code null}.
-     * @return The namespace, or {@code null} if none.
+     * @param  impl  the implementation class, or {@code null}.
+     * @return the namespace, or {@code null} if none.
      */
     private static String getNamespace(final Class<?> impl) {
         if (impl == null) {
@@ -356,10 +356,10 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * a field having the same name than the UML identifier. If no such field is found or
      * is annotated, returns {@code null}.
      *
-     * @param  impl   The implementation class.
-     * @param  method The name of the getter method to search for.
-     * @param  uml    The UML annotation on the GeoAPI interface, or {@code null} if none.
-     * @return The {@code XmlElement}, or {@code null} if none.
+     * @param  impl    the implementation class.
+     * @param  method  the name of the getter method to search for.
+     * @param  uml     the UML annotation on the GeoAPI interface, or {@code null} if none.
+     * @return the {@code XmlElement}, or {@code null} if none.
      */
     private static XmlElement getXmlElement(final Class<?> impl, final String method, final UML uml) {
         XmlElement element = null;
@@ -389,7 +389,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * Returns {@code true} if the given method is a non-standard extension.
      * If {@code true}, then {@code method} does not need to have UML annotation.
      *
-     * @param method The method to verify.
+     * @param  method  the method to verify.
      * @return {@code true} if the given method is an extension, or {@code false} otherwise.
      *
      * @since 0.5
@@ -552,8 +552,10 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
             testingClass = type.getCanonicalName();
             final Class<?> impl = getImplementation(type);
             if (impl == null) {
-                // Implementation existence are tested by 'testImplementationAnnotations()'.
-                // It is not the purpose of this test to verify again their existence.
+                /*
+                 * Implementation existence are tested by 'testImplementationAnnotations()'.
+                 * It is not the purpose of this test to verify again their existence.
+                 */
                 continue;
             }
             testingClass = impl.getCanonicalName();

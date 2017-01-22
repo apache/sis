@@ -35,7 +35,7 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  * @version 0.3
  * @module
  *
- * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
+ * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
  */
 final class ValueMap extends PropertyMap<Object> {
     /**
@@ -51,10 +51,10 @@ final class ValueMap extends PropertyMap<Object> {
     /**
      * Creates a map of values for the specified metadata and accessor.
      *
-     * @param metadata    The metadata object to wrap.
-     * @param accessor    The accessor to use for the metadata.
-     * @param keyPolicy   Determines the string representation of keys in the map..
-     * @param valuePolicy The behavior of this map toward null or empty values.
+     * @param metadata     the metadata object to wrap.
+     * @param accessor     the accessor to use for the metadata.
+     * @param keyPolicy    determines the string representation of keys in the map..
+     * @param valuePolicy  the behavior of this map toward null or empty values.
      */
     ValueMap(final Object metadata, final PropertyAccessor accessor,
             final KeyNamePolicy keyPolicy, final ValueExistencePolicy valuePolicy)

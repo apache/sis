@@ -43,6 +43,7 @@ import org.apache.sis.util.iso.Types;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_MetadataScope_Type", propOrder = {
     "resourceScope",
     "name"
@@ -74,7 +75,7 @@ public class DefaultMetadataScope extends ISOMetadata implements MetadataScope {
      * Constructs a metadata scope initialized to the given value.
      *
      * @param resourceScope  code for the scope.
-     * @param name  description of the scope, or {@code null} if none.
+     * @param name           description of the scope, or {@code null} if none.
      */
     public DefaultMetadataScope(final ScopeCode resourceScope, final CharSequence name) {
         this.resourceScope = resourceScope;

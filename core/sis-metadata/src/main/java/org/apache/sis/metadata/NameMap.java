@@ -40,9 +40,9 @@ final class NameMap extends PropertyMap<String> {
     /**
      * Creates a name map for the specified accessor.
      *
-     * @param accessor    The accessor to use for the metadata.
-     * @param keyPolicy   Determines the string representation of keys in the map.
-     * @param valuePolicy Determines the string representation of values in this map.
+     * @param accessor     the accessor to use for the metadata.
+     * @param keyPolicy    determines the string representation of keys in the map.
+     * @param valuePolicy  determines the string representation of values in this map.
      */
     NameMap(final PropertyAccessor accessor, final KeyNamePolicy keyPolicy, final KeyNamePolicy valuePolicy) {
         super(accessor, keyPolicy);

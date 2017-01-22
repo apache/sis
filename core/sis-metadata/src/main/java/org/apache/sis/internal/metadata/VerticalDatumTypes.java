@@ -98,8 +98,8 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
      * Known Text</cite></a> format (WKT 1). This method is used for WKT 1 parsing.
      *
-     * @param  code The legacy vertical datum code.
-     * @return The vertical datum type, or {@code null} if the code is unrecognized.
+     * @param  code  the legacy vertical datum code.
+     * @return the vertical datum type, or {@code null} if the code is unrecognized.
      */
     public static VerticalDatumType fromLegacy(int code) {
         code -= 2000;
@@ -110,8 +110,8 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      * Returns the legacy code for the datum type, or 0 if unknown.
      * This method is used for WKT 1 formatting.
      *
-     * @param  type The vertical datum type, or {@code null} if unknown.
-     * @return The legacy code for the given datum type, or 0 if unknown.
+     * @param  type  the vertical datum type, or {@code null} if unknown.
+     * @return the legacy code for the given datum type, or 0 if unknown.
      */
     public static int toLegacy(final VerticalDatumType type) {
         if (type != null) {
@@ -131,10 +131,10 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      * <p>This method uses heuristic rules and may be changed in any future SIS version.
      * If the type can not be determined, defaults to {@link VerticalDatumType#OTHER_SURFACE}.</p>
      *
-     * @param  name    The name of the datum for which to guess a type, or {@code null} if unknown.
-     * @param  aliases The aliases of the datum for which to guess a type, or {@code null} if unknown.
-     * @param  axis    The vertical axis for which to guess a type, or {@code null} if unknown.
-     * @return A datum type, or {@link VerticalDatumType#OTHER_SURFACE} if none can be guessed.
+     * @param  name     the name of the datum for which to guess a type, or {@code null} if unknown.
+     * @param  aliases  the aliases of the datum for which to guess a type, or {@code null} if unknown.
+     * @param  axis     the vertical axis for which to guess a type, or {@code null} if unknown.
+     * @return a datum type, or {@link VerticalDatumType#OTHER_SURFACE} if none can be guessed.
      */
     public static VerticalDatumType guess(final String name, final Collection<? extends GenericName> aliases,
             final CoordinateSystemAxis axis)
@@ -156,7 +156,7 @@ public final class VerticalDatumTypes implements CodeList.Filter {
             if (Units.isLinear(unit)) {
                 final String abbreviation = axis.getAbbreviation();
                 if (abbreviation.length() == 1) {
-                    AxisDirection dir = AxisDirection.UP;   // Expected direction for accepting the type.
+                    AxisDirection dir = AxisDirection.UP;               // Expected direction for accepting the type.
                     switch (abbreviation.charAt(0)) {
                         case 'h': type = ELLIPSOIDAL; break;
                         case 'H': type = VerticalDatumType.GEOIDAL; break;
@@ -178,8 +178,8 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      * Guesses the type of a datum of the given name. This method attempts to guess only if the given name
      * contains at least one letter. If the type can not be determined, returns {@code null}.
      *
-     * @param  name Name of the datum for which to guess a type, or {@code null}.
-     * @return A datum type, or {@code null} if none can be guessed.
+     * @param  name  name of the datum for which to guess a type, or {@code null}.
+     * @return a datum type, or {@code null} if none can be guessed.
      */
     private static VerticalDatumType guess(final String name) {
         if (name != null) {
@@ -208,7 +208,7 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      * The comparison is case-insensitive and ignores some non-ASCII characters. The exact algorithm applied here is
      * implementation dependent and may change in any future version.
      *
-     * @param name The datum name.
+     * @param  name  the datum name.
      */
     private VerticalDatumTypes(final String name) {
         final int length = name.length();
@@ -228,7 +228,7 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      *
      * <p>This method is public as an implementation side-effect and should be ignored.</p>
      *
-     * @param code The code to test.
+     * @param  code  the code to test.
      * @return {@code true} if the code matches the criterion.
       */
     @Override

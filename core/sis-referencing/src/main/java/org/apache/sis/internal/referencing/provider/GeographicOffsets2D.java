@@ -75,9 +75,9 @@ public final class GeographicOffsets2D extends GeographicOffsets {
      * Creates a transform from the specified group of parameter values.
      * The parameter values are unconditionally converted to degrees.
      *
-     * @param  factory Ignored (can be null).
-     * @param  values The group of parameter values.
-     * @return The created math transform.
+     * @param  factory  ignored (can be null).
+     * @param  values   the group of parameter values.
+     * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override

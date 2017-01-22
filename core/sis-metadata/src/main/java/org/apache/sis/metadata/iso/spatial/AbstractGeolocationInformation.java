@@ -46,6 +46,7 @@ import org.apache.sis.xml.Namespaces;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "AbstractMI_GeolocationInformation_Type")
 @XmlRootElement(name = "MI_GeolocationInformation", namespace = Namespaces.GMI)
 @XmlSeeAlso(DefaultGCPCollection.class)
@@ -71,7 +72,7 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GeolocationInformation)
      */
@@ -98,8 +99,8 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static AbstractGeolocationInformation castOrCopy(final GeolocationInformation object) {
@@ -116,7 +117,7 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
     /**
      * Returns an overall assessment of quality of geolocation information.
      *
-     * @return An overall assessment of quality of geolocation information.
+     * @return an overall assessment of quality of geolocation information.
      */
     @Override
     @XmlElement(name = "qualityInfo", namespace = Namespaces.GMI)
@@ -127,7 +128,7 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
     /**
      * Sets an overall assessment of quality of geolocation information.
      *
-     * @param newValues The new quality information values.
+     * @param  newValues  the new quality information values.
      */
     public void setQualityInfo(Collection<? extends DataQuality> newValues) {
         qualityInfo = writeCollection(newValues, qualityInfo, DataQuality.class);

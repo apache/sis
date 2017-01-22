@@ -71,8 +71,8 @@ public final class XmlUtilities extends SystemListener {
     /**
      * Returns the factory for creating {@link javax.xml.datatype} objects.
      *
-     * @return The factory (never {@code null}).
-     * @throws DatatypeConfigurationException If the factory can not be created.
+     * @return the factory (never {@code null}).
+     * @throws DatatypeConfigurationException if the factory can not be created.
      */
     public static DatatypeFactory getDatatypeFactory() throws DatatypeConfigurationException {
         DatatypeFactory f = factory;
@@ -112,8 +112,8 @@ public final class XmlUtilities extends SystemListener {
      *
      * <p>This method will be deprecated after we implemented ISO 19108 in SIS.</p>
      *
-     * @param  gc The date to modify in-place.
-     * @param  force {@code true} for forcing the temporal components to be removed without any check.
+     * @param  gc     the date to modify in-place.
+     * @param  force  {@code true} for forcing the temporal components to be removed without any check.
      * @return {@code true} if the time part has been completely removed, {@code false} otherwise.
      */
     public static boolean trimTime(final XMLGregorianCalendar gc, final boolean force) {
@@ -134,10 +134,10 @@ public final class XmlUtilities extends SystemListener {
      * Converts the given date to a XML Gregorian calendar using the locale and timezone
      * from the current {@linkplain Context marshalling context}.
      *
-     * @param  context The current (un)marshalling context, or {@code null} if none.
-     * @param  date The date to convert to a XML calendar, or {@code null}.
-     * @return The XML calendar, or {@code null} if {@code date} was null.
-     * @throws DatatypeConfigurationException If the factory can not be created.
+     * @param  context  the current (un)marshalling context, or {@code null} if none.
+     * @param  date     the date to convert to a XML calendar, or {@code null}.
+     * @return the XML calendar, or {@code null} if {@code date} was null.
+     * @throws DatatypeConfigurationException if the factory can not be created.
      */
     public static XMLGregorianCalendar toXML(final Context context, final Date date) throws DatatypeConfigurationException {
         if (date != null) {
@@ -153,7 +153,7 @@ public final class XmlUtilities extends SystemListener {
      * timezone were explicitely set, then the default ones are used as documented in the
      * {@link org.apache.sis.xml.XML#TIMEZONE} constant.
      *
-     * @return A Gregorian calendar initialized with the current timezone and locale.
+     * @return a Gregorian calendar initialized with the current timezone and locale.
      */
     private static GregorianCalendar createGregorianCalendar(final Context context) {
         if (context != null) {
@@ -177,9 +177,9 @@ public final class XmlUtilities extends SystemListener {
     /**
      * Converts the given XML Gregorian calendar to a date.
      *
-     * @param  context The current (un)marshalling context, or {@code null} if none.
-     * @param  xml The XML calendar to convert to a date, or {@code null}.
-     * @return The date, or {@code null} if {@code xml} was null.
+     * @param  context  the current (un)marshalling context, or {@code null} if none.
+     * @param  xml      the XML calendar to convert to a date, or {@code null}.
+     * @return the date, or {@code null} if {@code xml} was null.
      */
     public static Date toDate(final Context context, final XMLGregorianCalendar xml) {
         if (xml != null) {
