@@ -29,6 +29,8 @@ import java.io.Console;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.Path;
 import java.sql.Connection;                             // For javadoc.
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.util.resources.Errors;
@@ -37,10 +39,6 @@ import org.apache.sis.internal.util.Fallback;
 import org.apache.sis.setup.InstallationResources;
 
 import static org.apache.sis.internal.util.Constants.EPSG;
-
-// Branch-dependent imports
-import java.nio.file.AccessDeniedException;
-import java.nio.file.Path;
 
 
 /**
@@ -154,7 +152,7 @@ public class ResourcesDownloader extends InstallationResources {
      * Returns the provider to use for fetching the actual licensed data after we got user's agreement.
      * This method asks for user's agreement when first invoked.
      *
-     * @param  requireAgreement {@code true} if license agreement is required.
+     * @param  requireAgreement  {@code true} if license agreement is required.
      * @throws AccessDeniedException if the user does not accept to install the EPSG dataset.
      * @throws IOException if an error occurred while reading the {@link #DOWNLOAD_URL}.
      */
@@ -221,8 +219,8 @@ public class ResourcesDownloader extends InstallationResources {
      * Asks the user to answer by "Yes" or "No". Callers is responsible for ensuring
      * that the {@link #answers} map is non-empty before to invoke this method.
      *
-     * @param prompt Message to show to the user.
-     * @return The user's answer.
+     * @param  prompt  message to show to the user.
+     * @return the user's answer.
      */
     private boolean accept(final String prompt, final Object... arguments) {
         Boolean answer;
@@ -236,9 +234,9 @@ public class ResourcesDownloader extends InstallationResources {
      * Returns the terms of use of the dataset provided by the given authority, or {@code null} if none.
      * The terms of use can be returned in either plain text or HTML.
      *
-     * @param  authority One of the values returned by {@link #getAuthorities()}.
-     * @param  mimeType Either {@code "text/plain"} or {@code "text/html"}.
-     * @return The terms of use in plain text or HTML, or {@code null} if none.
+     * @param  authority  one of the values returned by {@link #getAuthorities()}.
+     * @param  mimeType   either {@code "text/plain"} or {@code "text/html"}.
+     * @return the terms of use in plain text or HTML, or {@code null} if none.
      * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
      * @throws IOException if an error occurred while reading the license file.
      */
@@ -255,8 +253,8 @@ public class ResourcesDownloader extends InstallationResources {
      * <p>If that question has not already been asked, this method asks to the user if (s)he accepts
      * EPSG terms of use. If (s)he refuses, an {@link AccessDeniedException} will be thrown.</p>
      *
-     * @param  authority One of the values returned by {@link #getAuthorities()}.
-     * @return The names of all SQL scripts to execute.
+     * @param  authority  one of the values returned by {@link #getAuthorities()}.
+     * @return the names of all SQL scripts to execute.
      * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
      * @throws IOException if an error occurred while fetching the script names.
      */
@@ -273,10 +271,10 @@ public class ResourcesDownloader extends InstallationResources {
      * <p>If that question has not already been asked, this method asks to the user if (s)he accepts
      * EPSG terms of use. If (s)he refuses, an {@link AccessDeniedException} will be thrown.</p>
      *
-     * @param  authority One of the values returned by {@link #getAuthorities()}.
-     * @param  resource Index of the script to open, from 0 inclusive to
-     *         <code>{@linkplain #getResourceNames(String) getResourceNames}(authority).length</code> exclusive.
-     * @return A reader for the installation script content.
+     * @param  authority  one of the values returned by {@link #getAuthorities()}.
+     * @param  resource   index of the script to open, from 0 inclusive to
+     *                    <code>{@linkplain #getResourceNames(String) getResourceNames}(authority).length</code> exclusive.
+     * @return a reader for the installation script content.
      * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
      * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
      * @throws IOException if an error occurred while creating the reader.

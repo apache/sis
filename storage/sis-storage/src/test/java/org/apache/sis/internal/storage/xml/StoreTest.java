@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage.xml;
 
 import java.util.Locale;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.*;
 import org.opengis.metadata.identification.CharacterSet;

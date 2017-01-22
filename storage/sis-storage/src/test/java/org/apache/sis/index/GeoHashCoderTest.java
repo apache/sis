@@ -58,7 +58,7 @@ public final strictfp class GeoHashCoderTest extends TestCase {
     /**
      * A list o places with their expected geohash.
      */
-    private static Place[] PLACES = new Place[] {
+    private static final Place[] PLACES = new Place[] {
         new Place("Empire State Building",  -73.985656, 40.748433, "dr5ru6j2c62q"),
         new Place("Statue Of Liberty",      -74.044444, 40.689167, "dr5r7p4rx6kz"),
         new Place("The White House",        -77.036550, 38.897669, "dqcjqcpeq70c"),
@@ -82,7 +82,7 @@ public final strictfp class GeoHashCoderTest extends TestCase {
     /**
      * Tests the {@link GeoHashCoder#decode(String)} method.
      *
-     * @throws ParseException Should never happen.
+     * @throws ParseException should never happen.
      */
     @Test
     public void testDecode() throws ParseException {

@@ -70,7 +70,7 @@ abstract class InlineTaglet implements Taglet {
     /**
      * Returns {@code true} since SIS taglets can be used in overview.
      *
-     * @return Default to {@code true}.
+     * @return default to {@code true}.
      */
     @Override
     public boolean inOverview() {
@@ -80,7 +80,7 @@ abstract class InlineTaglet implements Taglet {
     /**
      * Returns {@code true} since SIS taglets can be used in package documentation.
      *
-     * @return Default to {@code true}.
+     * @return default to {@code true}.
      */
     @Override
     public boolean inPackage() {
@@ -91,7 +91,7 @@ abstract class InlineTaglet implements Taglet {
      * Returns {@code true} since SIS taglets can be used in type documentation
      * (classes or interfaces).
      *
-     * @return Default to {@code true}.
+     * @return default to {@code true}.
      */
     @Override
     public boolean inType() {
@@ -101,7 +101,7 @@ abstract class InlineTaglet implements Taglet {
     /**
      * Returns {@code true} since SIS taglets can be used in constructor
      *
-     * @return Default to {@code true}.
+     * @return default to {@code true}.
      */
     @Override
     public boolean inConstructor() {
@@ -111,7 +111,7 @@ abstract class InlineTaglet implements Taglet {
     /**
      * Returns {@code true} since SIS taglets can be used in method documentation.
      *
-     * @return Default to {@code true}.
+     * @return default to {@code true}.
      */
     @Override
     public boolean inMethod() {
@@ -121,7 +121,7 @@ abstract class InlineTaglet implements Taglet {
     /**
      * Returns {@code true} since SIS taglets can be used in field documentation.
      *
-     * @return Default to {@code true}.
+     * @return default to {@code true}.
      */
     @Override
     public boolean inField() {
@@ -131,7 +131,7 @@ abstract class InlineTaglet implements Taglet {
     /**
      * Returns {@code true} since this base class is all about inline tags.
      *
-     * @return Always {@code true}.
+     * @return always {@code true}.
      */
     @Override
     public final boolean isInlineTag() {
@@ -143,8 +143,8 @@ abstract class InlineTaglet implements Taglet {
      * representation. This method should not be called since arrays of inline tags do
      * not exist. However we define it as a matter of principle.
      *
-     * @param  tags The tags to format.
-     * @return A string representation of the given tags.
+     * @param  tags  the tags to format.
+     * @return a string representation of the given tags.
      */
     @Override
     public final String toString(final Tag[] tags) {
@@ -158,6 +158,7 @@ abstract class InlineTaglet implements Taglet {
     /**
      * Prints a warning message.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     static void printWarning(final SourcePosition position, final String message) {
         final RootDoc root = getRootDoc();
         if (root != null) {
@@ -170,6 +171,7 @@ abstract class InlineTaglet implements Taglet {
     /**
      * Prints an error message.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     static void printError(final SourcePosition position, final String message) {
         final RootDoc root = getRootDoc();
         if (root != null) {

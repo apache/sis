@@ -86,8 +86,8 @@ public class GeoHashCoder implements Serializable {
          * Creates a new format for the given {@coe encoding} mapping.
          * This constructor computes the {@code decoding} arrays from the {@code encoding} one.
          *
-         * @param highestOneBit The leftmost one-bit of the value represented by a letter or digit.
-         * @param encoding The mapping from numerical values to symbols.
+         * @param  highestOneBit  the leftmost one-bit of the value represented by a letter or digit.
+         * @param  encoding       the mapping from numerical values to symbols.
          */
         private Format(final int highestOneBit, final byte[] encoding) {
             this.highestOneBit = highestOneBit;
@@ -98,9 +98,11 @@ public class GeoHashCoder implements Serializable {
             }
             decodingLowerCase = decoding;
             decodingUpperCase = decoding;
-            // Current version create a case-insensitive format.
-            // However if we implement BASE36 in a future version,
-            // then the two 'decoding' arrays will differ.
+            /*
+             * Current version create a case-insensitive format.
+             * However if we implement BASE36 in a future version,
+             * then the two 'decoding' arrays will differ.
+             */
         }
     }
 
@@ -133,7 +135,7 @@ public class GeoHashCoder implements Serializable {
      * Returns the current encoding/decoding format.
      * The default value is {@link Format#BASE32}.
      *
-     * @return The current format.
+     * @return the current format.
      */
     public Format getFormat() {
         return format;
@@ -142,7 +144,7 @@ public class GeoHashCoder implements Serializable {
     /**
      * Sets the encoding/decoding format.
      *
-     * @param format The new format.
+     * @param  format  the new format.
      */
     public void setFormat(final Format format) {
         ArgumentChecks.ensureNonNull("format", format);
@@ -153,7 +155,7 @@ public class GeoHashCoder implements Serializable {
      * Returns the length of geohashes strings to be encoded by the {@link #encode(DirectPosition)} method.
      * The default value is 12.
      *
-     * @return The length of geohashes strings.
+     * @return the length of geohashes strings.
      */
     public int getPrecision() {
         return precision;
@@ -162,19 +164,19 @@ public class GeoHashCoder implements Serializable {
     /**
      * Sets the length of geohashes strings to be encoded by the {@link #encode(DirectPosition)} method.
      *
-     * @param precision The new length of geohashes strings.
+     * @param  precision  he new length of geohashes strings.
      */
     public void setPrecision(final int precision) {
         ArgumentChecks.ensureBetween("precision", 1, 255, precision);
         this.precision = (byte) precision;
-        buffer = null; // Will recreate a new buffer when first needed.
+        buffer = null;                                  // Will recreate a new buffer when first needed.
     }
 
     /**
      * Encodes the given longitude and latitude into a geohash.
      *
-     * @param longitude Longitude to encode, as decimal degrees in the [-180 … 180]° range.
-     * @param latitude Latitude to encode, as decimal degrees in the [-90 … 90]° range.
+     * @param  longitude  longitude to encode, as decimal degrees in the [-180 … 180]° range.
+     * @param  latitude   latitude to encode, as decimal degrees in the [-90 … 90]° range.
      * @return Geohash encoding of the given longitude and latitude.
      */
     public String encode(final double longitude, final double latitude) {
@@ -237,7 +239,7 @@ public class GeoHashCoder implements Serializable {
      * <p>The current implementation does not verify the Coordinate Reference System of the given position.
      * However this may change in future SIS versions.</p>
      *
-     * @param  position The coordinate to encode.
+     * @param  position  the coordinate to encode.
      * @return Geohash encoding of the given position.
      */
     public String encode(final DirectPosition position) {
@@ -249,8 +251,8 @@ public class GeoHashCoder implements Serializable {
      * Decodes the given geohash into a longitude and a latitude.
      *
      * @param geohash Geohash string to decode.
-     * @return A new position with the longitude at ordinate 0 and latitude at ordinate 1.
-     * @throws ParseException If an error occurred while parsing the given string.
+     * @return a new position with the longitude at ordinate 0 and latitude at ordinate 1.
+     * @throws ParseException if an error occurred while parsing the given string.
      */
     public DirectPosition decode(final String geohash) throws ParseException {
         final int length = geohash.length();
@@ -266,7 +268,7 @@ public class GeoHashCoder implements Serializable {
         double xmin = -180, ymin = -90;
         double xmax =  180, ymax =  90;
 
-        int nc; // Number of characters for the 'c' code point.
+        int nc;                                         // Number of characters for the 'c' code point.
         for (int i=0; i<length; i+=nc) {
             int c = geohash.codePointAt(i);
             nc = Character.charCount(c);

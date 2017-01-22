@@ -377,7 +377,7 @@ public class XLink implements Serializable {
      * Type.AUTO} (including {@code null}) will overwrite the value inferred automatically by
      * {@link #getType()}. A {@code AUTO} value will enable automatic type detection.
      *
-     * @param type The new type of link, or {@code null} if none.
+     * @param  type  the new type of link, or {@code null} if none.
      */
     public void setType(final Type type) {
         canWrite(0x1, "type", "type"); // We want a non-null value in all cases.

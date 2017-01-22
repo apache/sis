@@ -50,8 +50,8 @@ public class ImageInputStreamComparator implements ImageInputStream {
     /**
      * Creates a new comparator for the given input streams.
      *
-     * @param expected The stream used as a reference implementation.
-     * @param actual   The stream to compare against the reference implementation.
+     * @param  expected  the stream used as a reference implementation.
+     * @param  actual    the stream to compare against the reference implementation.
      */
     public ImageInputStreamComparator(final ImageInputStream expected, final ImageInputStream actual) {
         this.expected = expected;
@@ -61,7 +61,7 @@ public class ImageInputStreamComparator implements ImageInputStream {
     /**
      * Forwards the call to the two streams.
      *
-     * @param byteOrder The byte order to set.
+     * @param  byteOrder  the byte order to set.
      */
     @Override
     public void setByteOrder(final ByteOrder byteOrder) {
@@ -72,7 +72,7 @@ public class ImageInputStreamComparator implements ImageInputStream {
     /**
      * Forwards the call to the two streams and ensures that they return identical results.
      *
-     * @return The result of the forwarded call.
+     * @return the result of the forwarded call.
      */
     @Override
     public ByteOrder getByteOrder() {
@@ -84,7 +84,7 @@ public class ImageInputStreamComparator implements ImageInputStream {
     /**
      * Forwards the call to the two streams and ensures that they return identical results.
      *
-     * @return The result of the forwarded call.
+     * @return the result of the forwarded call.
      * @throws IOException if any of the two streams failed to perform the operation.
      */
     @Override
@@ -100,8 +100,8 @@ public class ImageInputStreamComparator implements ImageInputStream {
      * This method requires that the two streams read an identical amount of bytes,
      * despite the method contract allowing a different amount of bytes to be read.
      *
-     * @param  dest The destination array where to store the bytes read.
-     * @return The result of the forwarded call.
+     * @param  dest  the destination array where to store the bytes read.
+     * @return the result of the forwarded call.
      * @throws IOException if any of the two streams failed to perform the operation.
      */
     @Override
