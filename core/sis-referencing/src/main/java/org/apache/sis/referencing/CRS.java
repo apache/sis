@@ -327,7 +327,7 @@ public final class CRS extends Static {
                  * The 'worldwide' flag is a little optimization for remembering that we do not need to compute
                  * the union anymore, but we still need to continue the loop for fetching all bounding boxes.
                  */
-                bestCRS = crs;
+                bestCRS = crs;                      // Fallback to be used if we don't find anything better.
                 worldwide = true;
             } else {
                 domains[i] = bbox;
@@ -413,7 +413,7 @@ public final class CRS extends Static {
                         final SingleCRS baseCRS = ((GeneralDerivedCRS) crs).getBaseCRS();
                         bbox = getGeographicBoundingBox(baseCRS);
                         if (bbox == null && bestCRS == null && baseCRS instanceof GeodeticCRS) {
-                            bestCRS = baseCRS;
+                            bestCRS = baseCRS;      // Fallback to be used if we don't find anything better.
                         }
                         tryDerivedCRS = true;
                         derivedCRS[i] = baseCRS;

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,7 +32,6 @@ import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.internal.feature.Resources;
 
 // Branch-dependent imports
-import java.util.Objects;
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.PropertyNotFoundException;
@@ -212,7 +212,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *
      * @param  name   the name of the property to create.
      * @param  value  the value to wrap.
-     * @return A {@code Property} wrapping the given value.
+     * @return a {@code Property} wrapping the given value.
      */
     final Property createProperty(final String name, final Object value) {
         final PropertyType pt = type.getProperty(name);
@@ -494,8 +494,8 @@ public abstract class AbstractFeature implements Feature, Serializable {
     /**
      * Verifies if the given property can be assigned to this feature.
      *
-     * @param name      shall be {@code property.getName().toString()}.
-     * @param property  the property to verify.
+     * @param  name      shall be {@code property.getName().toString()}.
+     * @param  property  the property to verify.
      */
     final void verifyPropertyType(final String name, final Property property) {
         final PropertyType pt, base = type.getProperty(name);
@@ -543,7 +543,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *   <li>May be a collection, in which case the class each elements in the collection is verified.</li>
      * </ul>
      *
-     * @param value  the value, which shall be non-null.
+     * @param  value  the value, which shall be non-null.
      */
     private static <T> Object verifyAttributeValue(final AttributeType<T> type, final Object value) {
         final Class<T> valueClass = type.getValueClass();
@@ -565,7 +565,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *   <li>May be a collection, in which case the class each elements in the collection is verified.</li>
      * </ul>
      *
-     * @param value  the value, which shall be non-null.
+     * @param  value  the value, which shall be non-null.
      */
     private static Object verifyAssociationValue(final FeatureAssociationRole role, final Object value) {
         final boolean isSingleton = Field.isSingleton(role.getMaximumOccurs());

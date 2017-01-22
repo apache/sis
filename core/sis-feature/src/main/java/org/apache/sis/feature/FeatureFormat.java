@@ -495,12 +495,22 @@ header: for (int i=0; ; i++) {
     /**
      * Not yet supported.
      *
-     * @return Currently never return.
+     * @return currently never return.
      * @throws ParseException currently always thrown.
      */
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
         throw new ParseException(Errors.getResources(displayLocale)
                 .getString(Errors.Keys.UnsupportedOperation_1, "parse"), 0);
+    }
+
+    /**
+     * Returns a clone of this format.
+     *
+     * @return a clone of this format.
+     */
+    @Override
+    public FeatureFormat clone() {
+        return (FeatureFormat) super.clone();
     }
 }
