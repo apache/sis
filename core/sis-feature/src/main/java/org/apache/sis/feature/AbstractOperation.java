@@ -18,6 +18,7 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import java.util.Collections;
 import java.util.HashMap;
 import java.io.IOException;
@@ -30,7 +31,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
-import java.util.Objects;
 import java.util.function.BiFunction;
 import java.io.UncheckedIOException;
 import org.opengis.feature.Attribute;

@@ -51,9 +51,9 @@ final strictfp class NoOperation extends AbstractOperation {
      * Constructs an operation from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      *
-     * @param identification The name and other information to be given to this operation.
-     * @param parameters     A description of the input parameters.
-     * @param result         The type of the result, or {@code null} if none.
+     * @param  identification  the name and other information to be given to this operation.
+     * @param  parameters      a description of the input parameters.
+     * @param  result          the type of the result, or {@code null} if none.
      */
     NoOperation(final Map<String,?> identification,
             final ParameterDescriptorGroup parameters, final IdentifiedType result)
@@ -66,7 +66,7 @@ final strictfp class NoOperation extends AbstractOperation {
     /**
      * Returns a description of the input parameters.
      *
-     * @return Description of the input parameters.
+     * @return description of the input parameters.
      */
     @Override
     public ParameterDescriptorGroup getParameters() {
@@ -76,7 +76,7 @@ final strictfp class NoOperation extends AbstractOperation {
     /**
      * Returns the expected result type, or {@code null} if none.
      *
-     * @return The type of the result, or {@code null} if none.
+     * @return the type of the result, or {@code null} if none.
      */
     @Override
     public IdentifiedType getResult() {
