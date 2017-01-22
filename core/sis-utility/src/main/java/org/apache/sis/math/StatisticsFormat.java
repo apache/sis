@@ -51,7 +51,6 @@ import static java.lang.Math.*;
  * @version 0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.
 public class StatisticsFormat extends TabularFormat<Statistics> {
     /**
      * For cross-version compatibility.
@@ -441,5 +440,15 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     private static void setFractionDigits(final NumberFormat format, final int digits) {
         format.setMinimumFractionDigits(digits);
         format.setMaximumFractionDigits(digits);
+    }
+
+    /**
+     * Returns a clone of this format.
+     *
+     * @return a clone of this format.
+     */
+    @Override
+    public StatisticsFormat clone() {
+        return (StatisticsFormat) super.clone();
     }
 }
