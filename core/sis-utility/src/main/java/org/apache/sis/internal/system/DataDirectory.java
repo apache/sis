@@ -111,7 +111,7 @@ public enum DataDirectory {
      * Returns the root directory fetched from the {@code SIS_DATA} environment variable.
      * If the environment variable is not set or the directory does not exist, then this method returns {@code null}.
      *
-     * @return The root SIS data directory, or {@code null} if none.
+     * @return the root SIS data directory, or {@code null} if none.
      */
     public static synchronized Path getRootDirectory() {
         if (rootDirectory == null) try {
@@ -142,7 +142,7 @@ public enum DataDirectory {
      * directory was not specified. If the {@code $SIS_DATA} directory exists but not the sub-directory,
      * then this method creates the sub-directory.
      *
-     * @return The sub-directory, or {@code null} if unspecified.
+     * @return the sub-directory, or {@code null} if unspecified.
      */
     public synchronized Path getDirectory() {
         if (directory == null) {
@@ -180,7 +180,7 @@ public enum DataDirectory {
      * path is returned as-is.
      *
      * @param  file The path to resolve, or {@code null}.
-     * @return The path to use, or {@code null} if the given path was null.
+     * @return the path to use, or {@code null} if the given path was null.
      */
     public Path resolve(Path file) {
         if (file != null && !file.isAbsolute()) {

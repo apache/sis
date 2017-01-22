@@ -16,6 +16,11 @@
  */
 package org.apache.sis.storage;
 
+import org.opengis.metadata.distribution.Format;
+import org.apache.sis.internal.simple.SimpleFormat;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.distribution.DefaultFormat;
+
 
 /**
  * Provides information about a specific {@link DataStore} implementation.
@@ -46,7 +51,7 @@ package org.apache.sis.storage;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public abstract class DataStoreProvider {
@@ -54,6 +59,61 @@ public abstract class DataStoreProvider {
      * Creates a new provider.
      */
     protected DataStoreProvider() {
+    }
+
+    /**
+     * Returns a short name or abbreviation for the data format.
+     * This name is used in some warnings or exception messages.
+     * It may contain any characters, including white spaces
+     * (i.e. this short name is <strong>not</strong> a format identifier).
+     *
+     * <div class="note"><b>Examples:</b>
+     * {@code "CSV"}, {@code "GeoTIFF"}, {@code "GML"}, {@code "GPX"}, {@code "JPEG"}, {@code "JPEG 2000"},
+     * {@code "NetCDF"}, {@code "PNG"}, {@code "Shapefile"}.
+     * </div>
+     *
+     * For a more comprehensive format name, see {@link #getFormat()}.
+     *
+     * @return a short name or abbreviation for the data format.
+     *
+     * @see #getFormat()
+     *
+     * @since 0.8
+     */
+    public abstract String getShortName();
+
+    /**
+     * Returns a description of the data format. The description should contain (if available):
+     *
+     * <ul>
+     *   <li>A reference to the {@linkplain DefaultFormat#getFormatSpecificationCitation()
+     *       format specification citation}, including:
+     *     <ul>
+     *       <li>a format specification {@linkplain DefaultCitation#getTitle() title}
+     *           (example: <cite>“PNG (Portable Network Graphics) Specification”</cite>),</li>
+     *       <li>the format {@linkplain #getShortName() short name} as a citation
+     *           {@linkplain DefaultCitation#getAlternateTitles() alternate title}
+     *           (example: <cite>“PNG”</cite>),</li>
+     *       <li>the format version as the citation {@linkplain DefaultCitation#getEdition() edition},</li>
+     *       <li>link to an {@linkplain DefaultCitation#getOnlineResources() online} version of the specification.</li>
+     *     </ul>
+     *   </li>
+     *   <li>The title of the {@linkplain DefaultFormat#getFileDecompressionTechnique() file decompression technique}
+     *       used for reading the data.</li>
+     * </ul>
+     *
+     * The default implementation returns a format containing only the value returned by {@link #getShortName()}.
+     * Subclasses are encouraged to override this method for providing a more complete description, if available.
+     *
+     * @return a description of the data format.
+     *
+     * @see #getShortName()
+     * @see DefaultFormat
+     *
+     * @since 0.8
+     */
+    public Format getFormat() {
+        return new SimpleFormat(getShortName());
     }
 
     /**
@@ -119,11 +179,11 @@ public abstract class DataStoreProvider {
      * Implementors shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
      * creation, keeping open only the needed resource.
      *
-     * @param  storage  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
+     * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
      * @return a data store implementation associated with this provider for the given storage.
      * @throws DataStoreException if an error occurred while creating the data store instance.
      *
      * @see DataStores#open(Object)
      */
-    public abstract DataStore open(StorageConnector storage) throws DataStoreException;
+    public abstract DataStore open(StorageConnector connector) throws DataStoreException;
 }

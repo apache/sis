@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.lang.reflect.Field;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
+import org.apache.sis.util.Characters;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -137,6 +138,16 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertEquals(field, symbol,    UnitFormat.INSTANCE.format(unit));
         if (name != null) {
             assertEquals(field, name, UnitFormat.getBundle(Locale.UK).getString(symbol));
+            for (int i=0; i<name.length();) {
+                final int c = name.codePointAt(i);
+                assertTrue(name, AbstractUnit.isSymbolChar(c) || Character.isWhitespace(c));
+                i += Character.charCount(c);
+            }
+        }
+        for (int i=0; i<symbol.length();) {
+            final int c = symbol.codePointAt(i);
+            assertTrue(symbol, AbstractUnit.isSymbolChar(c) || Characters.isSuperScript(c) || c == '∕');
+            i += Character.charCount(c);
         }
         declared.remove(field);
     }
@@ -264,6 +275,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.CELSIUS,       f.parse("degC"));
         assertSame(Units.CELSIUS,       f.parse("deg C"));
         assertSame(Units.WATT,          f.parse("watt"));
+        assertSame(Units.UNITY,         f.parse("unity"));
         try {
             f.parse("degree foo");
             fail("Should not accept unknown unit.");
@@ -362,10 +374,41 @@ public final strictfp class UnitFormatTest extends TestCase {
     public void testParseMultiplier() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         assertSame(Units.MILLIMETRE, f.parse("m/1000"));
+        assertSame(Units.KILOMETRE,  f.parse( "1000*m"));
+        assertSame(Units.KILOMETRE,  f.parse( "1000.0*m"));
         ConventionalUnitTest.verify(Units.METRE, f.parse("10*-6⋅m"),   "µm", 1E-6);
         ConventionalUnitTest.verify(Units.METRE, f.parse("10*-6.m"),   "µm", 1E-6);
-        ConventionalUnitTest.verify(Units.METRE, f.parse( "1000*m"),   "km", 1E+3);
-        ConventionalUnitTest.verify(Units.METRE, f.parse( "1000.0*m"), "km", 1E+3);
         ConventionalUnitTest.verify(Units.METRE, f.parse( "100 feet"), null, 30.48);
+    }
+
+    /**
+     * Tests parsing expressions containing parenthesis.
+     */
+    @Test
+    @DependsOnMethod("testParseMultiplier")
+    public void testParseWithParenthesis() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        assertSame(Units.PASCAL, f.parse("kg∕(m⋅s²)"));
+        assertSame(Units.PASCAL, f.parse("(kg)∕m∕s²"));
+        assertSame(Units.VOLT,   f.parse("kg⋅m²∕(s³⋅A)"));
+        assertSame(Units.VOLT,   f.parse("(kg)m²∕(s³⋅A)"));
+    }
+
+    /**
+     * Tests {@link UnitFormat#clone()}.
+     */
+    @Test
+    public void testClone() {
+        final UnitFormat f1 = new UnitFormat(Locale.FRANCE);
+        f1.label(Units.METRE,  "myMeterLabel");
+        f1.label(Units.SECOND, "mySecondLabel");
+        final UnitFormat f2 = f1.clone();
+        f2.label(Units.METRE, "otherMeterLabel");
+        assertSame  (Locale.FRANCE,     f1.getLocale());
+        assertSame  (Locale.FRANCE,     f2.getLocale());
+        assertEquals("myMeterLabel",    f1.format(Units.METRE));
+        assertEquals("mySecondLabel",   f1.format(Units.SECOND));
+        assertEquals("otherMeterLabel", f2.format(Units.METRE));
+        assertEquals("mySecondLabel",   f2.format(Units.SECOND));
     }
 }

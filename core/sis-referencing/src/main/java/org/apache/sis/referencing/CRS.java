@@ -35,6 +35,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -274,6 +275,160 @@ public final class CRS extends Static {
     }
 
     /**
+     * Suggests a coordinate reference system which could be a common target for coordinate operations having the
+     * given sources. This method compares the {@linkplain #getGeographicBoundingBox(CoordinateReferenceSystem)
+     * domain of validity} of all given CRSs. If a CRS has a domain of validity that contains the domain of all other
+     * CRS, than that CRS is returned. Otherwise this method verifies if a {@linkplain GeneralDerivedCRS#getBaseCRS()
+     * base CRS} (usually a {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} instance)
+     * would be suitable. If no suitable CRS is found, then this method returns {@code null}.
+     *
+     * <div class="note"><b>Use case:</b>
+     * before to test if two arbitrary envelopes {@linkplain GeneralEnvelope#intersects(Envelope) intersect} each other,
+     * they need to be {@linkplain Envelopes#transform(Envelope, CoordinateReferenceSystem) transformed} in the same CRS.
+     * However if one CRS is a Transverse Mercator projection while the other CRS is a world-wide geographic CRS, then
+     * attempts to use the Transverse Mercator projection as the common CRS is likely to fail since the geographic envelope
+     * may span an area far outside the projection domain of validity. This {@code suggestTargetCRS(…)} method can used
+     * for choosing a common CRS which is less likely to fail.</div>
+     *
+     * @param  regionOfInterest  the geographic area for which the coordinate operations will be applied,
+     *                           or {@code null} if unknown.
+     * @param  sourceCRS         the coordinate reference systems for which a common target CRS is desired.
+     * @return a CRS that may be used as a common target for all the given source CRS in the given region of interest,
+     *         or {@code null} if this method did not find a common target CRS. The returned CRS may be different than
+     *         all given CRS.
+     *
+     * @since 0.8
+     */
+    public static CoordinateReferenceSystem suggestTargetCRS(GeographicBoundingBox regionOfInterest,
+                                                             CoordinateReferenceSystem... sourceCRS)
+    {
+        CoordinateReferenceSystem bestCRS = null;
+        /*
+         * Compute the union of the domain of validity of all CRS. If a CRS does not specify a domain of validity,
+         * then assume that the CRS is valid for the whole world if the CRS is geodetic or return null otherwise.
+         * Opportunistically remember the domain of validity of each CRS in this loop since we will need them later.
+         */
+        boolean worldwide = false;
+        DefaultGeographicBoundingBox domain = null;
+        final GeographicBoundingBox[] domains = new GeographicBoundingBox[sourceCRS.length];
+        for (int i=0; i < sourceCRS.length; i++) {
+            final CoordinateReferenceSystem crs = sourceCRS[i];
+            final GeographicBoundingBox bbox = getGeographicBoundingBox(crs);
+            if (bbox == null) {
+                /*
+                 * If no domain of validity is specified and we can not fallback
+                 * on some knowledge about what the CRS is, abandon.
+                 */
+                if (!(crs instanceof GeodeticCRS)) {
+                    return null;
+                }
+                /*
+                 * Geodetic CRS (geographic or geocentric) can generally be presumed valid in a worldwide area.
+                 * The 'worldwide' flag is a little optimization for remembering that we do not need to compute
+                 * the union anymore, but we still need to continue the loop for fetching all bounding boxes.
+                 */
+                bestCRS = crs;                      // Fallback to be used if we don't find anything better.
+                worldwide = true;
+            } else {
+                domains[i] = bbox;
+                if (!worldwide) {
+                    if (domain == null) {
+                        domain = new DefaultGeographicBoundingBox(bbox);
+                    } else {
+                        domain.add(bbox);
+                    }
+                }
+            }
+        }
+        /*
+         * At this point we got the union of the domain of validity of all CRS. We are interested only in the
+         * part that intersect the region of interest. If the union is whole world, we do not need to compute
+         * the intersection; we can just leave the region of interest unchanged.
+         */
+        if (domain != null && !worldwide) {
+            if (regionOfInterest != null) {
+                domain.intersect(regionOfInterest);
+            }
+            regionOfInterest = domain;
+            domain = null;
+        }
+        /*
+         * Iterate again over the domain of validity of all CRS.  For each domain of validity, compute the area
+         * which is inside the domain or interest and the area which is outside. The "best CRS" will be the one
+         * which comply with the following rules, in preference order:
+         *
+         *   1) The CRS which is valid over the largest area of the region of interest.
+         *   2) If two CRS are equally good according rule 1, then the CRS with the smallest "outside area".
+         *
+         * Example: given two source CRS, a geographic one and a projected one:
+         *
+         *   - If the projected CRS contains fully the region of interest, then it will be returned.
+         *     The preference is given to the projected CRS because geometric are likely to be more
+         *     accurate in that space. Furthermore forward conversions from geographic to projected
+         *     CRS are usually faster than inverse conversions.
+         *
+         *   - Otherwise (i.e. if the region of interest is likely to be wider than the projected CRS
+         *     domain of validity), then the geographic CRS will be returned.
+         */
+        final double roiArea  = Extents.area(regionOfInterest);   // NaN if 'regionOfInterest' is null.
+        double maxInsideArea  = 0;
+        double minOutsideArea = Double.POSITIVE_INFINITY;
+        boolean tryDerivedCRS = false;
+        do {
+            for (int i=0; i < domains.length; i++) {
+                final GeographicBoundingBox bbox = domains[i];
+                if (bbox != null) {
+                    double insideArea  = Extents.area(bbox);
+                    double outsideArea = 0;
+                    if (regionOfInterest != null) {
+                        if (domain == null) {
+                            domain = new DefaultGeographicBoundingBox(bbox);
+                        } else {
+                            domain.setBounds(bbox);
+                        }
+                        domain.intersect(regionOfInterest);
+                        final double area = insideArea;
+                        insideArea = Extents.area(domain);
+                        outsideArea = area - insideArea;
+                    }
+                    if (insideArea > maxInsideArea || (insideArea == maxInsideArea && outsideArea < minOutsideArea)) {
+                        maxInsideArea  = insideArea;
+                        minOutsideArea = outsideArea;
+                        bestCRS        = sourceCRS[i];
+                    }
+                }
+            }
+            /*
+             * If the best CRS does not cover fully the region of interest, then we will redo the check again
+             * but using base CRS instead. For example if the list of source CRS had some projected CRS, we
+             * will try with the geographic CRS on which those projected CRS are based.
+             */
+            if (maxInsideArea < roiArea) {
+                if (tryDerivedCRS) break;                                               // Do not try twice.
+                final SingleCRS[] derivedCRS = new SingleCRS[sourceCRS.length];
+                for (int i=0; i < derivedCRS.length; i++) {
+                    GeographicBoundingBox bbox = null;
+                    final CoordinateReferenceSystem crs = sourceCRS[i];
+                    if (crs instanceof GeneralDerivedCRS) {
+                        final SingleCRS baseCRS = ((GeneralDerivedCRS) crs).getBaseCRS();
+                        bbox = getGeographicBoundingBox(baseCRS);
+                        if (bbox == null && bestCRS == null && baseCRS instanceof GeodeticCRS) {
+                            bestCRS = baseCRS;      // Fallback to be used if we don't find anything better.
+                        }
+                        tryDerivedCRS = true;
+                        derivedCRS[i] = baseCRS;
+                    }
+                    domains[i] = bbox;
+                }
+                sourceCRS = derivedCRS;
+            } else {
+                break;
+            }
+        } while (tryDerivedCRS);
+        return bestCRS;
+    }
+
+    /**
      * Finds a mathematical operation that transforms or converts coordinates from the given source to the
      * given target coordinate reference system. If an estimation of the geographic area containing the points
      * to transform is known, it can be specified for helping this method to find a better suited operation.
@@ -387,9 +542,8 @@ public final class CRS extends Static {
     /**
      * Returns the valid geographic area for the given coordinate operation, or {@code null} if unknown.
      * This method explores the {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of validity}
-     * associated with the given operation. If more than one geographic bounding box is found, then they will be
-     * {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add(GeographicBoundingBox) added}
-     * together.
+     * associated with the given operation. If more than one geographic bounding box is found, then this method
+     * computes their {@linkplain DefaultGeographicBoundingBox#add(GeographicBoundingBox) union}.
      *
      * @param  operation  the coordinate operation for which to get the domain of validity, or {@code null}.
      * @return the geographic area where the operation is valid, or {@code null} if unspecified.
@@ -408,8 +562,8 @@ public final class CRS extends Static {
     /**
      * Returns the valid geographic area for the given coordinate reference system, or {@code null} if unknown.
      * This method explores the {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getDomainOfValidity() domain of
-     * validity} associated with the given CRS. If more than one geographic bounding box is found, then they will be
-     * {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add(GeographicBoundingBox) added}
+     * validity} associated with the given CRS. If more than one geographic bounding box is found, then this method
+     * computes their {@linkplain DefaultGeographicBoundingBox#add(GeographicBoundingBox) union}.
      * together.
      *
      * @param  crs  the coordinate reference system for which to get the domain of validity, or {@code null}.

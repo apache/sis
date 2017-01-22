@@ -55,7 +55,7 @@ public final strictfp class StringJoinOperationTest extends TestCase {
      * avoid avoiding confusion if a code spelled the variable name (e.g. {@code prefix})
      * instead of using it.
      *
-     * @return The feature for a person.
+     * @return the feature for a person.
      */
     private static DefaultFeatureType person() {
         final PropertyType nameType = new DefaultAttributeType<>(name("name"), String.class, 1, 1, null);

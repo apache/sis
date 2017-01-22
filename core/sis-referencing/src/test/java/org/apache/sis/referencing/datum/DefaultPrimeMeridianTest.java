@@ -117,7 +117,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
     /**
      * Tests marshalling in the default namespace.
      *
-     * @throws JAXBException If an error occurred during marshalling.
+     * @throws JAXBException if an error occurred during marshalling.
      */
     @Test
     public void testMarshall() throws JAXBException {
@@ -128,7 +128,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
     /**
      * Tests marshalling in the GML 3.1 namespace.
      *
-     * @throws JAXBException If an error occurred during marshalling.
+     * @throws JAXBException if an error occurred during marshalling.
      */
     @Test
     @DependsOnMethod("testMarshall")
@@ -145,7 +145,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
     /**
      * Tests unmarshalling.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException if an error occurred during unmarshalling.
      *
      * @see <a href="http://epsg-registry.org/export.htm?gml=urn:ogc:def:meridian:EPSG::8901">GML export of EPSG:8901</a>
      */
@@ -158,7 +158,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
     /**
      * Tests marshalling in the GML 3.1 namespace.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
     @DependsOnMethod("testUnmarshall")
@@ -175,7 +175,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
     /**
      * Tests unmarshalling of Paris prime meridian.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
     @DependsOnMethod({"testUnmarshall", "testMarshall", "testWKT_inGrads"})

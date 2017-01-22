@@ -81,7 +81,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     /**
      * Tests the {@link IndexedResourceBundle#list(Appendable)} method.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since this test writes only in memory.
      */
     @Test
     @DependsOnMethod("testGetResources")
@@ -210,7 +210,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     /**
      * If a test failed, lists the resource bundle content to {@link #out}.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since this test writes only in memory.
      */
     @After
     public void dumpResourcesOnError() throws IOException {

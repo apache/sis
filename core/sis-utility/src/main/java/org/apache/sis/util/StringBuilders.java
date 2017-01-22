@@ -283,8 +283,10 @@ public final class StringBuilders extends Static {
                         if (n == 2) {
                             buffer.deleteCharAt(i + 1);         // Remove the low surrogate of a surrogate pair.
                         }
-                        // Nothing special to do about codepoint here, since 'c' is in
-                        // the basic plane (verified by the r < ASCII.length() check).
+                        /*
+                         * Nothing special to do about codepoint here, since 'c' is in
+                         * the basic plane (verified by the r < ASCII.length() check).
+                         */
                         buffer.setCharAt(i, cr);
                     }
                 }

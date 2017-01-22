@@ -55,20 +55,25 @@ public abstract class MarshalContext {
      * A {@code null} value means that the locale is unspecified. Callers are encouraged
      * to use the root locale as the default value, but some flexibility is allowed.
      *
-     * @return The locale for the XML fragment being (un)marshalled, or {@code null} is unspecified.
+     * @return the locale for the XML fragment being (un)marshalled, or {@code null} is unspecified.
      *
      * @see org.apache.sis.util.iso.DefaultInternationalString#toString(Locale)
      */
     public abstract Locale getLocale();
 
     /**
-     * Returns the timezone to use for (un)marshalling, or {@code null} if none were explicitely specified.
+     * Returns the timezone to use for (un)marshalling, or {@code null} if none was explicitely specified.
      *
      * <div class="section">Handling of <code>null</code> timezone</div>
      * A {@code null} value means that the timezone is unspecified. Callers are encouraged
      * to use the UTC timezone as the default value, but some flexibility is allowed.
      *
-     * @return The timezone for the XML fragment being (un)marshalled, or {@code null} if unspecified.
+     * <div class="warning"><b>Upcoming API change — Java time API</b><br>
+     * Return type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
+     * This change may be applied in synchronization with GeoAPI 4.0.
+     * </div>
+     *
+     * @return the timezone for the XML fragment being (un)marshalled, or {@code null} if unspecified.
      */
     public abstract TimeZone getTimeZone();
 
@@ -88,8 +93,8 @@ public abstract class MarshalContext {
      *   </tr>
      * </table>
      *
-     * @param  prefix One of the above-cited prefix.
-     * @return The version for the given schema, or {@code null} if unknown.
+     * @param  prefix  one of the above-cited prefix.
+     * @return the version for the given schema, or {@code null} if unknown.
      */
     public abstract Version getVersion(final String prefix);
 }

@@ -62,7 +62,7 @@ public final class Longitude extends Angle {
      * Construct a new longitude with the specified angular value.
      * This constructor does <strong>not</strong> {@linkplain #normalize(double) normalize} the given value.
      *
-     * @param λ Longitude value in decimal degrees.
+     * @param  λ  longitude value in decimal degrees.
      */
     public Longitude(final double λ) {
         super(λ);
@@ -78,7 +78,7 @@ public final class Longitude extends Angle {
      * locale. Developers should consider using {@link AngleFormat} for end-user applications
      * instead than this constructor.</p>
      *
-     * @param  string A string to be converted to a {@code Longitude}.
+     * @param  string  a string to be converted to a {@code Longitude}.
      * @throws NumberFormatException if the string does not contain a parsable angle,
      *         or represents a longitude angle.
      *
@@ -112,8 +112,8 @@ public final class Longitude extends Angle {
      *
      * Note that the given value should not be greater than 4×10⁸ degrees if a centimetric precision is desired.
      *
-     * @param  λ The longitude value in decimal degrees.
-     * @return The given value normalized to the [-180 … 180)° range, or NaN if the given value was NaN of infinite.
+     * @param  λ  the longitude value in decimal degrees.
+     * @return the given value normalized to the [-180 … 180)° range, or NaN if the given value was NaN of infinite.
      *
      * @see Latitude#clamp(double)
      *

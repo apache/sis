@@ -52,7 +52,7 @@ public final strictfp class AbstractPositionalAccuracyTest extends XMLTestCase {
      * <p><b>XML test file:</b>
      * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/quality/PositionalAccuracy.xml"}</p>
      *
-     * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.
+     * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-107">GEOTK-107</a>
      * @see FreeTextMarshallingTest

@@ -34,7 +34,7 @@ import java.util.logging.LogRecord;
  * The difference between using this listener or configuring the logging {@link java.util.logging.Handler} is
  * that listeners allow to handle the warnings on a per-{@code DataStore} (or any other emitter) instance.
  *
- * @param <S> The base type of objects that emit warnings (the <cite>source</cite>).
+ * @param  <S>  the base type of objects that emit warnings (the <cite>source</cite>).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -50,7 +50,7 @@ public interface WarningListener<S> extends EventListener {
      * This is typically, but not necessarily, the class having the name returned by
      * {@link LogRecord#getSourceClassName()}, or one of its parent classes.
      *
-     * @return The base type of objects that emit warnings (the <cite>source</cite>).
+     * @return the base type of objects that emit warnings (the <cite>source</cite>).
      */
     Class<S> getSourceClass();
 
@@ -68,8 +68,8 @@ public interface WarningListener<S> extends EventListener {
      * Applications do not need to log the warning, since logging will be done automatically if the emitter has
      * no registered warning listeners.</p>
      *
-     * @param source  The object that emitted a warning, or {@code null} if not available.
-     * @param warning The warning message together with programmatic information.
+     * @param source   the object that emitted a warning, or {@code null} if not available.
+     * @param warning  the warning message together with programmatic information.
      */
     void warningOccured(S source, LogRecord warning);
 }

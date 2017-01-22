@@ -82,7 +82,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     /**
      * Tests XML of a {@link LocalName}.
      *
-     * @throws JAXBException Should not happen.
+     * @throws JAXBException if (un)marshalling failed.
      */
     @Test
     public void testLocalName() throws JAXBException {
@@ -104,7 +104,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     /**
      * Tests XML of a {@link LocalName} with {@code &} symbol.
      *
-     * @throws JAXBException Should not happen.
+     * @throws JAXBException if (un)marshalling failed.
      */
     @Test
     @DependsOnMethod("testLocalName")
@@ -127,7 +127,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     /**
      * Tests XML of a {@link LocalName} with a scope.
      *
-     * @throws JAXBException Should not happen.
+     * @throws JAXBException if (un)marshalling failed.
      */
     @Test
     @DependsOnMethod("testLocalName")
@@ -151,7 +151,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     /**
      * Tests XML of a {@link TypeName}.
      *
-     * @throws JAXBException Should not happen.
+     * @throws JAXBException if (un)marshalling failed.
      */
     @Test
     public void testTypeName() throws JAXBException {
@@ -177,7 +177,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     /**
      * Tests XML of a {@link org.opengis.util.ScopedName}.
      *
-     * @throws JAXBException Should not happen.
+     * @throws JAXBException if (un)marshalling failed.
      */
     @Test
     public void testScopedName() throws JAXBException {

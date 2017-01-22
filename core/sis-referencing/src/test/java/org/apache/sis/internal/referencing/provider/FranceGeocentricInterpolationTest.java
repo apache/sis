@@ -20,6 +20,9 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
@@ -31,11 +34,6 @@ import org.apache.sis.test.TestStep;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
-
-// Branch-dependent imports
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.Path;
 
 
 /**
@@ -66,8 +64,8 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
      * version 1.0, April 1997 in <a href="http://www.ign.fr">http://www.ign.fr</a>
      * </blockquote>
      *
-     * @param  step The step as a value from 1 to 3 inclusive.
-     * @return The sample point at the given step.
+     * @param  step  the step as a value from 1 to 3 inclusive.
+     * @return the sample point at the given step.
      */
     public static double[] samplePoint(final int step) {
         switch (step) {
@@ -131,7 +129,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
      * <p>This method is part of a chain.
      * The next method is {@link #testGridAsShorts(DatumShiftGridFile)}.</p>
      *
-     * @return The loaded grid with values as {@code float}.
+     * @return the loaded grid with values as {@code float}.
      * @throws URISyntaxException if the URL to the test file can not be converted to a path.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
@@ -162,8 +160,8 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
      * <p>This method is part of a chain.
      * The previous method is {@link #testGridAsFloats()}.</p>
      *
-     * @param  grid The grid created by {@link #testGridAsFloats()}.
-     * @return The given grid, but compressed as {@code short} values.
+     * @param  grid  the grid created by {@link #testGridAsFloats()}.
+     * @return the given grid, but compressed as {@code short} values.
      * @throws TransformException if an error occurred while computing the envelope.
      */
     @TestStep

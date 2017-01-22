@@ -129,8 +129,8 @@ import java.util.function.Supplier;
  * then creating <var>B</var> is not allowed to implies (directly or indirectly) the creation of
  * <var>A</var>. If this rule is not meet, deadlock may occur randomly.
  *
- * @param <K> The type of key objects.
- * @param <V> The type of value objects.
+ * @param  <K>  the type of key objects.
+ * @param  <V>  the type of value objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -204,9 +204,9 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * of the {@linkplain #cost cost} of all values) before to replace eldest strong references by
      * {@linkplain Reference weak or soft references}.</p>
      *
-     * @param initialCapacity the initial capacity.
-     * @param costLimit The maximum number of objects to keep by strong reference.
-     * @param soft If {@code true}, use {@link SoftReference} instead of {@link WeakReference}.
+     * @param initialCapacity  the initial capacity.
+     * @param costLimit        the maximum number of objects to keep by strong reference.
+     * @param soft             if {@code true}, use {@link SoftReference} instead of {@link WeakReference}.
      */
     public Cache(int initialCapacity, final long costLimit, final boolean soft) {
         ArgumentChecks.ensureStrictlyPositive("initialCapacity", initialCapacity);
@@ -224,8 +224,10 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     @Override
     public void clear() {
         map.clear();
-        // Do not update "costs" and "totalCost". Instead let adjustReferences(...)
-        // do its job, which needs to be done in a different thread.
+        /*
+         * Do not update "costs" and "totalCost". Instead let adjustReferences(…)
+         * do its job, which needs to be done in a different thread.
+         */
     }
 
     /**
@@ -243,7 +245,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * {@linkplain SoftReference soft} or {@linkplain WeakReference weak} references, and the
      * values under computation at the time this method is invoked.
      *
-     * @return The number of elements currently cached.
+     * @return the number of elements currently cached.
      */
     @Override
     public int size() {
@@ -253,7 +255,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * Returns {@code true} if this map contains the specified key.
      *
-     * @param  key The key to check for existence.
+     * @param  key  the key to check for existence.
      * @return {@code true} if the given key still exist in this cache.
      */
     @Override
@@ -290,9 +292,9 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * Puts the given value in cache.
      *
-     * @param  key   The key for which to set a value.
-     * @param  value The value to store.
-     * @return The value previously stored at the given key, or {@code null} if none.
+     * @param  key    the key for which to set a value.
+     * @param  value  the value to store.
+     * @return the value previously stored at the given key, or {@code null} if none.
      */
     @Override
     public V put(final K key, final V value) {
@@ -313,8 +315,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * Removes the value associated to the given key in the cache.
      *
-     * @param  key The key of the value to removed.
-     * @return The value that were associated to the given key, or {@code null} if none.
+     * @param  key  the key of the value to removed.
+     * @return the value that were associated to the given key, or {@code null} if none.
      */
     @Override
     public V remove(final Object key) {
@@ -326,8 +328,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * {@link #peek} except that it blocks if the value is currently under computation in an
      * other thread.
      *
-     * @param  key The key of the value to get.
-     * @return The value associated to the given key, or {@code null} if none.
+     * @param  key  the key of the value to get.
+     * @return the value associated to the given key, or {@code null} if none.
      */
     @Override
     public V get(final Object key) {
@@ -339,12 +341,10 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * is returned immediately. Otherwise the {@code creator.call()} method is invoked and
      * its result is saved in this cache for future reuse.
      *
-     * @param  key The key for which to get the cached or created value.
-     * @param  creator A method for creating a value, to be invoked only if no value are
-     *         cached for the given key.
-     * @return The value for the given key, which may have been created as a result of this
-     *         method call.
-     * @throws Exception If an exception occurred during the execution of {@code creator.call()}.
+     * @param  key      the key for which to get the cached or created value.
+     * @param  creator  a method for creating a value, to be invoked only if no value are cached for the given key.
+     * @return the value for the given key, which may have been created as a result of this method call.
+     * @throws Exception if an exception occurred during the execution of {@code creator.call()}.
      */
     public V getOrCreate(final K key, final Callable<? extends V> creator) throws Exception {
         V value = peek(key);
@@ -367,14 +367,16 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * This method is similar to {@link #get(Object)} except that it doesn't block if the value is
      * in process of being computed in an other thread; it returns {@code null} in such case.
      *
-     * @param  key The key for which to get the cached value.
-     * @return The cached value for the given key, or {@code null} if there is none.
+     * @param  key  the key for which to get the cached value.
+     * @return the cached value for the given key, or {@code null} if there is none.
      */
     public V peek(final K key) {
         final Object value = map.get(key);
         if (value instanceof Handler<?>) {
-            // The value is under computation. We will not wait for it since it is
-            // not the purpose of this method (we should use lock(key) for that).
+            /*
+             * The value is under computation. We will not wait for it since it is
+             * not the purpose of this method (we should use lock(key) for that).
+             */
             return null;
         }
         if (value instanceof Reference<?>) {
@@ -431,8 +433,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      *     }
      * }
      *
-     * @param  key The key for the entry to lock.
-     * @return A handler to use for unlocking and storing the result.
+     * @param  key  the key for the entry to lock.
+     * @return a handler to use for unlocking and storing the result.
      */
     public Handler<V> lock(final K key) {
         final Work handler = new Work(key);
@@ -556,7 +558,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      *
      * See the {@link Cache} javadoc for a more complete example.
      *
-     * @param <V> The type of value objects.
+     * @param  <V>  the type of value objects.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3
@@ -569,7 +571,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
          * This method should be invoked after the {@code Handler} creation in case a value
          * has been computed in an other thread.
          *
-         * @return The value from the cache, or {@code null} if none.
+         * @return the value from the cache, or {@code null} if none.
          */
         V peek();
 
@@ -578,11 +580,11 @@ public class Cache<K,V> extends AbstractMap<K,V> {
          * <strong>must</strong> be invoked in a {@code finally} block, no matter
          * what the result is.
          *
-         * @param result The result to store in the cache, or {@code null} for removing
+         * @param result  the result to store in the cache, or {@code null} for removing
          *        the entry from the cache. If an entry is removed, a new computation
          *        will be attempted the next time a handler is created for the same key.
          *
-         * @throws IllegalStateException May be thrown if this method is not invoked in
+         * @throws IllegalStateException may be thrown if this method is not invoked in
          *         the pattern described in class javadoc, or if a key collision occurs.
          */
         void putAndUnlock(V result) throws IllegalStateException;
@@ -688,7 +690,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
         /**
          * Stores the result and release the lock.
          *
-         * @throws IllegalStateException If the current thread does not hold the lock.
+         * @throws IllegalStateException if the current thread does not hold the lock.
          */
         @Override
         public void putAndUnlock(final V result) throws IllegalStateException {
@@ -764,7 +766,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      */
     final void adjustReferences(final K key, final V value) {
         int cost = cost(value);
-        synchronized (costs) { // Should not be needed, but done as a safety.
+        synchronized (costs) {                          // Should not be needed, but done as a safety.
             final Integer old = costs.put(key, cost);
             if (old != null) {
                 cost -= old;
@@ -787,7 +789,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                         final Reference<V> ref = soft ? new Soft<>(map, oldKey, (V) oldValue)
                                                       : new Weak<>(map, oldKey, (V) oldValue);
                         if (!map.replace(oldKey, oldValue, ref)) {
-                            ref.clear(); // Prevents the reference to be enqueued.
+                            ref.clear();                // Prevents the reference to be enqueued.
                         }
                     }
                     it.remove();
@@ -817,8 +819,10 @@ public class Cache<K,V> extends AbstractMap<K,V> {
         /** Removes the reference from the map. */
         @Override public void dispose() {
             map.remove(key, this);
-            // There is nothing to remove from the cost map, since the later
-            // contains only the keys of objects hold by strong reference.
+            /*
+             * There is nothing to remove from the cost map, since the later
+             * contains only the keys of objects hold by strong reference.
+             */
         }
     }
 
@@ -840,8 +844,10 @@ public class Cache<K,V> extends AbstractMap<K,V> {
         /** Removes the reference from the map. */
         @Override public void dispose() {
             map.remove(key, this);
-            // There is nothing to remove from the cost map, since the later
-            // contains only the keys of objects hold by strong reference.
+            /*
+             * There is nothing to remove from the cost map, since the later
+             * contains only the keys of objects hold by strong reference.
+             */
         }
     }
 
@@ -849,7 +855,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * Returns the set of keys in this cache. The returned set is subjects to the same caution
      * than the ones documented in the {@link ConcurrentHashMap#keySet()} method.
      *
-     * @return The set of keys in this cache.
+     * @return the set of keys in this cache.
      */
     @Override
     public Set<K> keySet() {
@@ -862,7 +868,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * it doesn't support removal of elements (including through the {@link Iterator#remove}
      * method call).
      *
-     * @return A view of the entries contained in this map.
+     * @return a view of the entries contained in this map.
      */
     @Override
     public Set<Entry<K,V>> entrySet() {
@@ -909,8 +915,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * in all cases. Subclasses should override this method if they have some easy way to measure
      * the relative cost of value objects.
      *
-     * @param  value The object for which to get an estimation of its cost.
-     * @return The estimated cost of the given object.
+     * @param  value  the object for which to get an estimation of its cost.
+     * @return the estimated cost of the given object.
      *
      * @see java.lang.instrument.Instrumentation#getObjectSize(Object)
      */

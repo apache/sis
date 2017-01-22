@@ -73,10 +73,10 @@ public final class Country extends GO_CharacterString {
      * Builds a {@code <Country>} element.
      * For private use by {@link #create(Context, Locale)} only.
      *
-     * @param context       The current (un)marshalling context, or {@code null} if none.
-     * @param codeListValue The {@code codeListValue} attribute in the XML element.
-     * @param codeSpace     The 3-letters language code of the {@code value} attribute, or {@code null} if none.
-     * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
+     * @param context        the current (un)marshalling context, or {@code null} if none.
+     * @param codeListValue  the {@code codeListValue} attribute in the XML element.
+     * @param codeSpace      the 3-letters language code of the {@code value} attribute, or {@code null} if none.
+     * @param value          the value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
     private Country(final Context context, final String codeListValue, final String codeSpace, final String value) {
         identifier = new CodeListUID(context, "Country", codeListValue, codeSpace, value);
@@ -85,9 +85,9 @@ public final class Country extends GO_CharacterString {
     /**
      * Creates a new wrapper for the given locale.
      *
-     * @param context The current (un)marshalling context, or {@code null} if none.
-     * @param locale  The value to marshal, or {@code null}.
-     * @return The country to marshal, or {@code null} if the given locale was null
+     * @param  context  the current (un)marshalling context, or {@code null} if none.
+     * @param  locale   the value to marshal, or {@code null}.
+     * @return the country to marshal, or {@code null} if the given locale was null
      *         or if its {@link Locale#getCountry()} attribute is the empty string.
      */
     public static Country create(final Context context, final Locale locale) {
@@ -120,11 +120,11 @@ public final class Country extends GO_CharacterString {
     /**
      * Returns the locale for the given language and country (which may be null), or {@code null} if none.
      *
-     * @param  context  The current (un)marshalling context, or {@code null} if none.
-     * @param  language The wrapper for the language value.
-     * @param  country  The wrapper for the country value.
-     * @param  caller   The class which is invoking this method, used only in case of warning.
-     * @return A locale which represents the language and country value.
+     * @param  context   the current (un)marshalling context, or {@code null} if none.
+     * @param  language  the wrapper for the language value.
+     * @param  country   the wrapper for the country value.
+     * @param  caller    the class which is invoking this method, used only in case of warning.
+     * @return a locale which represents the language and country value.
      */
     public static Locale getLocale(final Context context, final LanguageCode language, final Country country,
             final Class<?> caller)

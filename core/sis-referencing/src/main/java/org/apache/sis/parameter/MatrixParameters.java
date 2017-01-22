@@ -64,8 +64,8 @@ class MatrixParameters extends TensorParameters<Double> {
     /**
      * Constructs a descriptors provider.
      *
-     * @param numRow The parameter for the number of rows.
-     * @param numCol The parameter for the number of columns.
+     * @param numRow  the parameter for the number of rows.
+     * @param numCol  the parameter for the number of columns.
      */
     MatrixParameters(final ParameterDescriptor<Integer> numRow, final ParameterDescriptor<Integer> numCol) {
         super(Double.class, "elt_", "_", numRow, numCol);
@@ -93,8 +93,8 @@ class MatrixParameters extends TensorParameters<Double> {
      * used by the EPSG database. For other row and column indices, the same pattern is still used but the
      * result is not an official EPSG parameter name.
      *
-     * @param  indices The indices of the tensor element for which to create a parameter alias.
-     * @return The parameter descriptor alias for the tensor element at the given indices, or {@code null} if none.
+     * @param  indices  the indices of the tensor element for which to create a parameter alias.
+     * @return the parameter descriptor alias for the tensor element at the given indices, or {@code null} if none.
      */
     static String indicesToAlias(final int[] indices) {
         final int row = indices[0];

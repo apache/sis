@@ -256,12 +256,12 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * <code>{@linkplain #getContextualParameters()}.{@linkplain ContextualParameters#completeTransform
      * completeTransform}(factory, this)}</code>.
      *
-     * @param semiMajor  The semi-major axis length.
-     * @param semiMinor  The semi-minor axis length.
-     * @param unit       The unit of measurement for the semi-axes and the ellipsoidal height.
-     * @param withHeight {@code true} if source geographic coordinates include an ellipsoidal height
-     *                   (i.e. are 3-D), or {@code false} if they are only 2-D.
-     * @param target     Whether the target coordinate shall be Cartesian or Spherical.
+     * @param semiMajor   the semi-major axis length.
+     * @param semiMinor   the semi-minor axis length.
+     * @param unit        the unit of measurement for the semi-axes and the ellipsoidal height.
+     * @param withHeight  {@code true} if source geographic coordinates include an ellipsoidal height
+     *                    (i.e. are 3-D), or {@code false} if they are only 2-D.
+     * @param target      whether the target coordinate shall be Cartesian or Spherical.
      *
      * @see #createGeodeticConversion(MathTransformFactory, double, double, Unit, boolean, TargetType)
      */
@@ -305,7 +305,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     /**
      * Restores transient fields after deserialization.
      *
-     * @param  in The input stream from which to deserialize the transform.
+     * @param  in  the input stream from which to deserialize the transform.
      * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
      * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
@@ -334,14 +334,14 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      *   <li>distance from Earth center on the Z axis (toward North pole).</li>
      * </ol>
      *
-     * @param factory    The factory to use for creating and concatenating the affine transforms.
-     * @param semiMajor  The semi-major axis length.
-     * @param semiMinor  The semi-minor axis length.
-     * @param unit       The unit of measurement for the semi-axes and the ellipsoidal height.
-     * @param withHeight {@code true} if source geographic coordinates include an ellipsoidal height
-     *                   (i.e. are 3-D), or {@code false} if they are only 2-D.
-     * @param target     Whether the target coordinate shall be Cartesian or Spherical.
-     * @return The conversion from geographic to geocentric coordinates.
+     * @param  factory     the factory to use for creating and concatenating the affine transforms.
+     * @param  semiMajor   the semi-major axis length.
+     * @param  semiMinor   the semi-minor axis length.
+     * @param  unit        the unit of measurement for the semi-axes and the ellipsoidal height.
+     * @param  withHeight  {@code true} if source geographic coordinates include an ellipsoidal height
+     *                     (i.e. are 3-D), or {@code false} if they are only 2-D.
+     * @param  target      whether the target coordinate shall be Cartesian or Spherical.
+     * @return the conversion from geographic to geocentric coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform createGeodeticConversion(final MathTransformFactory factory,
@@ -379,11 +379,11 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      *
      * The target type is assumed Cartesian because this is the most frequently used target.
      *
-     * @param factory    The factory to use for creating and concatenating the affine transforms.
-     * @param ellipsoid  The semi-major and semi-minor axis lengths with their unit of measurement.
-     * @param withHeight {@code true} if source geographic coordinates include an ellipsoidal height
-     *                   (i.e. are 3-D), or {@code false} if they are only 2-D.
-     * @return The conversion from geographic to Cartesian geocentric coordinates.
+     * @param  factory     the factory to use for creating and concatenating the affine transforms.
+     * @param  ellipsoid   the semi-major and semi-minor axis lengths with their unit of measurement.
+     * @param  withHeight  {@code true} if source geographic coordinates include an ellipsoidal height
+     *                     (i.e. are 3-D), or {@code false} if they are only 2-D.
+     * @return the conversion from geographic to Cartesian geocentric coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform createGeodeticConversion(final MathTransformFactory factory,
@@ -399,7 +399,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * including {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
      * Those parameters are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
      *
-     * @return The parameters values for the sequence of
+     * @return the parameters values for the sequence of
      *         <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms.
      */
     @Override
@@ -417,7 +417,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
      * contextual parameters}.</div>
      *
-     * @return A copy of the internal parameter values for this transform.
+     * @return a copy of the internal parameter values for this transform.
      */
     @Debug
     @Override
@@ -433,7 +433,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * Returns a description of the internal parameters of this {@code EllipsoidToCentricTransform} transform.
      * The returned group contains parameter descriptors for the number of dimensions and the eccentricity.
      *
-     * @return A description of the internal parameters.
+     * @return a description of the internal parameters.
      */
     @Debug
     @Override
@@ -463,7 +463,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     /**
      * Gets the dimension of output points, which is 3.
      *
-     * @return Always 3.
+     * @return always 3.
      */
     @Override
     public final int getTargetDimensions() {
@@ -473,7 +473,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     /**
      * Returns whether the target coordinate system is Cartesian or Spherical.
      *
-     * @return Whether the target coordinate system is Cartesian or Spherical.
+     * @return whether the target coordinate system is Cartesian or Spherical.
      */
     public final TargetType getTargetType() {
         return TargetType.CARTESIAN;
@@ -489,8 +489,8 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * transform derivative, because that calculation needs to inverse a square matrix with all terms in it before
      * to drop the last row in the two-dimensional case.</div>
      *
-     * @param  point The coordinate point where to evaluate the derivative.
-     * @return The derivative at the specified point (never {@code null}).
+     * @param  point  the coordinate point where to evaluate the derivative.
+     * @return the derivative at the specified point (never {@code null}).
      * @throws TransformException if the derivative can not be evaluated at the specified point.
      */
     @Override
@@ -528,14 +528,14 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * Implementation of {@link #transform(double[], int, double[], int, boolean)}
      * with possibility to override the {@link #withHeight} value.
      *
-     * @param λ        Longitude (radians).
-     * @param φ        Latitude (radians).
-     * @param h        Height above the ellipsoid divided by the length of semi-major axis.
-     * @param dstPts   The array into which the transformed coordinate is returned.
-     *                 May be {@code null} if only the derivative matrix is desired.
-     * @param dstOff   The offset to the location of the transformed point that is stored in the destination array.
-     * @param derivate {@code true} for computing the derivative, or {@code false} if not needed.
-     * @param wh       {@code true} for a 3×3 matrix, or {@code false} for a 3×2 matrix excluding the height elements.
+     * @param  λ         longitude (radians).
+     * @param  φ         latitude (radians).
+     * @param  h         height above the ellipsoid divided by the length of semi-major axis.
+     * @param  dstPts    the array into which the transformed coordinate is returned.
+     *                   May be {@code null} if only the derivative matrix is desired.
+     * @param  dstOff    the offset to the location of the transformed point that is stored in the destination array.
+     * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
+     * @param  wh        {@code true} for a 3×3 matrix, or {@code false} for a 3×2 matrix excluding the height elements.
      */
     private Matrix transform(final double λ, final double φ, final double h,
                              final double[] dstPts, final int dstOff,
@@ -639,12 +639,12 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * Converts Cartesian coordinates (<var>X</var>,<var>Y</var>,<var>Z</var>) to ellipsoidal coordinates
      * (λ,φ) or (λ,φ,<var>h</var>). This method is invoked by the transform returned by {@link #inverse()}.
      *
-     * @param  srcPts The array containing the source point coordinates.
-     * @param  srcOff The offset to the first point to be transformed in the source array.
-     * @param  dstPts The array into which the transformed point coordinates are returned.
-     *                May be the same than {@code srcPts}.
-     * @param  dstOff The offset to the location of the first transformed point that is stored in the destination array.
-     * @param  numPts The number of point objects to be transformed.
+     * @param  srcPts  the array containing the source point coordinates.
+     * @param  srcOff  the offset to the first point to be transformed in the source array.
+     * @param  dstPts  the array into which the transformed point coordinates are returned.
+     *                 May be the same than {@code srcPts}.
+     * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
+     * @param  numPts  the number of point objects to be transformed.
      * @throws TransformException if the calculation does not converge.
      */
     protected void inverseTransform(final double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts)
@@ -734,7 +734,7 @@ next:   while (--numPts >= 0) {
      * Returns the inverse of this transform. The default implementation returns a transform
      * that will delegate its work to {@link #inverseTransform(double[], int, double[], int, int)}.
      *
-     * @return The conversion from (geo)centric to ellipsoidal coordinates.
+     * @return the conversion from (geo)centric to ellipsoidal coordinates.
      */
     @Override
     public MathTransform inverse() {
@@ -761,8 +761,7 @@ next:   while (--numPts >= 0) {
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            // Slight optimization
-            return true;
+            return true;                            // Slight optimization
         }
         if (super.equals(object, mode)) {
             final EllipsoidToCentricTransform that = (EllipsoidToCentricTransform) object;
@@ -945,9 +944,9 @@ next:   while (--numPts >= 0) {
          * Given a transformation chain to format in WKT, inserts a "Geographic 3D to 2D" pseudo-conversion
          * after this transform (normally {@code transforms.get(index)}) if this conversion computes no height.
          *
-         * @param  transforms The full chain of concatenated transforms.
-         * @param  index      The index of this transform in the {@code transforms} chain.
-         * @return Index of this transform in the {@code transforms} chain after processing.
+         * @param  transforms  the full chain of concatenated transforms.
+         * @param  index       the index of this transform in the {@code transforms} chain.
+         * @return index of this transform in the {@code transforms} chain after processing.
          */
         @Override
         final int beforeFormat(final List<Object> transforms, int index, final boolean inverse) {
@@ -963,9 +962,9 @@ next:   while (--numPts >= 0) {
      * Given a transformation chain to format in WKT, inserts a "Geographic 2D to 3D" pseudo-conversion
      * before this transform (normally {@code transforms.get(index)}) if this conversion expects no height.
      *
-     * @param  transforms The full chain of concatenated transforms.
-     * @param  index      The index of this transform in the {@code transforms} chain.
-     * @return Index of this transform in the {@code transforms} chain after processing.
+     * @param  transforms  the full chain of concatenated transforms.
+     * @param  index       the index of this transform in the {@code transforms} chain.
+     * @return index of this transform in the {@code transforms} chain after processing.
      */
     @Override
     final int beforeFormat(final List<Object> transforms, int index, final boolean inverse) {

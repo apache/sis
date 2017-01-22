@@ -48,8 +48,8 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
      *   <li>{@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/extent"}</li>
      * </ul>
      *
-     * @param  filename The name of the XML file.
-     * @return The URL to the given XML file.
+     * @param  filename  the name of the XML file.
+     * @return the URL to the given XML file.
      */
     public static URL getResource(final String filename) {
         final URL resource = DefaultExtentTest.class.getResource(filename);
@@ -64,8 +64,8 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
      * <p><b>XML test file:</b>
      * {@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso/extent/Extent.xml"}</p>
      *
-     * @throws IOException   If an error occurred while reading the XML file.
-     * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.
+     * @throws IOException   if an error occurred while reading the XML file.
+     * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      */
     @Test
     public void testXML() throws IOException, JAXBException {
@@ -92,7 +92,7 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
     /**
      * Tests XML marshalling of the {@link Extents#WORLD} constant, which is a {@code DefaultExtent} instance.
      *
-     * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.
+     * @throws JAXBException if an error occurred during the during marshalling / unmarshalling processes.
      *
      * @since 0.6
      */

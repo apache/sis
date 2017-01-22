@@ -16,7 +16,7 @@
  */
 package org.apache.sis.util;
 
-import java.util.Map; // For javadoc
+import java.util.Map;                                               // For javadoc
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.Envelope;
@@ -169,10 +169,10 @@ public final class ArgumentChecks extends Static {
      * If this method does not thrown an exception, then the value can be casted to the class
      * represented by {@code expectedType} without throwing a {@link ClassCastException}.
      *
-     * @param  name  the name of the argument to be checked, used only if an exception is thrown.
-     *         Can be {@code null} if the name is unknown.
-     * @param  expectedType the expected type (class or interface).
-     * @param  value  the value to check, or {@code null}.
+     * @param  name          the name of the argument to be checked, used only if an exception is thrown.
+     *                       Can be {@code null} if the name is unknown.
+     * @param  expectedType  the expected type (class or interface).
+     * @param  value         the value to check, or {@code null}.
      * @throws IllegalArgumentException if {@code value} is non-null and is not assignable to the given type.
      *
      * @see org.apache.sis.util.collection.Containers#property(Map, Object, Class)
@@ -204,8 +204,7 @@ public final class ArgumentChecks extends Static {
      *
      * @param  upper  the maximal index value, exclusive.
      * @param  index  the index to check.
-     * @throws IndexOutOfBoundsException if the given index is negative or not lower than the
-     *         given upper value.
+     * @throws IndexOutOfBoundsException if the given index is negative or not lower than the given upper value.
      *
      * @see #ensurePositive(String, int)
      */

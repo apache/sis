@@ -65,7 +65,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * Creates the XML (un)marshaller pool to be shared by all test methods.
      * The (un)marshallers locale and timezone will be set to fixed values.
      *
-     * @throws JAXBException If an error occurred while creating the pool.
+     * @throws JAXBException if an error occurred while creating the pool.
      *
      * @see #disposeMarshallerPool()
      */
@@ -89,8 +89,8 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
     /**
      * Tests time instant. The test is executed using an arbitrary locale and timezone.
      *
-     * @throws JAXBException If an error occurred while marshalling.
-     * @throws DatatypeConfigurationException Should never happen.
+     * @throws JAXBException if an error occurred while marshalling.
+     * @throws DatatypeConfigurationException should never happen.
      */
     @Test
     public void testTimeInstant() throws JAXBException, DatatypeConfigurationException {
@@ -116,7 +116,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * Tests a time period using the GML 2 syntax.
      * The test is executed using an arbitrary locale and timezone.
      *
-     * @throws JAXBException If an error occurred while marshalling.
+     * @throws JAXBException if an error occurred while marshalling.
      */
     @Test
     public void testPeriodGML2() throws JAXBException {
@@ -143,7 +143,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * implementation of {@link #testPeriodGML2()} and {@link #testPeriodGML3()}.
      * The test is executed using an arbitrary locale and timezone.
      *
-     * @param expected The expected string.
+     * @param  expected  the expected string.
      */
     private void testPeriod(final TimePeriodBound begin, final TimePeriodBound end,
             final String expected, final boolean verifyValues) throws JAXBException
@@ -168,7 +168,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * Tests a time period using the GML 3 syntax.
      * The test is executed using an arbitrary locale and timezone.
      *
-     * @throws JAXBException If an error occurred while marshalling.
+     * @throws JAXBException if an error occurred while marshalling.
      */
     @Test
     public void testPeriodGML3() throws JAXBException {
@@ -186,7 +186,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * Same test than {@link #testPeriodGML3()}, but with simplified date format (omit the hours and timezone)
      * The test is executed using an arbitrary locale and timezone.
      *
-     * @throws JAXBException If an error occurred while marshalling.
+     * @throws JAXBException if an error occurred while marshalling.
      */
     @Test
     public void testSimplifiedPeriodGML3() throws JAXBException {
@@ -204,7 +204,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * Same test than {@link #testSimplifiedPeriodGML3()}, but without beginning boundary.
      * The test is executed using an arbitrary locale and timezone.
      *
-     * @throws JAXBException If an error occurred while marshalling.
+     * @throws JAXBException if an error occurred while marshalling.
      */
     @Test
     public void testBeforePeriodGML3() throws JAXBException {
@@ -222,7 +222,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * Same test than {@link #testSimplifiedPeriodGML3()}, but without end boundary.
      * The test is executed using an arbitrary locale and timezone.
      *
-     * @throws JAXBException If an error occurred while marshalling.
+     * @throws JAXBException if an error occurred while marshalling.
      */
     @Test
     public void testAfterPeriodGML3() throws JAXBException {

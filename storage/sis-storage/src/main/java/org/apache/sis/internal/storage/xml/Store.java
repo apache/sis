@@ -52,15 +52,10 @@ import static java.util.Collections.singleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class Store extends DataStore {
-    /**
-     * The file name.
-     */
-    private final String name;
-
     /**
      * The input stream or reader, set by the constructor and cleared when no longer needed.
      */
@@ -68,7 +63,7 @@ final class Store extends DataStore {
 
     /**
      * The unmarshalled object, initialized only when first needed.
-     * May still {@code null} if the unmarshalling failed.
+     * May still be {@code null} if the unmarshalling failed.
      */
     private Object object;
 
@@ -80,11 +75,12 @@ final class Store extends DataStore {
     /**
      * Creates a new XML store from the given file, URL or stream.
      *
-     * @param  connector information about the storage (URL, stream, <i>etc</i>).
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public Store(final StorageConnector connector) throws DataStoreException {
-        name = connector.getStorageName();
+    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
         final InputStream in = connector.getStorageAs(InputStream.class);
         if (in != null) {
             source = new StreamSource(in);
@@ -97,7 +93,7 @@ final class Store extends DataStore {
         final Closeable c = input(source);
         connector.closeAllExcept(c);
         if (c == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, name));
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
         }
     }
 
@@ -152,7 +148,7 @@ final class Store extends DataStore {
                 in.close();
             }
         } catch (JAXBException | IOException e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, name), e);
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, getDisplayName()), e);
         }
     }
 

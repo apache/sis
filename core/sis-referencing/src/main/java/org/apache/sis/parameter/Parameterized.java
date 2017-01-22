@@ -34,7 +34,7 @@ public interface Parameterized {
     /**
      * Returns the parameter descriptors for this parameterized object, or {@code null} if unknown.
      *
-     * @return The parameter descriptors for this object, or {@code null}.
+     * @return the parameter descriptors for this object, or {@code null}.
      */
     ParameterDescriptorGroup getParameterDescriptors();
 
@@ -48,7 +48,7 @@ public interface Parameterized {
      * then (s)he should {@linkplain DefaultParameterValueGroup#clone() clone} the parameters before to
      * modify them, then use the modified parameters for creating a new {@code Parameterized} object.
      *
-     * @return The parameter values for this object, or {@code null} if unknown.
+     * @return the parameter values for this object, or {@code null} if unknown.
      */
     ParameterValueGroup getParameterValues();
 }

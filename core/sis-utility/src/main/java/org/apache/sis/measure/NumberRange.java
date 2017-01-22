@@ -608,7 +608,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * then delegates to {@link #intersect(Range)}.
      *
      * @param  range  the range to add to this range.
-     * @return The union of this range with the given range.
+     * @return the union of this range with the given range.
      * @throws IllegalArgumentException if the given range can not be converted to a valid type
      *         through widening conversion, or if the units of measurement are not convertible.
      */

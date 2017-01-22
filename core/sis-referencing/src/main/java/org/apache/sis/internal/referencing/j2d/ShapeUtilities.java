@@ -53,15 +53,15 @@ public final class ShapeUtilities extends Static {
      * if the intersection does not occur between the ending points {@linkplain Line2D#getP1() P1} and
      * {@linkplain Line2D#getP2() P2} of the two line segments, then this method returns {@code null}.
      *
-     * @param  ax1 <var>x</var> value of the first point on the first  line.
-     * @param  ay1 <var>y</var> value of the first point on the first  line.
-     * @param  ax2 <var>x</var> value of the last  point on the first  line.
-     * @param  ay2 <var>y</var> value of the last  point on the first  line.
-     * @param  bx1 <var>x</var> value of the first point on the second line.
-     * @param  by1 <var>y</var> value of the first point on the second line.
-     * @param  bx2 <var>x</var> value of the last  point on the second line.
-     * @param  by2 <var>y</var> value of the last  point on the second line.
-     * @return The intersection point, or {@code null} if none.
+     * @param  ax1  <var>x</var> value of the first point on the first  line.
+     * @param  ay1  <var>y</var> value of the first point on the first  line.
+     * @param  ax2  <var>x</var> value of the last  point on the first  line.
+     * @param  ay2  <var>y</var> value of the last  point on the first  line.
+     * @param  bx1  <var>x</var> value of the first point on the second line.
+     * @param  by1  <var>y</var> value of the first point on the second line.
+     * @param  bx2  <var>x</var> value of the last  point on the second line.
+     * @param  by2  <var>y</var> value of the last  point on the second line.
+     * @return the intersection point, or {@code null} if none.
      *
      * @see org.apache.sis.geometry.Shapes2D#intersectionPoint(Line2D, Line2D)
      */
@@ -106,13 +106,13 @@ public final class ShapeUtilities extends Static {
      *       This distance can be obtained with {@code point.distance(result)}.</li>
      * </ul>
      *
-     * @param  x1 <var>x</var> value of the first point on the line.
-     * @param  y1 <var>y</var> value of the first point on the line.
-     * @param  x2 <var>x</var> value of the last  point on the line.
-     * @param  y2 <var>y</var> value of the last  point on the line.
-     * @param  x  <var>x</var> value of a point close to the given line.
-     * @param  y  <var>y</var> value of a point close to the given line.
-     * @return The nearest point on the given line.
+     * @param  x1  <var>x</var> value of the first point on the line.
+     * @param  y1  <var>y</var> value of the first point on the line.
+     * @param  x2  <var>x</var> value of the last  point on the line.
+     * @param  y2  <var>y</var> value of the last  point on the line.
+     * @param  x   <var>x</var> value of a point close to the given line.
+     * @param  y   <var>y</var> value of a point close to the given line.
+     * @return the nearest point on the given line.
      *
      * @see #colinearPoint(double,double , double,double , double,double , double)
      *
@@ -164,14 +164,14 @@ public final class ShapeUtilities extends Static {
      * If two result points meet those conditions, then this method returns the point
      * which is the closest to {@code line.getP1()}.
      *
-     * @param  x1 <var>x</var> value of the first point on the line.
-     * @param  y1 <var>y</var> value of the first point on the line.
-     * @param  x2 <var>x</var> value of the last  point on the line.
-     * @param  y2 <var>y</var> value of the last  point on the line.
-     * @param  x  <var>x</var> value of a point close to the given line.
-     * @param  y  <var>y</var> value of a point close to the given line.
-     * @param  distance The distance between the given point and the point to be returned.
-     * @return A point on the given line located at the given distance from the given point.
+     * @param  x1  <var>x</var> value of the first point on the line.
+     * @param  y1  <var>y</var> value of the first point on the line.
+     * @param  x2  <var>x</var> value of the last  point on the line.
+     * @param  y2  <var>y</var> value of the last  point on the line.
+     * @param  x   <var>x</var> value of a point close to the given line.
+     * @param  y   <var>y</var> value of a point close to the given line.
+     * @param  distance  the distance between the given point and the point to be returned.
+     * @return a point on the given line located at the given distance from the given point.
      *
      * @see #nearestColinearPoint(double,double , double,double , double,double)
      *
@@ -251,16 +251,16 @@ public final class ShapeUtilities extends Static {
      *
      * Note that if {@code P0.y == P2.y}, then both {@code horizontal} values produce the same result.
      *
-     * @param  x1 <var>x</var> value of the starting point.
-     * @param  y1 <var>y</var> value of the starting point.
-     * @param  px <var>x</var> value of a passing point.
-     * @param  py <var>y</var> value of a passing point.
-     * @param  x2 <var>x</var> value of the ending point.
-     * @param  y2 <var>y</var> value of the ending point.
-     * @param  horizontal If {@code true}, the <var>x</var> axis is considered horizontal while computing the
+     * @param  x1  <var>x</var> value of the starting point.
+     * @param  y1  <var>y</var> value of the starting point.
+     * @param  px  <var>x</var> value of a passing point.
+     * @param  py  <var>y</var> value of a passing point.
+     * @param  x2  <var>x</var> value of the ending point.
+     * @param  y2  <var>y</var> value of the ending point.
+     * @param  horizontal  if {@code true}, the <var>x</var> axis is considered horizontal while computing the
      *         {@code y=ax²+bx+c} equation terms. If {@code false}, it is considered parallel to the line
      *         joining the {@code P0} and {@code P2} points.
-     * @return A quadratic curve passing by the given points. The curve starts at {@code P0} and ends at {@code P2}.
+     * @return a quadratic curve passing by the given points. The curve starts at {@code P0} and ends at {@code P2}.
      *         If two points are too close or if the three points are colinear, then this method returns {@code null}.
      *
      * @todo This method is used by Geotk (a sandbox for code that may migrate to SIS), but not yet by SIS.
@@ -292,16 +292,16 @@ public final class ShapeUtilities extends Static {
      *
      * Note that if {@code P0.y == P2.y}, then both {@code horizontal} values produce the same result.
      *
-     * @param  x1 <var>x</var> value of the starting point.
-     * @param  y1 <var>y</var> value of the starting point.
-     * @param  px <var>x</var> value of a passing point.
-     * @param  py <var>y</var> value of a passing point.
-     * @param  x2 <var>x</var> value of the ending point.
-     * @param  y2 <var>y</var> value of the ending point.
-     * @param  horizontal If {@code true}, the <var>x</var> axis is considered horizontal while computing the
+     * @param  x1  <var>x</var> value of the starting point.
+     * @param  y1  <var>y</var> value of the starting point.
+     * @param  px  <var>x</var> value of a passing point.
+     * @param  py  <var>y</var> value of a passing point.
+     * @param  x2  <var>x</var> value of the ending point.
+     * @param  y2  <var>y</var> value of the ending point.
+     * @param  horizontal  if {@code true}, the <var>x</var> axis is considered horizontal while computing the
      *         {@code y = ax²+bx+c} equation terms. If {@code false}, it is considered parallel to the line
      *         joining the {@code P0} and {@code P2} points.
-     * @return The control point of a quadratic curve passing by the given points. The curve starts at {@code (x0,y0)}
+     * @return the control point of a quadratic curve passing by the given points. The curve starts at {@code (x0,y0)}
      *         and ends at {@code (x2,y2)}. If two points are too close or if the three points are colinear, then this
      *         method returns {@code null}.
      */
@@ -359,13 +359,13 @@ public final class ShapeUtilities extends Static {
      * Returns the center of a circle passing by the 3 given points. The distance between the returned
      * point and any of the given points will be constant; it is the circle radius.
      *
-     * @param  x1 <var>x</var> value of the first  point.
-     * @param  y1 <var>y</var> value of the first  point.
-     * @param  x2 <var>x</var> value of the second point.
-     * @param  y2 <var>y</var> value of the second point.
-     * @param  x3 <var>x</var> value of the third  point.
-     * @param  y3 <var>y</var> value of the third  point.
-     * @return The center of a circle passing by the given points.
+     * @param  x1  <var>x</var> value of the first  point.
+     * @param  y1  <var>y</var> value of the first  point.
+     * @param  x2  <var>x</var> value of the second point.
+     * @param  y2  <var>y</var> value of the second point.
+     * @param  x3  <var>x</var> value of the third  point.
+     * @param  y3  <var>y</var> value of the third  point.
+     * @return the center of a circle passing by the given points.
      *
      * @see org.apache.sis.geometry.Shapes2D#circle(Point2D, Point2D, Point2D)
      */
@@ -389,9 +389,9 @@ public final class ShapeUtilities extends Static {
      * line or a quadratic curve, then this method replaces it by a {@link Line2D} or
      * {@link QuadCurve2D} object respectively.
      *
-     * @param  path The shape to replace by a simpler Java2D construct.
+     * @param  path  the shape to replace by a simpler Java2D construct.
      *         This is generally an instance of {@link Path2D}, but not necessarily.
-     * @return A simpler Java construct, or {@code path} if no better construct is proposed.
+     * @return a simpler Java construct, or {@code path} if no better construct is proposed.
      */
     public static Shape toPrimitive(final Shape path) {
         final PathIterator it = path.getPathIterator(null);

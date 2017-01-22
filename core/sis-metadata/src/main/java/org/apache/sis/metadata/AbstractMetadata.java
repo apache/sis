@@ -71,7 +71,7 @@ import org.apache.sis.util.collection.TreeTable;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  *
  * @see MetadataStandard
@@ -93,16 +93,15 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * Implementation of this method shall not depend on the object state,
      * since this method may be indirectly invoked by copy constructors.
      *
-     * @return The metadata standard implemented.
+     * @return the metadata standard implemented.
      */
     public abstract MetadataStandard getStandard();
 
     /**
-     * Returns the metadata interface implemented by this class. It should be one of the
-     * interfaces defined in the {@linkplain #getStandard() metadata standard} implemented
-     * by this class.
+     * Returns the metadata interface implemented by this class. It should be one of the interfaces
+     * defined in the {@linkplain #getStandard() metadata standard} implemented by this class.
      *
-     * @return The standard interface implemented by this implementation class.
+     * @return the standard interface implemented by this implementation class.
      *
      * @see MetadataStandard#getInterface(Class)
      */
@@ -127,7 +126,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *
      * <div class="section">Note for implementors</div>
      * The default implementation uses Java reflection indirectly, by iterating over all entries
-     * returned by {@link MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)}.
+     * returned by {@link MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)}.
      * Subclasses that override this method should usually not invoke {@code super.isEmpty()},
      * because the Java reflection will discover and process the properties defined in the
      * subclasses - which is usually not the intend when overriding a method.
@@ -147,7 +146,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
          */
         final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
         try {
-            return Pruner.isEmpty(this, true, false);
+            return Pruner.isEmpty(this, getInterface(), true, false);
         } finally {
             if (!allowNull) {
                 Semaphores.clear(Semaphores.NULL_COLLECTION);
@@ -160,13 +159,13 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * {@linkplain ValueExistencePolicy#NON_NULL non null} properties, and sets to {@code null}
      * the properties for which {@link #isEmpty()} returned {@code true}.
      *
-     * @throws UnmodifiableMetadataException If this metadata is not modifiable.
+     * @throws UnmodifiableMetadataException if this metadata is not modifiable.
      */
     public void prune() {
         // See comment in 'isEmpty()' about NULL_COLLECTION semaphore purpose.
         final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
         try {
-            Pruner.isEmpty(this, true, true);
+            Pruner.isEmpty(this, getInterface(), true, true);
         } finally {
             if (!allowNull) {
                 Semaphores.clear(Semaphores.NULL_COLLECTION);
@@ -204,15 +203,15 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * The default implementation is equivalent to the following method call:
      *
      * {@preformat java
-     *   return getStandard().asValueMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
+     *   return getStandard().asValueMap(this, null, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
      * }
      *
-     * @return A view of this metadata object as a map.
+     * @return a view of this metadata object as a map.
      *
-     * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
+     * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
      */
     public Map<String,Object> asMap() {
-        return getStandard().asValueMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
+        return getStandard().asValueMap(this, null, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
     }
 
     /**
@@ -272,15 +271,15 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * The default implementation is equivalent to the following method call:
      *
      * {@preformat java
-     *   return getStandard().asTreeTable(this, ValueExistencePolicy.NON_EMPTY);
+     *   return getStandard().asTreeTable(this, null, ValueExistencePolicy.NON_EMPTY);
      * }
      *
-     * @return A tree table representation of the specified metadata.
+     * @return a tree table representation of the specified metadata.
      *
-     * @see MetadataStandard#asTreeTable(Object, ValueExistencePolicy)
+     * @see MetadataStandard#asTreeTable(Object, Class, ValueExistencePolicy)
      */
     public TreeTable asTreeTable() {
-        return getStandard().asTreeTable(this, ValueExistencePolicy.NON_EMPTY);
+        return getStandard().asTreeTable(this, null, ValueExistencePolicy.NON_EMPTY);
     }
 
     /**
@@ -289,8 +288,8 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * for better performances, or for comparing "hidden" properties not specified
      * by the GeoAPI (or other standard) interface.
      *
-     * @param  object The object to compare with this metadata.
-     * @param  mode The strictness level of the comparison.
+     * @param  object  the object to compare with this metadata.
+     * @param  mode    the strictness level of the comparison.
      * @return {@code true} if the given object is equal to this metadata.
      */
     @Override
@@ -311,7 +310,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * If a subclass needs to override the behavior of this method, then
      * override {@link #equals(Object, ComparisonMode)} instead.
      *
-     * @param  object The object to compare with this metadata for equality.
+     * @param  object  the object to compare with this metadata for equality.
      * @return {@code true} if the given object is strictly equals to this metadata.
      */
     @Override

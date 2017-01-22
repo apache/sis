@@ -83,9 +83,9 @@ abstract class DaemonThread extends Thread {
      *
      * See {@link ReferenceQueueConsumer} for a real example.
      *
-     * @param name The thread name.
-     * @param lastCreatedDaemon The previous element in a chain of {@code DaemonThread}s,
-     *        or {@code null}. Each SIS module shall maintain its own chain, if any.
+     * @param  name               the thread name.
+     * @param  lastCreatedDaemon  the previous element in a chain of {@code DaemonThread}s, or {@code null}.
+     *                            Each SIS module shall maintain its own chain, if any.
      */
     protected DaemonThread(final String name, final DaemonThread lastCreatedDaemon) {
         super(Threads.DAEMONS, name);
@@ -128,10 +128,10 @@ abstract class DaemonThread extends Thread {
      * <p><strong>This method is for internal use by Apache SIS shutdown hooks only.</strong>
      * Users should never invoke this method explicitely.</p>
      *
-     * @param  thread The first thread in the chain of threads to kill.
-     * @param  stopWaitingAt A {@link System#nanoTime()} value telling when to stop waiting.
+     * @param  thread         the first thread in the chain of threads to kill.
+     * @param  stopWaitingAt  a {@link System#nanoTime()} value telling when to stop waiting.
      *         This is used for preventing shutdown process to block an indefinite amount of time.
-     * @throws InterruptedException If an other thread invoked {@link #interrupt()} while
+     * @throws InterruptedException if an other thread invoked {@link #interrupt()} while
      *         we were waiting for the daemon threads to die.
      *
      * @see Threads#shutdown(long)
@@ -144,7 +144,7 @@ abstract class DaemonThread extends Thread {
         while (thread != null) {
             final long delay = stopWaitingAt - System.nanoTime();
             if (delay <= 0) break;
-            thread.join(delay / 1000000); // Convert nanoseconds to milliseconds.
+            thread.join(delay / 1000000);                   // Convert nanoseconds to milliseconds.
             thread = thread.previous;
         }
     }
@@ -157,8 +157,8 @@ abstract class DaemonThread extends Thread {
      * <p><strong>This method is for internal use by Apache SIS only.</strong>
      * Users should never invoke this method explicitely.</p>
      *
-     * @param  thread The first thread in the chain of threads to verify.
-     * @return The list of stalled or dead threads, or {@code null} if none.
+     * @param  thread  the first thread in the chain of threads to verify.
+     * @return the list of stalled or dead threads, or {@code null} if none.
      */
     static List<Thread> listStalledThreads(DaemonThread thread) {
         List<Thread> list = null;

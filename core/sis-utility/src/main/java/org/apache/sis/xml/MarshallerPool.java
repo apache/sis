@@ -75,7 +75,7 @@ public class MarshallerPool {
      * This is a very approximative value: actual timeout will not be shorter,
      * but may be twice longer.
      */
-    private static final long TIMEOUT = 15000000000L; // 15 seconds.
+    private static final long TIMEOUT = 15000000000L;           // 15 seconds.
 
     /**
      * Kind of JAXB implementations.
@@ -366,6 +366,19 @@ public class MarshallerPool {
         Unmarshaller unmarshaller = unmarshallers.poll();
         if (unmarshaller == null) {
             unmarshaller = new PooledUnmarshaller(createUnmarshaller(), template);
+        }
+        return unmarshaller;
+    }
+
+    /**
+     * Acquires a unmarshaller and set the properties to the given value, if non-null.
+     */
+    final Unmarshaller acquireUnmarshaller(final Map<String,?> properties) throws JAXBException {
+        final Unmarshaller unmarshaller = acquireUnmarshaller();
+        if (properties != null) {
+            for (final Map.Entry<String,?> entry : properties.entrySet()) {
+                unmarshaller.setProperty(entry.getKey(), entry.getValue());
+            }
         }
         return unmarshaller;
     }

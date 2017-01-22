@@ -47,9 +47,9 @@ public final strictfp class AbstractCSTest extends TestCase {
     /**
      * Gets a coordinate system for the given axes convention and compare against the expected values.
      *
-     * @param convention The convention to use.
-     * @param cs The coordinate system to test.
-     * @param expected The expected axes, in order.
+     * @param  convention  the convention to use.
+     * @param  cs          the coordinate system to test.
+     * @param  expected    the expected axes, in order.
      */
     private static void verifyAxesConvention(final AxesConvention convention, final AbstractCS cs,
             final CoordinateSystemAxis... expected)

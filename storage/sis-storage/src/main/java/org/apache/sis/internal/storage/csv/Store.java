@@ -44,12 +44,15 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.storage.DataStore;
+import org.apache.sis.internal.storage.FeatureStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
@@ -57,7 +60,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.measure.Units;
 
@@ -83,7 +85,7 @@ import org.opengis.feature.AttributeType;
  * @version 0.8
  * @module
  */
-public final class Store extends DataStore {
+public final class Store extends FeatureStore {
     /**
      * The character at the beginning of lines to ignore in the header.
      * Note that this is not part of OGC Moving Feature Specification.
@@ -115,11 +117,6 @@ public final class Store extends DataStore {
      * Examples: {@code xsd:boolean}, {@code xsd:decimal}, {@code xsd:integer}, <i>etc</i>.
      */
     private static final String TYPE_PREFIX = "xsd:";
-
-    /**
-     * The file name, used for reporting error messages.
-     */
-    private final String filename;
 
     /**
      * The reader, set by the constructor and cleared when no longer needed.
@@ -177,15 +174,16 @@ public final class Store extends DataStore {
      * <p>If the CSV file is known to be a Moving Feature file, then the given connector should
      * have an {@link org.apache.sis.setup.OptionKey#ENCODING} associated to the UTF-8 value.</p>
      *
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public Store(final StorageConnector connector) throws DataStoreException {
-        filename = connector.getStorageName();
+    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
         final Reader r = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(r);
         if (r == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, filename));
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, super.getDisplayName()));
         }
         source = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
         GeneralEnvelope envelope    = null;
@@ -237,8 +235,12 @@ public final class Store extends DataStore {
                 source.mark(1024);
             }
             source.reset();
-        } catch (IOException | FactoryException | IllegalArgumentException | DateTimeException e) {
-            throw new DataStoreException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", filename), e);
+        } catch (IOException e) {
+            throw new DataStoreException(getLocale(), "CSV", super.getDisplayName(), source).initCause(e);
+        } catch (FactoryException e) {
+            throw new DataStoreReferencingException(getLocale(), "CSV", super.getDisplayName(), source).initCause(e);
+        } catch (IllegalArgumentException | DateTimeException e) {
+            throw new DataStoreContentException(getLocale(), "CSV", super.getDisplayName(), source).initCause(e);
         }
         this.encoding    = connector.getOption(OptionKey.ENCODING);
         this.envelope    = envelope;
@@ -278,7 +280,7 @@ public final class Store extends DataStore {
                     case 2: if (element.length() == 2 && Character.toUpperCase(element.charAt(1)) == 'D') {
                                 spatialDimensionCount = element.charAt(0) - '0';
                                 if (spatialDimensionCount < 2 || spatialDimensionCount > 3) {
-                                    throw new DataStoreContentException(errors().getString(
+                                    throw new DataStoreReferencingException(errors().getString(
                                         Errors.Keys.IllegalCoordinateSystem_1, element));
                                 }
                                 continue;
@@ -300,7 +302,7 @@ public final class Store extends DataStore {
                                 case "hour":     timeUnit = Units.HOUR;   continue;
                                 case "day":      timeUnit = Units.DAY;    continue;
                                 case "absolute": isTimeAbsolute = true;   continue;
-                                default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnknownUnit_1, element));
+                                default: throw new DataStoreReferencingException(errors().getString(Errors.Keys.UnknownUnit_1, element));
                             }
                 }
                 // If we reach this point, there is some remaining unknown elements. Ignore them.
@@ -363,7 +365,7 @@ public final class Store extends DataStore {
         if ((dim = lowerCorner.length) != spatialDimensionCount ||
             (dim = upperCorner.length) != spatialDimensionCount)
         {
-            throw new DataStoreContentException(errors().getString(
+            throw new DataStoreReferencingException(errors().getString(
                     Errors.Keys.MismatchedDimension_2, dim, spatialDimensionCount));
         }
         for (int i=0; i<spatialDimensionCount; i++) {
@@ -441,7 +443,7 @@ public final class Store extends DataStore {
             }
             properties.add(createProperty(name, type, minOccurrence));
         }
-        String name = filename;
+        String name = super.getDisplayName();
         final int s = name.lastIndexOf('.');
         if (s > 0) {                            // Exclude 0 because shall not be the first character.
             name = name.substring(0, s);
@@ -491,12 +493,12 @@ public final class Store extends DataStore {
             } catch (MetadataStoreException e) {
                 listeners.warning(null, e);
             }
-            builder.add(encoding);
+            builder.add(encoding, MetadataBuilder.Scope.ALL);
             builder.add(ScopeCode.DATASET);
             try {
                 builder.addExtent(envelope);
             } catch (TransformException e) {
-                throw new DataStoreContentException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", filename), e);
+                throw new DataStoreReferencingException(getLocale(), "CSV", getDisplayName(), source).initCause(e);
             } catch (UnsupportedOperationException e) {
                 // Failed to set the temporal components if the sis-temporal module was
                 // not on the classpath, but the other dimensions still have been set.
@@ -509,12 +511,38 @@ public final class Store extends DataStore {
     }
 
     /**
+     * Returns the feature type for the given name. The {@code name} argument should be the
+     * value specified at the following path (only one such value exists for a CSV data store):
+     *
+     * <blockquote>
+     * {@link #getMetadata()} /
+     * {@link org.apache.sis.metadata.iso.DefaultMetadata#getContentInfo() contentInfo} /
+     * {@link org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription#getFeatureTypeInfo() featureTypes} /
+     * {@link org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo#getFeatureTypeName() featureTypeName}
+     * </blockquote>
+     *
+     * @param  name  the name of the feature type to get.
+     * @return the feature type of the given name (never {@code null}).
+     * @throws IllegalNameException if the given name was not found.
+     *
+     * @since 0.8
+     */
+    @Override
+    public FeatureType getFeatureType(String name) throws IllegalNameException {
+        if (featureType.getName().toString().equals(name)) {
+            return featureType;
+        }
+        throw new IllegalNameException(getLocale(), getDisplayName(), name);
+    }
+
+    /**
      * Returns the stream of features.
      *
      * @return a stream over all features in the CSV file.
      *
      * @todo Needs to reset the position when doing another pass on the features.
      */
+    @Override
     public Stream<Feature> getFeatures() {
         return StreamSupport.stream(new Iter(), false);
     }
@@ -641,7 +669,7 @@ public final class Store extends DataStore {
             try {
                 return read(action, false);
             } catch (IOException | IllegalArgumentException | DateTimeException e) {
-                throw new BackingStoreException(canNotParse(), e);
+                throw new BackingStoreException(canNotParseFile(), e);
             }
         }
 
@@ -653,15 +681,8 @@ public final class Store extends DataStore {
             try {
                 read(action, true);
             } catch (IOException | IllegalArgumentException | DateTimeException e) {
-                throw new BackingStoreException(canNotParse(), e);
+                throw new BackingStoreException(canNotParseFile(), e);
             }
-        }
-
-        /**
-         * Returns the error message for a file that can not be parsed.
-         */
-        private String canNotParse() {
-            return errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", filename);
         }
 
         /**
@@ -764,9 +785,18 @@ public final class Store extends DataStore {
     }
 
     /**
+     * Returns the error message for a file that can not be parsed.
+     * The error message will contain the line number if available.
+     */
+    final String canNotParseFile() {
+        final Object[] parameters = IOUtilities.errorMessageParameters("CSV", getDisplayName(), source);
+        return errors().getString(IOUtilities.errorMessageKey(parameters), parameters);
+    }
+
+    /**
      * Returns the resources to use for producing error messages.
      */
-    private IndexedResourceBundle errors() {
+    private Errors errors() {
         return Errors.getResources(getLocale());
     }
 

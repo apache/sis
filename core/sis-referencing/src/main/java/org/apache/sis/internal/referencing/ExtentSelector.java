@@ -26,7 +26,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
  * Current implementation uses only the geographic extent.
  * This may be extended to other kind of extent in any future SIS version.
  *
- * @param <T> The type of object to be selected.
+ * @param  <T>  the type of object to be selected.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -54,7 +54,7 @@ public final class ExtentSelector<T> {
     /**
      * Creates a selector for the given area of interest.
      *
-     * @param areaOfInterest The area of interest, or {@code null} if none.
+     * @param areaOfInterest  the area of interest, or {@code null} if none.
      */
     public ExtentSelector(final Extent areaOfInterest) {
         this.areaOfInterest = Extents.getGeographicBoundingBox(areaOfInterest);
@@ -66,8 +66,8 @@ public final class ExtentSelector<T> {
      * previous intersection, then the given extent and object are remembered as the best match
      * found so far.
      *
-     * @param  extent The extent to evaluate, or {@code null} if none.
-     * @param  object An optional user object associated to the given extent.
+     * @param  extent  the extent to evaluate, or {@code null} if none.
+     * @param  object  an optional user object associated to the given extent.
      * @return {@code true} if the given extent is a better match than any previous extents given to this method.
      */
     public boolean evaluate(final Extent extent, final T object) {
@@ -91,7 +91,7 @@ public final class ExtentSelector<T> {
     /**
      * Returns the object associated to the largest area found so far.
      *
-     * @return The object associated to the largest area found so far, or {@code null}.
+     * @return the object associated to the largest area found so far, or {@code null}.
      */
     public T best() {
         return best;

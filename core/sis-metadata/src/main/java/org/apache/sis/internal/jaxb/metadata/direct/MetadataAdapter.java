@@ -22,8 +22,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 /**
  * Base class for adapters from GeoAPI interfaces to their SIS implementation.
  *
- * @param <BoundType> The GeoAPI interface being adapted.
- * @param <ValueType> The SIS class implementing the interface.
+ * @param  <BoundType>  the GeoAPI interface being adapted.
+ * @param  <ValueType>  the SIS class implementing the interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -42,8 +42,8 @@ public abstract class MetadataAdapter<BoundType, ValueType extends BoundType>
     /**
      * Returns the given object unchanged, to be marshalled directly.
      *
-     * @param  value The metadata value.
-     * @return The value to marshal (which is the same).
+     * @param  value  the metadata value.
+     * @return the value to marshal (which is the same).
      */
     @Override
     public final BoundType unmarshal(final ValueType value) {

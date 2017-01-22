@@ -725,7 +725,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @param  proxy  the proxy to use for creating the object.
      * @param  code   the code of the object to create.
      * @return the object from one of the authority factory specified at construction time.
-     * @throws FactoryException If an error occurred while creating the object.
+     * @throws FactoryException if an error occurred while creating the object.
      */
     final <T> T create(AuthorityFactoryProxy<? extends T> proxy, String code) throws FactoryException {
         ArgumentChecks.ensureNonNull("code", code);

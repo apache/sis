@@ -23,6 +23,9 @@ import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.FileSystemException;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import org.apache.maven.plugin.AbstractMojo;
@@ -35,11 +38,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.artifact.Artifact;
 
 import static org.apache.sis.internal.maven.Filenames.*;
-
-// Related to JDK7
-import java.nio.file.Path;
-import java.nio.file.Files;
-import java.nio.file.FileSystemException;
 
 
 /**
@@ -198,9 +196,9 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
      * Returns the name of the given file. If the given file is a snapshot, then the
      * {@code "SNAPSHOT"} will be replaced by the timestamp if possible.
      *
-     * @param  file     The file from which to get the filename.
-     * @param  artifact The artifact that produced the given file.
-     * @return The filename to use.
+     * @param  file      the file from which to get the filename.
+     * @param  artifact  the artifact that produced the given file.
+     * @return the filename to use.
      */
     private static String getFinalName(final File file, final Artifact artifact) {
         String filename = file.getName();
@@ -222,8 +220,8 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
      * On JDK6 or on platform that do not support links, this method rather
      * updates the <code>content.txt</code> file.
      *
-     * @param file The source file to read.
-     * @param copy The destination file to create.
+     * @param  file  the source file to read.
+     * @param  copy  the destination file to create.
      */
     private static void linkFileToDirectory(final File file, final File copy) throws IOException {
         final Path source = file.toPath();

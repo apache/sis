@@ -122,7 +122,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      * {@linkplain #getMaximumOccurs() maximal number} of property values, than the maximum
      * is also set to that value.
      *
-     * @param  occurs the new minimum number of property values.
+     * @param  occurs  the new minimum number of property values.
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getMinimumOccurs()
@@ -159,7 +159,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      * {@linkplain #getMinimumOccurs() minimal number} of property values, than the minimum
      * is also set to that value.
      *
-     * @param  occurs the new maximum number of property values.
+     * @param  occurs  the new maximum number of property values.
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getMaximumOccurs()

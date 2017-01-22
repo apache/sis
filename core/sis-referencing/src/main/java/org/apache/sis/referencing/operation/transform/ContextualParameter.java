@@ -42,13 +42,14 @@ import org.apache.sis.parameter.DefaultParameterValue;
  * {@code UnmodifiableParameterValue} instances anyway. So no matter which temporary instance we used, we will end
  * with the same objects in memory anyway.
  *
- * @param <T> The type of the value stored in this parameter.
+ * @param  <T>  the type of the value stored in this parameter.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                         // No additional fields compared to parent.
 final class ContextualParameter<T> extends DefaultParameterValue<T> {
     /**
      * For cross-version compatibility.
@@ -59,7 +60,7 @@ final class ContextualParameter<T> extends DefaultParameterValue<T> {
      * Creates a parameter value from the specified descriptor.
      * The value will be initialized to the default value, if any.
      *
-     * @param descriptor The abstract definition of this parameter.
+     * @param  descriptor  the abstract definition of this parameter.
      */
     ContextualParameter(final ParameterDescriptor<T> descriptor) {
         super(descriptor);
@@ -69,8 +70,8 @@ final class ContextualParameter<T> extends DefaultParameterValue<T> {
      * Sets the parameter value and its associated unit without any verification of parameter validity
      * (except value type).
      *
-     * @param  value The parameter value, or {@code null} to restore the default.
-     * @param  unit  The unit associated to the new parameter value, or {@code null}.
+     * @param  value  the parameter value, or {@code null} to restore the default.
+     * @param  unit   the unit associated to the new parameter value, or {@code null}.
      */
     @Override
     protected void setValue(final Object value, final Unit<?> unit) {

@@ -18,15 +18,11 @@ package org.apache.sis.feature;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Collections;
 import java.io.IOException;
-import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
@@ -42,7 +38,7 @@ import org.opengis.feature.PropertyType;
  *
  * @author  Johann Sorel (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 final class LinkOperation extends AbstractOperation {
@@ -52,28 +48,9 @@ final class LinkOperation extends AbstractOperation {
     private static final long serialVersionUID = 765096861589501215L;
 
     /**
-     * Creates a parameter descriptor in the Apache SIS namespace. This convenience method shall
-     * not be in public API, because users should define operations in their own namespace.
-     *
-     * <div class="note"><b>Note:</b>
-     * this method is shared by other operations in this package, but is declared here in order to delay
-     * {@link org.apache.sis.parameter} classes loading until we need to instantiate an operation like this
-     * {@code LinkOperation}. Since {@code LinkOperation} is very light and often used, the cost for other
-     * operations of loading this class is considered negligible.</div>
-     */
-    static ParameterDescriptorGroup parameters(final String name, final int minimumOccurs,
-            final ParameterDescriptor<?>... parameters)
-    {
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(ParameterDescriptorGroup.NAME_KEY, name);
-        properties.put(Identifier.AUTHORITY_KEY, Citations.SIS);
-        return new DefaultParameterDescriptorGroup(properties, minimumOccurs, 1);
-    }
-
-    /**
      * The parameter descriptor for the "Link" operation, which does not take any parameter.
      */
-    private static final ParameterDescriptorGroup EMPTY_PARAMS = parameters("Link", 1);
+    private static final ParameterDescriptorGroup EMPTY_PARAMS = FeatureUtilities.parameters("Link");
 
     /**
      * The type of the result.
@@ -156,7 +133,7 @@ final class LinkOperation extends AbstractOperation {
     /**
      * Appends a string representation of the "formula" used for computing the result.
      *
-     * @param  buffer where to format the "formula".
+     * @param  buffer  where to format the "formula".
      */
     @Override
     void formatResultFormula(final Appendable buffer) throws IOException {

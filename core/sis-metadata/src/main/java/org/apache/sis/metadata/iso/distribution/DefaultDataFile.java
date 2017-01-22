@@ -45,6 +45,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MX_DataFile_Type", propOrder = {
     "featureTypes",
     "fileFormat"
@@ -80,7 +81,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object the metadata to copy values from, or {@code null} if none.
+     * @param object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(DataFile)
      */
@@ -106,7 +107,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object the object to get as a SIS implementation, or {@code null} if none.
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
@@ -134,7 +135,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
     /**
      * Sets the list of feature types concerned by the transfer data file.
      *
-     * @param newValues the new feature type values.
+     * @param newValues  the new feature type values.
      */
     public void setFeatureTypes(final Collection<? extends LocalName> newValues) {
         featureTypes = writeCollection(newValues, featureTypes, LocalName.class);
@@ -154,7 +155,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
     /**
      * Sets the format of the transfer data file.
      *
-     * @param newValue the new file format value.
+     * @param newValue  the new file format value.
      */
     public void setFileFormat(final Format newValue) {
         checkWritePermission();

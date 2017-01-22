@@ -41,8 +41,8 @@ public final class InternationalStringConverter extends XmlAdapter<String,Intern
      * Converts an object read from a XML stream to an {@link InternationalString}
      * implementation. JAXB invokes automatically this method at unmarshalling time.
      *
-     * @param  adapter The adapter for the string value.
-     * @return An {@link InternationalString} for the string value.
+     * @param  adapter  the adapter for the string value.
+     * @return an {@link InternationalString} for the string value.
      */
     @Override
     public InternationalString unmarshal(final String adapter) {
@@ -53,8 +53,8 @@ public final class InternationalStringConverter extends XmlAdapter<String,Intern
      * Converts an {@link InternationalString} to an object to formatted into a
      * XML stream. JAXB invokes automatically this method at marshalling time.
      *
-     * @param  value The string value.
-     * @return The adapter for the string.
+     * @param  value  the string value.
+     * @return the adapter for the string.
      */
     @Override
     public String marshal(final InternationalString value) {

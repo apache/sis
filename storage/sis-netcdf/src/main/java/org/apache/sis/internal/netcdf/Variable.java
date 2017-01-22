@@ -159,7 +159,7 @@ public abstract class Variable extends NamedElement {
      * or {@link Number} if {@code numeric} is {@code true}.
      *
      * @param  attributeName  the name of the attribute for which to get the values.
-     * @param  numeric {@code true} if the values are expected to be numeric, or {@code false} for strings.
+     * @param  numeric        {@code true} if the values are expected to be numeric, or {@code false} for strings.
      * @return the sequence of {@link String} or {@link Number} values for the named attribute.
      */
     public abstract Object[] getAttributeValues(String attributeName, boolean numeric);

@@ -187,7 +187,7 @@ public final strictfp class AngleFormatTest extends TestCase {
     /**
      * Tests the example provided in the {@link AngleFormat} javadoc.
      *
-     * @throws ParseException If a string can not be parsed.
+     * @throws ParseException if a string can not be parsed.
      */
     @Test
     @DependsOnMethod("testOptionalFields")
@@ -205,11 +205,11 @@ public final strictfp class AngleFormatTest extends TestCase {
     /**
      * Tests a single line of Javadoc examples.
      *
-     * @param f       The angle format to test.
-     * @param pattern The pattern to apply for the test.
-     * @param e1      The expected string value of 48.5.
-     * @param e2      The expected string value of -12.53125.
-     * @param eps     The tolerance for comparing the parsed value of {@code e2}.
+     * @param f        the angle format to test.
+     * @param pattern  the pattern to apply for the test.
+     * @param e1       the expected string value of 48.5.
+     * @param e2       the expected string value of -12.53125.
+     * @param eps      the tolerance for comparing the parsed value of {@code e2}.
      */
     private static void testExample(final AngleFormat f, final String pattern, final String e1, final String e2,
             final double eps) throws ParseException

@@ -18,6 +18,7 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,9 +26,6 @@ import java.util.AbstractCollection;
 import java.util.NoSuchElementException;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.resources.Errors;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -68,7 +66,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public abstract class AbstractMap<K,V> implements Map<K,V> {
@@ -129,6 +127,48 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
         protected void remove() throws UnsupportedOperationException {
             throw new UnsupportedOperationException(message(false));
         }
+    }
+
+    /**
+     * Convenience {@code EntryIterator} implementation which iterates over a list of key candidates.
+     * All keys associated to a null value will be skipped.
+     *
+     * @see AbstractMap#entryIterator()
+     *
+     * @since 0.8
+     */
+    protected final class KeyIterator extends EntryIterator<K,V> {
+        /** The key candidates.              */ private final K[] keys;
+        /** Index of current key.            */ private int index = -1;
+        /** Value associated to current key. */ private V value;
+
+        /**
+         * Creates a new iterator over the given key candidates.
+         * The given array is not cloned; do not modify.
+         *
+         * @param  keys  all keys that the map may possibly contain.
+         */
+        @SafeVarargs
+        public KeyIterator(final K... keys) {this.keys = keys;}
+
+        /**
+         * Moves to the next key associated to a non-null value.
+         *
+         * @return {@code false} if this method reached iteration end.
+         */
+        @Override
+        protected boolean next() {
+            while (++index < keys.length) {
+                value = get(keys[index]);
+                if (value != null) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override protected K getKey()   {return keys[index];}
+        @Override protected V getValue() {return value;}
     }
 
     /**
@@ -498,6 +538,9 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
     /**
      * Returns an iterator over the entries in this map.
      * It is okay (but not required) to return {@code null} if the map is empty.
+     *
+     * <div class="note"><b>Tip:</b>
+     * {@link KeyIterator} provides a convenient implementation for simple cases.</div>
      *
      * @return an iterator over the entries in this map, or {@code null}.
      */

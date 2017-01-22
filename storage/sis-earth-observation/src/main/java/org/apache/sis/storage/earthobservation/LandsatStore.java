@@ -25,9 +25,9 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.Debug;
 
 
@@ -66,11 +66,6 @@ import org.apache.sis.util.Debug;
  */
 public class LandsatStore extends DataStore {
     /**
-     * The file name.
-     */
-    private final String name;
-
-    /**
      * The reader, or {@code null} if closed.
      */
     private Reader source;
@@ -85,16 +80,17 @@ public class LandsatStore extends DataStore {
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
      *
-     * @param  connector information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the Landsat file.
      */
-    public LandsatStore(final StorageConnector connector) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("connector", connector);
-        name = connector.getStorageName();
+    public LandsatStore(final LandsatStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
         source = connector.getStorageAs(Reader.class);
         connector.closeAllExcept(source);
         if (source == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, name));
+            throw new UnsupportedStorageException(super.getLocale(), "Landsat",
+                    connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
     }
 
@@ -111,7 +107,7 @@ public class LandsatStore extends DataStore {
         if (metadata == null && source != null) try {
             try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
                 source = null;      // Will be closed at the end of this try-catch block.
-                final LandsatReader parser = new LandsatReader(name, listeners);
+                final LandsatReader parser = new LandsatReader(getDisplayName(), listeners);
                 parser.read(reader);
                 metadata = parser.getMetadata();
             }
@@ -142,6 +138,6 @@ public class LandsatStore extends DataStore {
     @Debug
     @Override
     public String toString() {
-        return getClass().getSimpleName() + '[' + name + ']';
+        return getClass().getSimpleName() + '[' + getDisplayName() + ']';
     }
 }

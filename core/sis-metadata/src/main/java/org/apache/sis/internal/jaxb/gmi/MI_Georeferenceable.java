@@ -35,6 +35,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  */
 @XmlType(name = "MI_Georeferenceable_Type")
 @XmlRootElement(name = "MI_Georeferenceable")
+@SuppressWarnings("CloneableClassWithoutClone")
 public class MI_Georeferenceable  extends DefaultGeoreferenceable {
     /**
      * For cross-version compatibility.
@@ -52,7 +53,7 @@ public class MI_Georeferenceable  extends DefaultGeoreferenceable {
      * Creates a new metadata as a copy of the given one.
      * This is a shallow copy constructor.
      *
-     * @param original The original metadata to copy.
+     * @param original  the original metadata to copy.
      */
     public MI_Georeferenceable(final Georeferenceable original) {
         super(original);
@@ -62,8 +63,8 @@ public class MI_Georeferenceable  extends DefaultGeoreferenceable {
      * Wraps the given metadata into a SIS implementation that can be marshalled,
      * using the {@code "gmi"} namespace if necessary.
      *
-     * @param  original The original metadata provided by the user.
-     * @return The metadata to marshall.
+     * @param  original  the original metadata provided by the user.
+     * @return the metadata to marshall.
      */
     public static DefaultGeoreferenceable castOrCopy(final Georeferenceable original) {
         if (original != null && !(original instanceof MI_Georeferenceable)) {

@@ -256,8 +256,10 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
         public void warningOccured(final Object source, final LogRecord warning) {
             assertFalse("No other warning were expected.", receivedWarning);
             if (VERBOSE) {
-                // In verbose mode, log the warning for allowing the developer to
-                // check the message. In normal mode, the test will be silent.
+                /*
+                 * In verbose mode, log the warning for allowing the developer to
+                 * check the message. In normal mode, the test will be silent.
+                 */
                 Logging.getLogger(warning.getLoggerName()).log(warning);
             }
             assertArrayEquals("FileName shall have precedence over CharacterString.",

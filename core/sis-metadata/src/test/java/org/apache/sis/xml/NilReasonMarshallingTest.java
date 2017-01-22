@@ -43,7 +43,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     /**
      * Tests a simple case for a missing data.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     public void testMissing() throws JAXBException {
@@ -80,7 +80,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
      * values are implemented as special cases in {@link NilReason}, because they are final classes on which
      * we have no control.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testMissing")
@@ -113,7 +113,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
      * values are implemented as special cases in {@link NilReason}, because they are final classes on which
      * we have no control.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testMissing")
@@ -141,7 +141,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     /**
      * Tests a missing double value.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testMissing")
@@ -173,7 +173,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     /**
      * Tests a case where the nil reason is specified by an other reason.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testMissing")
@@ -208,7 +208,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     /**
      * Tests a case where the nil reason is specified by a URI.
      *
-     * @throws JAXBException Should never happen.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
     @DependsOnMethod("testMissing")

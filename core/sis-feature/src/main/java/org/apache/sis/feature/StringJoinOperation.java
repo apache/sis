@@ -19,11 +19,13 @@ package org.apache.sis.feature;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import java.io.IOException;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.GenericName;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
@@ -34,7 +36,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
-import java.util.Objects;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.IdentifiedType;
@@ -74,7 +75,7 @@ final class StringJoinOperation extends AbstractOperation {
     /**
      * The parameter descriptor for the "String join" operation, which does not take any parameter.
      */
-    private static final ParameterDescriptorGroup EMPTY_PARAMS = LinkOperation.parameters("StringJoin", 1);
+    private static final ParameterDescriptorGroup EMPTY_PARAMS = FeatureUtilities.parameters("StringJoin");
 
     /**
      * The name of the properties (attributes of operations producing attributes)
@@ -427,7 +428,7 @@ final class StringJoinOperation extends AbstractOperation {
     /**
      * Appends a string representation of the "formula" used for computing the result.
      *
-     * @param  buffer where to format the "formula".
+     * @param  buffer  where to format the "formula".
      */
     @Override
     void formatResultFormula(final Appendable buffer) throws IOException {

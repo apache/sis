@@ -140,7 +140,7 @@ public class GO_CharacterString {
     /**
      * Builds a wrapper for the given text.
      *
-     * @param text The string to marshal, or {@code null} if none.
+     * @param  text  the string to marshal, or {@code null} if none.
      */
     protected GO_CharacterString(final CharSequence text) {
         this.text = text;
@@ -155,8 +155,8 @@ public class GO_CharacterString {
      * Sets the {@link #text} field to the given value.
      * If the given value overwrites a previous one, a warning is emitted.
      *
-     * @param value    The value to set.
-     * @param property 0 or one of the {@link #MIME_TYPE}, {@link #FILENAME} or {@link #ANCHOR} constants.
+     * @param  value     the value to set.
+     * @param  property  0 or one of the {@link #MIME_TYPE}, {@link #FILENAME} or {@link #ANCHOR} constants.
      */
     private void setText(CharSequence value, byte property) {
         value = CharSequences.trimWhitespaces(value);
@@ -202,8 +202,8 @@ public class GO_CharacterString {
             case 0:         return StringAdapter.toString(text);
             case FILENAME:  return new FileName(text.toString());
             case MIME_TYPE: return new MimeFileType(text.toString());
-            case ANCHOR:    return text;    // Shall be an instance of Anchor.
-            default:        return null;    // CodeList or Enum.
+            case ANCHOR:    return text;                                // Shall be an instance of Anchor.
+            default:        return null;                                // CodeList or Enum.
         }
     }
 
@@ -294,7 +294,7 @@ public class GO_CharacterString {
      * an {@code InternationalString} or an {@code Anchor}. This method is overridden
      * by {@code PT_FreeText} in order to handle the international string case.
      *
-     * @return The character sequence for this {@code <gco:CharacterString>}.
+     * @return the character sequence for this {@code <gco:CharacterString>}.
      */
     protected CharSequence toCharSequence() {
         final CharSequence text = CharSequences.trimWhitespaces(this.text);
@@ -313,7 +313,7 @@ public class GO_CharacterString {
      * But precedents exist (for example {@link javax.swing.tree.DefaultMutableTreeNode})
      * and this class is not for public usage.</div>
      *
-     * @return The text as a string (may be null).
+     * @return the text as a string (may be null).
      */
     @Override
     public final String toString() {

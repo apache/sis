@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.ResourceBundle;
 import java.lang.reflect.InvocationTargetException;
 import java.io.IOException;
-import org.apache.sis.util.Exceptions;
 
 
 /**
@@ -61,8 +60,8 @@ final class Loader extends ResourceBundle.Control {
      * Returns the formats supported by this loader.
      * The only supported format is {@code "apache-sis.utf"}.
      *
-     * @param  baseName Ignored.
-     * @return The supported formats.
+     * @param  baseName  ignored.
+     * @return the supported formats.
      */
     @Override
     public List<String> getFormats(String baseName) {
@@ -82,12 +81,12 @@ final class Loader extends ResourceBundle.Control {
     /**
      * Instantiates a new resource bundle.
      *
-     * @param  baseName  The fully qualified name of the base resource bundle.
-     * @param  locale    The locale for which the resource bundle should be instantiated.
-     * @param  format    Ignored since this loader supports only one format.
-     * @param  loader    The class loader to use.
-     * @param  reload    Ignored since this loader do not supports resource expiration.
-     * @return The resource bundle instance, or null if none could be found.
+     * @param  baseName  the fully qualified name of the base resource bundle.
+     * @param  locale    the locale for which the resource bundle should be instantiated.
+     * @param  format    ignored since this loader supports only one format.
+     * @param  loader    the class loader to use.
+     * @param  reload    ignored since this loader does not support resource expiration.
+     * @return the resource bundle instance, or null if none could be found.
      */
     @Override
     public ResourceBundle newBundle(final String baseName, final Locale locale,
@@ -98,7 +97,7 @@ final class Loader extends ResourceBundle.Control {
         try {
             classe = Class.forName(baseName, true, loader);
         } catch (ClassNotFoundException e) {
-            return null; // This is the expected behavior as of Control.newBundle contract.
+            return null;        // This is the expected behavior as of Control.newBundle contract.
         }
         /*
          * Gets the filename relative to the class we created, since we assumes that UTF files
@@ -117,9 +116,7 @@ final class Loader extends ResourceBundle.Control {
         try {
             return (ResourceBundle) classe.getDeclaredConstructor(URL.class).newInstance(resources);
         } catch (NoSuchMethodException | InvocationTargetException e) {
-            InstantiationException exception = new InstantiationException(Exceptions.getLocalizedMessage(e, locale));
-            exception.initCause(e);
-            throw exception;
+            throw (InstantiationException) new InstantiationException(e.toString()).initCause(e);
         }
     }
 }

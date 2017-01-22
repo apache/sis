@@ -41,7 +41,7 @@ public @interface DependsOn {
     /**
      * The other test classes on which this test depends.
      *
-     * @return The test dependencies.
+     * @return the test dependencies.
      */
     Class<?>[] value();
 }

@@ -85,7 +85,7 @@ public abstract strictfp class TestSuite {
      *
      * <p>This check is disabled if {@link #skipCheckForMissingTests} is {@code true}.</p>
      *
-     * @param suite The suite for which to check for missing tests.
+     * @param  suite  the suite for which to check for missing tests.
      */
     protected static void assertNoMissingTest(final Class<? extends TestSuite> suite) {
         if (skipCheckForMissingTests) return;
@@ -131,7 +131,9 @@ public abstract strictfp class TestSuite {
             assertTrue(declared.removeAll(tests));
             fail("Classes defined twice in " + suite.getSimpleName() + ": " + declared);
         }
-        // Ignore classes that are not really test, like "APIVerifier".
+        /*
+         * Ignore classes that are not really test, like "APIVerifier".
+         */
         for (final Iterator<Class<?>> it=tests.iterator(); it.hasNext();) {
             if (!it.next().getName().endsWith(CLASSNAME_SUFFIX)) {
                 it.remove();
@@ -200,7 +202,7 @@ public abstract strictfp class TestSuite {
      *    }
      * }
      *
-     * @param suite The suite for which to verify test order.
+     * @param  suite  the suite for which to verify test order.
      */
     protected static void verifyTestList(final Class<? extends TestSuite> suite) {
         verifyTestList(suite, BASE_TEST_CLASSES);
@@ -212,8 +214,8 @@ public abstract strictfp class TestSuite {
      * the rare cases where some test cases need to extend something else than geoapi-conformance
      * or Apache SIS test class.
      *
-     * @param suite The suite for which to verify test order.
-     * @param baseTestClasses The set of base classes that all test cases are expected to extends.
+     * @param  suite            the suite for which to verify test order.
+     * @param  baseTestClasses  the set of base classes that all test cases are expected to extends.
      */
     protected static void verifyTestList(final Class<? extends TestSuite> suite, final Class<?>[] baseTestClasses) {
         final Class<?>[] testCases = suite.getAnnotation(Suite.SuiteClasses.class).value();
@@ -246,7 +248,7 @@ public abstract strictfp class TestSuite {
      * <p>Since this method stops SIS daemon threads, the SIS library shall not be used anymore after
      * this method execution.</p>
      *
-     * @throws Exception If an error occurred during unregistration of the supervisor MBean or resource disposal.
+     * @throws Exception if an error occurred during unregistration of the supervisor MBean or resource disposal.
      */
     @AfterClass
     @SuppressWarnings("UseOfSystemOutOrSystemErr")

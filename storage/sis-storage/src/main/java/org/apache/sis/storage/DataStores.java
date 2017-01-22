@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Collection;
 import org.apache.sis.util.Static;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
@@ -28,7 +29,7 @@ import org.apache.sis.internal.system.SystemListener;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public final class DataStores extends Static {
@@ -75,6 +76,18 @@ public final class DataStores extends Static {
             }
         }
         return r;
+    }
+
+    /**
+     * Returns the list of data store providers available at this method invocation time.
+     * More providers may be added later if new modules are added on the classpath.
+     *
+     * @return descriptions of available data stores.
+     *
+     * @since 0.8
+     */
+    public static Collection<DataStoreProvider> providers() {
+        return registry().providers();
     }
 
     /**

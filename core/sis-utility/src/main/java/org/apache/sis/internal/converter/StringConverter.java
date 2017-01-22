@@ -123,8 +123,8 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * then delegates to {@link #doConvert(String)}.
      *
      * @param  source  the string to convert, or {@code null}.
-     * @return The converted value, or {@code null} if the given string was null or empty.
-     * @throws UnconvertibleObjectException If an error occurred during the conversion.
+     * @return the converted value, or {@code null} if the given string was null or empty.
+     * @throws UnconvertibleObjectException if an error occurred during the conversion.
      */
     @Override
     public final T apply(String source) throws UnconvertibleObjectException {
@@ -146,8 +146,8 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * type of this converter.
      *
      * @param  source  the string to convert, guaranteed to be non-null and non-empty.
-     * @return The converted value.
-     * @throws Exception If an error occurred during the conversion.
+     * @return the converted value.
+     * @throws Exception if an error occurred during the conversion.
      */
     abstract T doConvert(String source) throws Exception;
 

@@ -81,8 +81,8 @@ public final class PrimitiveTypeProperties {
      * The {@code primitive} argument shall be a specific instance created by the {@code new} keyword, not
      * a shared instance link {@link Boolean#FALSE} or the values returned by {@link Integer#valueOf(int)}.
      *
-     * @param primitive The {@link Boolean}, {@link Integer}, {@link Double} or {@link String} specific instance.
-     * @param property  The {@link NilReason} or other property to associate to the given instance.
+     * @param  primitive  the {@link Boolean}, {@link Integer}, {@link Double} or {@link String} specific instance.
+     * @param  property   the {@link NilReason} or other property to associate to the given instance.
      */
     public static void associate(final Object primitive, final Object property) {
         assert isValidKey(primitive) : primitive;
@@ -98,8 +98,8 @@ public final class PrimitiveTypeProperties {
     /**
      * Returns the property of the given primitive type, or {@code null} if none.
      *
-     * @param  primitive The {@link Boolean}, {@link Integer}, {@link Double} or {@link String} specific instance.
-     * @return The property associated to the given instance, or {@code null} if none.
+     * @param  primitive  the {@link Boolean}, {@link Integer}, {@link Double} or {@link String} specific instance.
+     * @return the property associated to the given instance, or {@code null} if none.
      */
     public static Object property(final Object primitive) {
         // No 'assert isValidKey(primitive)' because this method is sometime invoked

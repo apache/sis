@@ -155,11 +155,11 @@ public class ConverterRegistry {
      * If {@code existing} or one of its children is equals to the given {@code converter},
      * returns it. Otherwise returns {@code null}.
      *
-     * @param  <S> The {@code converter} source class.
-     * @param  <T> The {@code converter} target class.
-     * @param  converter The converter to replace by an existing converter, if possible.
-     * @param  existing Existing converter to test.
-     * @return A converter equals to {@code converter}, or {@code null} if none.
+     * @param  <S>        the {@code converter} source class.
+     * @param  <T>        the {@code converter} target class.
+     * @param  converter  the converter to replace by an existing converter, if possible.
+     * @param  existing   existing converter to test.
+     * @return a converter equals to {@code converter}, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     private static <S,T> ObjectConverter<S,T> findEquals(ObjectConverter<S,T> converter,
@@ -182,10 +182,10 @@ public class ConverterRegistry {
     /**
      * Returns a converter equals to the given {@code converter}, or {@code null} if none.
      *
-     * @param  <S> The {@code converter} source class.
-     * @param  <T> The {@code converter} target class.
-     * @param  converter The converter to replace by an existing converter, if possible.
-     * @return A converter equals to {@code converter}, or {@code null} if none.
+     * @param  <S>        the {@code converter} source class.
+     * @param  <T>        the {@code converter} target class.
+     * @param  converter  the converter to replace by an existing converter, if possible.
+     * @return a converter equals to {@code converter}, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     final <S,T> ObjectConverter<S,T> findEquals(final SystemConverter<S,T> converter) {
@@ -239,9 +239,9 @@ public class ConverterRegistry {
      * {@link #find(Class, Class)} is invoked, because we can not know the set of all
      * sub-classes in advance (and would not necessarily want to register all of them anyway).
      *
-     * @param <S> The class of source value.
-     * @param <T> The class of target (converted) values.
-     * @param converter The converter to register.
+     * @param  <S>        the class of source value.
+     * @param  <T>        the class of target (converted) values.
+     * @param  converter  the converter to register.
      */
     public <S,T> void register(final ObjectConverter<S,T> converter) {
         ArgumentChecks.ensureNonNull("converter", converter);
@@ -334,8 +334,8 @@ public class ConverterRegistry {
      *       chain of fallbacks.</li>
      * </ul>
      *
-     * @param key The key under which to register the converter.
-     * @param converter The converter to register.
+     * @param  key        the key under which to register the converter.
+     * @param  converter  the converter to register.
      */
     @SuppressWarnings("unchecked")
     private <S,T> void register(final ClassPair<S,T> key, ObjectConverter<S, ? extends T> converter) {
@@ -403,11 +403,11 @@ public class ConverterRegistry {
      * ensures that the converter source and target classes are the same ones
      * than the classes given in argument to this method.
      *
-     * @param  <S> The source class.
-     * @param  <T> The target class.
-     * @param  sourceClass The source class.
-     * @param  targetClass The target class, or {@code Object.class} for any.
-     * @return The converter from the specified source class to the target class.
+     * @param  <S>          the source class.
+     * @param  <T>          the target class.
+     * @param  sourceClass  the source class.
+     * @param  targetClass  the target class, or {@code Object.class} for any.
+     * @return the converter from the specified source class to the target class.
      * @throws UnconvertibleObjectException if no converter is found for the given classes.
      */
     @SuppressWarnings("unchecked")
@@ -428,11 +428,11 @@ public class ConverterRegistry {
      * This method may return a converter accepting more generic sources or
      * converting to more specific targets.
      *
-     * @param  <S> The source class.
-     * @param  <T> The target class.
-     * @param  sourceClass The source class.
-     * @param  targetClass The target class, or {@code Object.class} for any.
-     * @return The converter from the specified source class to the target class.
+     * @param  <S>          the source class.
+     * @param  <T>          the target class.
+     * @param  sourceClass  the source class.
+     * @param  targetClass  the target class, or {@code Object.class} for any.
+     * @return the converter from the specified source class to the target class.
      * @throws UnconvertibleObjectException if no converter is found for the given classes.
      */
     public <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> sourceClass, final Class<T> targetClass)
@@ -450,7 +450,7 @@ public class ConverterRegistry {
              * found on the classpath and try again.
              */
             if (!isInitialized) {
-                isInitialized = true; // Before 'initialize()' for preventing infinite recursivity.
+                isInitialized = true;       // Before 'initialize()' for preventing infinite recursivity.
                 initialize();
                 converter = get(key);
                 if (converter != null) {
@@ -509,11 +509,11 @@ public class ConverterRegistry {
      * would fit, and returns {@code null} in all other cases.
      * Subclasses can override this method in order to generate some converters dynamically.</p>
      *
-     * @param  <S> The source class.
-     * @param  <T> The target class.
-     * @param  sourceClass The source class.
-     * @param  targetClass The target class, or {@code Object.class} for any.
-     * @return A newly generated converter from the specified source class to the target class,
+     * @param  <S>          the source class.
+     * @param  <T>          the target class.
+     * @param  sourceClass  the source class.
+     * @param  targetClass  the target class, or {@code Object.class} for any.
+     * @return a newly generated converter from the specified source class to the target class,
      *         or {@code null} if none.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -530,7 +530,7 @@ public class ConverterRegistry {
      * of those leafs are {@link FallbackConverter}s which delegate their work to the
      * leafs.
      *
-     * @return A string representation of registered converters.
+     * @return a string representation of registered converters.
      */
     @Debug
     @Override

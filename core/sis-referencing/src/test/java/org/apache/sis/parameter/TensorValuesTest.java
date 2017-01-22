@@ -73,9 +73,9 @@ public final strictfp class TensorValuesTest extends TestCase {
      * Asserts that the given descriptor has the given name and default value.
      * Aliases and identifiers are ignored - testing them is the purpose of {@link MatrixParametersTest}.
      *
-     * @param name         The expected parameter name.
-     * @param defaultValue The expected parameter default value.
-     * @param actual       The actual parameter to verify.
+     * @param  name          the expected parameter name.
+     * @param  defaultValue  the expected parameter default value.
+     * @param  actual        the actual parameter to verify.
      */
     private static void assertDescriptorEquals(final String name, final Number defaultValue,
             final GeneralParameterDescriptor actual)
@@ -87,9 +87,9 @@ public final strictfp class TensorValuesTest extends TestCase {
     /**
      * Asserts that the given parameter has the given name and value.
      *
-     * @param name   The expected parameter name.
-     * @param value  The expected parameter value.
-     * @param actual The actual parameter to verify.
+     * @param  name    the expected parameter name.
+     * @param  value   the expected parameter value.
+     * @param  actual  the actual parameter to verify.
      */
     private static void assertValueEquals(final String name, final Number value, final GeneralParameterValue actual) {
         assertEquals(name, actual.getDescriptor().getName().getCode());

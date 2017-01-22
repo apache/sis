@@ -108,7 +108,7 @@ public final class Include extends InlineTaglet {
                 }
                 start = line.indexOf(ANCHOR_START);
                 if (start >= 0 && line.lastIndexOf(ANCHOR_END) >= start) {
-                    break; // Found the next section - stop this one.
+                    break;                              // Found the next section - stop this one.
                 }
                 if (line.contains(DOCUMENT_END)) {
                     break;

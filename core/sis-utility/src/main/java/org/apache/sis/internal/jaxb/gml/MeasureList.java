@@ -63,10 +63,10 @@ public final class MeasureList {
     /**
      * Creates a list of measures backed by the given array.
      *
-     * @param <E>         Compile-time value of {@code elementType}.
-     * @param array       The measure values as a Java array.
-     * @param elementType The type of elements in the given array. Primitive type shall be replaced by their wrapper.
-     * @param unit        The unit of measurement.
+     * @param <E>          compile-time value of {@code elementType}.
+     * @param array        the measure values as a Java array.
+     * @param elementType  the type of elements in the given array. Primitive type shall be replaced by their wrapper.
+     * @param unit         the unit of measurement.
      */
     public <E> MeasureList(final Object array, final Class<E> elementType, final Unit<?> unit) {
         this.unit = unit;
@@ -87,7 +87,7 @@ public final class MeasureList {
     /**
      * Constructs a string representation of the units.
      *
-     * @return A string representation of the unit.
+     * @return a string representation of the unit.
      */
     @XmlAttribute(name = "uom", required = true)
     public String getUOM() {
@@ -97,8 +97,8 @@ public final class MeasureList {
     /**
      * Sets the unit of measure. This method is invoked by JAXB at unmarshalling time.
      *
-     * @param uom The unit of measure as a string.
-     * @throws URISyntaxException If the {@code uom} looks like a URI, but can not be parsed.
+     * @param  uom  the unit of measure as a string.
+     * @throws URISyntaxException if the {@code uom} looks like a URI, but can not be parsed.
      */
     public void setUOM(String uom) throws URISyntaxException {
         final Context context = Context.current();
@@ -108,7 +108,7 @@ public final class MeasureList {
     /**
      * Returns the values as an array.
      *
-     * @return The values, or {@code null} if none.
+     * @return the values, or {@code null} if none.
      */
     public double[] toArray() {
         if (values == null) {

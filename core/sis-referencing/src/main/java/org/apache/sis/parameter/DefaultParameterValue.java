@@ -424,7 +424,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * then converts the values to the given unit of measurement.</p>
      *
      * @param  unit  the unit of measure for the value to be returned.
-     * @return The sequence of values represented by this parameter after conversion to type
+     * @return the sequence of values represented by this parameter after conversion to type
      *         {@code double} and conversion to {@code unit}.
      * @throws IllegalArgumentException if the specified unit is invalid for this parameter.
      * @throws InvalidParameterTypeException if the value is not an array of {@code double}s.

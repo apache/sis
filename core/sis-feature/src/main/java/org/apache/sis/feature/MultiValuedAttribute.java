@@ -41,19 +41,21 @@ import org.opengis.feature.MultiValuedPropertyException;
  *   <li><b>Serialization:</b> serialized objects of this class are not guaranteed to be compatible with future
  *       versions. Serialization should be used only for short term storage or RMI between applications running
  *       the same SIS version.</li>
+ *   <li><b>Cloning:</b> this class support <em>shallow</em> cloning only:
+ *       the attribute is cloned, but not the {@linkplain #getValues() value} elements.</li>
  * </ul>
  *
- * @param <V> The type of the attribute values.
+ * @param  <V>  the type of the attribute values.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  *
  * @see DefaultAttributeType
  */
-final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
+final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Cloneable {
     /**
      * For cross-version compatibility.
      */
@@ -151,7 +153,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
     @Override
     public void setValues(final Collection<? extends V> newValues) {
         if (newValues != values) {
-            ArgumentChecks.ensureNonNull("values", newValues);  // The parameter name in public API is "values".
+            ArgumentChecks.ensureNonNull("values", newValues);      // The parameter name in public API is "values".
             values.clear();
             values.addAll(newValues);
         }

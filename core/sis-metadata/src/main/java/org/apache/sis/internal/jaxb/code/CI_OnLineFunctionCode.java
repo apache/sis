@@ -49,7 +49,7 @@ public final class CI_OnLineFunctionCode extends CodeListAdapter<CI_OnLineFuncti
     /**
      * {@inheritDoc}
      *
-     * @return The wrapper for the code list value.
+     * @return the wrapper for the code list value.
      */
     @Override
     protected CI_OnLineFunctionCode wrap(final CodeListUID value) {
@@ -59,7 +59,7 @@ public final class CI_OnLineFunctionCode extends CodeListAdapter<CI_OnLineFuncti
     /**
      * {@inheritDoc}
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     @Override
     protected Class<OnLineFunction> getCodeListClass() {
@@ -69,7 +69,7 @@ public final class CI_OnLineFunctionCode extends CodeListAdapter<CI_OnLineFuncti
     /**
      * Invoked by JAXB on marshalling.
      *
-     * @return The value to be marshalled.
+     * @return the value to be marshalled.
      */
     @Override
     @XmlElement(name = "CI_OnLineFunctionCode")
@@ -80,7 +80,7 @@ public final class CI_OnLineFunctionCode extends CodeListAdapter<CI_OnLineFuncti
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param value The unmarshalled value.
+     * @param  value  the unmarshalled value.
      */
     public void setElement(final CodeListUID value) {
         identifier = value;

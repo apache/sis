@@ -134,7 +134,7 @@ public final class Logging extends Static {
     /**
      * Returns the factory used for obtaining {@link Logger} instances, or {@code null} if none.
      *
-     * @return The current logger factory, or {@code null} if none.
+     * @return the current logger factory, or {@code null} if none.
      */
     public static LoggerFactory<?> getLoggerFactory() {
         return factory;
@@ -311,7 +311,9 @@ public final class Logging extends Static {
                     }
                     final int length = paquet.length();
                     if (classname.length() > length) {
-                        // We expect '.' but we accept also '$' or end of string.
+                        /*
+                         * We expect '.' but we accept also '$' or end of string.
+                         */
                         final char separator = classname.charAt(length);
                         if (Character.isJavaIdentifierPart(separator)) {
                             continue;
@@ -363,10 +365,10 @@ public final class Logging extends Static {
          *
          * The message is fetched using Exception.getMessage() instead than getLocalizedMessage()
          * because in a client-server architecture, we want the locale on the server-side instead
-         * than the locale on the client side.
+         * than the locale on the client side. See LocalizedException policy.
          */
         final StringBuilder buffer = new StringBuilder(256).append(Classes.getShortClassName(error));
-        String message = error.getMessage();                    // Targeted to system administrators.
+        String message = error.getMessage();        // Targeted to system administrators (see above).
         if (message != null) {
             buffer.append(": ").append(message);
         }

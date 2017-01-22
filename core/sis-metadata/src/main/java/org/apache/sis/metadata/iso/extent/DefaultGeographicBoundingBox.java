@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.extent;
 
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -36,9 +37,6 @@ import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.xml.NilReason;
 
 import static java.lang.Double.doubleToLongBits;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -107,6 +105,7 @@ import java.util.Objects;
  *
  * @see org.apache.sis.geometry.GeneralEnvelope
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_GeographicBoundingBox_Type", propOrder = {
     "westBoundLongitude",
     "eastBoundLongitude",
@@ -254,8 +253,10 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
             return true;
         }
         final boolean p = value;
-        // (value == Boolean.FALSE) is an optimization for a common case avoiding PrimitiveTypeProperties check.
-        // DO NOT REPLACE BY 'equals' OR 'booleanValue()' - the exact reference value matter.
+        /*
+         * (value == Boolean.FALSE) is an optimization for a common case avoiding PrimitiveTypeProperties check.
+         * DO NOT REPLACE BY 'equals' OR 'booleanValue()' - the exact reference value matter.
+         */
         if (p || (value == Boolean.FALSE) || !(PrimitiveTypeProperties.property(value) instanceof NilReason)) {
             return p;
         }
@@ -289,7 +290,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      */
     public void setWestBoundLongitude(double newValue) {
         checkWritePermission();
-        if (newValue != Longitude.MAX_VALUE) { // Do not normalize +180° to -180°.
+        if (newValue != Longitude.MAX_VALUE) {                  // Do not normalize +180° to -180°.
             newValue = Longitude.normalize(newValue);
         }
         westBoundLongitude = newValue;
@@ -322,7 +323,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      */
     public void setEastBoundLongitude(double newValue) {
         checkWritePermission();
-        if (newValue != Longitude.MAX_VALUE) { // Do not normalize +180° to -180°.
+        if (newValue != Longitude.MAX_VALUE) {                      // Do not normalize +180° to -180°.
             newValue = Longitude.normalize(newValue);
         }
         eastBoundLongitude = newValue;
@@ -405,7 +406,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     private static void verifyBounds(final double southBoundLatitude, final double northBoundLatitude)
             throws IllegalArgumentException
     {
-        if (southBoundLatitude > northBoundLatitude) { // Accept NaN.
+        if (southBoundLatitude > northBoundLatitude) {                          // Accept NaN.
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalOrdinateRange_3,
                     new Latitude(southBoundLatitude), new Latitude(northBoundLatitude),
                     Vocabulary.format(Vocabulary.Keys.Latitude)));
@@ -421,7 +422,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
         southBoundLatitude = Latitude.clamp(southBoundLatitude);
         northBoundLatitude = Latitude.clamp(northBoundLatitude);
         final double span = eastBoundLongitude - westBoundLongitude;
-        if (!(span >= (Longitude.MAX_VALUE - Longitude.MIN_VALUE))) { // 'span' may be NaN.
+        if (!(span >= (Longitude.MAX_VALUE - Longitude.MIN_VALUE))) {           // 'span' may be NaN.
             westBoundLongitude = Longitude.normalize(westBoundLongitude);
             eastBoundLongitude = Longitude.normalize(eastBoundLongitude);
             if (span != 0) {
@@ -513,7 +514,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
         ArgumentChecks.ensureNonNull("envelope", envelope);
         checkWritePermission();
         ReferencingServices.getInstance().setBounds(envelope, this);
-        setInclusion(Boolean.TRUE); // Set only on success.
+        setInclusion(Boolean.TRUE);                                     // Set only on success.
     }
 
     /**
@@ -650,7 +651,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
          */
         final boolean i1 = getInclusion(this.getInclusion());
         final boolean i2 = getInclusion(box. getInclusion());
-        final int status = denormalize(λmin, λmax); // Must be after call to getInclusion().
+        final int status = denormalize(λmin, λmax);             // Must be after call to getInclusion().
         switch (status) {
             case -1: λmin -= Longitude.MAX_VALUE - Longitude.MIN_VALUE; break;
             case +1: λmax += Longitude.MAX_VALUE - Longitude.MIN_VALUE; break;
@@ -753,9 +754,11 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
         if (object == this) {
             return true;
         }
-        // Above code really requires DefaultGeographicBoundingBox.class, not getClass().
-        // This code is used only for performance raison. The super-class implementation
-        // is generic enough for all other cases.
+        /*
+         * Above code really requires DefaultGeographicBoundingBox.class, not getClass().
+         * This code is used only for performance raison. The super-class implementation
+         * is generic enough for all other cases.
+         */
         if (object != null && object.getClass() == DefaultGeographicBoundingBox.class) {
             final DefaultGeographicBoundingBox that = (DefaultGeographicBoundingBox) object;
             return Objects.equals(getInclusion(), that.getInclusion()) &&

@@ -70,9 +70,9 @@ public final class ReferencingUtilities extends Static {
      * This method provides the same functionality than {@link DefaultPrimeMeridian#getGreenwichLongitude(Unit)},
      * but on arbitrary implementation.
      *
-     * @param  primeMeridian The prime meridian from which to get the Greenwich longitude, or {@code null}.
-     * @param  unit The unit for the prime meridian to return.
-     * @return The prime meridian in the given units, or {@code 0} if the given prime meridian was null.
+     * @param  primeMeridian  the prime meridian from which to get the Greenwich longitude, or {@code null}.
+     * @param  unit           the unit for the prime meridian to return.
+     * @return the prime meridian in the given units, or {@code 0} if the given prime meridian was null.
      *
      * @see DefaultPrimeMeridian#getGreenwichLongitude(Unit)
      */
@@ -94,8 +94,8 @@ public final class ReferencingUtilities extends Static {
      * or for operations that support only one units for all axes, for example Well Know Text version 1
      * (WKT 1) formatting.</p>
      *
-     * @param cs The coordinate system for which to get the unit, or {@code null}.
-     * @return The unit for all axis in the given coordinate system, or {@code null}.
+     * @param  cs  the coordinate system for which to get the unit, or {@code null}.
+     * @return the unit for all axis in the given coordinate system, or {@code null}.
      *
      * @see org.apache.sis.internal.metadata.AxisDirections#getAngularUnit(CoordinateSystem)
      */
@@ -122,8 +122,8 @@ public final class ReferencingUtilities extends Static {
     /**
      * Returns the number of dimensions of the given CRS, or 0 if {@code null}.
      *
-     * @param  crs The CRS from which to get the number of dimensions, or {@code null}.
-     * @return The number of dimensions, or 0 if the given CRS or its coordinate system is null.
+     * @param  crs  the CRS from which to get the number of dimensions, or {@code null}.
+     * @return the number of dimensions, or 0 if the given CRS or its coordinate system is null.
      *
      * @since 0.6
      */
@@ -144,8 +144,8 @@ public final class ReferencingUtilities extends Static {
      * may themselves have other {@code CompoundCRS}. Those replacements are performed recursively
      * until we obtain a flat view of CRS components.
      *
-     * @param  source The collection of single or compound CRS.
-     * @param  addTo  Where to add the single CRS in order to obtain a flat view of {@code source}.
+     * @param  source  the collection of single or compound CRS.
+     * @param  addTo   where to add the single CRS in order to obtain a flat view of {@code source}.
      * @return {@code true} if this method found only single CRS in {@code source}, in which case {@code addTo}
      *         got the same content (assuming that {@code addTo} was empty prior this method call).
      * @throws ClassCastException if a CRS is neither a {@link SingleCRS} or a {@link CompoundCRS}.
@@ -178,8 +178,8 @@ public final class ReferencingUtilities extends Static {
      * that if this method returns a non-null value, then the coordinates are expected to be either two-dimensional
      * or three-dimensional with an ellipsoidal height.</p>
      *
-     * @param  crs The coordinate reference system for which to get the ellipsoid.
-     * @return The ellipsoid in the given CRS, or {@code null} if none.
+     * @param  crs  the coordinate reference system for which to get the ellipsoid.
+     * @return the ellipsoid in the given CRS, or {@code null} if none.
      *
      * @since 0.6
      */
@@ -210,8 +210,8 @@ public final class ReferencingUtilities extends Static {
      * <p>This method does not set the prime meridian to Greenwich.
      * Meridian rotation, if needed, shall be performed by the caller.</p>
      *
-     * @param  crs A source CRS, or {@code null}.
-     * @return A two-dimensional geographic CRS with standard axes, or {@code null} if none.
+     * @param  crs  a source CRS, or {@code null}.
+     * @return a two-dimensional geographic CRS with standard axes, or {@code null} if none.
      */
     public static GeographicCRS toNormalizedGeographicCRS(CoordinateReferenceSystem crs) {
         /*
@@ -266,9 +266,9 @@ public final class ReferencingUtilities extends Static {
      *       is truncated as <cite>"Ellipsoidal 2D CS"</cite>.</li>
      * </ul></div>
      *
-     * @param  object The identified object to view as a properties map.
-     * @param  excludes The keys of properties to exclude from the map.
-     * @return A view of the identified object properties.
+     * @param  object    the identified object to view as a properties map.
+     * @param  excludes  the keys of properties to exclude from the map.
+     * @return a view of the identified object properties.
      *
      * @see IdentifiedObjects#getProperties(IdentifiedObject, String...)
      *
@@ -313,9 +313,9 @@ public final class ReferencingUtilities extends Static {
      * {@code affineCS}, {@code cartesianCS}, {@code cylindricalCS}, {@code ellipsoidalCS}, {@code linearCS},
      * {@code parametricCS}, {@code polarCS}, {@code sphericalCS}, {@code timeCS} or {@code verticalCS}.
      *
-     * @param  base The abstract base interface.
-     * @param  type The interface or classes for which to get the XML property name.
-     * @return The XML property name for the given class or interface, or {@code null} if none.
+     * @param  base  the abstract base interface.
+     * @param  type  the interface or classes for which to get the XML property name.
+     * @return the XML property name for the given class or interface, or {@code null} if none.
      *
      * @see WKTUtilities#toType(Class, Class)
      *
@@ -347,10 +347,10 @@ public final class ReferencingUtilities extends Static {
      * Sets the source and target ellipsoids and coordinate systems to values inferred from the given CRS.
      * The ellipsoids will be non-null only if the given CRS is geographic (not geocentric).
      *
-     * @param sourceCRS The CRS from which to get the source coordinate system and ellipsoid.
-     * @param targetCRS The CRS from which to get the target coordinate system and ellipsoid.
-     * @param context   A pre-allocated context, or {@code null} for creating a new one.
-     * @return The given context if it was non-null, or a new context otherwise.
+     * @param  sourceCRS  the CRS from which to get the source coordinate system and ellipsoid.
+     * @param  targetCRS  the CRS from which to get the target coordinate system and ellipsoid.
+     * @param  context    a pre-allocated context, or {@code null} for creating a new one.
+     * @return the given context if it was non-null, or a new context otherwise.
      *
      * @since 0.7
      */

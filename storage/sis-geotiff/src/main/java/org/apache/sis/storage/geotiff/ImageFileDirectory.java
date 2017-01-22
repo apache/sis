@@ -29,7 +29,7 @@ import javax.measure.quantity.Length;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.geotiff.Resources;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -842,7 +842,7 @@ final class ImageFileDirectory {
      * Computes the tile width or height from the other size,
      * or returns a negative number if the size can not be computed.
      *
-     * @param  knownSize the tile width or height.
+     * @param  knownSize  the tile width or height.
      * @return the tile width if the known size was height, or the tile height if the known size was width,
      *         or a negative number if the width or height can not be computed.
      * @throws ArithmeticException if the result overflows.
@@ -978,8 +978,8 @@ final class ImageFileDirectory {
      * Information not under the {@code "metadata/contentInfo"} node will be merged
      * with the current content of the given {@code MetadataBuilder}.
      *
-     * @param metadata  where to write metadata information. Caller should have already invoked
-     *        {@link MetadataBuilder#setFormat(String)} before {@code completeMetadata(…)} calls.
+     * @param   metadata  where to write metadata information. Caller should have already invoked
+     *                    {@link MetadataBuilder#setFormat(String)} before {@code completeMetadata(…)} calls.
      */
     final void completeMetadata(final MetadataBuilder metadata, final Locale locale)
             throws DataStoreContentException, FactoryException
@@ -1046,9 +1046,9 @@ final class ImageFileDirectory {
     /**
      * Reports a warning with a message created from the given resource keys and parameters.
      *
-     * @param level       the logging level for the message to log.
-     * @param key         the {@code Resources} key of the message to format.
-     * @param parameters  the parameters to put in the message.
+     * @param  level       the logging level for the message to log.
+     * @param  key         the {@code Resources} key of the message to format.
+     * @param  parameters  the parameters to put in the message.
      */
     private void warning(final Level level, final short key, final Object... parameters) {
         final LogRecord r = reader.resources().getLogRecord(level, key, parameters);

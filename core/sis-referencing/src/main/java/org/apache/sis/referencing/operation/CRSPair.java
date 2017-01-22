@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.util.Objects;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -24,9 +25,6 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**

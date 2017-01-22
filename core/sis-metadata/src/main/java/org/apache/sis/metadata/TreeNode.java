@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
 import org.apache.sis.util.Debug;
@@ -59,7 +60,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 class TreeNode implements Node {
@@ -110,6 +111,14 @@ class TreeNode implements Node {
     final Object metadata;
 
     /**
+     * The return type of the getter method that provides the value encapsulated by this node.
+     * This information is used for filtering aspects when a class opportunistically implements
+     * many interfaces. This value is part of the {@link CacheKey} needed for invoking
+     * {@link MetadataStandard} methods.
+     */
+    final Class<?> baseType;
+
+    /**
      * The value of {@link TableColumn#NAME}, computed by {@link #getName()} then cached.
      *
      * @see #getName()
@@ -144,13 +153,15 @@ class TreeNode implements Node {
     /**
      * Creates the root node of a new metadata tree table.
      *
-     * @param  table    The table which is creating this root node.
-     * @param  metadata The root metadata object (can not be null).
+     * @param  table     the table which is creating this root node.
+     * @param  metadata  the root metadata object (can not be null).
+     * @param  baseType  the return type of the getter method that provides the value encapsulated by this node.
      */
-    TreeNode(final TreeTableView table, final Object metadata) {
+    TreeNode(final TreeTableView table, final Object metadata, final Class<?> baseType) {
         this.table    = table;
         this.parent   = null;
         this.metadata = metadata;
+        this.baseType = baseType;
     }
 
     /**
@@ -158,24 +169,27 @@ class TreeNode implements Node {
      * This constructor is for the {@link Element} subclass only.
      * Callers must invoke {@link #init()} after construction.
      *
-     * @param  parent   The parent of this node.
-     * @param  metadata The metadata object for which this node will be a value.
+     * @param  parent    the parent of this node.
+     * @param  metadata  the metadata object for which this node will be a value.
+     * @param  baseType  the return type of the getter method that provides the value encapsulated by this node.
      */
-    TreeNode(final TreeNode parent, final Object metadata) {
+    TreeNode(final TreeNode parent, final Object metadata, final Class<?> baseType) {
         this.table    = parent.table;
         this.parent   = parent;
         this.metadata = metadata;
+        this.baseType = baseType;
+        if (!table.standard.isMetadata(baseType)) {
+            children = LEAF;
+        }
     }
 
     /**
-     * Must be invoked after construction. The work performed by this method can not be done
-     * in the {@code TreeNode} constructor, because it needs the subclasses to finish their
-     * construction first.
+     * Returns the key to use for calls to {@link MetadataStandard} methods.
+     * This key is used only for some default method implementations in the root node;
+     * children will use the class of their node value instead.
      */
-    final void init() {
-        if (!table.standard.isMetadata(getElementType())) {
-            children = LEAF;
-        }
+    private CacheKey key() {
+        return new CacheKey(metadata.getClass(), baseType);
     }
 
     /**
@@ -184,7 +198,7 @@ class TreeNode implements Node {
      * order to return the property identifier instead.
      */
     String getIdentifier() {
-        final Class<?> type = table.standard.getInterface(metadata.getClass());
+        final Class<?> type = table.standard.getInterface(key());
         final String id = Types.getStandardName(type);
         return (id != null) ? id : Classes.getShortName(type);
     }
@@ -207,7 +221,7 @@ class TreeNode implements Node {
      */
     CharSequence getName() {
         return CharSequences.camelCaseToSentence(Classes.getShortName(
-                table.standard.getInterface(metadata.getClass()))).toString();
+                table.standard.getInterface(key()))).toString();
     }
 
     /**
@@ -222,14 +236,6 @@ class TreeNode implements Node {
     }
 
     /**
-     * Returns the base type of values to be returned by {@link #getUserObject()}.
-     * The default implementation is suitable only for the root node - subclasses must override.
-     */
-    public Class<?> getElementType() {
-        return table.standard.getInterface(metadata.getClass());
-    }
-
-    /**
      * The metadata value for this node, to be returned by {@code getValue(TableColumn.VALUE)}.
      * The default implementation is suitable only for the root node - subclasses must override.
      */
@@ -241,7 +247,7 @@ class TreeNode implements Node {
     /**
      * Sets the metadata value for this node. Subclasses must override this method.
      *
-     * @throws UnsupportedOperationException If the metadata value is not writable.
+     * @throws UnsupportedOperationException if the metadata value is not writable.
      */
     void setUserObject(final Object value) throws UnsupportedOperationException {
         throw new UnsupportedOperationException(unmodifiableCellValue(TableColumn.VALUE));
@@ -253,6 +259,26 @@ class TreeNode implements Node {
      */
     boolean isWritable() {
         return false;
+    }
+
+    /**
+     * Returns {@code true} if the given object is of the same class than this node and contains a reference
+     * to the same metadata object. Since {@code TreeNode} generates all content from the wrapped metadata,
+     * this condition should ensure that two equal nodes have the same values and children.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        return (other != null) && other.getClass() == getClass()
+                && ((TreeNode) other).metadata == metadata
+                && ((TreeNode) other).baseType == baseType;
+    }
+
+    /**
+     * Returns a hash code value for this node.
+     */
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(metadata) ^ Objects.hashCode(baseType);
     }
 
 
@@ -270,15 +296,13 @@ class TreeNode implements Node {
      */
     static class Element extends TreeNode {
         /**
-         * The accessor to use for fetching the property names, types and values from the
-         * {@link #metadata} object. Note that the value of this field is the same for all
-         * siblings.
+         * The accessor to use for fetching the property names, types and values from the {@link #metadata} object.
+         * Note that the reference stored in this field is the same for all siblings.
          */
         private final PropertyAccessor accessor;
 
         /**
-         * Index of the value in the {@link #metadata} object to be fetched with the
-         * {@link #accessor}.
+         * Index of the value in the {@link #metadata} object to be fetched with the {@link #accessor}.
          */
         private final int indexInData;
 
@@ -286,15 +310,15 @@ class TreeNode implements Node {
          * Creates a new child for a property of the given metadata at the given index.
          * Callers must invoke {@link #init()} after construction.
          *
-         * @param  parent      The parent of this node.
-         * @param  metadata    The metadata object for which this node will be a value.
-         * @param  accessor    Accessor to use for fetching the name, type and value.
-         * @param  indexInData Index to be given to the accessor of fetching the value.
+         * @param  parent       the parent of this node.
+         * @param  metadata     the metadata object for which this node will be a value.
+         * @param  accessor     accessor to use for fetching the name, type and value.
+         * @param  indexInData  index to be given to the accessor for fetching the value.
          */
         Element(final TreeNode parent, final Object metadata,
                 final PropertyAccessor accessor, final int indexInData)
         {
-            super(parent, metadata);
+            super(parent, metadata, accessor.type(indexInData, TypeValuePolicy.ELEMENT_TYPE));
             this.accessor = accessor;
             this.indexInData = indexInData;
         }
@@ -328,14 +352,6 @@ class TreeNode implements Node {
         }
 
         /**
-         * Returns the type of property elements.
-         */
-        @Override
-        public final Class<?> getElementType() {
-            return accessor.type(indexInData, TypeValuePolicy.ELEMENT_TYPE);
-        }
-
-        /**
          * Fetches the node value from the metadata object.
          */
         @Override
@@ -358,6 +374,23 @@ class TreeNode implements Node {
         final boolean isWritable() {
             return accessor.isWritable(indexInData);
         }
+
+        /**
+         * Returns {@code true} if the value returned by {@link #getUserObject()}
+         * should be the same for both nodes.
+         */
+        @Override
+        public boolean equals(final Object other) {
+            return super.equals(other) && ((Element) other).indexInData == indexInData;
+        }
+
+        /**
+         * Returns a hash code value for this node.
+         */
+        @Override
+        public int hashCode() {
+            return super.hashCode() ^ (31 * indexInData);
+        }
     }
 
 
@@ -376,11 +409,11 @@ class TreeNode implements Node {
          * Creates a new node for the given collection element.
          * Callers must invoke {@link #init()} after construction.
          *
-         * @param  parent      The parent of this node.
-         * @param  metadata    The metadata object for which this node will be a value.
-         * @param  accessor    Accessor to use for fetching the name, type and collection.
-         * @param  indexInData Index to be given to the accessor of fetching the collection.
-         * @param  indexInList Index of the element in the collection, in iteration order.
+         * @param  parent       the parent of this node.
+         * @param  metadata     the metadata object for which this node will be a value.
+         * @param  accessor     accessor to use for fetching the name, type and collection.
+         * @param  indexInData  index to be given to the accessor of fetching the collection.
+         * @param  indexInList  index of the element in the collection, in iteration order.
          */
         CollectionElement(final TreeNode parent, final Object metadata,
                 final PropertyAccessor accessor, final int indexInData, final int indexInList)
@@ -445,7 +478,7 @@ class TreeNode implements Node {
                 }
                 final Iterator<?> it = values.iterator();
                 for (int i=0; i<indexInList; i++) {
-                    it.next(); // Inefficient way to move at the desired index, but hopefully rare.
+                    it.next();      // Inefficient way to move at the desired index, but hopefully rare.
                 }
                 return it.next();
             } catch (NullPointerException | IndexOutOfBoundsException | NoSuchElementException e) {
@@ -466,16 +499,17 @@ class TreeNode implements Node {
             final Collection<?> values = (Collection<?>) super.getUserObject();
             if (!(values instanceof List<?>)) {
                 // 'setValue' is the public method which invoked this one.
-                throw new UnsupportedOperationException(Errors.format(
-                        Errors.Keys.UnsupportedOperation_1, "setValue"));
+                throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedOperation_1, "setValue"));
             }
             final Class<?> targetType;
             if (values instanceof CheckedContainer<?>) {
-                // Typically the same than getElementType(), but let be safe
-                // in case some implementations have stricter requirements.
+                /*
+                 * Typically the same than getElementType(), but let be safe
+                 * in case some implementations have stricter requirements.
+                 */
                 targetType = ((CheckedContainer<?>) values).getElementType();
             } else {
-                targetType = getElementType();
+                targetType = baseType;
             }
             value = ObjectConverters.convert(value, targetType);
             try {
@@ -491,6 +525,23 @@ class TreeNode implements Node {
                 // Same rational than in the getUserObject() method.
                 throw new ConcurrentModificationException(e);
             }
+        }
+
+        /**
+         * Returns {@code true} if the value returned by {@link #getUserObject()}
+         * should be the same for both nodes.
+         */
+        @Override
+        public boolean equals(final Object other) {
+            return super.equals(other) && ((CollectionElement) other).indexInList == indexInList;
+        }
+
+        /**
+         * Returns a hash code value for this node.
+         */
+        @Override
+        public int hashCode() {
+            return super.hashCode() ^ indexInList;
         }
     }
 
@@ -520,6 +571,7 @@ class TreeNode implements Node {
      * Only metadata object can have children.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final Collection<Node> getChildren() {
         /*
          * 'children' is set to LEAF if an only if the node *can not* have children,
@@ -535,11 +587,11 @@ class TreeNode implements Node {
                      * to that set, in order to allow this method to check again the next time
                      * that this method is invoked.
                      */
-                    children = null; // Let GC do its work.
+                    children = null;                                    // Let GC do its work.
                     return LEAF;
                 }
             }
-            cachedValue = null; // Use the cached value only once after iteration.
+            cachedValue = null;             // Use the cached value only once after iteration.
             /*
              * If there is a value, check if the cached collection is still applicable.
              */
@@ -553,7 +605,8 @@ class TreeNode implements Node {
              * At this point, we need to create a new collection. The property accessor shall
              * exist, otherwise the call to 'isLeaf()' above would have returned 'true'.
              */
-            children = new TreeNodeChildren(this, value, table.standard.getAccessor(value.getClass(), true));
+            children = new TreeNodeChildren(this, value,
+                    table.standard.getAccessor(new CacheKey(value.getClass(), baseType), true));
         }
         return children;
     }
@@ -574,7 +627,7 @@ class TreeNode implements Node {
      * Do not keep a reference to the returned node for a long time, since it is only
      * a proxy toward the real node to be created once the identifier is known.
      *
-     * @throws UnsupportedOperationException If this node {@linkplain #isLeaf() is a leaf}.
+     * @throws UnsupportedOperationException if this node {@linkplain #isLeaf() is a leaf}.
      */
     @Override
     public final Node newChild() throws UnsupportedOperationException {
@@ -699,7 +752,7 @@ class TreeNode implements Node {
         if (column == TableColumn.VALUE) {
             if (isLeaf()) {
                 value = cachedValue;
-                cachedValue = null; // Use the cached value only once after iteration.
+                cachedValue = null;                 // Use the cached value only once after iteration.
                 if (value == null) {
                     value = getUserObject();
                 }
@@ -714,7 +767,7 @@ class TreeNode implements Node {
         } else if (column == TableColumn.INDEX) {
             value = getIndex();
         } else if (column == TableColumn.TYPE) {
-            value = getElementType();
+            value = baseType;
         }
         return column.getElementType().cast(value);
     }
@@ -772,11 +825,10 @@ class TreeNode implements Node {
     }
 
     /**
-     * Implementation of {@link #toString()} appending the string representation
-     * in the given buffer.
+     * Implementation of {@link #toString()} appending the string representation in the given buffer.
      */
     final void toString(final StringBuilder buffer) {
         appendIdentifier(buffer.append("Node["));
-        buffer.append(" : ").append(Classes.getShortName(getElementType())).append(']');
+        buffer.append(" : ").append(Classes.getShortName(baseType)).append(']');
     }
 }

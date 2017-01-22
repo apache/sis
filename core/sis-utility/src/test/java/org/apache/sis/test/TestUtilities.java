@@ -23,6 +23,14 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.io.PrintWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.text.Format;
 import java.text.DateFormat;
@@ -46,7 +54,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final strictfp class TestUtilities extends Static {
@@ -390,7 +398,7 @@ public final strictfp class TestUtilities extends Static {
      * @throws InterruptedException if this thread has been interrupted while waiting.
      */
     public static void waitForBlockedState(final Thread thread) throws IllegalThreadStateException, InterruptedException {
-        int retry = MAXIMAL_WAIT_TIME / 5; // 5 shall be the same number than in the call to Thread.sleep.
+        int retry = MAXIMAL_WAIT_TIME / 5;              // 5 shall be the same number than in the call to Thread.sleep.
         do {
             Thread.sleep(5);
             switch (thread.getState()) {
@@ -419,7 +427,7 @@ public final strictfp class TestUtilities extends Static {
      */
     public static boolean waitForGarbageCollection(final Callable<Boolean> stopCondition) throws InterruptedException {
         assertTrue("GC-dependent tests not allowed in this run.", TestConfiguration.allowGarbageCollectorDependentTests());
-        int retry = MAXIMAL_WAIT_TIME / 50; // 50 shall be the same number than in the call to Thread.sleep.
+        int retry = MAXIMAL_WAIT_TIME / 50;             // 50 shall be the same number than in the call to Thread.sleep.
         boolean stop;
         do {
             if (--retry == 0) {
@@ -436,5 +444,33 @@ public final strictfp class TestUtilities extends Static {
             }
         } while (!stop);
         return true;
+    }
+
+    /**
+     * Copies the full content of the given test resource in a temporary file and returns the channel for that file.
+     * The file is opened with {@link StandardOpenOption#DELETE_ON_CLOSE}, together with read and write options.
+     *
+     * @param  caller    defines the root from which to search for the {@code resource}.
+     * @param  resource  path (relative to the {@code caller}) of the test file to copy.
+     * @return a channel opened on a copy of the content of the given test resource.
+     * @throws IOException if an error occurred while copying the data.
+     *
+     * @since 0.8
+     */
+    public static SeekableByteChannel createTemporaryFile(final Class<?> caller, final String resource) throws IOException {
+        final SeekableByteChannel channel;
+        try (final ReadableByteChannel in = Channels.newChannel(caller.getResourceAsStream(resource))) {
+            final int s = resource.lastIndexOf('.');
+            final Path file = Files.createTempFile("SIS", (s >= 0) ? resource.substring(s) : null);
+            channel = Files.newByteChannel(file, StandardOpenOption.DELETE_ON_CLOSE,
+                                StandardOpenOption.READ, StandardOpenOption.WRITE);
+            final ByteBuffer buffer = ByteBuffer.allocate(4000);
+            while (in.read(buffer) >= 0) {
+                buffer.flip();
+                channel.write(buffer);
+                buffer.clear();
+            }
+        }
+        return channel.position(0);
     }
 }

@@ -51,7 +51,7 @@ import org.apache.sis.xml.XML;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 class MetadataCommand extends CommandRunner {
@@ -131,7 +131,7 @@ class MetadataCommand extends CommandRunner {
      * If the given argument seems to be an authority code ("URN", "EPSG", "CRS", "AUTO", <i>etc.</i>),
      * delegates to {@link CRS#forCode(String)}. Otherwise reads the metadata using a datastore.
      *
-     * @return A {@link Metadata} or {@link CoordinateReferenceSystem} instance, or {@code null} if none.
+     * @return a {@link Metadata} or {@link CoordinateReferenceSystem} instance, or {@code null} if none.
      */
     final Object readMetadataOrCRS() throws DataStoreException, FactoryException {
         if (useStandardInput()) {
@@ -195,7 +195,9 @@ class MetadataCommand extends CommandRunner {
     final void format(final Object object) throws IOException, JAXBException {
         switch (outputFormat) {
             case TEXT: {
-                final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(object, ValueExistencePolicy.NON_EMPTY);
+                final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(object,
+                        (object instanceof Metadata) ? Metadata.class : null,
+                        ValueExistencePolicy.NON_EMPTY);
                 final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
                 tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
                 tf.format(tree, out);

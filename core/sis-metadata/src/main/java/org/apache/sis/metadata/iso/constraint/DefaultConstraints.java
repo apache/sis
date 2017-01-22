@@ -54,6 +54,7 @@ import org.apache.sis.util.iso.Types;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Constraints_Type" /*, propOrder = {
     "useLimitation",
     "constraintApplicationScope",
@@ -113,7 +114,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Constructs a new constraints with the given {@linkplain #getUseLimitations() use limitation}.
      *
-     * @param useLimitation The use limitation, or {@code null} if none.
+     * @param useLimitation  the use limitation, or {@code null} if none.
      */
     public DefaultConstraints(final CharSequence useLimitation) {
         useLimitations = singleton(Types.toInternationalString(useLimitation), InternationalString.class);
@@ -124,7 +125,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object the metadata to copy values from, or {@code null} if none.
+     * @param object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Constraints)
      */

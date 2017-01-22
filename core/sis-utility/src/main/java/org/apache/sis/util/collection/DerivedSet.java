@@ -53,8 +53,8 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
  * If the storage set is known to be immutable, then sub-classes may consider to cache some values,
  * especially the result of the {@link #size()} method.
  *
- * @param <S> the type of elements in the storage set.
- * @param <E> the type of elements in this set.
+ * @param  <S>  the type of elements in the storage set.
+ * @param  <E>  the type of elements in this set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
@@ -80,8 +80,8 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
     /**
      * Creates a new derived set from the specified storage set.
      *
-     * @param storage   The set which actually store the elements.
-     * @param converter The converter from the type in the storage set to the type in the derived set.
+     * @param  storage    the set which actually store the elements.
+     * @param  converter  the converter from the type in the storage set to the type in the derived set.
      */
     static <S,E> Set<E> create(final Set<S> storage, final ObjectConverter<S,E> converter) {
         final Set<FunctionProperty> properties = converter.properties();
@@ -171,8 +171,8 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
      * allows us to delegate the {@link #contains(Object)} and {@linkplain #remove(Object)}
      * operations to the {@linkplain #storage} set instead than iterating over all elements.
      *
-     * @param <S> the type of elements in the storage set.
-     * @param <E> the type of elements in this set.
+     * @param  <S>  the type of elements in the storage set.
+     * @param  <E>  the type of elements in this set.
      */
     private static class Invertible<S,E> extends DerivedSet<S,E> {
         /**
@@ -188,8 +188,8 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
         /**
          * Creates a new derived set from the specified storage set.
          *
-         * @param storage   The set which actually store the elements.
-         * @param converter The type of elements in this derived set.
+         * @param storage    the set which actually store the elements.
+         * @param converter  the type of elements in this derived set.
          */
         Invertible(final Set<S> storage, final ObjectConverter<S,E> converter) {
             super(storage, converter);
@@ -213,7 +213,7 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
          *     return storage.contains(inverse.apply(element));
          * }
          *
-         * @param  element object to be checked for containment in this set.
+         * @param  element  object to be checked for containment in this set.
          * @return {@code true} if this set contains the specified element.
          */
         @Override
@@ -231,7 +231,7 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
          *     return storage.remove(inverse.apply(element));
          * }
          *
-         * @param  element element to be removed from this set, if present.
+         * @param  element  element to be removed from this set, if present.
          * @return {@code true} if the set contained the specified element.
          * @throws UnsupportedOperationException if the {@linkplain #storage} set doesn't
          *         supports the {@code remove} operation.
@@ -248,8 +248,8 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
      * The bijection allows us to query the {@linkplain #storage} set size directly
      * instead than iterating over all elements.
      *
-     * @param <S> the type of elements in the storage set.
-     * @param <E> the type of elements in this set.
+     * @param  <S>  the type of elements in the storage set.
+     * @param  <E>  the type of elements in this set.
      */
     private static final class Bijective<S,E> extends Invertible<S,E> {
         /**
@@ -260,8 +260,8 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
         /**
          * Creates a new derived set from the specified storage set.
          *
-         * @param storage   The set which actually store the elements.
-         * @param converter The type of elements in this derived set.
+         * @param storage    the set which actually store the elements.
+         * @param converter  the type of elements in this derived set.
          */
         Bijective(final Set<S> storage, final ObjectConverter<S,E> converter) {
             super(storage, converter);

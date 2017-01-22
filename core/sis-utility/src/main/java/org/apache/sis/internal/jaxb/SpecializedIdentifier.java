@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
+import java.util.Objects;
 import java.io.Serializable;
 import java.util.logging.Level;
 import org.opengis.metadata.Identifier;
@@ -32,16 +33,13 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.util.Citations;
 
-// Branch-dependent imports
-import java.util.Objects;
-
 
 /**
  * Wraps a {@link XLink}, {@link URI} or {@link UUID} as an identifier in the {@link IdentifierMap}.
  * The {@linkplain #authority} is typically an instance of {@link NonMarshalledAuthority}. The value
  * is an object of a type constrained by the authority.
  *
- * @param  <T> The value type, typically {@link XLink}, {@link UUID} or {@link String}.
+ * @param  <T>  the value type, typically {@link XLink}, {@link UUID} or {@link String}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -78,8 +76,8 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
     /**
      * Creates a new adapter for the given authority and identifier value.
      *
-     * @param authority The identifier authority.
-     * @param value The identifier value, or {@code null} if not yet defined.
+     * @param  authority  the identifier authority.
+     * @param  value      the identifier value, or {@code null} if not yet defined.
      */
     public SpecializedIdentifier(final IdentifierSpace<T> authority, final T value) {
         this.authority = authority;
@@ -92,8 +90,8 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
      * authorities declared in the {@link IdentifierSpace} interface. Otherwise a
      * plain {@link IdentifierMapEntry} is created.
      *
-     * @param authority The authority, typically as one of the {@link IdentifierSpace} constants.
-     * @param code      The identifier code to parse.
+     * @param  authority  the authority, typically as one of the {@link IdentifierSpace} constants.
+     * @param  code       the identifier code to parse.
      *
      * @see IdentifierMapAdapter#put(Citation, String)
      */
@@ -145,10 +143,10 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
      * <p>This method assumes that {@link IdentifierMap#put(Object, Object)} is
      * the public API by which this method has been invoked.</p>
      *
-     * @param context The marshalling context, or {@code null} if none.
-     * @param value   The value that we failed to parse.
-     * @param type    The target type of the parsing process.
-     * @param cause   The exception that occurred during the parsing process.
+     * @param  context  the marshalling context, or {@code null} if none.
+     * @param  value    the value that we failed to parse.
+     * @param  type     the target type of the parsing process.
+     * @param  cause    the exception that occurred during the parsing process.
      */
     static void parseFailure(final Context context, final String value, final Class<?> type, final Exception cause) {
         Context.warningOccured(context, Level.WARNING, IdentifierMap.class, "put", cause,
@@ -158,7 +156,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
     /**
      * Returns the authority specified at construction time.
      *
-     * @return The identifier authority.
+     * @return the identifier authority.
      */
     @Override
     public Citation getAuthority() {
@@ -169,7 +167,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
      * Returns the identifier value. This is the {@linkplain #getCode() code} expressed as
      * an object more specialized than {@link String}.
      *
-     * @return The identifier value, or {@code null} if none.
+     * @return the identifier value, or {@code null} if none.
      */
     public T getValue() {
         return value;
@@ -179,7 +177,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
      * Returns a string representation of the {@linkplain #getValue() identifier value},
      * or {@code null} if none.
      *
-     * @return The identifier value.
+     * @return the identifier value.
      */
     @Override
     public String getCode() {
@@ -190,7 +188,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
     /**
      * Infers a code space from the authority.
      *
-     * @return The code space, or {@code null} if none.
+     * @return the code space, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -234,7 +232,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
     /**
      * Compares this identifier with the given object for equality.
      *
-     * @param other The object to compare with this identifier for equality.
+     * @param  other  the object to compare with this identifier for equality.
      */
     @Override
     public boolean equals(final Object other) {
@@ -249,7 +247,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
     /**
      * Returns a clone of this identifier.
      *
-     * @return A shallow clone of this identifier.
+     * @return a shallow clone of this identifier.
      */
     @Override
     public Object clone() {

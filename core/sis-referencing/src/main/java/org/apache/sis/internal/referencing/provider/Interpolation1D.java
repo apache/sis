@@ -89,9 +89,9 @@ public final class Interpolation1D extends AbstractProvider {
     /**
      * Creates a transform from the specified group of parameter values.
      *
-     * @param  factory Ignored (can be null).
-     * @param  values The group of parameter values.
-     * @return The created math transform.
+     * @param  factory  ignored (can be null).
+     * @param  values   the group of parameter values.
+     * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override

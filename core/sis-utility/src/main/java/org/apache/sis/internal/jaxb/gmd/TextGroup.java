@@ -100,8 +100,8 @@ final class TextGroup {
      * it would be possible to declare an other constructor allowing the more compact form
      * (the smaller ) if there is a need for that in the future.
      *
-     * @param locale The string language.
-     * @param text The string.
+     * @param  locale  the string language.
+     * @param  text    the string.
      */
     TextGroup(final Locale locale, final String text) {
         localized = new LocalisedCharacterString[] {

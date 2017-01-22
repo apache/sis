@@ -218,9 +218,9 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * <p>Alternatively, numerical fields can also be initialized by a call to
      * {@link #setPositionVectorTransformation(Matrix, double)}.</p>
      *
-     * @param targetDatum The target datum (usually WGS 84) for this set of parameters, or {@code null} if unknown.
-     * @param domainOfValidity Area or region in which a coordinate transformation based on those Bursa-Wolf parameters
-     *        is valid, or {@code null} is unspecified.
+     * @param targetDatum       the target datum (usually WGS 84) for this set of parameters, or {@code null} if unknown.
+     * @param domainOfValidity  area or region in which a coordinate transformation based on those Bursa-Wolf parameters
+     *                          is valid, or {@code null} is unspecified.
      */
     public BursaWolfParameters(final GeodeticDatum targetDatum, final Extent domainOfValidity) {
         this.targetDatum = targetDatum;
@@ -243,7 +243,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * revisited. See especially the methods creating a transformation between a pair of {@code GeocentricCRS} or
      * between a pair of {@code GeographicCRS} (tip: search for {@code DefaultGeodeticDatum}).</p>
      *
-     * @param pm The prime meridian of the enclosing {@code GeodeticDatum}.
+     * @param  pm  the prime meridian of the enclosing {@code GeodeticDatum}.
      */
     void verify(final PrimeMeridian pm) throws IllegalArgumentException {
         if (targetDatum != null) {
@@ -269,7 +269,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * <p>The source datum is the {@link DefaultGeodeticDatum} that contain this {@code BursaWolfParameters}
      * instance.</p>
      *
-     * @return The target datum for this set of parameters, or {@code null} if unknown.
+     * @return the target datum for this set of parameters, or {@code null} if unknown.
      */
     public GeodeticDatum getTargetDatum() {
         return targetDatum;
@@ -293,7 +293,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * the rules about the arrays of length 3, 6 or 7 are derived from the <cite>Well Known Text</cite> (WKT)
      * version 1 specification. The rule about the array of length 14 is an extension.</div>
      *
-     * @return The parameter values as an array of length 3, 6, 7 or 14.
+     * @return the parameter values as an array of length 3, 6, 7 or 14.
      *
      * @since 0.6
      */
@@ -325,7 +325,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *       class. Note however that those extra elements may be used by subclasses like {@link TimeDependentBWP}.</li>
      * </ul>
      *
-     * @param elements The new parameter values, as an array of any length.
+     * @param  elements  the new parameter values, as an array of any length.
      *
      * @since 0.6
      */
@@ -414,8 +414,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * Returns the parameter at the given index. If this {@code BursaWolfParameters} is time-dependent,
      * then the returned value shall be corrected for the given period.
      *
-     * @param index  0 for {@code tX}, 1 for {@code tY}, <i>etc.</i> in {@code TOWGS84[…]} order.
-     * @param period The value computed by {@link #period(Date)}, or {@code null}.
+     * @param  index   0 for {@code tX}, 1 for {@code tY}, <i>etc.</i> in {@code TOWGS84[…]} order.
+     * @param  period  the value computed by {@link #period(Date)}, or {@code null}.
      */
     DoubleDouble param(final int index, final DoubleDouble period) {
         final double p;
@@ -470,8 +470,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * that concatenation of transformations <var>A</var> → <var>B</var> followed by <var>B</var> → <var>A</var>
      * gives back the identity transform.
      *
-     * @param  time Date for which the transformation is desired, or {@code null} for the transformation's reference time.
-     * @return An affine transform in geocentric space created from this Bursa-Wolf parameters and the given time.
+     * @param  time  date for which the transformation is desired, or {@code null} for the transformation's reference time.
+     * @return an affine transform in geocentric space created from this Bursa-Wolf parameters and the given time.
      *
      * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum, Extent)
      */
@@ -491,15 +491,15 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
         final DoubleDouble RS = DoubleDouble.createSecondsToRadians();
         final DoubleDouble S = param(6, period);
         S.divide(PPM, 0);
-        S.add(1, 0);        // S = 1 + dS / PPM;
-        RS.multiply(S);     // RS = toRadians(1″) * S;
+        S.add(1, 0);                                                // S = 1 + dS / PPM;
+        RS.multiply(S);                                             // RS = toRadians(1″) * S;
         final DoubleDouble  X = param(3, period); X.multiply(RS);
         final DoubleDouble  Y = param(4, period); Y.multiply(RS);
         final DoubleDouble  Z = param(5, period); Z.multiply(RS);
         final DoubleDouble mX = new DoubleDouble(X); mX.negate();
         final DoubleDouble mY = new DoubleDouble(Y); mY.negate();
         final DoubleDouble mZ = new DoubleDouble(Z); mZ.negate();
-        final Integer       O = 0; // Fetch Integer instance only once.
+        final Integer       O = 0;                                  // Fetch Integer instance only once.
         return Matrices.create(4, 4, new Number[] {
                  S,  mZ,   Y,  param(0, period),
                  Z,   S,  mX,  param(1, period),
@@ -517,8 +517,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *       <a href="http://en.wikipedia.org/wiki/Skew-symmetric_matrix">skew-symmetric</a> (a.k.a. antisymmetric).</li>
      * </ul>
      *
-     * @param  matrix The matrix from which to get Bursa-Wolf parameters.
-     * @param  tolerance The tolerance error for the skew-symmetric matrix test, in units of PPM or arc-seconds (e.g. 1E-8).
+     * @param  matrix     the matrix from which to get Bursa-Wolf parameters.
+     * @param  tolerance  the tolerance error for the skew-symmetric matrix test, in units of PPM or arc-seconds (e.g. 1E-8).
      * @throws IllegalArgumentException if the specified matrix does not meet the conditions.
      *
      * @see #getPositionVectorTransformation(Date)
@@ -540,7 +540,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
         tX = matrix.getElement(0,3);
         tY = matrix.getElement(1,3);
         tZ = matrix.getElement(2,3);
-        if (Matrices.isTranslation(matrix)) {   // Optimization for a common case.
+        if (Matrices.isTranslation(matrix)) {                   // Optimization for a common case.
             return;
         }
         /*
@@ -596,10 +596,10 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * Retrieves the value at the specified row and column of the given matrix, wrapped in a {@code Number}.
      * The {@code Number} type depends on the matrix accuracy.
      *
-     * @param matrix The matrix from which to get the number.
-     * @param row    The row index, from 0 inclusive to {@link Matrix#getNumRow()} exclusive.
-     * @param column The column index, from 0 inclusive to {@link Matrix#getNumCol()} exclusive.
-     * @return       The current value at the given row and column.
+     * @param  matrix  the matrix from which to get the number.
+     * @param  row     the row index, from 0 inclusive to {@link Matrix#getNumRow()} exclusive.
+     * @param  column  the column index, from 0 inclusive to {@link Matrix#getNumCol()} exclusive.
+     * @return the current value at the given row and column.
      */
     private static Number getNumber(final Matrix matrix, final int row, final int column) {
         if (matrix instanceof MatrixSIS) {
@@ -614,7 +614,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * valid, or {@code null} if unspecified. If an extent was specified at construction time, then that extent is
      * returned. Otherwise the datum domain of validity (which may be {@code null}) is returned.
      *
-     * @return Area or region or timeframe in which the coordinate transformation is valid, or {@code null}.
+     * @return area or region or timeframe in which the coordinate transformation is valid, or {@code null}.
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */
@@ -628,7 +628,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     /**
      * Returns a copy of this object.
      *
-     * @return A copy of all parameters.
+     * @return a copy of all parameters.
      */
     @Override
     public BursaWolfParameters clone() {
@@ -643,7 +643,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     /**
      * Compares the specified object with this object for equality.
      *
-     * @param object The object to compare with the parameters.
+     * @param  object  the object to compare with the parameters.
      * @return {@code true} if the given object is equal to this {@code BursaWolfParameters}.
      */
     @Override
@@ -660,7 +660,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     /**
      * Returns a hash value for this object.
      *
-     * @return The hash code value. This value does not need to be the same in past or future versions of this class.
+     * @return the hash code value. This value does not need to be the same in past or future versions of this class.
      */
     @Override
     public int hashCode() {

@@ -104,6 +104,8 @@ import org.opengis.feature.PropertyNotFoundException;
  * @see DefaultAttributeType
  * @see DefaultAssociationRole
  * @see AbstractFeature
+ * @see org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo
+ * @see org.apache.sis.storage.FeatureNaming
  */
 public class DefaultFeatureType extends AbstractIdentifiedType implements FeatureType {
     /**
@@ -406,8 +408,10 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             if (property != null) {
                 final String tip = entry.getKey();
                 if (byName.putIfAbsent(tip, property) == null) {
-                    // This block is skipped if there is properties named "tip" and "head:tip".
-                    // The 'indices' value may be null if the property is an operation.
+                    /*
+                     * This block is skipped if there is properties named "tip" and "head:tip".
+                     * The 'indices' value may be null if the property is an operation.
+                     */
                     final Integer value = indices.get(property.getName().toString());
                     if (value != null && indices.put(tip, value) != null) {
                         throw new AssertionError(tip);                                  // Should never happen.
@@ -792,7 +796,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * inherited from the {@linkplain #getSuperTypes() super-types} only if {@code includeSuperTypes}
      * is {@code true}.
      *
-     * @param  includeSuperTypes {@code true} for including the properties inherited from the super-types,
+     * @param  includeSuperTypes  {@code true} for including the properties inherited from the super-types,
      *         or {@code false} for returning only the properties defined explicitely in this type.
      * @return feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).

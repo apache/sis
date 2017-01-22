@@ -49,7 +49,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @module
  */
 @DependsOn({
-    DefaultProjectedCRSTest.class,  // Has many similarities with DerivedCRS, but is simpler.
+    DefaultProjectedCRSTest.class,          // Has many similarities with DerivedCRS, but is simpler.
     DefaultConversionTest.class
 })
 public final strictfp class DefaultDerivedCRSTest extends XMLTestCase {
@@ -217,7 +217,7 @@ public final strictfp class DefaultDerivedCRSTest extends XMLTestCase {
     /**
      * Tests (un)marshalling of a derived coordinate reference system.
      *
-     * @throws JAXBException If an error occurred during (un)marshalling.
+     * @throws JAXBException if an error occurred during (un)marshalling.
      *
      * @since 0.7
      */

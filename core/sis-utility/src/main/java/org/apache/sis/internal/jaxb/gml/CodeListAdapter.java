@@ -43,7 +43,7 @@ public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> ext
     /**
      * Returns the class of code list wrapped by this adapter.
      *
-     * @return The code list class.
+     * @return the code list class.
      */
     protected abstract Class<BoundType> getCodeListClass();
 
@@ -51,7 +51,7 @@ public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> ext
      * Returns the default code space for the wrapped code list.
      * The default implementation returns {@code null}.
      *
-     * @return The default code space, or {@code null}.
+     * @return the default code space, or {@code null}.
      */
     protected String getCodeSpace() {
         return null;
@@ -61,8 +61,8 @@ public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> ext
      * Substitutes the adapter value read from an XML stream by the object which will
      * contain the value. JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  identifier The code space and identifier.
-     * @return A code list which represents the GML value.
+     * @param  identifier  the code space and identifier.
+     * @return a code list which represents the GML value.
      */
     @Override
     public final BoundType unmarshal(final CodeListUID identifier) {
@@ -73,8 +73,8 @@ public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> ext
      * Substitutes the code list by the proxy to be marshalled into an XML file
      * or stream. JAXB calls automatically this method at marshalling time.
      *
-     * @param  code The code list value.
-     * @return The proxy for the given code list.
+     * @param  code  the code list value.
+     * @return the proxy for the given code list.
      */
     @Override
     public final CodeListUID marshal(final BoundType code) {

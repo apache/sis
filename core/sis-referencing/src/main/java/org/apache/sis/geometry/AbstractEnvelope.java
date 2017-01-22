@@ -21,9 +21,11 @@ package org.apache.sis.geometry;
  * support Java2D (e.g. Android),  or applications that do not need it may want to avoid to
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
+import java.util.Objects;
 import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -47,9 +49,6 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.math.MathFunctions.epsilonEqual;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isPositive;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -113,6 +112,7 @@ import java.util.Objects;
  * @version 0.8
  * @module
  */
+@XmlTransient
 public abstract class AbstractEnvelope implements Envelope, Emptiable {
     /**
      * An empty array of envelopes, to be returned by {@link #toSimpleEnvelopes()}
@@ -132,8 +132,8 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * then it is returned unchanged. Otherwise the coordinate values and the CRS
      * of the given envelope are copied in a new envelope.
      *
-     * @param  envelope The envelope to cast, or {@code null}.
-     * @return The values of the given envelope as an {@code AbstractEnvelope} instance.
+     * @param  envelope  the envelope to cast, or {@code null}.
+     * @return the values of the given envelope as an {@code AbstractEnvelope} instance.
      *
      * @see GeneralEnvelope#castOrCopy(Envelope)
      * @see ImmutableEnvelope#castOrCopy(Envelope)
@@ -163,9 +163,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
     /**
      * Returns the common CRS of specified points.
      *
-     * @param  lowerCorner The first position.
-     * @param  upperCorner The second position.
-     * @return Their common CRS, or {@code null} if none.
+     * @param  lowerCorner  the first position.
+     * @param  upperCorner  the second position.
+     * @return their common CRS, or {@code null} if none.
      * @throws MismatchedReferenceSystemException if the two positions don't use equal CRS.
      */
     static CoordinateReferenceSystem getCommonCRS(final DirectPosition lowerCorner,
@@ -190,9 +190,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * Returns the axis of the given coordinate reference system for the given dimension,
      * or {@code null} if none.
      *
-     * @param  crs The envelope CRS, or {@code null}.
-     * @param  dimension The dimension for which to get the axis.
-     * @return The axis at the given dimension, or {@code null}.
+     * @param  crs        the envelope CRS, or {@code null}.
+     * @param  dimension  the dimension for which to get the axis.
+     * @return the axis at the given dimension, or {@code null}.
      */
     static CoordinateSystemAxis getAxis(final CoordinateReferenceSystem crs, final int dimension) {
         if (crs != null) {
@@ -208,8 +208,8 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * Returns {@code true} if the axis for the given dimension has the
      * {@link RangeMeaning#WRAPAROUND WRAPAROUND} range meaning.
      *
-     * @param  crs The envelope CRS, or {@code null}.
-     * @param  dimension The dimension for which to get the axis.
+     * @param  crs        the envelope CRS, or {@code null}.
+     * @param  dimension  the dimension for which to get the axis.
      * @return {@code true} if the range meaning is {@code WRAPAROUND}.
      */
     static boolean isWrapAround(final CoordinateReferenceSystem crs, final int dimension) {
@@ -221,8 +221,8 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * If the range meaning of the given axis is "wraparound", returns the spanning of that axis.
      * Otherwise returns {@link Double#NaN}.
      *
-     * @param  axis The axis for which to get the spanning.
-     * @return The spanning of the given axis.
+     * @param  axis  the axis for which to get the spanning.
+     * @return the spanning of the given axis.
      */
     static double getSpan(final CoordinateSystemAxis axis) {
         if (axis != null && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
@@ -265,7 +265,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * lower corner longitude greater than the upper corner longitude. Such extended interpretation applies
      * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
-     * @return A view over the lower corner, typically (but not necessarily) containing minimal ordinate values.
+     * @return a view over the lower corner, typically (but not necessarily) containing minimal ordinate values.
      */
     @Override
     public DirectPosition getLowerCorner() {
@@ -290,7 +290,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * upper corner longitude less than the lower corner longitude. Such extended interpretation applies
      * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
-     * @return A view over the upper corner, typically (but not necessarily) containing maximal ordinate values.
+     * @return a view over the upper corner, typically (but not necessarily) containing maximal ordinate values.
      */
     @Override
     public DirectPosition getUpperCorner() {
@@ -304,7 +304,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * The default implementation returns a view over the {@link #getMedian(int)} method,
      * so changes in this envelope will be immediately reflected in the returned direct position.
      *
-     * @return The median coordinates.
+     * @return the median coordinates.
      */
     public DirectPosition getMedian() {
         // We do not cache the object because it is very cheap to create and we
@@ -317,9 +317,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * This is usually the algebraic {@linkplain #getMinimum(int) minimum}, except if this envelope
      * spans the anti-meridian.
      *
-     * @param  dimension The dimension for which to obtain the ordinate value.
-     * @return The starting ordinate value at the given dimension.
-     * @throws IndexOutOfBoundsException If the given index is negative or is equals or greater
+     * @param  dimension  the dimension for which to obtain the ordinate value.
+     * @return the starting ordinate value at the given dimension.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
     public abstract double getLower(int dimension) throws IndexOutOfBoundsException;
@@ -329,9 +329,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * This is usually the algebraic {@linkplain #getMaximum(int) maximum}, except if this envelope
      * spans the anti-meridian.
      *
-     * @param  dimension The dimension for which to obtain the ordinate value.
-     * @return The starting ordinate value at the given dimension.
-     * @throws IndexOutOfBoundsException If the given index is negative or is equals or greater
+     * @param  dimension  the dimension for which to obtain the ordinate value.
+     * @return the starting ordinate value at the given dimension.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
     public abstract double getUpper(int dimension) throws IndexOutOfBoundsException;
@@ -342,9 +342,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * {@link #getLower(int)} value verbatim. In the case of envelope spanning the anti-meridian,
      * this method returns the {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimum value}.
      *
-     * @param  dimension The dimension for which to obtain the ordinate value.
-     * @return The minimal ordinate value at the given dimension.
-     * @throws IndexOutOfBoundsException If the given index is negative or is equals or greater
+     * @param  dimension  the dimension for which to obtain the ordinate value.
+     * @return the minimal ordinate value at the given dimension.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
     @Override
@@ -363,9 +363,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * {@link #getUpper(int)} value verbatim. In the case of envelope spanning the anti-meridian,
      * this method returns the {@linkplain CoordinateSystemAxis#getMaximumValue() axis maximum value}.
      *
-     * @param  dimension The dimension for which to obtain the ordinate value.
-     * @return The maximal ordinate value at the given dimension.
-     * @throws IndexOutOfBoundsException If the given index is negative or is equals or greater
+     * @param  dimension  the dimension for which to obtain the ordinate value.
+     * @return the maximal ordinate value at the given dimension.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
     @Override
@@ -396,9 +396,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * space. If the axis range meaning is not {@code WRAPAROUND}, then this method returns
      * {@link Double#NaN NaN}.
      *
-     * @param  dimension The dimension for which to obtain the ordinate value.
-     * @return The median ordinate at the given dimension, or {@link Double#NaN}.
-     * @throws IndexOutOfBoundsException If the given index is negative or is equals or greater
+     * @param  dimension  the dimension for which to obtain the ordinate value.
+     * @return the median ordinate at the given dimension, or {@link Double#NaN}.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
     @Override
@@ -445,9 +445,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * longitude) to the span. If the result is a positive number, it is returned. Otherwise
      * this method returns {@link Double#NaN NaN}.
      *
-     * @param  dimension The dimension for which to obtain the span.
-     * @return The span (typically width or height) at the given dimension, or {@link Double#NaN}.
-     * @throws IndexOutOfBoundsException If the given index is negative or is equals or greater
+     * @param  dimension  the dimension for which to obtain the span.
+     * @return the span (typically width or height) at the given dimension, or {@link Double#NaN}.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
     @Override
@@ -463,9 +463,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * Transforms a negative span into a valid value if the axis range meaning is "wraparound".
      * Returns {@code NaN} otherwise.
      *
-     * @param  axis The axis for the span dimension, or {@code null}.
-     * @param  span The negative span.
-     * @return A positive span, or NaN if the span can not be fixed.
+     * @param  axis  the axis for the span dimension, or {@code null}.
+     * @param  span  the negative span.
+     * @return a positive span, or NaN if the span can not be fixed.
      */
     static double fixSpan(final CoordinateSystemAxis axis, double span) {
         if (axis != null && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
@@ -484,10 +484,10 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * Returns the envelope span along the specified dimension, in terms of the given units.
      * The default implementation invokes {@link #getSpan(int)} and converts the result.
      *
-     * @param  dimension The dimension to query.
-     * @param  unit The unit for the return value.
-     * @return The span in terms of the given unit.
-     * @throws IndexOutOfBoundsException If the given index is out of bounds.
+     * @param  dimension  the dimension to query.
+     * @param  unit  the unit for the return value.
+     * @return the span in terms of the given unit.
+     * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws IncommensurableException if the length can't be converted to the specified units.
      */
     public double getSpan(final int dimension, final Unit<?> unit)
@@ -525,7 +525,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *       represents this envelope as 2ⁿ separated simple envelopes.
      * </ul>
      *
-     * @return A representation of this envelope as an array of non-empty envelope.
+     * @return a representation of this envelope as an array of non-empty envelope.
      *
      * @see Envelope2D#toRectangles()
      * @see GeneralEnvelope#simplify()
@@ -692,10 +692,10 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * inside the envelope interior, this method tests if the given point is <em>outside</em> the
      * envelope <em>exterior</em>.
      *
-     * @param  position The point to text.
+     * @param  position  the point to text.
      * @return {@code true} if the specified coordinate is inside the boundary of this envelope; {@code false} otherwise.
      * @throws MismatchedDimensionException if the specified point doesn't have the expected dimension.
-     * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      */
     public boolean contains(final DirectPosition position) throws MismatchedDimensionException {
         ensureNonNull("position", position);
@@ -741,10 +741,10 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *
      * <p><img src="doc-files/Contains.png" alt="Examples of envelope inclusions"></p>
      *
-     * @param  envelope The envelope to test for inclusion.
+     * @param  envelope  the envelope to test for inclusion.
      * @return {@code true} if this envelope completely encloses the specified one.
      * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
-     * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      *
      * @see #intersects(Envelope)
      * @see #equals(Envelope, double, boolean)
@@ -768,11 +768,11 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * For API stability, use the {@link #contains(Envelope)} method instead.
      * See <a href="http://issues.apache.org/jira/browse/SIS-172">SIS-172</a> for more information.</div>
      *
-     * @param  envelope The envelope to test for inclusion.
-     * @param  edgesInclusive {@code true} if this envelope edges are inclusive.
+     * @param  envelope        the envelope to test for inclusion.
+     * @param  edgesInclusive  {@code true} if this envelope edges are inclusive.
      * @return {@code true} if this envelope completely encloses the specified one.
      * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
-     * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      *
      * @see #intersects(Envelope, boolean)
      */
@@ -856,10 +856,10 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * This method can handle envelopes spanning the anti-meridian.
      *
-     * @param  envelope The envelope to test for intersection.
+     * @param  envelope  the envelope to test for intersection.
      * @return {@code true} if this envelope intersects the specified one.
      * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
-     * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      *
      * @see #contains(Envelope, boolean)
      * @see #equals(Envelope, double, boolean)
@@ -882,11 +882,11 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * For API stability, use the {@link #intersects(Envelope)} method instead.
      * See <a href="http://issues.apache.org/jira/browse/SIS-172">SIS-172</a> for more information.</div>
      *
-     * @param  envelope The envelope to test for intersection.
-     * @param  edgesInclusive {@code true} if this envelope edges are inclusive.
+     * @param  envelope        the envelope to test for intersection.
+     * @param  edgesInclusive  {@code true} if this envelope edges are inclusive.
      * @return {@code true} if this envelope intersects the specified one.
      * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
-     * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      *
      * @see #contains(Envelope, boolean)
      * @see #equals(Envelope, double, boolean)
@@ -992,10 +992,10 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * ignoring metadata}. If at least one envelope has a null CRS, then the CRS are ignored and the
      * ordinate values are compared as if the CRS were equal.
      *
-     * @param  other The envelope to compare with.
-     * @param  eps   The tolerance value to use for numerical comparisons.
-     * @param  epsIsRelative {@code true} if the tolerance value should be relative to
-     *         axis length, or {@code false} if it is an absolute value.
+     * @param  other          the envelope to compare with.
+     * @param  eps            the tolerance value to use for numerical comparisons.
+     * @param  epsIsRelative  {@code true} if the tolerance value should be relative to axis length,
+     *                        or {@code false} if it is an absolute value.
      * @return {@code true} if the given object is equal to this envelope up to the given tolerance value.
      *
      * @see #contains(Envelope)
@@ -1036,7 +1036,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * This implementation requires that the provided {@code object} argument is of the same class than this envelope.
      * We do not relax this rule since not every implementations in the SIS code base follow the same contract.</div>
      *
-     * @param object The object to compare with this envelope.
+     * @param  object  the object to compare with this envelope.
      * @return {@code true} if the given object is equal to this envelope.
      */
     @Override
@@ -1105,7 +1105,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence) parsed}
      * by the {@code GeneralEnvelope} constructor.
      *
-     * @return This envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
+     * @return this envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      */
     @Override
     public String toString() {
@@ -1116,9 +1116,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * Implementation of the public {@link #toString()} and {@link Envelopes#toString(Envelope)}
      * methods for formatting a {@code BOX} element from an envelope.
      *
-     * @param  envelope The envelope to format.
-     * @param  isSimplePrecision {@code true} if every lower and upper corner values can be casted to {@code float}.
-     * @return This envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
+     * @param  envelope           the envelope to format.
+     * @param  isSimplePrecision  {@code true} if every lower and upper corner values can be casted to {@code float}.
+     * @return this envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      *
      * @see GeneralEnvelope#GeneralEnvelope(CharSequence)
      * @see org.apache.sis.measure.CoordinateFormat
@@ -1236,12 +1236,12 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * since this class intentionally have no public setter methods. This is necessary for
      * preserving the immutable aspect of {@link ImmutableEnvelope} subclass among others.</p>
      *
-     * @param  dimension The dimension to set.
-     * @param  lower     The limit in the direction of decreasing ordinate values.
-     * @param  upper     The limit in the direction of increasing ordinate values.
-     * @throws UnmodifiableGeometryException If this envelope is not modifiable.
-     * @throws IndexOutOfBoundsException If the given index is out of bounds.
-     * @throws IllegalArgumentException If {@code lower > upper}, this envelope has a CRS
+     * @param  dimension  the dimension to set.
+     * @param  lower      the limit in the direction of decreasing ordinate values.
+     * @param  upper      the limit in the direction of increasing ordinate values.
+     * @throws UnmodifiableGeometryException if this envelope is not modifiable.
+     * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     * @throws IllegalArgumentException if {@code lower > upper}, this envelope has a CRS
      *         and the axis range meaning at the given dimension is not "wraparound".
      */
     void setRange(final int dimension, final double lower, final double upper)

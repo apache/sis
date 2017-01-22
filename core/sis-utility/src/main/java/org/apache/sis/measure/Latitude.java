@@ -76,7 +76,7 @@ public final class Latitude extends Angle {
     /**
      * Construct a new latitude with the specified angular value.
      *
-     * @param φ Latitude value in decimal degrees.
+     * @param  φ  latitude value in decimal degrees.
      */
     public Latitude(final double φ) {
         super(φ);
@@ -92,7 +92,7 @@ public final class Latitude extends Angle {
      * locale. Developers should consider using {@link AngleFormat} for end-user applications
      * instead than this constructor.</p>
      *
-     * @param  string A string to be converted to a {@code Latitude}.
+     * @param  string  a string to be converted to a {@code Latitude}.
      * @throws NumberFormatException if the string does not contain a parsable angle,
      *         or represents a longitude angle.
      *
@@ -132,8 +132,8 @@ public final class Latitude extends Angle {
      *   <li>±0 are returned unchanged (i.e. the sign of negative and positive zero is preserved)</li>
      * </ul>
      *
-     * @param  φ The latitude value in decimal degrees.
-     * @return The given value clamped to the [-90 … 90]° range, or NaN if the given value was NaN.
+     * @param  φ  the latitude value in decimal degrees.
+     * @return the given value clamped to the [-90 … 90]° range, or NaN if the given value was NaN.
      *
      * @see Longitude#normalize(double)
      *

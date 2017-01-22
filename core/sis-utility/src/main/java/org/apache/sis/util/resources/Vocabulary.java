@@ -59,592 +59,632 @@ public final class Vocabulary extends IndexedResourceBundle {
         /**
          * Accuracy
          */
-        public static final short Accuracy = 109;
+        public static final short Accuracy = 1;
 
         /**
          * Aliases
          */
-        public static final short Aliases = 74;
+        public static final short Aliases = 2;
 
         /**
          * Angle
          */
-        public static final short Angle = 0;
+        public static final short Angle = 3;
 
         /**
          * Degrees
          */
-        public static final short AngularDegrees = 1;
+        public static final short AngularDegrees = 4;
 
         /**
          * Minutes
          */
-        public static final short AngularMinutes = 2;
+        public static final short AngularMinutes = 5;
 
         /**
          * Seconds
          */
-        public static final short AngularSeconds = 3;
+        public static final short AngularSeconds = 6;
 
         /**
          * Attributes
          */
-        public static final short Attributes = 4;
+        public static final short Attributes = 7;
 
         /**
          * Axis changes
          */
-        public static final short AxisChanges = 98;
+        public static final short AxisChanges = 8;
 
         /**
          * Barometric altitude
          */
-        public static final short BarometricAltitude = 5;
+        public static final short BarometricAltitude = 9;
 
         /**
          * Cardinality
          */
-        public static final short Cardinality = 76;
+        public static final short Cardinality = 10;
 
         /**
          * Caused by {0}
          */
-        public static final short CausedBy_1 = 107;
+        public static final short CausedBy_1 = 11;
 
         /**
          * Character encoding
          */
-        public static final short CharacterEncoding = 6;
+        public static final short CharacterEncoding = 12;
 
         /**
          * Characteristics
          */
-        public static final short Characteristics = 85;
+        public static final short Characteristics = 13;
 
         /**
          * Classpath
          */
-        public static final short Classpath = 7;
+        public static final short Classpath = 14;
 
         /**
          * {0} code
          */
-        public static final short Code_1 = 8;
+        public static final short Code_1 = 15;
 
         /**
          * Commands
          */
-        public static final short Commands = 9;
+        public static final short Commands = 16;
 
         /**
          * Constant pressure surface
          */
-        public static final short ConstantPressureSurface = 19;
+        public static final short ConstantPressureSurface = 17;
 
         /**
          * Container
          */
-        public static final short Container = 92;
+        public static final short Container = 18;
 
         /**
          * Correlation
          */
-        public static final short Correlation = 83;
+        public static final short Correlation = 19;
 
         /**
          * Current date and time
          */
-        public static final short CurrentDateTime = 10;
+        public static final short CurrentDateTime = 20;
 
         /**
          * Current directory
          */
-        public static final short CurrentDirectory = 11;
+        public static final short CurrentDirectory = 21;
 
         /**
          * Cycle omitted
          */
-        public static final short CycleOmitted = 12;
+        public static final short CycleOmitted = 22;
 
         /**
          * Database
          */
-        public static final short DataBase = 96;
+        public static final short DataBase = 23;
 
         /**
          * Data directory
          */
-        public static final short DataDirectory = 88;
+        public static final short DataDirectory = 24;
+
+        /**
+         * Data formats
+         */
+        public static final short DataFormats = 119;
 
         /**
          * Datum
          */
-        public static final short Datum = 99;
+        public static final short Datum = 25;
 
         /**
          * Datum shift
          */
-        public static final short DatumShift = 100;
+        public static final short DatumShift = 26;
 
         /**
          * Daylight time
          */
-        public static final short DaylightTime = 13;
+        public static final short DaylightTime = 27;
 
         /**
          * Default value
          */
-        public static final short DefaultValue = 71;
+        public static final short DefaultValue = 28;
 
         /**
          * Deprecated
          */
-        public static final short Deprecated = 117;
+        public static final short Deprecated = 29;
 
         /**
          * Derived from {0}
          */
-        public static final short DerivedFrom_1 = 108;
+        public static final short DerivedFrom_1 = 30;
 
         /**
          * Description
          */
-        public static final short Description = 75;
+        public static final short Description = 31;
 
         /**
          * Destination
          */
-        public static final short Destination = 14;
+        public static final short Destination = 32;
 
         /**
          * Details
          */
-        public static final short Details = 110;
+        public static final short Details = 33;
 
         /**
          * Dimensions
          */
-        public static final short Dimensions = 15;
+        public static final short Dimensions = 34;
 
         /**
          * Directory
          */
-        public static final short Directory = 16;
+        public static final short Directory = 35;
 
         /**
          * ″
          */
-        public static final short DittoMark = 82;
+        public static final short DittoMark = 36;
 
         /**
          * Domain
          */
-        public static final short Domain = 113;
+        public static final short Domain = 37;
 
         /**
          * Dublin Julian
          */
-        public static final short DublinJulian = 17;
+        public static final short DublinJulian = 38;
 
         /**
          * Ellipsoid
          */
-        public static final short Ellipsoid = 70;
+        public static final short Ellipsoid = 39;
 
         /**
          * Ellipsoid change
          */
-        public static final short EllipsoidChange = 101;
+        public static final short EllipsoidChange = 40;
 
         /**
          * Ellipsoidal height
          */
-        public static final short EllipsoidalHeight = 18;
+        public static final short EllipsoidalHeight = 41;
+
+        /**
+         * {0} entr{0,choice,0#y|2#ies}
+         */
+        public static final short EntryCount_1 = 121;
 
         /**
          * Geocentric
          */
-        public static final short Geocentric = 102;
+        public static final short Geocentric = 42;
 
         /**
          * Geocentric conversion
          */
-        public static final short GeocentricConversion = 103;
+        public static final short GeocentricConversion = 43;
 
         /**
          * Geocentric radius
          */
-        public static final short GeocentricRadius = 104;
+        public static final short GeocentricRadius = 44;
 
         /**
          * Geodetic dataset
          */
-        public static final short GeodeticDataset = 95;
+        public static final short GeodeticDataset = 45;
 
         /**
          * Height
          */
-        public static final short Height = 69;
+        public static final short Height = 46;
 
         /**
          * Identifier
          */
-        public static final short Identifier = 20;
+        public static final short Identifier = 47;
 
         /**
          * Identity
          */
-        public static final short Identity = 105;
+        public static final short Identity = 48;
 
         /**
          * Implementation
          */
-        public static final short Implementation = 21;
+        public static final short Implementation = 49;
 
         /**
          *  in 
          */
-        public static final short InBetweenWords = 87;
+        public static final short InBetweenWords = 50;
 
         /**
          * Index
          */
-        public static final short Index = 22;
+        public static final short Index = 51;
 
         /**
          * Invalid
          */
-        public static final short Invalid = 89;
+        public static final short Invalid = 52;
 
         /**
          * Inverse operation
          */
-        public static final short InverseOperation = 106;
+        public static final short InverseOperation = 53;
 
         /**
          * Java extensions
          */
-        public static final short JavaExtensions = 23;
+        public static final short JavaExtensions = 54;
 
         /**
          * Java home directory
          */
-        public static final short JavaHome = 24;
+        public static final short JavaHome = 55;
 
         /**
          * Julian
          */
-        public static final short Julian = 25;
+        public static final short Julian = 56;
 
         /**
          * Latitude
          */
-        public static final short Latitude = 26;
+        public static final short Latitude = 57;
 
         /**
          * Legend
          */
-        public static final short Legend = 97;
+        public static final short Legend = 58;
 
         /**
          * Level
          */
-        public static final short Level = 94;
+        public static final short Level = 59;
 
         /**
          * Libraries
          */
-        public static final short Libraries = 27;
+        public static final short Libraries = 60;
 
         /**
          * Local configuration
          */
-        public static final short LocalConfiguration = 28;
+        public static final short LocalConfiguration = 61;
 
         /**
          * Locale
          */
-        public static final short Locale = 29;
+        public static final short Locale = 62;
 
         /**
          * Localization
          */
-        public static final short Localization = 30;
+        public static final short Localization = 63;
 
         /**
          * Logging
          */
-        public static final short Logging = 31;
+        public static final short Logging = 64;
 
         /**
          * Longitude
          */
-        public static final short Longitude = 32;
+        public static final short Longitude = 65;
 
         /**
          * Mandatory
          */
-        public static final short Mandatory = 77;
+        public static final short Mandatory = 66;
 
         /**
          * Maximum value
          */
-        public static final short MaximumValue = 33;
+        public static final short MaximumValue = 67;
 
         /**
          * Mean value
          */
-        public static final short MeanValue = 34;
+        public static final short MeanValue = 68;
 
         /**
          * Methods
          */
-        public static final short Methods = 111;
+        public static final short Methods = 69;
 
         /**
          * Minimum value
          */
-        public static final short MinimumValue = 35;
+        public static final short MinimumValue = 70;
 
         /**
          * Modified Julian
          */
-        public static final short ModifiedJulian = 36;
+        public static final short ModifiedJulian = 71;
 
         /**
          * Name
          */
-        public static final short Name = 37;
+        public static final short Name = 72;
 
         /**
          * None
          */
-        public static final short None = 91;
+        public static final short None = 73;
 
         /**
          * Note
          */
-        public static final short Note = 114;
+        public static final short Note = 74;
 
         /**
          * Number of ‘NaN’
          */
-        public static final short NumberOfNaN = 38;
+        public static final short NumberOfNaN = 75;
 
         /**
          * Number of values
          */
-        public static final short NumberOfValues = 39;
+        public static final short NumberOfValues = 76;
 
         /**
          * Obligation
          */
-        public static final short Obligation = 78;
+        public static final short Obligation = 77;
 
         /**
          * {0} ({1} of {2})
          */
-        public static final short Of_3 = 40;
+        public static final short Of_3 = 78;
 
         /**
          * Offset
          */
-        public static final short Offset = 41;
+        public static final short Offset = 79;
 
         /**
          * Operating system
          */
-        public static final short OperatingSystem = 42;
+        public static final short OperatingSystem = 80;
 
         /**
          * Operations
          */
-        public static final short Operations = 112;
+        public static final short Operations = 81;
 
         /**
          * Optional
          */
-        public static final short Optional = 79;
+        public static final short Optional = 82;
 
         /**
          * Options
          */
-        public static final short Options = 43;
+        public static final short Options = 83;
 
         /**
          * Other surface
          */
-        public static final short OtherSurface = 44;
+        public static final short OtherSurface = 84;
 
         /**
          * Others
          */
-        public static final short Others = 45;
+        public static final short Others = 85;
+
+        /**
+         * {0} ({1})
+         */
+        public static final short Parenthesis_2 = 126;
 
         /**
          * Paths
          */
-        public static final short Paths = 46;
+        public static final short Paths = 86;
+
+        /**
+         * Plug-ins
+         */
+        public static final short Plugins = 120;
 
         /**
          * “{0}”
          */
-        public static final short Quoted_1 = 86;
+        public static final short Quoted_1 = 87;
+
+        /**
+         * Read
+         */
+        public static final short Read = 122;
 
         /**
          * Remarks
          */
-        public static final short Remarks = 116;
+        public static final short Remarks = 88;
 
         /**
          * Remote configuration
          */
-        public static final short RemoteConfiguration = 93;
+        public static final short RemoteConfiguration = 89;
 
         /**
          * Root
          */
-        public static final short Root = 47;
+        public static final short Root = 90;
 
         /**
          * Root Mean Square
          */
-        public static final short RootMeanSquare = 48;
+        public static final short RootMeanSquare = 91;
 
         /**
          * Scale
          */
-        public static final short Scale = 49;
+        public static final short Scale = 92;
+
+        /**
+         * {0}/{1}
+         */
+        public static final short SlashSeparatedList_2 = 124;
 
         /**
          * Source
          */
-        public static final short Source = 50;
+        public static final short Source = 93;
 
         /**
          * Standard deviation
          */
-        public static final short StandardDeviation = 51;
+        public static final short StandardDeviation = 94;
 
         /**
          * Subset of {0}
          */
-        public static final short SubsetOf_1 = 115;
+        public static final short SubsetOf_1 = 95;
 
         /**
          * Superseded by {0}.
          */
-        public static final short SupersededBy_1 = 84;
+        public static final short SupersededBy_1 = 96;
 
         /**
          * Temporal
          */
-        public static final short Temporal = 66;
+        public static final short Temporal = 97;
 
         /**
          * Temporary files
          */
-        public static final short TemporaryFiles = 52;
+        public static final short TemporaryFiles = 98;
 
         /**
          * Time
          */
-        public static final short Time = 67;
+        public static final short Time = 99;
 
         /**
          * {0} time
          */
-        public static final short Time_1 = 53;
+        public static final short Time_1 = 100;
 
         /**
          * Timezone
          */
-        public static final short Timezone = 54;
+        public static final short Timezone = 101;
 
         /**
          * Transformation
          */
-        public static final short Transformation = 80;
+        public static final short Transformation = 102;
 
         /**
          * Transformation accuracy
          */
-        public static final short TransformationAccuracy = 81;
+        public static final short TransformationAccuracy = 103;
 
         /**
          * Truncated Julian
          */
-        public static final short TruncatedJulian = 55;
+        public static final short TruncatedJulian = 104;
 
         /**
          * Type
          */
-        public static final short Type = 56;
+        public static final short Type = 105;
 
         /**
          * Unavailable content.
          */
-        public static final short UnavailableContent = 57;
+        public static final short UnavailableContent = 106;
 
         /**
          * Units
          */
-        public static final short Units = 72;
+        public static final short Units = 107;
+
+        /**
+         * Unknown
+         */
+        public static final short Unknown = 125;
 
         /**
          * Unnamed
          */
-        public static final short Unnamed = 65;
+        public static final short Unnamed = 108;
 
         /**
          * Untitled
          */
-        public static final short Untitled = 58;
+        public static final short Untitled = 109;
 
         /**
          * User home directory
          */
-        public static final short UserHome = 59;
+        public static final short UserHome = 110;
 
         /**
          * Value
          */
-        public static final short Value = 60;
+        public static final short Value = 111;
 
         /**
          * Value domain
          */
-        public static final short ValueDomain = 73;
+        public static final short ValueDomain = 112;
 
         /**
          * Variables
          */
-        public static final short Variables = 61;
+        public static final short Variables = 113;
 
         /**
          * {0} version {1}
          */
-        public static final short Version_2 = 62;
+        public static final short Version_2 = 114;
 
         /**
          * Versions
          */
-        public static final short Versions = 63;
+        public static final short Versions = 115;
 
         /**
          * Vertical
          */
-        public static final short Vertical = 68;
+        public static final short Vertical = 116;
 
         /**
          * Warnings
          */
-        public static final short Warnings = 90;
+        public static final short Warnings = 117;
 
         /**
          * World
          */
-        public static final short World = 64;
+        public static final short World = 118;
+
+        /**
+         * Write
+         */
+        public static final short Write = 123;
     }
 
     /**

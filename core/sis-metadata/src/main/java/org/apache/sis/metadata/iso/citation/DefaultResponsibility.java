@@ -46,6 +46,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "CI_Responsibility_Type", propOrder = {
 /// "role",
 /// "extents",
@@ -85,9 +86,9 @@ public class DefaultResponsibility extends ISOMetadata implements Responsibility
     /**
      * Constructs a responsibility initialized to the specified values.
      *
-     * @param role   Function performed by the responsible party, or {@code null}.
-     * @param extent Spatial or temporal extent of the role, or {@code null}.
-     * @param party  Information about the party, or {@code null}.
+     * @param role    function performed by the responsible party, or {@code null}.
+     * @param extent  spatial or temporal extent of the role, or {@code null}.
+     * @param party   information about the party, or {@code null}.
      */
     public DefaultResponsibility(final Role role, final Extent extent, final Party party) {
         this.role    = role;
@@ -100,7 +101,7 @@ public class DefaultResponsibility extends ISOMetadata implements Responsibility
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Responsibility)
      */
@@ -127,8 +128,8 @@ public class DefaultResponsibility extends ISOMetadata implements Responsibility
      *       Responsibility contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultResponsibility castOrCopy(final Responsibility object) {
@@ -141,7 +142,7 @@ public class DefaultResponsibility extends ISOMetadata implements Responsibility
     /**
      * Returns the function performed by the responsible party.
      *
-     * @return Function performed by the responsible party.
+     * @return function performed by the responsible party.
      */
     @Override
 /// @XmlElement(name = "role", required = true)
@@ -152,7 +153,7 @@ public class DefaultResponsibility extends ISOMetadata implements Responsibility
     /**
      * Sets the function performed by the responsible party.
      *
-     * @param newValue The new role, or {@code null} if none.
+     * @param  newValue  the new role, or {@code null} if none.
      */
     public void setRole(final Role newValue) {
         checkWritePermission();
@@ -162,7 +163,7 @@ public class DefaultResponsibility extends ISOMetadata implements Responsibility
     /**
      * Returns the spatial or temporal extents of the role.
      *
-     * @return The spatial or temporal extents of the role.
+     * @return the spatial or temporal extents of the role.
      */
     @Override
 /// @XmlElement(name = "extent")
@@ -173,7 +174,7 @@ public class DefaultResponsibility extends ISOMetadata implements Responsibility
     /**
      * Sets the spatial and temporal extents of the role.
      *
-     * @param newValues The new spatial and temporal extents of the role.
+     * @param  newValues  the new spatial and temporal extents of the role.
      */
     public void setExtents(final Collection<? extends Extent> newValues) {
         extents = writeCollection(newValues, extents, Extent.class);
@@ -182,7 +183,7 @@ public class DefaultResponsibility extends ISOMetadata implements Responsibility
     /**
      * Returns information about the parties.
      *
-     * @return Information about the parties.
+     * @return information about the parties.
      */
     @Override
 /// @XmlElement(name = "party", required = true)
@@ -193,7 +194,7 @@ public class DefaultResponsibility extends ISOMetadata implements Responsibility
     /**
      * Sets information about the parties.
      *
-     * @param newValues New information about the parties.
+     * @param  newValues  new information about the parties.
      */
     public void setParties(final Collection<? extends Party> newValues) {
         parties = writeCollection(newValues, parties, Party.class);

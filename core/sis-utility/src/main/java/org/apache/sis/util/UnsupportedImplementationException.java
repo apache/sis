@@ -39,7 +39,7 @@ public class UnsupportedImplementationException extends UnsupportedOperationExce
     /**
      * Constructs an exception with the specified detail message.
      *
-     * @param message The detail message, or {@code null} if none.
+     * @param message  the detail message, or {@code null} if none.
      */
     public UnsupportedImplementationException(final String message) {
         super(message);
@@ -48,7 +48,7 @@ public class UnsupportedImplementationException extends UnsupportedOperationExce
     /**
      * Constructs an exception with an error message formatted for the specified class.
      *
-     * @param classe The unexpected implementation class.
+     * @param classe  the unexpected implementation class.
      */
     public UnsupportedImplementationException(final Class<?> classe) {
         super(Errors.format(Errors.Keys.UnsupportedImplementation_1, classe));
@@ -58,8 +58,8 @@ public class UnsupportedImplementationException extends UnsupportedOperationExce
      * Constructs an exception with an error message formatted for the specified class
      * and a cause.
      *
-     * @param classe The unexpected implementation class.
-     * @param cause  The cause for the exception, or {@code null} if none.
+     * @param classe  the unexpected implementation class.
+     * @param cause   the cause for the exception, or {@code null} if none.
      */
     public UnsupportedImplementationException(final Class<?> classe, final Exception cause) {
         super(Errors.format(Errors.Keys.UnsupportedImplementation_1, classe), cause);

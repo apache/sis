@@ -41,7 +41,7 @@ public final strictfp class WKTKeywordsTest extends TestCase {
      * If a developer change the constant values without changing the constant names (for example in order to use the
      * abridged WKT 2 keyword names instead that their long name), this is okay — just ignore this test.</p>
      *
-     * @throws ReflectiveOperationException should never happen.
+     * @throws ReflectiveOperationException if a field is not public, or other error related to reflexion.
      */
     @Test
     public void verifyConstantValues() throws ReflectiveOperationException {

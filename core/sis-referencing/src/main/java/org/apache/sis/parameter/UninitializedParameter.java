@@ -34,7 +34,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
  * @module
  */
 @SuppressWarnings("CloneInNonCloneableClass")
-final class UninitializedParameter implements GeneralParameterValue, Serializable { // Intentionally non-Cloneable.
+final class UninitializedParameter implements GeneralParameterValue, Serializable {     // Intentionally non-Cloneable.
     /**
      * For cross-version serialization compatibility.
      */
@@ -64,6 +64,7 @@ final class UninitializedParameter implements GeneralParameterValue, Serializabl
      * Returns {@code this} since there is no need to clone this object.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public GeneralParameterValue clone() {
         return this;
     }

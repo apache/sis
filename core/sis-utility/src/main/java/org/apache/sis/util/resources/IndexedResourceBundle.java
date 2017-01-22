@@ -90,6 +90,14 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     private static final int MAX_STRING_LENGTH = 200;
 
     /**
+     * First valid key index.
+     * We start at 1 rather than 0 in order to keep value 0 available for meaning "no localized message".
+     *
+     * @since 0.8
+     */
+    static final int FIRST = 1;
+
+    /**
      * The path of the binary file containing resources, or {@code null} if there is no resources
      * or if the resources have already been loaded. The resources may be a file or an entry in a
      * JAR file.
@@ -97,12 +105,11 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     private URL resources;
 
     /**
-     * The array of resources. Keys are an array index. For example, the value for key "14" is
-     * {@code values[14]}. This array will be loaded only when first needed. We should not load
-     * it at construction time, because some {@code ResourceBundle} objects will never ask for
-     * values. This is particularly the case for parent resources of {@code Resources_fr_CA},
-     * {@code Resources_en}, {@code Resources_de}, etc., which will only be used if a key has
-     * not been found in the child resources.
+     * The array of resources. Keys are an array index plus {@value #FIRST}. For example the value for key "14" is
+     * {@code values[13]}. This array will be loaded only when first needed. We should not load it at construction
+     * time, because some {@code ResourceBundle} objects will never ask for values.  This is particularly the case
+     * for parent resources of {@code Resources_fr_CA}, {@code Resources_en}, {@code Resources_de}, etc. which will
+     * only be used if a key has not been found in the child resources.
      *
      * @see #ensureLoaded(String)
      */
@@ -235,7 +242,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
         }
         final String lineSeparator = System.lineSeparator();
         final String[] values = ensureLoaded(null);
-        for (int i=0; i<values.length; i++) {
+        for (int i=0; i < values.length; i++) {
             final String key   = keys  [i];
             final String value = values[i];
             if (key != null && value != null) {
@@ -273,8 +280,10 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                  * differ from its parent in the way dates and numbers are formatted.
                  */
                 if (resources == null) {
-                    // If we get a NullPointerException or ClassCastException here,
-                    // it would be a bug in the way we create the chain of parents.
+                    /*
+                     * If we get a NullPointerException or ClassCastException here,
+                     * it would be a bug in the way we create the chain of parents.
+                     */
                     values = ((IndexedResourceBundle) parent).ensureLoaded(key);
                 } else {
                     /*
@@ -283,7 +292,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                      * into an error record. Note that the message must be logged outside
                      * the synchronized block, otherwise there is dead locks!
                      */
-                    final Locale    locale     = getLocale(); // Sometime null with IBM's JDK.
+                    final Locale    locale     = getLocale();                         // Sometime null with IBM's JDK.
                     final String    baseName   = getClass().getCanonicalName();
                     final String    methodName = (key != null) ? "getObject" : "getKeys";
                     final LogRecord record     = new LogRecord(Level.FINER, "Loaded resources for {0} from bundle \"{1}\".");
@@ -301,14 +310,12 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                         }
                     } catch (IOException exception) {
                         record.setLevel  (Level.WARNING);
-                        record.setMessage(exception.getMessage()); // For administrator, use system locale.
+                        record.setMessage(exception.getMessage());              // For administrator, use system locale.
                         record.setThrown (exception);
                         Logging.log(IndexedResourceBundle.class, methodName, record);
-                        final MissingResourceException error = new MissingResourceException(
-                                Exceptions.getLocalizedMessage(exception, locale), // For users, use requested locale.
-                                baseName, key);
-                        error.initCause(exception);
-                        throw error;
+                        throw (MissingResourceException) new MissingResourceException(
+                                Exceptions.getLocalizedMessage(exception, locale),   // For users, use requested locale.
+                                baseName, key).initCause(exception);
                     }
                     /*
                      * Now, logs the message. This message is provided only in English.
@@ -344,9 +351,11 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      */
     @Override
     protected final Object handleGetObject(final String key) {
-        // Synchronization performed by 'ensureLoaded'
+        /*
+         * Note: Synchronization is performed by 'ensureLoaded'
+         */
         final String[] values = ensureLoaded(key);
-        short keyID;
+        int keyID;
         try {
             keyID = Short.parseShort(key);
         } catch (NumberFormatException exception) {
@@ -359,9 +368,10 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
             } catch (ReflectiveOperationException e) {
                 e.addSuppressed(exception);
                 Logging.recoverableException(Logging.getLogger(Loggers.LOCALIZATION), getClass(), "handleGetObject", e);
-                return null; // This is okay as of 'handleGetObject' contract.
+                return null;                // This is okay as of 'handleGetObject' contract.
             }
         }
+        keyID -= FIRST;
         return (keyID >= 0 && keyID < values.length) ? values[keyID] : null;
     }
 
@@ -410,8 +420,10 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
             } else if (element instanceof ControlledVocabulary) {
                 replacement = Types.getCodeTitle((ControlledVocabulary) element).toString(getLocale());
             }
-            // No need to check for Numbers or Dates instances, since they are
-            // properly formatted in the ResourceBundle locale by MessageFormat.
+            /*
+             * No need to check for Numbers or Dates instances, since they are
+             * properly formatted in the ResourceBundle locale by MessageFormat.
+             */
             if (replacement != element) {
                 if (array == arguments) {
                     array = array.clone();                  // Protect the user-provided array from change.
@@ -456,7 +468,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * A space may or may not be added before ":", depending on the locale.
      * No space is added after the string; it is up to the caller to add such space if needed.
      *
-     * @param  key The key for the desired string.
+     * @param  key  the key for the desired string.
      * @return the string for the given key.
      * @throws MissingResourceException if no object for the given key can be found.
      */

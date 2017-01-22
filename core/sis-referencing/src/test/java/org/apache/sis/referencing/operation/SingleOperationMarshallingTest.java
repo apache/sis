@@ -176,10 +176,10 @@ public final strictfp class SingleOperationMarshallingTest extends XMLTestCase {
      * Verify a parameter value. The descriptor is expected to be the same instance than the descriptors
      * defined in the {@link ParameterValueGroup} and in the {@link OperationMethod}.
      *
-     * @param method        The method of the enclosing operation.
-     * @param group         The group which contain the given parameter.
-     * @param expectedValue The expected parameter value.
-     * @param parameter     The parameter to verify.
+     * @param  method         the method of the enclosing operation.
+     * @param  group          the group which contain the given parameter.
+     * @param  expectedValue  the expected parameter value.
+     * @param  parameter      the parameter to verify.
      */
     private static void verifyParameter(final OperationMethod method, final ParameterValueGroup group,
             final double expectedValue, final ParameterValue<?> parameter)

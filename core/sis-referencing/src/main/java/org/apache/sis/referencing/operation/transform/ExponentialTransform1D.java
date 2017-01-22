@@ -102,8 +102,8 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * Instances should be created using the {@linkplain #create(double, double) factory method},
      * which may returns optimized implementations for some particular argument values.
      *
-     * @param base   The base to be raised to a power.
-     * @param scale  The scale value to be multiplied.
+     * @param base   the base to be raised to a power.
+     * @param scale  the scale value to be multiplied.
      */
     protected ExponentialTransform1D(final double base, final double scale) {
         this.base   = base;
@@ -114,9 +114,9 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     /**
      * Constructs a new exponential transform which include the given scale factor applied after the exponentiation.
      *
-     * @param  base   The base to be raised to a power.
-     * @param  scale  The scale value to be multiplied.
-     * @return The math transform.
+     * @param  base   the base to be raised to a power.
+     * @param  scale  the scale value to be multiplied.
+     * @return the math transform.
      */
     public static MathTransform1D create(final double base, final double scale) {
         if (base == 0 || scale == 0) {
@@ -217,12 +217,11 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * {@code MathTransform}. This implementation can optimize some concatenation with
      * {@link LinearTransform1D} and {@link LogarithmicTransform1D}.
      *
-     * @param  other The math transform to apply.
-     * @param  applyOtherFirst {@code true} if the transformation order is {@code other}
-     *         followed by {@code this}, or {@code false} if the transformation order is
-     *         {@code this} followed by {@code other}.
-     * @param  factory The factory which is (indirectly) invoking this method, or {@code null} if none.
-     * @return The combined math transform, or {@code null} if no optimized combined transform is available.
+     * @param  other            the math transform to apply.
+     * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
+     *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @param  factory          the factory which is (indirectly) invoking this method, or {@code null} if none.
+     * @return the combined math transform, or {@code null} if no optimized combined transform is available.
      */
     @Override
     final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst,
@@ -251,10 +250,10 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * Concatenates in an optimized way a {@link LogarithmicTransform1D} {@code other}
      * to this {@code ExponentialTransform1D}.
      *
-     * @param  other The math transform to apply.
-     * @param  applyOtherFirst {@code true} if the transformation order is {@code other} followed by {@code this},
-     *         or {@code false} if the transformation order is {@code this} followed by {@code other}.
-     * @return The combined math transform, or {@code null} if no optimized combined transform is available.
+     * @param  other            the math transform to apply.
+     * @param  applyOtherFirst  {@code true} if the transformation order is {@code other} followed by {@code this}, or
+     *                          {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @return the combined math transform, or {@code null} if no optimized combined transform is available.
      */
     final MathTransform concatenateLog(final LogarithmicTransform1D other, final boolean applyOtherFirst) {
         final double newScale = lnBase / other.lnBase();
@@ -266,8 +265,10 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
             if (scale > 0) {
                 newOffset = other.log(scale) + other.offset();
             } else {
-                // Maybe the Math.log(...) argument will become
-                // positive if we rewrite the equation that way...
+                /*
+                 * Maybe the Math.log(double) argument will become
+                 * positive if we rewrite the equation that way...
+                 */
                 newOffset = other.log(scale * other.offset() * other.lnBase());
             }
             if (!Double.isNaN(newOffset)) {
@@ -292,7 +293,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Optimization for a common case.
+            return true;                    // Optimization for a common case.
         }
         if (super.equals(object, mode)) {
             final ExponentialTransform1D that = (ExponentialTransform1D) object;

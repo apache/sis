@@ -61,35 +61,112 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Name “{3}” is ambiguous because it can be understood as either “{1}” or “{2}” in the context
+         * of “{0}” data.
+         */
+        public static final short AmbiguousName_4 = 15;
+
+        /**
+         * Can not read “{1}” as a file in the {0} format.
+         */
+        public static final short CanNotReadFile_2 = 1;
+
+        /**
+         * Can not read line {2} of “{1}” as part of a file in the {0} format.
+         */
+        public static final short CanNotReadFile_3 = 2;
+
+        /**
+         * Can not read line {2} (after column {3}) of “{1}” as part of a file in the {0} format.
+         */
+        public static final short CanNotReadFile_4 = 3;
+
+        /**
+         * This {0} reader is closed.
+         */
+        public static final short ClosedReader_1 = 4;
+
+        /**
+         * This {0} writer is closed.
+         */
+        public static final short ClosedWriter_1 = 5;
+
+        /**
+         * One or more read operations are in progress in the “{0}” data store.
+         */
+        public static final short ConcurrentRead_1 = 19;
+
+        /**
+         * A write operation is in progress in the “{0}” data store.
+         */
+        public static final short ConcurrentWrite_1 = 20;
+
+        /**
          * Character string in the “{0}” file is too long. The string has {2} characters while the
          * limit is {1}.
          */
-        public static final short ExcessiveStringSize_3 = 0;
+        public static final short ExcessiveStringSize_3 = 6;
 
         /**
-         * Components of the “{0}” name are inconsistent with those of the name that was added.
+         * A feature named “{1}” is already present in the “{0}” data store.
          */
-        public static final short InconsistentNameComponents_1 = 4;
+        public static final short FeatureAlreadyPresent_2 = 16;
+
+        /**
+         * Feature “{1}” has not been found in the “{0}” data store.
+         */
+        public static final short FeatureNotFound_2 = 17;
+
+        /**
+         * The {0} data store does not accept features of type “{1}”.
+         */
+        public static final short IllegalFeatureType_2 = 7;
+
+        /**
+         * The {0} reader does not accept inputs of type ‘{1}’.
+         */
+        public static final short IllegalInputTypeForReader_2 = 8;
+
+        /**
+         * The {0} writer does not accept outputs of type ‘{1}’.
+         */
+        public static final short IllegalOutputTypeForWriter_2 = 9;
+
+        /**
+         * Components of the “{1}” name are inconsistent with those of the name previously binded in
+         * “{0}” data store.
+         */
+        public static final short InconsistentNameComponents_2 = 10;
 
         /**
          * Missing scheme in “{0}” URI.
          */
-        public static final short MissingSchemeInURI_1 = 1;
+        public static final short MissingSchemeInURI_1 = 11;
 
         /**
          * Processing executed on {0}.
          */
-        public static final short ProcessingExecutedOn_1 = 5;
+        public static final short ProcessingExecutedOn_1 = 12;
 
         /**
          * Can not move backward in the “{0}” stream.
          */
-        public static final short StreamIsForwardOnly_1 = 2;
+        public static final short StreamIsForwardOnly_1 = 13;
+
+        /**
+         * The “{0}” data store can be read only once.
+         */
+        public static final short StreamIsReadOnce_1 = 18;
+
+        /**
+         * Can not modify previously written data in “{0}”.
+         */
+        public static final short StreamIsWriteOnce_1 = 21;
 
         /**
          * Format of “{0}” is not recognized.
          */
-        public static final short UnknownFormatFor_1 = 3;
+        public static final short UnknownFormatFor_1 = 14;
     }
 
     /**

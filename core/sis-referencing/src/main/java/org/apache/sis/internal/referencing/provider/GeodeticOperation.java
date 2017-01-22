@@ -114,7 +114,7 @@ abstract class GeodeticOperation extends AbstractProvider {
     /**
      * Returns the interface implemented by all coordinate operations that extends this class.
      *
-     * @return Fixed to {@link Transformation}.
+     * @return fixed to {@link Transformation}.
      */
     @Override
     public final Class<Transformation> getOperationType() {

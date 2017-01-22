@@ -16,18 +16,28 @@
  */
 package org.apache.sis.referencing;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Arrays;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.cs.CartesianCS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
-import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.crs.DefaultProjectedCRS;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.DefaultExtent;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
 // Test imports
+import org.apache.sis.referencing.operation.HardCodedConversions;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -63,7 +73,7 @@ public final strictfp class CRSTest extends TestCase {
     /**
      * Tests {@link CRS#forCode(String)} with EPSG codes.
      *
-     * @throws FactoryException If a CRS can not be constructed.
+     * @throws FactoryException if a CRS can not be constructed.
      *
      * @see CommonCRSTest#testForCode()
      */
@@ -92,7 +102,7 @@ public final strictfp class CRSTest extends TestCase {
     /**
      * Tests {@link CRS#forCode(String)} with CRS codes.
      *
-     * @throws FactoryException If a CRS can not be constructed.
+     * @throws FactoryException if a CRS can not be constructed.
      *
      * @see CommonCRSTest#testForCode()
      */
@@ -136,6 +146,71 @@ public final strictfp class CRSTest extends TestCase {
                 + "PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]");
         assertInstanceOf("GEOGCS", DefaultGeographicCRS.class, crs);
         assertEquals("GCS WGS 1984", crs.getName().getCode());
+    }
+
+    /**
+     * Tests {@link CRS#suggestTargetCRS(GeographicBoundingBox, CoordinateReferenceSystem...)}.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testSuggestTargetCRS() {
+        /*
+         * Prepare 4 CRS with different datum (so we can more easily differentiate them in the assertions) and
+         * different domain of validity. CRS[1] is given a domain large enough for all CRS except the last one.
+         */
+        final Map<String,Object> properties = new HashMap<>(4);
+        final CartesianCS cs = (CartesianCS) StandardDefinitions.createCoordinateSystem(Constants.EPSG_PROJECTED_CS);
+        final ProjectedCRS[] crs = new ProjectedCRS[4];
+        for (int i=0; i<crs.length; i++) {
+            final CommonCRS baseCRS;
+            final double ymin, ymax;
+            switch (i) {
+                case 0: baseCRS = CommonCRS.WGS84;  ymin = 2; ymax = 4; break;
+                case 1: baseCRS = CommonCRS.WGS72;  ymin = 1; ymax = 4; break;
+                case 2: baseCRS = CommonCRS.SPHERE; ymin = 2; ymax = 3; break;
+                case 3: baseCRS = CommonCRS.NAD27;  ymin = 3; ymax = 5; break;
+                default: throw new AssertionError(i);
+            }
+            properties.put(DefaultProjectedCRS.NAME_KEY, "CRS #" + i);
+            properties.put(DefaultProjectedCRS.DOMAIN_OF_VALIDITY_KEY, new DefaultExtent(
+                    null, new DefaultGeographicBoundingBox(-1, +1, ymin, ymax), null, null));
+            crs[i] = new DefaultProjectedCRS(properties, baseCRS.geographic(), HardCodedConversions.MERCATOR, cs);
+        }
+        final ProjectedCRS[] overlappingCRS = Arrays.copyOf(crs, 3);        // Exclude the last CRS only.
+        /*
+         * Test between the 3 overlapping CRS without region of interest. We expect the CRS having a domain
+         * of validity large enough for all CRS; this is the second CRS created in above 'switch' statement.
+         */
+        assertSame("Expected CRS with widest domain of validity.", crs[1],
+                   CRS.suggestTargetCRS(null, overlappingCRS));
+        /*
+         * If we specify a smaller region of interest, we should get the CRS having the smallest domain of validity that
+         * cover the ROI. Following lines gradually increase the ROI size and verify that we get CRS for larger domain.
+         */
+        final DefaultGeographicBoundingBox regionOfInterest = new DefaultGeographicBoundingBox(-1, +1, 2.1, 2.9);
+        assertSame("Expected best fit for [2.1 … 2.9]°N", crs[2],
+                   CRS.suggestTargetCRS(regionOfInterest, overlappingCRS));
+
+        regionOfInterest.setNorthBoundLatitude(3.1);
+        assertSame("Expected best fit for [2.1 … 3.1]°N", crs[0],
+                   CRS.suggestTargetCRS(regionOfInterest, overlappingCRS));
+
+        regionOfInterest.setSouthBoundLatitude(1.9);
+        assertSame("Expected best fit for [1.9 … 3.1]°N", crs[1],
+                   CRS.suggestTargetCRS(regionOfInterest, overlappingCRS));
+        /*
+         * All above tests returned one of the CRS in the given array. Test now a case where none of those CRS
+         * have a domain of validity wide enough, so suggestTargetCRS(…) need to search among the base CRS.
+         */
+        assertSame("Expected a GeodeticCRS since none of the ProjectedCRS have a domain of validity wide enough.",
+                   crs[0].getBaseCRS(), CRS.suggestTargetCRS(null, crs));
+        /*
+         * With the same domain of validity than above, suggestTargetCRS(…) should not need to fallback on the
+         * base CRS anymore.
+         */
+        assertSame("Expected best fit for [1.9 … 3.1]°N", crs[1],
+                   CRS.suggestTargetCRS(regionOfInterest, crs));
     }
 
     /**
@@ -210,20 +285,20 @@ public final strictfp class CRSTest extends TestCase {
     @Test
     public void testGetComponentAt() {
         testGetComponentAt(
-                null, // Null because our CRS has no component for the 'x' axis alone.
-                null, // Null because our CRS has no component for the 'y' axis alone.
+                null,                                 // Null because our CRS has no component for the 'x' axis alone.
+                null,                                 // Null because our CRS has no component for the 'y' axis alone.
                 HardCodedCRS.GRAVITY_RELATED_HEIGHT,
                 HardCodedCRS.TIME,
                 HardCodedCRS.WGS84,
-                null, // Null because our CRS has no (x,y,z) component.
+                null,                                 // Null because our CRS has no (x,y,z) component.
                 HardCodedCRS.GEOID_4D);
         /*
          * The above tests was for the standard (x,y,z,t) flat view.
          * Now test again, but with a more hierarchical structure: ((x,y,z),t)
          */
         testGetComponentAt(
-                null, // Null because our CRS has no component for the 'x' axis alone.
-                null, // Null because our CRS has no component for the 'y' axis alone.
+                null,                                 // Null because our CRS has no component for the 'x' axis alone.
+                null,                                 // Null because our CRS has no component for the 'y' axis alone.
                 HardCodedCRS.GRAVITY_RELATED_HEIGHT,
                 HardCodedCRS.TIME,
                 HardCodedCRS.WGS84,

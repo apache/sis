@@ -47,9 +47,9 @@ public final strictfp class Assume extends org.junit.Assume {
      * If desired, those grids need to be downloaded by the user and stored in the directory
      * identified by the {@code SIS_DATA} environment variable.</p>
      *
-     * @param  type The directory where to search for the given file.
-     * @param  file The file that needs to exist.
-     * @return The path to the given file.
+     * @param  type  the directory where to search for the given file.
+     * @param  file  the file that needs to exist.
+     * @return the path to the given file.
      */
     public static Path assumeDataExists(final DataDirectory type, final String file) {
         assumeNotNull(System.getenv(DataDirectory.ENV));

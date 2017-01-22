@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.earthobservation;
 
+import java.nio.charset.StandardCharsets;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
@@ -24,9 +25,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-
-// Branch-dependent imports
-import java.nio.charset.StandardCharsets;
 
 
 /**

@@ -111,7 +111,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
      * Creates a new instance of {@link ObliqueStereographic} for a sphere or an ellipsoid.
      * The new instance is stored in the inherited {@link #transform} field.
      *
-     * @param ellipse {@code false} for the spherical case, or {@code true} for the ellipsoidal case.
+     * @param  ellipse  {@code false} for the spherical case, or {@code true} for the ellipsoidal case.
      */
     private void createNormalizedProjection(final boolean ellipse) {
         final OperationMethod op = new org.apache.sis.internal.referencing.provider.ObliqueStereographic();

@@ -41,7 +41,7 @@ public final strictfp class MarshallerPoolTest extends TestCase {
      * The marshaller should be reset to its initial state
      * despite the setter method we may have invoked on it.
      *
-     * @throws JAXBException Should not happen.
+     * @throws JAXBException if (un)marhaller construction failed.
      */
     @Test
     public void testAcquireRelease() throws JAXBException {

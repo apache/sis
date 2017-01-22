@@ -25,7 +25,7 @@ import org.apache.sis.util.collection.TableColumn;
 /**
  * For testing {@link TableColumn} deserialization.
  *
- * @param <V> Base type of all values in the column identified by this instance.
+ * @param  <V>  base type of all values in the column identified by this instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -53,9 +53,9 @@ public final strictfp class SerializableTableColumn<V> extends TableColumn<V> im
     /**
      * Creates a new instance for the given type of values.
      *
-     * @param field  The programmatic name of the static final field holding this constant.
-     * @param type   Base type of all values in the column identified by this instance.
-     * @param header The text to display as column header.
+     * @param  field   the programmatic name of the static final field holding this constant.
+     * @param  type    base type of all values in the column identified by this instance.
+     * @param  header  the text to display as column header.
      */
     private SerializableTableColumn(final String field, final Class<V> type, final CharSequence header) {
         super(type, header);
@@ -65,16 +65,14 @@ public final strictfp class SerializableTableColumn<V> extends TableColumn<V> im
     /**
      * Invoked on deserialization for resolving this instance to one of the predefined constants.
      *
-     * @return One of the predefined constants.
-     * @throws InvalidObjectException If this instance can not be resolved.
+     * @return one of the predefined constants.
+     * @throws InvalidObjectException if this instance can not be resolved.
      */
     private Object readResolve() throws ObjectStreamException {
         try {
             return SerializableTableColumn.class.getField(field).get(null);
-        } catch (Exception cause) { // Many exceptions, including unchecked ones.
-            InvalidObjectException e = new InvalidObjectException(cause.toString());
-            e.initCause(cause);
-            throw e;
+        } catch (Exception cause) {                 // Many exceptions, including unchecked ones.
+            throw (InvalidObjectException) new InvalidObjectException(cause.toString()).initCause(cause);
         }
     }
 }

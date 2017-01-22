@@ -170,9 +170,9 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      * The default implementation creates an affine transform, but some subclasses
      * will wrap that affine operation into Geographic/Geocentric conversions.
      *
-     * @param  factory The factory to use for creating concatenated transforms.
-     * @param  values The group of parameter values.
-     * @return The created math transform.
+     * @param  factory  the factory to use for creating concatenated transforms.
+     * @param  values   the group of parameter values.
+     * @return the created math transform.
      * @throws FactoryException if a transform can not be created.
      */
     @Override
@@ -203,10 +203,10 @@ public abstract class GeocentricAffine extends GeodeticOperation {
     /**
      * Creates parameter values for a Molodensky, Geocentric Translation or Position Vector transformation.
      *
-     * @param  descriptor     The {@code PARAMETERS} constant of the subclass describing the operation to create.
+     * @param  descriptor     the {@code PARAMETERS} constant of the subclass describing the operation to create.
      * @param  parameters     Bursa-Wolf parameters from which to get the values.
      * @param  isTranslation  {@code true} if the operation contains only translation terms.
-     * @return The operation parameters with their values initialized.
+     * @return the operation parameters with their values initialized.
      */
     private static Parameters createParameters(final ParameterDescriptorGroup descriptor,
             final BursaWolfParameters parameters, final boolean isTranslation)
@@ -235,12 +235,12 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      * will cause this method to return {@code null}. In such case, it is caller's responsibility to apply
      * the datum shift itself in Cartesian geocentric coordinates.</p>
      *
-     * @param sourceCS       The source coordinate system. Only the type and number of dimensions is checked.
-     * @param targetCS       The target coordinate system. Only the type and number of dimensions is checked.
-     * @param datumShift     The datum shift as a matrix.
+     * @param sourceCS       the source coordinate system. Only the type and number of dimensions is checked.
+     * @param targetCS       the target coordinate system. Only the type and number of dimensions is checked.
+     * @param datumShift     the datum shift as a matrix.
      * @param useMolodensky  {@code true} for allowing the use of Molodensky approximation, or {@code false}
      *                       for using the transformation in geocentric space (which should be more accurate).
-     * @return The parameter values, or {@code null} if no single operation method can be found.
+     * @return the parameter values, or {@code null} if no single operation method can be found.
      */
     public static ParameterValueGroup createParameters(final CoordinateSystem sourceCS,
             final CoordinateSystem targetCS, final Matrix datumShift, boolean useMolodensky)
@@ -307,7 +307,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      * boolean)} except that we need to perform the {@code forDatumShift(…)} work only after {@code beforeFormat(…)}
      * finished its work for all {@code ContextualParameters}, including the {@code EllipsoidToCentricTransform}'s one.</p>
      *
-     * @param transforms The full chain of concatenated transforms.
+     * @param  transforms  the full chain of concatenated transforms.
      */
     public static void asDatumShift(final List<Object> transforms) {
         for (int i=transforms.size() - 2; --i >= 0;) {

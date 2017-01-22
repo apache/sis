@@ -264,6 +264,7 @@ public final class NilReason implements Serializable {
      * Invoked after deserialization in order to return a unique instance if possible.
      *
      * @return a unique instance of the deserialized {@code NilReason}.
+     * @throws ObjectStreamException required by specification but should never be thrown.
      */
     private Object readResolve() throws ObjectStreamException {
         if (reason instanceof String) {
