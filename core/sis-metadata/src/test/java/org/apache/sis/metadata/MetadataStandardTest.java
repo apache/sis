@@ -92,6 +92,8 @@ public final strictfp class MetadataStandardTest extends TestCase {
         assertFalse("isMetadata(SimpleIdentifiedObject)", isMetadata(SimpleIdentifiedObject.class));
         assertFalse("isMetadata(GeographicCRS)",          isMetadata(GeographicCRS.class));
 //      assertFalse("isMetadata(RectifiedGrid)",          isMetadata(RectifiedGrid.class));
+        assertFalse("isMetadata(Double)",                 isMetadata(Double.class));
+        assertFalse("isMetadata(double)",                 isMetadata(Double.TYPE));
 
         standard = MetadataStandard.ISO_19111;
         assertFalse("isMetadata(String)",                 isMetadata(String.class));

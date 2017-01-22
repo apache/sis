@@ -69,7 +69,6 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see TableAppender
  */
-@SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.
 public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**
      * For cross-version compatibility.
@@ -330,5 +329,15 @@ scan:   for (int i=0; i<length; i++) {
             parsePattern = Pattern.compile(pattern.toString());
         }
         return parsePattern.matcher(text);
+    }
+
+    /**
+     * Returns a clone of this format.
+     *
+     * @return a clone of this format.
+     */
+    @Override
+    public TabularFormat<T> clone() {
+        return (TabularFormat<T>) super.clone();
     }
 }

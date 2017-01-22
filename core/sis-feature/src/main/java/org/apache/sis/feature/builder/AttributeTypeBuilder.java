@@ -123,8 +123,8 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     /**
      * Creates a new {@code AttributeType} builder for values of the given class.
      *
-     * @param owner      the builder of the {@code FeatureType} for which to add the attribute.
-     * @param valueClass the class of attribute values.
+     * @param owner       the builder of the {@code FeatureType} for which to add the attribute.
+     * @param valueClass  the class of attribute values.
      */
     AttributeTypeBuilder(final FeatureTypeBuilder owner, final Class<V> valueClass) {
         super(owner, null);
@@ -217,7 +217,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * {@linkplain #getMaximumOccurs() maximal number} of attribute values, than the maximum
      * is also set to that value.
      *
-     * @param  occurs the new minimum number of attribute values.
+     * @param  occurs  the new minimum number of attribute values.
      * @return {@code this} for allowing method calls chaining.
      */
     @Override
@@ -231,7 +231,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * {@linkplain #getMinimumOccurs() minimal number} of attribute values, than the minimum
      * is also set to that value.
      *
-     * @param  occurs the new maximum number of attribute values.
+     * @param  occurs  the new maximum number of attribute values.
      * @return {@code this} for allowing method calls chaining.
      */
     @Override
@@ -330,7 +330,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * <p>This is a convenience method for {@link #addCharacteristic(Class)} with a value
      * of type {@link Set} and a conventional name.</p>
      *
-     * @param  values valid values.
+     * @param  values  valid values.
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #characteristics()

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.feature;
 
-// Branch-dependent imports
 import java.util.Objects;
 
 
@@ -39,6 +38,7 @@ import java.util.Objects;
  *
  * @see DefaultAssociationRole
  */
+@SuppressWarnings("CloneableClassWithoutClone")     // AbstractAssociation.clone() contract is to return a shallow copy.
 final class SingletonAssociation extends AbstractAssociation {
     /**
      * For cross-version compatibility.
@@ -53,7 +53,7 @@ final class SingletonAssociation extends AbstractAssociation {
     /**
      * Creates a new association of the given role.
      *
-     * @param role Information about the association.
+     * @param role  information about the association.
      */
     public SingletonAssociation(final DefaultAssociationRole role) {
         super(role);
@@ -63,8 +63,8 @@ final class SingletonAssociation extends AbstractAssociation {
     /**
      * Creates a new association of the given role initialized to the given value.
      *
-     * @param role  Information about the association.
-     * @param value The initial value (may be {@code null}).
+     * @param role   information about the association.
+     * @param value  the initial value (may be {@code null}).
      */
     SingletonAssociation(final DefaultAssociationRole role, final AbstractFeature value) {
         super(role);
@@ -78,7 +78,7 @@ final class SingletonAssociation extends AbstractAssociation {
     /**
      * Returns the associated feature.
      *
-     * @return The associated feature (may be {@code null}).
+     * @return the associated feature (may be {@code null}).
      */
     @Override
     public AbstractFeature getValue() {
@@ -88,8 +88,8 @@ final class SingletonAssociation extends AbstractAssociation {
     /**
      * Sets the associated feature.
      *
-     * @param  value The new value, or {@code null}.
-     * @throws IllegalArgumentException If the given feature is not valid for this association.
+     * @param  value  the new value, or {@code null}.
+     * @throws InvalidPropertyValueException if the given feature is not valid for this association.
      */
     @Override
     public void setValue(final AbstractFeature value) throws IllegalArgumentException {
@@ -102,7 +102,7 @@ final class SingletonAssociation extends AbstractAssociation {
     /**
      * Returns a hash code value for this association.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {

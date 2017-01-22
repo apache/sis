@@ -41,7 +41,7 @@ public final strictfp class CharacteristicTypeMapTest extends TestCase {
     /**
      * Creates an attribute type for a temperature measurement in °C with a ±0.1°C accuracy.
      *
-     * @return A {@code "temperature"} type attribute with two characteristics: {@code "accuracy"} and {@code "units"}.
+     * @return a {@code "temperature"} type attribute with two characteristics: {@code "accuracy"} and {@code "units"}.
      */
     public static DefaultAttributeType<Float> temperature() {
         final DefaultAttributeType<?> units, accuracy;

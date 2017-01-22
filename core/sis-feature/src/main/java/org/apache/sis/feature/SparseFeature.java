@@ -18,6 +18,7 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.ConcurrentModificationException;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
@@ -27,7 +28,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
 
 // Branch-dependent imports
-import java.util.Objects;
 
 
 /**

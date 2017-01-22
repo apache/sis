@@ -81,7 +81,7 @@ final class CharacteristicTypeMap extends AbstractMap<String,DefaultAttributeTyp
      * <p>This method does not clone the {@code characterizedBy} array. If that array
      * is a user-provided argument, then cloning that array is caller responsibility.</p>
      *
-     * @param  source  the attribute which is characterized by {@code characterizedBy}.
+     * @param  source           the attribute which is characterized by {@code characterizedBy}.
      * @param  characterizedBy  characteristics of {@code source}. Should not be empty.
      * @return a map for this given characteristics.
      * @throws IllegalArgumentException if two characteristics have the same name.
@@ -104,7 +104,7 @@ final class CharacteristicTypeMap extends AbstractMap<String,DefaultAttributeTyp
      * <p>This constructor does not clone the {@code characterizedBy} array. If that array
      * is a user-provided argument, then cloning that array is caller responsibility.</p>
      *
-     * @param  source  the attribute which is characterized by {@code characterizedBy}.
+     * @param  source           the attribute which is characterized by {@code characterizedBy}.
      * @param  characterizedBy  characteristics of {@code source}. Should not be empty.
      * @throws IllegalArgumentException if two characteristics have the same name.
      */

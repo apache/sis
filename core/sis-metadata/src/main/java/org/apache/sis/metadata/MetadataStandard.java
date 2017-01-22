@@ -330,7 +330,7 @@ public class MetadataStandard implements Serializable {
          */
         final Class<?> type;
         if (value instanceof Class<?>) {
-            type = (Class<?>) value;                            // Stored result of previous call to findInterface(…).
+            type = (Class<?>) value;                        // Stored result of previous call to findInterface(…).
             assert type == findInterface(key) : key;
         } else if (key.isValid()) {
             /*
@@ -388,7 +388,7 @@ public class MetadataStandard implements Serializable {
      *         or implements an interface of this standard.
      */
     public boolean isMetadata(final Class<?> type) {
-        return (type != null) && isMetadata(new CacheKey(type));
+        return (type != null) && !type.isPrimitive() && isMetadata(new CacheKey(type));
     }
 
     /**

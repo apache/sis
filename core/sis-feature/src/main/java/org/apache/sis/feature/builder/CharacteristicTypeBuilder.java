@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature.builder;
 
+import java.util.Objects;
 import org.opengis.util.GenericName;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.util.Classes;
@@ -23,7 +24,6 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 
 // Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -89,8 +89,8 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     /**
      * Creates a new characteristic builder for values of the given class.
      *
-     * @param owner      the builder of the {@code AttributeType} for which to add this property.
-     * @param valueClass the class of characteristic values.
+     * @param owner       the builder of the {@code AttributeType} for which to add this property.
+     * @param valueClass  the class of characteristic values.
      */
     CharacteristicTypeBuilder(final AttributeTypeBuilder<?> owner, final Class<V> valueClass) {
         super(null, owner.getLocale());

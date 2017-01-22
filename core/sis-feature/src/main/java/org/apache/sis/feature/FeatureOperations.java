@@ -260,10 +260,10 @@ public final class FeatureOperations extends Static {
      * The type of {@code geometryAttributes} elements will be changed to {@code PropertyType}
      * if and when such interface will be defined in GeoAPI.</div>
      *
-     * @param  identification     the name and other information to be given to the operation.
-     * @param  crs                the Coordinate Reference System in which to express the envelope, or {@code null}.
-     * @param  geometryAttributes the operation or attribute type from which to get geometry values.
-     *                            Any element which is {@code null} or has a non-geometric value class will be ignored.
+     * @param  identification      the name and other information to be given to the operation.
+     * @param  crs                 the Coordinate Reference System in which to express the envelope, or {@code null}.
+     * @param  geometryAttributes  the operation or attribute type from which to get geometry values.
+     *                             Any element which is {@code null} or has a non-geometric value class will be ignored.
      * @return an operation which will compute the envelope encompassing all geometries in the given attributes.
      * @throws FactoryException if a coordinate operation to the target CRS can not be created.
      */
