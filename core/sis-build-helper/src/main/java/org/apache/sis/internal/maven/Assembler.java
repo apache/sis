@@ -147,8 +147,8 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
     /**
      * The filter to use for selecting the files to be included in the ZIP file.
      *
-     * @param  directory The directory.
-     * @param  filename  The filename.
+     * @param  directory  the directory.
+     * @param  filename   the filename.
      * @return {@code true} if the given file should be included in the ZIP file.
      */
     @Override

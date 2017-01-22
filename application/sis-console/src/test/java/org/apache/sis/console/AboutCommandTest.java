@@ -39,7 +39,7 @@ public final strictfp class AboutCommandTest extends TestCase {
     /**
      * Tests the sub-command without option.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception should never happen.
      */
     @Test
     public void testDefault() throws Exception {
@@ -68,7 +68,7 @@ public final strictfp class AboutCommandTest extends TestCase {
     /**
      * Tests the sub-command with the {@code --brief} option.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception should never happen.
      */
     @Test
     public void testBrief() throws Exception {
@@ -81,7 +81,7 @@ public final strictfp class AboutCommandTest extends TestCase {
     /**
      * Tests the sub-command with the {@code --verbose} option.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception should never happen.
      */
     @Test
     public void testVerbose() throws Exception {

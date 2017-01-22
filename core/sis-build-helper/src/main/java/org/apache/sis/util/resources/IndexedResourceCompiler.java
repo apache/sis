@@ -127,7 +127,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * @param sourceDirectory     the source directory.
      * @param buildDirectory      the target directory where to write UTF files.
      * @param resourcesToProcess  the resource bundle base classes
-     *        (e.g. {@code org/apache/sis/util/resources/Vocabulary.java}).
+     *                            (e.g. {@code org/apache/sis/util/resources/Vocabulary.java}).
      */
     IndexedResourceCompiler(final File sourceDirectory, final File buildDirectory, final File[] resourcesToProcess) {
         this.sourceDirectory    = sourceDirectory;

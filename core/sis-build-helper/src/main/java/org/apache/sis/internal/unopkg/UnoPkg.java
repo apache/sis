@@ -114,8 +114,8 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
     /**
      * Tests if a specified file should be included in a file list.
      *
-     * @param   directory the directory in which the file was found.
-     * @param   name      the name of the file.
+     * @param  directory  the directory in which the file was found.
+     * @param  name       the name of the file.
      */
     @Override
     public boolean accept(final File directory, final String name) {
@@ -222,7 +222,7 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
     /**
      * Copies the content of the specified binary file to the specified output stream.
      *
-     * @param name The ZIP entry name, or {@code null} for using the name of the given file.
+     * @param  name  the ZIP entry name, or {@code null} for using the name of the given file.
      */
     private static void copy(final File file, final ZipOutputStream out, String name) throws IOException {
         if (name == null) {
