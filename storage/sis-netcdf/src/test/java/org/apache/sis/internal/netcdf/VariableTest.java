@@ -96,8 +96,8 @@ public strictfp class VariableTest extends TestCase {
     /**
      * Compares the basic properties of the given variables.
      *
-     * @param expected  the expected property values.
-     * @param variables the variable for which to test properties.
+     * @param  expected   the expected property values.
+     * @param  variables  the variable for which to test properties.
      */
     private static void assertBasicPropertiesEqual(final Object[] expected, final Variable[] variables) {
         int propertyIndex = 0;

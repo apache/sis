@@ -84,10 +84,10 @@ public final class Region {
      *   <li>{@code subsamplings[i] > 0} for all <var>i</var></li>
      * </ul>
      *
-     * @param size         The number of elements along each dimension.
-     * @param regionLower  Index of the first value to read or write along each dimension.
-     * @param regionUpper  Index after the last value to read or write along each dimension.
-     * @param subsamplings Sub-sampling along each dimension. Shall be greater than zero.
+     * @param size          the number of elements along each dimension.
+     * @param regionLower   index of the first value to read or write along each dimension.
+     * @param regionUpper   index after the last value to read or write along each dimension.
+     * @param subsamplings  sub-sampling along each dimension. Shall be greater than zero.
      */
     public Region(final long[] size, final long[] regionLower, final long[] regionUpper, final int[] subsamplings) {
         final int dimension = size.length;
@@ -123,7 +123,7 @@ public final class Region {
     /**
      * Returns the number of dimension.
      *
-     * @return The hyper-rectangle dimension.
+     * @return the hyper-rectangle dimension.
      */
     public final int getDimension() {
         return targetSize.length;

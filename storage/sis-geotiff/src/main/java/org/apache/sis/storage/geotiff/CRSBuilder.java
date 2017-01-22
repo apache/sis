@@ -375,7 +375,7 @@ final class CRSBuilder {
      *
      * <p>See {@link #getSingleton(short)} for a discussion about why the value is removed from the map.</p>
      *
-     * @param  key the GeoTIFF key for which to get a value.
+     * @param  key  the GeoTIFF key for which to get a value.
      * @return the integer value for the given key, or {@link GeoCodes#undefined} if the key was not found.
      * @throws NumberFormatException if the value was stored as a string and can not be parsed.
      */
@@ -892,8 +892,8 @@ final class CRSBuilder {
      *
      * If no prime-meridian is defined, then the default is Greenwich as per GeoTIFF specification.
      *
-     * @param  names the component names to use if the prime meridian is user-defined.
-     * @param  unit  the angular unit of the longitude value relative to Greenwich.
+     * @param  names  the component names to use if the prime meridian is user-defined.
+     * @param  unit   the angular unit of the longitude value relative to Greenwich.
      * @return a prime meridian created from the given {@link Unit} and the above-cited GeoTIFF keys.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
      * @throws FactoryException if an error occurred during objects creation with the factories.
@@ -961,8 +961,8 @@ final class CRSBuilder {
      *   </ul></li>
      * </ul>
      *
-     * @param  names the component names to use if the ellipsoid is user-defined.
-     * @param  unit  the linear unit of the semi-axis lengths.
+     * @param  names  the component names to use if the ellipsoid is user-defined.
+     * @param  unit   the linear unit of the semi-axis lengths.
      * @return an ellipsoid created from the given {@link Unit} and the above-cited GeoTIFF keys.
      * @throws NoSuchElementException if a mandatory value is missing.
      * @throws NumberFormatException if a numeric value was stored as a string and can not be parsed.
