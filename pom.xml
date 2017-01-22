@@ -718,7 +718,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
           <validateLinks>true</validateLinks>                   <!-- Validates content of package-list resources. -->
           <links>
-            <link>http://static.javadoc.io/javax.measure/unit-api/1.0</link>
+            <link>http://unitsofmeasurement.github.io/unit-api/site/apidocs</link>
             <link>http://www.geoapi.org/snapshot/pending</link>
           </links>
 
