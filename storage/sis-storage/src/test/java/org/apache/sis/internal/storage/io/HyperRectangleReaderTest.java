@@ -82,9 +82,9 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
      * Creates an hyper-rectangle of random size and initializes the sub-region and sub-sampling to random values.
      * Sample values are index values encoded in base 10. For example the value at index (4,1,2,3) will be 4123.
      *
-     * @param random The random number generator to use for initializing the test.
-     * @param useChannel {@code true} for fetching the data from channel to a small buffer,
-     *        or {@code false} if the data are expected to be fully contained in the buffer.
+     * @param random      the random number generator to use for initializing the test.
+     * @param useChannel  {@code true} for fetching the data from channel to a small buffer, or
+     *                    {@code false} if the data are expected to be fully contained in the buffer.
      */
     private void initialize(final Random random, final boolean useChannel) throws IOException, DataStoreException {
         /*

@@ -54,7 +54,7 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
     /**
      * Test writing a sequence of bits.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testWriteBits() throws IOException {
@@ -83,7 +83,7 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
     /**
      * Tests {@link ChannelImageOutputStream#mark()} and {@code reset()} methods.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     public void testMarkAndReset() throws IOException {
@@ -138,7 +138,7 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
     /**
      * Tests {@link ChannelImageOutputStream#flushBefore(long)}.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
     @DependsOnMethod("testMarkAndReset")
