@@ -17,6 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,7 +29,6 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.internal.feature.Resources;
 
 // Branch-dependent imports
-import java.util.Objects;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.Operation;

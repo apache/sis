@@ -17,6 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Collections;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -31,7 +32,6 @@ import org.apache.sis.internal.util.Numerics;
 import static org.apache.sis.util.ArgumentChecks.*;
 
 // Branch-dependent imports
-import java.util.Objects;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 
@@ -203,7 +203,7 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
      * Invoked on serialization for saving the {@link #characteristics} field.
      *
      * @param  out The output stream where to serialize this attribute type.
-     * @throws IOException If an I/O error occurred while writing.
+     * @throws IOException if an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();

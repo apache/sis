@@ -47,7 +47,7 @@ public final strictfp class LinkOperationTest extends TestCase {
      *   <li>{@code name} as a link to the {@code city} attribute.</li>
      * </ul>
      *
-     * @return The feature for a city.
+     * @return the feature for a city.
      */
     private static DefaultFeatureType city() {
         final DefaultFeatureType city = DefaultFeatureTypeTest.city();

@@ -56,7 +56,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      *   <li>{@code population} as an {@link Integer} (mandatory)</li>
      * </ul>
      *
-     * @return The feature for a city.
+     * @return the feature for a city.
      */
     public static DefaultFeatureType city() {
         final Map<String,Object> identification = new HashMap<>();
@@ -78,7 +78,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      *   <li>{@code universities} as an arbitrary amount of {@link String}</li>
      * </ul>
      *
-     * @return The feature for an university city.
+     * @return the feature for an university city.
      */
     public static DefaultFeatureType universityCity() {
         return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "University city"), false,
@@ -95,7 +95,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      *   <li>{@code parliament} as a  {@link String}  (mandatory)</li>
      * </ul>
      *
-     * @return The feature for a capital.
+     * @return the feature for a capital.
      */
     public static DefaultFeatureType capital() {
         return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "Capital"), false,
@@ -113,7 +113,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      *   <li>{@code isGlobal}   as a  {@link Boolean}      (mandatory) — whether the city has an effect on global affairs.</li>
      * </ul>
      *
-     * @return The feature for a metropolis.
+     * @return the feature for a metropolis.
      */
     public static DefaultFeatureType metropolis() {
         final Map<String,Object> identification = new HashMap<>(4);
@@ -193,10 +193,10 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      *   <li>{@link DefaultFeatureType#getProperty(String)}</li>
      * </ul>
      *
-     * @param feature The feature to verify.
-     * @param includeSuperTypes {@code true} for including the properties inherited from the super-types,
-     *        or {@code false} for returning only the properties defined explicitely in the feature type.
-     * @param expected Names of the expected properties.
+     * @param  feature            the feature to verify.
+     * @param  includeSuperTypes  {@code true} for including the properties inherited from the super-types, or
+     *                            {@code false} for returning only the properties defined explicitely in the feature type.
+     * @param  expected           names of the expected properties.
      */
     private static void assertPropertiesEquals(final DefaultFeatureType feature, final boolean includeSuperTypes,
             final String... expected)
@@ -482,7 +482,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertArrayEquals("superTypes", new Object[] {metropolis, universityCity}, worldMetropolis.getSuperTypes().toArray());
         assertFalse      ("isAbstract",      worldMetropolis.isAbstract());
         assertFalse      ("isSparse",        worldMetropolis.isSparse());
-        assertFalse      ("isSimple",        worldMetropolis.isSimple()); // Because of the arbitrary amount of universities.
+        assertFalse      ("isSimple",        worldMetropolis.isSimple());           // Because of the arbitrary amount of universities.
         assertEquals     ("instanceSize", 6, worldMetropolis.indices().size());
 
         assertPropertiesEquals(worldMetropolis, false, "region", "temperature");
