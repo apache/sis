@@ -20,15 +20,13 @@ import java.util.EnumSet;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.nio.charset.StandardCharsets;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-
-// Branch-dependent imports
-import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -47,8 +45,8 @@ public final strictfp class CommandRunnerTest extends TestCase {
         /**
          * Creates a new sub-command for the given arguments and option values.
          *
-         * @param  validOptions The valid options.
-         * @param  arguments The test arguments.
+         * @param  validOptions  the valid options.
+         * @param  arguments     the test arguments.
          */
         Dummy(final EnumSet<Option> validOptions, final String... arguments) throws InvalidOptionException {
             super(0, arguments, validOptions);
@@ -66,7 +64,7 @@ public final strictfp class CommandRunnerTest extends TestCase {
     /**
      * Tests the {@code --locale} option.
      *
-     * @throws InvalidOptionException Should never happen.
+     * @throws InvalidOptionException should never happen.
      */
     @Test
     public void testLocale() throws InvalidOptionException {
@@ -79,7 +77,7 @@ public final strictfp class CommandRunnerTest extends TestCase {
     /**
      * Tests the {@code --timezone} option.
      *
-     * @throws InvalidOptionException Should never happen.
+     * @throws InvalidOptionException should never happen.
      */
     @Test
     public void testTimeZone() throws InvalidOptionException {
@@ -93,7 +91,7 @@ public final strictfp class CommandRunnerTest extends TestCase {
     /**
      * Tests the {@code --encoding} option.
      *
-     * @throws InvalidOptionException Should never happen.
+     * @throws InvalidOptionException should never happen.
      */
     @Test
     public void testEncoding() throws InvalidOptionException {
@@ -106,7 +104,7 @@ public final strictfp class CommandRunnerTest extends TestCase {
     /**
      * Tests passing a mix of different legal options.
      *
-     * @throws InvalidOptionException Should never happen.
+     * @throws InvalidOptionException should never happen.
      */
     @Test
     @DependsOnMethod({"testLocale", "testTimeZone", "testEncoding"})
@@ -125,10 +123,11 @@ public final strictfp class CommandRunnerTest extends TestCase {
     /**
      * Tests passing an option with a missing value.
      *
-     * @throws InvalidOptionException Should never happen.
+     * @throws InvalidOptionException should never happen.
      */
     @Test
     @DependsOnMethod("testLocale")
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testMissingOptionValue() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief"); // Should not comply.
         assertEquals(Option.BRIEF, getSingleton(c.options.keySet()));

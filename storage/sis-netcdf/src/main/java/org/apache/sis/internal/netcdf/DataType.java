@@ -165,7 +165,7 @@ public enum DataType {
      * Returns the signed or unsigned variant of this data type.
      * If this data type does not have the requested variant, then this method returns {@code this}.
      *
-     * @param  u {@code true} for the unsigned variant, or {@code false} for the signed variant.
+     * @param  u  {@code true} for the unsigned variant, or {@code false} for the signed variant.
      * @return the signed or unsigned variant of this data type.
      */
     public final DataType unsigned(final boolean u) {

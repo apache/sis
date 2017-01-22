@@ -111,8 +111,10 @@ public abstract class Decoder implements Closeable {
     protected final Number parseNumber(String value) {
         final int s = value.indexOf(' ');
         if (s >= 0) {
-            // Sometime, numeric values as string are followed by
-            // a unit of measurement. We ignore that unit for now...
+            /*
+             * Sometime, numeric values as string are followed by
+             * a unit of measurement. We ignore that unit for now...
+             */
             value = value.substring(0, s);
         }
         try {

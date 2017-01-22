@@ -106,9 +106,9 @@ final class MemoryDataTransfer implements DataTransfer, ReadableByteChannel {
      * Reads {@code length} values from the buffer and stores them into the array known to subclass,
      * starting at index {@code offset}.
      *
-     * @param  view     Ignored.
-     * @param  offset   The starting position within {@code dest} to write.
-     * @param  length   The number of values to read.
+     * @param  view    ignored.
+     * @param  offset  the starting position within {@code dest} to write.
+     * @param  length  the number of values to read.
      */
     @Override
     public void readFully(final Buffer view, final int offset, final int length) {

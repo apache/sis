@@ -75,7 +75,7 @@ interface DataTransfer {
     /**
      * Moves to the given position in the stream.
      *
-     * @param  position The position where to move.
+     * @param  position  the position where to move.
      * @throws IOException if the stream can not be moved to the given position.
      */
     void seek(long position) throws IOException;
@@ -88,9 +88,9 @@ interface DataTransfer {
      * the full content of {@link ChannelDataInput#buffer} (i.e. the view element at index 0 shall be
      * defined by the buffer elements starting at index 0).</p>
      *
-     * @param  view     Existing buffer to use as a view over {@link ChannelDataInput#buffer}, or {@code null}.
-     * @param  offset   The starting position within {@code dest} to write.
-     * @param  length   The number of values to read.
+     * @param  view     existing buffer to use as a view over {@link ChannelDataInput#buffer}, or {@code null}.
+     * @param  offset   the starting position within {@code dest} to write.
+     * @param  length   the number of values to read.
      * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     void readFully(Buffer view, int offset, int length) throws IOException;

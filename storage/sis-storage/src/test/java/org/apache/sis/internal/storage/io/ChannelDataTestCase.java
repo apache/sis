@@ -86,11 +86,11 @@ abstract strictfp class ChannelDataTestCase extends TestCase {
      * This method invokes {@link #transferRandomData(int)} in a loop,
      * with an operation identifier selected randomly between 0 inclusive to {@code numOperations} exclusive.
      *
-     * @param  testedStream  The stream to be tested.
-     * @param  length        Length threshold for stopping the test. Shall be the backing array length
-     *                       minus {@link #ARRAY_MAX_LENGTH}, in order to keep a margin for test cases.
-     * @param  numOperations Number of operations to be tested randomly.
-     * @throws IOException If an I/O error occurred.
+     * @param  testedStream   the stream to be tested.
+     * @param  length         length threshold for stopping the test. Shall be the backing array length
+     *                        minus {@link #ARRAY_MAX_LENGTH}, in order to keep a margin for test cases.
+     * @param  numOperations  number of operations to be tested randomly.
+     * @throws IOException if an I/O error occurred.
      */
     final void transferRandomData(final ChannelData testedStream, final int length, final int numOperations)
             throws IOException
@@ -122,8 +122,8 @@ abstract strictfp class ChannelDataTestCase extends TestCase {
     /**
      * Transfers random data using a method selected randomly.
      *
-     * @param  operation An identifier of the method to use for transfering data.
-     * @throws IOException If an I/O error occurred.
+     * @param  operation  an identifier of the method to use for transfering data.
+     * @throws IOException if an I/O error occurred.
      */
     abstract void transferRandomData(final int operation) throws IOException;
 

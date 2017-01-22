@@ -131,7 +131,7 @@ class MetadataCommand extends CommandRunner {
      * If the given argument seems to be an authority code ("URN", "EPSG", "CRS", "AUTO", <i>etc.</i>),
      * delegates to {@link CRS#forCode(String)}. Otherwise reads the metadata using a datastore.
      *
-     * @return A {@link Metadata} or {@link CoordinateReferenceSystem} instance, or {@code null} if none.
+     * @return a {@link Metadata} or {@link CoordinateReferenceSystem} instance, or {@code null} if none.
      */
     final Object readMetadataOrCRS() throws DataStoreException, FactoryException {
         if (useStandardInput()) {

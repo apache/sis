@@ -51,9 +51,9 @@ public final class HyperRectangleReader {
     /**
      * Creates a new reader for the given input and source region.
      *
-     * @param  dataType The type of elements to read, as one of the constants defined in {@link Numbers}.
-     * @param  input The channel from which to read the values, together with a buffer for transferring data.
-     * @param  origin The position in the channel of the first sample value in the hyper-rectangle.
+     * @param  dataType  the type of elements to read, as one of the constants defined in {@link Numbers}.
+     * @param  input     the channel from which to read the values, together with a buffer for transferring data.
+     * @param  origin    the position in the channel of the first sample value in the hyper-rectangle.
      * @throws DataStoreException if the given {@code dataType} is not one of the supported values.
      */
     public HyperRectangleReader(final byte dataType, final ChannelDataInput input, final long origin)
@@ -85,8 +85,8 @@ public final class HyperRectangleReader {
      * Creates a new reader for the data in an existing buffer.
      * The data will be read from the current buffer position to the buffer limit.
      *
-     * @param filename A data source name, for error messages or debugging purpose.
-     * @param data A buffer containing the data to read.
+     * @param  filename  a data source name, for error messages or debugging purpose.
+     * @param  data      a buffer containing the data to read.
      * @throws IOException should never happen.
      */
     public HyperRectangleReader(final String filename, final Buffer data) throws IOException {
@@ -108,8 +108,8 @@ public final class HyperRectangleReader {
      * Reads data in the given region. It is caller's responsibility to ensure that the {@code Region}
      * object has been created with a {@code size} argument equals to this hyper-rectangle size.
      *
-     * @param  region The sub-area to read and the sub-sampling to use.
-     * @return The data in an array of primitive type.
+     * @param  region  the sub-area to read and the sub-sampling to use.
+     * @return the data in an array of primitive type.
      * @throws IOException if an error occurred while transferring data from the channel.
      */
     public Object read(final Region region) throws IOException {

@@ -64,10 +64,10 @@ public final strictfp class DripByteChannel implements ReadableByteChannel {
     /**
      * Creates a new {@code DripByteChannel} wrapping the given data.
      *
-     * @param data    The data to provide.
-     * @param random  The random number generator to use for determining how many bytes to return.
-     * @param lower   Minimal amount of bytes to read, inclusive.
-     * @param upper   Maximal amount of bytes to read, exclusive.
+     * @param data    the data to provide.
+     * @param random  the random number generator to use for determining how many bytes to return.
+     * @param lower   minimal amount of bytes to read, inclusive.
+     * @param upper   maximal amount of bytes to read, exclusive.
      */
     public DripByteChannel(final byte[] data, final Random random, final int lower, final int upper) {
         this.data    = data;
@@ -80,7 +80,7 @@ public final strictfp class DripByteChannel implements ReadableByteChannel {
      * Reads a random number of bytes from the data array.
      *
      * @param buffer The buffer where to copy the bytes.
-     * @throws IOException If this channel is closed.
+     * @throws IOException if this channel is closed.
      */
     @Override
     public int read(final ByteBuffer buffer) throws IOException {

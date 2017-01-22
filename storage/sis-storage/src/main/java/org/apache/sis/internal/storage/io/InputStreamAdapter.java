@@ -106,7 +106,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
     /**
      * Marks the current position in this input stream.
      *
-     * @param  readlimit ignored.
+     * @param  readlimit  ignored.
      */
     @Override
     public void mark(final int readlimit) {

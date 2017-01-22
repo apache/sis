@@ -61,9 +61,9 @@ public final class FrenchProfile extends Static {
      * because AFNOR requires to specify whether the system is direct or indirect.
      * For reference system types, use {@link #toAFNOR(ReferenceSystem, boolean)} instead.
      *
-     * @param metadata The metadata to make AFNOR-compliant, or {@code null}.
-     * @return A copy of the metadata as an AFNOR-compliant object, or {@code metadata} if the metadata
-     *        was {@code null}, does not have an AFNOR type, or was already of the appropriate type.
+     * @param  metadata  the metadata to make AFNOR-compliant, or {@code null}.
+     * @return a copy of the metadata as an AFNOR-compliant object, or {@code metadata} if the metadata
+     *         was {@code null}, does not have an AFNOR type, or was already of the appropriate type.
      */
     public static Object toAFNOR(Object metadata) {
         if (metadata != null) {
@@ -113,10 +113,10 @@ public final class FrenchProfile extends Static {
      *   </complexType>
      * }
      *
-     * @param  rs The reference system to make AFNOR-compliant, or {@code null}.
-     * @param  indirect {@code false} for {@code FRA_DirectReferenceSystem},
-     *         or {@code true} for {@code FRA_IndirectReferenceSystem}.
-     * @return A copy of the given reference system as an AFNOR-compliant object, or {@code rs}
+     * @param  rs        the reference system to make AFNOR-compliant, or {@code null}.
+     * @param  indirect  {@code false} for {@code FRA_DirectReferenceSystem}, or
+     *                   {@code true} for {@code FRA_IndirectReferenceSystem}.
+     * @return a copy of the given reference system as an AFNOR-compliant object, or {@code rs}
      *         if the given reference system was {@code null} or already of the appropriate type.
      */
     public static ReferenceSystem toAFNOR(ReferenceSystem rs, final boolean indirect) {

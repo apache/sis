@@ -121,13 +121,13 @@ final class VariableInfo extends Variable {
     /**
      * Creates a new variable.
      *
-     * @param  input          the channel together with a buffer for reading the variable data.
-     * @param  name           the variable name.
-     * @param  dimensions     the dimensions of this variable.
-     * @param  attributes     the attributes associates to the variable, or an empty map if none.
-     * @param  dataType       the NetCDF type of data, or {@code null} if unknown.
-     * @param  size           the variable size, used for verification purpose only.
-     * @param  offset         the offset where the variable data begins in the NetCDF file.
+     * @param  input       the channel together with a buffer for reading the variable data.
+     * @param  name        the variable name.
+     * @param  dimensions  the dimensions of this variable.
+     * @param  attributes  the attributes associates to the variable, or an empty map if none.
+     * @param  dataType    the NetCDF type of data, or {@code null} if unknown.
+     * @param  size        the variable size, used for verification purpose only.
+     * @param  offset      the offset where the variable data begins in the NetCDF file.
      */
     VariableInfo(final ChannelDataInput      input,
                  final String                name,
