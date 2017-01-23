@@ -308,8 +308,7 @@ public final class XML extends Static {
      * this field is initially null, then created by {@link #getPool()} when first needed.
      * Once created the field value usually doesn't change. However the field may be reset
      * to {@code null} in an OSGi context when modules are loaded or unloaded, because the
-     * set of classes returned by {@link TypeRegistration#defaultClassesToBeBound()} may
-     * have changed.
+     * set of classes returned by {@link TypeRegistration#load(boolean)} may have changed.
      *
      * @see #getPool()
      */

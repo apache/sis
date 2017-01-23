@@ -164,7 +164,12 @@ public class MarshallerPool {
      * @throws JAXBException if the JAXB context can not be created.
      */
     public MarshallerPool(final Map<String,?> properties) throws JAXBException {
-        this(TypeRegistration.getSharedContext(), properties);
+        /*
+         * We currently add the default root adapters only when using the JAXB context provided by Apache SIS.
+         * We presume that if the user specified his own JAXBContext, then he does not expect us to change the
+         * classes that he wants to marshal.
+         */
+        this(TypeRegistration.getSharedContext(), TypeRegistration.addDefaultRootAdapters(properties));
     }
 
     /**
@@ -243,8 +248,10 @@ public class MarshallerPool {
         try {
             ((Pooled) marshaller).reset(template);
         } catch (JAXBException exception) {
-            // Not expected to happen because we are supposed
-            // to reset the properties to their initial values.
+            /*
+             * Not expected to happen because we are supposed
+             * to reset the properties to their initial values.
+             */
             Logging.unexpectedException(Logging.getLogger(Loggers.XML), MarshallerPool.class, "recycle", exception);
             return;
         }

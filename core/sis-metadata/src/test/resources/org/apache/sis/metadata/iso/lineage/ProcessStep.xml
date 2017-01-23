@@ -18,7 +18,7 @@
   under the License.
 -->
 
-<gmd:LI_ProcessStep
+<gmi:LE_ProcessStep
     xmlns:gmd = "http://www.isotc211.org/2005/gmd"
     xmlns:gco = "http://www.isotc211.org/2005/gco"
     xmlns:gmi = "http://www.isotc211.org/2005/gmi"
@@ -39,4 +39,4 @@
       </gmi:procedureDescription>
     </gmi:LE_Processing>
   </gmi:processingInformation>
-</gmd:LI_ProcessStep>
+</gmi:LE_ProcessStep>
