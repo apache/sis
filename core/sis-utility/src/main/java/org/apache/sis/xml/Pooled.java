@@ -38,6 +38,7 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.TypeRegistration;
 
 
 /**
@@ -156,6 +157,14 @@ abstract class Pooled {
     private ValueConverter converter;
 
     /**
+     * Converters from arbitrary classes implementing GeoAPI interfaces to Apache SIS implementations
+     * providing JAXB annotations, or null or an empty array if none. This is used at marshalling time.
+     *
+     * @see #getRootAdapters()
+     */
+    private TypeRegistration[] rootAdapters;
+
+    /**
      * The object to inform about warnings, or {@code null} if none.
      */
     private WarningListener<?> warningListener;
@@ -199,7 +208,7 @@ abstract class Pooled {
      * @throws JAXBException if an error occurred while setting a property.
      */
     final void initialize(final Pooled template) throws JAXBException {
-        reset(template); // Set the SIS properties first. JAXB properties are set below.
+        reset(template);     // Set the SIS properties first. JAXB properties are set below.
         for (final Map.Entry<Object,Object> entry : template.initialProperties.entrySet()) {
             setStandardProperty((String) entry.getKey(), entry.getValue());
         }
@@ -226,6 +235,7 @@ abstract class Pooled {
         versionGML       = template.versionGML;
         resolver         = template.resolver;
         converter        = template.converter;
+        rootAdapters     = template.rootAdapters;
         warningListener  = template.warningListener;
         resetTime        = System.nanoTime();
         if (this instanceof Marshaller) {
@@ -397,6 +407,11 @@ abstract class Pooled {
                     }
                     return;
                 }
+                case TypeRegistration.ROOT_ADAPTERS: {
+                    rootAdapters = (TypeRegistration[]) value;
+                    // No clone for now because ROOT_ADAPTERS is not yet a public API.
+                    return;
+                }
             }
         } catch (ClassCastException | IllformedLocaleException e) {
             throw new PropertyException(Errors.format(
@@ -445,6 +460,7 @@ abstract class Pooled {
                     default: return null;
                 }
             }
+            case TypeRegistration.ROOT_ADAPTERS: return (rootAdapters != null) ? rootAdapters.clone() : null;
             default: {
                 return getStandardProperty(convertPropertyKey(name));
             }
@@ -491,6 +507,18 @@ abstract class Pooled {
      */
     @SuppressWarnings("rawtypes")
     public abstract <A extends XmlAdapter> A getAdapter(final Class<A> type);
+
+    /**
+     * Returns the adapters to apply on the root object to marshal, or {@code null} or an empty array if none.
+     * This is used for converting from arbitrary implementations of GeoAPI interfaces to Apache SIS implementations
+     * providing JAXB annotations.
+     *
+     * @return a direct reference to the internal array of converters - do not modify.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final TypeRegistration[] getRootAdapters() {
+        return rootAdapters;
+    }
 
     /**
      * A method which is common to both {@code Marshaller} and {@code Unmarshaller}.
