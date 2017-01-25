@@ -70,7 +70,9 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      */
     private static final Version[] CONSTANTS = {
         new Version("1"),
-        new Version("2")
+        new Version("2"),
+        new Version("1.0"),
+        new Version("1.1")
     };
 
     /**

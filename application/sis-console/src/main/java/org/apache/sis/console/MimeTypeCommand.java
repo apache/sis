@@ -18,14 +18,12 @@ package org.apache.sis.console;
 
 import java.net.URI;
 import java.util.EnumSet;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.FileSystemNotFoundException;
 import org.apache.sis.storage.DataStores;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 
@@ -41,7 +39,7 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  *
  * @see Files#probeContentType(Path)
@@ -50,18 +48,23 @@ import org.apache.sis.util.CharSequences;
 final class MimeTypeCommand extends CommandRunner {
     /**
      * Creates the {@code "mime-type"} sub-command.
+     *
+     * @param  commandIndex  index of the {@code arguments} element containing the {@code "mime-type"} command name, or -1 if none.
+     * @param  arguments     the command-line arguments provided by the user.
+     * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
-    MimeTypeCommand(final int commandIndex, final String... args) throws InvalidOptionException {
-        super(commandIndex, args, EnumSet.of(Option.ENCODING, Option.HELP, Option.DEBUG));
+    MimeTypeCommand(final int commandIndex, final String... arguments) throws InvalidOptionException {
+        super(commandIndex, arguments, EnumSet.of(Option.ENCODING, Option.HELP, Option.DEBUG));
     }
 
     /**
      * Prints mime-type information.
      *
-     * @throws IOException if an error occurred while reading the file.
+     * @return 0 on success, or an exit code if the command failed for a reason other than an uncaught Java exception.
+     * @throws Exception if an error occurred while executing the sub-command.
      */
     @Override
-    public int run() throws InvalidOptionException, IOException, DataStoreException, URISyntaxException {
+    public int run() throws Exception {
         if (hasUnexpectedFileCount(1, Integer.MAX_VALUE)) {
             return Command.INVALID_ARGUMENT_EXIT_CODE;
         }

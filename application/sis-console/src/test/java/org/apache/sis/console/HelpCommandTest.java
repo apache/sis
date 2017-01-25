@@ -16,6 +16,7 @@
  */
 package org.apache.sis.console;
 
+import java.io.IOException;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -28,7 +29,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 @DependsOn(CommandRunnerTest.class)
@@ -37,9 +38,10 @@ public final strictfp class HelpCommandTest extends TestCase {
      * Tests the sub-command without option.
      *
      * @throws InvalidOptionException should never happen.
+     * @throws IOException should never happen, because we are writing to a {@code PrintWriter}.
      */
     @Test
-    public void testDefault() throws InvalidOptionException {
+    public void testDefault() throws InvalidOptionException, IOException {
         final HelpCommand test = new HelpCommand(0, CommandRunner.TEST);
         test.run();
         final String result = test.outputBuffer.toString();
@@ -57,9 +59,10 @@ public final strictfp class HelpCommandTest extends TestCase {
      * Shall contain only a subset of {@link #testDefault()}.
      *
      * @throws InvalidOptionException should never happen.
+     * @throws IOException should never happen, because we are writing to a {@code PrintWriter}.
      */
     @Test
-    public void testHelp() throws InvalidOptionException {
+    public void testHelp() throws InvalidOptionException, IOException {
         final HelpCommand test = new HelpCommand(0, CommandRunner.TEST, "--help");
         test.help("help");
         final String result = test.outputBuffer.toString();
@@ -76,9 +79,10 @@ public final strictfp class HelpCommandTest extends TestCase {
      * Tests the sub-command with the {@code --locale en} option.
      *
      * @throws InvalidOptionException should never happen.
+     * @throws IOException should never happen, because we are writing to a {@code PrintWriter}.
      */
     @Test
-    public void testEnglishLocale() throws InvalidOptionException {
+    public void testEnglishLocale() throws InvalidOptionException, IOException {
         final HelpCommand test = new HelpCommand(0, CommandRunner.TEST, "--help", "--locale", "en");
         test.help("help");
         final String result = test.outputBuffer.toString();
@@ -90,9 +94,10 @@ public final strictfp class HelpCommandTest extends TestCase {
      * Tests the sub-command with the {@code --locale fr} option.
      *
      * @throws InvalidOptionException should never happen.
+     * @throws IOException should never happen, because we are writing to a {@code PrintWriter}.
      */
     @Test
-    public void testFrenchLocale() throws InvalidOptionException {
+    public void testFrenchLocale() throws InvalidOptionException, IOException {
         final HelpCommand test = new HelpCommand(0, CommandRunner.TEST, "--help", "--locale", "fr");
         test.help("help");
         final String result = test.outputBuffer.toString();
