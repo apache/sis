@@ -112,7 +112,7 @@ public final strictfp class WriterTest extends TestCase {
      */
     @Test
     public void testMetadata100() throws Exception {
-        testMetadata(Store.V1_0, "1.0/metadata.xml");
+        testMetadata(StoreProvider.V1_0, "1.0/metadata.xml");
     }
 
     /**
@@ -123,7 +123,7 @@ public final strictfp class WriterTest extends TestCase {
      */
     @Test
     public void testMetadata110() throws Exception {
-        testMetadata(Store.V1_1, "1.1/metadata.xml");
+        testMetadata(StoreProvider.V1_1, "1.1/metadata.xml");
     }
 
     /**
@@ -152,7 +152,7 @@ public final strictfp class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testMetadata100")
     public void testWayPoints100() throws Exception {
-        testFeatures(Store.V1_0, Type.WAY_POINT, "1.0/waypoint.xml");
+        testFeatures(StoreProvider.V1_0, Type.WAY_POINT, "1.0/waypoint.xml");
     }
 
     /**
@@ -164,7 +164,7 @@ public final strictfp class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testMetadata110")
     public void testWayPoints110() throws Exception {
-        testFeatures(Store.V1_1, Type.WAY_POINT, "1.1/waypoint.xml");
+        testFeatures(StoreProvider.V1_1, Type.WAY_POINT, "1.1/waypoint.xml");
     }
 
     /**
@@ -176,7 +176,7 @@ public final strictfp class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testWayPoints100")
     public void testRoutes100() throws Exception {
-        testFeatures(Store.V1_0, Type.ROUTE, "1.0/route.xml");
+        testFeatures(StoreProvider.V1_0, Type.ROUTE, "1.0/route.xml");
     }
 
     /**
@@ -188,7 +188,7 @@ public final strictfp class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testWayPoints110")
     public void testRoutes110() throws Exception {
-        testFeatures(Store.V1_1, Type.ROUTE, "1.1/route.xml");
+        testFeatures(StoreProvider.V1_1, Type.ROUTE, "1.1/route.xml");
     }
 
     /**
@@ -200,7 +200,7 @@ public final strictfp class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testRoutes100")
     public void testTracks100() throws Exception {
-        testFeatures(Store.V1_0, Type.TRACK, "1.0/track.xml");
+        testFeatures(StoreProvider.V1_0, Type.TRACK, "1.0/track.xml");
     }
 
     /**
@@ -212,7 +212,7 @@ public final strictfp class WriterTest extends TestCase {
     @Test
     @DependsOnMethod("testRoutes110")
     public void testTracks110() throws Exception {
-        testFeatures(Store.V1_1, Type.TRACK, "1.1/track.xml");
+        testFeatures(StoreProvider.V1_1, Type.TRACK, "1.1/track.xml");
     }
 
     /**
@@ -372,7 +372,7 @@ public final strictfp class WriterTest extends TestCase {
              * but the main purpose of following code is to advance in the stream.
              */
             ReaderTest.verifyMetadata((Metadata) store.getMetadata(), 3);
-            assertEquals("version", Store.V1_1, store.getVersion());
+            assertEquals("version", StoreProvider.V1_1, store.getVersion());
             /*
              * Replace the metadata content by route content. The data store should rewind
              * to the begining of the file and replace the input stream by an output stream.
