@@ -50,7 +50,7 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 abstract class Pooled {
@@ -61,21 +61,12 @@ abstract class Pooled {
     private static final String[] SCHEMA_KEYS = {"gmd"};
 
     /**
-     * The prefix of property names which are provided in external (endorsed) implementation of JAXB.
-     * This is slightly different than the prefix used by the implementation bundled with the JDK 6,
-     * which is {@code "com.sun.xml.internal.bind"}.
-     *
-     * @see #convertPropertyKey(String)
-     */
-    static final String ENDORSED_PREFIX = "com.sun.xml.bind.";
-
-    /**
      * {@code true} if the JAXB implementation is the one bundled in JDK 6, or {@code false}
      * if this is the external implementation provided as a JAR file in the endorsed directory.
      * If {@code true}, then an additional {@code "internal"} package name needs to be inserted
      * in the property keys.
      *
-     * @see #convertPropertyKey(String)
+     * @see Implementation#toInternal(String)
      */
     private final boolean internal;
 
@@ -179,7 +170,7 @@ abstract class Pooled {
     /**
      * Creates a {@link PooledTemplate}.
      *
-     * @param internal {@code true} if the JAXB implementation is the one bundled in JDK 6,
+     * @param internal  {@code true} if the JAXB implementation is the one bundled in JDK 6,
      *        or {@code false} if this is the external implementation provided as a JAR file
      *        in the endorsed directory.
      */
@@ -313,22 +304,6 @@ abstract class Pooled {
     }
 
     /**
-     * Converts a property key from the JAXB name to the underlying implementation name.
-     * This applies only to property keys in the {@code "com.sun.xml.bind"} namespace.
-     *
-     * @param  key  the JAXB property key.
-     * @return the property key to use.
-     */
-    private String convertPropertyKey(String key) {
-        if (internal && key.startsWith(ENDORSED_PREFIX)) {
-            final StringBuilder buffer = new StringBuilder(key.length() + 10);
-            key = buffer.append("com.sun.xml.internal.bind.")
-                    .append(key, ENDORSED_PREFIX.length(), key.length()).toString();
-        }
-        return key;
-    }
-
-    /**
      * A method which is common to both {@code Marshaller} and {@code Unmarshaller}.
      * It saves the initial state if it was not already done, but subclasses will
      * need to complete the work.
@@ -421,7 +396,9 @@ abstract class Pooled {
          * If we reach this point, the given name is not a SIS property. Try to handle
          * it as a (un)marshaller-specific property, after saving the previous value.
          */
-        name = convertPropertyKey(name);
+        if (internal) {
+            name = Implementation.toInternal(name);
+        }
         if (!initialProperties.containsKey(name)) {
             if (initialProperties.put(name, getStandardProperty(name)) != null) {
                 // Should never happen, unless on concurrent changes in a backgroung thread.
@@ -435,7 +412,7 @@ abstract class Pooled {
      * A method which is common to both {@code Marshaller} and {@code Unmarshaller}.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because unmodifiable.
-    public final Object getProperty(final String name) throws PropertyException {
+    public final Object getProperty(String name) throws PropertyException {
         switch (name) {
             case XML.LOCALE:           return locale;
             case XML.TIMEZONE:         return timezone;
@@ -462,7 +439,10 @@ abstract class Pooled {
             }
             case TypeRegistration.ROOT_ADAPTERS: return (rootAdapters != null) ? rootAdapters.clone() : null;
             default: {
-                return getStandardProperty(convertPropertyKey(name));
+                if (internal) {
+                    name = Implementation.toInternal(name);
+                }
+                return getStandardProperty(name);
             }
         }
     }

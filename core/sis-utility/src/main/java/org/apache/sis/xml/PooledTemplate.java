@@ -44,11 +44,14 @@ final class PooledTemplate extends Pooled {
      *                    {@code false} if this is the external implementation provided as a JAR file
      *                    in the endorsed directory.
      */
-    PooledTemplate(final Map<String,?> properties, final boolean internal) throws PropertyException {
-        super(internal);
+    PooledTemplate(final Map<String,?> properties, final Implementation implementation) throws PropertyException {
+        super(implementation == Implementation.INTERNAL);
         if (properties != null) {
             for (final Map.Entry<String,?> entry : properties.entrySet()) {
-                setProperty(entry.getKey(), entry.getValue());
+                final String key = entry.getKey();
+                if (implementation.filterProperty(key)) {
+                    setProperty(key, entry.getValue());
+                }
             }
         }
     }
