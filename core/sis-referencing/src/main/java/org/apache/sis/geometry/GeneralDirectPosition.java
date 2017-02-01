@@ -57,6 +57,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @see DirectPosition1D
  * @see DirectPosition2D
+ * @see CoordinateFormat
  */
 public class GeneralDirectPosition extends AbstractDirectPosition implements Serializable, Cloneable {
     /**
@@ -108,9 +109,15 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * Consequently, callers shall not recycle the same array for creating many instances.
      *
      * <div class="note"><b>Implementation note:</b>
-     * The array is not cloned because this is usually not needed, especially in the context of variable
+     * the array is not cloned because this is usually not needed, especially in the context of variable
      * argument lengths since the array is often created implicitly. Furthermore the {@link #ordinates}
      * field is public, so cloning the array would not protect the state of this object anyway.</div>
+     *
+     * <p><b>Caution:</b> if only one number is specified, make sure that the number type is {@code double},
+     * {@code float} or {@code long} otherwise the {@link #GeneralDirectPosition(int)} constructor would be
+     * invoked with a very different meaning. For example for creating a one-dimensional coordinate initialized
+     * to the ordinate value 100, use <code>new GeneralDirectPosition(100<u>.0</u>)</code>, <strong>not</strong>
+     * {@code new GeneralDirectPosition(100)}, because the later would actually create a position with 100 dimensions.</p>
      *
      * @param ordinates  the ordinate values. This array is <strong>not</strong> cloned.
      */
@@ -145,7 +152,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @throws IllegalArgumentException if the given string can not be parsed.
      *
      * @see #toString()
-     * @see org.apache.sis.measure.CoordinateFormat
+     * @see CoordinateFormat
      */
     public GeneralDirectPosition(final CharSequence wkt) throws IllegalArgumentException {
         if ((ordinates = parse(wkt)) == null) {
