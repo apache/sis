@@ -126,6 +126,7 @@ import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
  * @see Angle
  * @see Latitude
  * @see Longitude
+ * @see org.apache.sis.geometry.CoordinateFormat
  */
 public class AngleFormat extends Format implements Localized {
     /**

@@ -24,9 +24,9 @@ import java.util.Date;
 import java.io.IOException;
 import java.text.Format;
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import javax.measure.Unit;
@@ -40,10 +40,12 @@ import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.LocalizedParseException;
 
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
+
+// Branch-dependent imports
+import java.io.UncheckedIOException;
 
 
 /**
@@ -73,7 +75,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * throws a {@code ParseException} on error. This allows both substring parsing and more accurate exception message
  * in case of error.</div>
  *
- * @param <T> The base type of objects parsed and formatted by this class.
+ * @param  <T>  the base type of objects parsed and formatted by this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -171,7 +173,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * @return the timezone used for this format, or UTC for unlocalized format.
      */
     public TimeZone getTimeZone() {
-        return timezone != null ? (TimeZone) timezone.clone() : TimeZone.getTimeZone(UTC);
+        return (timezone != null) ? (TimeZone) timezone.clone() : TimeZone.getTimeZone(UTC);
     }
 
     /**
@@ -214,13 +216,14 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * </ul>
      *
      * <div class="note"><b>Example:</b>
-     * If parsing of the {@code "30.0 40,0"} coordinate fails on the coma in the last number, then the {@code pos}
+     * if parsing of the {@code "30.0 40,0"} coordinate fails on the coma in the last number, then the {@code pos}
      * error index will be set to 5 (the beginning of the {@code "40.0"} character sequence) while the
      * {@link ParseException} error offset will be set to 2 (the coma position relative the beginning
      * of the {@code "40.0"} character sequence).</div>
      *
      * This error offset policy is a consequence of the compound nature of {@code CompoundFormat},
-     * since the exception may have been produced by a call to {@link Format#parseObject(String)}.
+     * since the exception may have been produced by a call to {@link Format#parseObject(String)}
+     * on one of the {@linkplain #getFormat(Class) sub-formats} used by this {@code CompoundFormat}.
      *
      * @param  text  the character sequence for the object to parse.
      * @param  pos   the position where to start the parsing.
@@ -331,16 +334,16 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     @Override
     public StringBuffer format(final Object object, final StringBuffer toAppendTo, final FieldPosition pos) {
         final Class<? extends T> valueType = getValueType();
-        ArgumentChecks.ensureCanCast("tree", valueType, object);
+        ArgumentChecks.ensureCanCast("object", valueType, object);
         try {
             format(valueType.cast(object), toAppendTo);
         } catch (IOException e) {
             /*
              * Should never happen when writing into a StringBuffer, unless the user
-             * override the format(Object, Appendable) method. We do not rethrown an
+             * override the format(Object, Appendable) method.  We do not rethrow an
              * AssertionError because of this possibility.
              */
-            throw new BackingStoreException(e);
+            throw new UncheckedIOException(e);
         }
         return toAppendTo;
     }

@@ -383,8 +383,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *
      * <div class="section">Restriction on character set</div>
      * Current implementation accepts only {@linkplain Character#isLetter(int) letters},
-     * {@linkplain Characters#isSubScript(int) subscripts}, {@linkplain Character#isWhitespace(int) whitespaces}
-     * and the degree sign (°),
+     * {@linkplain Characters#isSubScript(int) subscripts}, {@linkplain Character#isSpaceChar(int) spaces}
+     * (including non-breaking spaces but <strong>not</strong> CR/LF characters) and the degree sign (°),
      * but the set of legal characters may be expanded in future Apache SIS versions.
      * However the following restrictions are likely to remain:
      *
@@ -405,7 +405,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         ArgumentChecks.ensureNonEmpty("label", label);
         for (int i=0; i < label.length();) {
             final int c = label.codePointAt(i);
-            if (!AbstractUnit.isSymbolChar(c) && !Character.isWhitespace(c)) {
+            if (!AbstractUnit.isSymbolChar(c) && !Character.isSpaceChar(c)) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "label", label));
             }
             i += Character.charCount(c);
@@ -906,7 +906,7 @@ scan:   for (int n; i < end; i += n) {
                         }
                         continue;
                     }
-                    if (Character.isWhitespace(c) || Character.isDigit(c) || Characters.isSuperScript(c)) {
+                    if (Character.isSpaceChar(c) || Character.isDigit(c) || Characters.isSuperScript(c)) {
                         continue;
                     }
                     break scan;
