@@ -21,14 +21,15 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.mock.VerticalCRSMock;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import org.opengis.geometry.DirectPosition;
 
 
 /**
@@ -65,6 +66,40 @@ public final strictfp class CoordinateFormatTest extends TestCase {
     }
 
     /**
+     * Tests parsing a coordinate in unknown CRS.
+     * The ordinate values are formatted as ordinary numbers.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testParseUnknownCRS() throws ParseException {
+        final CoordinateFormat format = new CoordinateFormat(null, null);
+        final ParsePosition index = new ParsePosition(0);
+        DirectPosition position = format.parse("23.78 -12.74 127.9 3.25", index);
+        assertArrayEquals(new double[] {23.78, -12.74, 127.9, 3.25}, position.getCoordinate(), STRICT);
+        assertEquals("ParsePosition.getErrorIndex()", -1, index.getErrorIndex());
+        assertEquals("ParsePosition.getIndex()",      23, index.getIndex());
+        /*
+         * Try another point having a different number of position
+         * for verifying that no cached values are causing problem.
+         */
+        index.setIndex(0);
+        position = format.parse("4.64 10.25 -3.12", index);
+        assertArrayEquals(new double[] {4.64, 10.25, -3.12}, position.getCoordinate(), STRICT);
+        assertEquals("ParsePosition.getErrorIndex()", -1, index.getErrorIndex());
+        assertEquals("ParsePosition.getIndex()",      16, index.getIndex());
+        /*
+         * Try again with a different separator.
+         */
+        format.setSeparator("; ");
+        index.setIndex(0);
+        position = format.parse("4.64; 10.25; -3.12", index);
+        assertArrayEquals(new double[] {4.64, 10.25, -3.12}, position.getCoordinate(), STRICT);
+        assertEquals("ParsePosition.getErrorIndex()", -1, index.getErrorIndex());
+        assertEquals("ParsePosition.getIndex()",      18, index.getIndex());
+    }
+
+    /**
      * Tests formatting a single vertical coordinate.
      */
     @Test
@@ -85,6 +120,7 @@ public final strictfp class CoordinateFormatTest extends TestCase {
      * Tests formatting a 4-dimensional geographic coordinate.
      */
     @Test
+    @DependsOnMethod("testFormatUnknownCRS")
     public void testFormatGeographic4D() {
         /*
          * For a 4-dimensional coordinate with a temporal CRS.
@@ -124,16 +160,30 @@ public final strictfp class CoordinateFormatTest extends TestCase {
      *
      * @throws ParseException if the parsing failed.
      */
-//  @Test
+    @Test
+    @DependsOnMethod("testParseUnknownCRS")
     public void testParseGeographic4D() throws ParseException {
         final CoordinateFormat format = new CoordinateFormat(Locale.FRANCE, TimeZone.getTimeZone("GMT+01:00"));
-        final String anglePattern = "DD°MM.m′";
-        final String  datePattern = "dd-MM-yyyy HH:mm";
-        final ParsePosition index = new ParsePosition(0);
-        format.applyPattern(Angle.class,  anglePattern);
-        format.applyPattern(Date.class,    datePattern);
+        format.applyPattern(Date.class, "dd-MM-yyyy HH:mm");
         format.setDefaultCRS(HardCodedCRS.GEOID_4D);
-        final DirectPosition pos = format.parse("23°46,8′E 12°44,4′S 127,9 m 22-09-2006 07:00", index);
-        assertArrayEquals(new double[] {23.78, -12.74, 127.90, 54000.25}, pos.getCoordinate(), 0.005);
+        final ParsePosition index = new ParsePosition(11);
+        final DirectPosition pos = format.parse("(to skip); 23°46,8′E 12°44,4′S 127,9 m 22-09-2006 07:00 (ignore)", index);
+        assertArrayEquals(new double[] {23.78, -12.74, 127.90, 54000.25}, pos.getCoordinate(), STRICT);
+        assertEquals("ParsePosition.getErrorIndex()", -1, index.getErrorIndex());
+        assertEquals("ParsePosition.getIndex()",      55, index.getIndex());
+        /*
+         * Tests error message when parsing the same string but with unknown units of measurement.
+         */
+        index.setIndex(11);
+        try {
+            format.parse("(to skip); 23°46,8′E 12°44,4′S 127,9 Foo 22-09-2006 07:00", index);
+            fail("Should not have parsed a coordinate with unknown units.");
+        } catch (ParseException e) {
+            assertEquals("ParsePosition.getIndex()",        11, index.getIndex());
+            assertEquals("ParsePosition.getErrorIndex()",   37, index.getErrorIndex());
+            assertEquals("ParseException.getErrorOffset()", 37, e.getErrorOffset());
+            assertEquals("Les caractères « Foo » après « 23°46,8′E 12°44,4′S 127,9 » sont inattendus.",
+                         e.getLocalizedMessage());  // In the language specified at CoordinateFormat construction time.
+        }
     }
 }

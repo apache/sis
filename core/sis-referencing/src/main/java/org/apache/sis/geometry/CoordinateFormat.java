@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -90,6 +91,19 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * Serial number for cross-version compatibility.
      */
     private static final long serialVersionUID = 8324486673169133932L;
+
+    /**
+     * Maximal number of characters to convert to {@link String} if the text to parse is not a string instance.
+     * This is an arbitrary limit that may change (or be removed) in any future SIS version.
+     */
+    private static final int READ_AHEAD_LIMIT = 256;
+
+    /**
+     * Maximal number of dimensions to use when parsing a coordinate without {@link #defaultCRS}.
+     * This is an arbitrary limit that may change (or be removed) in any future SIS version.
+     * To avoid this limitation, users are encouraged to specify a default CRS.
+     */
+    private static final int DEFAULT_DIMENSION = 4;
 
     /**
      * The separator between each coordinate values to be formatted.
@@ -567,6 +581,8 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     public DirectPosition parse(final CharSequence text, final ParsePosition pos) throws ParseException {
         ArgumentChecks.ensureNonNull("text", text);
         ArgumentChecks.ensureNonNull("pos",  pos);
+        final int start  = pos.getIndex();
+        final int length = text.length();
         /*
          * The NumberFormat, DateFormat and AngleFormat work only on String values, not on CharSequence.
          * If the given text is not a String, we will convert an arbitrarily small section of the given
@@ -580,9 +596,9 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             subPos   = pos;
             asString = (String) text;
         } else {
-            offset   = pos.getIndex();
+            offset   = start;
             subPos   = new ParsePosition(0);
-            asString = text.subSequence(offset, Math.min(offset + 256, text.length())).toString();
+            asString = text.subSequence(start, Math.min(start + READ_AHEAD_LIMIT, length)).toString();
         }
         /*
          * The Format instances to be used for each ordinate values is determined by the default CRS.
@@ -591,9 +607,53 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
         if (lastCRS != defaultCRS) {
             initialize(defaultCRS);
         }
-        double[] ordinates = new double[formats.length];        // TODO: null if no CRS has been specified.
+        final double[] ordinates;
+        Format format;
+        final Format[] formats = this.formats;
+        if (formats != null) {
+            format    = null;
+            ordinates = new double[formats.length];
+        } else {
+            format    = getFormat(Number.class);
+            ordinates = new double[DEFAULT_DIMENSION];
+        }
+        /*
+         * For each ordinate value except the first one, we need to skip the separator.
+         * If we do not find the separator, we may consider that we reached the coordinate
+         * end ahead of time. We currently allow that only for coordinate without CRS.
+         */
         for (int i=0; i < ordinates.length; i++) {
-            final Object object = formats[i].parseObject(asString, subPos);
+            if (i != 0) {
+                final int end = subPos.getIndex();
+                int index = offset + end;
+                while (!CharSequences.regionMatches(text, index, separator)) {
+                    if (index < length) {
+                        final int c = Character.codePointAt(text, index);
+                        if (Character.isSpaceChar(c)) {
+                            index += Character.charCount(c);
+                            continue;
+                        }
+                    }
+                    if (formats == null) {
+                        pos.setIndex(index);
+                        return new GeneralDirectPosition(Arrays.copyOf(ordinates, i));
+                    }
+                    pos.setIndex(start);
+                    pos.setErrorIndex(index);
+                    throw new LocalizedParseException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
+                            new CharSequence[] {text.subSequence(start, end), CharSequences.token(text, index)}, index);
+                }
+                subPos.setIndex(index + separator.length() - offset);
+            }
+            /*
+             * At this point 'subPos' is set to the beginning of the next ordinate to parse in 'asString'.
+             * Parse the value as a number, angle or date, as determined from the coordinate system axis.
+             */
+            if (formats != null) {
+                format = formats[i];
+            }
+            @SuppressWarnings("null")
+            final Object object = format.parseObject(asString, subPos);
             if (object == null) {
                 /*
                  * If we failed to parse, build an error message with the type that was expected for that ordinate.
@@ -609,7 +669,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                         case DATE:      type = Date.class;      break;
                     }
                 }
-                pos.setIndex(offset);
+                pos.setIndex(start);
                 if (subPos != pos) {
                     pos.setErrorIndex(offset + subPos.getErrorIndex());
                 }
@@ -656,7 +716,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                             value = ((Unit<?>) unit).getConverterToAny(target).convert(value);
                         } catch (IncommensurableException e) {
                             index += offset;
-                            pos.setIndex(offset);
+                            pos.setIndex(start);
                             pos.setErrorIndex(index);
                             throw (ParseException) new ParseException(e.getMessage(), index).initCause(e);
                         }
@@ -674,20 +734,6 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 value = -value;
             }
             ordinates[i] = value;
-            /*
-             * We require the separator to be present before to continue.
-             */
-            final int index = offset + subPos.getIndex();
-            if (!CharSequences.regionMatches(text, index, separator)) {
-                if (i+1 == ordinates.length) {
-                    break;
-                }
-                pos.setIndex(offset);
-                pos.setErrorIndex(index);
-                throw new LocalizedParseException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
-                        new CharSequence[] {text.subSequence(offset, index), CharSequences.token(text, index)}, index);
-            }
-            subPos.setIndex(index + separator.length() - offset);
         }
         final GeneralDirectPosition position = new GeneralDirectPosition(ordinates);
         position.setCoordinateReferenceSystem(defaultCRS);
