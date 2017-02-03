@@ -112,6 +112,11 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     private String separator;
 
     /**
+     * The separator without spaces, used at parsing time.
+     */
+    private String parseSeparator;
+
+    /**
      * The coordinate reference system to assume if no CRS is attached to the position to format.
      * May be {@code null}.
      */
@@ -198,7 +203,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      */
     public CoordinateFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
-        separator = " ";
+        parseSeparator = separator = " ";
     }
 
     /**
@@ -218,8 +223,12 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @param  separator  the new coordinate separator.
      */
     public void setSeparator(final String separator) {
-        ArgumentChecks.ensureNonNull("separator", separator);
+        ArgumentChecks.ensureNonEmpty("separator", separator);
         this.separator = separator;
+        parseSeparator = CharSequences.trimWhitespaces(separator);
+        if (parseSeparator.isEmpty()) {
+            parseSeparator = separator;
+        }
     }
 
     /**
@@ -626,7 +635,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             if (i != 0) {
                 final int end = subPos.getIndex();
                 int index = offset + end;
-                while (!CharSequences.regionMatches(text, index, separator)) {
+                while (!CharSequences.regionMatches(text, index, parseSeparator)) {
                     if (index < length) {
                         final int c = Character.codePointAt(text, index);
                         if (Character.isSpaceChar(c)) {
@@ -643,7 +652,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                     throw new LocalizedParseException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
                             new CharSequence[] {text.subSequence(start, end), CharSequences.token(text, index)}, index);
                 }
-                subPos.setIndex(index + separator.length() - offset);
+                subPos.setIndex(index + parseSeparator.length() - offset);
             }
             /*
              * At this point 'subPos' is set to the beginning of the next ordinate to parse in 'asString'.

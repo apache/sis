@@ -125,6 +125,7 @@ final class DefaultFormat extends Format {
      */
     @Override
     public Object parseObject(String source, final ParsePosition pos) {
+        boolean exponent = false;
         final int index = CharSequences.skipLeadingWhitespaces(source, pos.getIndex(), source.length());
         int end;
         for (end = index; end < source.length(); end++) {
@@ -139,7 +140,11 @@ final class DefaultFormat extends Format {
                      */
                 }
                 case ',': case '/': break;
-                case 'E': case 'e': continue;
+                case 'E': case 'e': {
+                    if (exponent) break;
+                    exponent = true;
+                    continue;
+                }
             }
             break;
         }
