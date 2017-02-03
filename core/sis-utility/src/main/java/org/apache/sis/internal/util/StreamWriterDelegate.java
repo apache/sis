@@ -72,6 +72,12 @@ public class StreamWriterDelegate implements XMLStreamWriter {
 
     /** Forwards the call verbatim. */
     @Override
+    public void writeEmptyElement(String localName) throws XMLStreamException {
+        out.writeEmptyElement(localName);
+    }
+
+    /** Forwards the call verbatim. */
+    @Override
     public void writeEmptyElement(String namespaceURI, String localName) throws XMLStreamException {
         out.writeEmptyElement(namespaceURI, localName);
     }
@@ -80,12 +86,6 @@ public class StreamWriterDelegate implements XMLStreamWriter {
     @Override
     public void writeEmptyElement(String prefix, String localName, String namespaceURI) throws XMLStreamException {
         out.writeEmptyElement(prefix, localName, namespaceURI);
-    }
-
-    /** Forwards the call verbatim. */
-    @Override
-    public void writeEmptyElement(String localName) throws XMLStreamException {
-        out.writeEmptyElement(localName);
     }
 
     /** Forwards the call verbatim. */

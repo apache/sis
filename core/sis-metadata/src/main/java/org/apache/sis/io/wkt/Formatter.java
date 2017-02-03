@@ -321,7 +321,7 @@ public class Formatter implements Localized {
      * Creates a new formatter instance with the default configuration.
      */
     public Formatter() {
-        this(Convention.DEFAULT, Symbols.getDefault(), WKTFormat.DEFAULT_INDENTATION);
+        this(Convention.DEFAULT, Symbols.getDefault(), Constants.DEFAULT_INDENTATION);
     }
 
     /**
@@ -364,7 +364,7 @@ public class Formatter implements Localized {
         this.authority     = Convention.DEFAULT.getNameAuthority();
         this.symbols       = symbols;
         this.lineSeparator = this.symbols.lineSeparator();
-        this.indentation   = WKTFormat.DEFAULT_INDENTATION;
+        this.indentation   = Constants.DEFAULT_INDENTATION;
         this.numberFormat  = numberFormat;                      // No clone needed.
         this.dateFormat    = dateFormat;
         this.unitFormat    = unitFormat;

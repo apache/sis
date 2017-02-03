@@ -497,8 +497,10 @@ public final class Store extends FeatureStore {
             } catch (TransformException e) {
                 throw new DataStoreReferencingException(getLocale(), "CSV", getDisplayName(), source).initCause(e);
             } catch (UnsupportedOperationException e) {
-                // Failed to set the temporal components if the sis-temporal module was
-                // not on the classpath, but the other dimensions still have been set.
+                /*
+                 * Failed to set the temporal components if the sis-temporal module was
+                 * not on the classpath, but the other dimensions still have been set.
+                 */
                 listeners.warning(null, e);
             }
             builder.add(featureType, null);
@@ -540,12 +542,12 @@ public final class Store extends FeatureStore {
      * @todo Needs to reset the position when doing another pass on the features.
      */
     @Override
-    public Stream<AbstractFeature> getFeatures() {
+    public Stream<AbstractFeature> features() {
         return StreamSupport.stream(new Iter(), false);
     }
 
     /**
-     * Implementation of the iterator returned by {@link #getFeatures()}.
+     * Implementation of the iterator returned by {@link #features()}.
      */
     private final class Iter implements Spliterator<AbstractFeature> {
         /**
@@ -699,11 +701,17 @@ public final class Store extends FeatureStore {
         }
 
         /**
-         * Guarantees that we will not return null element.
+         * Returns the characteristics of the iteration over feature instances.
+         * The iteration is assumed {@link #ORDERED} in the declaration order in the CSV file.
+         * The iteration is {@link #NONNULL} (i.e. {@link #tryAdvance(Consumer)} is not allowed
+         * to return null value) and {@link #IMMUTABLE} (i.e. we do not support modification of
+         * the CSV file while an iteration is in progress).
+         *
+         * @return characteristics of iteration over the features in the CSV file.
          */
         @Override
         public int characteristics() {
-            return NONNULL;
+            return ORDERED | NONNULL | IMMUTABLE;
         }
     }
 

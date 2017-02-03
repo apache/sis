@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.netcdf;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -25,6 +27,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
@@ -136,7 +139,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override
-    public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {
+    public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
         int     version     = 0;
         boolean hasVersion  = false;
         boolean isSupported = false;
@@ -164,7 +167,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
         if (!isSupported) {
             final String path = connector.getStorageAs(String.class);
             if (path != null) {
-                ensureInitialized();
+                ensureInitialized(false);
                 final Method method = canOpenFromPath;
                 if (method != null) try {
                     isSupported = (Boolean) method.invoke(null, path);
@@ -275,7 +278,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     private static Decoder createByReflection(final WarningListeners<?> listeners, final Object input, final boolean isUCAR)
             throws IOException, DataStoreException
     {
-        ensureInitialized();
+        ensureInitialized(true);
         /*
          * Get the appropriate constructor for the isUCAR argument. This constructor will be null
          * if the above code failed to load the UCAR library. Otherwise, instantiate the wrapper.
@@ -300,17 +303,23 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             if (cause instanceof DataStoreException) throw (DataStoreException) cause;
             if (cause instanceof RuntimeException)   throw (RuntimeException)   cause;
             if (cause instanceof Error)              throw (Error)              cause;
-            throw new UndeclaredThrowableException(cause); // Should never happen actually.
+            throw new UndeclaredThrowableException(cause);  // Should never happen actually.
         } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e); // Should never happen (shall be verified by the JUnit tests).
+            throw new AssertionError(e);                    // Should never happen (shall be verified by the JUnit tests).
         }
     }
 
     /**
      * Gets the {@link java.lang.Class} that represent the {@link ucar.nc2.NetcdfFile type}.
+     *
+     * @param  open  {@code true} if this method is invoked (indirectly) from the {@link #open(StorageConnector)}
+     *               method, or {@code false} if invoked from the {@link #probeContent(StorageConnector)} method.
+     *               This is used only for logging message.
      */
-    private static void ensureInitialized() {
+    private static void ensureInitialized(final boolean open) {
         if (netcdfFileClass == null) {
+            Level  severity = null;                             // Logging level to use in case of failure.
+            Throwable cause = null;                             // Cause of the failure (may stay null).
             synchronized (NetcdfStoreProvider.class) {
                 /*
                  * No double-check because it is not a big deal if the constructors are fetched twice.
@@ -318,29 +327,50 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                  */
                 try {
                     netcdfFileClass = Class.forName(UCAR_CLASSNAME);
-                } catch (ClassNotFoundException e) {
-                    netcdfFileClass = Void.TYPE;
-                    return;
-                }
-                try {
-                    /*
-                     * UCAR API.
-                     */
                     canOpenFromPath = netcdfFileClass.getMethod("canOpen", String.class);
-                    assert canOpenFromPath.getReturnType() == Boolean.TYPE;
+                    if (canOpenFromPath.getReturnType() == Boolean.TYPE) {
+                        /*
+                         * At this point we found the class and method from UCAR API. Now get the Apache SIS wrapper
+                         * using reflection for avoiding "hard" dependency from this provider to the UCAR library.
+                         */
+                        final Class<? extends Decoder> wrapper =
+                                Class.forName("org.apache.sis.internal.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
+                        final Class<?>[] parameterTypes = new Class<?>[] {WarningListeners.class, netcdfFileClass};
+                        createFromUCAR = wrapper.getConstructor(parameterTypes);
+                        parameterTypes[1] = String.class;
+                        createFromPath = wrapper.getConstructor(parameterTypes);
+                        return;                                                                         // Success
+                    }
+                } catch (ClassNotFoundException e) {
                     /*
-                     * SIS Wrapper API.
+                     * Happen if the UCAR library is not on the classpath. Log at the configuration level without
+                     * reporting the exception (for avoiding scaring logs) because this is a typical use case.
                      */
-                    final Class<? extends Decoder> wrapper =
-                            Class.forName("org.apache.sis.internal.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
-                    final Class<?>[] parameterTypes = new Class<?>[] {WarningListeners.class, netcdfFileClass};
-                    createFromUCAR = wrapper.getConstructor(parameterTypes);
-                    parameterTypes[1] = String.class;
-                    createFromPath = wrapper.getConstructor(parameterTypes);
-                } catch (ReflectiveOperationException e) {
-                    throw new AssertionError(e);        // Should never happen (shall be verified by the JUnit tests).
+                    severity = Level.CONFIG;
+                } catch (NoClassDefFoundError | ReflectiveOperationException e) {
+                    /*
+                     * NoClassDefFoundError may happen if the UCAR class has been found but one of its dependencies
+                     * is missing (for example SLF4J). Log at the warning level because the user probably wanted to
+                     * use the UCAR library.
+                     *
+                     * ReflectiveOperationException should never happen because API compatibility shall be verified
+                     * by the JUnit tests. If it happen anyway  (for example because the user puts on his classpath
+                     * a different version of the NetCDF library than the one we tested), report a warning.
+                     */
+                    severity = Level.WARNING;
+                    cause = e;
                 }
+                /*
+                 * At this point we failed to use the UCAR library. Remember that failure while we are still in the
+                 * synchronized block, then log a message outside the synchronized block.
+                 */
+                reset();
+                netcdfFileClass = Void.TYPE;
             }
+            final LogRecord record = Resources.forLocale(null).getLogRecord(severity, Resources.Keys.CanNotUseUCAR);
+            record.setThrown(cause);
+            record.setLoggerName(Modules.NETCDF);
+            Logging.log(NetcdfStoreProvider.class, open ? "open" : "probeContent", record);
         }
     }
 

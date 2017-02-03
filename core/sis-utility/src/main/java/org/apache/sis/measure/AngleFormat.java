@@ -127,6 +127,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @see Angle
  * @see Latitude
  * @see Longitude
+ * @see org.apache.sis.geometry.CoordinateFormat
  */
 public class AngleFormat extends Format implements Localized {
     /**

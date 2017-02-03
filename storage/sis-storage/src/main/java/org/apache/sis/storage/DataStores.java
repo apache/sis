@@ -80,7 +80,7 @@ public final class DataStores extends Static {
 
     /**
      * Returns the list of data store providers available at this method invocation time.
-     * More providers may be added later if new modules are added on the classpath.
+     * More providers may be added later in a running JVM if new modules are added on the classpath.
      *
      * @return descriptions of available data stores.
      *

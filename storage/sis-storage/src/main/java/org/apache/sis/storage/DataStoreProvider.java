@@ -20,6 +20,8 @@ import org.opengis.metadata.distribution.Format;
 import org.apache.sis.internal.simple.SimpleFormat;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
+import org.apache.sis.measure.Range;
+import org.apache.sis.util.Version;
 
 
 /**
@@ -114,6 +116,17 @@ public abstract class DataStoreProvider {
      */
     public Format getFormat() {
         return new SimpleFormat(getShortName());
+    }
+
+    /**
+     * Returns the range of versions supported by the data store, or {@code null} if unspecified.
+     *
+     * @return the range of supported versions, or {@code null} if unspecified.
+     *
+     * @since 0.8
+     */
+    public Range<Version> getSupportedVersions() {
+        return null;
     }
 
     /**
