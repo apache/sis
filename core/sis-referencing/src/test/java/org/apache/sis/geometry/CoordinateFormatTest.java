@@ -89,14 +89,15 @@ public final strictfp class CoordinateFormatTest extends TestCase {
         assertEquals("ParsePosition.getErrorIndex()", -1, index.getErrorIndex());
         assertEquals("ParsePosition.getIndex()",      16, index.getIndex());
         /*
-         * Try again with a different separator.
+         * Try again with a different separator. Also put or remove some spaces
+         * around the separator for testing UnitFormat capabilities to ignore them.
          */
         format.setSeparator("; ");
         index.setIndex(0);
-        position = format.parse("4.64; 10.25; -3.12", index);
+        position = format.parse("4.64;10.25 ;  -3.12", index);
         assertArrayEquals(new double[] {4.64, 10.25, -3.12}, position.getCoordinate(), STRICT);
         assertEquals("ParsePosition.getErrorIndex()", -1, index.getErrorIndex());
-        assertEquals("ParsePosition.getIndex()",      18, index.getIndex());
+        assertEquals("ParsePosition.getIndex()",      19, index.getIndex());
     }
 
     /**
