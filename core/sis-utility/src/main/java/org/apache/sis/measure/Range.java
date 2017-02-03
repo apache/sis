@@ -182,7 +182,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * by the {@link #create(Comparable, boolean, Comparable, boolean)} method - otherwise we may
      * get an {@link ArrayStoreException}.
      */
-    @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
+    @SuppressWarnings({"unchecked","rawtypes"})                     // Generic array creation.
     Range<E>[] newArray(final int length) {
         return new Range[length];
     }

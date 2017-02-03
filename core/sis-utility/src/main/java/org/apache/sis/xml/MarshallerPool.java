@@ -32,7 +32,9 @@ import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.jaxb.AdapterReplacement;
 import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -66,11 +68,6 @@ import org.apache.sis.util.ArgumentChecks;
  */
 public class MarshallerPool {
     /**
-     * The indentation string, fixed to 2 spaces instead of 4 because ISO/OGC XML are very verbose.
-     */
-    private static final String INDENTATION = "  ";
-
-    /**
      * Amount of nanoseconds to wait before to remove unused (un)marshallers.
      * This is a very approximative value: actual timeout will not be shorter,
      * but may be twice longer.
@@ -78,21 +75,19 @@ public class MarshallerPool {
     private static final long TIMEOUT = 15000000000L;           // 15 seconds.
 
     /**
-     * Kind of JAXB implementations.
-     */
-    private static final byte INTERNAL = 0, ENDORSED = 1, OTHER = 2;
-
-    /**
      * The JAXB context to use for creating marshaller and unmarshaller.
+     *
+     * @see #createMarshaller()
+     * @see #createUnmarshaller()
      */
-    private final JAXBContext context;
+    protected final JAXBContext context;
 
     /**
-     * {@link #INTERNAL} if the JAXB implementation is the one bundled in the JDK,
-     * {@link #ENDORSED} if the TAXB implementation is the endorsed JAXB (Glassfish), or
-     * {@link #OTHER} if unknown.
+     * {@code INTERNAL} if the JAXB implementation is the one bundled in the JDK,
+     * {@code ENDORSED} if the TAXB implementation is the endorsed JAXB (Glassfish), or
+     * {@code null} if unknown.
      */
-    private final byte implementation;
+    private final Implementation implementation;
 
     /**
      * The mapper between namespaces and prefix.
@@ -164,7 +159,12 @@ public class MarshallerPool {
      * @throws JAXBException if the JAXB context can not be created.
      */
     public MarshallerPool(final Map<String,?> properties) throws JAXBException {
-        this(TypeRegistration.getSharedContext(), properties);
+        /*
+         * We currently add the default root adapters only when using the JAXB context provided by Apache SIS.
+         * We presume that if the user specified his own JAXBContext, then he does not expect us to change the
+         * classes that he wants to marshal.
+         */
+        this(TypeRegistration.getSharedContext(), TypeRegistration.addDefaultRootAdapters(properties));
     }
 
     /**
@@ -186,30 +186,12 @@ public class MarshallerPool {
         ArgumentChecks.ensureNonNull("context", context);
         this.context = context;
         replacements = DefaultFactories.createServiceLoader(AdapterReplacement.class);
-        /*
-         * Detects if we are using the endorsed JAXB implementation (i.e. the one provided in
-         * separated JAR files) or the one bundled in JDK 6. We use the JAXB context package
-         * name as a criterion:
-         *
-         *   JAXB endorsed JAR uses    "com.sun.xml.bind"
-         *   JAXB bundled in JDK uses  "com.sun.xml.internal.bind"
-         */
-        String classname = context.getClass().getName();
-        if (classname.startsWith("com.sun.xml.internal.bind.")) {
-            classname = "org.apache.sis.xml.OGCNamespacePrefixMapper";
-            implementation = INTERNAL;
-        } else if (classname.startsWith(Pooled.ENDORSED_PREFIX)) {
-            classname = "org.apache.sis.xml.OGCNamespacePrefixMapper_Endorsed";
-            implementation = ENDORSED;
-        } else {
-            classname = null;
-            implementation = OTHER;
-        }
+        implementation = Implementation.detect(context);
         /*
          * Prepares a copy of the property map (if any), then removes the
          * properties which are handled especially by this constructor.
          */
-        template = new PooledTemplate(properties, implementation == INTERNAL);
+        template = new PooledTemplate(properties, implementation);
         final Object rootNamespace = template.remove(XML.DEFAULT_NAMESPACE, "");
         /*
          * Instantiates the OGCNamespacePrefixMapper appropriate for the implementation
@@ -217,6 +199,7 @@ public class MarshallerPool {
          * usual ClassNotFoundException if the class was found but its parent class has
          * not been found.
          */
+        final String classname = implementation.mapper;
         if (classname == null) {
             mapper = null;
         } else try {
@@ -243,8 +226,10 @@ public class MarshallerPool {
         try {
             ((Pooled) marshaller).reset(template);
         } catch (JAXBException exception) {
-            // Not expected to happen because we are supposed
-            // to reset the properties to their initial values.
+            /*
+             * Not expected to happen because we are supposed
+             * to reset the properties to their initial values.
+             */
             Logging.unexpectedException(Logging.getLogger(Loggers.XML), MarshallerPool.class, "recycle", exception);
             return;
         }
@@ -438,23 +423,23 @@ public class MarshallerPool {
      *
      * @return a new marshaller configured for formatting OGC/ISO XML.
      * @throws JAXBException if an error occurred while creating and configuring the marshaller.
+     *
+     * @see #context
+     * @see #acquireMarshaller()
      */
     protected Marshaller createMarshaller() throws JAXBException {
         final Marshaller marshaller = context.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        switch (implementation) {
-            case INTERNAL: {
-                marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", mapper);
-                marshaller.setProperty("com.sun.xml.internal.bind.indentString", INDENTATION);
-                break;
-            }
-            case ENDORSED: {
-                marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", mapper);
-                marshaller.setProperty("com.sun.xml.bind.indentString", INDENTATION);
-                break;
-            }
-            // Do nothing for the OTHER case.
+        /*
+         * Note: we do not set the Marshaller.JAXB_ENCODING property because specification
+         * said that the default value is "UTF-8", which is what we want.
+         */
+        String key;
+        if ((key = implementation.mapperKey) != null) {
+            marshaller.setProperty(key, mapper);
+        }
+        if ((key = implementation.indentKey) != null) {
+            marshaller.setProperty(key, CharSequences.spaces(Constants.DEFAULT_INDENTATION));
         }
         synchronized (replacements) {
             for (final AdapterReplacement adapter : replacements) {
@@ -471,6 +456,9 @@ public class MarshallerPool {
      *
      * @return a new unmarshaller configured for parsing OGC/ISO XML.
      * @throws JAXBException if an error occurred while creating and configuring the unmarshaller.
+     *
+     * @see #context
+     * @see #acquireUnmarshaller()
      */
     protected Unmarshaller createUnmarshaller() throws JAXBException {
         final Unmarshaller unmarshaller = context.createUnmarshaller();

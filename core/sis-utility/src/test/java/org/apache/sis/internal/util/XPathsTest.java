@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import org.apache.sis.util.Characters;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -42,6 +43,7 @@ public final strictfp class XPathsTest extends TestCase {
         assertEquals(97, XPaths.endOfURI("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])", 0));
         assertEquals(-1, XPaths.endOfURI("m/s", 0));
         assertEquals(-1, XPaths.endOfURI("m.s", 0));
+        assertEquals(11, XPaths.endOfURI("EPSG" + Characters.NO_BREAK_SPACE + ": 9001", 0));
     }
 
     /**

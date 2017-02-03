@@ -52,6 +52,7 @@ package org.apache.sis.measure;
  *
  * @see Longitude
  * @see AngleFormat
+ * @see org.apache.sis.geometry.CoordinateFormat
  */
 public final class Latitude extends Angle {
     /**

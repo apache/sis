@@ -24,6 +24,8 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.Capabilities;
 import org.apache.sis.internal.storage.xml.stream.StaxDataStoreProvider;
+import org.apache.sis.measure.Range;
+import org.apache.sis.util.Version;
 
 
 /**
@@ -39,12 +41,37 @@ import org.apache.sis.internal.storage.xml.stream.StaxDataStoreProvider;
 @Capabilities({Capability.READ, Capability.WRITE})
 public final class StoreProvider extends StaxDataStoreProvider {
     /**
+     * The "1.0" version.
+     */
+    static final Version V1_0 = Version.valueOf(1,0);
+
+    /**
+     * The "1.1" version.
+     */
+    static final Version V1_1 = Version.valueOf(1,1);
+
+    /**
+     * The range of versions returned by {@link #getSupportedVersions()}.
+     */
+    private static final Range<Version> VERSIONS = new Range<>(Version.class, V1_0, true, V1_1, true);
+
+    /**
      * Creates a new GPX store provider.
      */
     public StoreProvider() {
         super("GPX", 4);
         types.put(Tags.NAMESPACE_V10, "application/gpx+xml");
         types.put(Tags.NAMESPACE_V11, "application/gpx+xml");
+    }
+
+    /**
+     * Returns the range of versions supported by the GPX data store.
+     *
+     * @return the range of supported versions.
+     */
+    @Override
+    public Range<Version> getSupportedVersions() {
+        return VERSIONS;
     }
 
     /**

@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.X364;
+import org.apache.sis.internal.util.Constants;
 
 
 /**
@@ -186,7 +187,7 @@ public abstract class FormattableObject {
         formatter.configure(convention, null, colorize ? Colors.DEFAULT : null,
                 convention.toUpperCase           ? (byte) +1 : 0,
                 (convention.majorVersion() == 1) ? (byte) -1 : 0,
-                WKTFormat.DEFAULT_INDENTATION);
+                Constants.DEFAULT_INDENTATION);
         if (!strict) {
             formatter.transliterator = Transliterator.IDENTITY;
         }

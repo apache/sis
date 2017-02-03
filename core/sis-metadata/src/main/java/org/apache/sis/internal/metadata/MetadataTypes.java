@@ -17,8 +17,24 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Collection;
+import org.opengis.metadata.Metadata;
+import org.opengis.metadata.content.Band;
+import org.opengis.metadata.content.ImageDescription;
+import org.opengis.metadata.lineage.ProcessStep;
+import org.opengis.metadata.lineage.Source;
 import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.internal.jaxb.gmi.LE_ProcessStep;
+import org.apache.sis.internal.jaxb.gmi.LE_Source;
+import org.apache.sis.internal.jaxb.gmi.MI_Band;
+import org.apache.sis.internal.jaxb.gmi.MI_CoverageDescription;
+import org.apache.sis.internal.jaxb.gmi.MI_Georectified;
+import org.apache.sis.internal.jaxb.gmi.MI_Georeferenceable;
+import org.apache.sis.internal.jaxb.gmi.MI_ImageDescription;
+import org.apache.sis.internal.jaxb.gmi.MI_Metadata;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.opengis.metadata.content.CoverageDescription;
+import org.opengis.metadata.spatial.Georectified;
+import org.opengis.metadata.spatial.Georeferenceable;
 
 
 /**
@@ -27,7 +43,7 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 public final class MetadataTypes extends TypeRegistration {
@@ -35,7 +51,45 @@ public final class MetadataTypes extends TypeRegistration {
      * Adds to the given collection the metadata types that should be given to the initial JAXB context.
      */
     @Override
-    public void getTypes(final Collection<Class<?>> addTo) {
+    protected void getTypes(final Collection<Class<?>> addTo) {
         addTo.add(DefaultMetadata.class);
+    }
+
+    /**
+     * Notifies that the {@code sis-metadata} module can marshal arbitrary implementations of some metadata interfaces.
+     *
+     * @return {@code true}.
+     */
+    @Override
+    protected boolean canMarshalInterfaces() {
+        return true;
+    }
+
+    /**
+     * Ensures that the given value is an instance of a class that can be marshalled, or returns {@code null}
+     * if the type of the given value is not handled by this method. Current implementation handles all types
+     * that may need to be put in the ISO 19115-3 namespace; we have to do that ourself because those classes
+     * are not public. Other types may be added if needed, but we do not want to handle too many of them (for
+     * performance reasons). However the list or recognized types shall contain at least {@link Metadata}.
+     *
+     * @param  value  the value to marshal.
+     * @return the given value as a type that can be marshalled, or {@code null}.
+     */
+    @Override
+    public Object toImplementation(final Object value) {
+        /*
+         * Classes that are most likely to be used should be checked first.  If a type is a specialization
+         * of another type (e.g. ImageDescription extends CoverageDescription), the specialized type shall
+         * be before the more generic type.
+         */
+        if (value instanceof Metadata)            return MI_Metadata           .castOrCopy((Metadata)            value);
+        if (value instanceof ImageDescription)    return MI_ImageDescription   .castOrCopy((ImageDescription)    value);
+        if (value instanceof CoverageDescription) return MI_CoverageDescription.castOrCopy((CoverageDescription) value);
+        if (value instanceof Georectified)        return MI_Georectified       .castOrCopy((Georectified)        value);
+        if (value instanceof Georeferenceable)    return MI_Georeferenceable   .castOrCopy((Georeferenceable)    value);
+        if (value instanceof Band)                return MI_Band               .castOrCopy((Band)                value);
+        if (value instanceof ProcessStep)         return LE_ProcessStep        .castOrCopy((ProcessStep)         value);
+        if (value instanceof Source)              return LE_Source             .castOrCopy((Source)              value);
+        return null;
     }
 }
