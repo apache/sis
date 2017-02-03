@@ -308,8 +308,11 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     /**
      * Returns {@code true} if the given Unicode code point is a valid character for a unit symbol.
      * Current implementation accepts letters, subscripts and the degree sign, but the set of legal
-     * characters may be expanded in any future SIS version. The most important goal is to avoid
-     * confusion with exponents and to detect where a unit symbol ends.
+     * characters may be expanded in any future SIS version (however it should never allow spaces).
+     * The goal is to avoid confusion with exponents and to detect where a unit symbol ends.
+     *
+     * <p>Space characters must be excluded from the set of legal characters because allowing them
+     * would make harder for {@link UnitFormat} to detect correctly where a unit symbol ends.</p>
      *
      * <p>Note that some units defined in the {@link Units} class break this rule. In particular,
      * some of those units contains superscripts or division sign. But the hard-coded symbols in

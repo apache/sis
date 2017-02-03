@@ -132,7 +132,7 @@ public class ConverterRegistry {
      */
     @SuppressWarnings("unchecked")
     private <S,T> void put(ClassPair<S,T> key, final ObjectConverter<? super S, ? extends T> converter) {
-        assert key.getClass() == ClassPair.class; // See SystemConverter.equals(Object)
+        assert key.getClass() == ClassPair.class;                   // See SystemConverter.equals(Object)
         assert key.cast(converter) != null : converter;
         assert Thread.holdsLock(converters);
         if (converter instanceof SystemConverter<?,?> &&
@@ -269,7 +269,7 @@ public class ConverterRegistry {
              * for the place where to put the given converter in the hierarchy of converters.
              */
             if (!isInitialized) {
-                isInitialized = true; // Before 'initialize()' for preventing infinite recursivity.
+                isInitialized = true;           // Before 'initialize()' for preventing infinite recursivity.
                 initialize();
             }
             for (Class<? super T> i=targetClass; i!=null && i!=stopAt; i=i.getSuperclass()) {
@@ -354,7 +354,7 @@ public class ConverterRegistry {
              * its source is more specific:  the source of 'converter' is of type <S> while the
              * source of 'existing' is of type <? super S>.
              */
-            assert converter.getSourceClass() == key.sourceClass; // Enforced by parameterized type.
+            assert converter.getSourceClass() == key.sourceClass;       // Enforced by parameterized type.
             if (existing.getSourceClass() == key.sourceClass) {
                 final boolean oldIsExact = isExactlyFor(existing,  key.targetClass);
                 final boolean newIsExact = isExactlyFor(converter, key.targetClass);
@@ -374,7 +374,7 @@ public class ConverterRegistry {
                      * checked the source class in the above 'if' statement.
                      */
                     converter = FallbackConverter.merge((ObjectConverter<S, ? extends T>) existing, converter);
-                    assert key.targetClass.isAssignableFrom(converter.getTargetClass()) : converter; // See FallbackConverter.merge javadoc.
+                    assert key.targetClass.isAssignableFrom(converter.getTargetClass()) : converter;    // See FallbackConverter.merge javadoc.
                 }
             }
         }

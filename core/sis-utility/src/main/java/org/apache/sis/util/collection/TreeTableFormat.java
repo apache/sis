@@ -414,8 +414,10 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                         parseValue(node, columns[ci], formats[ci], text.subSequence(indexOfValue, endOfValue).toString());
                     }
                     if (!found) break;
-                    // The end of this column will be the beginning of the next column,
-                    // after skipping the last character of the column separator.
+                    /*
+                     * The end of this column will be the beginning of the next column,
+                     * after skipping the last character of the column separator.
+                     */
                     indexOfValue = matcher.end();
                 }
             } catch (ParseException e) {

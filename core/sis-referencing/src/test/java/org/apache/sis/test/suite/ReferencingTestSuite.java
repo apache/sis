@@ -239,6 +239,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.Shapes2DTest.class,                 // Simpler than EnvelopesTest.
     org.apache.sis.geometry.EnvelopesTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
+    org.apache.sis.geometry.CoordinateFormatTest.class,
 
     org.apache.sis.distance.LatLonPointRadiusTest.class,        // Pending refactoring in a geometry package.
 

@@ -168,16 +168,16 @@ final class Reader extends StaxStreamReader {
         Version version = null;
         if (ver != null) {
             version = new Version(ver);
-            if (version.compareTo(Store.V1_0, 2) < 0 ||
-                version.compareTo(Store.V1_1, 2) > 0)
+            if (version.compareTo(StoreProvider.V1_0, 2) < 0 ||
+                version.compareTo(StoreProvider.V1_1, 2) > 0)
             {
                 throw new DataStoreContentException(errors().getString(
                         Errors.Keys.UnsupportedFormatVersion_2, owner.getFormatName(), version));
             }
         } else if (namespace != null) {
             switch (namespace) {
-                case Tags.NAMESPACE_V10: version = Store.V1_0; break;
-                case Tags.NAMESPACE_V11: version = Store.V1_1; break;
+                case Tags.NAMESPACE_V10: version = StoreProvider.V1_0; break;
+                case Tags.NAMESPACE_V11: version = StoreProvider.V1_1; break;
             }
         }
         /*

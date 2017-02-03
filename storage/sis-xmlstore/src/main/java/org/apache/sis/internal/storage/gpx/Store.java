@@ -51,16 +51,6 @@ import org.opengis.feature.FeatureType;
  */
 public final class Store extends StaxDataStore {
     /**
-     * The "1.0" version.
-     */
-    static final Version V1_0 = new Version("1.0");
-
-    /**
-     * The "1.1" version.
-     */
-    static final Version V1_1 = new Version("1.1");
-
-    /**
      * Version of the GPX file, or {@code null} if unknown.
      */
     Version version;
@@ -150,9 +140,9 @@ public final class Store extends StaxDataStore {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) try {
-            reader      = new Reader(this);
-            version     = reader.initialize(true);
-            metadata    = reader.getMetadata();
+            reader   = new Reader(this);
+            version  = reader.initialize(true);
+            metadata = reader.getMetadata();
         } catch (DataStoreException e) {
             throw e;
         } catch (URISyntaxException | RuntimeException e) {
@@ -179,11 +169,11 @@ public final class Store extends StaxDataStore {
     /**
      * Returns the stream of features.
      *
-     * @return a stream over all features in the CSV file.
+     * @return a stream over all features in the XML file.
      * @throws DataStoreException if an error occurred while creating the feature stream.
      */
     @Override
-    public synchronized Stream<Feature> getFeatures() throws DataStoreException {
+    public synchronized Stream<Feature> features() throws DataStoreException {
         Reader r = reader;
         reader = null;
         if (r == null) try {

@@ -43,12 +43,16 @@ import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.Markable;
 import org.apache.sis.internal.util.AbstractMap;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.storage.ConcurrentReadException;
 import org.apache.sis.storage.ConcurrentWriteException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.ForwardOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.util.logging.WarningListener;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -171,6 +175,12 @@ public abstract class StaxDataStore extends FeatureStore {
     private final ChannelFactory channelFactory;
 
     /**
+     * The number of spaces to use in indentations, or -1 if the XML output should not be formatted.
+     * This is ignored at reading time.
+     */
+    private final byte indentation;
+
+    /**
      * Whether the {@linkplain #stream} is currently in use by a {@link StaxStreamIO}. Value can be
      * one of {@link #START}, {@link #READING}, {@link #WRITING} or {@link #FINISHED} constants.
      */
@@ -191,10 +201,14 @@ public abstract class StaxDataStore extends FeatureStore {
      */
     protected StaxDataStore(final StaxDataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
+        final Integer indent;
         storage         = connector.getStorage();
         locale          = connector.getOption(OptionKey.LOCALE);
         timezone        = connector.getOption(OptionKey.TIMEZONE);
         encoding        = connector.getOption(OptionKey.ENCODING);
+        indent          = connector.getOption(OptionKey.INDENTATION);
+        indentation     = (indent == null) ? Constants.DEFAULT_INDENTATION
+                                           : (byte) Math.max(WKTFormat.SINGLE_LINE, Math.min(120, indent));
         configuration   = new Config();
         storageToWriter = OutputType.forType(storage.getClass());
         storageToReader = InputType.forType(storage.getClass());
@@ -340,6 +354,15 @@ public abstract class StaxDataStore extends FeatureStore {
         @Override
         public final Class<Object> getSourceClass() {
             return Object.class;
+        }
+
+        /**
+         * Do not format all properties for avoiding a never-ending loop.
+         */
+        @Debug
+        @Override
+        public String toString() {
+            return Utilities.toString(getClass(), "locale", locale, "timezone", timezone);
         }
     }
 
@@ -544,7 +567,10 @@ public abstract class StaxDataStore extends FeatureStore {
                 mark();
             }
         }
-        final XMLStreamWriter writer = type.create(this, outputOrFile);
+        XMLStreamWriter writer = type.create(this, outputOrFile);
+        if (indentation >= 0) {
+            writer = new FormattedWriter(writer, indentation);
+        }
         target.stream = output;
         state = WRITING;
         return writer;

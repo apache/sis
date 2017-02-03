@@ -66,6 +66,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @see DirectPosition1D
  * @see GeneralDirectPosition
  * @see Point2D
+ * @see CoordinateFormat
  */
 public class DirectPosition2D extends Point2D.Double implements DirectPosition, Cloneable {
     /**
@@ -156,7 +157,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @throws MismatchedDimensionException if the given point is not two-dimensional.
      *
      * @see #toString()
-     * @see org.apache.sis.measure.CoordinateFormat
+     * @see CoordinateFormat
      */
     public DirectPosition2D(final CharSequence wkt) throws IllegalArgumentException {
         final double[] ordinates = AbstractDirectPosition.parse(wkt);
