@@ -26,6 +26,7 @@ import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.Closeable;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Deprecable;
 
@@ -59,7 +60,7 @@ abstract strictfp class HTMLGenerator implements Closeable {
      * The number of space to add or remove in the {@linkplain #margin}
      * when new HTML elements are opened or closed.
      */
-    private static final int INDENTATION = 2;
+    private static final int INDENTATION = Constants.DEFAULT_INDENTATION;
 
     /**
      * Where to write the HTML page.

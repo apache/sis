@@ -38,6 +38,7 @@ import org.opengis.metadata.identification.Keywords;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.distribution.Format;
+import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
 
 import org.apache.sis.io.TableAppender;
@@ -46,6 +47,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
 
@@ -351,6 +353,17 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<Extent> getExtents() {
         return (bounds != null) ? Collections.<Extent>singleton(bounds) : super.getExtents();
+    }
+
+    /**
+     * Description of the spatial and temporal reference systems used in the dataset.
+     * This is fixed to WGS 84 in GPX files. We use (latitude, longitude) axis order.
+     *
+     * @return WGS 84 (EPSG:4326).
+     */
+    @Override
+    public Collection<ReferenceSystem> getReferenceSystemInfo() {
+        return Collections.<ReferenceSystem>singletonList(CommonCRS.WGS84.geographic());
     }
 
     /**

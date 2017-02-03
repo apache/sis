@@ -378,7 +378,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalUnicodeCodePoint_2 = 61;
 
         /**
-         * Can not use the “{1}” format with “{0}”.
+         * Can not use the {1} format with “{0}”.
          */
         public static final short IncompatibleFormat_2 = 62;
 

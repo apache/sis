@@ -1119,7 +1119,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * @return this envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      *
      * @see GeneralEnvelope#GeneralEnvelope(CharSequence)
-     * @see org.apache.sis.measure.CoordinateFormat
+     * @see CoordinateFormat
      * @see org.apache.sis.io.wkt
      */
     static String toString(final Envelope envelope, final boolean isSimplePrecision) {

@@ -105,6 +105,11 @@ final class LinearConverter extends AbstractConverter {
     private transient volatile BigDecimal scale10, offset10;
 
     /**
+     * The inverse of this unit converter. Computed when first needed.
+     */
+    private transient volatile LinearConverter inverse;
+
+    /**
      * Creates a new linear converter for the given scale and offset.
      * The complete formula applied is {@code y = (x*scale + offset) / divisor}.
      */
@@ -253,7 +258,11 @@ final class LinearConverter extends AbstractConverter {
      */
     @Override
     public synchronized UnitConverter inverse() {
-        return isIdentity() ? this : new LinearConverter(divisor, -offset, scale);
+        if (inverse == null) {
+            inverse = isIdentity() ? this : new LinearConverter(divisor, -offset, scale);
+            inverse.inverse = this;
+        }
+        return inverse;
     }
 
     /**

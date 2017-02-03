@@ -109,7 +109,7 @@ Console application.
       <groupId>org.apache.sis.storage</groupId>
       <artifactId>sis-xmlstore</artifactId>
       <version>${project.version}</version>
-      <scope>runtime</scope>
+      <scope>compile</scope>  <!-- Should be runtime after the hack in FormattedOutputCommand has been fixed. -->
     </dependency>
     <dependency>
       <groupId>org.apache.sis.storage</groupId>

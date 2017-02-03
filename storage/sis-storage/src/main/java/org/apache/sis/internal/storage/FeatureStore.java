@@ -84,6 +84,8 @@ public abstract class FeatureStore extends DataStore {
      *
      * @return a stream over all features in the data store.
      * @throws DataStoreException if an error occurred while creating the feature stream.
+     *
+     * @todo a future version of this method will take some kind of {@code Query} or {@code Filter} argument.
      */
-    public abstract Stream<AbstractFeature> getFeatures() throws DataStoreException;
+    public abstract Stream<AbstractFeature> features() throws DataStoreException;
 }

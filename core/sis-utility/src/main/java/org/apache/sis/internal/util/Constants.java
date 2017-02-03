@@ -37,6 +37,14 @@ import org.apache.sis.util.Static;
  */
 public final class Constants extends Static {
     /**
+     * The default indentation value to use in various text formats (both WKT and XML).
+     * We use a small value (2 instead of 4) because OGC's XML are very verbose.
+     *
+     * @see org.apache.sis.setup.OptionKey#INDENTATION
+     */
+    public static final byte DEFAULT_INDENTATION = 2;
+
+    /**
      * The {@value} code space.
      */
     public static final String EPSG = "EPSG";

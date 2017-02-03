@@ -19,6 +19,7 @@ package org.apache.sis.measure;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Locale;
+import java.text.ParsePosition;
 import java.lang.reflect.Field;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
@@ -281,6 +282,7 @@ public final strictfp class UnitFormatTest extends TestCase {
             fail("Should not accept unknown unit.");
         } catch (ParserException e) {
             final String message = e.getMessage();
+            assertTrue(message, message.contains("degree"));
             assertTrue(message, message.contains("foo"));
         }
         // Tests with localisation.
@@ -289,7 +291,8 @@ public final strictfp class UnitFormatTest extends TestCase {
             fail("Should not accept localized unit unless requested.");
         } catch (ParserException e) {
             final String message = e.getMessage();
-            assertTrue(message, message.contains("mètre cube"));
+            assertTrue(message, message.contains("mètre"));
+            assertTrue(message, message.contains("cube"));
         }
         f.setLocale(Locale.FRANCE);
         assertSame(Units.CUBIC_METRE, f.parse("mètre cube"));
@@ -392,6 +395,29 @@ public final strictfp class UnitFormatTest extends TestCase {
         assertSame(Units.PASCAL, f.parse("(kg)∕m∕s²"));
         assertSame(Units.VOLT,   f.parse("kg⋅m²∕(s³⋅A)"));
         assertSame(Units.VOLT,   f.parse("(kg)m²∕(s³⋅A)"));
+    }
+
+    /**
+     * Tests parsing a unit from another position than zero and verifies that {@code UnitFormat} detects
+     * correctly where the unit symbol ends.
+     */
+    @Test
+    @DependsOnMethod("testParseSymbol")
+    public void testParsePosition() {
+        final UnitFormat f = new UnitFormat(Locale.UK);
+        final ParsePosition pos = new ParsePosition(4);
+        assertSame(Units.CENTIMETRE, f.parse("ABC cm DEF", pos));
+        assertEquals("ParsePosition.getIndex()", 6, pos.getIndex());
+        assertEquals("ParsePosition.getErrorIndex()", -1, pos.getErrorIndex());
+        /*
+         * Adding "cm DEF" as a unit label should allow UnitFormat to recognize those characters.
+         * We associate a random unit to that label, just for testing purpose.
+         */
+        pos.setIndex(4);
+        f.label(Units.HECTARE, "cm DEF");
+        assertSame(Units.HECTARE, f.parse("ABC cm DEF", pos));
+        assertEquals("ParsePosition.getIndex()", 10, pos.getIndex());
+        assertEquals("ParsePosition.getErrorIndex()", -1, pos.getErrorIndex());
     }
 
     /**

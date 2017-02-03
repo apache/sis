@@ -42,6 +42,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @see DirectPosition2D
  * @see GeneralDirectPosition
+ * @see CoordinateFormat
  */
 public class DirectPosition1D extends AbstractDirectPosition implements Serializable, Cloneable {
     /**
@@ -99,7 +100,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @throws MismatchedDimensionException if the given point is not one-dimensional.
      *
      * @see #toString()
-     * @see org.apache.sis.measure.CoordinateFormat
+     * @see CoordinateFormat
      */
     public DirectPosition1D(final CharSequence wkt) throws IllegalArgumentException {
         final double[] ordinates = parse(wkt);

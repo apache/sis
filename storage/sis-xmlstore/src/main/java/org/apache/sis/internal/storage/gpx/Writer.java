@@ -67,7 +67,7 @@ final class Writer extends StaxStreamWriter {
         super(owner);
         this.metadata = metadata;
         final Version ver = owner.version;
-        if (ver != null && ver.compareTo(Store.V1_0, 2) <= 0) {
+        if (ver != null && ver.compareTo(StoreProvider.V1_0, 2) <= 0) {
             version = 0;
         } else {
             version = 1;
@@ -86,8 +86,8 @@ final class Writer extends StaxStreamWriter {
         final Version ver;
         switch (version) {
             default:
-            case 1: ver = Store.V1_1; namespace = Tags.NAMESPACE_V11; break;
-            case 0: ver = Store.V1_0; namespace = Tags.NAMESPACE_V10; break;
+            case 1: ver = StoreProvider.V1_1; namespace = Tags.NAMESPACE_V11; break;
+            case 0: ver = StoreProvider.V1_0; namespace = Tags.NAMESPACE_V10; break;
         }
         super.writeStartDocument();
         writer.setDefaultNamespace(namespace);

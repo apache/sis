@@ -139,7 +139,7 @@ public final strictfp class ReaderTest extends TestCase {
             verifyMetadata(md, 1);
             assertNull(md.author.link);
             assertNull(md.copyright);
-            assertEquals("version", Store.V1_0, reader.getVersion());
+            assertEquals("version", StoreProvider.V1_0, reader.getVersion());
         }
     }
 
@@ -157,7 +157,7 @@ public final strictfp class ReaderTest extends TestCase {
             assertEquals("Apache", md.copyright.author);
             assertEquals(2004, md.copyright.year.intValue());
             assertStringEquals("http://www.apache.org/licenses/LICENSE-2.0", md.copyright.license);
-            assertEquals("version", Store.V1_1, reader.getVersion());
+            assertEquals("version", StoreProvider.V1_1, reader.getVersion());
         }
     }
 
@@ -222,8 +222,8 @@ public final strictfp class ReaderTest extends TestCase {
     public void testWayPoint100() throws DataStoreException {
         try (final Store reader = create("1.0/waypoint.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
-            assertEquals("version", Store.V1_0, reader.getVersion());
-            try (final Stream<AbstractFeature> features = reader.getFeatures()) {
+            assertEquals("version", StoreProvider.V1_0, reader.getVersion());
+            try (final Stream<AbstractFeature> features = reader.features()) {
                 final Iterator<AbstractFeature> it = features.iterator();
                 verifyPoint(it.next(), 0, false);
                 verifyPoint(it.next(), 1, false);
@@ -243,8 +243,8 @@ public final strictfp class ReaderTest extends TestCase {
     public void testWayPoint110() throws DataStoreException {
         try (final Store reader = create("1.1/waypoint.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
-            assertEquals("version", Store.V1_1, reader.getVersion());
-            try (final Stream<AbstractFeature> features = reader.getFeatures()) {
+            assertEquals("version", StoreProvider.V1_1, reader.getVersion());
+            try (final Stream<AbstractFeature> features = reader.features()) {
                 final Iterator<AbstractFeature> it = features.iterator();
                 verifyPoint(it.next(), 0, true);
                 verifyPoint(it.next(), 1, true);
@@ -264,8 +264,8 @@ public final strictfp class ReaderTest extends TestCase {
     public void testRoute100() throws DataStoreException {
         try (final Store reader = create("1.0/route.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
-            assertEquals("version", Store.V1_0, reader.getVersion());
-            try (final Stream<AbstractFeature> features = reader.getFeatures()) {
+            assertEquals("version", StoreProvider.V1_0, reader.getVersion());
+            try (final Stream<AbstractFeature> features = reader.features()) {
                 final Iterator<AbstractFeature> it = features.iterator();
                 verifyRoute(it.next(), false, 1);
                 verifyEmpty(it.next(), "rtept");
@@ -284,7 +284,7 @@ public final strictfp class ReaderTest extends TestCase {
     public void testRoute110() throws DataStoreException {
         try (final Store reader = create("1.1/route.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
-            assertEquals("version", Store.V1_1, reader.getVersion());
+            assertEquals("version", StoreProvider.V1_1, reader.getVersion());
             verifyRoute110(reader);
         }
     }
@@ -294,7 +294,7 @@ public final strictfp class ReaderTest extends TestCase {
      * This verification is shared by {@link #testRoute110()} and {@link #testSequentialReads()}.
      */
     static void verifyRoute110(final Store reader) throws DataStoreException {
-        try (final Stream<AbstractFeature> features = reader.getFeatures()) {
+        try (final Stream<AbstractFeature> features = reader.features()) {
             final Iterator<AbstractFeature> it = features.iterator();
             verifyRoute(it.next(), true, 3);
             verifyEmpty(it.next(), "rtept");
@@ -371,8 +371,8 @@ public final strictfp class ReaderTest extends TestCase {
     public void testTrack100() throws DataStoreException {
         try (final Store reader = create("1.0/track.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
-            assertEquals("version", Store.V1_0, reader.getVersion());
-            try (final Stream<AbstractFeature> features = reader.getFeatures()) {
+            assertEquals("version", StoreProvider.V1_0, reader.getVersion());
+            try (final Stream<AbstractFeature> features = reader.features()) {
                 final Iterator<AbstractFeature> it = features.iterator();
                 verifyTrack(it.next(), false, 1);
                 verifyEmpty(it.next(), "trkseg");
@@ -391,8 +391,8 @@ public final strictfp class ReaderTest extends TestCase {
     public void testTrack110() throws DataStoreException {
         try (final Store reader = create("1.1/track.xml")) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
-            assertEquals("version", Store.V1_1, reader.getVersion());
-            try (final Stream<AbstractFeature> features = reader.getFeatures()) {
+            assertEquals("version", StoreProvider.V1_1, reader.getVersion());
+            try (final Stream<AbstractFeature> features = reader.features()) {
                 final Iterator<AbstractFeature> it = features.iterator();
                 verifyTrack(it.next(), true, 3);
                 verifyEmpty(it.next(), "trkseg");
@@ -583,8 +583,8 @@ public final strictfp class ReaderTest extends TestCase {
             verifyRoute110(reader);
             /*
              * Ask for metadata only after a first read, for testing the way the store manages readers.
-             * The new 'getFeatures()' call should reuse the reader created by 'getMetadata()' - this
-             * can be verified by stepping in the code with a debugger.
+             * The new 'features()' call should reuse the reader created by 'getMetadata()' - this can
+             * be verified by stepping in the code with a debugger.
              */
             md = (Metadata) reader.getMetadata();
             verifyRoute110(reader);
@@ -607,13 +607,13 @@ public final strictfp class ReaderTest extends TestCase {
     @DependsOnMethod("testSequentialReads")
     public void testConcurrentReads() throws DataStoreException {
         try (final Store reader = createFromURL()) {
-            final Stream<AbstractFeature>   f1 = reader.getFeatures();
+            final Stream<AbstractFeature>   f1 = reader.features();
             final Iterator<AbstractFeature> i1 = f1.iterator();
             verifyRoute(i1.next(), true, 3);
-            final Stream<AbstractFeature>   f2 = reader.getFeatures();
+            final Stream<AbstractFeature>   f2 = reader.features();
             final Iterator<AbstractFeature> i2 = f2.iterator();
             verifyEmpty(i1.next(), "rtept");
-            final Stream<AbstractFeature>   f3 = reader.getFeatures();
+            final Stream<AbstractFeature>   f3 = reader.features();
             final Iterator<AbstractFeature> i3 = f3.iterator();
             verifyRoute(i2.next(), true, 3);
             verifyRoute(i3.next(), true, 3);
