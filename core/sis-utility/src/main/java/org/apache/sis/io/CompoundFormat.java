@@ -209,25 +209,28 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *   <li>The {@code pos} index is left unchanged</li>
      *   <li>The {@code pos} {@linkplain ParsePosition#getErrorIndex() error index}
      *       is set to the beginning of the unparsable character sequence.</li>
-     *   <li>A {@code ParseException} is thrown with an
-     *       {@linkplain ParseException#getErrorOffset() error offset} relative to the above-cited
-     *       {@code pos} error index. Consequently the exact error location is <var>{@code pos}
-     *       error index</var> + <var>{@code ParseException} error offset</var>.</li>
+     *   <li>One of the following actions is taken (at implementation choice):
+     *     <ul>
+     *       <li>this method returns {@code null}, or</li>
+     *       <li>a {@code ParseException} is thrown with an {@linkplain ParseException#getErrorOffset() error offset}
+     *           set to the index of the first unparsable character. This is usually the same information than the
+     *           above-cited {@code pos} error index, but implementations are free to adopt a slightly different policy.</li>
+     *     </ul>
+     *   </li>
      * </ul>
      *
      * <div class="note"><b>Example:</b>
      * if parsing of the {@code "30.0 40,0"} coordinate fails on the coma in the last number, then the {@code pos}
-     * error index will be set to 5 (the beginning of the {@code "40.0"} character sequence) while the
-     * {@link ParseException} error offset will be set to 2 (the coma position relative the beginning
-     * of the {@code "40.0"} character sequence).</div>
+     * {@linkplain ParsePosition#getErrorIndex() error index} may be set to 5 (the beginning of the {@code "40.0"}
+     * character sequence) or to 7 (the coma position), depending on the implementation.</div>
      *
-     * This error offset policy is a consequence of the compound nature of {@code CompoundFormat},
-     * since the exception may have been produced by a call to {@link Format#parseObject(String)}
-     * on one of the {@linkplain #getFormat(Class) sub-formats} used by this {@code CompoundFormat}.
+     * Most implementations never return {@code null}. However some implementations may choose to return {@code null}
+     * if they can determine that the given text is not a supported format and reserve {@code ParseException} for the
+     * cases where the text seems to be the expected format but contains a malformed element.
      *
      * @param  text  the character sequence for the object to parse.
      * @param  pos   the position where to start the parsing.
-     * @return the parsed object.
+     * @return the parsed object, or {@code null} if the text is not recognized.
      * @throws ParseException if an error occurred while parsing the object.
      */
     public abstract T parse(CharSequence text, ParsePosition pos) throws ParseException;
@@ -253,8 +256,6 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * </ul>
      *
      * The default implementation delegates to {@link #parse(CharSequence, ParsePosition)}.
-     * In case of failure, the {@linkplain ParseException exception error offset} is added
-     * to the {@code pos} error index.
      *
      * @param  text  the string representation of the object to parse.
      * @param  pos   the position where to start the parsing.
@@ -265,7 +266,9 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
         try {
             return parse(text, pos);
         } catch (ParseException e) {
-            pos.setErrorIndex(Math.max(pos.getIndex(), pos.getErrorIndex()) + e.getErrorOffset());
+            if (pos.getErrorIndex() < 0) {
+                pos.setErrorIndex(e.getErrorOffset());
+            }
             return null;
         }
     }

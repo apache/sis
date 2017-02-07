@@ -31,6 +31,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -48,7 +49,7 @@ import static java.lang.Math.*;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 public class StatisticsFormat extends TabularFormat<Statistics> {
@@ -209,14 +210,15 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     }
 
     /**
-     * Not yet implemented.
+     * Not yet supported.
      *
      * @return currently never return.
-     * @throws ParseException currently never thrown.
+     * @throws ParseException currently always thrown.
      */
     @Override
     public Statistics parse(CharSequence text, ParsePosition pos) throws ParseException {
-        throw new UnsupportedOperationException();
+        throw new ParseException(Errors.getResources(getLocale())
+                .getString(Errors.Keys.UnsupportedOperation_1, "parse"), pos.getIndex());
     }
 
     /**

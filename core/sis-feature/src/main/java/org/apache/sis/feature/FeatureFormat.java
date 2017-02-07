@@ -501,7 +501,7 @@ header: for (int i=0; ; i++) {
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
         throw new ParseException(Errors.getResources(displayLocale)
-                .getString(Errors.Keys.UnsupportedOperation_1, "parse"), 0);
+                .getString(Errors.Keys.UnsupportedOperation_1, "parse"), pos.getIndex());
     }
 
     /**
