@@ -720,8 +720,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         /**
          * Default constructor.
          */
-        public Inverse() {
-            NormalizedProjection.this.super();
+        Inverse() {
         }
 
         /**
