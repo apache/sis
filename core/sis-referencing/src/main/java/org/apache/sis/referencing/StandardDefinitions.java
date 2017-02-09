@@ -148,7 +148,7 @@ final class StandardDefinitions {
             throw new IllegalStateException(e);     // Should not happen with SIS implementation.
         }
         final ParameterValueGroup parameters = method.getParameters().createValue();
-        String name = TransverseMercator.setParameters(parameters, true, latitude, longitude);
+        String name = TransverseMercator.Zoner.UTM.setParameters(parameters, true, latitude, longitude);
         final DefaultConversion conversion = new DefaultConversion(properties(0, name, null, false), method, null, parameters);
 
         name = baseCRS.getName().getCode() + " / " + name;
