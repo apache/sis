@@ -565,25 +565,16 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**
      * Parses a coordinate from the given character sequence.
      * This method presumes that the coordinate reference system is the {@linkplain #getDefaultCRS() default CRS}.
-     * The parsing begins at the index given by the {@code pos} argument. If parsing succeeds, then:
-     *
-     * <ul>
-     *   <li>The {@code pos} {@linkplain ParsePosition#getIndex() index}
-     *       is updated to the index after the last ordinate value.</li>
-     *   <li>The parsed coordinate is returned.</li>
-     * </ul>
-     *
-     * If parsing fails, then:
-     *
-     * <ul>
-     *   <li>The {@code pos} index is left unchanged</li>
-     *   <li>The {@code pos} {@linkplain ParsePosition#getErrorIndex() error index}
-     *       is set to the beginning of the unparsable ordinate value.</li>
-     * </ul>
+     * The parsing begins at the {@linkplain ParsePosition#getIndex() index} given by the {@code pos} argument.
+     * If parsing succeeds, then the {@code pos} index is updated to the index after the last ordinate value and
+     * the parsed coordinate is returned. Otherwise (if parsing fails), the {@code pos} index is left unchanged,
+     * the {@code pos} {@linkplain ParsePosition#getErrorIndex() error index} is set to the index of the first
+     * unparsable character and an exception is thrown with a similar {@linkplain ParseException#getErrorOffset()
+     * error index}.
      *
      * @param  text  the character sequence for the coordinate to parse.
      * @param  pos   the index where to start the parsing.
-     * @return the parsed coordinate.
+     * @return the parsed coordinate (never {@code null}).
      * @throws ParseException if an error occurred while parsing the coordinate.
      */
     @Override

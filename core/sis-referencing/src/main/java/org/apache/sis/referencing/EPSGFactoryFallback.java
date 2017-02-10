@@ -252,7 +252,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
                     } else {
                         continue;
                     }
-                    return crs.UTM(latitude, TransverseMercator.centralMeridian(zone));
+                    return crs.UTM(latitude, TransverseMercator.Zoner.UTM.centralMeridian(zone));
                 }
             }
             if ((kind & (DATUM | CRS)) != 0) {
