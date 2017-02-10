@@ -930,7 +930,7 @@ public enum CommonCRS {
         ArgumentChecks.ensureBetween("latitude",   Latitude.MIN_VALUE,     Latitude.MAX_VALUE,     latitude);
         ArgumentChecks.ensureBetween("longitude", -Formulas.LONGITUDE_MAX, Formulas.LONGITUDE_MAX, longitude);
         final boolean isSouth = MathFunctions.isNegative(latitude);
-        final int zone = TransverseMercator.zone(longitude);
+        final int zone = TransverseMercator.Zoner.UTM.zone(longitude);
         final Integer key = isSouth ? -zone : zone;
         ProjectedCRS crs;
         synchronized (cachedUTM) {

@@ -107,7 +107,6 @@ public class TransverseMercator extends ConformalProjection {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @SuppressWarnings("fallthrough")
     @Workaround(library="JDK", version="1.7")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final boolean isSouth = identMatch(method, "(?i).*\\bSouth\\b.*", TransverseMercatorSouth.IDENTIFIER);
@@ -126,11 +125,10 @@ public class TransverseMercator extends ConformalProjection {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Creates a new Transverse Mercator projection from the given initializer.
+     * This constructor is used also by {@link ZonedGridSystem}.
      */
-    @Workaround(library="JDK", version="1.7")
-    private TransverseMercator(final Initializer initializer) {
+    TransverseMercator(final Initializer initializer) {
         super(initializer);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         /*
@@ -185,7 +183,7 @@ public class TransverseMercator extends ConformalProjection {
          *
          * Denormalization
          *   - Scale x and y by B.
-         *   - Subtract M0 to the northing.
+         *   - Subtract M₀ to the northing.
          *   - Multiply by the scale factor (done by the super-class constructor).
          *   - Add false easting and false northing (done by the super-class constructor).
          */

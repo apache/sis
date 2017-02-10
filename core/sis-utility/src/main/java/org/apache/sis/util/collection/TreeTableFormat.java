@@ -324,7 +324,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
 
     /**
      * Creates a tree from the given character sequence,
-     * or returns {@code null} if an error occurred while parsing the characters.
+     * or returns {@code null} if the given text does not look like a tree for this method.
      * This method can parse the trees created by the {@code format(…)} methods
      * defined in this class.
      *
@@ -338,10 +338,21 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      *     </ol>
      *   </li>
      *   <li>The number of spaces and drawing characters before the node values determines the node
-     *       indentation. This indentation doesn't need to be a factor of the {@link #getIndentation()}
+     *       indentation. This indentation does not need to be a factor of the {@link #getIndentation()}
      *       value, but must be consistent across all the parsed tree.</li>
      *   <li>The indentation determines the parent of each node.</li>
      *   <li>Parsing stops at first empty line (ignoring whitespaces), or at the end of the given text.</li>
+     * </ul>
+     *
+     * <div class="section">Error index</div>
+     * If the given text does not seem to be a tree table, then this method returns {@code null}.
+     * Otherwise if parsing started but failed, then:
+     *
+     * <ul>
+     *   <li>{@link ParsePosition#getErrorIndex()} will give the index at the beginning
+     *       of line or beginning of cell where the error occurred, and</li>
+     *   <li>{@link ParseException#getErrorOffset()} will give either the same value,
+     *       or a slightly more accurate value inside the cell.</li>
      * </ul>
      *
      * @param  text  the character sequence for the tree to parse.
@@ -403,26 +414,31 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
              * text are not parsed (the value is left to null).
              */
             final TreeTable.Node node = new DefaultTreeTable.Node(table);
-            try {
-                matcher.region(indexOfValue, endOfLine);
-                for (int ci=0; ci<columns.length; ci++) {
-                    final boolean found = matcher.find();
-                    int endOfColumn = found ? matcher.start() : endOfLine;
-                    indexOfValue   = CharSequences.skipLeadingWhitespaces (text, indexOfValue, endOfColumn);
-                    int endOfValue = CharSequences.skipTrailingWhitespaces(text, indexOfValue, endOfColumn);
-                    if (endOfValue > indexOfValue) {
-                        parseValue(node, columns[ci], formats[ci], text.subSequence(indexOfValue, endOfValue).toString());
+            matcher.region(indexOfValue, endOfLine);
+            for (int ci=0; ci<columns.length; ci++) {
+                final boolean found = matcher.find();
+                int endOfColumn = found ? matcher.start() : endOfLine;
+                indexOfValue   = CharSequences.skipLeadingWhitespaces (text, indexOfValue, endOfColumn);
+                int endOfValue = CharSequences.skipTrailingWhitespaces(text, indexOfValue, endOfColumn);
+                if (endOfValue > indexOfValue) {
+                    final String valueText = text.subSequence(indexOfValue, endOfValue).toString();
+                    try {
+                        parseValue(node, columns[ci], formats[ci], valueText);
+                    } catch (ParseException | ClassCastException e) {
+                        pos.setErrorIndex(indexOfValue);                                    // See method javadoc.
+                        if (e instanceof ParseException) {
+                            indexOfValue += ((ParseException) e).getErrorOffset();
+                        }
+                        throw new LocalizedParseException(getDisplayLocale(), Errors.Keys.UnparsableStringForClass_2,
+                                new Object[] {columns[ci].getElementType(), valueText}, indexOfValue).initCause(e);
                     }
-                    if (!found) break;
-                    /*
-                     * The end of this column will be the beginning of the next column,
-                     * after skipping the last character of the column separator.
-                     */
-                    indexOfValue = matcher.end();
                 }
-            } catch (ParseException e) {
-                pos.setErrorIndex(indexOfValue);
-                throw e;
+                if (!found) break;
+                /*
+                 * The end of this column will be the beginning of the next column,
+                 * after skipping the last character of the column separator.
+                 */
+                indexOfValue = matcher.end();
             }
             /*
              * If this is the first node created so far, it will be the root.
@@ -441,7 +457,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                     if (--indentationLevel < 0) {
                         pos.setErrorIndex(indexOfLineStart);
                         throw new LocalizedParseException(getDisplayLocale(),
-                                Errors.Keys.NodeHasNoParent_1, new Object[] {node}, 0);
+                                Errors.Keys.NodeHasNoParent_1, new Object[] {node}, indexOfLineStart);
                     }
                     lastNode = lastNode.getParent();
                 }
@@ -455,7 +471,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                     if (parent == null) {
                         pos.setErrorIndex(indexOfLineStart);
                         throw new LocalizedParseException(getDisplayLocale(),
-                                Errors.Keys.NodeHasNoParent_1, new Object[] {node}, 0);
+                                Errors.Keys.NodeHasNoParent_1, new Object[] {node}, indexOfLineStart);
                     }
                     parent.getChildren().add(node);
                 } else if (i > p) {
@@ -485,12 +501,16 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * Parses the given string using a format appropriate for the type of values in
      * the given column, and stores the value in the given node.
      *
+     * <p>This work is done in a separated method instead than inlined in the
+     * {@code parse(…)} method because of the {@code <V>} parametric value.</p>
+     *
      * @param  V        the type of values in the given column.
      * @param  node     the node in which to set the value.
      * @param  column   the column in which to set the value.
      * @param  format   the format to use for parsing the value, or {@code null}.
      * @param  text     the textual representation of the value.
      * @throws ParseException if an error occurred while parsing.
+     * @throws ClassCastException if the parsed value is not of the expected type.
      */
     private <V> void parseValue(final TreeTable.Node node, final TableColumn<V> column,
             final Format format, final String text) throws ParseException

@@ -339,7 +339,6 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
          * Constructs an inverse math transform.
          */
         protected Inverse() {
-            AbstractMathTransform2D.this.super();
         }
 
         /**

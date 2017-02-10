@@ -703,10 +703,12 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Creates an object from the given character sequence.
      * The parsing begins at the index given by the {@code pos} argument.
+     * After successful parsing, {@link ParsePosition#getIndex()} gives the position after the last parsed character.
+     * In case of error, {@link ParseException#getErrorOffset()} gives the position of the first illegal character.
      *
      * @param  wkt  the character sequence for the object to parse.
      * @param  pos  the position where to start the parsing.
-     * @return the parsed object.
+     * @return the parsed object (never {@code null}).
      * @throws ParseException if an error occurred while parsing the WKT.
      */
     @Override
