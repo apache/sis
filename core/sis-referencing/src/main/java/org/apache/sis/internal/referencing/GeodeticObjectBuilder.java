@@ -250,7 +250,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         ArgumentChecks.ensureBetween("latitude",   Latitude.MIN_VALUE,     Latitude.MAX_VALUE,     latitude);
         ArgumentChecks.ensureBetween("longitude", -Formulas.LONGITUDE_MAX, Formulas.LONGITUDE_MAX, longitude);
         setConversionMethod(TransverseMercator.NAME);
-        setConversionName(TransverseMercator.setParameters(parameters, isUTM, latitude, longitude));
+        setConversionName(TransverseMercator.Zoner.UTM.setParameters(parameters, isUTM, latitude, longitude));
         return this;
     }
 

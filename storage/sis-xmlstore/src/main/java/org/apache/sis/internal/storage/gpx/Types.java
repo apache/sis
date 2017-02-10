@@ -28,6 +28,7 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.content.ContentInformation;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.FeatureNaming;
+import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.FeatureOperations;
@@ -41,7 +42,6 @@ import org.apache.sis.util.Static;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.Temporal;
-import org.apache.sis.storage.IllegalNameException;
 import org.opengis.feature.FeatureType;
 
 
