@@ -16,6 +16,9 @@
  */
 package org.apache.sis.measure;
 
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.cs.AxisDirection;
+
 
 /**
  * A latitude angle in decimal degrees.
@@ -47,7 +50,7 @@ package org.apache.sis.measure;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  *
  * @see Longitude
@@ -101,6 +104,29 @@ public final class Latitude extends Angle {
      */
     public Latitude(final String string) throws NumberFormatException {
         super(string);
+    }
+
+    /**
+     * Constructs a newly allocated object containing the latitude value of the given position.
+     * For this method, the latitude value is defined as the angular value associated to the first axis
+     * oriented toward {@linkplain AxisDirection#NORTH North} or {@linkplain AxisDirection#SOUTH South}.
+     * Note that this is not necessarily the <cite>geodetic latitudes</cite> used in
+     * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS};
+     * it may also be <cite>geocentric latitudes</cite>.
+     *
+     * <p>If the axis direction is South, then the sign of the ordinate value is inverted.
+     * If the ordinate value uses another angular units than {@linkplain Units#DEGREE degrees},
+     * then a unit conversion is applied.</p>
+     *
+     * @param  position  the coordinate from which to extract the latitude value in degrees.
+     * @throws IllegalArgumentException if the given coordinate it not associated to a CRS,
+     *         or if no axis oriented toward North or South is found, or if that axis does
+     *         not use {@linkplain Units#isAngular angular units}.
+     *
+     * @since 0.8
+     */
+    public Latitude(final DirectPosition position) throws IllegalArgumentException {
+        super(valueOf(position, AxisDirection.NORTH, AxisDirection.SOUTH));
     }
 
     /**
