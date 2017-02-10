@@ -23,7 +23,16 @@ import java.util.FormattableFlags;
 import java.text.Format;
 import java.text.ParseException;
 import java.io.Serializable;
+import javax.measure.Unit;
+import javax.measure.IncommensurableException;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Classes;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.math.MathFunctions.isNegative;
@@ -58,7 +67,7 @@ import static org.apache.sis.math.MathFunctions.isNegative;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  *
  * @see Latitude
@@ -129,6 +138,47 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
         } else {
             throw new NumberFormatException(text);
         }
+    }
+
+    /**
+     * Returns the angular value of the axis having the given direction.
+     * This helper method is used for subclass constructors expecting a {@link DirectPosition} argument.
+     *
+     * @param  position  the position from which to get an angular value.
+     * @param  positive  axis direction of positive values.
+     * @param  negative  axis direction of negative values.
+     * @return angular value in degrees.
+     * @throws IllegalArgumentException if the given coordinate it not associated to a CRS,
+     *         or if no axis oriented toward the given directions is found, or if that axis
+     *         does not use {@linkplain Units#isAngular angular units}.
+     */
+    static double valueOf(final DirectPosition position, final AxisDirection positive, final AxisDirection negative) {
+        final CoordinateReferenceSystem crs = position.getCoordinateReferenceSystem();
+        if (crs == null) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedCRS));
+        }
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        final int dimension = cs.getDimension();
+        IncommensurableException cause = null;
+        for (int i=0; i<dimension; i++) {
+            final CoordinateSystemAxis axis = cs.getAxis(i);
+            final AxisDirection dir = axis.getDirection();
+            final boolean isPositive = dir.equals(positive);
+            if (isPositive || dir.equals(negative)) {
+                double value = position.getOrdinate(i);
+                if (!isPositive) value = -value;
+                final Unit<?> unit = axis.getUnit();
+                if (unit != Units.DEGREE) try {
+                    value = unit.getConverterToAny(Units.DEGREE).convert(value);
+                } catch (IncommensurableException e) {
+                    cause = e;
+                    break;
+                }
+                return value;
+            }
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1,
+                Classes.getLeafInterfaces(crs.getClass(), CoordinateReferenceSystem.class)[0]), cause);
     }
 
     /**

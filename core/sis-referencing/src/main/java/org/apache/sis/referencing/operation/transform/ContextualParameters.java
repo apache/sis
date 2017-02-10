@@ -127,7 +127,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
@@ -501,24 +501,33 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#createMapProjection(MathTransformFactory)
      */
-    public synchronized MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)
+    public MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)
             throws FactoryException
     {
-        if (!isFrozen) {
-            freeze();
+        final MathTransform n, d;
+        synchronized (this) {
+            if (!isFrozen) {
+                freeze();
+            }
+            /*
+             * Creates the ConcatenatedTransform, letting the factory returns the cached instance
+             * if the caller already invoked this method previously (which usually do not happen).
+             */
+            n = factory.createAffineTransform(normalize);
+            d = factory.createAffineTransform(denormalize);
+            Matrix m;
+            if ((m = MathTransforms.getMatrix(n)) != null)   normalize = m;
+            if ((m = MathTransforms.getMatrix(d)) != null) denormalize = m;
         }
-        /*
-         * Creates the ConcatenatedTransform, letting the factory returns the cached instance
-         * if the caller already invoked this method previously (which usually do not happen).
-         */
-        final MathTransform n = factory.createAffineTransform(normalize);
-        final MathTransform d = factory.createAffineTransform(denormalize);
-        Matrix m;
-        if ((m = MathTransforms.getMatrix(n)) != null)   normalize = m;
-        if ((m = MathTransforms.getMatrix(d)) != null) denormalize = m;
         if (kernel == null) {   // Undocumented feature useful for MolodenskyTransform constructor.
             return null;
         }
+        /*
+         * Following call must be outside the synchronized block for avoiding dead-lock. This is because the
+         * factory typically contains a WeakHashSet, which invoke in turn the 'equals' methods in this class
+         * (indirectly, through 'kernel' comparison). We need to be outside the synchronized block for having
+         * the locks taken in same order (WeakHashSet lock before the ContextualParameters lock).
+         */
         return factory.createConcatenatedTransform(factory.createConcatenatedTransform(n, kernel), d);
     }
 

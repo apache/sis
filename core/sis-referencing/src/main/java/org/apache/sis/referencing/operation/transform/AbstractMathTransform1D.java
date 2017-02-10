@@ -176,7 +176,6 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
          * Constructs an inverse math transform.
          */
         protected Inverse() {
-            AbstractMathTransform1D.this.super();
         }
 
         /**

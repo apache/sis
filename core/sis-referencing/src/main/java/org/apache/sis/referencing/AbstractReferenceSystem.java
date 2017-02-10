@@ -17,6 +17,7 @@
 package org.apache.sis.referencing;
 
 import java.util.Map;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -33,9 +34,6 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
