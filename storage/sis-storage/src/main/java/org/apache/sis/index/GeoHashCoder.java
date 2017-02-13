@@ -19,7 +19,9 @@ package org.apache.sis.index;
 import java.io.Serializable;
 import java.text.ParseException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -32,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Chris Mattmann (JPL)
  * @since   0.1
- * @version 0.3
+ * @version 0.8
  * @module
  *
  * @see <a href="http://en.wikipedia.org/wiki/Geohash">Wikipedia: Geohash</a>
@@ -124,11 +126,18 @@ public class GeoHashCoder implements Serializable {
     private transient char[] buffer;
 
     /**
+     * The coordinate reference system to assign to the decoded direct positions,
+     * or {@code null} if none.
+     */
+    private final CoordinateReferenceSystem crs;
+
+    /**
      * Creates a new geohash coder/decoder initialized to the default precision for {@link Format#BASE32}.
      */
     public GeoHashCoder() {
         format = Format.BASE32;
         precision = 12;
+        crs = CommonCRS.defaultGeographic();
     }
 
     /**
@@ -164,7 +173,7 @@ public class GeoHashCoder implements Serializable {
     /**
      * Sets the length of geohashes strings to be encoded by the {@link #encode(DirectPosition)} method.
      *
-     * @param  precision  he new length of geohashes strings.
+     * @param  precision  the new length of geohashes strings.
      */
     public void setPrecision(final int precision) {
         ArgumentChecks.ensureBetween("precision", 1, 255, precision);
@@ -250,7 +259,7 @@ public class GeoHashCoder implements Serializable {
     /**
      * Decodes the given geohash into a longitude and a latitude.
      *
-     * @param geohash Geohash string to decode.
+     * @param  geohash  geohash string to decode.
      * @return a new position with the longitude at ordinate 0 and latitude at ordinate 1.
      * @throws ParseException if an error occurred while parsing the given string.
      */
@@ -307,7 +316,7 @@ public class GeoHashCoder implements Serializable {
                 isEven = !isEven;
             } while ((mask >>>= 1) != 0);
         }
-        return new DirectPosition2D((xmin + xmax) / 2,
-                                    (ymin + ymax) / 2);
+        return new DirectPosition2D(crs, (xmin + xmax) / 2,
+                                         (ymin + ymax) / 2);
     }
 }

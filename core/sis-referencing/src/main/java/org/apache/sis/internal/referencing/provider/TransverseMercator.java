@@ -157,7 +157,7 @@ public final class TransverseMercator extends AbstractMercator {
 
         /**
          * Computes zones for the Modified Transverse Mercator (MTM) projections.
-         * This projection is in used in Canada only.
+         * This projection is used in Canada only.
          *
          * <blockquote><table class="sis">
          *   <caption>Modified Transverse Mercator parameters</caption>
@@ -220,8 +220,8 @@ public final class TransverseMercator extends AbstractMercator {
          *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
          *   <tr><td>Latitude of natural origin</td>     <td>Given latitude, or 0° if zoned projection</td></tr>
          *   <tr><td>Longitude of natural origin</td>    <td>Given longitude, optionally snapped to a zone central meridian</td></tr>
-         *   <tr><td>Scale factor at natural origin</td> <td>0.9996</td></tr>
-         *   <tr><td>False easting</td>                  <td>500000 metres</td></tr>
+         *   <tr><td>Scale factor at natural origin</td> <td>0.9996 for UTM or 0.9999 for MTM</td></tr>
+         *   <tr><td>False easting</td>                  <td>500000 metres for UTM or 304800 metres for MTM</td></tr>
          *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
          * </table></blockquote>
          *
@@ -232,7 +232,7 @@ public final class TransverseMercator extends AbstractMercator {
          * @return a name like <cite>"Transverse Mercator"</cite> or <cite>"UTM zone 10N"</cite>,
          *         depending on the arguments given to this method.
          */
-        public String setParameters(final ParameterValueGroup group,
+        public final String setParameters(final ParameterValueGroup group,
                 final boolean zoned, double latitude, double longitude)
         {
             final boolean isSouth = MathFunctions.isNegative(latitude);
@@ -256,14 +256,14 @@ public final class TransverseMercator extends AbstractMercator {
         }
 
         /**
-         * If the given parameter values are those of an UTM projection, returns the zone number (negative if South).
+         * If the given parameter values are those of a zoned projection, returns the zone number (negative if South).
          * Otherwise returns 0. It is caller's responsibility to verify that the operation method is {@value #NAME}.
          *
          * @param  group  the Transverse Mercator projection parameters.
-         * @return UTM zone number (positive if North, negative if South),
-         *         or 0 if the given parameters are not for a UTM projection.
+         * @return zone number (positive if North, negative if South),
+         *         or 0 if the given parameters are not for a zoned projection.
          */
-        public int zone(final ParameterValueGroup group) {
+        public final int zone(final ParameterValueGroup group) {
             if (Numerics.epsilonEqual(group.parameter(Constants.SCALE_FACTOR)      .doubleValue(Units.UNITY), scale,   Numerics.COMPARISON_THRESHOLD) &&
                 Numerics.epsilonEqual(group.parameter(Constants.FALSE_EASTING)     .doubleValue(Units.METRE), easting, Formulas.LINEAR_TOLERANCE) &&
                 Numerics.epsilonEqual(group.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(Units.DEGREE),      0, Formulas.ANGULAR_TOLERANCE))
@@ -283,13 +283,13 @@ public final class TransverseMercator extends AbstractMercator {
         }
 
         /**
-         * Computes the UTM zone from a meridian in the zone.
+         * Computes the zone from a meridian in the zone.
          *
          * @param  longitude  a meridian inside the desired zone, in degrees relative to Greenwich.
          *                    Positive longitudes are toward east, and negative longitudes toward west.
-         * @return the UTM zone number numbered from 1 to 60 inclusive, or 0 if the given central meridian was NaN.
+         * @return the zone number numbered from 1 inclusive, or 0 if the given central meridian was NaN.
          */
-        public int zone(double longitude) {
+        public final int zone(double longitude) {
             /*
              * Casts to int are equivalent to Math.floor(double) for positive values, which is guaranteed
              * to be the case here since we normalize the central meridian to the [MIN_VALUE … MAX_VALUE] range.
@@ -301,12 +301,12 @@ public final class TransverseMercator extends AbstractMercator {
         }
 
         /**
-         * Computes the central meridian of a given UTM zone.
+         * Computes the central meridian of a given zone.
          *
-         * @param  zone  the UTM zone as a number in the [1 … 60] range.
-         * @return the central meridian of the given UTM zone.
+         * @param  zone  the zone as a number starting with 1.
+         * @return the central meridian of the given zone.
          */
-        public double centralMeridian(final int zone) {
+        public final double centralMeridian(final int zone) {
             return (zone - 0.5) * width + origin;
         }
     }
