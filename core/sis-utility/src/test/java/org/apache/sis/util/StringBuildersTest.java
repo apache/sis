@@ -80,6 +80,26 @@ public final strictfp class StringBuildersTest extends TestCase {
     }
 
     /**
+     * Tests the {@link StringBuilders#repeat(StringBuilder, int, char, int)} method.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testRepeat() {
+        final StringBuilder buffer = new StringBuilder("AB12");
+        repeat(buffer, 2, 'C', 0);
+        assertEquals("AB12", buffer.toString());
+        repeat(buffer, 2, 'C', 1);
+        assertEquals("ABC12", buffer.toString());
+        repeat(buffer, 3, '0', 4);
+        assertEquals("ABC000012", buffer.toString());
+        repeat(buffer, 6, ' ', 2);
+        assertEquals("ABC000  012", buffer.toString());
+        repeat(buffer, 6, '.', 3);
+        assertEquals("ABC000...  012", buffer.toString());
+    }
+
+    /**
      * Tests the {@link StringBuilders#trimFractionalPart(StringBuilder)} method.
      */
     @Test

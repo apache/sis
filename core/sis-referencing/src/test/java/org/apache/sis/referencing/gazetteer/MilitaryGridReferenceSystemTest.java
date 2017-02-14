@@ -42,12 +42,30 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the MGRS label.
      */
     @Test
-    @org.junit.Ignore
     public void testEncoding() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = new MilitaryGridReferenceSystem.Coder();
         final DirectPosition2D position = new DirectPosition2D(CommonCRS.WGS84.UTM(13, 103));
-        position.x = 377299;
+        position.x =  377299;
         position.y = 1483035;
-        assertEquals("48PUV7729883034", coder.encode(position));
+        assertEquals("precision", 1, coder.getPrecision(), STRICT);
+        assertEquals("48PUV7729983035", coder.encode(position));
+        coder.setPrecision(10);
+        assertEquals("precision", 10, coder.getPrecision(), STRICT);
+        assertEquals("48PUV77298303", coder.encode(position));
+        coder.setPrecision(304);
+        assertEquals("precision", 100, coder.getPrecision(), STRICT);
+        assertEquals("48PUV772830", coder.encode(position));
+        coder.setPrecision(1002);
+        assertEquals("precision", 1000, coder.getPrecision(), STRICT);
+        assertEquals("48PUV7783", coder.encode(position));
+        coder.setPrecision(10000);
+        assertEquals("precision", 10000, coder.getPrecision(), STRICT);
+        assertEquals("48PUV78", coder.encode(position));
+        coder.setPrecision(990004);
+        assertEquals("precision", 100000, coder.getPrecision(), STRICT);
+        assertEquals("48PUV", coder.encode(position));
+        coder.setPrecision(1000000);
+        assertEquals("precision", 1000000, coder.getPrecision(), STRICT);
+        assertEquals("48P", coder.encode(position));
     }
 }

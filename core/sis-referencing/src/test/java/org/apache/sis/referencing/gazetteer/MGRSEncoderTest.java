@@ -33,6 +33,16 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.Zo
  */
 public final strictfp class MGRSEncoderTest extends TestCase {
     /**
+     * Verifies relationship between static fields documented in {@link MGRSEncoder}.
+     */
+    @Test
+    public void verifyInvariants() {
+        assertEquals("GRID_SQUARE_SIZE",
+             StrictMath.pow(10, MGRSEncoder.METRE_PRECISION_DIGITS),
+                                MGRSEncoder.GRID_SQUARE_SIZE, STRICT);
+    }
+
+    /**
      * Tests {@link MGRSEncoder#latitudeBand(double)}.
      */
     @Test
@@ -52,7 +62,7 @@ public final strictfp class MGRSEncoderTest extends TestCase {
      */
     @Test
     public void testZone() {
-        assertEquals( "4°E band T", 31, MGRSEncoder.zone(UTM.zone( 4), 4, 'T'));
+        assertEquals( "4°E band T", 31, MGRSEncoder.zone(UTM.zone( 4),  4, 'T'));
         assertEquals( "4°E band V", 32, MGRSEncoder.zone(UTM.zone( 4),  4, 'V'));
         assertEquals("20°E band W", 34, MGRSEncoder.zone(UTM.zone(20), 20, 'W'));
         assertEquals("20°E band X", 33, MGRSEncoder.zone(UTM.zone(20), 20, 'X'));
