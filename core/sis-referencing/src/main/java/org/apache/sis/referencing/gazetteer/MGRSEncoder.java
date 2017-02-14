@@ -30,7 +30,9 @@ import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.StringBuilders;
 
 
 /**
@@ -69,7 +71,41 @@ final class MGRSEncoder {
     /**
      * Size of the 100,000-meter squares.
      */
-    private static final double GRID_SQUARE_SIZE = 100_000;
+    static final double GRID_SQUARE_SIZE = 100_000;
+
+    /**
+     * The number of digits in a one-meter precision when formatting MGRS labels.
+     *
+     * <p><b>Invariant:</b> the following relationship must hold:
+     * {@code GRID_SQUARE_SIZE == Math.pow(10, METRE_PRECISION_DIGITS)}
+     */
+    static final int METRE_PRECISION_DIGITS = 5;
+
+    /**
+     * The first of the two letters ({@code 'I'} and {@code 'O'}) excluded in MGRS notation.
+     * This letter and all following letters shall be shifted by one character. Example:
+     *
+     * {@preformat java
+     *     char band = ...;
+     *     if (band >= EXCLUDE_I) {
+     *         band++;
+     *         if (band >= EXCLUDE_O) band++;
+     *     }
+     * }
+     *
+     * or equivalently:
+     *
+     * {@preformat java
+     *     char band = ...;
+     *     if (band >= EXCLUDE_I && ++band >= EXCLUDE_O) band++;
+     * }
+     */
+    private static final char EXCLUDE_I = 'I';
+
+    /**
+     * The second of the two letters ({@code 'I'} and {@code 'O'}) excluded in MGRS notation.
+     */
+    private static final char EXCLUDE_O = 'O';
 
     /**
      * UTM zone of position CRS (negative for South hemisphere), or 0 if that CRS is not an UTM projection.
@@ -141,14 +177,8 @@ final class MGRSEncoder {
      */
     static char latitudeBand(final double φ) {
         int band = 'C' + (int) ((φ - UTM_SOUTH_BOUNDS) / LATITUDE_BAND_HEIGHT);
-        if (band >= 'N') {
-            if (band == 'W') {
-                band++;             // Because the last latitude band ('X') is 12° height instead of 8°.
-            } else {
-                band += 2;
-            }
-        } else if (band >= 'I') {
-            band++;
+        if (band >= EXCLUDE_I && ++band >= EXCLUDE_O && ++band == 'Y') {
+            band = 'X';         // Because the last latitude band ('X') is 12° height instead of 8°.
         }
         return (char) band;
     }
@@ -194,11 +224,11 @@ final class MGRSEncoder {
      * Encodes the given position into a MGRS label. It is caller responsibility to ensure that the
      * position CRS is the same than the CRS specified at this {@code MGRSEncoder} creation time.
      *
-     * @param  position   the direct position to format as a MGRS label.
-     * @param  precision  the precision as a power of 10.
-     * @param  buffer     where to format the direct position.
+     * @param  position  the direct position to format as a MGRS label.
+     * @param  digits    number of digits to use for formatting the numerical part of a MGRS label.
+     * @param  buffer    where to format the direct position.
      */
-    void encode(DirectPosition position, final double precision, final StringBuilder buffer) throws TransformException {
+    void encode(DirectPosition position, final int digits, final StringBuilder buffer) throws TransformException {
         if (toNormalized != null) {
             position = toNormalized.transform(position, null);
         }
@@ -216,43 +246,71 @@ final class MGRSEncoder {
                     throw new IllegalArgumentException();
                 }
                 buffer.append(zone).append(band);
-                /*
-                 * Columns in zone 1 are A-H, zone 2 are J-R (skipping O), zone 3 are S-Z,
-                 * then repeating every 3 zones. The zone number shall not take in account
-                 * the special cases done by the zone(…) method.
-                 */
-                final double x = position.getOrdinate(0);
-                final double y = position.getOrdinate(1);
-                final double cx = Math.floor(x / GRID_SQUARE_SIZE);
-                final double cy = Math.floor(y / GRID_SQUARE_SIZE);
-                int col = (int) cx;
-                if (col < 0 || col >= 8) {
-                    throw new IllegalArgumentException("UTM coordinates out of range");     // TODO: localize
+                if (digits >= 0) {
+                    /*
+                     * Specification said that 100,000-meters columns are lettered from A through Z (omitting I and O)
+                     * starting at the 180° meridian, proceeding easterly for 18°, and repeating for each 18° intervals.
+                     * Since a UTM zone is 6° width, a 18° interval is exactly 3 standard UTM zones (not the zone number
+                     * modified by the zone(…) method). Columns in zone 1 are A-H, zone 2 are J-R (skipping O), zone 3
+                     * are S-Z, then repeating every 3 zones.
+                     */
+                    final double x = position.getOrdinate(0);
+                    final double y = position.getOrdinate(1);
+                    final double cx = Math.floor(x / GRID_SQUARE_SIZE);
+                    final double cy = Math.floor(y / GRID_SQUARE_SIZE);
+                    int col = (int) cx;
+                    if (col < 1 || col > 8) {
+                        /*
+                         * UTM northing values at the equator range from 166021 to 833979 meters approximatively
+                         * (WGS84 ellipsoid). Consequently 'cx' ranges from approximatively 1.66 to 8.34, so 'c'
+                         * should range from 1 to 8.
+                         */
+                        throw new TransformException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
+                    }
+                    switch (utmZone % 3) {                          // First A-H sequence starts at zone number 1.
+                        case 1: col += ('A' - 1); break;
+                        case 2: col += ('J' - 1); if (col >= EXCLUDE_O) col++; break;
+                        case 0: col += ('S' - 1); break;
+                    }
+                    /*
+                     * Rows in odd  zones are ABCDEFGHJKLMNPQRSTUV
+                     * Rows in even zones are FGHJKLMNPQRSTUVABCDE
+                     * Those 20 letters are repeated in a cycle.
+                     */
+                    int row = (int) cy;
+                    if ((zone & 1) == 0) {
+                        row += ('F' - 'A');
+                    }
+                    row = 'A' + (row % 20);
+                    if (row >= EXCLUDE_I && ++row >= EXCLUDE_O) row++;
+                    buffer.append((char) col).append((char) row);
+                    /*
+                     * Numerical location at the given precision.
+                     * The specification requires us to truncate the number, not to round it.
+                     */
+                    if (digits > 0) {
+                        final double precision = MathFunctions.pow10(METRE_PRECISION_DIGITS - digits);
+                        append(buffer, (int) ((x - cx * GRID_SQUARE_SIZE) / precision), digits);
+                        append(buffer, (int) ((y - cy * GRID_SQUARE_SIZE) / precision), digits);
+                    }
                 }
-                switch (utmZone % 3) {
-                    case 0: col += 'A'; break;
-                    case 1: col += 'J'; if (col >= 'O') col++; break;
-                    case 2: col += 'S'; break;
-                }
-                /*
-                 * Rows in even zones are ABCDEFGHJKLMNPQRSTUV
-                 * Rows in odd  zones are FGHJKLMNPQRSTUVABCDE
-                 * Those 20 letters are repeated in a cycle.
-                 */
-                int row = (int) cy;
-                if ((zone & 1) != 0) {
-                    row += ('F' - 'A');
-                }
-                row = 'A' + (row % 20);
-                if (row >= 'N') row += 2;
-                else if (row >= 'I') row++;
-                buffer.append((char) col).append((char) row);
-                /*
-                 * Numerical location at the given precision.
-                 */
-                final int rx = (int) Math.floor((x - cx * GRID_SQUARE_SIZE) / precision);
-                final int ry = (int) Math.floor((y - cy * GRID_SQUARE_SIZE) / precision);
             }
         }
+    }
+
+    /**
+     * Appends the given value in the given buffer, padding with zero digits in order to get
+     * the specified total amount of digits.
+     */
+    private static void append(final StringBuilder buffer, final int value, int digits) throws TransformException {
+        if (value >= 0) {
+            final int p = buffer.length();
+            digits -= (buffer.append(value).length() - p);
+            if (digits >= 0) {
+                StringBuilders.repeat(buffer, p, '0', digits);
+                return;
+            }
+        }
+        throw new TransformException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
     }
 }
