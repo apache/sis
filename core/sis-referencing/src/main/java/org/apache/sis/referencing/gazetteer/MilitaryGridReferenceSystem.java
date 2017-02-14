@@ -24,8 +24,9 @@ import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -33,6 +34,8 @@ import org.apache.sis.util.resources.Errors;
  * The Military Grid Reference System (MGRS).
  * The MGRS is the geocoordinate standard used by NATO militaries for locating points on the earth.
  * It is based on the Universal Transverse Mercator (UTM) and the polar stereographic projections.
+ * Despite its name, MGRS is not used only for military purposes; it is used also for organizing
+ * Earth Observation data in a directory tree on some cloud storages for example.
  *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe. However the {@code Coder} performing conversions
@@ -47,9 +50,38 @@ import org.apache.sis.util.resources.Errors;
  */
 public class MilitaryGridReferenceSystem {
     /**
-     * Creates a new Military Grid Reference System (MGRS).
+     * The target datum, represented by a {@code CommonCRS} instance.
+     * Only the datums enumerated in {@link CommonCRS} are currently supported.
+     */
+    private final CommonCRS datum;
+
+    /**
+     * Creates a new Military Grid Reference System (MGRS) using the WGS84 datum.
      */
     public MilitaryGridReferenceSystem() {
+        datum = CommonCRS.WGS84;
+    }
+
+    /**
+     * Creates a new Military Grid Reference System (MGRS) using the specified datum.
+     * Only the datums enumerated in {@link CommonCRS} are currently supported.
+     *
+     * @param  datum  the target datum as a {@code CommonCRS} enumerated value.
+     */
+    public MilitaryGridReferenceSystem(final CommonCRS datum) {
+        ArgumentChecks.ensureNonNull("datum", datum);
+        this.datum = datum;
+    }
+
+    /**
+     * Returns a new object performing conversions between {@code DirectPosition} and MGRS labels.
+     * The returned object is <strong>not</strong> thread-safe; a new instance must be created for
+     * each thread, or synchronization must be applied by the caller.
+     *
+     * @return a new object performing conversions between {@link DirectPosition} and MGRS labels.
+     */
+    public Coder createCoder() {
+        return new Coder();
     }
 
     /**
@@ -85,7 +117,7 @@ public class MilitaryGridReferenceSystem {
         /**
          * Creates a new coder initialized to the default precision.
          */
-        public Coder() {
+        protected Coder() {
             digits    = 5;                          // 1 meter precision.
             buffer    = new StringBuilder(12);      // Length of "4QFJ12345678" sample value.
             encoders  = new IdentityHashMap<>();

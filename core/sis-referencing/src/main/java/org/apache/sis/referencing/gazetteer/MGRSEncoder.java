@@ -19,20 +19,23 @@ package org.apache.sis.referencing.gazetteer;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
-import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.StringBuilders;
+import org.apache.sis.util.Utilities;
 
 
 /**
@@ -67,6 +70,16 @@ final class MGRSEncoder {
      * Northernmost bound of the last latitude band ({@code 'X'}).
      */
     private static final double UTM_NORTH_BOUNDS = 84;
+
+    /**
+     * Special {@link #crsZone} value for the UPS South (Universal Polar Stereographic) projection.
+     */
+    private static final int SOUTH_POLE = -1000;
+
+    /**
+     * Special {@link #crsZone} value for the UPS North (Universal Polar Stereographic) projection.
+     */
+    private static final int NORTH_POLE = 1000;
 
     /**
      * Size of the 100,000-meter squares.
@@ -108,23 +121,33 @@ final class MGRSEncoder {
     private static final char EXCLUDE_O = 'O';
 
     /**
-     * UTM zone of position CRS (negative for South hemisphere), or 0 if that CRS is not an UTM projection.
-     * Note that this is not necessarily the same zone than the one to use for formatting any given coordinate
-     * in that projected CRS, since the {@link #zone(double, char)} method has special rules for some latitudes.
+     * The datum of the CRS given at construction time, or {@code null} if unsupported.
+     * Only the datums enumerated in {@link CommonCRS} are currently supported.
      */
-    private int crsZone;
+    private final CommonCRS datum;
+
+    /**
+     * UTM zone of position CRS (negative for South hemisphere), or {@value #NORTH_POLE} or {@value #SOUTH_POLE}
+     * if the CRS is a Universal Polar Stereographic projection, or 0 if the CRS is not a recognized projection.
+     * Note that this is not necessarily the same zone than the one to use for formatting any given coordinate in
+     * that projected CRS, since the {@link #zone(int, double, char)} method has special rules for some latitudes.
+     */
+    private final int crsZone;
 
     /**
      * Coordinate conversion from the position CRS to a CRS of the same type but with normalized axes.
      * Axis directions are (East, North) and axis units are metres or degrees, depending on the CRS type.
+     *
+     * <p>This transform should perform only simple operation like swapping axis order an unit conversions.
+     * It should not perform more complex operations that would require to go back to geographic coordinates.</p>
      */
-    private MathTransform toNormalized;
+    private final MathTransform toNormalized;
 
     /**
-     * Coordinate conversion from the <em>normalized</em> position CRS to a normalized geographic CRS.
-     * Axis directions are (East, North) and axis units are degrees.
+     * Coordinate conversion from the <em>normalized</em> position CRS to a geographic CRS.
+     * Axis directions are (North, East) as in EPSG geodetic dataset and axis units are degrees.
      */
-    private MathTransform toGeographic;
+    private final MathTransform toGeographic;
 
     /**
      * Creates a new converter from direct positions to MGRS labels.
@@ -133,36 +156,57 @@ final class MGRSEncoder {
         if (crs == null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedCRS));
         }
+        datum = CommonCRS.forDatum(crs);
+        if (datum == null) {
+            throw new TransformException("Unsupported datum");      // TODO: localize
+        }
         if (crs instanceof ProjectedCRS) {
-            Projection projection = ((ProjectedCRS) crs).getConversionFromBase();
+            ProjectedCRS  projCRS = (ProjectedCRS) crs;
+            Projection projection = projCRS.getConversionFromBase();
             final OperationMethod method = projection.getMethod();
             if (IdentifiedObjects.isHeuristicMatchForName(method, TransverseMercator.NAME)) {
                 crsZone = TransverseMercator.Zoner.UTM.zone(projection.getParameterValues());
-                if (crsZone != 0) {
-                    /*
-                     * Usually, the projected CRS already has (E,N) axis orientations with metres units,
-                     * so we let 'toNormalized' to null. In the rarer cases where the CRS axes do not
-                     * have the expected orientations and units, then we build a normalized version of
-                     * that CRS and compute the transformation to that CRS.
-                     */
-                    DefaultProjectedCRS normalized = DefaultProjectedCRS.castOrCopy((ProjectedCRS) crs);
-                    if (normalized != (normalized = normalized.forConvention(AxesConvention.NORMALIZED))) {
-                        toNormalized = CRS.findOperation(crs, normalized, null).getMathTransform();
-                        projection = normalized.getConversionFromBase();
-                    }
-                    /*
-                     * We will also need the transformation from the normalized projected CRS to longitude
-                     * and latitude (in that order) in degrees. We can get this transform directly from the
-                     * projected CRS if its base CRS already has the expected axis orientations and units.
-                     */
-                    DefaultGeographicCRS geographic = DefaultGeographicCRS.castOrCopy(normalized.getBaseCRS());
-                    if (geographic != (geographic = geographic.forConvention(AxesConvention.NORMALIZED))) {
-                        toGeographic = CRS.findOperation(normalized, geographic, null).getMathTransform();
-                    } else {
-                        toGeographic = projection.getMathTransform().inverse();
-                    }
-                }
+            } else if (IdentifiedObjects.isHeuristicMatchForName(method, PolarStereographicA.NAME)) {
+                crsZone = NORTH_POLE * PolarStereographicA.isUPS(projection.getParameterValues());
+            } else {
+                crsZone = 0;                                    // Neither UTM or UPS projection.
             }
+            if (crsZone != 0) {
+                /*
+                 * Usually, the projected CRS already has (E,N) axis orientations with metres units,
+                 * so we let 'toNormalized' to null. In the rarer cases where the CRS axes do not
+                 * have the expected orientations and units, then we build a normalized version of
+                 * that CRS and compute the transformation to that CRS.
+                 */
+                DefaultProjectedCRS normalized;
+                projCRS = normalized = DefaultProjectedCRS.castOrCopy(projCRS);
+                normalized = normalized.forConvention(AxesConvention.NORMALIZED);
+                if (normalized != projCRS) {
+                    toNormalized = CRS.findOperation(projCRS, normalized, null).getMathTransform();
+                    projection = normalized.getConversionFromBase();
+                } else {
+                    toNormalized = null;            // ProjectedCRS (UTM or UPS) is already normalized.
+                }
+            } else {
+                toNormalized = null;    // ProjectedCRS is neither UTM or UPS — will need full reprojection.
+            }
+            /*
+             * We will also need the transformation from the normalized projected CRS to latitude and
+             * longitude (in that order) in degrees. We can get this transform directly from the
+             * projected CRS if its base CRS already has the expected axis orientations and units.
+             */
+            GeographicCRS geographic = projCRS.getBaseCRS();
+            GeographicCRS standard = datum.geographic();
+            if (Utilities.equalsIgnoreMetadata(geographic.getCoordinateSystem(), standard.getCoordinateSystem())) {
+                toGeographic = projection.getMathTransform().inverse();
+            } else {
+                toGeographic = CRS.findOperation(projCRS, standard, null).getMathTransform();
+            }
+        } else {
+            crsZone      = 0;
+            toNormalized = null;
+            toGeographic = null;
+            // TODO
         }
     }
 
@@ -235,15 +279,19 @@ final class MGRSEncoder {
         final DirectPosition geographic;
         if (crsZone != 0) {
             geographic = toGeographic.transform(position, null);
-            final double φ = geographic.getOrdinate(1);
+            final double φ = geographic.getOrdinate(0);
             if (φ >= UTM_SOUTH_BOUNDS && φ <= UTM_NORTH_BOUNDS) {
-                final char   band = latitudeBand(φ);
-                final double    λ = geographic.getOrdinate(0);
-                final int utmZone = TransverseMercator.Zoner.UTM.zone(λ);
-                final int    zone = zone(utmZone, λ, band);
-                if (zone != crsZone) {
-                    // TODO: reproject
-                    throw new IllegalArgumentException();
+                final boolean isNorth = MathFunctions.isPositive(φ);
+                final char    band    = latitudeBand(φ);
+                final double  λ       = geographic.getOrdinate(1);
+                final int     utmZone = TransverseMercator.Zoner.UTM.zone(λ);
+                final int     zone    = zone(utmZone, λ, band);
+                if ((isNorth ? zone : -zone) != crsZone) try {
+                    final double cl = TransverseMercator.Zoner.UTM.centralMeridian(zone);
+                    position = CRS.findOperation(datum.geographic(), datum.UTM(φ, cl), null)
+                            .getMathTransform().transform(geographic, null);
+                } catch (FactoryException e) {
+                    throw new TransformException(e.toString(), e);
                 }
                 buffer.append(zone).append(band);
                 if (digits >= 0) {

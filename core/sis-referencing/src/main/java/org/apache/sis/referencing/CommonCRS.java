@@ -33,6 +33,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.CartesianCS;
@@ -69,6 +70,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
@@ -416,6 +418,31 @@ public enum CommonCRS {
     }
 
     /**
+     * Returns the value for the given datum or CRS, or {@code null} if none.
+     * The given object can be either an instance of {@link GeodeticDatum},
+     * or an instance of {@link SingleCRS} associated to a geodetic datum.
+     *
+     * @param  object  the object (datum or CRS) for which to get a {@code CommonCRS} value.
+     * @return the {@code CommonCRS} value for the given geodetic object, or {@code null} if none.
+     *
+     * @see #datum()
+     * @since 0.8
+     */
+    public static CommonCRS forDatum(IdentifiedObject object) {
+        if (object instanceof SingleCRS) {
+            object = ((SingleCRS) object).getDatum();
+        }
+        if (object instanceof GeodeticDatum) {
+            for (final CommonCRS c : values()) {
+                if (Utilities.equalsIgnoreMetadata(c.datum(), object)) {
+                    return c;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the default two-dimensional normalized geographic CRS.
      * The CRS returned by this method has the following properties:
      *
@@ -724,6 +751,7 @@ public enum CommonCRS {
      *
      * @return the geodetic datum associated to this enum.
      *
+     * @see #forDatum(GeodeticDatum)
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
      */
     public GeodeticDatum datum() {
