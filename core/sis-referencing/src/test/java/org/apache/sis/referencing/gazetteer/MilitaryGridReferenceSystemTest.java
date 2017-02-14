@@ -16,14 +16,15 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import org.opengis.referencing.operation.TransformException;
 
 
 /**
@@ -37,13 +38,60 @@ import org.opengis.referencing.operation.TransformException;
 @DependsOn(MGRSEncoderTest.class)
 public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     /**
-     * Tests encoding of coordinates.
+     * Returns a coder instance to test.
+     */
+    private MilitaryGridReferenceSystem.Coder coder() {
+        return new MilitaryGridReferenceSystem().createCoder();
+    }
+
+    /**
+     * Tests encoding of various coordinates.
      *
      * @throws TransformException if an error occurred while computing the MGRS label.
      */
     @Test
     public void testEncoding() throws TransformException {
-        final MilitaryGridReferenceSystem.Coder coder = new MilitaryGridReferenceSystem.Coder();
+        final MilitaryGridReferenceSystem.Coder coder = coder();
+        final DirectPosition2D position = new DirectPosition2D();
+        /*
+         * 41°N 10°E (UTM zone 32)
+         */
+        position.setCoordinateReferenceSystem(CommonCRS.WGS84.UTM(41, 10));
+        position.x =  584102;
+        position.y = 4539239;
+        assertEquals("32TNL8410239239", coder.encode(position));
+        /*
+         * 82°N 10°W (UTM zone 29) — should instantiate a new MGRSEncoder.
+         */
+        position.setCoordinateReferenceSystem(CommonCRS.WGS84.UTM(82, -10));
+        position.x =  484463;
+        position.y = 9104963;
+        assertEquals("29XMM8446304963", coder.encode(position));
+        /*
+         * 41°S 10°E (UTM zone 32) — should reuse the MGRSEncoder created in first test.
+         */
+        position.setCoordinateReferenceSystem(CommonCRS.WGS84.UTM(-41, 10));
+        position.x =  584102;
+        position.y = 5460761;
+        assertEquals("32GNV8410260761", coder.encode(position));
+        /*
+         * 82°N 10°E (UTM zone 32) — in this special case, zone 32 is replaced by zone 33.
+         */
+        position.setCoordinateReferenceSystem(CommonCRS.WGS84.UTM(82, 10));
+        position.x =  515537;
+        position.y = 9104963;
+//      assertEquals("33XVM2240608183", coder.encode(position));
+    }
+
+    /**
+     * Tests encoding of the same coordinate at various precision.
+     *
+     * @throws TransformException if an error occurred while computing the MGRS label.
+     */
+    @Test
+    @DependsOnMethod("testEncoding")
+    public void testPrecision() throws TransformException {
+        final MilitaryGridReferenceSystem.Coder coder = coder();
         final DirectPosition2D position = new DirectPosition2D(CommonCRS.WGS84.UTM(13, 103));
         position.x =  377299;
         position.y = 1483035;

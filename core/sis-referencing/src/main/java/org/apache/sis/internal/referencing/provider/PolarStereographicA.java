@@ -17,10 +17,16 @@
 package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -100,5 +106,29 @@ public final class PolarStereographicA extends AbstractStereographic {
      */
     public PolarStereographicA() {
         super(PARAMETERS);
+    }
+
+    /**
+     * If the given parameter values are those of a Universal Polar Stereographic projection,
+     * returns -1 for South pole or +1 for North pole. Otherwise returns 0. It is caller's
+     * responsibility to verify that the operation method is {@value #NAME}.
+     *
+     * @param  group  the Transverse Mercator projection parameters.
+     * @return zone number (positive if North, negative if South),
+     *         or 0 if the given parameters are not for a zoned projection.
+     *
+     * @since 0.8
+     */
+    public static int isUPS(final ParameterValueGroup group) {
+        if (Numerics.epsilonEqual(group.parameter(Constants.SCALE_FACTOR)    .doubleValue(Units.UNITY),  1, Numerics.COMPARISON_THRESHOLD) &&
+            Numerics.epsilonEqual(group.parameter(Constants.FALSE_EASTING)   .doubleValue(Units.METRE),  0, Formulas.LINEAR_TOLERANCE) &&
+            Numerics.epsilonEqual(group.parameter(Constants.FALSE_NORTHING)  .doubleValue(Units.METRE),  0, Formulas.LINEAR_TOLERANCE) &&
+            Numerics.epsilonEqual(group.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(Units.DEGREE), 0, Formulas.ANGULAR_TOLERANCE))
+        {
+            final double φ = group.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(Units.DEGREE);
+            if (Numerics.epsilonEqual(φ, Latitude.MAX_VALUE, Formulas.ANGULAR_TOLERANCE)) return +1;
+            if (Numerics.epsilonEqual(φ, Latitude.MIN_VALUE, Formulas.ANGULAR_TOLERANCE)) return -1;
+        }
+        return 0;
     }
 }
