@@ -120,10 +120,10 @@ public final class PolarStereographicA extends AbstractStereographic {
      * @since 0.8
      */
     public static int isUPS(final ParameterValueGroup group) {
-        if (Numerics.epsilonEqual(group.parameter(Constants.SCALE_FACTOR)    .doubleValue(Units.UNITY),  1, Numerics.COMPARISON_THRESHOLD) &&
-            Numerics.epsilonEqual(group.parameter(Constants.FALSE_EASTING)   .doubleValue(Units.METRE),  0, Formulas.LINEAR_TOLERANCE) &&
-            Numerics.epsilonEqual(group.parameter(Constants.FALSE_NORTHING)  .doubleValue(Units.METRE),  0, Formulas.LINEAR_TOLERANCE) &&
-            Numerics.epsilonEqual(group.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(Units.DEGREE), 0, Formulas.ANGULAR_TOLERANCE))
+        if (Numerics.epsilonEqual(group.parameter(Constants.SCALE_FACTOR)    .doubleValue(Units.UNITY),   0.994, Numerics.COMPARISON_THRESHOLD) &&
+            Numerics.epsilonEqual(group.parameter(Constants.FALSE_EASTING)   .doubleValue(Units.METRE), 2000000, Formulas.LINEAR_TOLERANCE) &&
+            Numerics.epsilonEqual(group.parameter(Constants.FALSE_NORTHING)  .doubleValue(Units.METRE), 2000000, Formulas.LINEAR_TOLERANCE) &&
+            Numerics.epsilonEqual(group.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(Units.DEGREE),      0, Formulas.ANGULAR_TOLERANCE))
         {
             final double φ = group.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(Units.DEGREE);
             if (Numerics.epsilonEqual(φ, Latitude.MAX_VALUE, Formulas.ANGULAR_TOLERANCE)) return +1;
