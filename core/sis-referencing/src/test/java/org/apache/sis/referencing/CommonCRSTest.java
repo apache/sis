@@ -291,4 +291,16 @@ public final strictfp class CommonCRSTest extends TestCase {
         assertSame("Expected a cached instance.", crs, CommonCRS.WGS72.UTM(-45, -122));
         assertNotSame("Expected a new instance.", crs, CommonCRS.WGS72.UTM(+45, -122));
     }
+
+    /**
+     * Tests {@link CommonCRS#forDatum(CoordinateReferenceSystem)}.
+     *
+     * @sinc 0.8
+     */
+    @Test
+    @DependsOnMethod("testGeographic")
+    public void testForDatum() {
+        assertSame("WGS84", CommonCRS.WGS84, CommonCRS.forDatum(CommonCRS.WGS84.geographic()));
+        assertSame("WGS72", CommonCRS.WGS72, CommonCRS.forDatum(CommonCRS.WGS72.geographic()));
+    }
 }

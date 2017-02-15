@@ -80,7 +80,17 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         position.setCoordinateReferenceSystem(CommonCRS.WGS84.UTM(82, 10));
         position.x =  515537;
         position.y = 9104963;
-//      assertEquals("33XVM2240608183", coder.encode(position));
+        assertEquals("33XVM2240708183", coder.encode(position));
+        /*
+         * Same position as previously tested, but using geographic coordinates.
+         */
+        position.setCoordinateReferenceSystem(CommonCRS.WGS84.geographic());
+        position.x = 82;
+        position.y = 10;
+        assertEquals("33XVM2240608183", coder.encode(position));
+        position.x = -41;
+        position.y = 10;
+        assertEquals("32GNV8410260761", coder.encode(position));
     }
 
     /**

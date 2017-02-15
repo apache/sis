@@ -24,9 +24,11 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
+import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -40,6 +42,7 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
@@ -67,6 +70,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
@@ -418,28 +422,67 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the value for the given datum or CRS, or {@code null} if none.
-     * The given object can be either an instance of {@link GeodeticDatum},
-     * or an instance of {@link SingleCRS} associated to a geodetic datum.
+     * Returns the {@code CommonCRS} enumeration value for the datum of the given CRS.
+     * The given CRS shall comply to the following conditions
+     * (otherwise an {@link IllegalArgumentException} is thrown):
      *
-     * @param  object  the object (datum or CRS) for which to get a {@code CommonCRS} value.
-     * @return the {@code CommonCRS} value for the given geodetic object, or {@code null} if none.
+     * <ul>
+     *   <li>The {@code crs} is either an instance of {@link SingleCRS},
+     *       or an instance of {@link org.opengis.referencing.crs.CompoundCRS}
+     *       with an {@linkplain CRS#getHorizontalComponent horizontal component}.</li>
+     *   <li>The {@code crs} or the horizontal component of {@code crs} is associated to a {@link GeodeticDatum}.</li>
+     *   <li>The geodetic datum has the same EPSG code than one of the {@code CommonCRS} enumeration values,
+     *       or has no EPSG code but is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
+     *       to the {@link #datum()} value of one of the {@code CommonCRS} enumeration values.</li>
+     * </ul>
+     *
+     * This method is useful for easier creation of various coordinate reference systems through the
+     * {@link #geographic()}, {@link #geocentric()} and other convenience methods when the set of datum
+     * supported by {@code CommonCRS} is known to be sufficient.
+     *
+     * @param  crs  the coordinate reference system for which to get a {@code CommonCRS} value.
+     * @return the {@code CommonCRS} value for the geodetic datum of the given CRS.
+     * @throws IllegalArgumentException if no {@code CommonCRS} value can be found for the given CRS.
      *
      * @see #datum()
      * @since 0.8
      */
-    public static CommonCRS forDatum(IdentifiedObject object) {
-        if (object instanceof SingleCRS) {
-            object = ((SingleCRS) object).getDatum();
+    public static CommonCRS forDatum(final CoordinateReferenceSystem crs) {
+        final SingleCRS single;
+        if (crs instanceof SingleCRS) {
+            single = (SingleCRS) crs;
+        } else {
+            single = CRS.getHorizontalComponent(crs);
+            if (single == null) {
+                throw new IllegalArgumentException(Resources.format(
+                        Resources.Keys.NonHorizontalCRS_1, IdentifiedObjects.getName(crs, null)));
+            }
         }
-        if (object instanceof GeodeticDatum) {
+        final Datum datum = single.getDatum();
+        if (datum instanceof GeodeticDatum) {
+            /*
+             * First, try to search using only the EPSG code. This approach avoid initializing unneeded
+             * geodetic objects (such initializations are costly if they require connection to the EPSG
+             * database).
+             */
+            int epsg = 0;
+            final Identifier identifier = IdentifiedObjects.getIdentifier(datum, Citations.EPSG);
+            if (identifier != null) {
+                final String code = identifier.getCode();
+                if (code != null) try {
+                    epsg = Integer.parseInt(code);
+                } catch (NumberFormatException e) {
+                    Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), CommonCRS.class, "forDatum", e);
+                }
+            }
             for (final CommonCRS c : values()) {
-                if (Utilities.equalsIgnoreMetadata(c.datum(), object)) {
+                if ((epsg != 0) ? c.datum == epsg : Utilities.equalsIgnoreMetadata(c.datum(), datum)) {
                     return c;
                 }
             }
         }
-        return null;
+        throw new IllegalArgumentException(Errors.format(
+                Errors.Keys.UnsupportedDatum_1, IdentifiedObjects.getName(datum, null)));
     }
 
     /**
@@ -751,7 +794,7 @@ public enum CommonCRS {
      *
      * @return the geodetic datum associated to this enum.
      *
-     * @see #forDatum(GeodeticDatum)
+     * @see #forDatum(CoordinateReferenceSystem)
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
      */
     public GeodeticDatum datum() {

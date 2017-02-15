@@ -19,7 +19,6 @@ package org.apache.sis.referencing.gazetteer;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.OperationMethod;
@@ -121,7 +120,7 @@ final class MGRSEncoder {
     private static final char EXCLUDE_O = 'O';
 
     /**
-     * The datum of the CRS given at construction time, or {@code null} if unsupported.
+     * The datum to which to transform the coordinate before formatting the MGRS label.
      * Only the datums enumerated in {@link CommonCRS} are currently supported.
      */
     private final CommonCRS datum;
@@ -130,38 +129,66 @@ final class MGRSEncoder {
      * UTM zone of position CRS (negative for South hemisphere), or {@value #NORTH_POLE} or {@value #SOUTH_POLE}
      * if the CRS is a Universal Polar Stereographic projection, or 0 if the CRS is not a recognized projection.
      * Note that this is not necessarily the same zone than the one to use for formatting any given coordinate in
-     * that projected CRS, since the {@link #zone(int, double, char)} method has special rules for some latitudes.
+     * that projected CRS, since the {@link #zone(double, char)} method has special rules for some latitudes.
      */
     private final int crsZone;
 
     /**
-     * Coordinate conversion from the position CRS to a CRS of the same type but with normalized axes.
-     * Axis directions are (East, North) and axis units are metres or degrees, depending on the CRS type.
+     * Coordinate conversion from the position CRS to a CRS of the same type but with normalized axes,
+     * or {@code null} if not needed. After conversion, axis directions will be (East, North) and axis
+     * units will be metres.
      *
-     * <p>This transform should perform only simple operation like swapping axis order an unit conversions.
+     * <p>This transform should perform only simple operations like swapping axis order and unit conversions.
      * It should not perform more complex operations that would require to go back to geographic coordinates.</p>
      */
     private final MathTransform toNormalized;
 
     /**
-     * Coordinate conversion from the <em>normalized</em> position CRS to a geographic CRS.
+     * Coordinate conversion or transformation from the <em>normalized</em> CRS to geographic CRS.
      * Axis directions are (North, East) as in EPSG geodetic dataset and axis units are degrees.
+     * This transform is never {@code null}.
+     *
+     * <p>This transform may contain datum change from the position datum to the target {@link #datum}.</p>
      */
     private final MathTransform toGeographic;
 
     /**
-     * Creates a new converter from direct positions to MGRS labels.
+     * A transform from a position in the CRS given at construction time to a position in the CRS identified by
+     * {@link #actualZone}. This field is updated only when a given position is not located in the zone of the
+     * CRS given at construction time.
      */
-    MGRSEncoder(final CoordinateReferenceSystem crs) throws FactoryException, TransformException {
+    private MathTransform toActualZone;
+
+    /**
+     * The actual zone where the position to encode is located. Legal values are the same than {@link #crsZone}.
+     * If non-zero, then this is the zone of the {@link #toActualZone} transform. This field is updated only when
+     * a given position is not located in the zone of the CRS given at construction time.
+     */
+    private int actualZone;
+
+    /**
+     * Creates a new converter from direct positions to MGRS labels.
+     *
+     * @param  datum  the datum to which to transform the coordinate before formatting the MGRS label,
+     *                or {@code null} for inferring the datum from the given {@code crs}.
+     * @param  crs    the coordinate reference system of the coordinates for which to create MGRS labels.
+     * @throws IllegalArgumentException if the given CRS has no horizontal component or do not use one of
+     *         the supported datums.
+     */
+    MGRSEncoder(CommonCRS datum, CoordinateReferenceSystem crs) throws FactoryException, TransformException {
         if (crs == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedCRS));
+            throw new GazetteerException(Errors.format(Errors.Keys.UnspecifiedCRS));
         }
-        datum = CommonCRS.forDatum(crs);
+        CoordinateReferenceSystem horizontal = CRS.getHorizontalComponent(crs);
+        if (horizontal == null) {
+            horizontal = crs;
+        }
         if (datum == null) {
-            throw new TransformException("Unsupported datum");      // TODO: localize
+            datum = CommonCRS.forDatum(horizontal);
         }
-        if (crs instanceof ProjectedCRS) {
-            ProjectedCRS  projCRS = (ProjectedCRS) crs;
+        this.datum = datum;
+        if (horizontal instanceof ProjectedCRS) {
+            ProjectedCRS  projCRS = (ProjectedCRS) horizontal;
             Projection projection = projCRS.getConversionFromBase();
             final OperationMethod method = projection.getMethod();
             if (IdentifiedObjects.isHeuristicMatchForName(method, TransverseMercator.NAME)) {
@@ -178,12 +205,13 @@ final class MGRSEncoder {
                  * have the expected orientations and units, then we build a normalized version of
                  * that CRS and compute the transformation to that CRS.
                  */
-                DefaultProjectedCRS normalized;
-                projCRS = normalized = DefaultProjectedCRS.castOrCopy(projCRS);
-                normalized = normalized.forConvention(AxesConvention.NORMALIZED);
-                if (normalized != projCRS) {
-                    toNormalized = CRS.findOperation(projCRS, normalized, null).getMathTransform();
-                    projection = normalized.getConversionFromBase();
+                final DefaultProjectedCRS userAxisOrder = DefaultProjectedCRS.castOrCopy(projCRS);
+                projCRS = userAxisOrder.forConvention(AxesConvention.NORMALIZED);
+                if (crs != horizontal || projCRS != userAxisOrder) {
+                    toNormalized = CRS.findOperation(crs, projCRS, null).getMathTransform();
+                    projection   = projCRS.getConversionFromBase();
+                    horizontal   = projCRS;
+                    crs          = projCRS;         // Next step in the chain of transformations.
                 } else {
                     toNormalized = null;            // ProjectedCRS (UTM or UPS) is already normalized.
                 }
@@ -195,19 +223,15 @@ final class MGRSEncoder {
              * longitude (in that order) in degrees. We can get this transform directly from the
              * projected CRS if its base CRS already has the expected axis orientations and units.
              */
-            GeographicCRS geographic = projCRS.getBaseCRS();
-            GeographicCRS standard = datum.geographic();
-            if (Utilities.equalsIgnoreMetadata(geographic.getCoordinateSystem(), standard.getCoordinateSystem())) {
+            if (crs == horizontal && Utilities.equalsIgnoreMetadata(projCRS.getBaseCRS(), datum.geographic())) {
                 toGeographic = projection.getMathTransform().inverse();
-            } else {
-                toGeographic = CRS.findOperation(projCRS, standard, null).getMathTransform();
+                return;
             }
         } else {
             crsZone      = 0;
             toNormalized = null;
-            toGeographic = null;
-            // TODO
         }
+        toGeographic = CRS.findOperation(crs, datum.geographic(), null).getMathTransform();
     }
 
     /**
@@ -224,6 +248,7 @@ final class MGRSEncoder {
         if (band >= EXCLUDE_I && ++band >= EXCLUDE_O && ++band == 'Y') {
             band = 'X';         // Because the last latitude band ('X') is 12° height instead of 8°.
         }
+        assert band >= 'C' && band <= 'X' : band;
         return (char) band;
     }
 
@@ -232,12 +257,12 @@ final class MGRSEncoder {
      * Those zones are normally the same than UTM, except for Norway and
      * Svalbard which have special rules.
      *
-     * @param  zone  the value of {@code TransverseMercator.Zoner.UTM.zone(λ)}.
      * @param  band  the latitude band computed by {@link #latitudeBand(double)}.
      * @param  λ     the longitude for which to compute the UTM zone.
-     * @return the UTM zone for the given longitude.
+     * @return the UTM zone for the given longitude, or 0 if the given longitude is NaN or infinite.
      */
-    static int zone(int zone, final double λ, final char band) {
+    static int zone(final double λ, final char band) {
+        int zone = TransverseMercator.Zoner.UTM.zone(λ);
         switch (band) {
             /*
              * Zone 32 has been widened to 9° (at the expense of zone 31)
@@ -261,6 +286,10 @@ final class MGRSEncoder {
                 break;
             }
         }
+        if (zone == 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, "λ"));
+        }
+        assert zone >= 1 && zone <= 60 : zone;
         return zone;
     }
 
@@ -268,82 +297,93 @@ final class MGRSEncoder {
      * Encodes the given position into a MGRS label. It is caller responsibility to ensure that the
      * position CRS is the same than the CRS specified at this {@code MGRSEncoder} creation time.
      *
+     * @param  owner     the {@code Coder} which own this {@code MGRSEncoder}.
      * @param  position  the direct position to format as a MGRS label.
      * @param  digits    number of digits to use for formatting the numerical part of a MGRS label.
-     * @param  buffer    where to format the direct position.
+     * @return the value of {@code buffer.toString()}.
      */
-    void encode(DirectPosition position, final int digits, final StringBuilder buffer) throws TransformException {
+    String encode(final MilitaryGridReferenceSystem.Coder owner, DirectPosition position, final int digits)
+            throws FactoryException, TransformException
+    {
+        final StringBuilder buffer = owner.buffer;
         if (toNormalized != null) {
-            position = toNormalized.transform(position, null);
+            owner.normalized = position = toNormalized.transform(position, owner.normalized);
         }
-        final DirectPosition geographic;
-        if (crsZone != 0) {
-            geographic = toGeographic.transform(position, null);
-            final double φ = geographic.getOrdinate(0);
-            if (φ >= UTM_SOUTH_BOUNDS && φ <= UTM_NORTH_BOUNDS) {
-                final boolean isNorth = MathFunctions.isPositive(φ);
-                final char    band    = latitudeBand(φ);
-                final double  λ       = geographic.getOrdinate(1);
-                final int     utmZone = TransverseMercator.Zoner.UTM.zone(λ);
-                final int     zone    = zone(utmZone, λ, band);
-                if ((isNorth ? zone : -zone) != crsZone) try {
-                    final double cl = TransverseMercator.Zoner.UTM.centralMeridian(zone);
-                    position = CRS.findOperation(datum.geographic(), datum.UTM(φ, cl), null)
-                            .getMathTransform().transform(geographic, null);
-                } catch (FactoryException e) {
-                    throw new TransformException(e.toString(), e);
+        final DirectPosition geographic = toGeographic.transform(position, owner.geographic);
+        owner.geographic = geographic;                      // For reuse in next method calls.
+        final double φ = geographic.getOrdinate(0);
+        if (φ >= UTM_SOUTH_BOUNDS && φ <= UTM_NORTH_BOUNDS) {
+            /*
+             * Universal Transverse Mercator (UTM) case.
+             */
+            final char band = latitudeBand(φ);
+            final int  zone = zone(geographic.getOrdinate(1), band);
+            final int  sz   = MathFunctions.isNegative(φ) ? -zone : zone;       // Never zero.
+            if (sz != crsZone) {
+                if (sz != actualZone) {
+                    double cm    = TransverseMercator.Zoner.UTM.centralMeridian(zone);
+                    actualZone   = 0;   // In case an exception is thrown on the next line.
+                    toActualZone = CRS.findOperation(datum.geographic(), datum.UTM(φ, cm), null).getMathTransform();
+                    actualZone   = sz;
                 }
-                buffer.append(zone).append(band);
-                if (digits >= 0) {
+                owner.normalized = position = toActualZone.transform(geographic, owner.normalized);
+            }
+            buffer.setLength(0);
+            buffer.append(zone).append(band);
+            if (digits >= 0) {
+                /*
+                 * Specification said that 100,000-meters columns are lettered from A through Z (omitting I and O)
+                 * starting at the 180° meridian, proceeding easterly for 18°, and repeating for each 18° intervals.
+                 * Since a UTM zone is 6° width, a 18° interval is exactly 3 standard UTM zones. Columns in zone 1
+                 * are A-H, zone 2 are J-R (skipping O), zone 3 are S-Z, then repeating every 3 zones.
+                 */
+                final double x = position.getOrdinate(0);
+                final double y = position.getOrdinate(1);
+                final double cx = Math.floor(x / GRID_SQUARE_SIZE);
+                final double cy = Math.floor(y / GRID_SQUARE_SIZE);
+                int col = (int) cx;
+                if (col < 1 || col > 8) {
                     /*
-                     * Specification said that 100,000-meters columns are lettered from A through Z (omitting I and O)
-                     * starting at the 180° meridian, proceeding easterly for 18°, and repeating for each 18° intervals.
-                     * Since a UTM zone is 6° width, a 18° interval is exactly 3 standard UTM zones (not the zone number
-                     * modified by the zone(…) method). Columns in zone 1 are A-H, zone 2 are J-R (skipping O), zone 3
-                     * are S-Z, then repeating every 3 zones.
+                     * UTM northing values at the equator range from 166021 to 833979 meters approximatively
+                     * (WGS84 ellipsoid). Consequently 'cx' ranges from approximatively 1.66 to 8.34, so 'c'
+                     * should range from 1 to 8.
                      */
-                    final double x = position.getOrdinate(0);
-                    final double y = position.getOrdinate(1);
-                    final double cx = Math.floor(x / GRID_SQUARE_SIZE);
-                    final double cy = Math.floor(y / GRID_SQUARE_SIZE);
-                    int col = (int) cx;
-                    if (col < 1 || col > 8) {
-                        /*
-                         * UTM northing values at the equator range from 166021 to 833979 meters approximatively
-                         * (WGS84 ellipsoid). Consequently 'cx' ranges from approximatively 1.66 to 8.34, so 'c'
-                         * should range from 1 to 8.
-                         */
-                        throw new TransformException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
-                    }
-                    switch (utmZone % 3) {                          // First A-H sequence starts at zone number 1.
-                        case 1: col += ('A' - 1); break;
-                        case 2: col += ('J' - 1); if (col >= EXCLUDE_O) col++; break;
-                        case 0: col += ('S' - 1); break;
-                    }
-                    /*
-                     * Rows in odd  zones are ABCDEFGHJKLMNPQRSTUV
-                     * Rows in even zones are FGHJKLMNPQRSTUVABCDE
-                     * Those 20 letters are repeated in a cycle.
-                     */
-                    int row = (int) cy;
-                    if ((zone & 1) == 0) {
-                        row += ('F' - 'A');
-                    }
-                    row = 'A' + (row % 20);
-                    if (row >= EXCLUDE_I && ++row >= EXCLUDE_O) row++;
-                    buffer.append((char) col).append((char) row);
-                    /*
-                     * Numerical location at the given precision.
-                     * The specification requires us to truncate the number, not to round it.
-                     */
-                    if (digits > 0) {
-                        final double precision = MathFunctions.pow10(METRE_PRECISION_DIGITS - digits);
-                        append(buffer, (int) ((x - cx * GRID_SQUARE_SIZE) / precision), digits);
-                        append(buffer, (int) ((y - cy * GRID_SQUARE_SIZE) / precision), digits);
-                    }
+                    throw new TransformException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
+                }
+                switch (zone % 3) {                          // First A-H sequence starts at zone number 1.
+                    case 1: col += ('A' - 1); break;
+                    case 2: col += ('J' - 1); if (col >= EXCLUDE_O) col++; break;
+                    case 0: col += ('S' - 1); break;
+                }
+                /*
+                 * Rows in odd  zones are ABCDEFGHJKLMNPQRSTUV
+                 * Rows in even zones are FGHJKLMNPQRSTUVABCDE
+                 * Those 20 letters are repeated in a cycle.
+                 */
+                int row = (int) cy;
+                if ((zone & 1) == 0) {
+                    row += ('F' - 'A');
+                }
+                row = 'A' + (row % 20);
+                if (row >= EXCLUDE_I && ++row >= EXCLUDE_O) row++;
+                buffer.append((char) col).append((char) row);
+                /*
+                 * Numerical location at the given precision.
+                 * The specification requires us to truncate the number, not to round it.
+                 */
+                if (digits > 0) {
+                    final double precision = MathFunctions.pow10(METRE_PRECISION_DIGITS - digits);
+                    append(buffer, (int) ((x - cx * GRID_SQUARE_SIZE) / precision), digits);
+                    append(buffer, (int) ((y - cy * GRID_SQUARE_SIZE) / precision), digits);
                 }
             }
+        } else {
+            /*
+             * Universal Polar Stereographic (UPS) case.
+             */
+            return null;    // TODO
         }
+        return buffer.toString();
     }
 
     /**

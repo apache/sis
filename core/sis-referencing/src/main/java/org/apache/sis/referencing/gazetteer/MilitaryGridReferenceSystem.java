@@ -50,10 +50,11 @@ import org.apache.sis.util.resources.Errors;
  */
 public class MilitaryGridReferenceSystem {
     /**
-     * The target datum, represented by a {@code CommonCRS} instance.
+     * The datum to which to transform the coordinate before formatting the MGRS label,
+     * or {@code null} for inferring the datum from the CRS associated to each coordinate.
      * Only the datums enumerated in {@link CommonCRS} are currently supported.
      */
-    private final CommonCRS datum;
+    final CommonCRS datum;
 
     /**
      * Creates a new Military Grid Reference System (MGRS) using the WGS84 datum.
@@ -66,10 +67,10 @@ public class MilitaryGridReferenceSystem {
      * Creates a new Military Grid Reference System (MGRS) using the specified datum.
      * Only the datums enumerated in {@link CommonCRS} are currently supported.
      *
-     * @param  datum  the target datum as a {@code CommonCRS} enumerated value.
+     * @param  datum  the datum to which to transform coordinates before formatting the MGRS labels,
+     *                or {@code null} for inferring the datum from the CRS associated to each coordinate.
      */
     public MilitaryGridReferenceSystem(final CommonCRS datum) {
-        ArgumentChecks.ensureNonNull("datum", datum);
         this.datum = datum;
     }
 
@@ -98,7 +99,7 @@ public class MilitaryGridReferenceSystem {
      * @version 0.8
      * @module
      */
-    public static class Coder {
+    public class Coder {
         /**
          * Number of digits to use for formatting the numerical part of a MGRS label.
          */
@@ -110,17 +111,23 @@ public class MilitaryGridReferenceSystem {
         private final Map<CoordinateReferenceSystem,MGRSEncoder> encoders;
 
         /**
+         * Temporary positions used by {@link MGRSEncoder} only. References are kept for avoiding to
+         * recreate those temporary objects for every label to format.
+         */
+        DirectPosition normalized, geographic;
+
+        /**
          * A buffer where to create label, to be reused for each new label.
          */
-        private final StringBuilder buffer;
+        final StringBuilder buffer;
 
         /**
          * Creates a new coder initialized to the default precision.
          */
         protected Coder() {
-            digits    = 5;                          // 1 meter precision.
-            buffer    = new StringBuilder(12);      // Length of "4QFJ12345678" sample value.
-            encoders  = new IdentityHashMap<>();
+            digits   = 5;                          // 1 meter precision.
+            buffer   = new StringBuilder(12);      // Length of "4QFJ12345678" sample value.
+            encoders = new IdentityHashMap<>();
         }
 
         /**
@@ -178,17 +185,17 @@ public class MilitaryGridReferenceSystem {
             ArgumentChecks.ensureNonNull("position", position);
             final CoordinateReferenceSystem crs = position.getCoordinateReferenceSystem();
             MGRSEncoder encoder = encoders.get(crs);
-            if (encoder == null) try {
-                encoder = new MGRSEncoder(crs);
-                if (encoders.put(crs, encoder) != null) {
-                    throw new ConcurrentModificationException();            // Opportunistic check.
+            try {
+                if (encoder == null) {
+                    encoder = new MGRSEncoder(datum, crs);
+                    if (encoders.put(crs, encoder) != null) {
+                        throw new ConcurrentModificationException();            // Opportunistic check.
+                    }
                 }
-            } catch (FactoryException e) {
-                throw new TransformException(e.toString(), e);
+                return encoder.encode(this, position, digits);
+            } catch (IllegalArgumentException  | FactoryException e) {
+                throw new GazetteerException(e.getLocalizedMessage(), e);
             }
-            buffer.setLength(0);
-            encoder.encode(position, digits, buffer);
-            return buffer.toString();
         }
 
         /**
