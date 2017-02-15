@@ -20,7 +20,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.internal.referencing.provider.TransverseMercator.Zoner.UTM;
 
 
 /**
@@ -62,9 +61,9 @@ public final strictfp class MGRSEncoderTest extends TestCase {
      */
     @Test
     public void testZone() {
-        assertEquals( "4°E band T", 31, MGRSEncoder.zone(UTM.zone( 4),  4, 'T'));
-        assertEquals( "4°E band V", 32, MGRSEncoder.zone(UTM.zone( 4),  4, 'V'));
-        assertEquals("20°E band W", 34, MGRSEncoder.zone(UTM.zone(20), 20, 'W'));
-        assertEquals("20°E band X", 33, MGRSEncoder.zone(UTM.zone(20), 20, 'X'));
+        assertEquals( "4°E band T", 31, MGRSEncoder.zone( 4, 'T'));
+        assertEquals( "4°E band V", 32, MGRSEncoder.zone( 4, 'V'));
+        assertEquals("20°E band W", 34, MGRSEncoder.zone(20, 'W'));
+        assertEquals("20°E band X", 33, MGRSEncoder.zone(20, 'X'));
     }
 }
