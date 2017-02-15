@@ -297,13 +297,14 @@ final class MGRSEncoder {
      * Encodes the given position into a MGRS label. It is caller responsibility to ensure that the
      * position CRS is the same than the CRS specified at this {@code MGRSEncoder} creation time.
      *
-     * @param  owner     the {@code Coder} which own this {@code MGRSEncoder}.
-     * @param  position  the direct position to format as a MGRS label.
-     * @param  digits    number of digits to use for formatting the numerical part of a MGRS label.
+     * @param  owner      the {@code Coder} which own this {@code MGRSEncoder}.
+     * @param  position   the direct position to format as a MGRS label.
+     * @param  separator  the separator to insert between each component of the MGRS identifier.
+     * @param  digits     number of digits to use for formatting the numerical part of a MGRS label.
      * @return the value of {@code buffer.toString()}.
      */
-    String encode(final MilitaryGridReferenceSystem.Coder owner, DirectPosition position, final int digits)
-            throws FactoryException, TransformException
+    String encode(final MilitaryGridReferenceSystem.Coder owner, DirectPosition position,
+            final String separator, final int digits) throws FactoryException, TransformException
     {
         final StringBuilder buffer = owner.buffer;
         if (toNormalized != null) {
@@ -329,7 +330,7 @@ final class MGRSEncoder {
                 owner.normalized = position = toActualZone.transform(geographic, owner.normalized);
             }
             buffer.setLength(0);
-            buffer.append(zone).append(band);
+            buffer.append(zone).append(separator).append(band);
             if (digits >= 0) {
                 /*
                  * Specification said that 100,000-meters columns are lettered from A through Z (omitting I and O)
@@ -366,15 +367,15 @@ final class MGRSEncoder {
                 }
                 row = 'A' + (row % 20);
                 if (row >= EXCLUDE_I && ++row >= EXCLUDE_O) row++;
-                buffer.append((char) col).append((char) row);
+                buffer.append(separator).append((char) col).append((char) row);
                 /*
                  * Numerical location at the given precision.
                  * The specification requires us to truncate the number, not to round it.
                  */
                 if (digits > 0) {
                     final double precision = MathFunctions.pow10(METRE_PRECISION_DIGITS - digits);
-                    append(buffer, (int) ((x - cx * GRID_SQUARE_SIZE) / precision), digits);
-                    append(buffer, (int) ((y - cy * GRID_SQUARE_SIZE) / precision), digits);
+                    append(buffer.append(separator), (int) ((x - cx * GRID_SQUARE_SIZE) / precision), digits);
+                    append(buffer.append(separator), (int) ((y - cy * GRID_SQUARE_SIZE) / precision), digits);
                 }
             }
         } else {

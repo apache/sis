@@ -126,4 +126,29 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         assertEquals("precision", 1000000, coder.getPrecision(), STRICT);
         assertEquals("48P", coder.encode(position));
     }
+
+    /**
+     * Tests encoding of the same coordinate with various separators, mixed with various precisions.
+     *
+     * @throws TransformException if an error occurred while computing the MGRS label.
+     */
+    @Test
+    @DependsOnMethod("testPrecision")
+    public void testSeparator() throws TransformException {
+        final MilitaryGridReferenceSystem.Coder coder = coder();
+        final DirectPosition2D position = new DirectPosition2D(CommonCRS.WGS84.UTM(13, 103));
+        position.x =  377299;
+        position.y = 1483035;
+        assertEquals("separator", "", coder.getSeparator());
+        assertEquals("48PUV7729983035", coder.encode(position));
+
+        coder.setSeparator(" ");
+        assertEquals("separator", " ", coder.getSeparator());
+        assertEquals("48 P UV 77299 83035", coder.encode(position));
+
+        coder.setSeparator("/");
+        coder.setPrecision(100000);
+        assertEquals("separator", "/", coder.getSeparator());
+        assertEquals("48/P/UV", coder.encode(position));
+    }
 }

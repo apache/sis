@@ -106,6 +106,11 @@ public class MilitaryGridReferenceSystem {
         private byte digits;
 
         /**
+         * The separator to insert between each component of the MGRS identifier, or an empty string if none.
+         */
+        private String separator;
+
+        /**
          * Cached information needed for building a MGRS label from a direct position in the given CRS.
          */
         private final Map<CoordinateReferenceSystem,MGRSEncoder> encoders;
@@ -125,9 +130,10 @@ public class MilitaryGridReferenceSystem {
          * Creates a new coder initialized to the default precision.
          */
         protected Coder() {
-            digits   = 5;                          // 1 meter precision.
-            buffer   = new StringBuilder(12);      // Length of "4QFJ12345678" sample value.
-            encoders = new IdentityHashMap<>();
+            digits    = 5;                          // 1 meter precision.
+            separator = "";
+            buffer    = new StringBuilder(16);      // Length of "4 Q FJ 1234 5678" sample value.
+            encoders  = new IdentityHashMap<>();
         }
 
         /**
@@ -174,6 +180,30 @@ public class MilitaryGridReferenceSystem {
         }
 
         /**
+         * Returns the separator to insert between each component of the MGRS identifier.
+         * Components are zone number, latitude band, 100,000-metres square identifier and numerical values.
+         * By default the separator is an empty string, which produce labels like "4QFJ12345678".
+         *
+         * @return the separator to insert between each component of the MGRS identifier, or an empty string if none.
+         */
+        public String getSeparator() {
+            return separator;
+        }
+
+        /**
+         * Sets the separator to insert between each component of the MGRS identifier.
+         * Components are zone number, latitude band, 100,000-metres square identifier and numerical values.
+         * By default the separator is an empty string, which produce labels like "4QFJ12345678".
+         * If the separator is set to a space, then the labels will be formatted like "4 Q FJ 1234 5678".
+         *
+         * @param  separator  the separator to insert between each component of the MGRS identifier.
+         */
+        public void setSeparator(final String separator) {
+            ArgumentChecks.ensureNonNull("separator", separator);
+            this.separator = separator;
+        }
+
+        /**
          * Encodes the given position into a MGRS label.
          * The given position must have a CRS associated to it.
          *
@@ -192,7 +222,7 @@ public class MilitaryGridReferenceSystem {
                         throw new ConcurrentModificationException();            // Opportunistic check.
                     }
                 }
-                return encoder.encode(this, position, digits);
+                return encoder.encode(this, position, separator, digits);
             } catch (IllegalArgumentException  | FactoryException e) {
                 throw new GazetteerException(e.getLocalizedMessage(), e);
             }
