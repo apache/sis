@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.ArrayList;
 import javax.measure.UnitConverter;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.Utilities;
 
 
 /**
@@ -30,7 +33,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @version 0.8
  * @module
  */
-final class ConcatenatedConverter extends AbstractConverter {
+final class ConcatenatedConverter extends AbstractConverter implements LenientComparable {
     /**
      * For cross-version compatibility.
      */
@@ -158,6 +161,19 @@ final class ConcatenatedConverter extends AbstractConverter {
         if (other instanceof ConcatenatedConverter) {
             final ConcatenatedConverter o = (ConcatenatedConverter) other;
             return c1.equals(o.c1) && c2.equals(o.c2);
+        }
+        return false;
+    }
+
+    /**
+     * Compares this converter with the given object for equality, optionally ignoring rounding errors.
+     */
+    @Override
+    public boolean equals(final Object other, final ComparisonMode mode) {
+        if (other instanceof ConcatenatedConverter) {
+            final ConcatenatedConverter o = (ConcatenatedConverter) other;
+            return Utilities.deepEquals(c1, o.c1, mode) &&
+                   Utilities.deepEquals(c2, o.c2, mode);
         }
         return false;
     }
