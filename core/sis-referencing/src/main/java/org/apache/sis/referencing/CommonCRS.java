@@ -970,7 +970,8 @@ public enum CommonCRS {
      *   <li>The value of the <var>longitude</var> argument determines the 6°-width zone,
      *       numbered from 1 for the zone starting at 180°W up to 60 for the zone finishing at 180°E.
      *       Longitudes outside the [-180 … 180]° range will be rolled as needed before to compute the zone.</li>
-     *   <li>Calculation of UTM zone involves two special cases:
+     *   <li>Calculation of UTM zone involves two special cases (if those special cases are not desired,
+     *       they can be avoided by making sure that the given latitude is below 56°N):
      *     <ul>
      *       <li>Between 56°N and 64°N, zone 32 is widened to 9° (at the expense of zone 31)
      *           to accommodate southwest Norway.</li>
@@ -981,27 +982,24 @@ public enum CommonCRS {
      *   </li>
      * </ul>
      *
-     * If the special cases for Norway and Svalbard are not desired, they can be avoided by making sure
-     * that the given latitude is below 56°N.
+     * The map projection uses the following parameters:
+     *
+     * <blockquote><table class="sis">
+     *   <caption>Universal Transverse Mercator (UTM) parameters</caption>
+     *   <tr><th>Parameter name</th>                 <th>UTM parameter value</th></tr>
+     *   <tr><td>Latitude of natural origin</td>     <td>0°</td></tr>
+     *   <tr><td>Longitude of natural origin</td>    <td>Central meridian of the UTM zone containing the given longitude</td></tr>
+     *   <tr><td>Scale factor at natural origin</td> <td>0.9996</td></tr>
+     *   <tr><td>False easting</td>                  <td>500 000 metres</td></tr>
+     *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10 000 000 (South hemisphere) metres</td></tr>
+     * </table></blockquote>
+     *
+     * The coordinate system axes are (Easting, Northing) in metres.
      *
      * <div class="note"><b>Warning:</b>
      * be aware of parameter order! For this method, latitude is first.
      * This order is for consistency with the non-normalized {@linkplain #geographic() geographic} CRS
      * of all items in this {@code CommonCRS} enumeration.</div>
-     *
-     * The map projection uses the following parameters:
-     *
-     * <blockquote><table class="sis">
-     *   <caption>Universal Transverse Mercator (UTM) parameters</caption>
-     *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
-     *   <tr><td>Latitude of natural origin</td>     <td>0°</td></tr>
-     *   <tr><td>Longitude of natural origin</td>    <td>Central meridian of the UTM zone containing the given longitude</td></tr>
-     *   <tr><td>Scale factor at natural origin</td> <td>0.9996</td></tr>
-     *   <tr><td>False easting</td>                  <td>500000 metres</td></tr>
-     *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
-     * </table></blockquote>
-     *
-     * The coordinate system axes are (Easting, Northing) in metres.
      *
      * @param  latitude  a latitude in the desired UTM projection zone.
      * @param  longitude a longitude in the desired UTM projection zone.
