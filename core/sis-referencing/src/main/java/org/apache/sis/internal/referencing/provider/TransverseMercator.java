@@ -142,6 +142,7 @@ public final class TransverseMercator extends AbstractMercator {
     public static enum Zoner {
         /**
          * Computes zones for the Universal Transverse Mercator (UTM) projections.
+         * This computation includes special cases for Norway and Svalbard.
          *
          * <blockquote><table class="sis">
          *   <caption>Universal Transverse Mercator parameters</caption>
@@ -153,7 +154,24 @@ public final class TransverseMercator extends AbstractMercator {
          *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
          * </table></blockquote>
          */
-        UTM(Longitude.MIN_VALUE, 6, 0.9996, 500000, 10000000),
+        UTM(Longitude.MIN_VALUE, 6, 0.9996, 500000, 10000000) {
+            @Override public int zone(final double φ, final double λ) {
+                int zone = super.zone(φ, λ);
+                switch (zone) {
+                    /*
+                     * Between 56° and 64°, zone  32 is widened to 9° at the expense of zone 31 to accommodate Norway.
+                     * Between 72° and 84°, zones 33 and 35 are widened to 12° to accommodate Svalbard. To compensate,
+                     * zones 31 and 37 are widened to 9° and zones 32, 34, and 36 are eliminated.
+                     * In this switch statement, only the zones that are reduced or eliminated needs to appear.
+                     */
+                    case 31: if (isNorway  (φ)) {if (λ >=  3) zone++;             } break;   //  3° is zone 31 central meridian.
+                    case 32: if (isSvalbard(φ)) {if (λ >=  9) zone++; else zone--;} break;   //  9° is zone 32 central meridian.
+                    case 34: if (isSvalbard(φ)) {if (λ >= 21) zone++; else zone--;} break;   // 21° is zone 34 central meridian.
+                    case 36: if (isSvalbard(φ)) {if (λ >= 33) zone++; else zone--;} break;   // 33° is zone 36 central meridian.
+                }
+                return zone;
+            }
+        },
 
         /**
          * Computes zones for the Modified Transverse Mercator (MTM) projections.
@@ -236,7 +254,7 @@ public final class TransverseMercator extends AbstractMercator {
                 final boolean zoned, double latitude, double longitude)
         {
             final boolean isSouth = MathFunctions.isNegative(latitude);
-            int zone = zone(longitude);
+            int zone = zone(latitude, longitude);
             if (zoned) {
                 latitude = 0;
                 longitude = centralMeridian(zone);
@@ -272,7 +290,7 @@ public final class TransverseMercator extends AbstractMercator {
                 final boolean isNorth = Numerics.epsilonEqual(v, 0, Formulas.LINEAR_TOLERANCE);
                 if (isNorth || Numerics.epsilonEqual(v, northing, Formulas.LINEAR_TOLERANCE)) {
                     v = group.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(Units.DEGREE);
-                    int zone = zone(v);
+                    int zone = zone(0, v);
                     if (Numerics.epsilonEqual(centralMeridian(zone), v, Formulas.ANGULAR_TOLERANCE)) {
                         if (!isNorth) zone = -zone;
                         return zone;
@@ -285,16 +303,17 @@ public final class TransverseMercator extends AbstractMercator {
         /**
          * Computes the zone from a meridian in the zone.
          *
-         * @param  longitude  a meridian inside the desired zone, in degrees relative to Greenwich.
-         *                    Positive longitudes are toward east, and negative longitudes toward west.
+         * @param  φ  a latitude for which to get the zone. Used for taking in account the special cases.
+         * @param  λ  a meridian inside the desired zone, in degrees relative to Greenwich.
+         *            Positive longitudes are toward east, and negative longitudes toward west.
          * @return the zone number numbered from 1 inclusive, or 0 if the given central meridian was NaN.
          */
-        public final int zone(double longitude) {
+        public int zone(final double φ, final double λ) {
             /*
              * Casts to int are equivalent to Math.floor(double) for positive values, which is guaranteed
              * to be the case here since we normalize the central meridian to the [MIN_VALUE … MAX_VALUE] range.
              */
-            double z = (longitude - origin) / width;                                      // Zone number with fractional part.
+            double z = (λ - origin) / width;                                              // Zone number with fractional part.
             z -= Math.floor(z / ((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / width))    // Roll in the [0 … 60) range.
                               * ((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / width);
             return (int) (z + 1);   // Cast only after addition in order to handle NaN as documented.
@@ -308,6 +327,28 @@ public final class TransverseMercator extends AbstractMercator {
          */
         public final double centralMeridian(final int zone) {
             return (zone - 0.5) * width + origin;
+        }
+
+        /**
+         * First exception in UTM projection, corresponding to latitude band V.
+         * This method is public for {@code MGRSEncoderTest.verifyZonerConsistency()} purpose only.
+         *
+         * @param  φ  the latitude in degrees to test.
+         * @return whether the given latitude is in the Norway latitude band.
+         */
+        public static boolean isNorway(final double φ) {
+            return (φ >= 56) && (φ < 64);
+        }
+
+        /**
+         * Second exception in UTM projection, corresponding to latitude band X.
+         * This method is public for {@code MGRSEncoderTest.verifyZonerConsistency()} purpose only.
+         *
+         * @param  φ  the latitude in degrees to test.
+         * @return whether the given latitude is in the Svalbard latitude band.
+         */
+        public static boolean isSvalbard(final double φ) {
+            return (φ >= 72) && (φ < 84);
         }
     }
 }

@@ -431,13 +431,15 @@ public enum CommonCRS {
      *       or an instance of {@link org.opengis.referencing.crs.CompoundCRS}
      *       with an {@linkplain CRS#getHorizontalComponent horizontal component}.</li>
      *   <li>The {@code crs} or the horizontal component of {@code crs} is associated to a {@link GeodeticDatum}.</li>
-     *   <li>The geodetic datum has the same EPSG code than one of the {@code CommonCRS} enumeration values,
-     *       or has no EPSG code but is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
+     *   <li>The geodetic datum either<ul>
+     *     <li>has the same EPSG code than one of the {@code CommonCRS} enumeration values, or</li>
+     *     <li>has no EPSG code but is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
      *       to the {@link #datum()} value of one of the {@code CommonCRS} enumeration values.</li>
+     *   </ul></li>
      * </ul>
      *
      * This method is useful for easier creation of various coordinate reference systems through the
-     * {@link #geographic()}, {@link #geocentric()} and other convenience methods when the set of datum
+     * {@link #geographic()}, {@link #geocentric()} or other convenience methods when the set of datums
      * supported by {@code CommonCRS} is known to be sufficient.
      *
      * @param  crs  the coordinate reference system for which to get a {@code CommonCRS} value.
@@ -959,15 +961,28 @@ public enum CommonCRS {
      * There is a total of 120 UTM zones, with 60 zones in the North hemisphere and 60 zones in the South hemisphere.
      * The projection zone is determined from the arguments as below:
      *
-     * <ul>
+     * <ul class="verbose">
      *   <li>The sign of the <var>latitude</var> argument determines the hemisphere:
      *       North for positive latitudes (including positive zero) or
      *       South for negative latitudes (including negative zero).
-     *       The latitude magnitude is ignored, except for ensuring that the latitude is inside the [-90 … 90]° range.</li>
+     *       The latitude magnitude is ignored, except for the special cases documented below
+     *       and for ensuring that the latitude is inside the [-90 … 90]° range.</li>
      *   <li>The value of the <var>longitude</var> argument determines the 6°-width zone,
      *       numbered from 1 for the zone starting at 180°W up to 60 for the zone finishing at 180°E.
      *       Longitudes outside the [-180 … 180]° range will be rolled as needed before to compute the zone.</li>
+     *   <li>Calculation of UTM zone involves two special cases:
+     *     <ul>
+     *       <li>Between 56°N and 64°N, zone 32 is widened to 9° (at the expense of zone 31)
+     *           to accommodate southwest Norway.</li>
+     *       <li>Between 72°N and 84°N, zones 33 and 35 are widened to 12° to accommodate Svalbard.
+     *           To compensate for these 12° wide zones, zones 31 and 37 are widened to 9° and
+     *           zones 32, 34, and 36 are eliminated.</li>
+     *     </ul>
+     *   </li>
      * </ul>
+     *
+     * If the special cases for Norway and Svalbard are not desired, they can be avoided by making sure
+     * that the given latitude is below 56°N.
      *
      * <div class="note"><b>Warning:</b>
      * be aware of parameter order! For this method, latitude is first.
@@ -998,7 +1013,7 @@ public enum CommonCRS {
         ArgumentChecks.ensureBetween("latitude",   Latitude.MIN_VALUE,     Latitude.MAX_VALUE,     latitude);
         ArgumentChecks.ensureBetween("longitude", -Formulas.LONGITUDE_MAX, Formulas.LONGITUDE_MAX, longitude);
         final boolean isSouth = MathFunctions.isNegative(latitude);
-        final int zone = TransverseMercator.Zoner.UTM.zone(longitude);
+        final int zone = TransverseMercator.Zoner.UTM.zone(latitude, longitude);
         final Integer key = isSouth ? -zone : zone;
         ProjectedCRS crs;
         synchronized (cachedUTM) {

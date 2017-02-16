@@ -238,11 +238,16 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
      * </table></blockquote>
      *
+     * Note that calculation of UTM zone contains special cases for Norway and Svalbard.
+     * If not desired, those exceptions can be avoided by making sure that the given latitude is below 56°N.
+     *
      * @param  isUTM      if {@code true}, the given central meridian will be snapped to the central meridian of a UTM zone.
      * @param  latitude   the latitude in the center of the desired projection.
      * @param  longitude  the longitude in the center of the desired projection.
      * @return {@code this}, for method calls chaining.
      * @throws FactoryException if the operation method for the Transverse Mercator projection can not be obtained.
+     *
+     * @see CommonCRS#UTM(double, double)
      */
     public GeodeticObjectBuilder setTransverseMercator(boolean isUTM, double latitude, double longitude)
             throws FactoryException

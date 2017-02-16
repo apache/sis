@@ -21,7 +21,7 @@
  * Geographic identifiers are location descriptors such as addresses and grid indexes.
  * Their reference systems are defined by <cite>Spatial referencing by geographic identifiers</cite> (ISO 19112).
  * Gazetteers provide linking mechanism between referencing using geographic identifiers (this package)
- * and referencing using coordinates ({@link org.apache.sis.referencing.crs} package).
+ * and referencing using coordinates (…{@link org.apache.sis.referencing.crs .crs} package).
  *
  * @author  Chris Mattmann (JPL)
  * @author  Martin Desruisseaux (Geomatys)

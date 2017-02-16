@@ -587,7 +587,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
              * 42005: WGS 84 / Auto Mollweide         —   defined by "Central_Meridian" only.
              */
             case 42001: isUTM  = true; break;
-            case 42002: isUTM  = (latitude == 0) && (UTM.centralMeridian(UTM.zone(longitude)) == longitude); break;
+            case 42002: isUTM  = (latitude == 0) && (UTM.centralMeridian(UTM.zone(0, longitude)) == longitude); break;
             case 42003: method = "Orthographic";       param = Constants.LATITUDE_OF_ORIGIN;  break;
             case 42004: method = "Equirectangular";    param = Constants.STANDARD_PARALLEL_1; break;
             case 42005: method = "Mollweide";                                                 break;

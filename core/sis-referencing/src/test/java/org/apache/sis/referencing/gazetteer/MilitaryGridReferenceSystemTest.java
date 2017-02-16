@@ -76,8 +76,9 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         assertEquals("32GNV8410260761", coder.encode(position));
         /*
          * 82°N 10°E (UTM zone 32) — in this special case, zone 32 is replaced by zone 33.
+         * Call to WGS84.UTM(φ,λ) needs to specify a smaller latitude for getting zone 32.
          */
-        position.setCoordinateReferenceSystem(CommonCRS.WGS84.UTM(82, 10));
+        position.setCoordinateReferenceSystem(CommonCRS.WGS84.UTM(40, 10));
         position.x =  515537;
         position.y = 9104963;
         assertEquals("33XVM2240708183", coder.encode(position));
