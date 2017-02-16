@@ -37,13 +37,18 @@ import static org.junit.Assert.*;
  */
 public final strictfp class TransverseMercatorTest extends TestCase {
     /**
-     * Tests {@link TransverseMercator.Zoner#zone(double)}.
+     * Tests {@link TransverseMercator.Zoner#zone(double)},
+     * including the special cases for Norway and Svalbard.
      */
     @Test
     public void testZone() {
-        assertEquals(1,  TransverseMercator.Zoner.UTM.zone(-180));
-        assertEquals(10, TransverseMercator.Zoner.UTM.zone(-123));
-        assertEquals(60, TransverseMercator.Zoner.UTM.zone(179.9));
+        assertEquals("180°E",        1, TransverseMercator.Zoner.UTM.zone( 0, -180  ));
+        assertEquals("123°E",       10, TransverseMercator.Zoner.UTM.zone( 0, -123  ));
+        assertEquals("179.9°W",     60, TransverseMercator.Zoner.UTM.zone( 0,  179.9));
+        assertEquals( "4°E band T", 31, TransverseMercator.Zoner.UTM.zone(45,    4  ));
+        assertEquals( "4°E band V", 32, TransverseMercator.Zoner.UTM.zone(56,    4  ));
+        assertEquals("20°E band W", 34, TransverseMercator.Zoner.UTM.zone(71,   20  ));
+        assertEquals("20°E band X", 33, TransverseMercator.Zoner.UTM.zone(72,   20  ));
     }
 
     /**

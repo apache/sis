@@ -31,6 +31,7 @@ import org.apache.sis.measure.Units;
 
 /**
  * The provider for <cite>"Polar Stereographic (Variant A)"</cite> projection (EPSG:9810).
+ * Also used for the definition of Universal Polar Stereographic (UPS) projection.
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)

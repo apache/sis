@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
+import org.apache.sis.internal.referencing.provider.TransverseMercator.Zoner;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -47,6 +48,7 @@ public final strictfp class MGRSEncoderTest extends TestCase {
     @Test
     public void testLatitudeBand() {
         assertEquals("80°S", 'C', MGRSEncoder.latitudeBand(-80));
+        assertEquals("45°N", 'T', MGRSEncoder.latitudeBand( 45));
         assertEquals("55°N", 'U', MGRSEncoder.latitudeBand( 55));
         assertEquals("56°N", 'V', MGRSEncoder.latitudeBand( 56));
         assertEquals("63°N", 'V', MGRSEncoder.latitudeBand( 63));
@@ -57,13 +59,17 @@ public final strictfp class MGRSEncoderTest extends TestCase {
     }
 
     /**
-     * Tests {@link MGRSEncoder#zone(double, char)}.
+     * Verifies that {@link Zoner#isNorway(double)} and {@link Zoner#isSvalbard(double)}
+     * are consistent with the latitude bands.
      */
     @Test
-    public void testZone() {
-        assertEquals( "4°E band T", 31, MGRSEncoder.zone( 4, 'T'));
-        assertEquals( "4°E band V", 32, MGRSEncoder.zone( 4, 'V'));
-        assertEquals("20°E band W", 34, MGRSEncoder.zone(20, 'W'));
-        assertEquals("20°E band X", 33, MGRSEncoder.zone(20, 'X'));
+    public void verifyZonerConsistency() {
+        for (double φ = MGRSEncoder.UTM_SOUTH_BOUNDS; φ < MGRSEncoder.UTM_NORTH_BOUNDS; φ++) {
+            final String latitude = String.valueOf(φ);
+            final char band = MGRSEncoder.latitudeBand(φ);
+            assertTrue  (latitude, band >= 'C' && band <= 'X');
+            assertEquals(latitude, band == 'V', Zoner.isNorway(φ));
+            assertEquals(latitude, band == 'X', Zoner.isSvalbard(φ));
+        }
     }
 }

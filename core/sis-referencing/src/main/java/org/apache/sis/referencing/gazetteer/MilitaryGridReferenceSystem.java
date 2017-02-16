@@ -33,13 +33,14 @@ import org.apache.sis.util.resources.Errors;
 /**
  * The Military Grid Reference System (MGRS).
  * The MGRS is the geocoordinate standard used by NATO militaries for locating points on the earth.
- * It is based on the Universal Transverse Mercator (UTM) and the polar stereographic projections.
- * Despite its name, MGRS is not used only for military purposes; it is used also for organizing
- * Earth Observation data in a directory tree on some cloud storages for example.
+ * It is based on the Universal Transverse Mercator (UTM) and the Universal Polar Stereographic (UPS) projections.
+ * Despite its name, MGRS is used not only for military purposes; it is used also for organizing Earth Observation
+ * data in directory trees for example.
  *
  * <div class="section">Immutability and thread safety</div>
- * This class is immutable and thus thread-safe. However the {@code Coder} performing conversions
- * between labels and coordinates are not thread-safe; a new instance must be created for each thread.
+ * This class is immutable and thus thread-safe.
+ * However the {@link Coder Coder} instances performing conversions between labels and coordinates are not thread-safe;
+ * it is recommended to create a new {@code Coder} instance for each thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
@@ -143,13 +144,13 @@ public class MilitaryGridReferenceSystem {
          * <table class="sis">
          *   <caption>MGRS label precisions</caption>
          *   <tr><th>Precision (m)</th>             <th>Label example</th></tr>
-         *   <tr><td style="text-align:right">1</td> <td>4QFJ 12345 67890</td></tr>
-         *   <tr><td style="text-align:right">10</td> <td>4QFJ 1234 6789</td></tr>
-         *   <tr><td style="text-align:right">100</td> <td>4QFJ 123 678</td></tr>
-         *   <tr><td style="text-align:right">1000</td> <td>4QFJ 12 67</td></tr>
-         *   <tr><td style="text-align:right">10 000</td> <td>4QFJ 1 6</td></tr>
-         *   <tr><td style="text-align:right">100 000</td> <td>4QFJ</td></tr>
-         *   <tr><td style="text-align:right">(approximative) 1 000 000</td> <td>4Q</td></tr>
+         *   <tr><td style="text-align:right">1</td> <td>4 Q FJ 12345 67890</td></tr>
+         *   <tr><td style="text-align:right">10</td> <td>4 Q FJ 1234 6789</td></tr>
+         *   <tr><td style="text-align:right">100</td> <td>4 Q FJ 123 678</td></tr>
+         *   <tr><td style="text-align:right">1000</td> <td>4 Q FJ 12 67</td></tr>
+         *   <tr><td style="text-align:right">10 000</td> <td>4 Q FJ 1 6</td></tr>
+         *   <tr><td style="text-align:right">100 000</td> <td>4 Q FJ</td></tr>
+         *   <tr><td style="text-align:right">(approximative) 1 000 000</td> <td>4 Q</td></tr>
          * </table>
          *
          * Values smaller than 1 (e.g. 0.01 for a centimetre precision) may also be returned

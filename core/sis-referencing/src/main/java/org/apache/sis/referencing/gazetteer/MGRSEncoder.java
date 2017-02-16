@@ -63,12 +63,12 @@ final class MGRSEncoder {
     /**
      * Southernmost bound of the first latitude band ({@code 'C'}).
      */
-    private static final double UTM_SOUTH_BOUNDS = -80;
+    static final double UTM_SOUTH_BOUNDS = -80;
 
     /**
      * Northernmost bound of the last latitude band ({@code 'X'}).
      */
-    private static final double UTM_NORTH_BOUNDS = 84;
+    static final double UTM_NORTH_BOUNDS = 84;
 
     /**
      * Special {@link #crsZone} value for the UPS South (Universal Polar Stereographic) projection.
@@ -253,47 +253,6 @@ final class MGRSEncoder {
     }
 
     /**
-     * Computes the UTM zone for the given longitude and latitude band.
-     * Those zones are normally the same than UTM, except for Norway and
-     * Svalbard which have special rules.
-     *
-     * @param  band  the latitude band computed by {@link #latitudeBand(double)}.
-     * @param  λ     the longitude for which to compute the UTM zone.
-     * @return the UTM zone for the given longitude, or 0 if the given longitude is NaN or infinite.
-     */
-    static int zone(final double λ, final char band) {
-        int zone = TransverseMercator.Zoner.UTM.zone(λ);
-        switch (band) {
-            /*
-             * Zone 32 has been widened to 9° (at the expense of zone 31)
-             * between latitudes 56° and 64° to accommodate southwest Norway.
-             */
-            case 'V': {
-                if (zone == 31 && λ >= 3) zone++;           // 3° is the central meridian of zone 31.
-                break;
-            }
-            /*
-             * Between 72° and 84°, zones 33 and 35 have been widened to 12° to accommodate Svalbard.
-             * To compensate for these 12° wide zones, zones 31 and 37 are widened to 9° and zones 32,
-             * 34, and 36 are eliminated.
-             */
-            case 'X': {
-                switch (zone) {
-                    case 32: if (λ >=  9) zone++; else zone--; break;   //  9° is zone 32 central meridian.
-                    case 34: if (λ >= 21) zone++; else zone--; break;   // 21° is zone 34 central meridian.
-                    case 36: if (λ >= 33) zone++; else zone--; break;   // 33° is zone 36 central meridian.
-                }
-                break;
-            }
-        }
-        if (zone == 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, "λ"));
-        }
-        assert zone >= 1 && zone <= 60 : zone;
-        return zone;
-    }
-
-    /**
      * Encodes the given position into a MGRS label. It is caller responsibility to ensure that the
      * position CRS is the same than the CRS specified at this {@code MGRSEncoder} creation time.
      *
@@ -317,20 +276,23 @@ final class MGRSEncoder {
             /*
              * Universal Transverse Mercator (UTM) case.
              */
-            final char band = latitudeBand(φ);
-            final int  zone = zone(geographic.getOrdinate(1), band);
-            final int  sz   = MathFunctions.isNegative(φ) ? -zone : zone;       // Never zero.
+            final double λ = geographic.getOrdinate(1);
+            final int zone = TransverseMercator.Zoner.UTM.zone(φ, λ);
+            final int sz   = MathFunctions.isNegative(φ) ? -zone : zone;
+            if (sz == 0) {
+                // Zero value at this point is the result of NaN of infinite ordinate value.
+                throw new GazetteerException(Errors.format(Errors.Keys.NotANumber_1, "longitude"));
+            }
             if (sz != crsZone) {
                 if (sz != actualZone) {
-                    double cm    = TransverseMercator.Zoner.UTM.centralMeridian(zone);
-                    actualZone   = 0;   // In case an exception is thrown on the next line.
-                    toActualZone = CRS.findOperation(datum.geographic(), datum.UTM(φ, cm), null).getMathTransform();
+                    actualZone   = 0;                           // In case an exception is thrown on the next line.
+                    toActualZone = CRS.findOperation(datum.geographic(), datum.UTM(φ, λ), null).getMathTransform();
                     actualZone   = sz;
                 }
                 owner.normalized = position = toActualZone.transform(geographic, owner.normalized);
             }
             buffer.setLength(0);
-            buffer.append(zone).append(separator).append(band);
+            buffer.append(zone).append(separator).append(latitudeBand(φ));
             if (digits >= 0) {
                 /*
                  * Specification said that 100,000-meters columns are lettered from A through Z (omitting I and O)
