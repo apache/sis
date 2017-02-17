@@ -290,6 +290,7 @@ public final strictfp class CommonCRSTest extends TestCase {
         final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
         assertEquals(Constants.LATITUDE_OF_ORIGIN,    0, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
         assertEquals(Constants.CENTRAL_MERIDIAN,   -123, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
+        assertEquals(Constants.SCALE_FACTOR,     0.9996, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), STRICT);
         assertEquals(Constants.FALSE_EASTING,    500000, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), STRICT);
         assertEquals(Constants.FALSE_NORTHING, 10000000, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
         assertSame("Expected a cached instance.", crs, CommonCRS.WGS72.universal(-45, -122));
@@ -309,6 +310,7 @@ public final strictfp class CommonCRSTest extends TestCase {
         final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
         assertEquals(Constants.LATITUDE_OF_ORIGIN, -90, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
         assertEquals(Constants.CENTRAL_MERIDIAN,     0, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
+        assertEquals(Constants.SCALE_FACTOR,     0.994, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), STRICT);
         assertEquals(Constants.FALSE_EASTING,  2000000, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), STRICT);
         assertEquals(Constants.FALSE_NORTHING, 2000000, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
         assertSame("Expected a cached instance.", crs, CommonCRS.WGS72.universal(-85, -122));

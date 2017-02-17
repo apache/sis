@@ -602,7 +602,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         CartesianCS cs;                             // Coordinate system with (E,N) axes in metres.
         try {
             if (isUTM != null && isUTM) {
-                crs = datum.UTM(latitude, longitude);
+                crs = datum.universal(forceUTM(latitude), longitude);
                 if (factor == (isLegacy ? Constants.EPSG_METRE : 1)) {
                     return crs;
                 }
@@ -611,7 +611,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             } else {
                 cs = projectedCS;
                 if (cs == null) {
-                    crs = datum.UTM(latitude, longitude);
+                    crs = datum.universal(forceUTM(latitude), longitude);
                     projectedCS = cs = crs.getCoordinateSystem();
                     baseCRS = crs.getBaseCRS();
                 } else {
@@ -680,6 +680,17 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             message = Resources.format(Resources.Keys.NoSuchAuthorityCode_3, Constants.EPSG, Unit.class, s);
         }
         throw new NoSuchAuthorityCodeException(message, Constants.EPSG, s);
+    }
+
+    /**
+     * Forces the given latitude in the range of UTM projections, including Norway and Svalbard special cases.
+     * This method is used for preventing {@code "AUTO:42001"} to switch on the Universal Polar Stereographic
+     * projection for high latitudes, because the WMS specification does not said that we should. However we
+     * could remove this method if we consider allowing that as an Apache SIS extension.
+     */
+    private static double forceUTM(final double latitude) {
+        return Math.max(Zoner.SOUTH_BOUNDS + 0.5,
+               Math.min(Zoner.NORTH_BOUNDS - 0.5, latitude));
     }
 
     /**
