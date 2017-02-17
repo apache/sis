@@ -95,8 +95,8 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
     }
 
     /**
-     * Returns the EPSG authority with only a modification in the title of emphasing that this is a subset
-     * of EPSG dataset.
+     * Returns the EPSG authority with only a modification in the title
+     * for emphasing that this is a subset of EPSG dataset.
      */
     @Override
     public synchronized Citation getAuthority() {

@@ -74,6 +74,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
 /**
  * Definitions of referencing objects identified by the {@link CommonCRS} enumeration values.
  * This class is used only as a fallback if the objects can not be fetched from the EPSG database.
+ * This class should not be loaded when a connection to an EPSG geodetic dataset is available.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -109,7 +110,7 @@ final class StandardDefinitions {
             map.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
         }
         map.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, name));
-        map.put(ALIAS_KEY, alias); // May be null, which is okay.
+        map.put(ALIAS_KEY, alias);                                      // May be null, which is okay.
         if (world) {
             map.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
         }
@@ -146,7 +147,7 @@ final class StandardDefinitions {
         final OperationMethod method;
         try {
             method = DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class)
-                                .getOperationMethod(isUTM ? TransverseMercator.NAME : PolarStereographicA.NAME);
+                            .getOperationMethod(isUTM ? TransverseMercator.NAME : PolarStereographicA.NAME);
         } catch (NoSuchIdentifierException e) {
             throw new IllegalStateException(e);                     // Should not happen with SIS implementation.
         }
@@ -169,17 +170,17 @@ final class StandardDefinitions {
      */
     static GeographicCRS createGeographicCRS(final short code, final GeodeticDatum datum, final EllipsoidalCS cs) {
         final String name;
-        String alias = null;
-        String scope = null;
+        String  alias = null;
+        String  scope = null;
         boolean world = false;
         switch (code) {
-            case 4326: name = "WGS 84"; world = true; scope = "Horizontal component of 3D system."; break;
-            case 4322: name = "WGS 72"; world = true; break;
-            case 4258: name = "ETRS89"; alias = "ETRS89-GRS80"; break;
-            case 4269: name = "NAD83";  break;
-            case 4267: name = "NAD27";  break;
-            case 4230: name = "ED50";   break;
-            case 4047: name = "Unspecified datum based upon the GRS 1980 Authalic Sphere"; world = true; break;
+            case 4326: name = "WGS 84"; world = true;           scope = "Horizontal component of 3D system."; break;
+            case 4322: name = "WGS 72"; world = true;           scope = "Horizontal component of 3D system."; break;
+            case 4258: name = "ETRS89"; alias = "ETRS89-GRS80"; scope = "Horizontal component of 3D system."; break;
+            case 4269: name = "NAD83";                          scope = "Geodetic survey.";                   break;
+            case 4267: name = "NAD27";                          scope = "Geodetic survey.";                   break;
+            case 4230: name = "ED50";                           scope = "Geodetic survey.";                   break;
+            case 4047: name = "Unspecified datum based upon the GRS 1980 Authalic Sphere"; world = true;      break;
             default:   throw new AssertionError(code);
         }
         final Map<String, Object> properties = properties(code, name, alias, world);
