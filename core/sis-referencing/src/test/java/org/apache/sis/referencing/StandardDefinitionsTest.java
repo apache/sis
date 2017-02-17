@@ -71,14 +71,15 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
     }
 
     /**
-     * Tests {@link StandardDefinitions#createUTM(int, GeographicCRS, double, boolean, CartesianCS)}.
+     * Tests {@link StandardDefinitions#createUniversal(int, GeographicCRS, boolean, double, double, CartesianCS)}
+     * for a Universal Transverse Mercator (UTM) projection.
      *
      * @since 0.7
      */
     @Test
     @DependsOnMethod("testCreateGeographicCRS")
     public void testCreateUTM() {
-        final ProjectedCRS crs = StandardDefinitions.createUTM(32610, HardCodedCRS.WGS84, 15, -122, HardCodedCS.PROJECTED);
+        final ProjectedCRS crs = StandardDefinitions.createUniversal(32610, HardCodedCRS.WGS84, true, 15, -122, HardCodedCS.PROJECTED);
         assertEquals("name", "WGS 84 / UTM zone 10N", crs.getName().getCode());
         final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
         assertEquals(Constants.LATITUDE_OF_ORIGIN, -123, pg.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(), STRICT);

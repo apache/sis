@@ -43,6 +43,7 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.EngineeringDatum;
+import org.apache.sis.internal.referencing.provider.TransverseMercator.Zoner;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -59,8 +60,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.SimpleInternationalString;
-
-import static org.apache.sis.internal.referencing.provider.TransverseMercator.Zoner.UTM;
 
 
 /**
@@ -587,7 +586,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
              * 42005: WGS 84 / Auto Mollweide         —   defined by "Central_Meridian" only.
              */
             case 42001: isUTM  = true; break;
-            case 42002: isUTM  = (latitude == 0) && (UTM.centralMeridian(UTM.zone(0, longitude)) == longitude); break;
+            case 42002: isUTM  = (latitude == 0) && (Zoner.UTM.centralMeridian(Zoner.UTM.zone(0, longitude)) == longitude); break;
             case 42003: method = "Orthographic";       param = Constants.LATITUDE_OF_ORIGIN;  break;
             case 42004: method = "Equirectangular";    param = Constants.STANDARD_PARALLEL_1; break;
             case 42005: method = "Mollweide";                                                 break;
@@ -598,9 +597,9 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
          * enumeration if possible because CommonCRS will itself delegate to the EPSG factory if possible.
          */
         final CommonCRS datum = CommonCRS.WGS84;
-        final GeographicCRS baseCRS;
-        final ProjectedCRS crs;
-        CartesianCS cs;
+        final GeographicCRS baseCRS;                // To be set, directly or indirectly, to WGS84.geographic().
+        final ProjectedCRS crs;                     // Temporary UTM projection, for extracting other properties.
+        CartesianCS cs;                             // Coordinate system with (E,N) axes in metres.
         try {
             if (isUTM != null && isUTM) {
                 crs = datum.UTM(latitude, longitude);
@@ -640,10 +639,10 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
              */
             final GeodeticObjectBuilder builder = new GeodeticObjectBuilder();
             if (isUTM != null) {
-                if (isUTM) {
+                if (isUTM && crs != null) {
                     builder.addName(crs.getName());
                 } // else default to the conversion name, which is "Transverse Mercator".
-                builder.setTransverseMercator(isUTM, latitude, longitude);
+                builder.setTransverseMercator(isUTM ? Zoner.UTM : Zoner.ANY, latitude, longitude);
             } else {
                 builder.setConversionMethod(method)
                        .addName(PROJECTION_NAMES[projection - FIRST_PROJECTION_CODE])

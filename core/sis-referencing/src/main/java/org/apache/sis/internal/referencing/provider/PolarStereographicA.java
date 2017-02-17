@@ -110,6 +110,36 @@ public final class PolarStereographicA extends AbstractStereographic {
     }
 
     /**
+     * Sets the parameter values for a Universal Polar Stereographic projection
+     * and returns a suggested conversion name.
+     *
+     * <blockquote><table class="sis">
+     *   <caption>Universal Polar Stereographic parameters</caption>
+     *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
+     *   <tr><td>Latitude of natural origin</td>     <td>90°N or 90°S</td></tr>
+     *   <tr><td>Longitude of natural origin</td>    <td>0°</td></tr>
+     *   <tr><td>Scale factor at natural origin</td> <td>0.994</td></tr>
+     *   <tr><td>False easting</td>                  <td>2000000 metres</td></tr>
+     *   <tr><td>False northing</td>                 <td>2000000 metres</td></tr>
+     * </table></blockquote>
+     *
+     * @param  group  the parameters for which to set the values.
+     * @param  north  {@code true} for North pole, or {@code false} for South pole.
+     * @return a name like <cite>"Universal Polar Stereographic North"</cite>,
+     *         depending on the arguments given to this method.
+     *
+     * @since 0.8
+     */
+    public static String setParameters(final ParameterValueGroup group, final boolean north) {
+        group.parameter(Constants.LATITUDE_OF_ORIGIN).setValue(north ? Latitude.MAX_VALUE : Latitude.MIN_VALUE, Units.DEGREE);
+        group.parameter(Constants.CENTRAL_MERIDIAN)  .setValue(0,       Units.DEGREE);
+        group.parameter(Constants.SCALE_FACTOR)      .setValue(0.994,   Units.UNITY);
+        group.parameter(Constants.FALSE_EASTING)     .setValue(2000000, Units.METRE);
+        group.parameter(Constants.FALSE_NORTHING)    .setValue(2000000, Units.METRE);
+        return "Universal Polar Stereographic " + (north ? "North" : "South");
+    }
+
+    /**
      * If the given parameter values are those of a Universal Polar Stereographic projection,
      * returns -1 for South pole or +1 for North pole. Otherwise returns 0. It is caller's
      * responsibility to verify that the operation method is {@value #NAME}.

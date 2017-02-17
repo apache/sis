@@ -64,7 +64,7 @@ public final strictfp class MGRSEncoderTest extends TestCase {
      */
     @Test
     public void verifyZonerConsistency() {
-        for (double φ = MGRSEncoder.UTM_SOUTH_BOUNDS; φ < MGRSEncoder.UTM_NORTH_BOUNDS; φ++) {
+        for (double φ = Zoner.SOUTH_BOUNDS; φ < Zoner.NORTH_BOUNDS; φ++) {
             final String latitude = String.valueOf(φ);
             final char band = MGRSEncoder.latitudeBand(φ);
             assertTrue  (latitude, band >= 'C' && band <= 'X');
