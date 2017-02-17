@@ -41,12 +41,14 @@ import org.opengis.util.NoSuchIdentifierException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultSphericalCS;
@@ -126,29 +128,31 @@ final class StandardDefinitions {
     }
 
     /**
-     * Returns the operation method for Transverse Mercator projection using the SIS factory implementation.
-     * This method restricts the factory to SIS implementation instead than arbitrary factory in order to meet
-     * the contract saying that {@link CommonCRS} methods should never fail.
+     * Creates a Universal Transverse Mercator (UTM) or a Universal Polar Stereographic (UPS) projected CRS
+     * using the Apache SIS factory implementation. This method restricts the factory to SIS implementation
+     * instead than arbitrary factory in order to meet the contract saying that {@link CommonCRS} methods
+     * should never fail.
      *
      * @param code       the EPSG code, or 0 if none.
      * @param baseCRS    the geographic CRS on which the projected CRS is based.
-     * @param latitude   a latitude in the zone of the desired projection, to be snapped to 0°.
+     * @param isUTM      {@code true} for UTM or {@code false} for UPS. Note: redundant with the given latitude.
+     * @param latitude   a latitude in the zone of the desired projection, to be snapped to 0°, 90°S or 90°N.
      * @param longitude  a longitude in the zone of the desired projection, to be snapped to UTM central meridian.
      * @param derivedCS  the projected coordinate system.
      */
-    static ProjectedCRS createUTM(final int code, final GeographicCRS baseCRS,
+    static ProjectedCRS createUniversal(final int code, final GeographicCRS baseCRS, final boolean isUTM,
             final double latitude, final double longitude, final CartesianCS derivedCS)
     {
         final OperationMethod method;
         try {
-            method = DefaultFactories.forBuildin(MathTransformFactory.class,
-                                          DefaultMathTransformFactory.class)
-                    .getOperationMethod(TransverseMercator.NAME);
+            method = DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class)
+                                .getOperationMethod(isUTM ? TransverseMercator.NAME : PolarStereographicA.NAME);
         } catch (NoSuchIdentifierException e) {
-            throw new IllegalStateException(e);     // Should not happen with SIS implementation.
+            throw new IllegalStateException(e);                     // Should not happen with SIS implementation.
         }
         final ParameterValueGroup parameters = method.getParameters().createValue();
-        String name = TransverseMercator.Zoner.UTM.setParameters(parameters, true, latitude, longitude);
+        String name = isUTM ? TransverseMercator.Zoner.UTM.setParameters(parameters, latitude, longitude)
+                            : PolarStereographicA.setParameters(parameters, latitude >= 0);
         final DefaultConversion conversion = new DefaultConversion(properties(0, name, null, false), method, null, parameters);
 
         name = baseCRS.getName().getCode() + " / " + name;
@@ -313,16 +317,17 @@ final class StandardDefinitions {
     @SuppressWarnings("fallthrough")
     static CoordinateSystem createCoordinateSystem(final short code) {
         final String name;
-        final int dim;                  // Number of dimension.
+        int type = 0;                   // 0= Cartesian (default), 1= Spherical, 2= Ellipsoidal
+        int dim = 2;                    // Number of dimension, default to 2.
         short axisCode;                 // Code of first axis + dim (or code after the last axis).
-        boolean isCartesian = false;
-        boolean isSpherical = false;
         switch (code) {
-            case 6422: name = "Ellipsoidal 2D"; dim = 2; axisCode = 108; break;
-            case 6423: name = "Ellipsoidal 3D"; dim = 3; axisCode = 111; break;
-            case 6404: name = "Spherical";      dim = 3; axisCode =  63; isSpherical = true; break;
-            case 6500: name = "Earth centred";  dim = 3; axisCode = 118; isCartesian = true; break;
-            case 4400: name = "Cartesian 2D";   dim = 2; axisCode =   3; isCartesian = true; break;
+            case 6422: name = "Ellipsoidal 2D"; type = 2;          axisCode =  108; break;
+            case 6423: name = "Ellipsoidal 3D"; type = 2; dim = 3; axisCode =  111; break;
+            case 6404: name = "Spherical";      type = 1; dim = 3; axisCode =   63; break;
+            case 6500: name = "Earth centred";            dim = 3; axisCode =  118; break;
+            case 4400: name = "Cartesian 2D";                      axisCode =    3; break;
+            case 1026: name = "Cartesian 2D for UPS north";        axisCode = 1067; break;
+            case 1027: name = "Cartesian 2D for UPS south";        axisCode = 1059; break;
             default:   throw new AssertionError(code);
         }
         final Map<String,?> properties = properties(code, name, null, false);
@@ -334,20 +339,13 @@ final class StandardDefinitions {
             case 1:  xAxis = createAxis(--axisCode);
             case 0:  break;
         }
-        if (isCartesian) {
-            if (zAxis != null) {
-                return new DefaultCartesianCS(properties, xAxis, yAxis, zAxis);
-            } else {
-                return new DefaultCartesianCS(properties, xAxis, yAxis);
-            }
-        } else if (isSpherical) {
-            return new DefaultSphericalCS(properties, xAxis, yAxis, zAxis);
-        } else {
-            if (zAxis != null) {
-                return new DefaultEllipsoidalCS(properties, xAxis, yAxis, zAxis);
-            } else {
-                return new DefaultEllipsoidalCS(properties, xAxis, yAxis);
-            }
+        switch (type) {
+            default: throw new AssertionError(type);
+            case 0:  return (zAxis != null) ? new DefaultCartesianCS  (properties, xAxis, yAxis, zAxis)
+                                            : new DefaultCartesianCS  (properties, xAxis, yAxis);
+            case 1:  return                   new DefaultSphericalCS  (properties, xAxis, yAxis, zAxis);
+            case 2:  return (zAxis != null) ? new DefaultEllipsoidalCS(properties, xAxis, yAxis, zAxis)
+                                            : new DefaultEllipsoidalCS(properties, xAxis, yAxis);
         }
     }
 
@@ -367,12 +365,10 @@ final class StandardDefinitions {
         switch (code) {
             case 1:    name = "Easting";
                        abrv = "E";
-                       unit = Units.METRE;
                        dir  = AxisDirection.EAST;
                        break;
             case 2:    name = "Northing";
                        abrv = "N";
-                       unit = Units.METRE;
                        dir  = AxisDirection.NORTH;
                        break;
             case 60:   name = "Spherical latitude";
@@ -393,7 +389,6 @@ final class StandardDefinitions {
                        break;
             case 62:   name = "Geocentric radius";
                        abrv = "R";                          // See HardCodedAxes.GEOCENTRIC_RADIUS in tests.
-                       unit = Units.METRE;
                        dir  = AxisDirection.UP;
                        rm   = RangeMeaning.EXACT;
                        min  = 0;
@@ -439,6 +434,23 @@ final class StandardDefinitions {
             case 117:  name = AxisNames.GEOCENTRIC_Z;
                        abrv = "Z";
                        dir  = AxisDirection.GEOCENTRIC_Z;
+                       break;
+            case 1057: // Actually no axis allocated by EPSG here, but createCoordinateSystem(1027) needs this number.
+            case 1056: name = "Easting";
+                       abrv = "E";
+                       dir  = CoordinateSystems.directionAlongMeridian(AxisDirection.NORTH, 90);
+                       break;
+            case 1058: name = "Northing";
+                       abrv = "N";
+                       dir  = CoordinateSystems.directionAlongMeridian(AxisDirection.NORTH, 0);
+                       break;
+            case 1065: name = "Easting";
+                       abrv = "E";
+                       dir  = CoordinateSystems.directionAlongMeridian(AxisDirection.SOUTH, 90);
+                       break;
+            case 1066: name = "Northing";
+                       abrv = "N";
+                       dir  = CoordinateSystems.directionAlongMeridian(AxisDirection.SOUTH, 180);
                        break;
             default:   throw new AssertionError(code);
         }

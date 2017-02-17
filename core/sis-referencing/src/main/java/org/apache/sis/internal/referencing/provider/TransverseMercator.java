@@ -141,8 +141,8 @@ public final class TransverseMercator extends AbstractMercator {
      */
     public static enum Zoner {
         /**
-         * Computes zones for the Universal Transverse Mercator (UTM) projections.
-         * This computation includes special cases for Norway and Svalbard.
+         * Universal Transverse Mercator (UTM) projection zones.
+         * The zone computation includes special cases for Norway and Svalbard.
          *
          * <blockquote><table class="sis">
          *   <caption>Universal Transverse Mercator parameters</caption>
@@ -174,7 +174,7 @@ public final class TransverseMercator extends AbstractMercator {
         },
 
         /**
-         * Computes zones for the Modified Transverse Mercator (MTM) projections.
+         * Modified Transverse Mercator (MTM) projection zones.
          * This projection is used in Canada only.
          *
          * <blockquote><table class="sis">
@@ -187,7 +187,17 @@ public final class TransverseMercator extends AbstractMercator {
          *   <tr><td>False northing</td>                 <td>0 metres</td></tr>
          * </table></blockquote>
          */
-        MTM(-51.5, -3, 0.9999, 304800, Double.NaN);
+        MTM(-51.5, -3, 0.9999, 304800, Double.NaN),
+
+        /**
+         * Like UTM, but allows <cite>latitude of origin</cite> and <cite>central meridian</cite> to be anywhere.
+         * The given central meridian is not snapped to the UTM zone center and no special case is applied for
+         * Norway or Svalbard.
+         *
+         * <p>This zoner matches the behavior of {@code AUTO(2):42002} authority code specified in the
+         * OGC <cite>Web Map Service</cite> (WMS) specification.</p>
+         */
+        ANY(Longitude.MIN_VALUE, 6, 0.9996, 500000, 10000000);
 
         /**
          * Longitude of the beginning of zone 1. This is the westmost longitude if {@link #width} is positive,
@@ -244,26 +254,28 @@ public final class TransverseMercator extends AbstractMercator {
          * </table></blockquote>
          *
          * @param  group      the parameters for which to set the values.
-         * @param  zoned      {@code true} for snapping the given latitude/longitude to a zone.
          * @param  latitude   the latitude in the center of the desired projection.
          * @param  longitude  the longitude in the center of the desired projection.
          * @return a name like <cite>"Transverse Mercator"</cite> or <cite>"UTM zone 10N"</cite>,
          *         depending on the arguments given to this method.
          */
-        public final String setParameters(final ParameterValueGroup group,
-                final boolean zoned, double latitude, double longitude)
-        {
+        public final String setParameters(final ParameterValueGroup group, double latitude, double longitude) {
             final boolean isSouth = MathFunctions.isNegative(latitude);
             int zone = zone(latitude, longitude);
-            if (zoned) {
-                latitude = 0;
+            String name;
+            if (this == ANY) {
+                name = "UTM";
+                if (latitude != 0 || longitude != centralMeridian(zone)) {
+                    name = NAME;
+                    zone = 0;
+                }
+            } else {
+                name      = name();
+                latitude  = 0;
                 longitude = centralMeridian(zone);
-            } else if (longitude != centralMeridian(zone)) {
-                zone = 0;
             }
-            String name = NAME;
             if (zone != 0) {
-                name = name() + " zone " + zone + (isSouth ? 'S' : 'N');
+                name = name + " zone " + zone + (isSouth ? 'S' : 'N');
             }
             group.parameter(Constants.LATITUDE_OF_ORIGIN).setValue(latitude,  Units.DEGREE);
             group.parameter(Constants.CENTRAL_MERIDIAN)  .setValue(longitude, Units.DEGREE);
@@ -350,5 +362,15 @@ public final class TransverseMercator extends AbstractMercator {
         public static boolean isSvalbard(final double φ) {
             return (φ >= 72) && (φ < 84);
         }
+
+        /**
+         * Southernmost bound of the first latitude band ({@code 'C'}), inclusive.
+         */
+        public static final double SOUTH_BOUNDS = -80;
+
+        /**
+         * Northernmost bound of the last latitude band ({@code 'X'}), exclusive.
+         */
+        public static final double NORTH_BOUNDS = 84;
     }
 }

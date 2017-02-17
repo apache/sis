@@ -45,6 +45,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
+import org.apache.sis.measure.Latitude;
 
 
 /**
@@ -138,10 +139,14 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
                 add(codes, crs.geographic);
                 add(codes, crs.geo3D);
             }
-            if (projected && (crs.northUTM != 0 || crs.southUTM != 0)) {
-                for (int zone = crs.firstZone; zone <= crs.lastZone; zone++) {
-                    if (crs.northUTM != 0) codes.add(Integer.toString(crs.northUTM + zone));
-                    if (crs.southUTM != 0) codes.add(Integer.toString(crs.southUTM + zone));
+            if (projected) {
+                add(codes, crs.northUPS);
+                add(codes, crs.southUPS);
+                if (crs.northUTM != 0 || crs.southUTM != 0) {
+                    for (int zone = crs.firstZone; zone <= crs.lastZone; zone++) {
+                        if (crs.northUTM != 0) codes.add(Integer.toString(crs.northUTM + zone));
+                        if (crs.southUTM != 0) codes.add(Integer.toString(crs.southUTM + zone));
+                    }
                 }
             }
         }
@@ -246,13 +251,19 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
                     final double latitude;
                     int zone;
                     if (crs.northUTM != 0 && (zone = n - crs.northUTM) >= crs.firstZone && zone <= crs.lastZone) {
-                        latitude = +1;
+                        latitude = +1;          // Any north latitude below 56°N (because of Norway exception) is okay
                     } else if (crs.southUTM != 0 && (zone = n - crs.southUTM) >= crs.firstZone && zone <= crs.lastZone) {
-                        latitude = -1;
+                        latitude = -1;          // Any south latitude above 80°S (because of UPS south case) is okay.
+                    } else if (n == crs.northUPS) {
+                        latitude = Latitude.MAX_VALUE;
+                        zone     = 30;                  // Any random UTM zone is okay.
+                    } else if (n == crs.southUPS) {
+                        latitude = Latitude.MIN_VALUE;
+                        zone     = 30;                  // Any random UTM zone is okay.
                     } else {
                         continue;
                     }
-                    return crs.UTM(latitude, TransverseMercator.Zoner.UTM.centralMeridian(zone));
+                    return crs.universal(latitude, TransverseMercator.Zoner.UTM.centralMeridian(zone));
                 }
             }
             if ((kind & (DATUM | CRS)) != 0) {

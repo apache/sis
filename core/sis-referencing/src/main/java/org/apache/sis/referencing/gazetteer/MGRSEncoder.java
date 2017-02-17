@@ -61,16 +61,6 @@ final class MGRSEncoder {
     private static final double LATITUDE_BAND_HEIGHT = 8;
 
     /**
-     * Southernmost bound of the first latitude band ({@code 'C'}).
-     */
-    static final double UTM_SOUTH_BOUNDS = -80;
-
-    /**
-     * Northernmost bound of the last latitude band ({@code 'X'}).
-     */
-    static final double UTM_NORTH_BOUNDS = 84;
-
-    /**
      * Special {@link #crsZone} value for the UPS South (Universal Polar Stereographic) projection.
      */
     private static final int SOUTH_POLE = -1000;
@@ -244,7 +234,7 @@ final class MGRSEncoder {
      * @return the band letter for the given latitude.
      */
     static char latitudeBand(final double φ) {
-        int band = 'C' + (int) ((φ - UTM_SOUTH_BOUNDS) / LATITUDE_BAND_HEIGHT);
+        int band = 'C' + (int) ((φ - TransverseMercator.Zoner.SOUTH_BOUNDS) / LATITUDE_BAND_HEIGHT);
         if (band >= EXCLUDE_I && ++band >= EXCLUDE_O && ++band == 'Y') {
             band = 'X';         // Because the last latitude band ('X') is 12° height instead of 8°.
         }
@@ -272,7 +262,9 @@ final class MGRSEncoder {
         final DirectPosition geographic = toGeographic.transform(position, owner.geographic);
         owner.geographic = geographic;                      // For reuse in next method calls.
         final double φ = geographic.getOrdinate(0);
-        if (φ >= UTM_SOUTH_BOUNDS && φ <= UTM_NORTH_BOUNDS) {
+        if (φ >= TransverseMercator.Zoner.SOUTH_BOUNDS &&
+            φ <  TransverseMercator.Zoner.NORTH_BOUNDS)
+        {
             /*
              * Universal Transverse Mercator (UTM) case.
              */
@@ -286,7 +278,7 @@ final class MGRSEncoder {
             if (sz != crsZone) {
                 if (sz != actualZone) {
                     actualZone   = 0;                           // In case an exception is thrown on the next line.
-                    toActualZone = CRS.findOperation(datum.geographic(), datum.UTM(φ, λ), null).getMathTransform();
+                    toActualZone = CRS.findOperation(datum.geographic(), datum.universal(φ, λ), null).getMathTransform();
                     actualZone   = sz;
                 }
                 owner.normalized = position = toActualZone.transform(geographic, owner.normalized);
