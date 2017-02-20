@@ -19,9 +19,9 @@ package org.apache.sis.referencing.gazetteer;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -36,13 +36,53 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @module
  */
-@DependsOn(MGRSEncoderTest.class)
 public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     /**
      * Returns a coder instance to test.
      */
     private MilitaryGridReferenceSystem.Coder coder() {
         return new MilitaryGridReferenceSystem().createCoder();
+    }
+
+    /**
+     * Verifies relationship between static fields documented in {@link Encoder}.
+     */
+    @Test
+    public void verifyInvariants() {
+        assertEquals("GRID_SQUARE_SIZE",
+             StrictMath.pow(10, MilitaryGridReferenceSystem.METRE_PRECISION_DIGITS),
+                                MilitaryGridReferenceSystem.GRID_SQUARE_SIZE, STRICT);
+    }
+
+    /**
+     * Tests {@link MilitaryGridReferenceSystem.Encoder#latitudeBand(double)}.
+     */
+    @Test
+    public void testLatitudeBand() {
+        assertEquals("80°S", 'C', MilitaryGridReferenceSystem.Encoder.latitudeBand(-80));
+        assertEquals("45°N", 'T', MilitaryGridReferenceSystem.Encoder.latitudeBand( 45));
+        assertEquals("55°N", 'U', MilitaryGridReferenceSystem.Encoder.latitudeBand( 55));
+        assertEquals("56°N", 'V', MilitaryGridReferenceSystem.Encoder.latitudeBand( 56));
+        assertEquals("63°N", 'V', MilitaryGridReferenceSystem.Encoder.latitudeBand( 63));
+        assertEquals("64°N", 'W', MilitaryGridReferenceSystem.Encoder.latitudeBand( 64));
+        assertEquals("71°N", 'W', MilitaryGridReferenceSystem.Encoder.latitudeBand( 71));
+        assertEquals("72°N", 'X', MilitaryGridReferenceSystem.Encoder.latitudeBand( 72));
+        assertEquals("84°N", 'X', MilitaryGridReferenceSystem.Encoder.latitudeBand( 84));
+    }
+
+    /**
+     * Verifies that {@link Zoner#isNorway(double)} and {@link Zoner#isSvalbard(double)}
+     * are consistent with the latitude bands.
+     */
+    @Test
+    public void verifyZonerConsistency() {
+        for (double φ = TransverseMercator.Zoner.SOUTH_BOUNDS; φ < TransverseMercator.Zoner.NORTH_BOUNDS; φ++) {
+            final String latitude = String.valueOf(φ);
+            final char band = MilitaryGridReferenceSystem.Encoder.latitudeBand(φ);
+            assertTrue  (latitude, band >= 'C' && band <= 'X');
+            assertEquals(latitude, band == 'V', TransverseMercator.Zoner.isNorway(φ));
+            assertEquals(latitude, band == 'X', TransverseMercator.Zoner.isSvalbard(φ));
+        }
     }
 
     /**
@@ -62,14 +102,14 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         position.y = 4539239;
         assertEquals("32TNL8410239239", coder.encode(position));
         /*
-         * 82°N 10°W (UTM zone 29) — should instantiate a new MGRSEncoder.
+         * 82°N 10°W (UTM zone 29) — should instantiate a new MilitaryGridReferenceSystem.Encoder.
          */
         position.setCoordinateReferenceSystem(CommonCRS.WGS84.universal(82, -10));
         position.x =  484463;
         position.y = 9104963;
         assertEquals("29XMM8446304963", coder.encode(position));
         /*
-         * 41°S 10°E (UTM zone 32) — should reuse the MGRSEncoder created in first test.
+         * 41°S 10°E (UTM zone 32) — should reuse the Encoder created in first test.
          */
         position.setCoordinateReferenceSystem(CommonCRS.WGS84.universal(-41, 10));
         position.x =  584102;
