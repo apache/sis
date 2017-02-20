@@ -245,7 +245,6 @@ import org.junit.BeforeClass;
     org.apache.sis.distance.LatLonPointRadiusTest.class,        // Pending refactoring in a geometry package.
 
     // Referencing by identifiers
-    org.apache.sis.referencing.gazetteer.MGRSEncoderTest.class,
     org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystemTest.class,
 
     org.apache.sis.test.integration.DatumShiftTest.class,
