@@ -25,12 +25,15 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.geometry.DirectPosition2D;
+
+import static org.apache.sis.referencing.gazetteer.MGRSEncoder.*;
 
 
 /**
@@ -175,7 +178,7 @@ public class MilitaryGridReferenceSystem {
          * @return precision of formatted labels in metres.
          */
         public double getPrecision() {
-            return MathFunctions.pow10(MGRSEncoder.METRE_PRECISION_DIGITS - digits);
+            return MathFunctions.pow10(METRE_PRECISION_DIGITS - digits);
         }
 
         /**
@@ -191,8 +194,8 @@ public class MilitaryGridReferenceSystem {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "precision", precision));
             }
             // The -3 is an arbitrary limit to millimetre precision.
-            int n = Math.max(-3, Math.min(MGRSEncoder.METRE_PRECISION_DIGITS + 1, (int) p));
-            digits = (byte) (MGRSEncoder.METRE_PRECISION_DIGITS - n);
+            int n = Math.max(-3, Math.min(METRE_PRECISION_DIGITS + 1, (int) p));
+            digits = (byte) (METRE_PRECISION_DIGITS - n);
         }
 
         /**
@@ -256,60 +259,72 @@ public class MilitaryGridReferenceSystem {
             ArgumentChecks.ensureNonNull("label", label);
             final int end  = CharSequences.skipTrailingWhitespaces(label, 0, label.length());
             final int base = CharSequences.skipLeadingWhitespaces (label, 0, end);
-            int i = base;
-            do if (i >= end) {
-                throw new GazetteerException(Errors.format(Errors.Keys.UnexpectedEndOfString_1, label));
-            } while (isDigit(label.charAt(i++)));
-            final int zone = Integer.parseInt(label.subSequence(base, --i).toString());
+            int i = endOfDigits(label, base, end);
+            final int zone = parseInt(label, base, i, Resources.Keys.IllegalUTMZone_1);
             if (zone < 1 || zone > 60) {
-                throw new GazetteerException("Illegal UTM zone number: " + zone);       // TODO: localize
+                throw new GazetteerException(Resources.format(Resources.Keys.IllegalUTMZone_1, zone));
             }
             /*
              * Parse the sub-sequence made of letters. That sub-sequence can have one or three parts.
              * The first part is mandatory and the two other parts are optional, but if the two last
              * parts are omitted, then they must be omitted together.
              *
-             *   0: latitude band
-             *   1: column letter
-             *   2: row letter
+             *   1 — latitude band: C-X (excluding I and O) for UTM. Other letters (A, B, Y, Z) are for UPS.
+             *   2 — column letter: A-H in zone 1, J-R (skipping O) in zone 2, S-Z in zone 3, then repeat.
+             *   3 — row letter:    ABCDEFGHJKLMNPQRSTUV in odd zones, FGHJKLMNPQRSTUVABCDE in even zones.
              */
             double φ = Double.NaN;
             int col = 1, row = 0;
-            for (int part = 0; part <= 2; part++) {
-                i = skipSeparator(label, base, i, end);
+            for (int part = 1; part <= 3; part++) {
+                i = nextComponent(label, base, i, end, part != 2);
+                if (i >= end) {
+                    break;                                      // Allowed only for part 2 (the column letter).
+                }
                 int c = Character.codePointAt(label, i);
+                final int ni = i + Character.charCount(c);
                 if (c < 'A' || c > 'Z') {
                     if (c >= 'a' && c <= 'z') {
                         c -= ('a' - 'A');
                     } else {
-                        // TODO: specialize the error message for band, col and row.
-                        throw new GazetteerException("Illegal latitude band: " +
-                                label.subSequence(i, i + Character.charCount(c)));
+                        final short key;
+                        final CharSequence token;
+                        if (part == 1) {
+                            key = Resources.Keys.IllegalLatitudeBand_1;
+                            token = label.subSequence(i, ni);
+                        } else {
+                            key = Resources.Keys.IllegalSquareIdentification_1;
+                            token = CharSequences.token(label, i);
+                        }
+                        throw new GazetteerException(Resources.format(key, token));
                     }
                 }
+                /*
+                 * At this point, 'c' is a valid letter. First, applies a correction for the fact that 'I' and 'O'
+                 * letters were excluded. Next, the conversion to latitude or 100 000 meters grid indices depends
+                 * on which part we are parsing. The formulas used below are about the same than in MGRSEncoder,
+                 * with terms moved on the other side of the equations.
+                 */
+                if (c >= EXCLUDE_O) c--;
+                if (c >= EXCLUDE_I) c--;
                 switch (part) {
-                    case 0: {
-                        if (c >= MGRSEncoder.EXCLUDE_O) c--;
-                        if (c >= MGRSEncoder.EXCLUDE_I) c--;
-                        φ = (c - 'C') * MGRSEncoder.LATITUDE_BAND_HEIGHT + TransverseMercator.Zoner.SOUTH_BOUNDS;
-                        break;
-                    }
                     case 1: {
-                        switch (zone % 3) {                         // First A-H sequence starts at zone number 1.
-                            case 1: col = c - ('A' - 1); break;
-                            case 2: col = c - ('J' - 1); if (c >= MGRSEncoder.EXCLUDE_O) col--; break;
-                            case 0: col = c - ('S' - 1); break;
-                        }
+                        φ = (c - 'C') * LATITUDE_BAND_HEIGHT + TransverseMercator.Zoner.SOUTH_BOUNDS;
                         break;
                     }
                     case 2: {
-                        if (c >= MGRSEncoder.EXCLUDE_O) c--;
-                        if (c >= MGRSEncoder.EXCLUDE_I) c--;
-                        row = c - (((zone & 1) != 0) ? 'F' : 'A');
+                        switch (zone % 3) {                         // First A-H sequence starts at zone number 1.
+                            case 1: col = c - ('A' - 1); break;
+                            case 2: col = c - ('J' - 2); break;     // -2 because 'I' has already been excluded.
+                            case 0: col = c - ('S' - 3); break;     // -3 because 'I' and 'O' have been excluded.
+                        }
+                        break;
+                    }
+                    case 3: {
+                        row = c - (((zone & 1) == 0) ? 'F' : 'A');
                         break;
                     }
                 }
-                i++;
+                i = ni;
             }
             /*
              * We need to create a UTM projection from (φ,λ) coordinates, not from UTM zone,
@@ -317,30 +332,33 @@ public class MilitaryGridReferenceSystem {
              */
             final double λ = TransverseMercator.Zoner.UTM.centralMeridian(zone);
             final ProjectedCRS crs = datum.universal(φ,λ);
-            DirectPosition2D p = new DirectPosition2D(φ,λ);
-            DirectPosition c = crs.getConversionFromBase().getMathTransform().transform(p, p);
-            row += ((int) (c.getOrdinate(1) / (MGRSEncoder.GRID_SQUARE_SIZE * 20))) * 20;
+            final DirectPosition2D pos = new DirectPosition2D(φ,λ);
+            row += ((int) (crs.getConversionFromBase().getMathTransform().transform(pos, pos).getOrdinate(1)
+                    / (GRID_SQUARE_SIZE * GRID_ROW_COUNT))) * GRID_ROW_COUNT;
 
-            final DirectPosition2D pos = new DirectPosition2D(crs);
-            pos.x = col * MGRSEncoder.GRID_SQUARE_SIZE;
-            pos.y = row * MGRSEncoder.GRID_SQUARE_SIZE;
+            pos.setCoordinateReferenceSystem(crs);
+            pos.x = col * GRID_SQUARE_SIZE;
+            pos.y = row * GRID_SQUARE_SIZE;
             return pos;
         }
 
         /**
          * Skips spaces, then the separator if present (optional).
          *
-         * @param  label  the label to parse.
-         * @param  base   index where the parsing began. Used for formatting error message only.
-         * @param  start  current parsing position.
-         * @param  end    where the parsing is expected to end.
-         * @return position where to continue parsing, with spaces skipped.
+         * @param  label      the label to parse.
+         * @param  base       index where the parsing began. Used for formatting error message only.
+         * @param  start      current parsing position.
+         * @param  end        where the parsing is expected to end.
+         * @param  mandatory  whether to throw an exception or return {@code end} if we reached the end of string.
+         * @return position where to continue parsing (with spaces skipped), or {@code end} if we reached end of string.
          * @throws GazetteerException if this method unexpectedly reached the end of string.
          */
-        private int skipSeparator(final CharSequence label, final int base, int start, final int end) throws GazetteerException {
+        private int nextComponent(final CharSequence label, final int base, int start, final int end, final boolean mandatory)
+                throws GazetteerException
+        {
             start = CharSequences.skipLeadingWhitespaces(label, start, end);
             if (start < end) {
-                if (!CharSequences.regionMatches(label, start, separator)) {
+                if (!CharSequences.regionMatches(label, start, trimmedSeparator)) {
                     return start;               // Separator not found, but it was optional.
                 }
                 start += trimmedSeparator.length();
@@ -349,15 +367,52 @@ public class MilitaryGridReferenceSystem {
                     return start;
                 }
             }
+            if (!mandatory) return start;
             throw new GazetteerException(Errors.format(Errors.Keys.UnexpectedEndOfString_1, label.subSequence(base, end)));
         }
     }
 
     /**
-     * Returns whether the given character is an ASCII digit. We do not use {@link Character#isDigit(char)}
-     * because we restrict to the set of ASCII characters.
+     * Returns the index after the last digit in a sequence of ASCII characters.
+     * Leading whitespaces must have been skipped before to invoke this method.
      */
-    static boolean isDigit(final char c) {
-        return c >= '0' && c <= '9';
+    static int endOfDigits(final CharSequence label, int i, final int end) {
+        while (i < end) {
+            final char c = label.charAt(i);     // Code-point API not needed here because we restrict to ASCII.
+            if (c < '0' || c > '9') {           // Do not use Character.isDigit(…) because we restrict to ASCII.
+                break;
+            }
+            i++;
+        }
+        return i;
+    }
+
+    /**
+     * Parses part of the given character sequence as an integer.
+     *
+     * @param  label     the MGRS label to parse.
+     * @param  start     index of the first character to parse as an integer.
+     * @param  end       index after the last character to parse as an integer.
+     * @param  errorKey  {@link Resources.Keys} value to use in case of error.
+     *                   The error message string shall accept exactly one argument.
+     * @return the parsed integer.
+     * @throws GazetteerException if the string can not be parsed as an integer.
+     */
+    static int parseInt(final CharSequence label, final int start, final int end, final short errorKey)
+            throws GazetteerException
+    {
+        NumberFormatException cause = null;
+        final CharSequence part;
+        if (start == end) {
+            part = CharSequences.token(label, start);
+        } else {
+            part = label.subSequence(start, end);
+            try {
+                return Integer.parseInt(part.toString());
+            } catch (NumberFormatException e) {
+                cause = e;
+            }
+        }
+        throw new GazetteerException(Resources.format(errorKey, part), cause);
     }
 }

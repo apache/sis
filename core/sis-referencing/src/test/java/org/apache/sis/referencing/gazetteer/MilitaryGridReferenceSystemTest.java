@@ -162,8 +162,10 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     @Test
     public void testDecoding() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
+        coder.setSeparator(" / ");
         final DirectPosition position = coder.decode("32TNL8410239239");
+        assertEquals("32TNL8410239239", position, coder.decode("32/T/NL/84102/39239"));
         assertEquals("Easting",   500000, position.getOrdinate(0), STRICT);
-//      assertEquals("Northing", 4500000, position.getOrdinate(1), STRICT);
+        assertEquals("Northing", 4500000, position.getOrdinate(1), STRICT);
     }
 }

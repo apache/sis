@@ -76,6 +76,12 @@ final class MGRSEncoder {
     static final double GRID_SQUARE_SIZE = 100_000;
 
     /**
+     * Number of letters available for grid rows. Those letters are "ABCDEFGHJKLMNPQRSTUV" (starting at letter
+     * F for zones of even number), repeated in a cycle. Each row is {@value #GRID_SQUARE_SIZE} metres height.
+     */
+    static final int GRID_ROW_COUNT = 20;
+
+    /**
      * The number of digits in a one-meter precision when formatting MGRS labels.
      *
      * <p><b>Invariant:</b> the following relationship must hold:
@@ -319,7 +325,7 @@ final class MGRSEncoder {
                 if ((zone & 1) == 0) {
                     row += ('F' - 'A');
                 }
-                row = 'A' + (row % 20);
+                row = 'A' + (row % GRID_ROW_COUNT);
                 if (row >= EXCLUDE_I && ++row >= EXCLUDE_O) row++;
                 buffer.append(separator).append((char) col).append((char) row);
                 /*
