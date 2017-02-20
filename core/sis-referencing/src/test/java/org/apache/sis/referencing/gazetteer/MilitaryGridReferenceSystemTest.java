@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.gazetteer;
 
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
@@ -151,5 +152,18 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         coder.setPrecision(100000);
         assertEquals("separator", "/", coder.getSeparator());
         assertEquals("48/P/UV", coder.encode(position));
+    }
+
+    /**
+     * Tests decoding of various coordinates.
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    public void testDecoding() throws TransformException {
+        final MilitaryGridReferenceSystem.Coder coder = coder();
+        final DirectPosition position = coder.decode("32TNL8410239239");
+        assertEquals("Easting",   500000, position.getOrdinate(0), STRICT);
+//      assertEquals("Northing", 4500000, position.getOrdinate(1), STRICT);
     }
 }
