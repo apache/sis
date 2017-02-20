@@ -58,7 +58,7 @@ final class MGRSEncoder {
      * Height of latitude bands, in degrees.
      * Those bands are labeled from {@code 'C'} to {@code 'X'} inclusive, excluding {@code 'I'} and {@code 'O'}.
      */
-    private static final double LATITUDE_BAND_HEIGHT = 8;
+    static final double LATITUDE_BAND_HEIGHT = 8;
 
     /**
      * Special {@link #crsZone} value for the UPS South (Universal Polar Stereographic) projection.
@@ -102,12 +102,12 @@ final class MGRSEncoder {
      *     if (band >= EXCLUDE_I && ++band >= EXCLUDE_O) band++;
      * }
      */
-    private static final char EXCLUDE_I = 'I';
+    static final char EXCLUDE_I = 'I';
 
     /**
      * The second of the two letters ({@code 'I'} and {@code 'O'}) excluded in MGRS notation.
      */
-    private static final char EXCLUDE_O = 'O';
+    static final char EXCLUDE_O = 'O';
 
     /**
      * The datum to which to transform the coordinate before formatting the MGRS label.
@@ -303,7 +303,7 @@ final class MGRSEncoder {
                      * (WGS84 ellipsoid). Consequently 'cx' ranges from approximatively 1.66 to 8.34, so 'c'
                      * should range from 1 to 8.
                      */
-                    throw new TransformException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
+                    throw new GazetteerException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
                 }
                 switch (zone % 3) {                          // First A-H sequence starts at zone number 1.
                     case 1: col += ('A' - 1); break;

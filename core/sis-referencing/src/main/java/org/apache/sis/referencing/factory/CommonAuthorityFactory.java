@@ -176,14 +176,18 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *
  * <div class="note"><b>Examples:</b>
  * {@code "AUTO2:42001,1,-100,45"} identifies a Universal Transverse Mercator (UTM) projection
- * for a zone containing the point at (45°N, 100°W).</div>
+ * for a zone containing the point at (45°N, 100°W) with axes in metres.</div>
  *
  * Codes in the {@code "AUTO"} namespace are the same than codes in the {@code "AUTO2"} namespace, except that
  * the {@linkplain org.apache.sis.measure.Units#valueOfEPSG(int) EPSG code} of the desired unit of measurement
  * was used instead than the unit factor.
  * The {@code "AUTO"} namespace was defined in the <cite>Web Map Service</cite> (WMS) 1.1.1 specification
  * while the {@code "AUTO2"} namespace is defined in WMS 1.3.0.
- * In Apache SIS implementation, the unit parameter (either as factor or as EPSG code) is optional and default to metres.
+ * In Apache SIS implementation, the unit parameter (either as factor or as EPSG code) is optional and defaults to metres.
+ *
+ * <p>In the {@code AUTO(2):42001} case, the UTM zone is calculated as specified in WMS 1.3 specification,
+ * i.e. <strong>without</strong> taking in account the Norway and Svalbard special cases and without
+ * switching to polar stereographic projections for high latitudes.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -683,14 +687,14 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     }
 
     /**
-     * Forces the given latitude in the range of UTM projections, including Norway and Svalbard special cases.
-     * This method is used for preventing {@code "AUTO:42001"} to switch on the Universal Polar Stereographic
-     * projection for high latitudes, because the WMS specification does not said that we should. However we
-     * could remove this method if we consider allowing that as an Apache SIS extension.
+     * Forces the given latitude in the range of UTM projections, excluding Norway and Svalbard special cases.
+     * This method is used for preventing {@code "AUTO:42001"} to handle the UTM special cases and to switch
+     * on the Universal Polar Stereographic projection for high latitudes, because the WMS specification does
+     * not said that we should. However we could remove this method if we consider allowing UTM special cases
+     * and UPS projections as an Apache SIS extension.
      */
     private static double forceUTM(final double latitude) {
-        return Math.max(Zoner.SOUTH_BOUNDS + 0.5,
-               Math.min(Zoner.NORTH_BOUNDS - 0.5, latitude));
+        return Math.max(-45, Math.min(45, latitude));
     }
 
     /**

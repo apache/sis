@@ -17,17 +17,20 @@
 package org.apache.sis.referencing.gazetteer;
 
 import java.util.Map;
-import java.text.ParseException;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.geometry.DirectPosition2D;
 
 
 /**
@@ -51,17 +54,23 @@ import org.apache.sis.util.resources.Errors;
  */
 public class MilitaryGridReferenceSystem {
     /**
-     * The datum to which to transform the coordinate before formatting the MGRS label,
-     * or {@code null} for inferring the datum from the CRS associated to each coordinate.
+     * The datum to which to transform the coordinate before formatting the MGRS label.
      * Only the datums enumerated in {@link CommonCRS} are currently supported.
      */
     final CommonCRS datum;
+
+    /**
+     * Whether {@link MGRSEncoder} should infer the datum from the given coordinates
+     * instead than using {@link #datum}.
+     */
+    final boolean avoidDatumChange;
 
     /**
      * Creates a new Military Grid Reference System (MGRS) using the WGS84 datum.
      */
     public MilitaryGridReferenceSystem() {
         datum = CommonCRS.WGS84;
+        avoidDatumChange = false;
     }
 
     /**
@@ -72,7 +81,8 @@ public class MilitaryGridReferenceSystem {
      *                or {@code null} for inferring the datum from the CRS associated to each coordinate.
      */
     public MilitaryGridReferenceSystem(final CommonCRS datum) {
-        this.datum = datum;
+        this.datum = (datum != null) ? datum : CommonCRS.WGS84;
+        avoidDatumChange = (datum == null);
     }
 
     /**
@@ -112,6 +122,11 @@ public class MilitaryGridReferenceSystem {
         private String separator;
 
         /**
+         * Same separator, but without leading and trailing spaces.
+         */
+        private String trimmedSeparator;
+
+        /**
          * Cached information needed for building a MGRS label from a direct position in the given CRS.
          */
         private final Map<CoordinateReferenceSystem,MGRSEncoder> encoders;
@@ -132,7 +147,7 @@ public class MilitaryGridReferenceSystem {
          */
         protected Coder() {
             digits    = 5;                          // 1 meter precision.
-            separator = "";
+            separator = trimmedSeparator = "";
             buffer    = new StringBuilder(16);      // Length of "4 Q FJ 1234 5678" sample value.
             encoders  = new IdentityHashMap<>();
         }
@@ -202,6 +217,7 @@ public class MilitaryGridReferenceSystem {
         public void setSeparator(final String separator) {
             ArgumentChecks.ensureNonNull("separator", separator);
             this.separator = separator;
+            trimmedSeparator = CharSequences.trimWhitespaces(separator);
         }
 
         /**
@@ -218,7 +234,7 @@ public class MilitaryGridReferenceSystem {
             MGRSEncoder encoder = encoders.get(crs);
             try {
                 if (encoder == null) {
-                    encoder = new MGRSEncoder(datum, crs);
+                    encoder = new MGRSEncoder(avoidDatumChange ? null : datum, crs);
                     if (encoders.put(crs, encoder) != null) {
                         throw new ConcurrentModificationException();            // Opportunistic check.
                     }
@@ -234,10 +250,114 @@ public class MilitaryGridReferenceSystem {
          *
          * @param  label  MGRS string to decode.
          * @return a new position with the longitude at ordinate 0 and latitude at ordinate 1.
-         * @throws ParseException if an error occurred while parsing the given string.
+         * @throws TransformException if an error occurred while parsing the given string.
          */
-        public DirectPosition decode(final String label) throws ParseException {
-            return null;
+        public DirectPosition decode(final CharSequence label) throws TransformException {
+            ArgumentChecks.ensureNonNull("label", label);
+            final int end  = CharSequences.skipTrailingWhitespaces(label, 0, label.length());
+            final int base = CharSequences.skipLeadingWhitespaces (label, 0, end);
+            int i = base;
+            do if (i >= end) {
+                throw new GazetteerException(Errors.format(Errors.Keys.UnexpectedEndOfString_1, label));
+            } while (isDigit(label.charAt(i++)));
+            final int zone = Integer.parseInt(label.subSequence(base, --i).toString());
+            if (zone < 1 || zone > 60) {
+                throw new GazetteerException("Illegal UTM zone number: " + zone);       // TODO: localize
+            }
+            /*
+             * Parse the sub-sequence made of letters. That sub-sequence can have one or three parts.
+             * The first part is mandatory and the two other parts are optional, but if the two last
+             * parts are omitted, then they must be omitted together.
+             *
+             *   0: latitude band
+             *   1: column letter
+             *   2: row letter
+             */
+            double φ = Double.NaN;
+            int col = 1, row = 0;
+            for (int part = 0; part <= 2; part++) {
+                i = skipSeparator(label, base, i, end);
+                int c = Character.codePointAt(label, i);
+                if (c < 'A' || c > 'Z') {
+                    if (c >= 'a' && c <= 'z') {
+                        c -= ('a' - 'A');
+                    } else {
+                        // TODO: specialize the error message for band, col and row.
+                        throw new GazetteerException("Illegal latitude band: " +
+                                label.subSequence(i, i + Character.charCount(c)));
+                    }
+                }
+                switch (part) {
+                    case 0: {
+                        if (c >= MGRSEncoder.EXCLUDE_O) c--;
+                        if (c >= MGRSEncoder.EXCLUDE_I) c--;
+                        φ = (c - 'C') * MGRSEncoder.LATITUDE_BAND_HEIGHT + TransverseMercator.Zoner.SOUTH_BOUNDS;
+                        break;
+                    }
+                    case 1: {
+                        switch (zone % 3) {                         // First A-H sequence starts at zone number 1.
+                            case 1: col = c - ('A' - 1); break;
+                            case 2: col = c - ('J' - 1); if (c >= MGRSEncoder.EXCLUDE_O) col--; break;
+                            case 0: col = c - ('S' - 1); break;
+                        }
+                        break;
+                    }
+                    case 2: {
+                        if (c >= MGRSEncoder.EXCLUDE_O) c--;
+                        if (c >= MGRSEncoder.EXCLUDE_I) c--;
+                        row = c - (((zone & 1) != 0) ? 'F' : 'A');
+                        break;
+                    }
+                }
+                i++;
+            }
+            /*
+             * We need to create a UTM projection from (φ,λ) coordinates, not from UTM zone,
+             * because there is special cases to take in account for Norway and Svalbard.
+             */
+            final double λ = TransverseMercator.Zoner.UTM.centralMeridian(zone);
+            final ProjectedCRS crs = datum.universal(φ,λ);
+            DirectPosition2D p = new DirectPosition2D(φ,λ);
+            DirectPosition c = crs.getConversionFromBase().getMathTransform().transform(p, p);
+            row += ((int) (c.getOrdinate(1) / (MGRSEncoder.GRID_SQUARE_SIZE * 20))) * 20;
+
+            final DirectPosition2D pos = new DirectPosition2D(crs);
+            pos.x = col * MGRSEncoder.GRID_SQUARE_SIZE;
+            pos.y = row * MGRSEncoder.GRID_SQUARE_SIZE;
+            return pos;
         }
+
+        /**
+         * Skips spaces, then the separator if present (optional).
+         *
+         * @param  label  the label to parse.
+         * @param  base   index where the parsing began. Used for formatting error message only.
+         * @param  start  current parsing position.
+         * @param  end    where the parsing is expected to end.
+         * @return position where to continue parsing, with spaces skipped.
+         * @throws GazetteerException if this method unexpectedly reached the end of string.
+         */
+        private int skipSeparator(final CharSequence label, final int base, int start, final int end) throws GazetteerException {
+            start = CharSequences.skipLeadingWhitespaces(label, start, end);
+            if (start < end) {
+                if (!CharSequences.regionMatches(label, start, separator)) {
+                    return start;               // Separator not found, but it was optional.
+                }
+                start += trimmedSeparator.length();
+                start = CharSequences.skipLeadingWhitespaces(label, start, end);
+                if (start < end) {
+                    return start;
+                }
+            }
+            throw new GazetteerException(Errors.format(Errors.Keys.UnexpectedEndOfString_1, label.subSequence(base, end)));
+        }
+    }
+
+    /**
+     * Returns whether the given character is an ASCII digit. We do not use {@link Character#isDigit(char)}
+     * because we restrict to the set of ASCII characters.
+     */
+    static boolean isDigit(final char c) {
+        return c >= '0' && c <= '9';
     }
 }
