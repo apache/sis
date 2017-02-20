@@ -166,6 +166,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalAxisDirection_2 = 20;
 
         /**
+         * “{0}” is not a valid latitude band. A letter was expected.
+         */
+        public static final short IllegalLatitudeBand_1 = 73;
+
+        /**
          * Dimensions of “{0}” operation can not be ({1} → {2}).
          */
         public static final short IllegalOperationDimension_3 = 21;
@@ -190,6 +195,16 @@ public final class Resources extends IndexedResourceBundle {
          * Parameter “{0}” can not take the “{1}” value.
          */
         public static final short IllegalParameterValue_2 = 25;
+
+        /**
+         * “{0}” is not a valid square identification.
+         */
+        public static final short IllegalSquareIdentification_1 = 74;
+
+        /**
+         * “{0}” is not a valid Universal Transverse Mercator (UTM) zone.
+         */
+        public static final short IllegalUTMZone_1 = 72;
 
         /**
          * Unit of measurement “{1}” is not valid for “{0}” values.
