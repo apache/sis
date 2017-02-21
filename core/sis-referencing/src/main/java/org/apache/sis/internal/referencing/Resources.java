@@ -227,6 +227,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IncompatibleDatum_2 = 28;
 
         /**
+         * Square identification in the “{0}” reference is inconsistent with the grid zone designation.
+         * A consistent zone would be “{1}”.
+         */
+        public static final short InconsistentWithGZD_2 = 77;
+
+        /**
          * Inverse operation uses this parameter value with opposite sign.
          */
         public static final short InverseOperationUsesOppositeSign = 29;

@@ -349,7 +349,7 @@ public final class TransverseMercator extends AbstractMercator {
          * @return whether the given latitude is in the Norway latitude band.
          */
         public static boolean isNorway(final double φ) {
-            return (φ >= 56) && (φ < 64);
+            return (φ >= NORWAY_BOUNDS) && (φ < 64);
         }
 
         /**
@@ -360,16 +360,30 @@ public final class TransverseMercator extends AbstractMercator {
          * @return whether the given latitude is in the Svalbard latitude band.
          */
         public static boolean isSvalbard(final double φ) {
-            return (φ >= 72) && (φ < 84);
+            return (φ >= 72) && (φ < NORTH_BOUNDS);
         }
 
         /**
          * Southernmost bound of the first latitude band ({@code 'C'}), inclusive.
+         *
+         * @see #NORTH_BOUNDS
          */
         public static final double SOUTH_BOUNDS = -80;
 
         /**
+         * Northernmost bounds (exclusive) of the latitudes that do not require special case.
+         * Coordinates at latitudes equal or greater than this value may be subject to special
+         * rules regarding their UTM zones.
+         *
+         * @see #isNorway(double)
+         * @see #isSvalbard(double)
+         */
+        public static final double NORWAY_BOUNDS = 56;
+
+        /**
          * Northernmost bound of the last latitude band ({@code 'X'}), exclusive.
+         *
+         * @see #SOUTH_BOUNDS
          */
         public static final double NORTH_BOUNDS = 84;
     }
