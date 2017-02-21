@@ -53,8 +53,8 @@ import org.apache.sis.geometry.DirectPosition2D;
  *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe.
- * However the {@link Coder Coder} instances performing conversions between labels and coordinates are not thread-safe;
- * it is recommended to create a new {@code Coder} instance for each thread.
+ * However the {@link Coder Coder} instances performing conversions between references and coordinates
+ * are not thread-safe; it is recommended to create a new {@code Coder} instance for each thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
@@ -68,20 +68,10 @@ public class MilitaryGridReferenceSystem {
      * Height of latitude bands, in degrees.
      * Those bands are labeled from {@code 'C'} to {@code 'X'} inclusive, excluding {@code 'I'} and {@code 'O'}.
      */
-    static final double LATITUDE_BAND_HEIGHT = 8;
+    private static final double LATITUDE_BAND_HEIGHT = 8;
 
     /**
-     * Special {@link #crsZone} value for the UPS South (Universal Polar Stereographic) projection.
-     */
-    static final int SOUTH_POLE = -1000;
-
-    /**
-     * Special {@link #crsZone} value for the UPS North (Universal Polar Stereographic) projection.
-     */
-    static final int NORTH_POLE = 1000;
-
-    /**
-     * Size of the 100,000-meter squares.
+     * Size of the 100 000-metres squares.
      */
     static final double GRID_SQUARE_SIZE = 100_000;
 
@@ -89,10 +79,10 @@ public class MilitaryGridReferenceSystem {
      * Number of letters available for grid rows. Those letters are "ABCDEFGHJKLMNPQRSTUV" (starting at letter
      * F for zones of even number), repeated in a cycle. Each row is {@value #GRID_SQUARE_SIZE} metres height.
      */
-    static final int GRID_ROW_COUNT = 20;
+    private static final int GRID_ROW_COUNT = 20;
 
     /**
-     * The number of digits in a one-meter precision when formatting MGRS labels.
+     * The number of digits in a one-meter precision when formatting MGRS references.
      *
      * <p><b>Invariant:</b> the following relationship must hold:
      * {@code GRID_SQUARE_SIZE == Math.pow(10, METRE_PRECISION_DIGITS)}
@@ -118,15 +108,15 @@ public class MilitaryGridReferenceSystem {
      *     if (band >= EXCLUDE_I && ++band >= EXCLUDE_O) band++;
      * }
      */
-    static final char EXCLUDE_I = 'I';
+    private static final char EXCLUDE_I = 'I';
 
     /**
      * The second of the two letters ({@code 'I'} and {@code 'O'}) excluded in MGRS notation.
      */
-    static final char EXCLUDE_O = 'O';
+    private static final char EXCLUDE_O = 'O';
 
     /**
-     * The datum to which to transform the coordinate before formatting the MGRS label.
+     * The datum to which to transform the coordinate before formatting the MGRS reference.
      * Only the datums enumerated in {@link CommonCRS} are currently supported.
      */
     final CommonCRS datum;
@@ -149,7 +139,7 @@ public class MilitaryGridReferenceSystem {
      * Creates a new Military Grid Reference System (MGRS) using the specified datum.
      * Only the datums enumerated in {@link CommonCRS} are currently supported.
      *
-     * @param  datum  the datum to which to transform coordinates before formatting the MGRS labels,
+     * @param  datum  the datum to which to transform coordinates before formatting the MGRS references,
      *                or {@code null} for inferring the datum from the CRS associated to each coordinate.
      */
     public MilitaryGridReferenceSystem(final CommonCRS datum) {
@@ -158,19 +148,19 @@ public class MilitaryGridReferenceSystem {
     }
 
     /**
-     * Returns a new object performing conversions between {@code DirectPosition} and MGRS labels.
+     * Returns a new object performing conversions between {@code DirectPosition} and MGRS references.
      * The returned object is <strong>not</strong> thread-safe; a new instance must be created for
      * each thread, or synchronization must be applied by the caller.
      *
-     * @return a new object performing conversions between {@link DirectPosition} and MGRS labels.
+     * @return a new object performing conversions between {@link DirectPosition} and MGRS references.
      */
     public Coder createCoder() {
         return new Coder();
     }
 
     /**
-     * Conversions between direct positions and labels in the Military Grid Reference System (MGRS).
-     * Each {@code Coder} instance can read labels at arbitrary precision, but formats at the
+     * Conversions between direct positions and references in the Military Grid Reference System (MGRS).
+     * Each {@code Coder} instance can read references at arbitrary precision, but formats at the
      * {@linkplain #setPrecision specified precision}.
      *
      * <div class="section">Immutability and thread safety</div>
@@ -184,7 +174,7 @@ public class MilitaryGridReferenceSystem {
      */
     public class Coder {
         /**
-         * Number of digits to use for formatting the numerical part of a MGRS label.
+         * Number of digits to use for formatting the numerical part of a MGRS reference.
          */
         private byte digits;
 
@@ -199,18 +189,18 @@ public class MilitaryGridReferenceSystem {
         private String trimmedSeparator;
 
         /**
-         * Cached information needed for building a MGRS label from a direct position in the given CRS.
+         * Cached information needed for building a MGRS reference from a direct position in the given CRS.
          */
         private final Map<CoordinateReferenceSystem,Encoder> encoders;
 
         /**
          * Temporary positions used by {@link Encoder} only. References are kept for avoiding to
-         * recreate those temporary objects for every label to format.
+         * recreate those temporary objects for every reference to format.
          */
         DirectPosition normalized, geographic;
 
         /**
-         * A buffer where to create label, to be reused for each new label.
+         * A buffer where to create reference, to be reused for each new reference.
          */
         final StringBuilder buffer;
 
@@ -218,19 +208,19 @@ public class MilitaryGridReferenceSystem {
          * Creates a new coder initialized to the default precision.
          */
         protected Coder() {
-            digits    = 5;                          // 1 meter precision.
+            digits    = METRE_PRECISION_DIGITS;     // 1 metre precision.
             separator = trimmedSeparator = "";
-            buffer    = new StringBuilder(16);      // Length of "4 Q FJ 1234 5678" sample value.
+            buffer    = new StringBuilder(18);      // Length of "4 Q FJ 12345 67890" sample value.
             encoders  = new IdentityHashMap<>();
         }
 
         /**
-         * Returns the precision of the labels formatted by this coder.
+         * Returns the precision of the references formatted by this coder.
          * This method returns one of the following values:
          *
          * <table class="sis">
-         *   <caption>MGRS label precisions</caption>
-         *   <tr><th>Precision (m)</th>             <th>Label example</th></tr>
+         *   <caption>MGRS reference precisions</caption>
+         *   <tr><th>Precision (m)</th>             <th>Reference example</th></tr>
          *   <tr><td style="text-align:right">1</td> <td>4 Q FJ 12345 67890</td></tr>
          *   <tr><td style="text-align:right">10</td> <td>4 Q FJ 1234 6789</td></tr>
          *   <tr><td style="text-align:right">100</td> <td>4 Q FJ 123 678</td></tr>
@@ -244,14 +234,14 @@ public class MilitaryGridReferenceSystem {
          * if that value has been {@linkplain #setPrecision(double) explicitely set},
          * but sub-metric precision are usually not used with MGRS.
          *
-         * @return precision of formatted labels in metres.
+         * @return precision of formatted references in metres.
          */
         public double getPrecision() {
             return MathFunctions.pow10(METRE_PRECISION_DIGITS - digits);
         }
 
         /**
-         * Sets the desired precision of the labels formatted by this coder.
+         * Sets the desired precision of the references formatted by this coder.
          * This method rounds the given precision to one of the power of 10
          * documented in the {@link #getPrecision()} method.
          *
@@ -269,8 +259,8 @@ public class MilitaryGridReferenceSystem {
 
         /**
          * Returns the separator to insert between each component of the MGRS identifier.
-         * Components are zone number, latitude band, 100,000-metres square identifier and numerical values.
-         * By default the separator is an empty string, which produce labels like "4QFJ12345678".
+         * Components are zone number, latitude band, 100 000-metres square identifier and numerical values.
+         * By default the separator is an empty string, which produce references like "4QFJ12345678".
          *
          * @return the separator to insert between each component of the MGRS identifier, or an empty string if none.
          */
@@ -280,9 +270,13 @@ public class MilitaryGridReferenceSystem {
 
         /**
          * Sets the separator to insert between each component of the MGRS identifier.
-         * Components are zone number, latitude band, 100,000-metres square identifier and numerical values.
-         * By default the separator is an empty string, which produce labels like "4QFJ12345678".
-         * If the separator is set to a space, then the labels will be formatted like "4 Q FJ 1234 5678".
+         * Components are zone number, latitude band, 100 000-metres square identifier and numerical values.
+         * By default the separator is an empty string, which produce references like "4QFJ12345678".
+         * If the separator is set to a space, then the references will be formatted like "4 Q FJ 1234 5678".
+         *
+         * <p>Note that a MGRS reference is normally written as an entity without spaces, parentheses, dashes,
+         * or decimal points. Invoking this method with a non-empty separator produces non-conform MGRS, but
+         * is sometime convenient for readability or for use in file systems (with the {@code '/'} separator).</p>
          *
          * @param  separator  the separator to insert between each component of the MGRS identifier.
          */
@@ -293,18 +287,22 @@ public class MilitaryGridReferenceSystem {
         }
 
         /**
-         * Encodes the given position into a MGRS label.
-         * The given position must have a CRS associated to it.
+         * Encodes the given position into a MGRS reference.
+         * The given position must have a Coordinate Reference System (CRS) associated to it.
          *
          * @param  position  the coordinate to encode.
          * @return MGRS encoding of the given position.
-         * @throws TransformException if an error occurred while transforming the given coordinate to a MGRS label.
+         * @throws TransformException if an error occurred while transforming the given coordinate to a MGRS reference.
          */
         public String encode(final DirectPosition position) throws TransformException {
             ArgumentChecks.ensureNonNull("position", position);
             final CoordinateReferenceSystem crs = position.getCoordinateReferenceSystem();
+            if (crs == null) {
+                throw new GazetteerException(Errors.format(Errors.Keys.UnspecifiedCRS));
+            }
             Encoder encoder = encoders.get(crs);
             try {
+                // We can not use encoders.computeIfAbsent(crs, ...) because of checked exceptions.
                 if (encoder == null) {
                     encoder = new Encoder(avoidDatumChange ? null : datum, crs);
                     if (encoders.put(crs, encoder) != null) {
@@ -312,24 +310,25 @@ public class MilitaryGridReferenceSystem {
                     }
                 }
                 return encoder.encode(this, position, separator, digits);
-            } catch (IllegalArgumentException  | FactoryException e) {
+            } catch (IllegalArgumentException | FactoryException e) {
                 throw new GazetteerException(e.getLocalizedMessage(), e);
             }
         }
 
         /**
-         * Decodes the given MGRS label into a position.
+         * Decodes the given MGRS reference into a position.
+         * The Coordinate Reference System (CRS) associated to the returned position depends on the given reference.
          *
-         * @param  label  MGRS string to decode.
+         * @param  reference  MGRS string to decode.
          * @return a new position with the longitude at ordinate 0 and latitude at ordinate 1.
          * @throws TransformException if an error occurred while parsing the given string.
          */
-        public DirectPosition decode(final CharSequence label) throws TransformException {
-            ArgumentChecks.ensureNonNull("label", label);
-            final int end  = CharSequences.skipTrailingWhitespaces(label, 0, label.length());
-            final int base = CharSequences.skipLeadingWhitespaces (label, 0, end);
-            int i = endOfDigits(label, base, end);
-            final int zone = parseInt(label, base, i, Resources.Keys.IllegalUTMZone_1);
+        public DirectPosition decode(final CharSequence reference) throws TransformException {
+            ArgumentChecks.ensureNonNull("reference", reference);
+            final int end  = CharSequences.skipTrailingWhitespaces(reference, 0, reference.length());
+            final int base = CharSequences.skipLeadingWhitespaces (reference, 0, end);
+            int i = endOfDigits(reference, base, end);
+            final int zone = parseInt(reference, base, i, Resources.Keys.IllegalUTMZone_1);
             if (zone < 1 || zone > 60) {
                 throw new GazetteerException(Resources.format(Resources.Keys.IllegalUTMZone_1, zone));
             }
@@ -342,14 +341,14 @@ public class MilitaryGridReferenceSystem {
              *   2 — column letter: A-H in zone 1, J-R (skipping O) in zone 2, S-Z in zone 3, then repeat.
              *   3 — row letter:    ABCDEFGHJKLMNPQRSTUV in odd zones, FGHJKLMNPQRSTUVABCDE in even zones.
              */
-            double φ = Double.NaN;
+            double φs = Double.NaN;
             int col = 1, row = 0;
             for (int part = 1; part <= 3; part++) {
-                i = nextComponent(label, base, i, end, part != 2);
-                if (i >= end) {
-                    break;                                      // Allowed only for part 2 (the column letter).
+                if (part == 2 && i >= end) {
+                    break;                                      // Allow to stop parsing only after part 1.
                 }
-                int c = Character.codePointAt(label, i);
+                i = nextComponent(reference, base, i, end);
+                int c = Character.codePointAt(reference, i);
                 final int ni = i + Character.charCount(c);
                 if (c < 'A' || c > 'Z') {
                     if (c >= 'a' && c <= 'z') {
@@ -359,10 +358,10 @@ public class MilitaryGridReferenceSystem {
                         final CharSequence token;
                         if (part == 1) {
                             key = Resources.Keys.IllegalLatitudeBand_1;
-                            token = label.subSequence(i, ni);
+                            token = reference.subSequence(i, ni);
                         } else {
                             key = Resources.Keys.IllegalSquareIdentification_1;
-                            token = CharSequences.token(label, i);
+                            token = CharSequences.token(reference, i);
                         }
                         throw new GazetteerException(Resources.format(key, token));
                     }
@@ -370,14 +369,14 @@ public class MilitaryGridReferenceSystem {
                 /*
                  * At this point, 'c' is a valid letter. First, applies a correction for the fact that 'I' and 'O'
                  * letters were excluded. Next, the conversion to latitude or 100 000 meters grid indices depends
-                 * on which part we are parsing. The formulas used below are about the same than in Encoder,
+                 * on which part we are parsing. The formulas used below are about the same than in Encoder class,
                  * with terms moved on the other side of the equations.
                  */
                 if (c >= EXCLUDE_O) c--;
                 if (c >= EXCLUDE_I) c--;
                 switch (part) {
                     case 1: {
-                        φ = (c - 'C') * LATITUDE_BAND_HEIGHT + TransverseMercator.Zoner.SOUTH_BOUNDS;
+                        φs = (c - 'C') * LATITUDE_BAND_HEIGHT + TransverseMercator.Zoner.SOUTH_BOUNDS;
                         break;
                     }
                     case 2: {
@@ -399,45 +398,97 @@ public class MilitaryGridReferenceSystem {
              * We need to create a UTM projection from (φ,λ) coordinates, not from UTM zone,
              * because there is special cases to take in account for Norway and Svalbard.
              */
-            final double λ = TransverseMercator.Zoner.UTM.centralMeridian(zone);
-            final ProjectedCRS crs = datum.universal(φ,λ);
-            final DirectPosition2D pos = new DirectPosition2D(φ,λ);
-            row += ((int) (crs.getConversionFromBase().getMathTransform().transform(pos, pos).getOrdinate(1)
+            final double λ0 = TransverseMercator.Zoner.UTM.centralMeridian(zone);
+            final ProjectedCRS crs = datum.universal(φs, λ0);
+            final DirectPosition2D pos = new DirectPosition2D(φs, λ0);
+            final MathTransform projection = crs.getConversionFromBase().getMathTransform();
+            row += ((int) (projection.transform(pos, pos).getOrdinate(1)
                     / (GRID_SQUARE_SIZE * GRID_ROW_COUNT))) * GRID_ROW_COUNT;
 
             pos.setCoordinateReferenceSystem(crs);
             pos.x = col * GRID_SQUARE_SIZE;
             pos.y = row * GRID_SQUARE_SIZE;
+            if (i < end) {
+                /*
+                 * If we have not yet reached the end of string, parse the numerical location.
+                 * That location is normally encoded as a single number with an even number of digits.
+                 * The first half is the easting and the second half is the northing, both relative to the
+                 * 100 000-meter square. However some variants of MGRS use a separator, in which case we get
+                 * two distinct numbers. In both cases, the resolution is determined by the amount of digits.
+                 */
+                i = nextComponent(reference, base, i, end);
+                int s = endOfDigits(reference, i, end);
+                final double x, y;
+                if (s >= end) {
+                    final int length = s - i;
+                    final int h = i + (length >>> 1);
+                    if ((length & 1) != 0) {
+                        throw new GazetteerException(Resources.format(Resources.Keys.MismatchedResolution_2,
+                                reference.subSequence(i, h), reference.subSequence(h, s)));
+                    }
+                    x = parseCoordinate(reference, i, h);
+                    y = parseCoordinate(reference, h, s);
+                } else {
+                    x = parseCoordinate(reference, i, s);
+                    i = nextComponent(reference, base, s, end);
+                    s = endOfDigits(reference, i, end);
+                    y = parseCoordinate(reference, i, s);
+                    if (s < end) {
+                        throw new GazetteerException(Errors.format(Errors.Keys.UnexpectedCharactersAfter_2,
+                                reference.subSequence(base, s), CharSequences.trimWhitespaces(reference, s, end)));
+                    }
+                }
+                pos.x += x;
+                pos.y += y;
+            }
+            /*
+             * The southernmost bound of the latitude band (φs) has been computed at the longitude of the central
+             * meridian (λ₀). But the (x,y) position that we just parsed is probably at another longitude (λ), in
+             * which case its northing value (y) is closer to the pole of its hemisphere. The slight difference in
+             * northing values can cause a change of 100 000-metres grid square. We detect this case by converting
+             * (x,y) to geographic coordinates (φ,λ) and verifying if the result is in the expected latitude band.
+             * We also use this calculation for error detection, by verifying if the given 100 000-metres square
+             * identification is consistent with grid zone designation.
+             */
+            final MathTransform inverse = projection.inverse();
+            DirectPosition check = inverse.transform(pos, null);
+            final double sign = Math.signum(φs);
+            double error = (φs - check.getOrdinate(0)) / LATITUDE_BAND_HEIGHT;
+            if (error > 0) {
+                if (error < 1) {
+                    pos.y += sign * (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
+                } else {
+                    throw new GazetteerException("Iconsistent MGRS reference.");    // TODO: localize
+                }
+            }
             return pos;
         }
 
         /**
          * Skips spaces, then the separator if present (optional).
          *
-         * @param  label      the label to parse.
+         * @param  reference  the reference to parse.
          * @param  base       index where the parsing began. Used for formatting error message only.
          * @param  start      current parsing position.
          * @param  end        where the parsing is expected to end.
-         * @param  mandatory  whether to throw an exception or return {@code end} if we reached the end of string.
-         * @return position where to continue parsing (with spaces skipped), or {@code end} if we reached end of string.
+         * @return position where to continue parsing (with spaces skipped).
          * @throws GazetteerException if this method unexpectedly reached the end of string.
          */
-        private int nextComponent(final CharSequence label, final int base, int start, final int end, final boolean mandatory)
+        private int nextComponent(final CharSequence reference, final int base, int start, final int end)
                 throws GazetteerException
         {
-            start = CharSequences.skipLeadingWhitespaces(label, start, end);
+            start = CharSequences.skipLeadingWhitespaces(reference, start, end);
             if (start < end) {
-                if (!CharSequences.regionMatches(label, start, trimmedSeparator)) {
+                if (!CharSequences.regionMatches(reference, start, trimmedSeparator)) {
                     return start;               // Separator not found, but it was optional.
                 }
                 start += trimmedSeparator.length();
-                start = CharSequences.skipLeadingWhitespaces(label, start, end);
+                start = CharSequences.skipLeadingWhitespaces(reference, start, end);
                 if (start < end) {
                     return start;
                 }
             }
-            if (!mandatory) return start;
-            throw new GazetteerException(Errors.format(Errors.Keys.UnexpectedEndOfString_1, label.subSequence(base, end)));
+            throw new GazetteerException(Errors.format(Errors.Keys.UnexpectedEndOfString_1, reference.subSequence(base, end)));
         }
     }
 
@@ -445,10 +496,10 @@ public class MilitaryGridReferenceSystem {
      * Returns the index after the last digit in a sequence of ASCII characters.
      * Leading whitespaces must have been skipped before to invoke this method.
      */
-    static int endOfDigits(final CharSequence label, int i, final int end) {
+    static int endOfDigits(final CharSequence reference, int i, final int end) {
         while (i < end) {
-            final char c = label.charAt(i);     // Code-point API not needed here because we restrict to ASCII.
-            if (c < '0' || c > '9') {           // Do not use Character.isDigit(…) because we restrict to ASCII.
+            final char c = reference.charAt(i);     // Code-point API not needed here because we restrict to ASCII.
+            if (c < '0' || c > '9') {               // Do not use Character.isDigit(…) because we restrict to ASCII.
                 break;
             }
             i++;
@@ -459,23 +510,23 @@ public class MilitaryGridReferenceSystem {
     /**
      * Parses part of the given character sequence as an integer.
      *
-     * @param  label     the MGRS label to parse.
-     * @param  start     index of the first character to parse as an integer.
-     * @param  end       index after the last character to parse as an integer.
-     * @param  errorKey  {@link Resources.Keys} value to use in case of error.
-     *                   The error message string shall accept exactly one argument.
+     * @param  reference  the MGRS reference to parse.
+     * @param  start      index of the first character to parse as an integer.
+     * @param  end        index after the last character to parse as an integer.
+     * @param  errorKey   {@link Resources.Keys} value to use in case of error.
+     *                    The error message string shall accept exactly one argument.
      * @return the parsed integer.
      * @throws GazetteerException if the string can not be parsed as an integer.
      */
-    static int parseInt(final CharSequence label, final int start, final int end, final short errorKey)
+    static int parseInt(final CharSequence reference, final int start, final int end, final short errorKey)
             throws GazetteerException
     {
         NumberFormatException cause = null;
         final CharSequence part;
         if (start == end) {
-            part = CharSequences.token(label, start);
+            part = CharSequences.token(reference, start);
         } else {
-            part = label.subSequence(start, end);
+            part = reference.subSequence(start, end);
             try {
                 return Integer.parseInt(part.toString());
             } catch (NumberFormatException e) {
@@ -485,11 +536,26 @@ public class MilitaryGridReferenceSystem {
         throw new GazetteerException(Resources.format(errorKey, part), cause);
     }
 
+    /**
+     * Parses part of the given character sequence as a grid coordinate.
+     * The resolution is determined by the amount of digits.
+     *
+     * @param  reference  the MGRS reference to parse.
+     * @param  start      index of the first character to parse as a grid coordinate.
+     * @param  end        index after the last character to parse as a grid coordinate
+     * @return the parsed grid coordinate (also referred to as rectangular coordinates).
+     * @throws GazetteerException if the string can not be parsed as a grid coordinate.
+     */
+    static double parseCoordinate(final CharSequence reference, final int start, final int end) throws GazetteerException {
+        return parseInt(reference, start, end, Resources.Keys.IllegalGridCoordinate_1)
+                * MathFunctions.pow10(METRE_PRECISION_DIGITS - (end - start));
+    }
+
 
 
 
     /**
-     * Conversions from direct positions to Military Grid Reference System (MGRS) labels.
+     * Conversions from direct positions to Military Grid Reference System (MGRS) references.
      * Each {@code Encoder} instance is configured for one {@code DirectPosition} CRS.
      * If a position is given in another CRS, another {@code Encoder} instance must be created.
      *
@@ -506,7 +572,17 @@ public class MilitaryGridReferenceSystem {
      */
     static final class Encoder {
         /**
-         * The datum to which to transform the coordinate before formatting the MGRS label.
+         * Special {@link #crsZone} value for the UPS South (Universal Polar Stereographic) projection.
+         */
+        private static final int SOUTH_POLE = -1000;
+
+        /**
+         * Special {@link #crsZone} value for the UPS North (Universal Polar Stereographic) projection.
+         */
+        private static final int NORTH_POLE = 1000;
+
+        /**
+         * The datum to which to transform the coordinate before formatting the MGRS reference.
          * Only the datums enumerated in {@link CommonCRS} are currently supported.
          */
         private final CommonCRS datum;
@@ -553,18 +629,14 @@ public class MilitaryGridReferenceSystem {
         private int actualZone;
 
         /**
-         * Creates a new converter from direct positions to MGRS labels.
+         * Creates a new converter from direct positions to MGRS references.
          *
-         * @param  datum  the datum to which to transform the coordinate before formatting the MGRS label,
+         * @param  datum  the datum to which to transform the coordinate before formatting the MGRS reference,
          *                or {@code null} for inferring the datum from the given {@code crs}.
-         * @param  crs    the coordinate reference system of the coordinates for which to create MGRS labels.
-         * @throws IllegalArgumentException if the given CRS has no horizontal component or do not use one of
-         *         the supported datums.
+         * @param  crs    the coordinate reference system of the coordinates for which to create MGRS references.
+         * @throws IllegalArgumentException if the given CRS do not use one of the supported datums.
          */
         Encoder(CommonCRS datum, CoordinateReferenceSystem crs) throws FactoryException, TransformException {
-            if (crs == null) {
-                throw new GazetteerException(Errors.format(Errors.Keys.UnspecifiedCRS));
-            }
             CoordinateReferenceSystem horizontal = CRS.getHorizontalComponent(crs);
             if (horizontal == null) {
                 horizontal = crs;
@@ -639,13 +711,13 @@ public class MilitaryGridReferenceSystem {
         }
 
         /**
-         * Encodes the given position into a MGRS label. It is caller responsibility to ensure that the
-         * position CRS is the same than the CRS specified at this {@code Encoder} creation time.
+         * Encodes the given position into a MGRS reference. It is caller responsibility to ensure that
+         * the position CRS is the same than the CRS specified at this {@code Encoder} creation time.
          *
          * @param  owner      the {@code Coder} which own this {@code Encoder}.
-         * @param  position   the direct position to format as a MGRS label.
+         * @param  position   the direct position to format as a MGRS reference.
          * @param  separator  the separator to insert between each component of the MGRS identifier.
-         * @param  digits     number of digits to use for formatting the numerical part of a MGRS label.
+         * @param  digits     number of digits to use for formatting the numerical part of a MGRS reference.
          * @return the value of {@code buffer.toString()}.
          */
         String encode(final MilitaryGridReferenceSystem.Coder owner, DirectPosition position,
