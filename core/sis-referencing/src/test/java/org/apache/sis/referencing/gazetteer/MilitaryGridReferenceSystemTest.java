@@ -22,6 +22,7 @@ import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -36,6 +37,7 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @module
  */
+@DependsOn(org.apache.sis.referencing.operation.projection.TransverseMercatorTest.class)
 public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     /**
      * Returns a coder instance to test.
@@ -91,6 +93,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the MGRS label.
      */
     @Test
+    @DependsOnMethod({"verifyInvariants", "testLatitudeBand"})
     public void testEncoding() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         final DirectPosition2D position = new DirectPosition2D();
@@ -133,6 +136,38 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         position.x = -41;
         position.y = 10;
         assertEquals("32GNV8410260761", coder.encode(position));
+    }
+
+    /**
+     * Tests decoding of various coordinates, all at the same resolution.
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod("verifyInvariants")
+    public void testDecoding() throws TransformException {
+        final MilitaryGridReferenceSystem.Coder coder = coder();
+        DirectPosition position;
+
+        position = coder.decode("32TNL8410239239");
+        assertSame("crs", CommonCRS.WGS84.universal(41, 10), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   584102, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 4539239, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("29XMM8446304963");
+        assertSame("crs", CommonCRS.WGS84.universal(82, -10), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   484463, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 9104963, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("32GNV8410260761");
+        assertSame("crs", CommonCRS.WGS84.universal(-41, 10), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   584102, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 5460761, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("33XVM2240708183");
+        assertSame("crs", CommonCRS.WGS84.universal(82, 10), position.getCoordinateReferenceSystem());
+//      assertEquals("Easting",   515537, position.getOrdinate(0), STRICT);
+//      assertEquals("Northing", 9104963, position.getOrdinate(1), STRICT);
     }
 
     /**
@@ -195,17 +230,35 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
-     * Tests decoding of various coordinates.
+     * Tests decoding the same coordinates with different separators at different resolutions.
      *
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    public void testDecoding() throws TransformException {
+    @DependsOnMethod("testDecoding")
+    public void testDecodingVariants() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         coder.setSeparator(" / ");
-        final DirectPosition position = coder.decode("32TNL8410239239");
+        DirectPosition position;
+
+        position = coder.decode("32TNL8410239239");
         assertEquals("32TNL8410239239", position, coder.decode("32/T/NL/84102/39239"));
+        assertEquals("Easting",   584102, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 4539239, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("32TNL8439");
+        assertEquals("32TNL8439", position, coder.decode("32/T/NL/84/39"));
+        assertEquals("Easting",   584000, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 4539000, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("32TNL");
+        assertEquals("32TNL", position, coder.decode("32/T/NL"));
         assertEquals("Easting",   500000, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 4500000, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("32T");
+        assertEquals("32T", position, coder.decode("32/T"));
+        assertEquals("Easting",   100000, position.getOrdinate(0), STRICT);
+//      assertEquals("Northing", 4000000, position.getOrdinate(1), STRICT);
     }
 }

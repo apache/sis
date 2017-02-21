@@ -166,6 +166,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalAxisDirection_2 = 20;
 
         /**
+         * “{0}” is not a valid grid coordinate.
+         */
+        public static final short IllegalGridCoordinate_1 = 75;
+
+        /**
          * “{0}” is not a valid latitude band. A letter was expected.
          */
         public static final short IllegalLatitudeBand_1 = 73;
@@ -261,6 +266,11 @@ public final class Resources extends IndexedResourceBundle {
          * Expected the “{0}” prime meridian but found “{1}”.
          */
         public static final short MismatchedPrimeMeridian_2 = 36;
+
+        /**
+         * “{0}” and “{1}” do not have the same resolution.
+         */
+        public static final short MismatchedResolution_2 = 76;
 
         /**
          * The transform has {2} {0,choice,0#source|1#target} dimension{2,choice,1#|2#s}, while {1} was
