@@ -175,6 +175,8 @@ public class MilitaryGridReferenceSystem {
     public class Coder {
         /**
          * Number of digits to use for formatting the numerical part of a MGRS reference.
+         *
+         * @see #getPrecision()
          */
         private byte digits;
 
@@ -287,6 +289,28 @@ public class MilitaryGridReferenceSystem {
         }
 
         /**
+         * Returns the encoder for the given coordinate reference system.
+         *
+         * @throws IllegalArgumentException if the given CRS do not use one of the supported datums.
+         * @throws FactoryException if the creation of a coordinate operation failed.
+         * @throws TransformException if the creation of an inverse operation failed.
+         */
+        private Encoder encoder(final CoordinateReferenceSystem crs) throws FactoryException, TransformException {
+            if (crs == null) {
+                throw new GazetteerException(Errors.format(Errors.Keys.UnspecifiedCRS));
+            }
+            // We can not use encoders.computeIfAbsent(crs, ...) because of checked exceptions.
+            Encoder encoder = encoders.get(crs);
+            if (encoder == null) {
+                encoder = new Encoder(avoidDatumChange ? null : datum, crs);
+                if (encoders.put(crs, encoder) != null) {
+                    throw new ConcurrentModificationException();            // Opportunistic check.
+                }
+            }
+            return encoder;
+        }
+
+        /**
          * Encodes the given position into a MGRS reference.
          * The given position must have a Coordinate Reference System (CRS) associated to it.
          *
@@ -296,20 +320,8 @@ public class MilitaryGridReferenceSystem {
          */
         public String encode(final DirectPosition position) throws TransformException {
             ArgumentChecks.ensureNonNull("position", position);
-            final CoordinateReferenceSystem crs = position.getCoordinateReferenceSystem();
-            if (crs == null) {
-                throw new GazetteerException(Errors.format(Errors.Keys.UnspecifiedCRS));
-            }
-            Encoder encoder = encoders.get(crs);
             try {
-                // We can not use encoders.computeIfAbsent(crs, ...) because of checked exceptions.
-                if (encoder == null) {
-                    encoder = new Encoder(avoidDatumChange ? null : datum, crs);
-                    if (encoders.put(crs, encoder) != null) {
-                        throw new ConcurrentModificationException();            // Opportunistic check.
-                    }
-                }
-                return encoder.encode(this, position, separator, digits);
+                return encoder(position.getCoordinateReferenceSystem()).encode(this, position, separator, digits);
             } catch (IllegalArgumentException | FactoryException e) {
                 throw new GazetteerException(e.getLocalizedMessage(), e);
             }
@@ -390,7 +402,14 @@ public class MilitaryGridReferenceSystem {
                         break;
                     }
                     case 3: {
-                        row = c - (((zone & 1) == 0) ? 'F' : 'A');
+                        if ((zone & 1) != 0) {
+                            row = c - 'A';
+                        } else {
+                            row = c - 'F';
+                            if (row < 0) {
+                                row += GRID_ROW_COUNT;
+                            }
+                        }
                         break;
                     }
                 }
@@ -405,14 +424,14 @@ public class MilitaryGridReferenceSystem {
              */
             final double λ0 = TransverseMercator.Zoner.UTM.centralMeridian(zone);
             final ProjectedCRS crs = datum.universal(Math.signum(φs), λ0);
-            final DirectPosition2D pos = new DirectPosition2D(φs, λ0);
+            final DirectPosition2D position = new DirectPosition2D(φs, λ0);
             final MathTransform projection = crs.getConversionFromBase().getMathTransform();
-            final double northing = Math.floor(projection.transform(pos, pos).getOrdinate(1)
+            final double northing = Math.floor(projection.transform(position, position).getOrdinate(1)
                                     / (GRID_SQUARE_SIZE * GRID_ROW_COUNT))
                                     * (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
-            pos.setCoordinateReferenceSystem(crs);
-            pos.x = col * GRID_SQUARE_SIZE;
-            pos.y = row * GRID_SQUARE_SIZE + northing;
+            position.setCoordinateReferenceSystem(crs);
+            position.x = col * GRID_SQUARE_SIZE;
+            position.y = row * GRID_SQUARE_SIZE + northing;
             if (i < end) {
                 /*
                  * If we have not yet reached the end of string, parse the numerical location.
@@ -443,8 +462,8 @@ public class MilitaryGridReferenceSystem {
                                 reference.subSequence(base, s), CharSequences.trimWhitespaces(reference, s, end)));
                     }
                 }
-                pos.x += x;
-                pos.y += y;
+                position.x += x;
+                position.y += y;
             }
             /*
              * The southernmost bound of the latitude band (φs) has been computed at the longitude of the central
@@ -466,18 +485,35 @@ public class MilitaryGridReferenceSystem {
              */
             if (hasSquareIdentification) {
                 final MathTransform inverse = projection.inverse();
-                DirectPosition check = inverse.transform(pos, null);
-                double delta = truncateLastLatitudeBand(check.getOrdinate(0)) - φs;
+                DirectPosition check = inverse.transform(position, null);
+                double φ = check.getOrdinate(0);
+                double delta = truncateLastLatitudeBand(φ) - φs;
                 if ((φs >= 0) ? (delta < 0) : (delta > LATITUDE_BAND_HEIGHT)) {
-                    pos.y += Math.signum(φs) * (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
-                    check = inverse.transform(pos, check);
-                    delta = truncateLastLatitudeBand(check.getOrdinate(0)) - φs;
+                    position.y += Math.signum(φs) * (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
+                    check = inverse.transform(position, check);
+                    delta = truncateLastLatitudeBand(φ = check.getOrdinate(0)) - φs;
                 }
-                if (!(delta >= 0 && delta <= LATITUDE_BAND_HEIGHT)) {
-                    throw new GazetteerException("Iconsistent MGRS reference.");    // TODO: localize
+                /*
+                 * Verification. We allow a tolerance on the UTM zone number for latitudes close to a pole
+                 * because not all users may apply the UTM special rules for Norway and Svalbard. Anyway,
+                 * using the neighbor zone at those high latitudes is less significant.
+                 */
+                final int actual = TransverseMercator.Zoner.UTM.zone(φ, check.getOrdinate(1));
+                final boolean isHighLat   = Math.abs(φ) >= TransverseMercator.Zoner.NORWAY_BOUNDS;
+                final boolean isZoneValid = Math.abs(actual - zone) <= (isHighLat ? 1 : 0);
+                final boolean isBandValid = delta >= 0 && delta <= LATITUDE_BAND_HEIGHT;
+                if (!isBandValid || !isZoneValid) {
+                    final String gzd;
+                    try {
+                        gzd = encoder(crs).encode(this, position, "", 0);
+                    } catch (IllegalArgumentException | FactoryException e) {
+                        throw new GazetteerException(e.getLocalizedMessage(), e);
+                    }
+                    final CharSequence ref = reference.subSequence(base, end);
+                    throw new ReferenceVerifyException(Resources.format(Resources.Keys.InconsistentWithGZD_2, ref, gzd));
                 }
             }
-            return pos;
+            return position;
         }
 
         /**
@@ -507,6 +543,9 @@ public class MilitaryGridReferenceSystem {
             throw new GazetteerException(Errors.format(Errors.Keys.UnexpectedEndOfString_1, reference.subSequence(base, end)));
         }
     }
+
+    //  Following methods would be defined as private methods in Coder class
+    //  if we were allowed to define static methods in non-static inner class.
 
     /**
      * Returns the index after the last digit in a sequence of ASCII characters.
@@ -663,6 +702,8 @@ public class MilitaryGridReferenceSystem {
          *                or {@code null} for inferring the datum from the given {@code crs}.
          * @param  crs    the coordinate reference system of the coordinates for which to create MGRS references.
          * @throws IllegalArgumentException if the given CRS do not use one of the supported datums.
+         * @throws FactoryException if the creation of a coordinate operation failed.
+         * @throws TransformException if the creation of an inverse operation failed.
          */
         Encoder(CommonCRS datum, CoordinateReferenceSystem crs) throws FactoryException, TransformException {
             CoordinateReferenceSystem horizontal = CRS.getHorizontalComponent(crs);
@@ -748,8 +789,8 @@ public class MilitaryGridReferenceSystem {
          * @param  digits     number of digits to use for formatting the numerical part of a MGRS reference.
          * @return the value of {@code buffer.toString()}.
          */
-        String encode(final MilitaryGridReferenceSystem.Coder owner, DirectPosition position,
-                final String separator, final int digits) throws FactoryException, TransformException
+        String encode(final Coder owner, DirectPosition position, final String separator, final int digits)
+                throws FactoryException, TransformException
         {
             final StringBuilder buffer = owner.buffer;
             if (toNormalized != null) {

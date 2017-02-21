@@ -16,7 +16,9 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
+import java.util.Random;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
@@ -24,6 +26,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -260,5 +263,71 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         assertEquals("32T", position, coder.decode("32/T"));
         assertEquals("Easting",   100000, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 4000000, position.getOrdinate(1), STRICT);
+    }
+
+    /**
+     * Verifies the exceptions thrown when an invalid reference is given.
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod("testDecoding")
+    public void testErrorDetection() throws TransformException {
+        final MilitaryGridReferenceSystem.Coder coder = coder();
+        try {
+            coder.decode("32TNL841023923");
+            fail("Shall not accept numeric identifier of odd length.");
+        } catch (GazetteerException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("8410"));
+            assertTrue(message, message.contains("23923"));
+        }
+        try {
+            coder.decode("32TN");
+            fail("Shall not accept half of a grid zone designator.");
+        } catch (GazetteerException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("32TN"));
+        }
+        try {
+            coder.decode("32SNL8410239239");
+            fail("Shall report an invalid latitude band.");
+        } catch (ReferenceVerifyException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("32SNL8410239239"));
+            assertTrue(message, message.contains("32TNL"));
+        }
+    }
+
+    /**
+     * Encode random coordinates, decode them and verifies that the results are approximatively equals
+     * to the original coordinates.
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+//  @Test
+    @DependsOnMethod({"testEncoding", "testDecoding"})
+    public void verifyConsistency() throws TransformException {
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        final MilitaryGridReferenceSystem.Coder coder = coder();
+        final DirectPosition2D expected = new DirectPosition2D();
+        final DirectPosition2D position = new DirectPosition2D(CommonCRS.WGS84.geographic());
+        for (int i=0; i<100; i++) {
+            position.x = random.nextDouble() * 160 -  80;       // Latitude  (despite the 'x' field name)
+            position.y = random.nextDouble() * 358 - 179;       // Longitude (despite the 'y' field name)
+            final String reference = coder.encode(position);
+            final DirectPosition r = coder.decode(reference);
+            final ProjectedCRS crs = (ProjectedCRS) r.getCoordinateReferenceSystem();
+            assertSame(expected, crs.getConversionFromBase().getMathTransform().transform(position, expected));
+            final double distance = expected.distance(r.getOrdinate(0), r.getOrdinate(1));
+            if (!(distance < 1.5)) {    // Use '!' for catching NaN.
+                final String lineSeparator = System.lineSeparator();
+                fail("Consistency check failed for φ = " + position.x + " and λ = " + position.y + lineSeparator
+                   + "MGRS reference = " + reference + lineSeparator
+                   + "Parsing result = " + r         + lineSeparator
+                   + "Projected φ, λ = " + expected  + lineSeparator
+                   + "Distance (m)   = " + distance  + lineSeparator);
+            }
+        }
     }
 }
