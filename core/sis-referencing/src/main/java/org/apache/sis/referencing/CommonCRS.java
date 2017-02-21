@@ -986,7 +986,7 @@ public enum CommonCRS {
      */
     @Deprecated
     public ProjectedCRS UTM(final double latitude, final double longitude) {
-        return universal(Math.max(-45, Math.min(45, latitude)), longitude);
+        return universal(Math.signum(latitude), longitude);
     }
 
     /**
@@ -1022,9 +1022,15 @@ public enum CommonCRS {
      *   </li>
      * </ul>
      *
+     * <div class="note"><b>Tip:</b>
+     * for "straight" UTM zone calculation without any special case (neither Norway, Svalbard or Universal Polar
+     * Stereographic projection), one can replace the {@code latitude} argument by {@code Math.signum(latitude)}.
+     * For using a specific zone number, one can additionally replace the {@code longitude} argument by
+     * {@code zone * 6 - 183}.</div>
+     *
      * The map projection uses the following parameters:
      *
-     * <blockquote><table class="sis">
+     * <table class="sis">
      *   <caption>Universal Transverse Mercator (UTM) and Universal Polar Stereographic (UPS) projection parameters</caption>
      *   <tr>
      *     <th>Parameter name</th>
@@ -1051,7 +1057,7 @@ public enum CommonCRS {
      *     <td>0 (North hemisphere) or 10 000 000 (South hemisphere) metres</td>
      *     <td>2 000 000 metres</td>
      *   </tr>
-     * </table></blockquote>
+     * </table>
      *
      * The coordinate system axes are (Easting, Northing) in metres.
      *

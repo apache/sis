@@ -166,8 +166,8 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
 
         position = coder.decode("33XVM2240708183");
         assertSame("crs", CommonCRS.WGS84.universal(82, 10), position.getCoordinateReferenceSystem());
-//      assertEquals("Easting",   515537, position.getOrdinate(0), STRICT);
-//      assertEquals("Northing", 9104963, position.getOrdinate(1), STRICT);
+        assertEquals("Easting",   422407, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 9108183, position.getOrdinate(1), STRICT);
     }
 
     /**
@@ -259,6 +259,6 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         position = coder.decode("32T");
         assertEquals("32T", position, coder.decode("32/T"));
         assertEquals("Easting",   100000, position.getOrdinate(0), STRICT);
-//      assertEquals("Northing", 4000000, position.getOrdinate(1), STRICT);
+        assertEquals("Northing", 4000000, position.getOrdinate(1), STRICT);
     }
 }
