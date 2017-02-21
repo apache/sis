@@ -343,8 +343,10 @@ public class MilitaryGridReferenceSystem {
              */
             double φs = Double.NaN;
             int col = 1, row = 0;
+            boolean hasSquareIdentification = true;
             for (int part = 1; part <= 3; part++) {
                 if (part == 2 && i >= end) {
+                    hasSquareIdentification = false;
                     break;                                      // Allow to stop parsing only after part 1.
                 }
                 i = nextComponent(reference, base, i, end);
@@ -395,19 +397,22 @@ public class MilitaryGridReferenceSystem {
                 i = ni;
             }
             /*
-             * We need to create a UTM projection from (φ,λ) coordinates, not from UTM zone,
-             * because there is special cases to take in account for Norway and Svalbard.
+             * Create a UTM projection for exactly the zone specified in the MGRS reference,
+             * regardless the Norway and Svalbard special cases. Then project an estimation
+             * of the (φ,λ) coordinate in order to get an estimation of the northing value.
+             * This estimation is needed because the 100 000-metres square identification is
+             * insufficient; we may need to add some multiple of 2000 kilometres.
              */
             final double λ0 = TransverseMercator.Zoner.UTM.centralMeridian(zone);
-            final ProjectedCRS crs = datum.universal(φs, λ0);
+            final ProjectedCRS crs = datum.universal(Math.signum(φs), λ0);
             final DirectPosition2D pos = new DirectPosition2D(φs, λ0);
             final MathTransform projection = crs.getConversionFromBase().getMathTransform();
-            row += ((int) (projection.transform(pos, pos).getOrdinate(1)
-                    / (GRID_SQUARE_SIZE * GRID_ROW_COUNT))) * GRID_ROW_COUNT;
-
+            final double northing = Math.floor(projection.transform(pos, pos).getOrdinate(1)
+                                    / (GRID_SQUARE_SIZE * GRID_ROW_COUNT))
+                                    * (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
             pos.setCoordinateReferenceSystem(crs);
             pos.x = col * GRID_SQUARE_SIZE;
-            pos.y = row * GRID_SQUARE_SIZE;
+            pos.y = row * GRID_SQUARE_SIZE + northing;
             if (i < end) {
                 /*
                  * If we have not yet reached the end of string, parse the numerical location.
@@ -446,18 +451,29 @@ public class MilitaryGridReferenceSystem {
              * meridian (λ₀). But the (x,y) position that we just parsed is probably at another longitude (λ), in
              * which case its northing value (y) is closer to the pole of its hemisphere. The slight difference in
              * northing values can cause a change of 100 000-metres grid square. We detect this case by converting
-             * (x,y) to geographic coordinates (φ,λ) and verifying if the result is in the expected latitude band.
+             * (x,y) to geographic coordinates (φ,λ) and verifying if the result is in the expected latitude band:
+             *
+             *  - In North hemisphere, we expect φ >= φs in all cases because φ value is closest to equator at λ₀.
+             *    So if (φ - φs) is negative, this means that φ is too low and more northing needs to be added.
+             *
+             *  - In South hemisphere, we expect φ <= φs + LATITUDE_BAND_HEIGHT in all cases for similar reason
+             *    (the +LATITUDE_BAND_HEIGHT is for converting southernmost value φs into northernmost value φn).
+             *    So if (φ - φs) > LATITUDE_BAND_HEIGHT, this means that φ is too high and some northing needs to
+             *    be removed.
+             *
              * We also use this calculation for error detection, by verifying if the given 100 000-metres square
              * identification is consistent with grid zone designation.
              */
-            final MathTransform inverse = projection.inverse();
-            DirectPosition check = inverse.transform(pos, null);
-            final double sign = Math.signum(φs);
-            double error = (φs - check.getOrdinate(0)) / LATITUDE_BAND_HEIGHT;
-            if (error > 0) {
-                if (error < 1) {
-                    pos.y += sign * (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
-                } else {
+            if (hasSquareIdentification) {
+                final MathTransform inverse = projection.inverse();
+                DirectPosition check = inverse.transform(pos, null);
+                double delta = truncateLastLatitudeBand(check.getOrdinate(0)) - φs;
+                if ((φs >= 0) ? (delta < 0) : (delta > LATITUDE_BAND_HEIGHT)) {
+                    pos.y += Math.signum(φs) * (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
+                    check = inverse.transform(pos, check);
+                    delta = truncateLastLatitudeBand(check.getOrdinate(0)) - φs;
+                }
+                if (!(delta >= 0 && delta <= LATITUDE_BAND_HEIGHT)) {
                     throw new GazetteerException("Iconsistent MGRS reference.");    // TODO: localize
                 }
             }
@@ -549,6 +565,18 @@ public class MilitaryGridReferenceSystem {
     static double parseCoordinate(final CharSequence reference, final int start, final int end) throws GazetteerException {
         return parseInt(reference, start, end, Resources.Keys.IllegalGridCoordinate_1)
                 * MathFunctions.pow10(METRE_PRECISION_DIGITS - (end - start));
+    }
+
+    /**
+     * If the given latitude is inside the "extended area" of X band, pretend that we have the maximal
+     * "normal area" latitude value instead. The intend is to hide the additional complexity introduced
+     * by the fact that the X latitude band is 12° height while all other latitude bands are 8° height.
+     */
+    static double truncateLastLatitudeBand(double φ) {
+        if (φ > 80 && φ < TransverseMercator.Zoner.NORTH_BOUNDS) {
+            φ = 80;
+        }
+        return φ;
     }
 
 

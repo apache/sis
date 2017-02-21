@@ -599,6 +599,9 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         /*
          * For the (Universal) Transverse Mercator case (AUTO:42001 and 42002), we delegate to the CommonCRS
          * enumeration if possible because CommonCRS will itself delegate to the EPSG factory if possible.
+         * The Math.signum(latitude) instruction is for preventing "AUTO:42001" to handle the UTM special cases
+         * (Norway and Svalbard) or to switch on the Universal Polar Stereographic projection for high latitudes,
+         * because the WMS specification does not said that we should.
          */
         final CommonCRS datum = CommonCRS.WGS84;
         final GeographicCRS baseCRS;                // To be set, directly or indirectly, to WGS84.geographic().
@@ -606,7 +609,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         CartesianCS cs;                             // Coordinate system with (E,N) axes in metres.
         try {
             if (isUTM != null && isUTM) {
-                crs = datum.universal(forceUTM(latitude), longitude);
+                crs = datum.universal(Math.signum(latitude), longitude);
                 if (factor == (isLegacy ? Constants.EPSG_METRE : 1)) {
                     return crs;
                 }
@@ -615,7 +618,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             } else {
                 cs = projectedCS;
                 if (cs == null) {
-                    crs = datum.universal(forceUTM(latitude), longitude);
+                    crs = datum.universal(Math.signum(latitude), longitude);
                     projectedCS = cs = crs.getCoordinateSystem();
                     baseCRS = crs.getBaseCRS();
                 } else {
@@ -684,17 +687,6 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             message = Resources.format(Resources.Keys.NoSuchAuthorityCode_3, Constants.EPSG, Unit.class, s);
         }
         throw new NoSuchAuthorityCodeException(message, Constants.EPSG, s);
-    }
-
-    /**
-     * Forces the given latitude in the range of UTM projections, excluding Norway and Svalbard special cases.
-     * This method is used for preventing {@code "AUTO:42001"} to handle the UTM special cases and to switch
-     * on the Universal Polar Stereographic projection for high latitudes, because the WMS specification does
-     * not said that we should. However we could remove this method if we consider allowing UTM special cases
-     * and UPS projections as an Apache SIS extension.
-     */
-    private static double forceUTM(final double latitude) {
-        return Math.max(-45, Math.min(45, latitude));
     }
 
     /**
