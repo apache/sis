@@ -426,9 +426,9 @@ public class MilitaryGridReferenceSystem {
             final ProjectedCRS crs = datum.universal(Math.signum(φs), λ0);
             final DirectPosition2D position = new DirectPosition2D(φs, λ0);
             final MathTransform projection = crs.getConversionFromBase().getMathTransform();
-            final double northing = Math.floor(projection.transform(position, position).getOrdinate(1)
-                                    / (GRID_SQUARE_SIZE * GRID_ROW_COUNT))
-                                    * (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
+            double northing = projection.transform(position, position).getOrdinate(1) / (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
+            northing = (φs >= 0) ? Math.floor(northing) : Math.ceil(northing);      // Round toward equator.
+            northing *= (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
             position.setCoordinateReferenceSystem(crs);
             position.x = col * GRID_SQUARE_SIZE;
             position.y = row * GRID_SQUARE_SIZE + northing;
