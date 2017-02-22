@@ -171,6 +171,11 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         assertSame("crs", CommonCRS.WGS84.universal(82, 10), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   422407, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 9108183, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("32FNL9360826322");
+        assertSame("crs", CommonCRS.WGS84.universal(-49.4, 10.3), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   593608, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 4526322, position.getOrdinate(1), STRICT);
     }
 
     /**
@@ -305,7 +310,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      *
      * @throws TransformException if an error occurred while computing the coordinate.
      */
-//  @Test
+    @Test
     @DependsOnMethod({"testEncoding", "testDecoding"})
     public void verifyConsistency() throws TransformException {
         final Random random = TestUtilities.createRandomNumberGenerator();
