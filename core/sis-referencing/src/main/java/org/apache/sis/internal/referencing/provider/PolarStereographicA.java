@@ -110,6 +110,11 @@ public final class PolarStereographicA extends AbstractStereographic {
     }
 
     /**
+     * False Easting and false Northing value used in Universal Polar Stereographic (UPS) projections.
+     */
+    public static final double UPS_SHIFT = 2000000;
+
+    /**
      * Sets the parameter values for a Universal Polar Stereographic projection
      * and returns a suggested conversion name.
      *
@@ -132,10 +137,10 @@ public final class PolarStereographicA extends AbstractStereographic {
      */
     public static String setParameters(final ParameterValueGroup group, final boolean north) {
         group.parameter(Constants.LATITUDE_OF_ORIGIN).setValue(north ? Latitude.MAX_VALUE : Latitude.MIN_VALUE, Units.DEGREE);
-        group.parameter(Constants.CENTRAL_MERIDIAN)  .setValue(0,       Units.DEGREE);
-        group.parameter(Constants.SCALE_FACTOR)      .setValue(0.994,   Units.UNITY);
-        group.parameter(Constants.FALSE_EASTING)     .setValue(2000000, Units.METRE);
-        group.parameter(Constants.FALSE_NORTHING)    .setValue(2000000, Units.METRE);
+        group.parameter(Constants.CENTRAL_MERIDIAN)  .setValue(0,         Units.DEGREE);
+        group.parameter(Constants.SCALE_FACTOR)      .setValue(0.994,     Units.UNITY);
+        group.parameter(Constants.FALSE_EASTING)     .setValue(UPS_SHIFT, Units.METRE);
+        group.parameter(Constants.FALSE_NORTHING)    .setValue(UPS_SHIFT, Units.METRE);
         return "Universal Polar Stereographic " + (north ? "North" : "South");
     }
 
@@ -145,16 +150,15 @@ public final class PolarStereographicA extends AbstractStereographic {
      * responsibility to verify that the operation method is {@value #NAME}.
      *
      * @param  group  the Transverse Mercator projection parameters.
-     * @return zone number (positive if North, negative if South),
-     *         or 0 if the given parameters are not for a zoned projection.
+     * @return +1 if UPS north, -1 if UPS south, or 0 if the given parameters are not for a UPS projection.
      *
      * @since 0.8
      */
     public static int isUPS(final ParameterValueGroup group) {
-        if (Numerics.epsilonEqual(group.parameter(Constants.SCALE_FACTOR)    .doubleValue(Units.UNITY),   0.994, Numerics.COMPARISON_THRESHOLD) &&
-            Numerics.epsilonEqual(group.parameter(Constants.FALSE_EASTING)   .doubleValue(Units.METRE), 2000000, Formulas.LINEAR_TOLERANCE) &&
-            Numerics.epsilonEqual(group.parameter(Constants.FALSE_NORTHING)  .doubleValue(Units.METRE), 2000000, Formulas.LINEAR_TOLERANCE) &&
-            Numerics.epsilonEqual(group.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(Units.DEGREE),      0, Formulas.ANGULAR_TOLERANCE))
+        if (Numerics.epsilonEqual(group.parameter(Constants.SCALE_FACTOR)    .doubleValue(Units.UNITY),     0.994, Numerics.COMPARISON_THRESHOLD) &&
+            Numerics.epsilonEqual(group.parameter(Constants.FALSE_EASTING)   .doubleValue(Units.METRE), UPS_SHIFT, Formulas.LINEAR_TOLERANCE) &&
+            Numerics.epsilonEqual(group.parameter(Constants.FALSE_NORTHING)  .doubleValue(Units.METRE), UPS_SHIFT, Formulas.LINEAR_TOLERANCE) &&
+            Numerics.epsilonEqual(group.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(Units.DEGREE),        0, Formulas.ANGULAR_TOLERANCE))
         {
             final double φ = group.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(Units.DEGREE);
             if (Numerics.epsilonEqual(φ, Latitude.MAX_VALUE, Formulas.ANGULAR_TOLERANCE)) return +1;

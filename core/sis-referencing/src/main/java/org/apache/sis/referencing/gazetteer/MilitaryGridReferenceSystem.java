@@ -116,6 +116,19 @@ public class MilitaryGridReferenceSystem {
     private static final char EXCLUDE_O = 'O';
 
     /**
+     * The column letters used in Polar Stereographic Projections.
+     * They are letters A to Z but omitting I, O, D, E, M, N, V, W.
+     */
+    private static final byte[] POLAR_COLUMNS = {
+        'A','B','C','F','G','H','J','K','L','P','Q','R','S','T','U','X','Y','Z'
+    };
+
+    /**
+     * Military Grid Reference System (MGRS) instance using the WGS84 datum.
+     */
+    public static final MilitaryGridReferenceSystem WGS84 = new MilitaryGridReferenceSystem(CommonCRS.WGS84);
+
+    /**
      * The datum to which to transform the coordinate before formatting the MGRS reference.
      * Only the datums enumerated in {@link CommonCRS} are currently supported.
      */
@@ -128,12 +141,18 @@ public class MilitaryGridReferenceSystem {
     final boolean avoidDatumChange;
 
     /**
-     * Creates a new Military Grid Reference System (MGRS) using the WGS84 datum.
+     * Value to add to the row number in order to have the "A" letter on the northernmost value on Greenwich meridian of
+     * the Universal Polar Stereographic (UPS) South projection. Value is initially zero and computed when first needed.
+     * This is derived from the bottom of the 100 000-metres square labeled "A" in Grid Zone Designations A and B.
      */
-    public MilitaryGridReferenceSystem() {
-        datum = CommonCRS.WGS84;
-        avoidDatumChange = false;
-    }
+    private transient short southOffset;
+
+    /**
+     * Value to add to the row number in order to have the "A" letter on the southernmost value on Greenwich meridian of
+     * the Universal Polar Stereographic (UPS) North projection. Value is initially zero and computed when first needed.
+     * This is derived from the bottom of the 100 000-metres square labeled "A" in Grid Zone Designations Y and Z.
+     */
+    private transient short northOffset;
 
     /**
      * Creates a new Military Grid Reference System (MGRS) using the specified datum.
@@ -145,6 +164,39 @@ public class MilitaryGridReferenceSystem {
     public MilitaryGridReferenceSystem(final CommonCRS datum) {
         this.datum = (datum != null) ? datum : CommonCRS.WGS84;
         avoidDatumChange = (datum == null);
+    }
+
+    /**
+     * Returns the value to add to the row number in order to have the "A" letter on the southernmost or
+     * northernmost value on Greenwich meridian of the Universal Polar Stereographic (UPS) projection.
+     * If {@code south} is {@code true}, then this is computed from the northernmost value of UPS South;
+     * otherwise this is computed from the southernmost value of UPS North. This value is derived from
+     * the bottom of the 100 000-metres square labeled "A" in Grid Zone Designations A, B, Y and Z.
+     */
+    final int polarOffset(final boolean south) throws TransformException {
+        // No need to synchronized; not a big deal if computed twice.
+        short origin = south ? southOffset : northOffset;
+        if (origin == 0) {
+            final DirectPosition2D position = new DirectPosition2D(
+                    south ? TransverseMercator.Zoner.SOUTH_BOUNDS
+                          : TransverseMercator.Zoner.NORTH_BOUNDS, 0);
+            double northing = datum.universal(position.x * 1.01, position.y).getConversionFromBase()
+                                   .getMathTransform().transform(position, position).getOrdinate(1);
+            if (south) {
+                northing = 2*PolarStereographicA.UPS_SHIFT - northing;
+            }
+            northing = Math.floor(northing / GRID_SQUARE_SIZE);
+            origin = (short) northing;
+            if (origin != northing) {                       // Paranoiac check (should never happen).
+                throw new GazetteerException();
+            }
+            if (south) {
+                southOffset = origin;
+            } else {
+                northOffset = origin;
+            }
+        }
+        return origin;
     }
 
     /**
@@ -196,10 +248,10 @@ public class MilitaryGridReferenceSystem {
         private final Map<CoordinateReferenceSystem,Encoder> encoders;
 
         /**
-         * Temporary positions used by {@link Encoder} only. References are kept for avoiding to
-         * recreate those temporary objects for every reference to format.
+         * Temporary positions used for encoding and decoding. References are kept for avoiding
+         * to recreate those temporary objects for every reference to parse or format.
          */
-        DirectPosition normalized, geographic;
+        transient DirectPosition normalized, geographic;
 
         /**
          * A buffer where to create reference, to be reused for each new reference.
@@ -286,6 +338,13 @@ public class MilitaryGridReferenceSystem {
             ArgumentChecks.ensureNonNull("separator", separator);
             this.separator = separator;
             trimmedSeparator = CharSequences.trimWhitespaces(separator);
+        }
+
+        /**
+         * Bridge to {@link MilitaryGridReferenceSystem#polarOffset(boolean)} for the {@link Encoder} class.
+         */
+        final int polarOffset(final boolean south) throws TransformException {
+            return MilitaryGridReferenceSystem.this.polarOffset(south);
         }
 
         /**
@@ -485,20 +544,20 @@ public class MilitaryGridReferenceSystem {
              */
             if (hasSquareIdentification) {
                 final MathTransform inverse = projection.inverse();
-                DirectPosition check = inverse.transform(position, null);
-                double φ = check.getOrdinate(0);
+                geographic = inverse.transform(position, geographic);
+                double φ = geographic.getOrdinate(0);
                 double delta = truncateLastLatitudeBand(φ) - φs;
                 if ((φs >= 0) ? (delta < 0) : (delta > LATITUDE_BAND_HEIGHT)) {
                     position.y += Math.signum(φs) * (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
-                    check = inverse.transform(position, check);
-                    delta = truncateLastLatitudeBand(φ = check.getOrdinate(0)) - φs;
+                    geographic = inverse.transform(position, geographic);
+                    delta = truncateLastLatitudeBand(φ = geographic.getOrdinate(0)) - φs;
                 }
                 /*
                  * Verification. We allow a tolerance on the UTM zone number for latitudes close to a pole
                  * because not all users may apply the UTM special rules for Norway and Svalbard. Anyway,
                  * using the neighbor zone at those high latitudes is less significant.
                  */
-                final int actual = TransverseMercator.Zoner.UTM.zone(φ, check.getOrdinate(1));
+                final int actual = TransverseMercator.Zoner.UTM.zone(φ, geographic.getOrdinate(1));
                 final boolean isHighLat   = Math.abs(φ) >= TransverseMercator.Zoner.NORWAY_BOUNDS;
                 final boolean isZoneValid = Math.abs(actual - zone) <= (isHighLat ? 1 : 0);
                 final boolean isBandValid = delta >= 0 && delta <= LATITUDE_BAND_HEIGHT;
@@ -639,14 +698,10 @@ public class MilitaryGridReferenceSystem {
      */
     static final class Encoder {
         /**
-         * Special {@link #crsZone} value for the UPS South (Universal Polar Stereographic) projection.
+         * Special {@link #crsZone} value for the UPS (Universal Polar Stereographic) projection.
+         * Positive value is used for North pole and negative value for South pole.
          */
-        private static final int SOUTH_POLE = -1000;
-
-        /**
-         * Special {@link #crsZone} value for the UPS North (Universal Polar Stereographic) projection.
-         */
-        private static final int NORTH_POLE = 1000;
+        private static final int POLE = 100;
 
         /**
          * The datum to which to transform the coordinate before formatting the MGRS reference.
@@ -655,7 +710,7 @@ public class MilitaryGridReferenceSystem {
         private final CommonCRS datum;
 
         /**
-         * UTM zone of position CRS (negative for South hemisphere), or {@value #NORTH_POLE} or {@value #SOUTH_POLE}
+         * UTM zone of position CRS (negative for South hemisphere), or {@value #POLE} (negative of positive)
          * if the CRS is a Universal Polar Stereographic projection, or 0 if the CRS is not a recognized projection.
          * Note that this is not necessarily the same zone than the one to use for formatting any given coordinate in
          * that projected CRS, since the {@link #zone(double, char)} method has special rules for some latitudes.
@@ -721,7 +776,7 @@ public class MilitaryGridReferenceSystem {
                 if (IdentifiedObjects.isHeuristicMatchForName(method, TransverseMercator.NAME)) {
                     crsZone = TransverseMercator.Zoner.UTM.zone(projection.getParameterValues());
                 } else if (IdentifiedObjects.isHeuristicMatchForName(method, PolarStereographicA.NAME)) {
-                    crsZone = NORTH_POLE * PolarStereographicA.isUPS(projection.getParameterValues());
+                    crsZone = POLE * PolarStereographicA.isUPS(projection.getParameterValues());
                 } else {
                     crsZone = 0;                                    // Neither UTM or UPS projection.
                 }
@@ -797,43 +852,58 @@ public class MilitaryGridReferenceSystem {
                 owner.normalized = position = toNormalized.transform(position, owner.normalized);
             }
             final DirectPosition geographic = toGeographic.transform(position, owner.geographic);
-            owner.geographic = geographic;                      // For reuse in next method calls.
-            final double φ = geographic.getOrdinate(0);
-            if (φ >= TransverseMercator.Zoner.SOUTH_BOUNDS &&
-                φ <  TransverseMercator.Zoner.NORTH_BOUNDS)
-            {
-                /*
-                 * Universal Transverse Mercator (UTM) case.
-                 */
-                final double λ = geographic.getOrdinate(1);
-                final int zone = TransverseMercator.Zoner.UTM.zone(φ, λ);
-                final int sz   = MathFunctions.isNegative(φ) ? -zone : zone;
-                if (sz == 0) {
-                    // Zero value at this point is the result of NaN of infinite ordinate value.
-                    throw new GazetteerException(Errors.format(Errors.Keys.NotANumber_1, "longitude"));
+            owner.geographic     = geographic;                  // For reuse in next method calls.
+            final double  λ      = geographic.getOrdinate(1);
+            final double  φ      = geographic.getOrdinate(0);
+            final boolean isUTM  = φ >= TransverseMercator.Zoner.SOUTH_BOUNDS &&
+                                   φ <  TransverseMercator.Zoner.NORTH_BOUNDS;
+            final int zone       = isUTM ? TransverseMercator.Zoner.UTM.zone(φ, λ) : POLE;
+            final int signedZone = MathFunctions.isNegative(φ) ? -zone : zone;
+            if (signedZone == 0) {
+                // Zero value at this point is the result of NaN of infinite ordinate value.
+                throw new GazetteerException(Errors.format(Errors.Keys.NotANumber_1, "longitude"));
+            }
+            /*
+             * If the DirectPosition given to this method is not in the expected Coordinate Reference System,
+             * transform it now. This may happen because the UTM zone computed above is not the same UTM zone
+             * than the coordinate one, or because the coordinate is geographic instead than projected.
+             */
+            if (signedZone != crsZone) {
+                if (signedZone != actualZone) {
+                    actualZone   = 0;                           // In case an exception is thrown on the next line.
+                    toActualZone = CRS.findOperation(datum.geographic(), datum.universal(φ, λ), null).getMathTransform();
+                    actualZone   = signedZone;
                 }
-                if (sz != crsZone) {
-                    if (sz != actualZone) {
-                        actualZone   = 0;                           // In case an exception is thrown on the next line.
-                        toActualZone = CRS.findOperation(datum.geographic(), datum.universal(φ, λ), null).getMathTransform();
-                        actualZone   = sz;
-                    }
-                    owner.normalized = position = toActualZone.transform(geographic, owner.normalized);
-                }
-                buffer.setLength(0);
+                owner.normalized = position = toActualZone.transform(geographic, owner.normalized);
+            }
+            /*
+             * Grid Zone Designator (GZD).
+             */
+            buffer.setLength(0);
+            if (isUTM) {
                 buffer.append(zone).append(separator).append(latitudeBand(φ));
-                if (digits >= 0) {
+            } else {
+                char z = (signedZone < 0) ? 'A' : 'Y';
+                if (λ >= 0) z++;
+                buffer.append(z);
+            }
+            /*
+             * 100 000-metres square identification.
+             */
+            if (digits >= 0) {
+                final double  x = position.getOrdinate(0);
+                final double  y = position.getOrdinate(1);
+                final double cx = Math.floor(x / GRID_SQUARE_SIZE);
+                final double cy = Math.floor(y / GRID_SQUARE_SIZE);
+                int col = (int) cx;
+                int row = (int) cy;
+                if (isUTM) {
                     /*
                      * Specification said that 100,000-meters columns are lettered from A through Z (omitting I and O)
                      * starting at the 180° meridian, proceeding easterly for 18°, and repeating for each 18° intervals.
                      * Since a UTM zone is 6° width, a 18° interval is exactly 3 standard UTM zones. Columns in zone 1
                      * are A-H, zone 2 are J-R (skipping O), zone 3 are S-Z, then repeating every 3 zones.
                      */
-                    final double x = position.getOrdinate(0);
-                    final double y = position.getOrdinate(1);
-                    final double cx = Math.floor(x / GRID_SQUARE_SIZE);
-                    final double cy = Math.floor(y / GRID_SQUARE_SIZE);
-                    int col = (int) cx;
                     if (col < 1 || col > 8) {
                         /*
                          * UTM northing values at the equator range from 166021 to 833979 meters approximatively
@@ -852,37 +922,60 @@ public class MilitaryGridReferenceSystem {
                      * Rows in even zones are FGHJKLMNPQRSTUVABCDE
                      * Those 20 letters are repeated in a cycle.
                      */
-                    int row = (int) cy;
                     if ((zone & 1) == 0) {
                         row += ('F' - 'A');
                     }
-                    row = 'A' + (row % GRID_ROW_COUNT);
-                    if (row >= EXCLUDE_I && ++row >= EXCLUDE_O) row++;
-                    buffer.append(separator).append((char) col).append((char) row);
+                    row %= GRID_ROW_COUNT;
+                    // Row calculation to be completed after the 'else' block.
+                } else {
                     /*
-                     * Numerical location at the given precision.
-                     * The specification requires us to truncate the number, not to round it.
+                     * Universal Polar Stereographic (UPS) case. Row letters go from A to Z, omitting I and O.
+                     * The column letters go from A to Z, omitting I, O, D, E, M, N, V, W. Rightmost column in
+                     * grid zones A and Y has column letter Z, and the next column in grid zones B and Z starts
+                     * over with column letter A.
                      */
-                    if (digits > 0) {
-                        final double precision = MathFunctions.pow10(METRE_PRECISION_DIGITS - digits);
-                        append(buffer.append(separator), (int) ((x - cx * GRID_SQUARE_SIZE) / precision), digits);
-                        append(buffer.append(separator), (int) ((y - cy * GRID_SQUARE_SIZE) / precision), digits);
+                    final byte[] columns = POLAR_COLUMNS;
+                    col -= (int) (PolarStereographicA.UPS_SHIFT / GRID_SQUARE_SIZE);
+                    if (!(λ >= 0)) {                    // Same condition than in GZD block. Use of ! is for NaN.
+                        col += columns.length;          // Letters Z to A from right to left.
                     }
+                    if (col < 0 || col >= columns.length) {
+                        throw new GazetteerException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
+                    }
+                    col  = columns[col];
+                    row -= owner.polarOffset(signedZone < 0);
                 }
-            } else {
+                row += 'A';
+                if (row >= EXCLUDE_I && ++row >= EXCLUDE_O) row++;
+                buffer.append(separator).append(letter(col)).append(letter(row));
                 /*
-                 * Universal Polar Stereographic (UPS) case.
+                 * Numerical location at the given precision.
+                 * The specification requires us to truncate the number, not to round it.
                  */
-                return null;    // TODO
+                if (digits > 0) {
+                    final double precision = MathFunctions.pow10(METRE_PRECISION_DIGITS - digits);
+                    append(buffer.append(separator), (int) ((x - cx * GRID_SQUARE_SIZE) / precision), digits);
+                    append(buffer.append(separator), (int) ((y - cy * GRID_SQUARE_SIZE) / precision), digits);
+                }
             }
             return buffer.toString();
+        }
+
+        /**
+         * Returns the given character as a {@code char} if it is a letter, or throws an exception otherwise.
+         * The exception should never happen, unless the the encoder is used for a planet larger than Earth
+         * for which we do not have enough letters.
+         */
+        private static char letter(final int c) throws GazetteerException {
+            if (c >= 'A' && c <= 'Z') return (char) c;
+            throw new GazetteerException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
         }
 
         /**
          * Appends the given value in the given buffer, padding with zero digits in order to get
          * the specified total amount of digits.
          */
-        private static void append(final StringBuilder buffer, final int value, int digits) throws TransformException {
+        private static void append(final StringBuilder buffer, final int value, int digits) throws GazetteerException {
             if (value >= 0) {
                 final int p = buffer.length();
                 digits -= (buffer.append(value).length() - p);
@@ -891,7 +984,7 @@ public class MilitaryGridReferenceSystem {
                     return;
                 }
             }
-            throw new TransformException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
+            throw new GazetteerException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
         }
     }
 }
