@@ -97,7 +97,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      */
     @Test
     @DependsOnMethod({"verifyInvariants", "testLatitudeBand"})
-    public void testEncodingUTM() throws TransformException {
+    public void testEncodeUTM() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         final DirectPosition2D position = new DirectPosition2D();
         /*
@@ -149,7 +149,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      */
     @Test
     @DependsOnMethod("verifyInvariants")
-    public void testDecodingUTM() throws TransformException {
+    public void testDecodeUTM() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         DirectPosition position;
 
@@ -186,7 +186,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      */
     @Test
     @DependsOnMethod("verifyInvariants")
-    public void testEncodingUPS() throws TransformException {
+    public void testEncodeUPS() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         final DirectPosition2D position = new DirectPosition2D();
         /*
@@ -218,12 +218,59 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
+     * Tests decoding of various coordinates in Universal Polar Stereographic (UPS) projection,
+     * all at the same resolution.
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod("verifyInvariants")
+    public void testDecodeUPS() throws TransformException {
+        final MilitaryGridReferenceSystem.Coder coder = coder();
+        DirectPosition position;
+        /*
+         * South case.
+         */
+        position = coder.decode("BAN0001000010");
+        assertSame("crs", CommonCRS.WGS84.universal(-90, 0), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",  2000010, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 2000010, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("AZM9999099990");
+        assertSame("crs", CommonCRS.WGS84.universal(-90, 0), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",  1999990, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 1999990, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("BLJ0672702814");
+        assertSame("crs", CommonCRS.WGS84.universal(-90, 0), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",  2806727, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 1602814, position.getOrdinate(1), STRICT);
+        /*
+         * North case.
+         */
+        position = coder.decode("ZAH0001000010");
+        assertSame("crs", CommonCRS.WGS84.universal(90, 0), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",  2000010, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 2000010, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("YZG9999099990");
+        assertSame("crs", CommonCRS.WGS84.universal(90, 0), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",  1999990, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 1999990, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("YRK8672702814");
+        assertSame("crs", CommonCRS.WGS84.universal(90, 0), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",  1386727, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 2202814, position.getOrdinate(1), STRICT);
+    }
+
+    /**
      * Tests encoding of the same coordinate at various precision.
      *
      * @throws TransformException if an error occurred while computing the MGRS label.
      */
     @Test
-    @DependsOnMethod("testEncodingUTM")
+    @DependsOnMethod("testEncodeUTM")
     public void testPrecision() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         final DirectPosition2D position = new DirectPosition2D(CommonCRS.WGS84.universal(13, 103));
@@ -282,8 +329,8 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod("testDecodingUTM")
-    public void testDecodingVariants() throws TransformException {
+    @DependsOnMethod("testDecodeUTM")
+    public void testDecodeVariants() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         coder.setSeparator(" / ");
         DirectPosition position;
@@ -315,7 +362,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod("testDecodingUTM")
+    @DependsOnMethod("testDecodeUTM")
     public void testErrorDetection() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         try {
@@ -350,14 +397,14 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod({"testEncodingUTM", "testDecodingUTM"})
+    @DependsOnMethod({"testEncodeUTM", "testDecodeUTM"})
     public void verifyConsistency() throws TransformException {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final MilitaryGridReferenceSystem.Coder coder = coder();
         final DirectPosition2D expected = new DirectPosition2D();
         final DirectPosition2D position = new DirectPosition2D(CommonCRS.WGS84.geographic());
         for (int i=0; i<100; i++) {
-            position.x = random.nextDouble() * 160 -  80;       // Latitude  (despite the 'x' field name)
+            position.x = random.nextDouble() * 180 -  90;       // Latitude  (despite the 'x' field name)
             position.y = random.nextDouble() * 358 - 179;       // Longitude (despite the 'y' field name)
             final String reference = coder.encode(position);
             final DirectPosition r = coder.decode(reference);
