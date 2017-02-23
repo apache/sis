@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
@@ -42,6 +43,7 @@ import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.measure.Latitude;
 
 
 /**
@@ -401,41 +403,114 @@ public class MilitaryGridReferenceSystem {
          * @throws TransformException if an error occurred while parsing the given string.
          */
         public DirectPosition decode(final CharSequence reference) throws TransformException {
+            final int              zone;            // UTM zone, or 0 if UPS.
+            final ProjectedCRS     crs;             // UTM or UPS projection for the zone.
+            final MathTransform    projection;      // Conversion from geographic coordinates to projected CRS.
+            final DirectPosition2D position;        // The decoded position.
+            boolean hasSquareIdentification;        // Whether a square identification is present (UTM only).
+            double  φs;                             // Southernmost bound of latitude band (UTM only).
+
             ArgumentChecks.ensureNonNull("reference", reference);
             final int end  = CharSequences.skipTrailingWhitespaces(reference, 0, reference.length());
             final int base = CharSequences.skipLeadingWhitespaces (reference, 0, end);
             int i = endOfDigits(reference, base, end);
-            final int zone = parseInt(reference, base, i, Resources.Keys.IllegalUTMZone_1);
-            if (zone < 1 || zone > 60) {
-                throw new GazetteerException(Resources.format(Resources.Keys.IllegalUTMZone_1, zone));
-            }
-            /*
-             * Parse the sub-sequence made of letters. That sub-sequence can have one or three parts.
-             * The first part is mandatory and the two other parts are optional, but if the two last
-             * parts are omitted, then they must be omitted together.
-             *
-             *   1 — latitude band: C-X (excluding I and O) for UTM. Other letters (A, B, Y, Z) are for UPS.
-             *   2 — column letter: A-H in zone 1, J-R (skipping O) in zone 2, S-Z in zone 3, then repeat.
-             *   3 — row letter:    ABCDEFGHJKLMNPQRSTUV in odd zones, FGHJKLMNPQRSTUVABCDE in even zones.
-             */
-            double φs = Double.NaN;
-            int col = 1, row = 0;
-            boolean hasSquareIdentification = true;
-            for (int part = 1; part <= 3; part++) {
-                if (part == 2 && i >= end) {
-                    hasSquareIdentification = false;
-                    break;                                      // Allow to stop parsing only after part 1.
-                }
-                i = nextComponent(reference, base, i, end);
-                int c = Character.codePointAt(reference, i);
-                final int ni = i + Character.charCount(c);
-                if (c < 'A' || c > 'Z') {
-                    if (c >= 'a' && c <= 'z') {
-                        c -= ('a' - 'A');
+            if (i == base && i < end) {
+                /*
+                 * Universal Polar Stereographic (UPS) case. The reference has no zone number
+                 * and begins directly with 3 parts, where each part is exactly one letter:
+                 *
+                 *   part 0  —  A zone indicator: A or B for South pole, or Y or Z for North pole.
+                 *   part 1  —  column letter:    A to Z, omitting I, O, D, E, M, N, V, W.
+                 *   part 2  —  row letter:       A to Z, omitting I, O.
+                 */
+                zone          = 0;                  // Not used in UPS case.
+                boolean south = false;              // True for A and B zones, false for Y and Z zones.
+                boolean west  = false;              // True for A and Y zones, false for B and Z zones.
+                int col = 0, row = 0;               // Parsed row and column indices.
+                for (int part = 0; part <= 2; part++) {
+                    int c = Character.codePointAt(reference, i);
+                    final int ni = i + Character.charCount(c);
+                    if (isLetter(c) || isLetter(c -= ('a' - 'A'))) {
+parse:                  switch (part) {
+                            case 0: {
+                                switch (c) {
+                                    case 'A': south = true; west = true; break;
+                                    case 'B': south = true;              break;
+                                    case 'Y':               west = true; break;
+                                    case 'Z':                            break;
+                                    default : break parse;                              // Invalid UPS zone.
+                                }
+                                i = nextComponent(reference, base, ni, end);
+                                continue;
+                            }
+                            case 1: {
+                                col = Arrays.binarySearch(POLAR_COLUMNS, (byte) c);
+                                if (col < 0) break;                                     // Invalid column letter.
+                                if (west) col -= POLAR_COLUMNS.length;
+                                col += (int) (PolarStereographicA.UPS_SHIFT / GRID_SQUARE_SIZE);
+                                i = nextComponent(reference, base, ni, end);
+                                continue;
+                            }
+                            case 2: {
+                                if (c >= EXCLUDE_O) c--;
+                                if (c >= EXCLUDE_I) c--;
+                                row = (c - 'A') + polarOffset(south);
+                                i = ni;
+                                continue;
+                            }
+                        }
+                    }
+                    /*
+                     * We reach this point only if the current character is invalid (not a letter,
+                     * or not one of the letters expected for the current part).
+                     */
+                    final short key;
+                    final CharSequence token;
+                    if (part == 0) {
+                        key = Resources.Keys.IllegalUPSZone_1;
+                        token = reference.subSequence(i, ni);
                     } else {
+                        key = Resources.Keys.IllegalSquareIdentification_1;
+                        token = CharSequences.token(reference, i);
+                    }
+                    throw new GazetteerException(Resources.format(key, token));
+                }
+                crs = datum.universal(φs = (south ? Latitude.MIN_VALUE : Latitude.MAX_VALUE), 0);
+                position = new DirectPosition2D(col * GRID_SQUARE_SIZE, row * GRID_SQUARE_SIZE);
+                hasSquareIdentification = false;
+                projection = null;
+            } else {
+                /*
+                 * Universal Transverse Mercator (UTM) case.
+                 */
+                zone = parseInt(reference, base, i, Resources.Keys.IllegalUTMZone_1);
+                if (zone < 1 || zone > 60) {
+                    throw new GazetteerException(Resources.format(Resources.Keys.IllegalUTMZone_1, zone));
+                }
+                /*
+                 * Parse the sub-sequence made of letters. That sub-sequence can have one or three parts.
+                 * The first part is mandatory and the two other parts are optional, but if the two last
+                 * parts are omitted, then they must be omitted together.
+                 *
+                 *   part 0  —  latitude band: C-X (excluding I and O) for UTM. Other letters (A, B, Y, Z) are for UPS.
+                 *   part 1  —  column letter: A-H in zone 1, J-R (skipping O) in zone 2, S-Z in zone 3, then repeat.
+                 *   part 2  —  row letter:    ABCDEFGHJKLMNPQRSTUV in odd zones, FGHJKLMNPQRSTUVABCDE in even zones.
+                 */
+                φs = Double.NaN;
+                int col = 1, row = 0;
+                hasSquareIdentification = true;
+                for (int part = 0; part <= 2; part++) {
+                    if (part == 1 && i >= end) {
+                        hasSquareIdentification = false;
+                        break;                                      // Allow to stop parsing only after part 1.
+                    }
+                    i = nextComponent(reference, base, i, end);
+                    int c = Character.codePointAt(reference, i);
+                    final int ni = i + Character.charCount(c);
+                    if (!isLetter(c) && !isLetter(c -= ('a' - 'A'))) {
                         final short key;
                         final CharSequence token;
-                        if (part == 1) {
+                        if (part == 0) {
                             key = Resources.Keys.IllegalLatitudeBand_1;
                             token = reference.subSequence(i, ni);
                         } else {
@@ -444,59 +519,59 @@ public class MilitaryGridReferenceSystem {
                         }
                         throw new GazetteerException(Resources.format(key, token));
                     }
+                    /*
+                     * At this point, 'c' is a valid letter. First, applies a correction for the fact that 'I' and 'O'
+                     * letters were excluded. Next, the conversion to latitude or 100 000 meters grid indices depends
+                     * on which part we are parsing. The formulas used below are about the same than in Encoder class,
+                     * with terms moved on the other side of the equations.
+                     */
+                    if (c >= EXCLUDE_O) c--;
+                    if (c >= EXCLUDE_I) c--;
+                    switch (part) {
+                        case 0: {
+                            φs = (c - 'C') * LATITUDE_BAND_HEIGHT + TransverseMercator.Zoner.SOUTH_BOUNDS;
+                            break;
+                        }
+                        case 1: {
+                            switch (zone % 3) {                         // First A-H sequence starts at zone number 1.
+                                case 1: col = c - ('A' - 1); break;
+                                case 2: col = c - ('J' - 2); break;     // -2 because 'I' has already been excluded.
+                                case 0: col = c - ('S' - 3); break;     // -3 because 'I' and 'O' have been excluded.
+                            }
+                            break;
+                        }
+                        case 2: {
+                            if ((zone & 1) != 0) {
+                                row = c - 'A';
+                            } else {
+                                row = c - 'F';
+                                if (row < 0) {
+                                    row += GRID_ROW_COUNT;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    i = ni;
                 }
                 /*
-                 * At this point, 'c' is a valid letter. First, applies a correction for the fact that 'I' and 'O'
-                 * letters were excluded. Next, the conversion to latitude or 100 000 meters grid indices depends
-                 * on which part we are parsing. The formulas used below are about the same than in Encoder class,
-                 * with terms moved on the other side of the equations.
+                 * Create a UTM projection for exactly the zone specified in the MGRS reference,
+                 * regardless the Norway and Svalbard special cases. Then project an estimation
+                 * of the (φ,λ) coordinate in order to get an estimation of the northing value.
+                 * This estimation is needed because the 100 000-metres square identification is
+                 * insufficient; we may need to add some multiple of 2000 kilometres.
                  */
-                if (c >= EXCLUDE_O) c--;
-                if (c >= EXCLUDE_I) c--;
-                switch (part) {
-                    case 1: {
-                        φs = (c - 'C') * LATITUDE_BAND_HEIGHT + TransverseMercator.Zoner.SOUTH_BOUNDS;
-                        break;
-                    }
-                    case 2: {
-                        switch (zone % 3) {                         // First A-H sequence starts at zone number 1.
-                            case 1: col = c - ('A' - 1); break;
-                            case 2: col = c - ('J' - 2); break;     // -2 because 'I' has already been excluded.
-                            case 0: col = c - ('S' - 3); break;     // -3 because 'I' and 'O' have been excluded.
-                        }
-                        break;
-                    }
-                    case 3: {
-                        if ((zone & 1) != 0) {
-                            row = c - 'A';
-                        } else {
-                            row = c - 'F';
-                            if (row < 0) {
-                                row += GRID_ROW_COUNT;
-                            }
-                        }
-                        break;
-                    }
-                }
-                i = ni;
+                final double λ0 = TransverseMercator.Zoner.UTM.centralMeridian(zone);
+                crs = datum.universal(Math.signum(φs), λ0);
+                position = new DirectPosition2D(φs, λ0);
+                projection = crs.getConversionFromBase().getMathTransform();
+                double northing = projection.transform(position, position).getOrdinate(1) / (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
+                northing = (φs >= 0) ? Math.floor(northing) : Math.ceil(northing);      // Round toward equator.
+                northing *= (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
+                position.x = col * GRID_SQUARE_SIZE;
+                position.y = row * GRID_SQUARE_SIZE + northing;
             }
-            /*
-             * Create a UTM projection for exactly the zone specified in the MGRS reference,
-             * regardless the Norway and Svalbard special cases. Then project an estimation
-             * of the (φ,λ) coordinate in order to get an estimation of the northing value.
-             * This estimation is needed because the 100 000-metres square identification is
-             * insufficient; we may need to add some multiple of 2000 kilometres.
-             */
-            final double λ0 = TransverseMercator.Zoner.UTM.centralMeridian(zone);
-            final ProjectedCRS crs = datum.universal(Math.signum(φs), λ0);
-            final DirectPosition2D position = new DirectPosition2D(φs, λ0);
-            final MathTransform projection = crs.getConversionFromBase().getMathTransform();
-            double northing = projection.transform(position, position).getOrdinate(1) / (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
-            northing = (φs >= 0) ? Math.floor(northing) : Math.ceil(northing);      // Round toward equator.
-            northing *= (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
             position.setCoordinateReferenceSystem(crs);
-            position.x = col * GRID_SQUARE_SIZE;
-            position.y = row * GRID_SQUARE_SIZE + northing;
             if (i < end) {
                 /*
                  * If we have not yet reached the end of string, parse the numerical location.
@@ -549,6 +624,7 @@ public class MilitaryGridReferenceSystem {
              * identification is consistent with grid zone designation.
              */
             if (hasSquareIdentification) {
+                @SuppressWarnings("null")
                 final MathTransform inverse = projection.inverse();
                 geographic = inverse.transform(position, geographic);
                 double φ = geographic.getOrdinate(0);
@@ -611,6 +687,13 @@ public class MilitaryGridReferenceSystem {
 
     //  Following methods would be defined as private methods in Coder class
     //  if we were allowed to define static methods in non-static inner class.
+
+    /**
+     * Returns {@code true} if the given character is a valid upper case ASCII letter, excluding I and O.
+     */
+    static boolean isLetter(final int c) {
+        return (c >= 'A' && c <= 'Z') && c != EXCLUDE_I && c != EXCLUDE_O;
+    }
 
     /**
      * Returns the index after the last digit in a sequence of ASCII characters.

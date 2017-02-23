@@ -207,6 +207,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalSquareIdentification_1 = 74;
 
         /**
+         * “{0}” is not a valid Universal Polar Stereographic (UPS) zone.
+         */
+        public static final short IllegalUPSZone_1 = 78;
+
+        /**
          * “{0}” is not a valid Universal Transverse Mercator (UTM) zone.
          */
         public static final short IllegalUTMZone_1 = 72;
