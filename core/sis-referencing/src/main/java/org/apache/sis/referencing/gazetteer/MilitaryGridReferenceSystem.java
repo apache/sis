@@ -124,11 +124,6 @@ public class MilitaryGridReferenceSystem {
     };
 
     /**
-     * Military Grid Reference System (MGRS) instance using the WGS84 datum.
-     */
-    public static final MilitaryGridReferenceSystem WGS84 = new MilitaryGridReferenceSystem(CommonCRS.WGS84);
-
-    /**
      * The datum to which to transform the coordinate before formatting the MGRS reference.
      * Only the datums enumerated in {@link CommonCRS} are currently supported.
      */
@@ -153,6 +148,17 @@ public class MilitaryGridReferenceSystem {
      * This is derived from the bottom of the 100 000-metres square labeled "A" in Grid Zone Designations Y and Z.
      */
     private transient short northOffset;
+
+    /**
+     * Creates a new Military Grid Reference System (MGRS) using the default datum.
+     * The current Apache SIS version uses the {@linkplain CommonCRS#WGS84 WGS84} datum,
+     * but this choice may change in the future if there is a need to adapt to new MGRS specifications.
+     * For a more specific datum, consider using the {@link #MilitaryGridReferenceSystem(CommonCRS)} constructor.
+     */
+    public MilitaryGridReferenceSystem() {
+        datum = CommonCRS.WGS84;
+        avoidDatumChange = false;
+    }
 
     /**
      * Creates a new Military Grid Reference System (MGRS) using the specified datum.
