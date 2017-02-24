@@ -16,8 +16,10 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.InternationalString;
@@ -27,6 +29,7 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Types;
 
@@ -55,13 +58,25 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
 
     /**
      * Property used to characterize the spatial reference system.
+     *
+     * @see #getTheme()
      */
     private final InternationalString theme;
 
     /**
      * Authority with overall responsibility for the spatial reference system.
+     *
+     * @see #getOverallOwner()
      */
     private final Party overallOwner;
+
+    /**
+     * Description of location type(s) in the spatial reference system.
+     * This collection shall be unmodifiable.
+     *
+     * @see #getLocationTypes()
+     */
+    private final Collection<LocationType> locationTypes;
 
     /**
      * Creates a reference system from the given properties.
@@ -122,11 +137,20 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      * </table>
      *
      * @param properties  the properties to be given to the coordinate reference system.
+     * @param types       description of location type(s) in the spatial reference system.
      */
-    public ReferencingByIdentifiers(final Map<String,?> properties) {
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    public ReferencingByIdentifiers(final Map<String,?> properties, final LocationType... types) {
         super(properties);
         theme = Types.toInternationalString(properties, THEME_KEY);
         overallOwner = Containers.property(properties, OVERALL_OWNER_KEY, Party.class);
+        ArgumentChecks.ensureNonNull("types", types);
+        /*
+         * Having the 'this' reference escaped in object construction should not be an issue here because
+         * we invoke package-private method in such a way that if an exception is thrown, the whole tree
+         * (with all 'this' references) will be discarded.
+         */
+        locationTypes = DefaultLocationType.snapshot(Arrays.asList(types), this, new IdentityHashMap<>());
     }
 
     /**
@@ -162,11 +186,15 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
 
     /**
      * Description of location type(s) in the spatial reference system.
+     * The collection returned by this method is unmodifiable.
      *
      * @return description of location type(s) in the spatial reference system.
      */
     @Override
-    public abstract Collection<LocationType> getLocationType();
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Because the collection is unmodifiable.
+    public Collection<LocationType> getLocationTypes() {
+        return locationTypes;
+    }
 
     /**
      * Compares this reference system with the specified object for equality.
