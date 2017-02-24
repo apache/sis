@@ -50,7 +50,7 @@ import org.apache.sis.util.iso.Types;
  * @module
  */
 @XmlTransient
-public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem implements ReferenceSystemUsingIdentifiers {
+public class ReferencingByIdentifiers extends AbstractReferenceSystem implements ReferenceSystemUsingIdentifiers {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -150,7 +150,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
          * we invoke package-private method in such a way that if an exception is thrown, the whole tree
          * (with all 'this' references) will be discarded.
          */
-        locationTypes = DefaultLocationType.snapshot(Arrays.asList(types), this, new IdentityHashMap<>());
+        locationTypes = LocationTypeSnapshot.snapshot(Arrays.asList(types), this, new IdentityHashMap<>());
     }
 
     /**
@@ -210,6 +210,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      * @return {@code true} if both objects are equal.
      */
     @Override
+    @SuppressWarnings("fallthrough")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (!super.equals(object, mode)) {
             return false;
@@ -218,16 +219,22 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
             case STRICT: {
                 final ReferencingByIdentifiers that = (ReferencingByIdentifiers) object;
                 return Objects.equals(theme,        that.theme) &&
-                       Objects.equals(overallOwner, that.overallOwner);
+                       Objects.equals(overallOwner, that.overallOwner) &&
+                       locationTypes.equals(that.locationTypes);
             }
             case BY_CONTRACT: {
                 final ReferenceSystemUsingIdentifiers that = (ReferenceSystemUsingIdentifiers) object;
-                return Utilities.deepEquals(getTheme(),        that.getTheme(),        mode) &&
-                       Utilities.deepEquals(getOverallOwner(), that.getOverallOwner(), mode);
+                if (!Utilities.deepEquals(getTheme(),        that.getTheme(),        mode) ||
+                    !Utilities.deepEquals(getOverallOwner(), that.getOverallOwner(), mode))
+                {
+                    return false;
+                }
+                // Fall through
             }
             default: {
                 // Theme and owner are metadata, so they can be ignored.
-                return true;
+                return Utilities.deepEquals(getLocationTypes(),
+                        ((ReferenceSystemUsingIdentifiers) object).getLocationTypes(), mode);
             }
         }
     }
@@ -241,6 +248,6 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + Objects.hash(theme, overallOwner);
+        return super.computeHashCode() + Objects.hash(theme, overallOwner, locationTypes);
     }
 }
