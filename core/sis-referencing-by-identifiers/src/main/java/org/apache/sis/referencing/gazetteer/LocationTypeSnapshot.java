@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
+import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.extent.GeographicExtent;
@@ -31,14 +32,21 @@ import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * Unmodifiable description of a location.
+ * Unmodifiable description of a location created as a snapshot of another {@link LocationType} instance
+ * at {@link ReferencingByIdentifiers} construction time. This instance will be set a different reference
+ * system than the original location type.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-final class DefaultLocationType implements LocationType {
+final class LocationTypeSnapshot implements LocationType, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 9032473745502779734L;
+
     /**
      * Name of the location type.
      */
@@ -89,11 +97,11 @@ final class DefaultLocationType implements LocationType {
      *
      * @param source    the location type to use as a template.
      * @param rs        the reference system that comprises this location type.
-     * @param existing  other {@code DefaultLocationType} instances created before this one.
+     * @param existing  other {@code LocationTypeSnapshot} instances created before this one.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    private DefaultLocationType(final LocationType source, final ReferenceSystemUsingIdentifiers rs,
-            final Map<LocationType, DefaultLocationType> existing)
+    private LocationTypeSnapshot(final LocationType source, final ReferenceSystemUsingIdentifiers rs,
+            final Map<LocationType, LocationTypeSnapshot> existing)
     {
         /*
          * Put 'this' in the map at the beginning in case the parents and children contain cyclic references.
@@ -121,15 +129,15 @@ final class DefaultLocationType implements LocationType {
      * @param existing  an initially empty identity hash map for internal usage by this method.
      */
     static List<LocationType> snapshot(final Collection<? extends LocationType> types,
-            final ReferenceSystemUsingIdentifiers rs, final Map<LocationType, DefaultLocationType> existing)
+            final ReferenceSystemUsingIdentifiers rs, final Map<LocationType, LocationTypeSnapshot> existing)
     {
         final LocationType[] array = types.toArray(new LocationType[types.size()]);
         for (int i=0; i < array.length; i++) {
             final LocationType source = array[i];
             ArgumentChecks.ensureNonNullElement("types", i, source);
-            DefaultLocationType copy = existing.get(source);
+            LocationTypeSnapshot copy = existing.get(source);
             if (copy == null) {
-                copy = new DefaultLocationType(source, rs, existing);
+                copy = new LocationTypeSnapshot(source, rs, existing);
             }
             array[i] = copy;
         }
