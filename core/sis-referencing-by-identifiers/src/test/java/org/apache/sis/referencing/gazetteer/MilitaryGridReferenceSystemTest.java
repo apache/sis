@@ -24,7 +24,6 @@ import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
@@ -40,7 +39,6 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @module
  */
-@DependsOn(org.apache.sis.referencing.operation.projection.TransverseMercatorTest.class)
 public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     /**
      * Returns a coder instance to test.
