@@ -232,9 +232,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
-     * Checks if changes in the metadata are allowed. All {@code setFoo(...)} methods in
-     * subclasses should invoke this method (directly or indirectly) before to apply any
-     * change.
+     * Checks if changes in the metadata are allowed. All {@code setFoo(…)} methods in subclasses
+     * shall invoke this method (directly or indirectly) before to apply any change.
      *
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      *
