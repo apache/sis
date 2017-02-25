@@ -16,10 +16,8 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Collection;
-import java.util.IdentityHashMap;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.InternationalString;
@@ -29,7 +27,6 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Types;
 
@@ -48,6 +45,8 @@ import org.apache.sis.util.iso.Types;
  * @since   0.8
  * @version 0.8
  * @module
+ *
+ * @see ModifiableLocationType
  */
 @XmlTransient
 public class ReferencingByIdentifiers extends AbstractReferenceSystem implements ReferenceSystemUsingIdentifiers {
@@ -136,6 +135,10 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem implements
      *   </tr>
      * </table>
      *
+     * This constructor copies the given {@link LocationType} instances as per
+     * {@link ModifiableLocationType#snapshot(ReferenceSystemUsingIdentifiers, LocationType...)}.
+     * Changes in the given location types after construction will not affect this {@code ReferencingByIdentifiers}.
+     *
      * @param properties  the properties to be given to the coordinate reference system.
      * @param types       description of location type(s) in the spatial reference system.
      */
@@ -144,13 +147,12 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem implements
         super(properties);
         theme = Types.toInternationalString(properties, THEME_KEY);
         overallOwner = Containers.property(properties, OVERALL_OWNER_KEY, Party.class);
-        ArgumentChecks.ensureNonNull("types", types);
         /*
          * Having the 'this' reference escaped in object construction should not be an issue here because
          * we invoke package-private method in such a way that if an exception is thrown, the whole tree
          * (with all 'this' references) will be discarded.
          */
-        locationTypes = LocationTypeSnapshot.snapshot(Arrays.asList(types), this, new IdentityHashMap<>());
+        locationTypes = AbstractLocationType.snapshot(this, types);
     }
 
     /**

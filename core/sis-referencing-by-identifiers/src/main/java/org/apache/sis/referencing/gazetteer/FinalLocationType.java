@@ -41,7 +41,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @version 0.8
  * @module
  */
-final class LocationTypeSnapshot implements LocationType, Serializable {
+final class FinalLocationType extends AbstractLocationType implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -59,6 +59,7 @@ final class LocationTypeSnapshot implements LocationType, Serializable {
 
     /**
      * Method(s) of uniquely identifying location instances.
+     * This list is unmodifiable.
      */
     private final List<InternationalString> identifications;
 
@@ -84,28 +85,30 @@ final class LocationTypeSnapshot implements LocationType, Serializable {
 
     /**
      * Parent location types (location types of which this location type is a sub-division).
+     * This list is unmodifiable.
      */
     private final List<LocationType> parents;
 
     /**
      * Child location types (location types which sub-divides this location type).
+     * This list is unmodifiable.
      */
     private final List<LocationType> children;
 
     /**
      * Creates a copy of the given location type with the reference system set to the given value.
      *
-     * @param source    the location type to use as a template.
+     * @param source    the location type to copy.
      * @param rs        the reference system that comprises this location type.
-     * @param existing  other {@code LocationTypeSnapshot} instances created before this one.
+     * @param existing  other {@code FinalLocationType} instances created before this one.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    private LocationTypeSnapshot(final LocationType source, final ReferenceSystemUsingIdentifiers rs,
-            final Map<LocationType, LocationTypeSnapshot> existing)
+    private FinalLocationType(final LocationType source, final ReferenceSystemUsingIdentifiers rs,
+            final Map<LocationType, FinalLocationType> existing)
     {
         /*
          * Put 'this' in the map at the beginning in case the parents and children contain cyclic references.
-         * Cyclic references are not allowed if the source are LocationTypeTemplate, but the user could have
+         * Cyclic references are not allowed if the source are ModifiableLocationType, but the user could have
          * given its own implementation. Having the 'this' reference escaped in object construction should not
          * be an issue here because this is a private constructor, and we use it in such a way that if an
          * exception is thrown, the whole tree (with all 'this' references) will be discarded.
@@ -123,21 +126,23 @@ final class LocationTypeSnapshot implements LocationType, Serializable {
     }
 
     /**
-     * Copies the content of the given collection.
+     * Creates a snapshot of the given location types. This method returns a new collection within which
+     * all elements are snapshots (as {@code FinalLocationType} instances) of the given location types,
+     * except the reference system which is set to the given value.
      *
      * @param rs        the reference system to assign to the new location types.
      * @param existing  an initially empty identity hash map for internal usage by this method.
      */
     static List<LocationType> snapshot(final Collection<? extends LocationType> types,
-            final ReferenceSystemUsingIdentifiers rs, final Map<LocationType, LocationTypeSnapshot> existing)
+            final ReferenceSystemUsingIdentifiers rs, final Map<LocationType, FinalLocationType> existing)
     {
         final LocationType[] array = types.toArray(new LocationType[types.size()]);
         for (int i=0; i < array.length; i++) {
             final LocationType source = array[i];
             ArgumentChecks.ensureNonNullElement("types", i, source);
-            LocationTypeSnapshot copy = existing.get(source);
+            FinalLocationType copy = existing.get(source);
             if (copy == null) {
-                copy = new LocationTypeSnapshot(source, rs, existing);
+                copy = new FinalLocationType(source, rs, existing);
             }
             array[i] = copy;
         }
@@ -154,7 +159,7 @@ final class LocationTypeSnapshot implements LocationType, Serializable {
     @SuppressWarnings("unchecked")
     private static List<InternationalString> snapshot(final Collection<? extends InternationalString> c) {
         if (c instanceof UnmodifiableArrayList<?>) {
-            return (List<InternationalString>) c;
+            return (List<InternationalString>) c;       // Unsafe cast okay because we allow only read operations.
         } else {
             return UnmodifiableArrayList.wrap(c.toArray(new InternationalString[c.size()]));
         }

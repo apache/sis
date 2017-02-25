@@ -30,6 +30,7 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.referencing.gazetteer.LocationTypeTest.class,
     org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystemTest.class
 })
 public final strictfp class ReferencingByIdentifiersTestSuite extends TestSuite {
