@@ -30,7 +30,7 @@ import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.gazetteer.Resources;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -585,11 +585,11 @@ parse:                  switch (part) {
                 final double x, y;
                 if (s >= end) {
                     final int length = s - i;
-                    final int h = i + (length >>> 1);
                     if ((length & 1) != 0) {
-                        throw new GazetteerException(Resources.format(Resources.Keys.MismatchedResolution_2,
-                                reference.subSequence(i, h), reference.subSequence(h, s)));
+                        throw new GazetteerException(Resources.format(Resources.Keys.OddGridCoordinateLength_1,
+                                reference.subSequence(i, s)));
                     }
+                    final int h = i + (length >>> 1);
                     x = parseCoordinate(reference, i, h);
                     y = parseCoordinate(reference, h, s);
                 } else {

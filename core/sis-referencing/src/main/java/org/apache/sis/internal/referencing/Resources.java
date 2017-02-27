@@ -166,16 +166,6 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalAxisDirection_2 = 20;
 
         /**
-         * “{0}” is not a valid grid coordinate.
-         */
-        public static final short IllegalGridCoordinate_1 = 75;
-
-        /**
-         * “{0}” is not a valid latitude band. A letter was expected.
-         */
-        public static final short IllegalLatitudeBand_1 = 73;
-
-        /**
          * Dimensions of “{0}” operation can not be ({1} → {2}).
          */
         public static final short IllegalOperationDimension_3 = 21;
@@ -202,21 +192,6 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalParameterValue_2 = 25;
 
         /**
-         * “{0}” is not a valid square identification.
-         */
-        public static final short IllegalSquareIdentification_1 = 74;
-
-        /**
-         * “{0}” is not a valid Universal Polar Stereographic (UPS) zone.
-         */
-        public static final short IllegalUPSZone_1 = 78;
-
-        /**
-         * “{0}” is not a valid Universal Transverse Mercator (UTM) zone.
-         */
-        public static final short IllegalUTMZone_1 = 72;
-
-        /**
          * Unit of measurement “{1}” is not valid for “{0}” values.
          */
         public static final short IllegalUnitFor_2 = 26;
@@ -230,12 +205,6 @@ public final class Resources extends IndexedResourceBundle {
          * Datum of “{1}” shall be “{0}”.
          */
         public static final short IncompatibleDatum_2 = 28;
-
-        /**
-         * Square identification in the “{0}” reference is inconsistent with the grid zone designation.
-         * A consistent zone would be “{1}”.
-         */
-        public static final short InconsistentWithGZD_2 = 77;
 
         /**
          * Inverse operation uses this parameter value with opposite sign.
@@ -277,11 +246,6 @@ public final class Resources extends IndexedResourceBundle {
          * Expected the “{0}” prime meridian but found “{1}”.
          */
         public static final short MismatchedPrimeMeridian_2 = 36;
-
-        /**
-         * “{0}” and “{1}” do not have the same resolution.
-         */
-        public static final short MismatchedResolution_2 = 76;
 
         /**
          * The transform has {2} {0,choice,0#source|1#target} dimension{2,choice,1#|2#s}, while {1} was
