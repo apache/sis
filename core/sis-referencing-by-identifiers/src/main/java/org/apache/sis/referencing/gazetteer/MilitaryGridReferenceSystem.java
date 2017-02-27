@@ -18,6 +18,7 @@ package org.apache.sis.referencing.gazetteer;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import org.opengis.util.FactoryException;
@@ -36,14 +37,25 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.metadata.sql.MetadataSource;
+import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.Workaround;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.measure.Latitude;
+
+// Branch-dependent imports
+import org.opengis.metadata.citation.Party;
+import org.opengis.referencing.gazetteer.LocationType;
 
 
 /**
@@ -65,7 +77,7 @@ import org.apache.sis.measure.Latitude;
  *
  * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
  */
-public class MilitaryGridReferenceSystem {
+public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
     /**
      * Height of latitude bands, in degrees.
      * Those bands are labeled from {@code 'C'} to {@code 'X'} inclusive, excluding {@code 'I'} and {@code 'O'}.
@@ -155,9 +167,9 @@ public class MilitaryGridReferenceSystem {
      * Creates a new Military Grid Reference System (MGRS) using the default datum.
      * The current Apache SIS version uses the {@linkplain CommonCRS#WGS84 WGS84} datum,
      * but this choice may change in the future if there is a need to adapt to new MGRS specifications.
-     * For a more specific datum, consider using the {@link #MilitaryGridReferenceSystem(CommonCRS)} constructor.
      */
     public MilitaryGridReferenceSystem() {
+        super(properties(), types());
         datum = CommonCRS.WGS84;
         avoidDatumChange = false;
     }
@@ -166,12 +178,49 @@ public class MilitaryGridReferenceSystem {
      * Creates a new Military Grid Reference System (MGRS) using the specified datum.
      * Only the datums enumerated in {@link CommonCRS} are currently supported.
      *
-     * @param  datum  the datum to which to transform coordinates before formatting the MGRS references,
-     *                or {@code null} for inferring the datum from the CRS associated to each coordinate.
+     * @param  properties  the properties to be given to the reference system.
+     * @param  datum       the datum to which to transform coordinates before formatting the MGRS references,
+     *                     or {@code null} for inferring the datum from the CRS associated to each coordinate.
      */
-    public MilitaryGridReferenceSystem(final CommonCRS datum) {
+    public MilitaryGridReferenceSystem(final Map<String,?> properties, final CommonCRS datum) {
+        super(properties, types());
         this.datum = (datum != null) ? datum : CommonCRS.WGS84;
         avoidDatumChange = (datum == null);
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.8")
+    private static Map<String,?> properties() {
+        final Map<String,Object> properties = new HashMap<>();
+        properties.put(NAME_KEY, "Military Grid Reference System");
+        properties.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
+        properties.put(THEME_KEY, Vocabulary.formatInternational(Vocabulary.Keys.Mapping));
+        try {
+            properties.put(OVERALL_OWNER_KEY, MetadataSource.getProvided().lookup(Party.class, "NATO"));
+        } catch (MetadataStoreException e) {
+            Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING_BY_IDENTIFIERS),
+                    MilitaryGridReferenceSystem.class, "<init>", e);
+        }
+        return properties;
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.8")
+    private static LocationType[] types() {
+        final ModifiableLocationType gzd    = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.GridZoneDesignator));
+        final ModifiableLocationType square = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.SquareIdentifier100));
+        final ModifiableLocationType coord  = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.GridCoordinates));
+        gzd   .addIdentification(Vocabulary.formatInternational(Vocabulary.Keys.Code));
+        coord .addIdentification(Vocabulary.formatInternational(Vocabulary.Keys.Coordinate));
+        square.addParent(gzd);
+        coord .addParent(square);
+        return new LocationType[] {gzd};
     }
 
     /**

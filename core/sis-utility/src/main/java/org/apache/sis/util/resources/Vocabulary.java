@@ -127,6 +127,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Classpath = 14;
 
         /**
+         * Code
+         */
+        public static final short Code = 128;
+
+        /**
          * {0} code
          */
         public static final short Code_1 = 15;
@@ -145,6 +150,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Container
          */
         public static final short Container = 18;
+
+        /**
+         * Coordinate
+         */
+        public static final short Coordinate = 129;
 
         /**
          * Correlation
@@ -395,6 +405,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Mandatory
          */
         public static final short Mandatory = 66;
+
+        /**
+         * Mapping
+         */
+        public static final short Mapping = 127;
 
         /**
          * Maximum value

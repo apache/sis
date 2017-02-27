@@ -67,6 +67,16 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ChildAlreadyExists_1 = 8;
 
         /**
+         * Grid coordinates
+         */
+        public static final short GridCoordinates = 12;
+
+        /**
+         * Grid zone designator
+         */
+        public static final short GridZoneDesignator = 13;
+
+        /**
          * “{0}” is not a valid grid coordinate.
          */
         public static final short IllegalGridCoordinate_1 = 1;
@@ -116,6 +126,11 @@ public final class Resources extends IndexedResourceBundle {
          * A location type parent named “{0}” already exists.
          */
         public static final short ParentAlreadyExists_1 = 9;
+
+        /**
+         * 100 km square identifier
+         */
+        public static final short SquareIdentifier100 = 14;
     }
 
     /**
@@ -213,25 +228,6 @@ public final class Resources extends IndexedResourceBundle {
      * @param  arg0  value to substitute to "{0}".
      * @param  arg1  value to substitute to "{1}".
      * @param  arg2  value to substitute to "{2}".
-     * @return the formatted string for the given key.
-     * @throws MissingResourceException if no object for the given key can be found.
-     */
-    public static String format(final short  key,
-                                final Object arg0,
-                                final Object arg1,
-                                final Object arg2) throws MissingResourceException
-    {
-        return forLocale(null).getString(key, arg0, arg1, arg2);
-    }
-
-    /**
-     * Gets a string for the given key are replace all occurrence of "{0}",
-     * "{1}", with values of {@code arg0}, {@code arg1}, etc.
-     *
-     * @param  key   the key for the desired string.
-     * @param  arg0  value to substitute to "{0}".
-     * @param  arg1  value to substitute to "{1}".
-     * @param  arg2  value to substitute to "{2}".
      * @param  arg3  value to substitute to "{3}".
      * @return the formatted string for the given key.
      * @throws MissingResourceException if no object for the given key can be found.
@@ -249,7 +245,7 @@ public final class Resources extends IndexedResourceBundle {
      * The international string to be returned by {@link formatInternational}.
      */
     private static final class International extends ResourceInternationalString {
-        private static final long serialVersionUID = 4553487496835099424L;
+        private static final long serialVersionUID = -955665828906534712L;
 
         International(short key)                           {super(key);}
         International(short key, Object args)              {super(key, args);}
@@ -276,29 +272,11 @@ public final class Resources extends IndexedResourceBundle {
      * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
      * when a {@link InternationalString#toString(Locale)} method is invoked.
      *
-     * <div class="note"><b>API note:</b>
-     * This method is redundant with the one expecting {@code Object...}, but avoid the creation
-     * of a temporary array. There is no risk of confusion since the two methods delegate their
-     * work to the same {@code format} method anyway.</div>
-     *
      * @param  key  the key for the desired string.
      * @param  arg  values to substitute to "{0}".
      * @return an international string for the given key.
      */
     public static InternationalString formatInternational(final short key, final Object arg) {
         return new International(key, arg);
-    }
-
-    /**
-     * Gets an international string for the given key. This method does not check for the key
-     * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
-     * when a {@link InternationalString#toString(Locale)} method is invoked.
-     *
-     * @param  key   the key for the desired string.
-     * @param  args  values to substitute to "{0}", "{1}", <i>etc</i>.
-     * @return an international string for the given key.
-     */
-    public static InternationalString formatInternational(final short key, final Object... args) {
-        return new International(key, args);
     }
 }

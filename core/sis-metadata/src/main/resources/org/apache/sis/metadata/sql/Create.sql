@@ -95,7 +95,8 @@ INSERT INTO metadata."CI_Party" (ID, "name") VALUES
   ('Apache', 'The Apache Software Foundation'),
   ('OGC',    'Open Geospatial Consortium'),
   ('ISO',    'International Organization for Standardization'),
-  ('IOGP',   'International Association of Oil & Gas producers');
+  ('IOGP',   'International Association of Oil & Gas producers'),
+  ('NATO',   'North Atlantic Treaty Organization');
 
 INSERT INTO metadata."CI_Responsibility" (ID, "party", "role") VALUES
   ('Apache', 'Apache', 'principalInvestigator'),

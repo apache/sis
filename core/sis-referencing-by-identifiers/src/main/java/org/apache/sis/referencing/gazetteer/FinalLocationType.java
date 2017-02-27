@@ -22,13 +22,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.extent.GeographicExtent;
-import org.opengis.referencing.gazetteer.LocationType;
-import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.util.ArgumentChecks;
+
+// Branch-dependent imports
+import org.opengis.metadata.citation.Party;
+import org.opengis.referencing.gazetteer.LocationType;
+import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 
 
 /**
