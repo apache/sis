@@ -27,6 +27,7 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
+import org.apache.sis.internal.gazetteer.Resources;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -402,15 +403,31 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      */
     public void addParent(final ModifiableLocationType parent) {
         ArgumentChecks.ensureNonNull("parent", parent);
-        final String key = parent.name.toString();
-        if (parents.putIfAbsent(key, parent) != null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
+        final String parentName = parent.name.toString();
+        if (parents.putIfAbsent(parentName, parent) != null) {
+            throw new IllegalStateException(Resources.format(Resources.Keys.ParentAlreadyExists_1, parentName));
         }
-        if (parent.children.putIfAbsent(name.toString(), this) != null) {
-            if (parents.remove(key) != parent) {                            // Paranoiac check.
-                throw new ConcurrentModificationException();
+        final String childName = name.toString();
+        if (parent.children.putIfAbsent(childName, this) != null) {
+            if (parents.remove(parentName) != parent) {
+                throw new ConcurrentModificationException();                    // Paranoiac check.
             }
-            throw new IllegalArgumentException("Child already present");    // TODO: localize
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.ChildAlreadyExists_1, parentName));
+        }
+        /*
+         * Following verification is not very efficient (lot of verifications are repeated every time that a new
+         * parent is added), and is redundant with the verification performed by snapshot(…) method.  For now we
+         * perform this verification here on the assumption that the tree is small, and that reporting errors
+         * early make development easier. However if performance become a concern, we could remove this code
+         * and perform the verification when first needed in getParents() and getChildren(), or make equals(…)
+         * and toString() methods tolerance to cycles.
+         */
+        try {
+            parent.checkForCycles();
+        } catch (IllegalArgumentException e) {
+            parent.children.remove(childName);                                  // Rollback
+            parents.remove(parentName);
+            throw e;
         }
     }
 
@@ -425,7 +442,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
         final String key = parent.name.toString();
         final ModifiableLocationType removed = parents.remove(key);
         if (removed == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementNotFound_1, key));
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.LocationTypeNotFound_1, key));
         }
         if (removed.children.remove(name.toString()) != this || removed != parent) {
             throw new CorruptedObjectException();
