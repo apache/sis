@@ -31,19 +31,19 @@ import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
 
 /**
  * Returns unmodifiable view of metadata elements of arbitrary type.
- * Despite the {@code Cloner} class name, this class actually tries
- * to avoid creating new clones as much as possible.
+ * Despite the {@code Cloner} parent class name, this class actually
+ * tries to avoid creating new clones as much as possible.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
-final class Cloner extends org.apache.sis.internal.util.Cloner {
+final class Freezer extends org.apache.sis.internal.util.Cloner {
     /**
-     * Creates a new {@code Cloner} instance.
+     * Creates a new {@code Freezer} instance.
      */
-    Cloner() {
+    Freezer() {
     }
 
     /**

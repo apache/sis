@@ -81,7 +81,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  */
 class PropertyAccessor {
@@ -1161,7 +1161,7 @@ class PropertyAccessor {
         assert implementation.isInstance(metadata) : metadata;
         if (setters != null) try {
             final Object[] arguments = new Object[1];
-            final Cloner cloner = new Cloner();
+            final Freezer freezer = new Freezer();
             for (int i=0; i<allCount; i++) {
                 final Method setter = setters[i];
                 if (setter != null) {
@@ -1180,7 +1180,7 @@ class PropertyAccessor {
                     }
                     final Method getter = getters[i];
                     final Object source = get(getter, metadata);
-                    final Object target = cloner.clone(source);
+                    final Object target = freezer.clone(source);
                     if (source != target) {
                         arguments[0] = target;
                         set(setter, metadata, arguments);
@@ -1198,6 +1198,41 @@ class PropertyAccessor {
         } catch (CloneNotSupportedException e) {
             throw new UnsupportedOperationException(e);
         }
+    }
+
+    /**
+     * Returns a deep copy of the given metadata object.
+     *
+     * @param  metadata   the metadata object to copy.
+     * @param  copies     a map of metadata objects already copied.
+     * @return a copy of the given metadata object, or {@code metadata} itself if there is
+     *         no known implementation class or that implementation has no setter method.
+     * @throws Exception if an error occurred while creating the copy. This include any
+     *         checked checked exception that the no-argument constructor may throw.
+     */
+    final Object deepCopy(final Object metadata, final Map<Object,Object> copies) throws Exception {
+        if (setters == null) {
+            return metadata;
+        }
+        Object copy = copies.get(metadata);
+        if (copy == null) {
+            copy = implementation.newInstance();
+            copies.put(metadata, copy);                     // Need to be first in case of cyclic graphs.
+            final Object[] arguments = new Object[1];
+            for (int i=0; i<allCount; i++) {
+                final Method setter = setters[i];
+                if (setter != null && !setter.isAnnotationPresent(Deprecated.class)) {
+                    final Method getter = getters[i];
+                    Object value = get(getter, metadata);
+                    if (value != null) {
+                        // TODO: perform deep copy here.
+                        arguments[0] = value;
+                        set(setter, copy, arguments);
+                    }
+                }
+            }
+        }
+        return copy;
     }
 
     /**
