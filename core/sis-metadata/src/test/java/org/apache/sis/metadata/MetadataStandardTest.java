@@ -356,6 +356,21 @@ public final strictfp class MetadataStandardTest extends TestCase {
     }
 
     /**
+     * Tests {@link MetadataStandard#deepCopy(Object)}.
+     */
+    @Test
+    @DependsOnMethod("testEquals")
+    public void testDeepCopy() {
+        standard = MetadataStandard.ISO_19115;
+        final DefaultCitation original = HardCodedCitations.EPSG;
+        final DefaultCitation copy = (DefaultCitation) standard.deepCopy(original);
+        assertNotSame(original, copy);
+//      assertNotSame(getSingleton(original.getCitedResponsibleParties()),
+//                    getSingleton(copy.getCitedResponsibleParties()));
+        assertEquals(original, copy);
+    }
+
+    /**
      * Tests serialization of pre-defined constants.
      */
     @Test

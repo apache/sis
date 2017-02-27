@@ -83,7 +83,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -167,8 +167,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @return an unmodifiable copy of this metadata.
      */
     public AbstractMetadata unmodifiable() {
-        // Reminder: 'unmodifiable' is reset to null by checkWritePermission().
-        if (unmodifiable == null) {
+        /*
+         * The 'unmodifiable' field is reset to null by checkWritePermission().
+         * However this is not sufficient since the setter method of some child
+         * could have been invoked without invoking any setter method on 'this'.
+         * So we also need to perform an equality check.
+         */
+        if (unmodifiable == null || (unmodifiable != this && unmodifiable != FREEZING && !equals(unmodifiable))) {
             final ModifiableMetadata candidate;
             try {
                 /*
@@ -387,7 +392,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             if (unmodifiable == FREEZING) {
                 /*
                  * freeze() method is under progress. The source collection is already
-                 * an unmodifiable instance created by Cloner.clone(Object).
+                 * an unmodifiable instance created by Freezer.clone(Object).
                  */
                 assert collectionType(elementType).isInstance(source);
                 return (Collection<E>) source;

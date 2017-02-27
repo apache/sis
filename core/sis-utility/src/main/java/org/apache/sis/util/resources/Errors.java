@@ -106,6 +106,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotConvertValue_2 = 8;
 
         /**
+         * Can not copy “{0}”.
+         */
+        public static final short CanNotCopy_1 = 169;
+
+        /**
          * Can not open “{0}”.
          */
         public static final short CanNotOpen_1 = 9;

@@ -66,7 +66,7 @@ final class StandardImplementation extends MetadataStandard {
      * But maybe the most interesting property is that it allocates less objects since {@code IdentityHashMap}
      * implementation doesn't need the chain of objects created by {@code HashMap}.</div>
      */
-    private final transient Map<Class<?>,Class<?>> implementations; // written by reflection on deserialization.
+    private final transient Map<Class<?>,Class<?>> implementations;     // written by reflection on deserialization.
 
     /**
      * Creates a new instance working on implementation of interfaces defined in the
@@ -161,7 +161,7 @@ final class StandardImplementation extends MetadataStandard {
                         Logging.recoverableException(Logging.getLogger(Modules.METADATA),
                                 MetadataStandard.class, "getImplementation", e);
                     }
-                    implementations.put(type, Void.TYPE); // Marker for "class not found".
+                    implementations.put(type, Void.TYPE);                       // Marker for "class not found".
                 }
             }
         }
