@@ -188,6 +188,15 @@ public final strictfp class LocationTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testInheritance")
     public void testToString() {
+        verifyToString(create(true)[0]);
+    }
+
+    /**
+     * Verify the string representation of "administrative area" location type.
+     * This is the body of {@link #testToString()} method, but is also shared by other tests
+     * as a convenient way to verify that a {@code ModifiableLocationType} did not changed.
+     */
+    private static void verifyToString(final ModifiableLocationType area) {
         assertMultilinesEquals(
                 "administrative area………………… area of responsibility of highest level local authority\n" +
                 "  ├─town……………………………………………… city or town\n" +
@@ -197,14 +206,14 @@ public final strictfp class LocationTypeTest extends TestCase {
                 "  │   └─street……………………………… thoroughfare providing access to properties\n" +
                 "  │       └─property……………… land use\n" +
                 "  └─street………………………………………… thoroughfare providing access to properties\n" +
-                "      └─property………………………… land use\n", create(true)[0].toString());
+                "      └─property………………………… land use\n", area.toString());
     }
 
     /**
      * Tests the equality and hash code value computation.
      */
     @Test
-    @DependsOnMethod("testToString")
+    @DependsOnMethod("testToString")                // Because in case of failure, JUnit invokes toString().
     public void testEquals() {
         final ModifiableLocationType t1 = create(false)[0];
         final ModifiableLocationType t2 = create(true )[0];
@@ -221,5 +230,30 @@ public final strictfp class LocationTypeTest extends TestCase {
     @DependsOnMethod("testEquals")
     public void testSerialization() {
         assertSerializedEquals(ModifiableLocationType.snapshot(null, create(true)));
+    }
+
+    /**
+     * Tests the safety against infinite recursivity.
+     * This method attempts to add "town" as a child of "street".
+     */
+    @Test
+    @DependsOnMethod("testToString")
+    public void testCheckForCycles() {
+        final ModifiableLocationType[] types  = create(true);
+        final ModifiableLocationType   town   = types[1];
+        final ModifiableLocationType   street = types[3];
+        try {
+            town.addParent(street);
+            fail("Shall not accept to add town as a child of street.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("street"));
+        }
+        /*
+         * Verify the string representation as a way to verify that parent addition
+         * has been properly rolled back. If not, we may have an infinite loop here
+         * until a StackOverflowError or OutOfMemoryError occurs.
+         */
+        verifyToString(types[0]);
     }
 }

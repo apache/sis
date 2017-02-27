@@ -62,6 +62,11 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Location type parent already has a child named “{0}”.
+         */
+        public static final short ChildAlreadyExists_1 = 8;
+
+        /**
          * “{0}” is not a valid grid coordinate.
          */
         public static final short IllegalGridCoordinate_1 = 1;
@@ -93,9 +98,24 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InconsistentWithGZD_2 = 6;
 
         /**
+         * Location type “{0}” can not have itself as a children.
+         */
+        public static final short LocationTypeCycle_1 = 11;
+
+        /**
+         * No location type named “{0}” has been found.
+         */
+        public static final short LocationTypeNotFound_1 = 10;
+
+        /**
          * Can not determine dimension of “{0}” because of odd number of characters.
          */
         public static final short OddGridCoordinateLength_1 = 7;
+
+        /**
+         * A location type parent named “{0}” already exists.
+         */
+        public static final short ParentAlreadyExists_1 = 9;
     }
 
     /**

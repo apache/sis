@@ -20,8 +20,10 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.IdentityHashMap;
+import java.util.Map;
 import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 import org.opengis.referencing.gazetteer.LocationType;
+import org.apache.sis.internal.gazetteer.Resources;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -29,7 +31,6 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -64,7 +65,37 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
      */
     public static List<LocationType> snapshot(final ReferenceSystemUsingIdentifiers rs, final LocationType... types) {
         ArgumentChecks.ensureNonNull("types", types);
-        return FinalLocationType.snapshot(Arrays.asList(types), rs, new IdentityHashMap<>());
+        final List<LocationType> snapshot = FinalLocationType.snapshot(Arrays.asList(types), rs, new IdentityHashMap<>());
+        final Map<LocationType,Boolean> parents = new IdentityHashMap<>();
+        for (final LocationType type : snapshot) {
+            checkForCycles(type, parents);
+        }
+        return snapshot;
+    }
+
+    /**
+     * Implementation of {@link #verifyCycle()} to be invoked recursively for each children.
+     *
+     * @throws IllegalArgumentException if an infinite recursivity is detected.
+     */
+    private static void checkForCycles(final LocationType type, final Map<LocationType,Boolean> parents) {
+        if (parents.put(type, Boolean.TRUE) != null) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.LocationTypeCycle_1, type.getName()));
+        }
+        for (final LocationType child : type.getChildren()) {
+            checkForCycles(child, parents);
+        }
+        parents.remove(type);
+    }
+
+    /**
+     * Verifies that there is not cycles in the children.
+     * This method should be invoked for validating a user argument.
+     *
+     * @throws IllegalArgumentException if an infinite recursivity is detected.
+     */
+    final void checkForCycles() {
+        checkForCycles(this, new IdentityHashMap<>());
     }
 
     /**
@@ -115,8 +146,8 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
                 if (Objects.equals(getName(), that.getName())) {
                     /*
                      * To be safe, we should apply some check against infinite recursivity here.
-                     * We do not on the assumption that the constructor verified that we do not
-                     * have any cycle.
+                     * We do not on the assumption that subclasses verified that we do not have
+                     * any cycle.
                      */
                     return Utilities.deepEquals(getChildren(), that.getChildren(), mode);
                 }
@@ -162,11 +193,20 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
 
     /**
      * Returns a string representation of this location type and all its children.
+     * Current implementation formats a tree with the {@linkplain ModifiableLocationType#getName() name}
+     * and {@linkplain ModifiableLocationType#getDefinition() definition} of each type, like below:
+     *
+     * {@preformat text
+     *   administrative area………………… area of responsibility of highest level local authority
+     *     ├─town……………………………………………… city or town
+     *     │   └─street……………………………… thoroughfare providing access to properties
+     *     └─street………………………………………… thoroughfare providing access to properties
+     * }
+     *
      * The string representation is mostly for debugging purpose and may change in any future SIS version.
      *
      * @return a string representation of this location type.
      */
-    @Debug
     @Override
     public String toString() {
         final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE_AS_TEXT);
@@ -176,6 +216,9 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
 
     /**
      * Invoked recursively for formatting the given type in the given tree.
+     * This method does not perform any check against infinite recursivity
+     * on the assumption that subclasses verified this constraint by calls
+     * to {@link #checkForCycles()}.
      */
     private static void format(final LocationType type, final TreeTable.Node node) {
         node.setValue(TableColumn.NAME, type.getName());
