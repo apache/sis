@@ -21,8 +21,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
-import org.opengis.referencing.gazetteer.LocationType;
 import org.apache.sis.internal.gazetteer.Resources;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -31,6 +29,10 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
+
+// Branch-dependent imports
+import org.opengis.referencing.gazetteer.LocationType;
+import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 
 
 /**

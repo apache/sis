@@ -21,14 +21,21 @@ import java.util.Collection;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.citation.Party;
-import org.opengis.referencing.gazetteer.LocationType;
-import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.Debug;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.io.wkt.FormattableObject;
+
+// Branch-dependent imports
+import org.opengis.metadata.citation.Party;
+import org.opengis.referencing.gazetteer.LocationType;
+import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 
 
 /**
@@ -139,7 +146,7 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem implements
      * {@link ModifiableLocationType#snapshot(ReferenceSystemUsingIdentifiers, LocationType...)}.
      * Changes in the given location types after construction will not affect this {@code ReferencingByIdentifiers}.
      *
-     * @param properties  the properties to be given to the coordinate reference system.
+     * @param properties  the properties to be given to the reference system.
      * @param types       description of location type(s) in the spatial reference system.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
@@ -251,5 +258,55 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem implements
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + Objects.hash(theme, overallOwner, locationTypes);
+    }
+
+    /**
+     * Formats a pseudo-<cite>Well Known Text</cite> (WKT) representation for this object.
+     * The format produced by this method is non-standard and may change in any future Apache SIS version.
+     *
+     * @param  formatter  the formatter where to format the inner content of this pseudo-WKT element.
+     * @return an arbitrary keyword for the pseudo-WKT element.
+     */
+    @Debug
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        WKTUtilities.appendName(this, formatter, ElementKind.NAME);
+        if (theme != null) {
+            formatter.newLine();
+            formatter.append(new SubElement("Theme", theme));
+        }
+        if (overallOwner != null) {
+            formatter.newLine();
+            formatter.append(new SubElement("Owner", overallOwner.getName()));
+        }
+        for (final LocationType type : locationTypes) {
+            formatter.newLine();
+            formatter.append(new SubElement("LocationType", type.getName()));
+        }
+        return "ReferenceSystemUsingIdentifiers";
+    }
+
+    /**
+     * A sub-element inside the pseudo-WKT.
+     */
+    private static final class SubElement extends FormattableObject {
+        /** The pseudo-WKT name of the element to format. */
+        private final String name;
+
+        /** The value of the element to format. */
+        private final InternationalString value;
+
+        /** Creates a new citation with the given value. */
+        SubElement(final String name, final InternationalString value) {
+            this.name  = name;
+            this.value = value;
+        }
+
+        /** Formats the sub-element. */
+        @Override
+        protected String formatTo(final Formatter formatter) {
+            formatter.append(value != null ? value.toString(formatter.getLocale()) : null, null);
+            return name;
+        }
     }
 }

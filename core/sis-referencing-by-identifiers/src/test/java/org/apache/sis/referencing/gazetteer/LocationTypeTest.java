@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.gazetteer;
 
 import java.util.List;
-import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.metadata.extent.GeographicDescription;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -25,6 +24,9 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+
+// Branch-dependent imports
+import org.opengis.referencing.gazetteer.LocationType;
 
 
 /**
@@ -37,9 +39,12 @@ import static org.apache.sis.test.Assert.*;
  */
 public final strictfp class LocationTypeTest extends TestCase {
     /**
-     * Create the example given in annex B of ISO 19112:2003.
+     * Creates the example given in annex B of ISO 19112:2003.
+     *
+     * @param  inherit  {@code false} for defining all properties of all location types explicitely even
+     *                  in case of redundancy, or {@code true} for relying on inheritance when possible.
      */
-    private static ModifiableLocationType[] create(final boolean inherit) {
+    static ModifiableLocationType[] create(final boolean inherit) {
         /*
          * From larger area to finer one. Each type is the child of the previous type,
          * except "street" which will have all the 3 parents.
