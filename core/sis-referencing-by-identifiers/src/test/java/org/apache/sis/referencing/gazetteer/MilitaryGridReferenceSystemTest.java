@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
+import java.util.Locale;
 import java.util.Random;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -31,6 +32,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+// Branch-dependent imports
+import org.opengis.referencing.gazetteer.LocationType;
+
 
 /**
  * Tests {@link MilitaryGridReferenceSystem}.
@@ -43,10 +47,25 @@ import static org.junit.Assert.*;
 @DependsOn(ReferencingByIdentifiersTest.class)
 public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     /**
-     * Returns a coder instance to test.
+     * Verifies the metadata.
      */
-    private MilitaryGridReferenceSystem.Coder coder() {
-        return new MilitaryGridReferenceSystem().createCoder();
+    @Test
+    public void verifyMetadata() {
+        final MilitaryGridReferenceSystem rs = new MilitaryGridReferenceSystem();
+        assertEquals("theme", "Mapping",      rs.getTheme().toString(Locale.ENGLISH));
+        assertEquals("theme", "Cartographie", rs.getTheme().toString(Locale.FRENCH));
+
+        final LocationType gzd = TestUtilities.getSingleton(rs.getLocationTypes());
+        assertEquals("type", "Grid zone designator", gzd.getName().toString(Locale.ENGLISH));
+        assertEquals("parent", 0, gzd.getParents().size());
+
+        final LocationType sid = TestUtilities.getSingleton(gzd.getChildren());
+        assertEquals("type", "100 km square identifier", sid.getName().toString(Locale.ENGLISH));
+        assertSame("parent", gzd, TestUtilities.getSingleton(sid.getParents()));
+
+        final LocationType gc = TestUtilities.getSingleton(sid.getChildren());
+        assertEquals("type", "Grid coordinate", gc.getName().toString(Locale.ENGLISH));
+        assertSame("parent", sid, TestUtilities.getSingleton(gc.getParents()));
     }
 
     /**
@@ -88,6 +107,13 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
             assertEquals(latitude, band == 'V', TransverseMercator.Zoner.isNorway(φ));
             assertEquals(latitude, band == 'X', TransverseMercator.Zoner.isSvalbard(φ));
         }
+    }
+
+    /**
+     * Returns a coder instance to test.
+     */
+    private MilitaryGridReferenceSystem.Coder coder() {
+        return new MilitaryGridReferenceSystem().createCoder();
     }
 
     /**
