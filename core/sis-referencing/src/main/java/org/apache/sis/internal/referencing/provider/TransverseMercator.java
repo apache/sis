@@ -203,7 +203,7 @@ public final class TransverseMercator extends AbstractMercator {
          * Longitude of the beginning of zone 1. This is the westmost longitude if {@link #width} is positive,
          * or the eastmost longitude if {@code width} is negative.
          */
-        private final double origin;
+        public final double origin;
 
         /**
          * Width of a zone, in degrees of longitude.
@@ -212,22 +212,22 @@ public final class TransverseMercator extends AbstractMercator {
          * @see #zone(double)
          * @see #centralMeridian(int)
          */
-        private final double width;
+        public final double width;
 
         /**
-         * The scale factor of UTM projections.
+         * The scale factor of zoned projections.
          */
-        private final double scale;
+        public final double scale;
 
         /**
-         * The false easting of UTM projections, in metres.
+         * The false easting of zoned projections, in metres.
          */
-        private final double easting;
+        public final double easting;
 
         /**
-         * The false northing in South hemisphere of UTM projection, in metres.
+         * The false northing in South hemisphere of zoned projection, in metres.
          */
-        private final double northing;
+        public final double northing;
 
         /**
          * Creates a new instance for computing zones using the given parameters.
@@ -321,14 +321,15 @@ public final class TransverseMercator extends AbstractMercator {
          * @return the zone number numbered from 1 inclusive, or 0 if the given central meridian was NaN.
          */
         public int zone(final double φ, final double λ) {
-            /*
-             * Casts to int are equivalent to Math.floor(double) for positive values, which is guaranteed
-             * to be the case here since we normalize the central meridian to the [MIN_VALUE … MAX_VALUE] range.
-             */
             double z = (λ - origin) / width;                                              // Zone number with fractional part.
             z -= Math.floor(z / ((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / width))    // Roll in the [0 … 60) range.
                               * ((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / width);
-            return (int) (z + 1);   // Cast only after addition in order to handle NaN as documented.
+            /*
+             * Casts to int are equivalent to Math.floor(double) for positive values, which is guaranteed
+             * to be the case here since we normalize the central meridian to the [MIN_VALUE … MAX_VALUE]
+             * range. We cast only after addition in order to handle NaN as documented.
+             */
+            return (int) (z + 1);
         }
 
         /**

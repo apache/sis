@@ -138,6 +138,12 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
     };
 
     /**
+     * The object to use for computing zone number and central meridian. This is a static final
+     * field in current Apache SIS version, but could become configurable in a future version.
+     */
+    private static final TransverseMercator.Zoner ZONER = TransverseMercator.Zoner.UTM;
+
+    /**
      * The datum to which to transform the coordinate before formatting the MGRS reference.
      * Only the datums enumerated in {@link CommonCRS} are currently supported.
      */
@@ -457,7 +463,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             final MathTransform    projection;      // Conversion from geographic coordinates to projected CRS.
             final DirectPosition2D position;        // The decoded position.
             boolean hasSquareIdentification;        // Whether a square identification is present (UTM only).
-            double  φs;                             // Southernmost bound of latitude band (UTM only).
+            final double λ0;                        // Central meridian of UTM zone (ignoring Norway and Svalbard).
+            double φs;                              // Southernmost bound of latitude band (UTM only).
 
             ArgumentChecks.ensureNonNull("reference", reference);
             final int end  = CharSequences.skipTrailingWhitespaces(reference, 0, reference.length());
@@ -528,6 +535,7 @@ parse:                  switch (part) {
                 position = new DirectPosition2D(col * GRID_SQUARE_SIZE, row * GRID_SQUARE_SIZE);
                 hasSquareIdentification = false;
                 projection = null;
+                λ0 = 0;
             } else {
                 /*
                  * Universal Transverse Mercator (UTM) case.
@@ -610,7 +618,7 @@ parse:                  switch (part) {
                  * This estimation is needed because the 100 000-metres square identification is
                  * insufficient; we may need to add some multiple of 2000 kilometres.
                  */
-                final double λ0 = TransverseMercator.Zoner.UTM.centralMeridian(zone);
+                λ0  = ZONER.centralMeridian(zone);
                 crs = datum.universal(Math.signum(φs), λ0);
                 position = new DirectPosition2D(φs, λ0);
                 projection = crs.getConversionFromBase().getMathTransform();
@@ -621,31 +629,35 @@ parse:                  switch (part) {
                 position.y = row * GRID_SQUARE_SIZE + northing;
             }
             position.setCoordinateReferenceSystem(crs);
+            /*
+             * If we have not yet reached the end of string, parse the numerical location.
+             * That location is normally encoded as a single number with an even number of digits.
+             * The first half is the easting and the second half is the northing, both relative to the
+             * 100 000-meter square. However some variants of MGRS use a separator, in which case we get
+             * two distinct numbers. In both cases, the resolution is determined by the amount of digits.
+             */
+            final double sx, sy;
             if (i < end) {
-                /*
-                 * If we have not yet reached the end of string, parse the numerical location.
-                 * That location is normally encoded as a single number with an even number of digits.
-                 * The first half is the easting and the second half is the northing, both relative to the
-                 * 100 000-meter square. However some variants of MGRS use a separator, in which case we get
-                 * two distinct numbers. In both cases, the resolution is determined by the amount of digits.
-                 */
                 i = nextComponent(reference, base, i, end);
                 int s = endOfDigits(reference, i, end);
                 final double x, y;
                 if (s >= end) {
-                    final int length = s - i;
+                    int length = s - i;
                     if ((length & 1) != 0) {
                         throw new GazetteerException(Resources.format(Resources.Keys.OddGridCoordinateLength_1,
                                 reference.subSequence(i, s)));
                     }
-                    final int h = i + (length >>> 1);
-                    x = parseCoordinate(reference, i, h);
-                    y = parseCoordinate(reference, h, s);
+                    final int h = i + (length >>>= 1);
+                    sx = sy = MathFunctions.pow10(METRE_PRECISION_DIGITS - length);
+                    x  = parseCoordinate(reference, i, h, sx);
+                    y  = parseCoordinate(reference, h, s, sy);
                 } else {
-                    x = parseCoordinate(reference, i, s);
-                    i = nextComponent(reference, base, s, end);
-                    s = endOfDigits(reference, i, end);
-                    y = parseCoordinate(reference, i, s);
+                    sx = MathFunctions.pow10(METRE_PRECISION_DIGITS - (s - i));
+                    x  = parseCoordinate(reference, i, s, sx);
+                    i  = nextComponent(reference, base, s, end);
+                    s  = endOfDigits(reference, i, end);
+                    sy = MathFunctions.pow10(METRE_PRECISION_DIGITS - (s - i));
+                    y = parseCoordinate(reference, i, s, sy);
                     if (s < end) {
                         throw new GazetteerException(Errors.format(Errors.Keys.UnexpectedCharactersAfter_2,
                                 reference.subSequence(base, s), CharSequences.trimWhitespaces(reference, s, end)));
@@ -653,6 +665,8 @@ parse:                  switch (part) {
                 }
                 position.x += x;
                 position.y += y;
+            } else {
+                sx = sy = (hasSquareIdentification ? GRID_SQUARE_SIZE : GRID_SQUARE_SIZE * 10);
             }
             /*
              * The southernmost bound of the latitude band (φs) has been computed at the longitude of the central
@@ -676,23 +690,36 @@ parse:                  switch (part) {
                 @SuppressWarnings("null")
                 final MathTransform inverse = projection.inverse();
                 geographic = inverse.transform(position, geographic);
-                double φ = geographic.getOrdinate(0);
-                double delta = truncateLastLatitudeBand(φ) - φs;
-                if ((φs >= 0) ? (delta < 0) : (delta > LATITUDE_BAND_HEIGHT)) {
+                double   φ = geographic.getOrdinate(0);
+                double  Δφ = truncateLastLatitudeBand(φ) - φs;
+                if ((φs >= 0) ? (Δφ < 0) : (Δφ > LATITUDE_BAND_HEIGHT)) {
                     position.y += Math.signum(φs) * (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
                     geographic = inverse.transform(position, geographic);
-                    delta = truncateLastLatitudeBand(φ = geographic.getOrdinate(0)) - φs;
+                    Δφ = truncateLastLatitudeBand(φ = geographic.getOrdinate(0)) - φs;
                 }
-                /*
-                 * Verification. We allow a tolerance on the UTM zone number for latitudes close to a pole
-                 * because not all users may apply the UTM special rules for Norway and Svalbard. Anyway,
-                 * using the neighbor zone at those high latitudes is less significant.
-                 */
-                final int actual = TransverseMercator.Zoner.UTM.zone(φ, geographic.getOrdinate(1));
-                final boolean isHighLat   = Math.abs(φ) >= TransverseMercator.Zoner.NORWAY_BOUNDS;
-                final boolean isZoneValid = Math.abs(actual - zone) <= (isHighLat ? 1 : 0);
-                final boolean isBandValid = delta >= 0 && delta <= LATITUDE_BAND_HEIGHT;
-                if (!isBandValid || !isZoneValid) {
+                boolean isValid = (Δφ >= 0) && (Δφ <= LATITUDE_BAND_HEIGHT);
+                if (isValid) {
+                    /*
+                     * Verification of UTM zone. We allow a tolerance for latitudes close to a pole because
+                     * not all users may apply the UTM special rules for Norway and Svalbard. Anyway, using
+                     * the neighbor zone at those high latitudes is less significant. For other latitudes,
+                     * we allow a tolerance if the point is close to a line of zone change.
+                     */
+                    final double λ = geographic.getOrdinate(1);
+                    final int actual = ZONER.zone(φ, λ);
+                    final int threshold;
+                    if (Math.abs(φ) >= TransverseMercator.Zoner.NORWAY_BOUNDS) {
+                        threshold = 1;                      // Tolerance in zone numbers for high latitudes.
+                    } else {
+                        final double rλ = Math.IEEEremainder(λ - ZONER.origin, ZONER.width);    // Distance to closest zone change, in degrees of longitude.
+                        final double cv = (position.x - ZONER.easting) / (λ - λ0);              // Approximative conversion factor from degrees to metres.
+                        threshold = Math.abs(rλ) * cv <= sx ? 1 : 0;                            // Be tolerant if distance in metres is less than resolution.
+                    }
+                    isValid = Math.abs(actual - zone) <= threshold;
+                }
+                if (!isValid) {
+                    position.x += sx/2;
+                    position.y += sy/2;
                     final String gzd;
                     try {
                         gzd = encoder(crs).encode(this, position, "", 0);
@@ -794,13 +821,13 @@ parse:                  switch (part) {
      *
      * @param  reference  the MGRS reference to parse.
      * @param  start      index of the first character to parse as a grid coordinate.
-     * @param  end        index after the last character to parse as a grid coordinate
+     * @param  end        index after the last character to parse as a grid coordinate.
+     * @param  scale      value of {@code MathFunctions.pow10(METRE_PRECISION_DIGITS - (end - start))}.
      * @return the parsed grid coordinate (also referred to as rectangular coordinates).
      * @throws GazetteerException if the string can not be parsed as a grid coordinate.
      */
-    static double parseCoordinate(final CharSequence reference, final int start, final int end) throws GazetteerException {
-        return parseInt(reference, start, end, Resources.Keys.IllegalGridCoordinate_1)
-                * MathFunctions.pow10(METRE_PRECISION_DIGITS - (end - start));
+    static double parseCoordinate(final CharSequence reference, final int start, final int end, final double scale) throws GazetteerException {
+        return parseInt(reference, start, end, Resources.Keys.IllegalGridCoordinate_1) * scale;
     }
 
     /**
@@ -912,7 +939,7 @@ parse:                  switch (part) {
                 Projection projection = projCRS.getConversionFromBase();
                 final OperationMethod method = projection.getMethod();
                 if (IdentifiedObjects.isHeuristicMatchForName(method, TransverseMercator.NAME)) {
-                    crsZone = TransverseMercator.Zoner.UTM.zone(projection.getParameterValues());
+                    crsZone = ZONER.zone(projection.getParameterValues());
                 } else if (IdentifiedObjects.isHeuristicMatchForName(method, PolarStereographicA.NAME)) {
                     crsZone = POLE * PolarStereographicA.isUPS(projection.getParameterValues());
                 } else {
@@ -995,7 +1022,7 @@ parse:                  switch (part) {
             final double  φ      = geographic.getOrdinate(0);
             final boolean isUTM  = φ >= TransverseMercator.Zoner.SOUTH_BOUNDS &&
                                    φ <  TransverseMercator.Zoner.NORTH_BOUNDS;
-            final int zone       = isUTM ? TransverseMercator.Zoner.UTM.zone(φ, λ) : POLE;
+            final int zone       = isUTM ? ZONER.zone(φ, λ) : POLE;
             final int signedZone = MathFunctions.isNegative(φ) ? -zone : zone;
             if (signedZone == 0) {
                 // Zero value at this point is the result of NaN of infinite ordinate value.
@@ -1046,7 +1073,7 @@ parse:                  switch (part) {
                         /*
                          * UTM northing values at the equator range from 166021 to 833979 meters approximatively
                          * (WGS84 ellipsoid). Consequently 'cx' ranges from approximatively 1.66 to 8.34, so 'c'
-                         * should range from 1 to 8.
+                         * should range from 1 to 8 inclusive.
                          */
                         throw new GazetteerException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
                     }
