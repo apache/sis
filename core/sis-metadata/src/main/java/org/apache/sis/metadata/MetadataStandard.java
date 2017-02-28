@@ -19,7 +19,6 @@ package org.apache.sis.metadata;
 import java.util.Set;
 import java.util.Map;
 import java.util.LinkedHashSet;
-import java.util.IdentityHashMap;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentMap;
@@ -36,8 +35,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.SystemListener;
@@ -1042,48 +1039,6 @@ public class MetadataStandard implements Serializable {
              */
         }
         return 0;
-    }
-
-    /**
-     * Returns a deep copy of the given metadata object. This method performs a <em>copy</em>, not a clone,
-     * since the copied metadata may not be of the same class than the original metadata.
-     * This method performs the following step:
-     *
-     * <ul>
-     *   <li>Get the {@linkplain #getImplementation implementation class} of the given metadata instance.</li>
-     *   <li>Create a new instance of the implementation class using the public no-argument constructor.</li>
-     *   <li>Invoke all non-deprecated setter methods on the new instance with the corresponding value from
-     *       the given metadata.</li>
-     *   <li>If any of the values copied in above step is itself a metadata, recursively performs deep copy
-     *       on those metadata instances too.</li>
-     * </ul>
-     *
-     * This method supports cyclic graphs. This method may return the given {@code metadata} object directly
-     * if the {@linkplain #getImplementation implementation class} does not provide any setter method.
-     *
-     * @param  metadata  the metadata object to copy, or {@code null}.
-     * @return A copy of the given metadata object, or {@code null} if the given argument is {@code null}.
-     * @throws ClassCastException if the metadata object does not implement a metadata interface of the expected package.
-     * @throws UnsupportedOperationException if there is no implementation class for at least one metadata to copy,
-     *         or an implementation class does not provide a public default constructor.
-     *
-     * @since 0.8
-     */
-    Object deepCopy(final Object metadata) throws ClassCastException {
-        if (metadata != null) {
-            final PropertyAccessor accessor = getAccessor(new CacheKey(metadata.getClass()), true);
-            final Map<Object,Object> copies = new IdentityHashMap<>();
-            try {
-                return accessor.deepCopy(metadata, copies);
-            } catch (ReflectiveOperationException e) {
-                throw new UnsupportedOperationException(Errors.format(Errors.Keys.CanNotCopy_1, accessor.type));
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {  // Other non-checked exception may be throw by default metadata constructor.
-                throw new BackingStoreException(e);
-            }
-        }
-        return metadata;
     }
 
     /**

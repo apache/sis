@@ -165,6 +165,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * </ul>
      *
      * @return an unmodifiable copy of this metadata.
+     *
+     * @see MetadataCopier
      */
     public AbstractMetadata unmodifiable() {
         /*
@@ -675,6 +677,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * Creates a <strong>shallow</strong> copy of this metadata.
      * The clone operation is required for the internal working of the {@link #unmodifiable()} method,
      * which needs <em>shallow</em> copies of metadata entities.
+     * For deep copies, see {@link MetadataCopier}.
      *
      * <div class="section">API note</div>
      * While {@link Cloneable}, the {@code ModifiableMetadata} subclasses should not provide
@@ -688,6 +691,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *
      * @return a <em>shallow</em> copy of this metadata.
      * @throws CloneNotSupportedException if the clone is not supported.
+     *
+     * @see #unmodifiable()
+     * @see MetadataCopier
      */
     @Override
     protected ModifiableMetadata clone() throws CloneNotSupportedException {
