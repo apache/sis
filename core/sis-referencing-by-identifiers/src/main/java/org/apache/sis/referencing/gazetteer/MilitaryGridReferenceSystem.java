@@ -706,16 +706,19 @@ parse:                  switch (part) {
                      * we allow a tolerance if the point is close to a line of zone change.
                      */
                     final double λ = geographic.getOrdinate(1);
-                    final int actual = ZONER.zone(φ, λ);
-                    final int threshold;
-                    if (Math.abs(φ) >= TransverseMercator.Zoner.NORWAY_BOUNDS) {
-                        threshold = 1;                      // Tolerance in zone numbers for high latitudes.
-                    } else {
-                        final double rλ = Math.IEEEremainder(λ - ZONER.origin, ZONER.width);    // Distance to closest zone change, in degrees of longitude.
-                        final double cv = (position.x - ZONER.easting) / (λ - λ0);              // Approximative conversion factor from degrees to metres.
-                        threshold = Math.abs(rλ) * cv <= sx ? 1 : 0;                            // Be tolerant if distance in metres is less than resolution.
+                    final int zoneError = ZONER.zone(φ, λ) - zone;
+                    if (zoneError != 0) {
+                        if (Math.abs(φ) >= TransverseMercator.Zoner.NORWAY_BOUNDS) {
+                            isValid = Math.abs(zoneError) == 1;         // Tolerance in zone numbers for high latitudes.
+                        } else {
+                            final double rλ = Math.IEEEremainder(λ - ZONER.origin, ZONER.width);    // Distance to closest zone change, in degrees of longitude.
+                            final double cv = (position.x - ZONER.easting) / (λ - λ0);              // Approximative conversion factor from degrees to metres.
+                            isValid = (Math.abs(rλ) * cv <= sx);                                    // Be tolerant if distance in metres is less than resolution.
+                            if (isValid) {
+                                isValid = (zoneError == (rλ < 0 ? -1 : +1));                        // Verify also that the error is on the side of the zone change.
+                            }
+                        }
                     }
-                    isValid = Math.abs(actual - zone) <= threshold;
                 }
                 if (!isValid) {
                     position.x += sx/2;
