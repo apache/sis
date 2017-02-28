@@ -142,8 +142,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
-     * Tests decoding of various coordinates in Universal Transverse Mercator (UTM) projection,
-     * all at the same resolution.
+     * Tests decoding of various coordinates in Universal Transverse Mercator (UTM) projection.
      *
      * @throws TransformException if an error occurred while computing the coordinate.
      */
@@ -177,6 +176,16 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         assertSame("crs", CommonCRS.WGS84.universal(-49.4, 10.3), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   593608, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 4526322, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("19RBK");                                           // North hemisphere
+        assertSame("crs", CommonCRS.WGS84.universal(26, -69), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   200000, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 2900000, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("19JBK");                                           // South hemisphere
+        assertSame("crs", CommonCRS.WGS84.universal(-10, -69), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   200000, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 6900000, position.getOrdinate(1), STRICT);
     }
 
     /**
