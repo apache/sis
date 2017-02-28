@@ -67,7 +67,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ChildAlreadyExists_1 = 8;
 
         /**
-         * Grid coordinates
+         * Grid coordinate
          */
         public static final short GridCoordinates = 12;
 
@@ -116,6 +116,11 @@ public final class Resources extends IndexedResourceBundle {
          * No location type named “{0}” has been found.
          */
         public static final short LocationTypeNotFound_1 = 10;
+
+        /**
+         * Military Grid Reference System
+         */
+        public static final short MGRS = 15;
 
         /**
          * Can not determine dimension of “{0}” because of odd number of characters.

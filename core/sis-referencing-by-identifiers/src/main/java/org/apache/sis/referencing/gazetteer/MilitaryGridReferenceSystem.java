@@ -34,6 +34,7 @@ import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.gazetteer.Resources;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -78,6 +79,11 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
  */
 public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 8337394374656125471L;
+
     /**
      * Height of latitude bands, in degrees.
      * Those bands are labeled from {@code 'C'} to {@code 'X'} inclusive, excluding {@code 'I'} and {@code 'O'}.
@@ -200,16 +206,19 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      */
     @Workaround(library="JDK", version="1.8")
     private static Map<String,?> properties() {
-        final Map<String,Object> properties = new HashMap<>();
-        properties.put(NAME_KEY, "Military Grid Reference System");
-        properties.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
-        properties.put(THEME_KEY, Vocabulary.formatInternational(Vocabulary.Keys.Mapping));
+        Party party;
         try {
-            properties.put(OVERALL_OWNER_KEY, MetadataSource.getProvided().lookup(Party.class, "NATO"));
+            party = MetadataSource.getProvided().lookup(Party.class, "NATO");
         } catch (MetadataStoreException e) {
+            party = null;
             Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING_BY_IDENTIFIERS),
                     MilitaryGridReferenceSystem.class, "<init>", e);
         }
+        final Map<String,Object> properties = new HashMap<>(6);
+        properties.put(NAME_KEY, new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null));
+        properties.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
+        properties.put(THEME_KEY, Vocabulary.formatInternational(Vocabulary.Keys.Mapping));
+        properties.put(OVERALL_OWNER_KEY, party);
         return properties;
     }
 
