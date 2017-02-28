@@ -1201,7 +1201,7 @@ class PropertyAccessor {
     }
 
     /**
-     * Returns a deep copy of the given metadata object.
+     * Returns a potentially deep copy of the given metadata object.
      *
      * @param  metadata   the metadata object to copy.
      * @param  copies     a map of metadata objects already copied.
@@ -1210,24 +1210,25 @@ class PropertyAccessor {
      * @throws Exception if an error occurred while creating the copy. This include any
      *         checked checked exception that the no-argument constructor may throw.
      */
-    final Object deepCopy(final Object metadata, final Map<Object,Object> copies) throws Exception {
+    final Object copy(final Object metadata, final MetadataCopier copier) throws Exception {
         if (setters == null) {
             return metadata;
         }
-        Object copy = copies.get(metadata);
+        Object copy = copier.copies.get(metadata);
         if (copy == null) {
             copy = implementation.newInstance();
-            copies.put(metadata, copy);                     // Need to be first in case of cyclic graphs.
+            copier.copies.put(metadata, copy);              // Need to be first in case of cyclic graphs.
             final Object[] arguments = new Object[1];
             for (int i=0; i<allCount; i++) {
                 final Method setter = setters[i];
                 if (setter != null && !setter.isAnnotationPresent(Deprecated.class)) {
-                    final Method getter = getters[i];
-                    Object value = get(getter, metadata);
+                    Object value = get(getters[i], metadata);
                     if (value != null) {
-                        // TODO: perform deep copy here.
-                        arguments[0] = value;
-                        set(setter, copy, arguments);
+                        value = copier.copyAny(elementTypes[i], value);
+                        if (value != null) {
+                            arguments[0] = value;
+                            set(setter, copy, arguments);
+                        }
                     }
                 }
             }
