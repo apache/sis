@@ -1058,12 +1058,35 @@ parse:                  switch (part) {
 
                 final int info = ROW_RESOLVER[latitudeBand];        // Contains the above-cited northing value.
                 if (hasSquareIdentification) {
-                    int rowBit = 1 << (row + NORTHING_BITS_COUNT);  // Bit of the row to check for existence.
-                    isValid = (info & rowBit) != 0;                 // Whether the row exists in latitude band.
-                    if (isValid) do rowBit <<= 1;                   // Shift bit mask to the next invalid row.
-                    while ((info & rowBit) != 0);
-                    if ((info & ~(rowBit - 1)) != 0) {      // Test if there is valid rows after a "hole" of invalid rows.
-                        row += GRID_ROW_COUNT;              // Valid rows after a "hole" were from previous cycle, which means that we started a new cycle.
+                    int rowBit = 1 << (row + NORTHING_BITS_COUNT);  // Bit mask of the row to check for existence.
+                    isValid = (info & rowBit) != 0;                 // Whether the row exists in the latitude band.
+                    if (isValid) {
+                        /*
+                         * Get the bit mask of the first invalid row north of current row. For example if 'info' has
+                         * the following value and the current 'rowBit' mask has its bit set at the position of (1),
+                         * then after this line of code the 'rowBit' bit will be set at the position of (2).
+                         *
+                         *     11111000000000011111
+                         *         ^          ^   ^
+                         *        (3)        (2) (1)
+                         *
+                         * This line works by forcing to 1 all bits on the right side of (1) then searching the lowest
+                         * zero bit (actually inverting everything and searching the lowest one bit, since there is no
+                         * "lowestZeroBit" method in java.lang.Integer).
+                         *
+                         * The purpose is to verify if there another, distinct, sequence of 1 values on the left of
+                         * current sequence. We will check that (after this block) by verifying if there is any bit
+                         * set to 1 on the left side of zero bits, like the bit at position (3) in above figure. If
+                         * such distinct sequence exists, then that sequence is the current cycle of rows while the
+                         * sequence on the right side is a new cycle of rows.
+                         *
+                         * Note that if there is no zero bit on the left side, then rowBit = 0.
+                         * This implies ~(rowBit - 1) == 0, which is okay for next line of code.
+                         */
+                        rowBit = Integer.lowestOneBit(~(info | (rowBit - 1)));
+                    }
+                    if ((info & ~(rowBit - 1)) != 0) {      // Test if there is valid rows on the left side of sequence of zero bits.
+                        row += GRID_ROW_COUNT;              // Left bits were from previous cycle, which means that we started a new cycle.
                     }
                 }
                 row += (info & NORTHING_BITS_MASK) * GRID_ROW_COUNT;        // Add the pre-computed northing value.
