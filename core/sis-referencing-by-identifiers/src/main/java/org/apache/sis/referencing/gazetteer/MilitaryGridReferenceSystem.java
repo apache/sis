@@ -1053,10 +1053,12 @@ parse:                  switch (part) {
                  * This estimation is needed because the 100 kilometres square identification is insufficient;
                  * we may need to add some multiple of 2000 kilometres (20 squares).
                  */
-                λ0  = ZONER.centralMeridian(zone);
                 φs = latitudeBand * LATITUDE_BAND_HEIGHT + TransverseMercator.Zoner.SOUTH_BOUNDS;
+                if (latitudeBand < 0 || latitudeBand >= ROW_RESOLVER.length) {
+                    throw new GazetteerException(Resources.format(Resources.Keys.IllegalLatitudeBand_1, Encoder.latitudeBand(φs)));
+                }
+                λ0  = ZONER.centralMeridian(zone);
                 crs = owner.projection(Math.signum(φs), λ0);
-
                 final int info = ROW_RESOLVER[latitudeBand];        // Contains the above-cited northing value.
                 if (hasSquareIdentification) {
                     int rowBit = 1 << (row + NORTHING_BITS_COUNT);  // Bit mask of the row to check for existence.
