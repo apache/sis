@@ -322,14 +322,23 @@ public final class TransverseMercator extends AbstractMercator {
          */
         public int zone(final double φ, final double λ) {
             double z = (λ - origin) / width;                                              // Zone number with fractional part.
-            z -= Math.floor(z / ((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / width))    // Roll in the [0 … 60) range.
-                              * ((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / width);
+            final double count = (Longitude.MAX_VALUE - Longitude.MIN_VALUE) / width;
+            z -= Math.floor(z / count) * count;                                           // Roll in the [0 … 60) range.
             /*
              * Casts to int are equivalent to Math.floor(double) for positive values, which is guaranteed
              * to be the case here since we normalize the central meridian to the [MIN_VALUE … MAX_VALUE]
              * range. We cast only after addition in order to handle NaN as documented.
              */
             return (int) (z + 1);
+        }
+
+        /**
+         * Returns the number of zones.
+         *
+         * @return number of zones.
+         */
+        public final int zoneCount() {
+            return (int) ((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / width);
         }
 
         /**
@@ -361,7 +370,7 @@ public final class TransverseMercator extends AbstractMercator {
          * @return whether the given latitude is in the Svalbard latitude band.
          */
         public static boolean isSvalbard(final double φ) {
-            return (φ >= 72) && (φ < NORTH_BOUNDS);
+            return (φ >= SVALBARD_BOUNDS) && (φ < NORTH_BOUNDS);
         }
 
         /**
@@ -380,6 +389,12 @@ public final class TransverseMercator extends AbstractMercator {
          * @see #isSvalbard(double)
          */
         public static final double NORWAY_BOUNDS = 56;
+
+        /**
+         * Southernmost bounds (inclusive) of the last latitude band, which contains Svalbard.
+         * This latitude band is 12° height instead of 8°.
+         */
+        public static final double SVALBARD_BOUNDS = 72;
 
         /**
          * Northernmost bound of the last latitude band ({@code 'X'}), exclusive.

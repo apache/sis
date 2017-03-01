@@ -18,8 +18,10 @@ package org.apache.sis.referencing.gazetteer;
 
 import java.util.Locale;
 import java.util.Random;
-import org.opengis.referencing.operation.TransformException;
+import java.lang.reflect.Field;
 import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
@@ -99,6 +101,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      * are consistent with the latitude bands.
      */
     @Test
+    @DependsOnMethod("testLatitudeBand")
     public void verifyZonerConsistency() {
         for (double φ = TransverseMercator.Zoner.SOUTH_BOUNDS; φ < TransverseMercator.Zoner.NORTH_BOUNDS; φ++) {
             final String latitude = String.valueOf(φ);
@@ -106,6 +109,84 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
             assertTrue  (latitude, band >= 'C' && band <= 'X');
             assertEquals(latitude, band == 'V', TransverseMercator.Zoner.isNorway(φ));
             assertEquals(latitude, band == 'X', TransverseMercator.Zoner.isSvalbard(φ));
+        }
+    }
+
+    /**
+     * Verifies the hard-coded tables used for decoding purpose.
+     * This method performs its computation using UTM zone 31, which is the zone from 0° to 6°E.
+     * The results should be the same for all other zones.
+     *
+     * @throws TransformException if an error occurred while projecting a geographic coordinate.
+     * @throws ReflectiveOperationException if this test method can not access the table to verify.
+     */
+    @Test
+    @DependsOnMethod("verifyInvariants")
+    public void verifyDecoderTables() throws TransformException, ReflectiveOperationException {
+        final int              numBands   = 20;
+        final double           zoneCentre = 3;
+        final double           zoneBorder = 0;
+        final CommonCRS        datum      = CommonCRS.WGS84;
+        final DirectPosition2D geographic = new DirectPosition2D();
+        final DirectPosition2D projected  = new DirectPosition2D();
+        final MathTransform    northMT    = datum.universal(+1, zoneCentre).getConversionFromBase().getMathTransform();
+        final MathTransform    southMT    = datum.universal(-1, zoneCentre).getConversionFromBase().getMathTransform();
+        final int[] table;
+        {
+            // Use reflection for keeping MilitaryGridReferenceSystem.Decoder.ROW_RESOLVER private.
+            final Field f = MilitaryGridReferenceSystem.Decoder.class.getDeclaredField("ROW_RESOLVER");
+            f.setAccessible(true);
+            table = (int[]) f.get(null);
+            assertEquals("ROW_RESOLVER.length", numBands, table.length);
+        }
+        for (int band = 0; band < numBands; band++) {
+            final double φ = band * MilitaryGridReferenceSystem.LATITUDE_BAND_HEIGHT + TransverseMercator.Zoner.SOUTH_BOUNDS;
+            final boolean isSouth = (φ < 0);
+            final MathTransform projection = (isSouth) ? southMT : northMT;
+            /*
+             * Computes the smallest possible northing value. In the North hemisphere, this is the value
+             * on the central meridian because northing values tends toward the poles as we increase the
+             * distance from that centre.  In the South hemisphere, this is the value on the zone border
+             * where we have the maximal distance from the centre.
+             */
+            geographic.x = φ;
+            geographic.y = isSouth ? zoneBorder : zoneCentre;
+            final double ymin = projection.transform(geographic, projected).getOrdinate(1);
+            /*
+             * Computes the largest possible northing value. This is not only the value of the next latitude band;
+             * we also need to interchange the "zone centre" and "zone border" logic described in previous comment.
+             * The result is that we will have some overlap in the northing value of consecutive latitude bands.
+             */
+            geographic.y = isSouth ? zoneCentre : zoneBorder;
+            geographic.x = MilitaryGridReferenceSystem.Decoder.upperBounds(φ);
+            final double ymax = projection.transform(geographic, projected).getOrdinate(1);
+            /*
+             * Computes the value that we will encode in the MilitaryGridReferenceSystem.Decoder.ROW_RESOLVER table.
+             * The lowest 4 bits are the number of the row cycle (a cycle of 2000 km). The remaining bits tell which
+             * rows are valid in that latitude band.
+             */
+            final int rowCycle = (int) Math.floor(ymin / (MilitaryGridReferenceSystem.GRID_SQUARE_SIZE * MilitaryGridReferenceSystem.GRID_ROW_COUNT));
+            final int lowerRow = (int) Math.floor(ymin /  MilitaryGridReferenceSystem.GRID_SQUARE_SIZE);    // Inclusive
+            final int upperRow = (int) Math.ceil (ymax /  MilitaryGridReferenceSystem.GRID_SQUARE_SIZE);    // Exclusive
+            assertTrue("rowCycle", rowCycle >= 0 && rowCycle <= MilitaryGridReferenceSystem.Decoder.NORTHING_BITS_MASK);
+            assertTrue("lowerRow", lowerRow >= 0);
+            assertTrue("upperRow", upperRow >= 0);
+            int validRows = 0;
+            for (int i = lowerRow; i < upperRow; i++) {
+                validRows |= 1 << (i % MilitaryGridReferenceSystem.GRID_ROW_COUNT);
+            }
+            final int bits = (validRows << MilitaryGridReferenceSystem.Decoder.NORTHING_BITS_COUNT) | rowCycle;
+            /*
+             * Verification. If it fails, format the line of code that should be inserted
+             * in the MilitaryGridReferenceSystem.Decoder.ROW_RESOLVER table definition.
+             */
+            if (table[band] != bits) {
+                String bitMasks = Integer.toBinaryString(validRows);
+                bitMasks = "00000000000000000000".substring(bitMasks.length()).concat(bitMasks);
+                fail(String.format("ROW_RESOLVER[%d]: expected %d but got %d. Below is suggested line of code:%n"
+                        + "/* Latitude band %c (from %3.0f°) */   %d  |  0b%s_0000%n", band, bits, table[band],
+                        MilitaryGridReferenceSystem.Encoder.latitudeBand(φ), φ, rowCycle, bitMasks));
+            }
         }
     }
 
@@ -168,12 +249,13 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
-     * Tests decoding of various coordinates in Universal Transverse Mercator (UTM) projection.
+     * Tests decoding of various coordinates in Universal Transverse Mercator (UTM) projection,
+     * all of them at metric precision.
      *
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod("verifyInvariants")
+    @DependsOnMethod({"verifyInvariants", "verifyDecoderTables"})
     public void testDecodeUTM() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         DirectPosition position;
@@ -202,16 +284,40 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         assertSame("crs", CommonCRS.WGS84.universal(-49.4, 10.3), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   593608, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 4526322, position.getOrdinate(1), STRICT);
+    }
 
-        position = coder.decode("19RBK");                                           // North hemisphere
-        assertSame("crs", CommonCRS.WGS84.universal(26, -69), position.getCoordinateReferenceSystem());
-        assertEquals("Easting",   200000, position.getOrdinate(0), STRICT);
-        assertEquals("Northing", 2900000, position.getOrdinate(1), STRICT);
+    /**
+     * Tests decoding of values that are close to a change of zones.
+     * Values tested in this methods were used to cause a {@link ReferenceVerifyException}
+     * before we debugged the verification algorithm in the {@code decode(…)} method.
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod("testDecodeUTM")
+    public void testDecodeLimitCases() throws TransformException {
+        final MilitaryGridReferenceSystem.Coder coder = coder();
+        DirectPosition position;
 
-        position = coder.decode("19JBK");                                           // South hemisphere
+        position = coder.decode("19JBK");                                            // South hemisphere
         assertSame("crs", CommonCRS.WGS84.universal(-10, -69), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   200000, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 6900000, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("1VCK");                                // North of Norway latitude band
+        assertSame("crs", CommonCRS.WGS84.universal(62, -180), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   300000, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 6900000, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("57KTP");
+        assertSame("crs", CommonCRS.WGS84.universal(-24, 156), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   200000, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 7300000, position.getOrdinate(1), STRICT);
+
+        position = coder.decode("56VPH");
+        assertSame("crs", CommonCRS.WGS84.universal(55, 154), position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   600000, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 6200000, position.getOrdinate(1), STRICT);
     }
 
     /**
