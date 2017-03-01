@@ -1067,8 +1067,8 @@ parse:                  switch (part) {
                          * then after this line of code the 'rowBit' bit will be set at the position of (2).
                          *
                          *     11111000000000011111
-                         *         ^          ^   ^
-                         *        (3)        (2) (1)
+                         *         ^         ^   ^
+                         *        (3)       (2) (1)
                          *
                          * This line works by forcing to 1 all bits on the right side of (1) then searching the lowest
                          * zero bit (actually inverting everything and searching the lowest one bit, since there is no
