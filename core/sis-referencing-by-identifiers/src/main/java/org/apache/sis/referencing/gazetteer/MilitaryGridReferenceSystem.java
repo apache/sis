@@ -1083,11 +1083,12 @@ parse:                  switch (part) {
                          *
                          * Note that if there is no zero bit on the left side, then rowBit = 0.
                          * This implies ~(rowBit - 1) == 0, which is okay for next line of code.
+                         * Note: ~(rowBit - 1)  ==  -rowBit
                          */
                         rowBit = Integer.lowestOneBit(~(info | (rowBit - 1)));
                     }
-                    if ((info & ~(rowBit - 1)) != 0) {      // Test if there is valid rows on the left side of sequence of zero bits.
-                        row += GRID_ROW_COUNT;              // Left bits were from previous cycle, which means that we started a new cycle.
+                    if ((info & -rowBit) != 0) {    // Test if there is valid rows on the left side of sequence of zero bits.
+                        row += GRID_ROW_COUNT;      // Left bits were from previous cycle, which means that we started a new cycle.
                     }
                 }
                 row += (info & NORTHING_BITS_MASK) * GRID_ROW_COUNT;        // Add the pre-computed northing value.
