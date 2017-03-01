@@ -851,27 +851,28 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             /*
              * First column is the minimal northing value as a multiple of 2000 km.
              * Second column enumerates the valid rows in that latitude band.
+             * Trailing _0000 are for making room for NORTHING_BITS_COUNT bits.
              */
-            /* Latitude band C (from -80°) */   0  |  0b11111111100000000001_0000,
-            /* Latitude band D (from -72°) */   1  |  0b00000000001111111111_0000,
-            /* Latitude band E (from -64°) */   1  |  0b00111111111100000000_0000,
-            /* Latitude band F (from -56°) */   1  |  0b11100000000001111111_0000,
-            /* Latitude band G (from -48°) */   2  |  0b00001111111111000000_0000,
-            /* Latitude band H (from -40°) */   2  |  0b11111000000000011111_0000,
-            /* Latitude band J (from -32°) */   3  |  0b00000011111111110000_0000,
-            /* Latitude band K (from -24°) */   3  |  0b11111110000000000111_0000,
-            /* Latitude band L (from -16°) */   4  |  0b00000000111111111100_0000,
-            /* Latitude band M (from  -8°) */   4  |  0b11111111100000000000_0000,
-            /* Latitude band N (from   0°) */   0  |  0b00000000000111111111_0000,
-            /* Latitude band P (from   8°) */   0  |  0b00111111111100000000_0000,
-            /* Latitude band Q (from  16°) */   0  |  0b11100000000001111111_0000,
-            /* Latitude band R (from  24°) */   1  |  0b00001111111111000000_0000,
-            /* Latitude band S (from  32°) */   1  |  0b11111000000000011111_0000,
-            /* Latitude band T (from  40°) */   2  |  0b00000011111111110000_0000,
-            /* Latitude band U (from  48°) */   2  |  0b11111110000000000111_0000,
-            /* Latitude band V (from  56°) */   3  |  0b00000000111111111100_0000,
-            /* Latitude band W (from  64°) */   3  |  0b11111111110000000000_0000,
-            /* Latitude band X (from  72°) */   3  |  0b10000011111111111111_0000
+            /* Latitude band C (from 80°S) */   0  |  0b11111111100000000001_0000,
+            /* Latitude band D (from 72°S) */   1  |  0b00000000001111111111_0000,
+            /* Latitude band E (from 64°S) */   1  |  0b00111111111100000000_0000,
+            /* Latitude band F (from 56°S) */   1  |  0b11100000000001111111_0000,
+            /* Latitude band G (from 48°S) */   2  |  0b00001111111111000000_0000,
+            /* Latitude band H (from 40°S) */   2  |  0b11111000000000011111_0000,
+            /* Latitude band J (from 32°S) */   3  |  0b00000011111111110000_0000,
+            /* Latitude band K (from 24°S) */   3  |  0b11111110000000000111_0000,
+            /* Latitude band L (from 16°S) */   4  |  0b00000000111111111100_0000,
+            /* Latitude band M (from  8°S) */   4  |  0b11111111100000000000_0000,
+            /* Latitude band N (from  0° ) */   0  |  0b00000000000111111111_0000,
+            /* Latitude band P (from  8°N) */   0  |  0b00111111111100000000_0000,
+            /* Latitude band Q (from 16°N) */   0  |  0b11100000000001111111_0000,
+            /* Latitude band R (from 24°N) */   1  |  0b00001111111111000000_0000,
+            /* Latitude band S (from 32°N) */   1  |  0b11111000000000011111_0000,
+            /* Latitude band T (from 40°N) */   2  |  0b00000011111111110000_0000,
+            /* Latitude band U (from 48°N) */   2  |  0b11111110000000000111_0000,
+            /* Latitude band V (from 56°N) */   3  |  0b00000000111111111100_0000,
+            /* Latitude band W (from 64°N) */   3  |  0b11111111110000000000_0000,
+            /* Latitude band X (from 72°N) */   3  |  0b10000011111111111111_0000
         };
 
         /**
