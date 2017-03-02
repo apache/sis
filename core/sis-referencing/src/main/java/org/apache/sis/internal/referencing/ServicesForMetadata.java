@@ -57,9 +57,11 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.VerticalExtent;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -98,7 +100,7 @@ import org.apache.sis.util.Utilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class ServicesForMetadata extends ReferencingServices {
@@ -388,6 +390,21 @@ public final class ServicesForMetadata extends ReferencingServices {
             setTemporalExtent(envelope, extent, crs, temporalCRS);
             target.getTemporalElements().add(extent);
         }
+    }
+
+    /**
+     * Creates a two-dimensional geographic position associated to the default geographic CRS.
+     * Axis order is (longitude, latitude).
+     *
+     * @param  λ  the longitude value.
+     * @param  φ  the latitude value.
+     * @return the direct position for the given geographic coordinate.
+     *
+     * @since 0.8
+     */
+    @Override
+    public DirectPosition geographic(final double λ, final double φ) {
+        return new DirectPosition2D(CommonCRS.defaultGeographic(), λ, φ);
     }
 
 

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.ArrayList;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -36,6 +37,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
@@ -406,6 +408,30 @@ public final class Extents extends Static {
         if (max == null) return min;
         final long startTime = min.getTime();
         return new Date(Math.addExact(startTime, Math.round((max.getTime() - startTime) * location)));
+    }
+
+    /**
+     * Returns the position at the median longitude and latitude values of the given bounding box.
+     * This method does not check the {@linkplain DefaultGeographicBoundingBox#getInclusion() inclusion} status.
+     * This method takes in account bounding boxes that cross the anti-meridian.
+     *
+     * @param  bbox  the bounding box for which to get the median longitude and latitude values, or {@code null}.
+     * @return a median position of the given bounding box, or {@code null} if none.
+     */
+    public static DirectPosition centroid(final GeographicBoundingBox bbox) {
+        if (bbox != null) {
+            double y    = (bbox.getNorthBoundLatitude() + bbox.getSouthBoundLatitude()) / 2;
+            double x    =  bbox.getWestBoundLongitude();
+            double xmax =  bbox.getEastBoundLongitude();
+            if (xmax < x) {
+                xmax += (Longitude.MAX_VALUE - Longitude.MIN_VALUE);
+            }
+            x = Longitude.normalize((x + xmax) / 2);
+            if (Double.isFinite(x) || Double.isFinite(y)) {
+                return ReferencingServices.getInstance().geographic(x, y);
+            }
+        }
+        return null;
     }
 
     /**

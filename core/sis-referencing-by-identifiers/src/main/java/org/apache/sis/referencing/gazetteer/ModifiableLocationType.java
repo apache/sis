@@ -205,6 +205,8 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      *
      * @return property used as the defining characteristic of the location type,
      *         or {@code null} if no value has been defined or can be inherited.
+     *
+     * @see ReferencingByIdentifiers#getTheme()
      */
     @Override
     public InternationalString getTheme() {
@@ -232,11 +234,19 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * If no methods have been explicitely set, then this method inherits the values from
      * the parents providing that all parents specify the same methods.
      *
-     * <p>The collection returned by this method is unmodifiable. For adding or removing an identification,
-     * use {@link #addIdentification(CharSequence)} or {@link #removeIdentification(CharSequence)}.</p>
+     * <div class="note"><b>Examples:</b>
+     * some identification methods are “name”, “code”, “unique street reference number” and “geographic address”.
+     * A location using “name” identifications may have the “Spain” {@linkplain AbstractLocation#getGeographicIdentifier()
+     * geographic identifier}, and a location using “postcode” identifications may have the “SW1P 3AD” geographic identifier.
+     * </div>
+     *
+     * The collection returned by this method is unmodifiable. For adding or removing an identification,
+     * use {@link #addIdentification(CharSequence)} or {@link #removeIdentification(CharSequence)}.
      *
      * @return method(s) of uniquely identifying location instances,
      *         or an empty list if no value has been defined or can be inherited.
+     *
+     * @see AbstractLocation#getGeographicIdentifier()
      */
     @Override
     public Collection<InternationalString> getIdentifications() {
@@ -304,6 +314,8 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      *
      * @return geographic area within which the location type occurs,
      *         or {@code null} if no value has been defined or can be inherited.
+     *
+     * @see ReferencingByIdentifiers#getDomainOfValidity()
      */
     @Override
     public GeographicExtent getTerritoryOfUse() {
@@ -340,6 +352,9 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      *
      * @return organization or class of organization able to create and destroy location instances,
      *         or {@code null} if no value has been defined or can be inherited.
+     *
+     * @see AbstractLocation#getAdministrator()
+     * @see ReferencingByIdentifiers#getOverallOwner()
      */
     @Override
     public Party getOwner() {
@@ -375,6 +390,8 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * use {@link #addParent(ModifiableLocationType)} or {@link #removeParent(ModifiableLocationType)}.</p>
      *
      * @return parent location types, or an empty collection if none.
+     *
+     * @see AbstractLocation#getParents()
      */
     @Override
     public final Collection<ModifiableLocationType> getParents() {
@@ -388,6 +405,8 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * or  <code>child.{@linkplain #removeParent removeParent}(this)</code>.
      *
      * @return child location types, or an empty collection if none.
+     *
+     * @see AbstractLocation#getChildren()
      */
     @Override
     public final Collection<ModifiableLocationType> getChildren() {
@@ -455,6 +474,8 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * given to the {@link ReferencingByIdentifiers} constructor for example.
      *
      * @return {@code null}.
+     *
+     * @see ReferencingByIdentifiers#getLocationTypes()
      */
     @Override
     public ReferenceSystemUsingIdentifiers getReferenceSystem() {

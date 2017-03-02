@@ -22,6 +22,7 @@ import java.util.Locale;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
@@ -70,7 +71,7 @@ import org.apache.sis.util.Deprecable;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public class ReferencingServices extends OptionalDependency {
@@ -272,6 +273,20 @@ public class ReferencingServices extends OptionalDependency {
      * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
      */
     public void addElements(Envelope envelope, DefaultExtent target) throws TransformException {
+        throw moduleNotFound();
+    }
+
+    /**
+     * Creates a two-dimensional geographic position associated to the default geographic CRS.
+     * Axis order is (longitude, latitude).
+     *
+     * @param  λ  the longitude value.
+     * @param  φ  the latitude value.
+     * @return the direct position for the given geographic coordinate.
+     *
+     * @since 0.8
+     */
+    public DirectPosition geographic(final double λ, final double φ) {
         throw moduleNotFound();
     }
 
