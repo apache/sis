@@ -23,6 +23,14 @@
  * Gazetteers provide linking mechanism between referencing using geographic identifiers (this package)
  * and referencing using coordinates (…{@link org.apache.sis.referencing.crs .crs} package).
  *
+ * <div class="section">Extensions to ISO 19112</div>
+ * In addition to standard properties, the Apache SIS implementation provides the following extensions:
+ *
+ * <ul>
+ *   <li>{@link org.apache.sis.referencing.gazetteer.AbstractLocation#getEnvelope()} can provide envelopes
+ *       in non-geographic CRS.</li>
+ * </ul>
+ *
  * @author  Chris Mattmann (JPL)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8

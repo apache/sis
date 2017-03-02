@@ -53,6 +53,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.measure.Latitude;
+import org.opengis.geometry.coordinate.Position;
 
 // Branch-dependent imports
 import org.opengis.metadata.citation.Party;
@@ -239,6 +240,13 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
     }
 
     /**
+     * Returns the first location types, which should be the grid zone identifier.
+     */
+    final LocationType rootType() {
+        return super.getLocationTypes().get(0);     // Use super.… for protecting from method overriding.
+    }
+
+    /**
      * Returns the value to add to the row number in order to have the "A" letter on the southernmost or
      * northernmost value on Greenwich meridian of the Universal Polar Stereographic (UPS) projection.
      * If {@code south} is {@code true}, then this is computed from the northernmost value of UPS South;
@@ -341,6 +349,13 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         }
 
         /**
+         * Returns the reference system for which MGRS references will be encoded or decoded.
+         */
+        final MilitaryGridReferenceSystem getReferenceSystem() {
+            return MilitaryGridReferenceSystem.this;
+        }
+
+        /**
          * Returns the precision of the references formatted by this coder.
          * This method returns one of the following values:
          *
@@ -418,14 +433,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          */
         final ProjectedCRS projection(final double latitude, final double longitude) {
             return MilitaryGridReferenceSystem.this.datum.universal(latitude, longitude);
-        }
-
-        /**
-         * Bridge to {@link MilitaryGridReferenceSystem#polarOffset(boolean)}
-         * for the {@link Encoder} and {@link Decoder} classes.
-         */
-        final int polarOffset(final boolean south) throws TransformException {
-            return MilitaryGridReferenceSystem.this.polarOffset(south);
         }
 
         /**
@@ -747,7 +754,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                         throw new GazetteerException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
                     }
                     col  = columns[col];
-                    row -= owner.polarOffset(signedZone < 0);
+                    row -= owner.getReferenceSystem().polarOffset(signedZone < 0);
                 }
                 row += 'A';
                 if (row >= EXCLUDE_I && ++row >= EXCLUDE_O) row++;
@@ -796,14 +803,15 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
 
     /**
-     * The result of decoding a MGRS reference.
+     * The result of decoding a MGRS reference. The {@linkplain #getPosition() position}
+     * represents the lower-left corner (not the centroid) of the decoded MGRS reference.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.8
      * @version 0.8
      * @module
      */
-    static final class Decoder {
+    static final class Decoder extends AbstractLocation {
         /**
          * Number of bits reserved for storing the minimal northing value of latitude bands in the
          * {@link #ROW_RESOLVER} table.
@@ -879,6 +887,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * The position decoded from the MGRS reference given to the constructor.
          * This is the lower-left corner of a cell of size {@link #sx} × {@link #sy}
          * The CRS of that position will be a UTM or UPS projected CRS.
+         *
+         * @see #getPosition()
          */
         private final DirectPosition2D position;
 
@@ -894,6 +904,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @param owner  the {@code Coder} which is creating this {@code Decoder}.
          */
         Decoder(final Coder owner, final CharSequence reference) throws TransformException {
+            super(owner.getReferenceSystem().rootType(), reference);
             final int zone;                     // UTM zone, or 0 if UPS.
             final ProjectedCRS crs;             // UTM or UPS projection for the zone.
             boolean hasSquareIdentification;    // Whether a square identification is present (UTM only).
@@ -944,7 +955,7 @@ parse:                  switch (part) {
                             case 2: {
                                 if (c >= EXCLUDE_O) c--;
                                 if (c >= EXCLUDE_I) c--;
-                                row = (c - 'A') + owner.polarOffset(south);
+                                row = (c - 'A') + owner.getReferenceSystem().polarOffset(south);
                                 i = ni;
                                 continue;
                             }
@@ -1295,6 +1306,14 @@ parse:                  switch (part) {
         static double upperBounds(final double φ) {
             return φ < TransverseMercator.Zoner.SVALBARD_BOUNDS ? φ + LATITUDE_BAND_HEIGHT
                      : TransverseMercator.Zoner.NORTH_BOUNDS;
+        }
+
+        /**
+         * Returns the lower-left corner of the decoded MGRS cell.
+         */
+        @Override
+        public Position getPosition() {
+            return position;
         }
     }
 }

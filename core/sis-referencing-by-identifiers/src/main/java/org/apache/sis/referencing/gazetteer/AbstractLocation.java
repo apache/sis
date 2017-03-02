@@ -22,11 +22,13 @@ import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.metadata.iso.extent.Extents;
 
 
@@ -48,6 +50,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
  * <ul>
  *   <li><b>temporal extent</b></li>
  *   <li><b>alternative geographic identifier</b></li>
+ *   <li><b>envelope</b> (an Apache SIS extension not in ISO 19112 standard)</li>
  *   <li><b>position</b> (mandatory if the geographic identifier contains insufficient information to identify location)</li>
  *   <li><b>parent location instance</b></li>
  *   <li><b>child location instance</b></li>
@@ -60,6 +63,13 @@ import org.apache.sis.metadata.iso.extent.Extents;
  */
 public abstract class AbstractLocation implements Location {
     /**
+     * The description of the nature of this geographic identifier, or {@code null} if unspecified.
+     *
+     * @see #getLocationType()
+     */
+    private final LocationType type;
+
+    /**
      * The geographic identifier, or {@code null} if unspecified.
      *
      * @see #getGeographicIdentifier()
@@ -70,9 +80,11 @@ public abstract class AbstractLocation implements Location {
      * Creates a new location for the given geographic identifier.
      * This constructor accepts a {@code null} argument, but this is not recommended.
      *
+     * @param type        the description of the nature of this geographic identifier.
      * @param identifier  the geographic identifier to be returned by {@link #getGeographicIdentifier()}.
      */
-    protected AbstractLocation(final CharSequence identifier) {
+    protected AbstractLocation(final LocationType type, final CharSequence identifier) {
+        this.type       = type;
         this.identifier = identifier;
     }
 
@@ -138,9 +150,26 @@ public abstract class AbstractLocation implements Location {
     }
 
     /**
+     * Returns an envelope that encompass the location. This property is partially redundant with
+     * {@link #getGeographicExtent()}, except that this method allows envelopes in non-geographic CRS.
+     *
+     * <p>The default implementation copies the {@link #getGeographicExtent()} in a new envelope associated
+     * to the {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.</p>
+     *
+     * @return envelope that encompass the location, or {@code null} if none.
+     */
+    public Envelope getEnvelope() {
+        final GeographicExtent extent = getGeographicExtent();
+        return (extent instanceof GeographicBoundingBox) ? new Envelope2D((GeographicBoundingBox) extent) : null;
+    }
+
+    /**
      * Returns coordinates of a representative point for the location instance.
-     * The default implementation returns the centroid of the {@linkplain #getGeographicExtent() geographic extent}
-     * if that extent is geographic bounding box.
+     * This is often the centroid of the location instance, but not necessarily;
+     * another typical value is the lower-left corner.
+     *
+     * <p>The default implementation returns the centroid of the {@linkplain #getGeographicExtent()
+     * geographic extent} if that extent is geographic bounding box.</p>
      *
      * @return coordinates of a representative point for the location instance, or {@code null} if none.
      */
@@ -156,7 +185,9 @@ public abstract class AbstractLocation implements Location {
      * @return the nature of the identifier and its associated geographic location.
      */
     @Override
-    public abstract LocationType getLocationType();
+    public LocationType getLocationType() {
+        return type;
+    }
 
     /**
      * Returns the organization responsible for defining the characteristics of the location instance.
