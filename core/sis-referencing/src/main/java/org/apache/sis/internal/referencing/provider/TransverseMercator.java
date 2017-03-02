@@ -155,6 +155,7 @@ public final class TransverseMercator extends AbstractMercator {
          * </table></blockquote>
          */
         UTM(Longitude.MIN_VALUE, 6, 0.9996, 500000, 10000000) {
+            /** Computes the zone from a meridian in the zone. */
             @Override public int zone(final double φ, final double λ) {
                 int zone = super.zone(φ, λ);
                 switch (zone) {
@@ -170,6 +171,14 @@ public final class TransverseMercator extends AbstractMercator {
                     case 36: if (isSvalbard(φ)) {if (λ >= 33) zone++; else zone--;} break;   // 33° is zone 36 central meridian.
                 }
                 return zone;
+            }
+
+            /** Indicates whether the given zone needs to be handled in a special way for the given latitude. */
+            @Override public boolean isSpecialCase(final int zone, final double φ) {
+                if (zone >= 31 && zone <= 37) {
+                    return isSvalbard(φ) || (zone <= 32 && isNorway(φ));
+                }
+                return false;
             }
         },
 
@@ -352,19 +361,30 @@ public final class TransverseMercator extends AbstractMercator {
         }
 
         /**
+         * Indicates whether the given zone needs to be handled in a special way for the given latitude.
+         *
+         * @param  zone  the zone to test if it is a special case.
+         * @param  φ     the latitude for which to test if there is a special case.
+         * @return whether the given zone at the given latitude is a special case.
+         */
+        public boolean isSpecialCase(final int zone, final double φ) {
+            return false;
+        }
+
+        /**
          * First exception in UTM projection, corresponding to latitude band V.
-         * This method is public for {@code MGRSEncoderTest.verifyZonerConsistency()} purpose only.
+         * This method is public for {@code MilitaryGridReferenceSystemTest.verifyZonerConsistency()} purpose only.
          *
          * @param  φ  the latitude in degrees to test.
          * @return whether the given latitude is in the Norway latitude band.
          */
         public static boolean isNorway(final double φ) {
-            return (φ >= NORWAY_BOUNDS) && (φ < 64);
+            return (φ >= 56) && (φ < 64);
         }
 
         /**
          * Second exception in UTM projection, corresponding to latitude band X.
-         * This method is public for {@code MGRSEncoderTest.verifyZonerConsistency()} purpose only.
+         * This method is public for {@code MilitaryGridReferenceSystemTest.verifyZonerConsistency()} purpose only.
          *
          * @param  φ  the latitude in degrees to test.
          * @return whether the given latitude is in the Svalbard latitude band.
@@ -379,16 +399,6 @@ public final class TransverseMercator extends AbstractMercator {
          * @see #NORTH_BOUNDS
          */
         public static final double SOUTH_BOUNDS = -80;
-
-        /**
-         * Northernmost bounds (exclusive) of the latitudes that do not require special case.
-         * Coordinates at latitudes equal or greater than this value may be subject to special
-         * rules regarding their UTM zones.
-         *
-         * @see #isNorway(double)
-         * @see #isSvalbard(double)
-         */
-        public static final double NORWAY_BOUNDS = 56;
 
         /**
          * Southernmost bounds (inclusive) of the last latitude band, which contains Svalbard.

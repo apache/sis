@@ -1166,7 +1166,7 @@ parse:                  switch (part) {
                         if (zoneError != 0) {
                             final int zc = ZONER.zoneCount();
                             if (zoneError > zc/2) zoneError -= zc;
-                            if (Math.abs(φ) >= TransverseMercator.Zoner.NORWAY_BOUNDS) {
+                            if (ZONER.isSpecialCase(zone, φ)) {
                                 isValid = Math.abs(zoneError) == 1;         // Tolerance in zone numbers for high latitudes.
                             } else {
                                 final double rλ = Math.IEEEremainder(λ - ZONER.origin, ZONER.width);    // Distance to closest zone change, in degrees of longitude.
