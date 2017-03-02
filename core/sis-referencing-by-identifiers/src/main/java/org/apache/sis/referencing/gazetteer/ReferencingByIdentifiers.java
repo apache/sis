@@ -177,6 +177,8 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem implements
      * Property used to characterize the spatial reference system.
      *
      * @return property used to characterize the spatial reference system.
+     *
+     * @see AbstractLocationType#getTheme()
      */
     @Override
     public InternationalString getTheme() {
@@ -187,6 +189,9 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem implements
      * Authority with overall responsibility for the spatial reference system.
      *
      * @return authority with overall responsibility for the spatial reference system.
+     *
+     * @see ModifiableLocationType#getOwner()
+     * @see AbstractLocation#getAdministrator()
      */
     @Override
     public Party getOverallOwner() {
@@ -198,6 +203,8 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem implements
      * The collection returned by this method is unmodifiable.
      *
      * @return description of location type(s) in the spatial reference system.
+     *
+     * @see ModifiableLocationType#getReferenceSystem()
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Because the collection is unmodifiable.
