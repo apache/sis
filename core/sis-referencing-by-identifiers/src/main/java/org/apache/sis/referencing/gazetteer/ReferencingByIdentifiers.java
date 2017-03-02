@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.gazetteer;
 
 import java.util.Map;
-import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.InternationalString;
@@ -82,7 +82,7 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem implements
      *
      * @see #getLocationTypes()
      */
-    private final Collection<LocationType> locationTypes;
+    private final List<LocationType> locationTypes;
 
     /**
      * Creates a reference system from the given properties.
@@ -208,7 +208,7 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem implements
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Because the collection is unmodifiable.
-    public Collection<LocationType> getLocationTypes() {
+    public List<LocationType> getLocationTypes() {
         return locationTypes;
     }
 
