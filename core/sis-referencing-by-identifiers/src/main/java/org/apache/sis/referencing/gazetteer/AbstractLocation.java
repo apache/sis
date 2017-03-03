@@ -158,6 +158,7 @@ public abstract class AbstractLocation implements Location {
      *
      * @return envelope that encompass the location, or {@code null} if none.
      */
+    @Override
     public Envelope getEnvelope() {
         final GeographicExtent extent = getGeographicExtent();
         return (extent instanceof GeographicBoundingBox) ? new Envelope2D((GeographicBoundingBox) extent) : null;

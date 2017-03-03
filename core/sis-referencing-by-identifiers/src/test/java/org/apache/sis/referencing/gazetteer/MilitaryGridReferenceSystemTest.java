@@ -24,6 +24,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
@@ -35,6 +36,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 // Branch-dependent imports
+import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;
 
 
@@ -198,6 +200,18 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
+     * Decodes the given reference and returns its direct position.
+     */
+    private static DirectPosition decode(final MilitaryGridReferenceSystem.Coder coder, final String reference)
+            throws TransformException
+    {
+        final Location loc = coder.decode(reference);
+        final DirectPosition2D pos = (DirectPosition2D) loc.getPosition().getDirectPosition();
+        assertTrue(reference, ((Envelope2D) loc.getEnvelope()).contains(pos));
+        return pos;
+    }
+
+    /**
      * Tests encoding of various coordinates in Universal Transverse Mercator (UTM) projection.
      *
      * @throws TransformException if an error occurred while computing the MGRS label.
@@ -260,27 +274,27 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         DirectPosition position;
 
-        position = coder.decode("32TNL8410239239");
+        position = decode(coder, "32TNL8410239239");
         assertSame("crs", CommonCRS.WGS84.universal(41, 10), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   584102.5, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 4539239.5, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("29XMM8446304963");
+        position = decode(coder, "29XMM8446304963");
         assertSame("crs", CommonCRS.WGS84.universal(82, -10), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   484463.5, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 9104963.5, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("32GNV8410260761");
+        position = decode(coder, "32GNV8410260761");
         assertSame("crs", CommonCRS.WGS84.universal(-41, 10), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   584102.5, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 5460761.5, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("33XVM2240708183");
+        position = decode(coder, "33XVM2240708183");
         assertSame("crs", CommonCRS.WGS84.universal(82, 10), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   422407.5, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 9108183.5, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("32FNL9360826322");
+        position = decode(coder, "32FNL9360826322");
         assertSame("crs", CommonCRS.WGS84.universal(-49.4, 10.3), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   593608.5, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 4526322.5, position.getOrdinate(1), STRICT);
@@ -299,22 +313,22 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         DirectPosition position;
 
-        position = coder.decode("19JBK");                                            // South hemisphere
+        position = decode(coder, "19JBK");                                            // South hemisphere
         assertSame("crs", CommonCRS.WGS84.universal(-10, -69), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   250000, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 6950000, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("1VCK");                                // North of Norway latitude band
+        position = decode(coder, "1VCK");                                // North of Norway latitude band
         assertSame("crs", CommonCRS.WGS84.universal(62, -180), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   350000, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 6950000, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("57KTP");
+        position = decode(coder, "57KTP");
         assertSame("crs", CommonCRS.WGS84.universal(-24, 156), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   250000, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 7350000, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("56VPH");
+        position = decode(coder, "56VPH");
         assertSame("crs", CommonCRS.WGS84.universal(55, 154), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   650000, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 6250000, position.getOrdinate(1), STRICT);
@@ -372,34 +386,34 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         /*
          * South case.
          */
-        position = coder.decode("BAN0001000010");
+        position = decode(coder, "BAN0001000010");
         assertSame("crs", CommonCRS.WGS84.universal(-90, 0), position.getCoordinateReferenceSystem());
         assertEquals("Easting",  2000010.5, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 2000010.5, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("AZM9999099990");
+        position = decode(coder, "AZM9999099990");
         assertSame("crs", CommonCRS.WGS84.universal(-90, 0), position.getCoordinateReferenceSystem());
         assertEquals("Easting",  1999990.5, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 1999990.5, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("BLJ0672702814");
+        position = decode(coder, "BLJ0672702814");
         assertSame("crs", CommonCRS.WGS84.universal(-90, 0), position.getCoordinateReferenceSystem());
         assertEquals("Easting",  2806727.5, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 1602814.5, position.getOrdinate(1), STRICT);
         /*
          * North case.
          */
-        position = coder.decode("ZAH0001000010");
+        position = decode(coder, "ZAH0001000010");
         assertSame("crs", CommonCRS.WGS84.universal(90, 0), position.getCoordinateReferenceSystem());
         assertEquals("Easting",  2000010.5, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 2000010.5, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("YZG9999099990");
+        position = decode(coder, "YZG9999099990");
         assertSame("crs", CommonCRS.WGS84.universal(90, 0), position.getCoordinateReferenceSystem());
         assertEquals("Easting",  1999990.5, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 1999990.5, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("YRK8672702814");
+        position = decode(coder, "YRK8672702814");
         assertSame("crs", CommonCRS.WGS84.universal(90, 0), position.getCoordinateReferenceSystem());
         assertEquals("Easting",  1386727.5, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 2202814.5, position.getOrdinate(1), STRICT);
@@ -476,23 +490,23 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         coder.setSeparator(" / ");
         DirectPosition position;
 
-        position = coder.decode("32TNL8410239239");
-        assertEquals("32TNL8410239239", position, coder.decode("32/T/NL/84102/39239"));
+        position = decode(coder, "32TNL8410239239");
+        assertEquals("32TNL8410239239", position, decode(coder, "32/T/NL/84102/39239"));
         assertEquals("Easting",   584102.5, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 4539239.5, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("32TNL8439");
-        assertEquals("32TNL8439", position, coder.decode("32/T/NL/84/39"));
+        position = decode(coder, "32TNL8439");
+        assertEquals("32TNL8439", position, decode(coder, "32/T/NL/84/39"));
         assertEquals("Easting",   584500.0, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 4539500.0, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("32TNL");
-        assertEquals("32TNL", position, coder.decode("32/T/NL"));
+        position = decode(coder, "32TNL");
+        assertEquals("32TNL", position, decode(coder, "32/T/NL"));
         assertEquals("Easting",   550000.0, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 4550000.0, position.getOrdinate(1), STRICT);
 
-        position = coder.decode("32T");
-        assertEquals("32T", position, coder.decode("32/T"));
+        position = decode(coder, "32T");
+        assertEquals("32T", position, decode(coder, "32/T"));
         assertEquals("Easting",   500000.0, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 9000000.0, position.getOrdinate(1), STRICT);
     }
@@ -548,7 +562,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
             position.x = random.nextDouble() * 180 -  90;       // Latitude  (despite the 'x' field name)
             position.y = random.nextDouble() * 358 - 179;       // Longitude (despite the 'y' field name)
             final String reference = coder.encode(position);
-            final DirectPosition r = coder.decode(reference);
+            final DirectPosition r = decode(coder, reference);
             final ProjectedCRS crs = (ProjectedCRS) r.getCoordinateReferenceSystem();
             assertSame(expected, crs.getConversionFromBase().getMathTransform().transform(position, expected));
             final double distance = expected.distance(r.getOrdinate(0), r.getOrdinate(1));
