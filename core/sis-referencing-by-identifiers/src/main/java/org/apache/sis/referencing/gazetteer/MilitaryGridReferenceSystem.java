@@ -22,7 +22,9 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -51,12 +53,13 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.measure.Latitude;
-import org.opengis.geometry.coordinate.Position;
 
 // Branch-dependent imports
 import org.opengis.metadata.citation.Party;
+import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;
 
 
@@ -475,16 +478,16 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         }
 
         /**
-         * Decodes the given MGRS reference into a position.
+         * Decodes the given MGRS reference into a position and an envelope.
          * The Coordinate Reference System (CRS) associated to the returned position depends on the given reference.
          *
          * @param  reference  MGRS string to decode.
          * @return a new position with the longitude at ordinate 0 and latitude at ordinate 1.
          * @throws TransformException if an error occurred while parsing the given string.
          */
-        public DirectPosition decode(final CharSequence reference) throws TransformException {
+        public Location decode(final CharSequence reference) throws TransformException {
             ArgumentChecks.ensureNonNull("reference", reference);
-            return new Decoder(this, reference).position;
+            return new Decoder(this, reference);
         }
     }
 
@@ -1155,6 +1158,8 @@ parse:                  switch (part) {
                 sx = (ZONER.easting - GRID_SQUARE_SIZE) * 2;
                 sy =  ZONER.northing;
             }
+            position.x += sx/2;
+            position.y += sy/2;
             /*
              * At this point we finished computing the position. Now perform error detection, by verifying
              * if the given 100 kilometres square identification is consistent with grid zone designation.
@@ -1197,8 +1202,6 @@ parse:                  switch (part) {
                     }
                 }
             }
-            position.x += sx/2;
-            position.y += sy/2;
             if (!isValid) {
                 final String gzd;
                 try {
@@ -1320,6 +1323,18 @@ parse:                  switch (part) {
         @Override
         public Position getPosition() {
             return position;
+        }
+
+        /**
+         * Returns an envelope that encompass the location. This property is partially redundant with
+         * {@link #getGeographicExtent()}, except that this method allows envelopes in non-geographic CRS.
+         *
+         * @return envelope that encompass the location.
+         */
+        @Override
+        public Envelope getEnvelope() {
+            return new Envelope2D(position.getCoordinateReferenceSystem(),
+                    position.x - sx/2, position.y - sy/2, sx, sy);
         }
     }
 }
