@@ -29,7 +29,7 @@ import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.geometry.GeneralDirectPosition;
 
 
 /**
@@ -165,18 +165,25 @@ public abstract class AbstractLocation implements Location {
 
     /**
      * Returns coordinates of a representative point for the location instance.
-     * This is often the centroid of the location instance, but not necessarily;
-     * another typical value is the lower-left corner.
+     * This is typically (but not necessarily) the centroid of the location instance.
      *
-     * <p>The default implementation returns the centroid of the {@linkplain #getGeographicExtent()
-     * geographic extent} if that extent is geographic bounding box.</p>
+     * <p>The default implementation returns the {@linkplain #getEnvelope()} median position.</p>
      *
      * @return coordinates of a representative point for the location instance, or {@code null} if none.
      */
     @Override
     public Position getPosition() {
-        final GeographicExtent extent = getGeographicExtent();
-        return (extent instanceof GeographicBoundingBox) ? Extents.centroid((GeographicBoundingBox) extent) : null;
+        final Envelope envelope = getEnvelope();
+        if (envelope == null) {
+            return null;
+        }
+        final int dimension = envelope.getDimension();
+        final GeneralDirectPosition pos = new GeneralDirectPosition(dimension);
+        pos.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
+        for (int i=0; i<dimension; i++) {
+            pos.setOrdinate(i, envelope.getMedian(i));
+        }
+        return pos;
     }
 
     /**

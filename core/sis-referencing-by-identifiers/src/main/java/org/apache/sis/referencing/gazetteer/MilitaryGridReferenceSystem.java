@@ -885,7 +885,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * The position decoded from the MGRS reference given to the constructor.
-         * This is the lower-left corner of a cell of size {@link #sx} × {@link #sy}
+         * This is the center of a cell of size {@link #sx} × {@link #sy}.
          * The CRS of that position will be a UTM or UPS projected CRS.
          *
          * @see #getPosition()
@@ -1144,8 +1144,16 @@ parse:                  switch (part) {
                 }
                 position.x += x;
                 position.y += y;
+            } else if (hasSquareIdentification) {
+                sx = sy = GRID_SQUARE_SIZE;
             } else {
-                sx = sy = (hasSquareIdentification ? GRID_SQUARE_SIZE : GRID_SQUARE_SIZE * 10);
+                /*
+                 * Not used for scaling anymore. Choose value that will cause the point to be in zone zenter.
+                 * The '- GRID_SQUARE_SIZE' in 'sx' is because the westernmost 100-km grid squares are in the
+                 * column at index 1 (the column at index 0 is outside the UTM zone).
+                 */
+                sx = (ZONER.easting - GRID_SQUARE_SIZE) * 2;
+                sy =  ZONER.northing;
             }
             /*
              * At this point we finished computing the position. Now perform error detection, by verifying
@@ -1157,51 +1165,49 @@ parse:                  switch (part) {
              * tolerance threshold for the upper bound because the coordinate that we are testing is the
              * lower-left corner of the cell area.
              */
-            if (hasSquareIdentification) {
+            if (hasSquareIdentification && isValid) {
+                final MathTransform inverse = crs.getConversionFromBase().getMathTransform().inverse();
+                DirectPosition geographic = owner.geographic;
+                geographic = inverse.transform(position, geographic);
+                final double λ = geographic.getOrdinate(1);
+                final double φ = geographic.getOrdinate(0);
+                owner.geographic = geographic;                                          // For future reuse.
+                isValid = (φ >= φs - LATITUDE_BAND_HEIGHT/2) && (φ < upperBounds(φs));  // See above comment.
                 if (isValid) {
-                    final MathTransform inverse = crs.getConversionFromBase().getMathTransform().inverse();
-                    DirectPosition geographic = owner.geographic;
-                    geographic = inverse.transform(position, geographic);
-                    final double λ = geographic.getOrdinate(1);
-                    final double φ = geographic.getOrdinate(0);
-                    owner.geographic = geographic;                                          // For future reuse.
-                    isValid = (φ >= φs - LATITUDE_BAND_HEIGHT/2) && (φ < upperBounds(φs));  // See above comment.
-                    if (isValid) {
-                        /*
-                         * Verification of UTM zone. We allow a tolerance for latitudes close to a pole because
-                         * not all users may apply the UTM special rules for Norway and Svalbard. Anyway, using
-                         * the neighbor zone at those high latitudes is less significant. For other latitudes,
-                         * we allow a tolerance if the point is close to a line of zone change.
-                         */
-                        int zoneError = ZONER.zone(φ, λ) - zone;
-                        if (zoneError != 0) {
-                            final int zc = ZONER.zoneCount();
-                            if (zoneError > zc/2) zoneError -= zc;
-                            if (ZONER.isSpecialCase(zone, φ)) {
-                                isValid = Math.abs(zoneError) == 1;         // Tolerance in zone numbers for high latitudes.
-                            } else {
-                                final double rλ = Math.IEEEremainder(λ - ZONER.origin, ZONER.width);    // Distance to closest zone change, in degrees of longitude.
-                                final double cv = (position.x - ZONER.easting) / (λ - λ0);              // Approximative conversion factor from degrees to metres.
-                                isValid = (Math.abs(rλ) * cv <= sx);                                    // Be tolerant if distance in metres is less than resolution.
-                                if (isValid) {
-                                    isValid = (zoneError == (rλ < 0 ? -1 : +1));                        // Verify also that the error is on the side of the zone change.
-                                }
+                    /*
+                     * Verification of UTM zone. We allow a tolerance for latitudes close to a pole because
+                     * not all users may apply the UTM special rules for Norway and Svalbard. Anyway, using
+                     * the neighbor zone at those high latitudes is less significant. For other latitudes,
+                     * we allow a tolerance if the point is close to a line of zone change.
+                     */
+                    int zoneError = ZONER.zone(φ, λ) - zone;
+                    if (zoneError != 0) {
+                        final int zc = ZONER.zoneCount();
+                        if (zoneError > zc/2) zoneError -= zc;
+                        if (ZONER.isSpecialCase(zone, φ)) {
+                            isValid = Math.abs(zoneError) == 1;         // Tolerance in zone numbers for high latitudes.
+                        } else {
+                            final double rλ = Math.IEEEremainder(λ - ZONER.origin, ZONER.width);    // Distance to closest zone change, in degrees of longitude.
+                            final double cv = (position.x - ZONER.easting) / (λ - λ0);              // Approximative conversion factor from degrees to metres.
+                            isValid = (Math.abs(rλ) * cv <= sx);                                    // Be tolerant if distance in metres is less than resolution.
+                            if (isValid) {
+                                isValid = (zoneError == (rλ < 0 ? -1 : +1));                        // Verify also that the error is on the side of the zone change.
                             }
                         }
                     }
                 }
-                if (!isValid) {
-                    position.x += sx/2;
-                    position.y += sy/2;
-                    final String gzd;
-                    try {
-                        gzd = owner.encoder(crs).encode(owner, position, "", 0);
-                    } catch (IllegalArgumentException | FactoryException e) {
-                        throw new GazetteerException(e.getLocalizedMessage(), e);
-                    }
-                    final CharSequence ref = reference.subSequence(base, end);
-                    throw new ReferenceVerifyException(Resources.format(Resources.Keys.InconsistentWithGZD_2, ref, gzd));
+            }
+            position.x += sx/2;
+            position.y += sy/2;
+            if (!isValid) {
+                final String gzd;
+                try {
+                    gzd = owner.encoder(crs).encode(owner, position, "", 0);
+                } catch (IllegalArgumentException | FactoryException e) {
+                    throw new GazetteerException(e.getLocalizedMessage(), e);
                 }
+                final CharSequence ref = reference.subSequence(base, end);
+                throw new ReferenceVerifyException(Resources.format(Resources.Keys.InconsistentWithGZD_2, ref, gzd));
             }
         }
 
