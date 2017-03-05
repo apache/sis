@@ -29,6 +29,7 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.RoundingMode;
 import javax.measure.Unit;
@@ -1618,7 +1619,7 @@ public class Formatter implements Localized {
      * Appends the warnings after the WKT string. If there is no warnings, then this method does nothing.
      * If this method is invoked, then it shall be the last method before {@link #toWKT()}.
      */
-    final void appendWarnings() {
+    final void appendWarnings() throws IOException {
         final Warnings warnings = this.warnings;                    // Protect against accidental changes.
         if (warnings != null) {
             final StringBuffer buffer = this.buffer;
@@ -1627,7 +1628,7 @@ public class Formatter implements Localized {
             if (colors != null) {
                 buffer.append(X364.BACKGROUND_RED.sequence()).append(X364.BOLD.sequence()).append(' ');
             }
-            buffer.append(Vocabulary.getResources(locale).getLabel(Vocabulary.Keys.Warnings));
+            Vocabulary.getResources(locale).appendLabel(Vocabulary.Keys.Warnings, buffer);
             if (colors != null) {
                 buffer.append(' ').append(X364.RESET.sequence()).append(X364.FOREGROUND_RED.sequence());
             }

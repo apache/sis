@@ -17,6 +17,7 @@
 package org.apache.sis.io.wkt;
 
 import java.io.Console;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.xml.bind.annotation.XmlTransient;
@@ -208,6 +209,8 @@ public abstract class FormattableObject {
             }
             formatter.appendWarnings();
             wkt = formatter.toWKT();
+        } catch (IOException e) {
+            throw new UnformattableObjectException(e);      // Should never happen since we write to a StringBuffer.
         } finally {
             formatter.clear();
         }
