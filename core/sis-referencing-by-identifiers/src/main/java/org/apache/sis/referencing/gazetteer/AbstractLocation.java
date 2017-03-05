@@ -30,6 +30,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -78,7 +79,7 @@ public abstract class AbstractLocation implements Location {
 
     /**
      * Creates a new location for the given geographic identifier.
-     * This constructor accepts a {@code null} argument, but this is not recommended.
+     * This constructor accepts {@code null} arguments, but this is not recommended.
      *
      * @param type        the description of the nature of this geographic identifier.
      * @param identifier  the geographic identifier to be returned by {@link #getGeographicIdentifier()}.
@@ -236,5 +237,19 @@ public abstract class AbstractLocation implements Location {
     @Override
     public Collection<? extends Location> getChildren() {
         return Collections.emptyList();
+    }
+
+    /**
+     * Returns a string representation of this location.
+     * This representation is mostly for debugging purpose and may change in any future Apache SIS version.
+     *
+     * @return a string representation of this location for debugging purpose.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        synchronized (LocationFormat.INSTANCE) {
+            return LocationFormat.INSTANCE.format(this);
+        }
     }
 }
