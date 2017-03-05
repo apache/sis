@@ -206,8 +206,9 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
             throws TransformException
     {
         final Location loc = coder.decode(reference);
-        final DirectPosition2D pos = (DirectPosition2D) loc.getPosition().getDirectPosition();
-        assertTrue(reference, ((Envelope2D) loc.getEnvelope()).contains(pos));
+        final Envelope2D envelope = new Envelope2D(loc.getEnvelope());
+        final DirectPosition2D pos = new DirectPosition2D(loc.getPosition().getDirectPosition());
+        assertTrue(reference, envelope.contains(pos));
         return pos;
     }
 

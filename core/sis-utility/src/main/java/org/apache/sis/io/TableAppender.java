@@ -42,7 +42,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * <p>For example, the following code:</p>
  *
  * {@preformat java
- *     StringBuilder  buffer = new StringBuilder();
+ *     StringBuilder buffer = new StringBuilder();
  *     TableAppender table  = new TableAppender(buffer);
  *     table.nextLine('═');
  *     table.append("English\tFrench\tr.e.d.\n");

@@ -62,9 +62,19 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Accuracy = 1;
 
         /**
+         * Administrator
+         */
+        public static final short Administrator = 130;
+
+        /**
          * Aliases
          */
         public static final short Aliases = 2;
+
+        /**
+         * Alternative identifiers
+         */
+        public static final short AlternativeIdentifiers = 131;
 
         /**
          * Angle
@@ -155,6 +165,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Coordinate
          */
         public static final short Coordinate = 129;
+
+        /**
+         * Coordinate reference system
+         */
+        public static final short CoordinateRefSys = 132;
 
         /**
          * Correlation
@@ -262,6 +277,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short DublinJulian = 38;
 
         /**
+         * East bound
+         */
+        public static final short EastBound = 133;
+
+        /**
          * Ellipsoid
          */
         public static final short Ellipsoid = 39;
@@ -275,6 +295,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Ellipsoidal height
          */
         public static final short EllipsoidalHeight = 41;
+
+        /**
+         * End date
+         */
+        public static final short EndDate = 134;
 
         /**
          * {0} entr{0,choice,0#y|2#ies}
@@ -300,6 +325,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Geodetic dataset
          */
         public static final short GeodeticDataset = 45;
+
+        /**
+         * Geographic identifier
+         */
+        public static final short GeographicIdentifier = 135;
 
         /**
          * Height
@@ -392,6 +422,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Localization = 63;
 
         /**
+         * Location type
+         */
+        public static final short LocationType = 136;
+
+        /**
          * Logging
          */
         public static final short Logging = 64;
@@ -445,6 +480,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * None
          */
         public static final short None = 73;
+
+        /**
+         * North bound
+         */
+        public static final short NorthBound = 137;
 
         /**
          * Note
@@ -542,6 +582,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short RemoteConfiguration = 89;
 
         /**
+         * Representative position
+         */
+        public static final short RepresentativePosition = 141;
+
+        /**
          * Root
          */
         public static final short Root = 90;
@@ -567,9 +612,19 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Source = 93;
 
         /**
+         * South bound
+         */
+        public static final short SouthBound = 138;
+
+        /**
          * Standard deviation
          */
         public static final short StandardDeviation = 94;
+
+        /**
+         * Start date
+         */
+        public static final short StartDate = 139;
 
         /**
          * Subset of {0}
@@ -690,6 +745,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Warnings
          */
         public static final short Warnings = 117;
+
+        /**
+         * West bound
+         */
+        public static final short WestBound = 140;
 
         /**
          * World

@@ -22,9 +22,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import org.opengis.util.FactoryException;
-import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -53,8 +51,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 
 // Branch-dependent imports
@@ -345,10 +343,10 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * Creates a new coder initialized to the default precision.
          */
         protected Coder() {
-            digits    = METRE_PRECISION_DIGITS;     // 1 metre precision.
-            separator = trimmedSeparator = "";
-            buffer    = new StringBuilder(18);      // Length of "4 Q FJ 12345 67890" sample value.
-            encoders  = new IdentityHashMap<>();
+            digits     = METRE_PRECISION_DIGITS;     // 1 metre precision.
+            separator  = trimmedSeparator = "";
+            buffer     = new StringBuilder(18);      // Length of "4 Q FJ 12345 67890" sample value.
+            encoders   = new IdentityHashMap<>();
         }
 
         /**
@@ -814,7 +812,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * @version 0.8
      * @module
      */
-    static final class Decoder extends AbstractLocation {
+    static final class Decoder extends SimpleLocation.Projected {
         /**
          * Number of bits reserved for storing the minimal northing value of latitude bands in the
          * {@link #ROW_RESOLVER} table.
@@ -887,19 +885,12 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         };
 
         /**
-         * The position decoded from the MGRS reference given to the constructor.
-         * This is the center of a cell of size {@link #sx} × {@link #sy}.
-         * The CRS of that position will be a UTM or UPS projected CRS.
+         * The Coordinate Reference System of the decoded MGRS reference.
+         * This is an Universal Transverse Mercator (UTM) or Universal Polar Stereographic (UPS) projection.
          *
-         * @see #getPosition()
+         * @see #getCoordinateReferenceSystem()
          */
-        private final DirectPosition2D position;
-
-        /**
-         * The cell size along <var>x</var> and <var>y</var> axis. This is the scale factors used for
-         * multiplying the MGRS numerical values in order to get easting and northing values in metres.
-         */
-        private final double sx, sy;
+        private final ProjectedCRS crs;
 
         /**
          * Decodes the given MGRS reference.
@@ -909,7 +900,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         Decoder(final Coder owner, final CharSequence reference) throws TransformException {
             super(owner.getReferenceSystem().rootType(), reference);
             final int zone;                     // UTM zone, or 0 if UPS.
-            final ProjectedCRS crs;             // UTM or UPS projection for the zone.
             boolean hasSquareIdentification;    // Whether a square identification is present (UTM only).
             final double φs;                    // Southernmost bound of latitude band (UTM only).
             final double λ0;                    // Central meridian of UTM zone (ignoring Norway and Svalbard).
@@ -979,8 +969,9 @@ parse:                  switch (part) {
                     }
                     throw new GazetteerException(Resources.format(key, token));
                 }
-                crs = owner.projection(φs = (south ? Latitude.MIN_VALUE : Latitude.MAX_VALUE), 0);
-                position = new DirectPosition2D(col * GRID_SQUARE_SIZE, row * GRID_SQUARE_SIZE);
+                crs  = owner.projection(φs = (south ? Latitude.MIN_VALUE : Latitude.MAX_VALUE), 0);
+                minX = col * GRID_SQUARE_SIZE;
+                minY = row * GRID_SQUARE_SIZE;
                 hasSquareIdentification = false;
                 λ0 = 0;
             } else {
@@ -1108,10 +1099,9 @@ parse:                  switch (part) {
                     }
                 }
                 row += (info & NORTHING_BITS_MASK) * GRID_ROW_COUNT;        // Add the pre-computed northing value.
-                position = new DirectPosition2D(col * GRID_SQUARE_SIZE,
-                                                row * GRID_SQUARE_SIZE);
+                minX = col * GRID_SQUARE_SIZE;
+                minY = row * GRID_SQUARE_SIZE;
             }
-            position.setCoordinateReferenceSystem(crs);
             /*
              * If we have not yet reached the end of string, parse the numerical location.
              * That location is normally encoded as a single number with an even number of digits.
@@ -1119,6 +1109,7 @@ parse:                  switch (part) {
              * 100 kilometer square. However some variants of MGRS use a separator, in which case we get
              * two distinct numbers. In both cases, the resolution is determined by the amount of digits.
              */
+            final double sx, sy;    // Scale factors for converting MGRS values in to easting and northing in metres.
             if (i < end) {
                 i = nextComponent(owner, reference, base, i, end);
                 int s = endOfDigits(reference, i, end);
@@ -1145,8 +1136,8 @@ parse:                  switch (part) {
                                 reference.subSequence(base, s), CharSequences.trimWhitespaces(reference, s, end)));
                     }
                 }
-                position.x += x;
-                position.y += y;
+                minX += x;
+                minY += y;
             } else if (hasSquareIdentification) {
                 sx = sy = GRID_SQUARE_SIZE;
             } else {
@@ -1158,45 +1149,87 @@ parse:                  switch (part) {
                 sx = (ZONER.easting - GRID_SQUARE_SIZE) * 2;
                 sy =  ZONER.northing;
             }
-            position.x += sx/2;
-            position.y += sy/2;
+            maxX = minX + sx;
+            maxY = minY + sy;
             /*
-             * At this point we finished computing the position. Now perform error detection, by verifying
-             * if the given 100 kilometres square identification is consistent with grid zone designation.
-             * We verify both φ and λ, but the verification of φ is actually redundant with the check of
-             * 100 km square validity that we did previously with the help of ROW_RESOLVER bitmask.
-             * We check φ anyway in case of bug, but we have to allow a tolerance threshold on the south
-             * bound because the 100 km square may overlap two latitude bands. We do not need equivalent
-             * tolerance threshold for the upper bound because the coordinate that we are testing is the
-             * lower-left corner of the cell area.
+             * At this point the non-clipped projected envelope has been computed. Now compute the geographic envelope.
+             * We need this information for clipping the projected envelope to the domain of validity of UTM zone.
              */
-            if (hasSquareIdentification && isValid) {
+            if (!hasSquareIdentification) {
+                if (zone != 0) {
+                    if (φs < 0) {
+                        southBoundLatitude = TransverseMercator.Zoner.SOUTH_BOUNDS;
+                        northBoundLatitude = 0;
+                    } else {
+                        southBoundLatitude = 0;
+                        northBoundLatitude = TransverseMercator.Zoner.NORTH_BOUNDS;
+                    }
+                    westBoundLongitude = λ0 - ZONER.width / 2;
+                    eastBoundLongitude = λ0 + ZONER.width / 2;
+                } else {
+                    if (φs < 0) {
+                        southBoundLatitude = Latitude.MIN_VALUE;
+                        northBoundLatitude = TransverseMercator.Zoner.SOUTH_BOUNDS;
+                    } else {
+                        southBoundLatitude = TransverseMercator.Zoner.NORTH_BOUNDS;
+                        northBoundLatitude = Latitude.MAX_VALUE;
+                    }
+                    westBoundLongitude = Longitude.MIN_VALUE;
+                    eastBoundLongitude = Longitude.MAX_VALUE;
+                }
+            } else {
                 final MathTransform inverse = crs.getConversionFromBase().getMathTransform().inverse();
-                DirectPosition geographic = owner.geographic;
-                geographic = inverse.transform(position, geographic);
-                final double λ = geographic.getOrdinate(1);
-                final double φ = geographic.getOrdinate(0);
-                owner.geographic = geographic;                                          // For future reuse.
-                isValid = (φ >= φs - LATITUDE_BAND_HEIGHT/2) && (φ < upperBounds(φs));  // See above comment.
+                computeGeographicBoundingBox(inverse);
+                final boolean changed;
+                if (zone != 0) {
+                    changed = clipGeographicBoundingBox(λ0 - ZONER.width/2, φs,
+                                                        λ0 + ZONER.width/2, φs + LATITUDE_BAND_HEIGHT);
+                } else if (φs < 0) {
+                    changed = clipGeographicBoundingBox(Longitude.MIN_VALUE, Latitude.MIN_VALUE,
+                                                        Longitude.MAX_VALUE, TransverseMercator.Zoner.SOUTH_BOUNDS);
+                } else {
+                    changed = clipGeographicBoundingBox(Longitude.MIN_VALUE, TransverseMercator.Zoner.NORTH_BOUNDS,
+                                                        Longitude.MAX_VALUE, Latitude.MAX_VALUE);
+                }
+                if (changed) {
+//                  clipProjectedEnvelope(inverse.inverse(), sx / 100, sy / 100);       // TODO
+                }
+                /*
+                 * At this point we finished computing the position. Now perform error detection, by verifying
+                 * if the given 100 kilometres square identification is consistent with grid zone designation.
+                 * We verify both φ and λ, but the verification of φ is actually redundant with the check of
+                 * 100 km square validity that we did previously with the help of ROW_RESOLVER bitmask.
+                 * We check φ anyway in case of bug, but we have to allow a tolerance threshold on the south
+                 * bound because the 100 km square may overlap two latitude bands. We do not need equivalent
+                 * tolerance threshold for the upper bound because the coordinate that we are testing is the
+                 * lower-left corner of the cell area.
+                 */
                 if (isValid) {
-                    /*
-                     * Verification of UTM zone. We allow a tolerance for latitudes close to a pole because
-                     * not all users may apply the UTM special rules for Norway and Svalbard. Anyway, using
-                     * the neighbor zone at those high latitudes is less significant. For other latitudes,
-                     * we allow a tolerance if the point is close to a line of zone change.
-                     */
-                    int zoneError = ZONER.zone(φ, λ) - zone;
-                    if (zoneError != 0) {
-                        final int zc = ZONER.zoneCount();
-                        if (zoneError > zc/2) zoneError -= zc;
-                        if (ZONER.isSpecialCase(zone, φ)) {
-                            isValid = Math.abs(zoneError) == 1;         // Tolerance in zone numbers for high latitudes.
-                        } else {
-                            final double rλ = Math.IEEEremainder(λ - ZONER.origin, ZONER.width);    // Distance to closest zone change, in degrees of longitude.
-                            final double cv = (position.x - ZONER.easting) / (λ - λ0);              // Approximative conversion factor from degrees to metres.
-                            isValid = (Math.abs(rλ) * cv <= sx);                                    // Be tolerant if distance in metres is less than resolution.
-                            if (isValid) {
-                                isValid = (zoneError == (rλ < 0 ? -1 : +1));                        // Verify also that the error is on the side of the zone change.
+                    final DirectPosition geographic = inverse.transform(getDirectPosition(), owner.geographic);
+                    final double λ = geographic.getOrdinate(1);
+                    final double φ = geographic.getOrdinate(0);
+                    owner.geographic = geographic;                                          // For future reuse.
+                    isValid = (φ >= φs - LATITUDE_BAND_HEIGHT/2) && (φ < upperBounds(φs));  // See above comment.
+                    if (isValid) {
+                        /*
+                         * Verification of UTM zone. We allow a tolerance for latitudes close to a pole because
+                         * not all users may apply the UTM special rules for Norway and Svalbard. Anyway, using
+                         * the neighbor zone at those high latitudes is less significant. For other latitudes,
+                         * we allow a tolerance if the point is close to a line of zone change.
+                         */
+                        int zoneError = ZONER.zone(φ, λ) - zone;
+                        if (zoneError != 0) {
+                            final int zc = ZONER.zoneCount();
+                            if (zoneError > zc/2) zoneError -= zc;
+                            if (ZONER.isSpecialCase(zone, φ)) {
+                                isValid = Math.abs(zoneError) == 1;         // Tolerance in zone numbers for high latitudes.
+                            } else {
+                                final double rλ = Math.IEEEremainder(λ - ZONER.origin, ZONER.width);    // Distance to closest zone change, in degrees of longitude.
+                                final double cv = (minX - ZONER.easting) / (λ - λ0);                    // Approximative conversion factor from degrees to metres.
+                                isValid = (Math.abs(rλ) * cv <= sx);                                    // Be tolerant if distance in metres is less than resolution.
+                                if (isValid) {
+                                    isValid = (zoneError == (rλ < 0 ? -1 : +1));                        // Verify also that the error is on the side of the zone change.
+                                }
                             }
                         }
                     }
@@ -1205,7 +1238,7 @@ parse:                  switch (part) {
             if (!isValid) {
                 final String gzd;
                 try {
-                    gzd = owner.encoder(crs).encode(owner, position, "", 0);
+                    gzd = owner.encoder(crs).encode(owner, getDirectPosition(), "", 0);
                 } catch (IllegalArgumentException | FactoryException e) {
                     throw new GazetteerException(e.getLocalizedMessage(), e);
                 }
@@ -1318,23 +1351,12 @@ parse:                  switch (part) {
         }
 
         /**
-         * Returns the lower-left corner of the decoded MGRS cell.
+         * Returns the Coordinate Reference System of the decoded MGRS reference.
+         * This is an Universal Transverse Mercator (UTM) or Universal Polar Stereographic (UPS) projection.
          */
         @Override
-        public Position getPosition() {
-            return position;
-        }
-
-        /**
-         * Returns an envelope that encompass the location. This property is partially redundant with
-         * {@link #getGeographicExtent()}, except that this method allows envelopes in non-geographic CRS.
-         *
-         * @return envelope that encompass the location.
-         */
-        @Override
-        public Envelope getEnvelope() {
-            return new Envelope2D(position.getCoordinateReferenceSystem(),
-                    position.x - sx/2, position.y - sy/2, sx, sy);
+        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+            return crs;
         }
     }
 }
