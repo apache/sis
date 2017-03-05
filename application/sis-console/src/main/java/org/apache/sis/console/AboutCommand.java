@@ -161,7 +161,7 @@ final class AboutCommand extends CommandRunner {
                 out.print(X364.BOLD.sequence());
                 out.print(' ');
             }
-            out.print(Vocabulary.getResources(locale).getLabel(Vocabulary.Keys.Warnings));
+            Vocabulary.getResources(locale).appendLabel(Vocabulary.Keys.Warnings, out);
             if (colors) {
                 out.print(' ');
                 out.println(X364.RESET.sequence());
