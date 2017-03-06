@@ -582,9 +582,9 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short RemoteConfiguration = 89;
 
         /**
-         * Representative position
+         * Representative value
          */
-        public static final short RepresentativePosition = 141;
+        public static final short RepresentativeValue = 141;
 
         /**
          * Root

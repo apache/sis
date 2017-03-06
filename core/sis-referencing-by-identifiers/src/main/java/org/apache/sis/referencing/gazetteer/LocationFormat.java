@@ -77,11 +77,11 @@ import org.apache.sis.util.resources.Vocabulary;
  *   │ Location type:               Grid zone designator           │
  *   │ Geographic identifier:       32TNL83                        │
  *   │ West bound:                    580,000 m    —     9°57′00″E │
+ *   │ Representative value:          585,000 m    —    10°00′36″E │
  *   │ East bound:                    590,000 m    —    10°04′13″E │
  *   │ South bound:                 4,530,000 m    —    40°54′58″N │
+ *   │ Representative value:        4,535,000 m    —    40°57′42″N │
  *   │ North bound:                 4,540,000 m    —    41°00′27″N │
- *   │ Representative position:       585,000 m    —    10°00′36″E │
- *   │                              4,535,000 m    —    40°57′42″N │
  *   │ Coordinate reference system: WGS 84 / UTM zone 32N          │
  *   └─────────────────────────────────────────────────────────────┘
  * }
@@ -114,11 +114,11 @@ public class LocationFormat extends CompoundFormat<Location> {
      */
     private static final short[] BOUND_KEY = {
         Vocabulary.Keys.WestBound,
+        Vocabulary.Keys.RepresentativeValue,
         Vocabulary.Keys.EastBound,
         Vocabulary.Keys.SouthBound,
-        Vocabulary.Keys.NorthBound,
-        Vocabulary.Keys.RepresentativePosition,
-        0
+        Vocabulary.Keys.RepresentativeValue,
+        Vocabulary.Keys.NorthBound
     };
 
     /**
@@ -329,21 +329,21 @@ public class LocationFormat extends CompoundFormat<Location> {
                     case 0: if (bbox     != null) g = bbox.getWestBoundLongitude();
                             if (envelope != null) p = envelope.getMinimum(0);
                             break;
-                    case 1: if (bbox     != null) g = bbox.getEastBoundLongitude();
+                    case 2: if (bbox     != null) g = bbox.getEastBoundLongitude();
                             if (envelope != null) p = envelope.getMaximum(0);
                             rounding = RoundingMode.CEILING;
                             break;
-                    case 2: if (bbox     != null) g = bbox.getSouthBoundLatitude();
+                    case 3: if (bbox     != null) g = bbox.getSouthBoundLatitude();
                             if (envelope != null) p = envelope.getMinimum(1);
                             dimension = 1;
                             break;
-                    case 3: if (bbox     != null) g = bbox.getNorthBoundLatitude();
+                    case 5: if (bbox     != null) g = bbox.getNorthBoundLatitude();
                             if (envelope != null) p = envelope.getMaximum(1);
                             rounding = RoundingMode.CEILING;
                             dimension = 1;
                             break;
-                    case 5: dimension = 1;                            // Fall through
-                    case 4: if (geopos   != null) g = geopos  .getOrdinate(dimension);
+                    case 4: dimension = 1;                            // Fall through
+                    case 1: if (geopos   != null) g = geopos  .getOrdinate(dimension);
                             if (position != null) p = position.getOrdinate(dimension);
                             rounding = RoundingMode.HALF_EVEN;
                             break;
@@ -398,10 +398,7 @@ public class LocationFormat extends CompoundFormat<Location> {
                 final String u = (unitSymbol != null) ? unitSymbol[i] : "";
                 final String g = (geographic != null) ? geographic[i] : "";
                 if (!p.isEmpty() || !g.isEmpty()) {
-                    final short key = BOUND_KEY[i];
-                    if (key != 0) {
-                        vocabulary.appendLabel(key, table);
-                    }
+                    vocabulary.appendLabel(BOUND_KEY[i], table);
                     table.nextColumn();
                     table.append(CharSequences.spaces(maxProjLength - p.length())).append(p);
                     table.append(CharSequences.spaces(maxUnitLength - u.length())).append(u).append(separator);
