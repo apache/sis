@@ -50,8 +50,8 @@ public final strictfp class LocationFormatTest extends TestCase {
         assertMultilinesEquals(
                 "┌─────────────────────────────────────────┐\n" +
                 "│ Geographic identifier:       A location │\n" +
-                "│ East bound:                   8°00′00″E │\n" +
-                "│ West bound:                  10°00′00″E │\n" +
+                "│ West bound:                   8°00′00″E │\n" +
+                "│ East bound:                  10°00′00″E │\n" +
                 "│ South bound:                  2°00′00″S │\n" +
                 "│ North bound:                 30°00′00″N │\n" +
                 "│ Representative position:      9°00′00″E │\n" +
@@ -79,8 +79,8 @@ public final strictfp class LocationFormatTest extends TestCase {
         assertMultilinesEquals(
                 "┌────────────────────────────────────────────────────┐\n" +
                 "│ Geographic identifier:       A location            │\n" +
-                "│ East bound:                    388,719 m           │\n" +
-                "│ West bound:                    611,281 m           │\n" +
+                "│ West bound:                    388,719 m           │\n" +
+                "│ East bound:                    611,281 m           │\n" +
                 "│ South bound:                  -221,095 m           │\n" +
                 "│ North bound:                 3,319,207 m           │\n" +
                 "│ Representative position:       500,000 m           │\n" +
@@ -111,8 +111,8 @@ public final strictfp class LocationFormatTest extends TestCase {
         assertMultilinesEquals(
                 "┌─────────────────────────────────────────────────────────────┐\n" +
                 "│ Geographic identifier:       A location                     │\n" +
-                "│ East bound:                    388,719 m    —     8°00′00″E │\n" +
-                "│ West bound:                    611,281 m    —    10°00′00″E │\n" +
+                "│ West bound:                    388,719 m    —     8°00′00″E │\n" +
+                "│ East bound:                    611,281 m    —    10°00′00″E │\n" +
                 "│ South bound:                  -221,095 m    —     2°00′00″S │\n" +
                 "│ North bound:                 3,319,207 m    —    30°00′00″N │\n" +
                 "│ Representative position:       500,000 m    —     9°00′00″E │\n" +
