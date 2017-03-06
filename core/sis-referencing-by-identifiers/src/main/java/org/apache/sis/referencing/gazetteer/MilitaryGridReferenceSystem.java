@@ -329,7 +329,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         private final Map<CoordinateReferenceSystem,Encoder> encoders;
 
         /**
-         * Temporary positions used for encoding and decoding. References are kept for avoiding
+         * Temporary positions used for encoding. References are kept for avoiding
          * to recreate those temporary objects for every reference to parse or format.
          */
         transient DirectPosition normalized, geographic;
@@ -900,7 +900,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         Decoder(final Coder owner, final CharSequence reference) throws TransformException {
             super(owner.getReferenceSystem().rootType(), reference);
             final int zone;                     // UTM zone, or 0 if UPS.
-            boolean hasSquareIdentification;    // Whether a square identification is present (UTM only).
+            boolean hasSquareIdentification;    // Whether a square identification is present.
             final double φs;                    // Southernmost bound of latitude band (UTM only).
             final double λ0;                    // Central meridian of UTM zone (ignoring Norway and Svalbard).
             boolean isValid = true;             // Whether the given reference passes consistency checks.
@@ -972,7 +972,7 @@ parse:                  switch (part) {
                 crs  = owner.projection(φs = (south ? Latitude.MIN_VALUE : Latitude.MAX_VALUE), 0);
                 minX = col * GRID_SQUARE_SIZE;
                 minY = row * GRID_SQUARE_SIZE;
-                hasSquareIdentification = false;
+                hasSquareIdentification = true;
                 λ0 = 0;
             } else {
                 /*
@@ -1178,22 +1178,8 @@ parse:                  switch (part) {
                     eastBoundLongitude = Longitude.MAX_VALUE;
                 }
             } else {
-                final MathTransform inverse = crs.getConversionFromBase().getMathTransform().inverse();
-                computeGeographicBoundingBox(inverse);
-                final boolean changed;
-                if (zone != 0) {
-                    changed = clipGeographicBoundingBox(λ0 - ZONER.width/2, φs,
-                                                        λ0 + ZONER.width/2, φs + LATITUDE_BAND_HEIGHT);
-                } else if (φs < 0) {
-                    changed = clipGeographicBoundingBox(Longitude.MIN_VALUE, Latitude.MIN_VALUE,
-                                                        Longitude.MAX_VALUE, TransverseMercator.Zoner.SOUTH_BOUNDS);
-                } else {
-                    changed = clipGeographicBoundingBox(Longitude.MIN_VALUE, TransverseMercator.Zoner.NORTH_BOUNDS,
-                                                        Longitude.MAX_VALUE, Latitude.MAX_VALUE);
-                }
-                if (changed) {
-//                  clipProjectedEnvelope(inverse.inverse(), sx / 100, sy / 100);       // TODO
-                }
+                final MathTransform projection = crs.getConversionFromBase().getMathTransform();
+                computeGeographicBoundingBox(projection.inverse());
                 /*
                  * At this point we finished computing the position. Now perform error detection, by verifying
                  * if the given 100 kilometres square identification is consistent with grid zone designation.
@@ -1204,12 +1190,10 @@ parse:                  switch (part) {
                  * tolerance threshold for the upper bound because the coordinate that we are testing is the
                  * lower-left corner of the cell area.
                  */
-                if (isValid) {
-                    final DirectPosition geographic = inverse.transform(getDirectPosition(), owner.geographic);
-                    final double λ = geographic.getOrdinate(1);
-                    final double φ = geographic.getOrdinate(0);
-                    owner.geographic = geographic;                                          // For future reuse.
-                    isValid = (φ >= φs - LATITUDE_BAND_HEIGHT/2) && (φ < upperBounds(φs));  // See above comment.
+                if (isValid && zone != 0) {
+                    final double λ = (westBoundLongitude + eastBoundLongitude) / 2;
+                    final double φ = (southBoundLatitude + northBoundLatitude) / 2;
+                    isValid = (φ >= φs - LATITUDE_BAND_HEIGHT/2) && (φ < upperBound(φs));   // See above comment.
                     if (isValid) {
                         /*
                          * Verification of UTM zone. We allow a tolerance for latitudes close to a pole because
@@ -1232,6 +1216,29 @@ parse:                  switch (part) {
                                 }
                             }
                         }
+                    }
+                }
+                /*
+                 * At this point we finished verifying the cell validity using the coordinates specified by the
+                 * MGRS reference. If the cell is valid, we can now check for cells that are on a zone border.
+                 * Those cells will be clipped to the zone valid area.
+                 */
+                if (isValid) {
+                    final boolean changed;
+                    if (zone != 0) {
+                        double width = ZONER.width;
+                        if (!ZONER.isSpecialCase(zone, φs)) width /= 2;       // Be strict only if not Norway or Svalbard.
+                        changed = clipGeographicBoundingBox(λ0 - width, φs,
+                                                            λ0 + width, upperBound(φs));
+                    } else if (φs < 0) {
+                        changed = clipGeographicBoundingBox(Longitude.MIN_VALUE, Latitude.MIN_VALUE,
+                                                            Longitude.MAX_VALUE, TransverseMercator.Zoner.SOUTH_BOUNDS);
+                    } else {
+                        changed = clipGeographicBoundingBox(Longitude.MIN_VALUE, TransverseMercator.Zoner.NORTH_BOUNDS,
+                                                            Longitude.MAX_VALUE, Latitude.MAX_VALUE);
+                    }
+                    if (changed) {
+                        clipProjectedEnvelope(projection, sx / 100, sy / 100);
                     }
                 }
             }
@@ -1343,9 +1350,9 @@ parse:                  switch (part) {
         }
 
         /**
-         * Returns the upper bounds of the latitude band specified by the given lower bounds.
+         * Returns the upper bound of the latitude band specified by the given lower bound.
          */
-        static double upperBounds(final double φ) {
+        static double upperBound(final double φ) {
             return φ < TransverseMercator.Zoner.SVALBARD_BOUNDS ? φ + LATITUDE_BAND_HEIGHT
                      : TransverseMercator.Zoner.NORTH_BOUNDS;
         }

@@ -160,7 +160,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
              * The result is that we will have some overlap in the northing value of consecutive latitude bands.
              */
             geographic.y = isSouth ? zoneCentre : zoneBorder;
-            geographic.x = MilitaryGridReferenceSystem.Decoder.upperBounds(φ);
+            geographic.x = MilitaryGridReferenceSystem.Decoder.upperBound(φ);
             final double ymax = projection.transform(geographic, projected).getOrdinate(1);
             /*
              * Computes the value that we will encode in the MilitaryGridReferenceSystem.Decoder.ROW_RESOLVER table.
@@ -313,26 +313,38 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     public void testDecodeLimitCases() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         DirectPosition position;
-
+        /*
+         * Cell on the West border of a UTM zone in the South hemisphere.
+         * The Easting value would be 250000 if the cell was not clipped.
+         */
         position = decode(coder, "19JBK");                                            // South hemisphere
         assertSame("crs", CommonCRS.WGS84.universal(-10, -69), position.getCoordinateReferenceSystem());
-        assertEquals("Easting",   250000, position.getOrdinate(0), STRICT);
+        assertEquals("Easting",   251256, position.getOrdinate(0), 1);
         assertEquals("Northing", 6950000, position.getOrdinate(1), STRICT);
-
+        /*
+         * Easting range before clipping is [300000 … 400000] metres.
+         * The east boung become 343828 metres after clipping.
+         * The easting value would be 350000 if the cell was not clipped.
+         */
         position = decode(coder, "1VCK");                                // North of Norway latitude band
         assertSame("crs", CommonCRS.WGS84.universal(62, -180), position.getCoordinateReferenceSystem());
-        assertEquals("Easting",   350000, position.getOrdinate(0), STRICT);
+        assertEquals("Easting",   371914, position.getOrdinate(0), 1);
         assertEquals("Northing", 6950000, position.getOrdinate(1), STRICT);
-
+        /*
+         * Northing value would be 7350000 if the cell was not clipped.
+         */
         position = decode(coder, "57KTP");
         assertSame("crs", CommonCRS.WGS84.universal(-24, 156), position.getCoordinateReferenceSystem());
         assertEquals("Easting",   250000, position.getOrdinate(0), STRICT);
-        assertEquals("Northing", 7350000, position.getOrdinate(1), STRICT);
-
+        assertEquals("Northing", 7371306, position.getOrdinate(1), 1);
+        /*
+         * Easting  value would be  650000 if the cell was not clipped.
+         * Northing value would be 6250000 if the cell was not clipped.
+         */
         position = decode(coder, "56VPH");
         assertSame("crs", CommonCRS.WGS84.universal(55, 154), position.getCoordinateReferenceSystem());
-        assertEquals("Easting",   650000, position.getOrdinate(0), STRICT);
-        assertEquals("Northing", 6250000, position.getOrdinate(1), STRICT);
+        assertEquals("Easting",   643536, position.getOrdinate(0), 1);
+        assertEquals("Northing", 6253618, position.getOrdinate(1), 1);
     }
 
     /**
