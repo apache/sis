@@ -360,11 +360,12 @@ public class MetadataStandard implements Serializable {
             if (v instanceof PropertyAccessor) {
                 return v;
             }
+            final Class<?> standardImpl = getImplementation(type);
             final PropertyAccessor accessor;
             if (SpecialCases.isSpecialCase(type)) {
-                accessor = new SpecialCases(citation, type, key.type);
+                accessor = new SpecialCases(citation, type, k.type, standardImpl);
             } else {
-                accessor = new PropertyAccessor(citation, type, key.type);
+                accessor = new PropertyAccessor(citation, type, k.type, standardImpl);
             }
             return accessor;
         });

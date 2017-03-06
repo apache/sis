@@ -238,13 +238,15 @@ class PropertyAccessor {
      * @param  standard        the standard which define the {@code type} interface.
      * @param  type            the interface implemented by the metadata class.
      * @param  implementation  the class of metadata implementations, or {@code type} if none.
+     * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
+     *                         This is the same than {@code implementation} unless a custom implementation is used.
      */
-    PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation) {
+    PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
         assert type.isAssignableFrom(implementation) : implementation;
         this.standard       = standard;
         this.type           = type;
         this.implementation = implementation;
-        this.getters        = getGetters(type, implementation);
+        this.getters        = getGetters(type, implementation, standardImpl);
         int allCount = getters.length;
         int standardCount = allCount;
         if (allCount != 0 && getters[allCount-1] == EXTRA_GETTER) {
@@ -400,9 +402,10 @@ class PropertyAccessor {
      *
      * @param  type            the metadata interface.
      * @param  implementation  the class of metadata implementations, or {@code type} if none.
+     * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
      * @return the getters declared in the given interface (never {@code null}).
      */
-    private static Method[] getGetters(final Class<?> type, final Class<?> implementation) {
+    private static Method[] getGetters(final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
         /*
          * Indices map is used for choosing what to do in case of name collision.
          */
@@ -466,7 +469,7 @@ class PropertyAccessor {
          * keep the extra methods last. The code checking for the extra methods require
          * them to be last.
          */
-        Arrays.sort(getters, 0, count, new PropertyComparator(implementation));
+        Arrays.sort(getters, 0, count, new PropertyComparator(implementation, standardImpl));
         if (!hasExtraGetter) {
             if (getters.length == count) {
                 getters = Arrays.copyOf(getters, count+1);
