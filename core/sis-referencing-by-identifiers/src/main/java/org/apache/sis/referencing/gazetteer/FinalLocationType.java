@@ -96,7 +96,7 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
      * Child location types (location types which sub-divides this location type).
      * This list is unmodifiable.
      */
-    private final List<LocationType> children;
+    final List<LocationType> children;
 
     /**
      * Creates a copy of the given location type with the reference system set to the given value.

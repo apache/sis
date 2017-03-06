@@ -17,19 +17,17 @@
 
 
 /**
- * Directory mapping geographic identifiers to locations, either as descriptions or coordinates.
- * Geographic identifiers are location descriptors such as addresses and grid indexes.
- * Their reference systems are defined by <cite>Spatial referencing by geographic identifiers</cite> (ISO 19112).
- * Gazetteers provide linking mechanism between referencing using geographic identifiers (this package)
- * and referencing using coordinates (…{@link org.apache.sis.referencing.crs .crs} package).
+ * Mapping between geographic identifiers (addresses, grid indexes…) and locations (descriptions, coordinates…).
+ * This package provides base classes implementing the <cite>Spatial referencing by geographic identifiers</cite>
+ * (ISO 19112) standard. Those base classes are
+ * {@link org.apache.sis.referencing.gazetteer.AbstractLocation},
+ * {@link org.apache.sis.referencing.gazetteer.ModifiableLocationType} and
+ * {@link org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers}, completed by the
+ * {@link org.apache.sis.referencing.gazetteer.LocationFormat} utility class.
  *
- * <div class="section">Extensions to ISO 19112</div>
- * In addition to standard properties, the Apache SIS implementation provides the following extensions:
- *
- * <ul>
- *   <li>{@link org.apache.sis.referencing.gazetteer.AbstractLocation#getEnvelope()} can provide envelopes
- *       in non-geographic CRS.</li>
- * </ul>
+ * <p>This package provides also implementations on top of above base classes.
+ * Some implementation classes are {@link org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystem}
+ * (also for civilian use).</p>
  *
  * @author  Chris Mattmann (JPL)
  * @author  Martin Desruisseaux (Geomatys)
