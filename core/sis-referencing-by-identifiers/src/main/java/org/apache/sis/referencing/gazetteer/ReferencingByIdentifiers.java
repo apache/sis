@@ -54,6 +54,7 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * @module
  *
  * @see ModifiableLocationType
+ * @see AbstractLocation
  */
 @XmlTransient
 public class ReferencingByIdentifiers extends AbstractReferenceSystem implements ReferenceSystemUsingIdentifiers {

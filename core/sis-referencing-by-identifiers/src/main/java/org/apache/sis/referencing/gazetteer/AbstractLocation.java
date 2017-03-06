@@ -61,14 +61,21 @@ import org.apache.sis.util.Debug;
  * @since   0.8
  * @version 0.8
  * @module
+ *
+ * @see ModifiableLocationType
+ * @see ReferencingByIdentifiers
+ * @see LocationFormat
  */
 public abstract class AbstractLocation implements Location {
     /**
      * The description of the nature of this geographic identifier, or {@code null} if unspecified.
      *
+     * <p>This field is non-final for sub-class constructors convenience,
+     * but its value should not be changed after {@code Location} construction.</p>
+     *
      * @see #getLocationType()
      */
-    private final LocationType type;
+    private LocationType type;
 
     /**
      * The geographic identifier, or {@code null} if unspecified.
@@ -87,6 +94,15 @@ public abstract class AbstractLocation implements Location {
     protected AbstractLocation(final LocationType type, final CharSequence identifier) {
         this.type       = type;
         this.identifier = identifier;
+    }
+
+    /**
+     * Sets the location type to the unique child of current type. This method should be invoked
+     * only when the caller know that there is at least one children and that the children class
+     * is {@link FinalLocationType} (for performance reason).
+     */
+    final void setTypeToChild() {
+        type = ((FinalLocationType) type).children.get(0);
     }
 
     /**

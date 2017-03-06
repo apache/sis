@@ -68,6 +68,48 @@ import org.opengis.referencing.gazetteer.LocationType;
  * Despite its name, MGRS is used not only for military purposes; it is used also for organizing Earth Observation
  * data in directory trees for example.
  *
+ * <p>MGRS references are sequences of digits and letters like “4Q FJ 12345 67890” (a reference with 1 metre accuracy),
+ * optionally written with reduced resolution as in “4Q FJ 123 678” (a reference with 100 metres accuracy).
+ * Those references form a hierarchy of 3 {@linkplain ModifiableLocationType location types}:</p>
+ *
+ * <blockquote>
+ *   <b>Grid zone designator</b>         (example: “4Q”)<br>
+ *     └─<b>100 km square identifier</b> (example: “FJ”)<br>
+ *         └─<b>Grid coordinate</b>      (example: “12345 67890”)<br>
+ * </blockquote>
+ *
+ * <p>Conversions between MGRS references and spatial coordinates can be performed by the {@link Coder Coder}
+ * inner class. The result of decoding a MGRS reference is an envelope rather than a point,
+ * but a representative point can be obtained.</p>
+ *
+ * <div class="note"><b>Example:</b>
+ * the following code:
+ *
+ * {@preformat java
+ *     MilitaryGridReferenceSystem system = new MilitaryGridReferenceSystem();
+ *     MilitaryGridReferenceSystem.Coder coder = system.createCoder();
+ *     Location loc = coder.decode("32TNL83");
+ *     System.out.println(loc);
+ * }
+ *
+ * should display (locale may vary):
+ *
+ * {@preformat text
+ *     ┌─────────────────────────────────────────────────────────────────┐
+ *     │ Location type:               Grid coordinate                    │
+ *     │ Geographic identifier:       32TNL83                            │
+ *     │ West bound:                    580,000 m    —     9°57′00″E     │
+ *     │ Representative value:          585,000 m    —    10°00′36″E     │
+ *     │ East bound:                    590,000 m    —    10°04′13″E     │
+ *     │ South bound:                 4,530,000 m    —    40°54′58″N     │
+ *     │ Representative value:        4,535,000 m    —    40°57′42″N     │
+ *     │ North bound:                 4,540,000 m    —    41°00′27″N     │
+ *     │ Coordinate reference system: WGS 84 / UTM zone 32N              │
+ *     │ Administrator:               North Atlantic Treaty Organization │
+ *     └─────────────────────────────────────────────────────────────────┘
+ * }
+ * </div>
+ *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe.
  * However the {@link Coder Coder} instances performing conversions between references and coordinates
@@ -295,6 +337,9 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * Conversions between direct positions and references in the Military Grid Reference System (MGRS).
      * Each {@code Coder} instance can read references at arbitrary precision, but formats at the
      * {@linkplain #setPrecision specified precision}.
+     * The same {@code Coder} instance can be reused for reading or writing many MGRS references.
+     *
+     * <p>See the {@link MilitaryGridReferenceSystem} enclosing class for usage example.</p>
      *
      * <div class="section">Immutability and thread safety</div>
      * This class is <strong>not</strong> thread-safe. A new instance must be created for each thread,
@@ -1180,6 +1225,19 @@ parse:                  switch (part) {
             } else {
                 final MathTransform projection = crs.getConversionFromBase().getMathTransform();
                 computeGeographicBoundingBox(projection.inverse());
+                /*
+                 * Update the LocationType according the precision.
+                 * This update is mostly for documentation purpose.
+                 * There is three levels:
+                 *
+                 *   - Grid zone designator         (if hasSquareIdentification == false)
+                 *   - 100 km square identifier     (if resolution == 100 km)
+                 *   - Grid coordinate              (if resolution < 100 km)
+                 */
+                setTypeToChild();                   // Replace "Grid zone designator" by "100 km square identifier".
+                if (sx < GRID_SQUARE_SIZE || sy < GRID_SQUARE_SIZE) {
+                    setTypeToChild();               // Replace "100 km square identifier" by "Grid coordinate".
+                }
                 /*
                  * At this point we finished computing the position. Now perform error detection, by verifying
                  * if the given 100 kilometres square identification is consistent with grid zone designation.

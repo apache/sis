@@ -110,6 +110,9 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * @since   0.8
  * @version 0.8
  * @module
+ *
+ * @see AbstractLocation
+ * @see ReferencingByIdentifiers
  */
 public class ModifiableLocationType extends AbstractLocationType {      // Not Serializable on intend.
     /**
