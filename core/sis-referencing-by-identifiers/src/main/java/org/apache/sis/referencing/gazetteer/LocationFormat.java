@@ -76,8 +76,8 @@ import org.apache.sis.util.resources.Vocabulary;
  *   ┌─────────────────────────────────────────────────────────────┐
  *   │ Location type:               Grid zone designator           │
  *   │ Geographic identifier:       32TNL83                        │
- *   │ East bound:                    580,000 m    —     9°57′00″E │
- *   │ West bound:                    590,000 m    —    10°04′13″E │
+ *   │ West bound:                    580,000 m    —     9°57′00″E │
+ *   │ East bound:                    590,000 m    —    10°04′13″E │
  *   │ South bound:                 4,530,000 m    —    40°54′58″N │
  *   │ North bound:                 4,540,000 m    —    41°00′27″N │
  *   │ Representative position:       585,000 m    —    10°00′36″E │
@@ -113,8 +113,8 @@ public class LocationFormat extends CompoundFormat<Location> {
      * {@link Vocabulary.Keys} constants for the east, west, south and north bounds, in that order.
      */
     private static final short[] BOUND_KEY = {
-        Vocabulary.Keys.EastBound,
         Vocabulary.Keys.WestBound,
+        Vocabulary.Keys.EastBound,
         Vocabulary.Keys.SouthBound,
         Vocabulary.Keys.NorthBound,
         Vocabulary.Keys.RepresentativePosition,
