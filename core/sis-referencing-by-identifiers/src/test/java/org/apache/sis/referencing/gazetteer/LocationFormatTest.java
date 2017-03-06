@@ -51,11 +51,11 @@ public final strictfp class LocationFormatTest extends TestCase {
                 "┌─────────────────────────────────────────┐\n" +
                 "│ Geographic identifier:       A location │\n" +
                 "│ West bound:                   8°00′00″E │\n" +
+                "│ Representative value:         9°00′00″E │\n" +
                 "│ East bound:                  10°00′00″E │\n" +
                 "│ South bound:                  2°00′00″S │\n" +
+                "│ Representative value:        14°00′00″N │\n" +
                 "│ North bound:                 30°00′00″N │\n" +
-                "│ Representative position:      9°00′00″E │\n" +
-                "│                              14°00′00″N │\n" +
                 "│ Coordinate reference system: WGS 84     │\n" +
                 "└─────────────────────────────────────────┘\n", format.format(loc));
     }
@@ -80,11 +80,11 @@ public final strictfp class LocationFormatTest extends TestCase {
                 "┌────────────────────────────────────────────────────┐\n" +
                 "│ Geographic identifier:       A location            │\n" +
                 "│ West bound:                    388,719 m           │\n" +
+                "│ Representative value:          500,000 m           │\n" +
                 "│ East bound:                    611,281 m           │\n" +
                 "│ South bound:                  -221,095 m           │\n" +
+                "│ Representative value:        1,549,056 m           │\n" +
                 "│ North bound:                 3,319,207 m           │\n" +
-                "│ Representative position:       500,000 m           │\n" +
-                "│                              1,549,056 m           │\n" +
                 "│ Coordinate reference system: WGS 84 / UTM zone 32N │\n" +
                 "└────────────────────────────────────────────────────┘\n", format.format(loc));
     }
@@ -112,11 +112,11 @@ public final strictfp class LocationFormatTest extends TestCase {
                 "┌─────────────────────────────────────────────────────────────┐\n" +
                 "│ Geographic identifier:       A location                     │\n" +
                 "│ West bound:                    388,719 m    —     8°00′00″E │\n" +
+                "│ Representative value:          500,000 m    —     9°00′00″E │\n" +
                 "│ East bound:                    611,281 m    —    10°00′00″E │\n" +
                 "│ South bound:                  -221,095 m    —     2°00′00″S │\n" +
+                "│ Representative value:        1,549,056 m    —    14°00′43″N │\n" +
                 "│ North bound:                 3,319,207 m    —    30°00′00″N │\n" +
-                "│ Representative position:       500,000 m    —     9°00′00″E │\n" +
-                "│                              1,549,056 m    —    14°00′43″N │\n" +
                 "│ Coordinate reference system: WGS 84 / UTM zone 32N          │\n" +
                 "└─────────────────────────────────────────────────────────────┘\n", format.format(loc));
     }
