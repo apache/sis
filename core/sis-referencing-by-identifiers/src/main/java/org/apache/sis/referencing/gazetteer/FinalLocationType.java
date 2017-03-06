@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.ModifiableMetadata;
@@ -116,6 +117,19 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
          * exception is thrown, the whole tree (with all 'this' references) will be discarded.
          */
         existing.put(source, this);
+        /*
+         * For the following properties, we will fallback on the given reference system if the property value
+         * from the source location type is null. We do that because those properties are mandatory according
+         * ISO 19112 and it happen quite often that they have the same value in the location type than in the
+         * reference system.
+         */
+        InternationalString theme;
+        GeographicExtent    territoryOfUse;
+        Party               owner;
+        /*
+         * Copy the value from the source location type, make them unmodifiable,
+         * fallback on the ReferenceSystemUsingIdentifiers if necessary.
+         */
         name            = source.getName();
         theme           = source.getTheme();
         identifications = snapshot(source.getIdentifications());
@@ -125,6 +139,19 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
         parents         = snapshot(source.getParents(),  rs, existing);
         children        = snapshot(source.getChildren(), rs, existing);
         referenceSystem = rs;
+        if (rs != null) {
+            if (theme == null) theme = rs.getTheme();
+            if (owner == null) owner = rs.getOverallOwner();
+            if (territoryOfUse == null) {
+                final Extent domainOfValidity = rs.getDomainOfValidity();
+                if (domainOfValidity instanceof GeographicExtent) {
+                    territoryOfUse = (GeographicExtent) domainOfValidity;
+                }
+            }
+        }
+        this.theme          = theme;
+        this.territoryOfUse = territoryOfUse;
+        this.owner          = owner;
     }
 
     /**
