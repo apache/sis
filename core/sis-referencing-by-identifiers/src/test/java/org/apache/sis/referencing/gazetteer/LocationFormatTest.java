@@ -16,6 +16,11 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
+import java.util.Locale;
+import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -37,19 +42,82 @@ public final strictfp class LocationFormatTest extends TestCase {
     @Test
     public void testGeographic() {
         final SimpleLocation loc = new SimpleLocation(null, "A location");
-        loc.minX =   8;
-        loc.maxX =  20;
-        loc.minY = -10;
-        loc.maxY =  30;
-        final LocationFormat format = new LocationFormat(null, null);
+        loc.minX =  8;
+        loc.maxX = 10;
+        loc.minY = -2;
+        loc.maxY = 30;
+        final LocationFormat format = new LocationFormat(Locale.US, null);
         assertMultilinesEquals(
-                "Geographic identifier:       A location\n" +
-                "East bound:                   8°E\n" +
-                "West bound:                  20°E\n" +
-                "South bound:                 10°S\n" +
-                "North bound:                 30°N\n" +
-                "Representative position:     14°E\n" +
-                "                             10°N\n" +
-                "Coordinate reference system: WGS 84\n", format.format(loc));
+                "┌─────────────────────────────────────────┐\n" +
+                "│ Geographic identifier:       A location │\n" +
+                "│ East bound:                   8°00′00″E │\n" +
+                "│ West bound:                  10°00′00″E │\n" +
+                "│ South bound:                  2°00′00″S │\n" +
+                "│ North bound:                 30°00′00″N │\n" +
+                "│ Representative position:      9°00′00″E │\n" +
+                "│                              14°00′00″N │\n" +
+                "│ Coordinate reference system: WGS 84     │\n" +
+                "└─────────────────────────────────────────┘\n", format.format(loc));
+    }
+
+    /**
+     * Tests formatting of an instance having only projected coordinates.
+     */
+    @Test
+    @DependsOnMethod("testGeographic")
+    public void testProjected() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.universal(14, 9);
+        final SimpleLocation loc = new SimpleLocation(null, "A location") {
+            @Override public CoordinateReferenceSystem getCoordinateReferenceSystem() {return crs;}
+            @Override public GeographicExtent          getGeographicExtent()          {return null;}
+        };
+        loc.minX =  388719.35;
+        loc.maxX =  611280.65;
+        loc.minY = -221094.87;
+        loc.maxY = 3319206.22;
+        final LocationFormat format = new LocationFormat(Locale.US, null);
+        assertMultilinesEquals(
+                "┌────────────────────────────────────────────────────┐\n" +
+                "│ Geographic identifier:       A location            │\n" +
+                "│ East bound:                    388,719 m           │\n" +
+                "│ West bound:                    611,281 m           │\n" +
+                "│ South bound:                  -221,095 m           │\n" +
+                "│ North bound:                 3,319,207 m           │\n" +
+                "│ Representative position:       500,000 m           │\n" +
+                "│                              1,549,056 m           │\n" +
+                "│ Coordinate reference system: WGS 84 / UTM zone 32N │\n" +
+                "└────────────────────────────────────────────────────┘\n", format.format(loc));
+    }
+
+    /**
+     * Tests formatting of an instance having geographic and projected coordinates.
+     */
+    @Test
+    @DependsOnMethod({"testGeographic", "testProjected"})
+    public void testGeographicAndProjected() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.universal(14, 9);
+        final SimpleLocation.Projected loc = new SimpleLocation.Projected(null, "A location") {
+            @Override public CoordinateReferenceSystem getCoordinateReferenceSystem() {return crs;}
+        };
+        loc.minX =  388719.35;
+        loc.maxX =  611280.65;
+        loc.minY = -221094.87;
+        loc.maxY = 3319206.22;
+        loc.westBoundLongitude =  8;
+        loc.eastBoundLongitude = 10;
+        loc.southBoundLatitude = -2;
+        loc.northBoundLatitude = 30;
+        final LocationFormat format = new LocationFormat(Locale.US, null);
+        assertMultilinesEquals(
+                "┌─────────────────────────────────────────────────────────────┐\n" +
+                "│ Geographic identifier:       A location                     │\n" +
+                "│ East bound:                    388,719 m    —     8°00′00″E │\n" +
+                "│ West bound:                    611,281 m    —    10°00′00″E │\n" +
+                "│ South bound:                  -221,095 m    —     2°00′00″S │\n" +
+                "│ North bound:                 3,319,207 m    —    30°00′00″N │\n" +
+                "│ Representative position:       500,000 m    —     9°00′00″E │\n" +
+                "│                              1,549,056 m    —    14°00′43″N │\n" +
+                "│ Coordinate reference system: WGS 84 / UTM zone 32N          │\n" +
+                "└─────────────────────────────────────────────────────────────┘\n", format.format(loc));
     }
 }

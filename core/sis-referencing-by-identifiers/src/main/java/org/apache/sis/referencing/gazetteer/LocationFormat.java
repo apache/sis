@@ -20,8 +20,11 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Collection;
+import java.util.Arrays;
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.text.Format;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import javax.measure.Unit;
@@ -41,8 +44,10 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.coordinate.Position;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Angle;
+import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.geometry.Envelopes;
@@ -54,22 +59,45 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Formats {@link Location} instances.
+ * Formats {@link Location} instances in a tabular format.
+ * This format assumes a monospaced font and an encoding supporting drawing box characters (e.g. UTF-8).
  *
- * <p>This class is not thread-safe.</p>
+ * <div class="note"><b>Example:</b>
+ * the location identified by "32TNL83" in the {@linkplain MilitaryGridReferenceSystem military grid reference system}
+ * can be represented by the following string formatted using {@link Locale#ENGLISH}:
+ *
+ * {@preformat text
+ *   ┌─────────────────────────────────────────────────────────────┐
+ *   │ Location type:               Grid zone designator           │
+ *   │ Geographic identifier:       32TNL83                        │
+ *   │ East bound:                    580,000 m    —     9°57′00″E │
+ *   │ West bound:                    590,000 m    —    10°04′13″E │
+ *   │ South bound:                 4,530,000 m    —    40°54′58″N │
+ *   │ North bound:                 4,540,000 m    —    41°00′27″N │
+ *   │ Representative position:       585,000 m    —    10°00′36″E │
+ *   │                              4,535,000 m    —    40°57′42″N │
+ *   │ Coordinate reference system: WGS 84 / UTM zone 32N          │
+ *   └─────────────────────────────────────────────────────────────┘
+ * }
+ * </div>
+ *
+ * <div class="warning"><b>Limitation:</b>
+ * Current implementation supports only formatting, not parsing.
+ * This class is not thread-safe.
+ * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                 // Because no additional field defined in this class.
-final class LocationFormat extends CompoundFormat<Location> {
+public class LocationFormat extends CompoundFormat<Location> {
     /**
      * For cross-version compatibility.
      */
@@ -166,18 +194,24 @@ final class LocationFormat extends CompoundFormat<Location> {
     }
 
     /**
-     * Formats the given location.
+     * Writes a textual representation of the given location in the given stream or buffer.
+     *
+     * @param  location    the location to format.
+     * @param  toAppendTo  where to format the location.
+     * @throws IOException if an error occurred while writing to the given appendable.
      */
     @Override
-    @SuppressWarnings("fallthrough")
+    @SuppressWarnings({"fallthrough", "null"})
     public void format(final Location location, final Appendable toAppendTo) throws IOException {
+        ArgumentChecks.ensureNonNull("location", location);
         final Locale locale = getLocale(Locale.Category.DISPLAY);
         final Vocabulary vocabulary = Vocabulary.getResources(locale);
-        final TableAppender table = new TableAppender(toAppendTo, " ");
+        final TableAppender table = new TableAppender(toAppendTo, "│ ", " ", " │");
         table.setMultiLinesCells(true);
         /*
          * Location type.
          */
+        table.appendHorizontalSeparator();
         final LocationType type = location.getLocationType();
         if (type != null) {
             append(table, vocabulary, Vocabulary.Keys.LocationType, toString(type.getName(), locale));
@@ -240,9 +274,11 @@ final class LocationFormat extends CompoundFormat<Location> {
                         envelope = Envelopes.transform(envelope, normCRS);  // Should only change order and sign.
                     }
                 }
-                GeographicCRS geogCRS = ReferencingUtilities.toNormalizedGeographicCRS(posCRS);
-                if (geogCRS != null) {
-                    geopos = transform(position, posCRS, geogCRS);
+                if (bbox != null) {     // Compute geographic position only if there is a geographic bounding box.
+                    GeographicCRS geogCRS = ReferencingUtilities.toNormalizedGeographicCRS(posCRS);
+                    if (geogCRS != null) {
+                        geopos = transform(position, posCRS, geogCRS);
+                    }
                 }
                 position = transform(position, posCRS, normCRS);
             }
@@ -261,27 +297,31 @@ final class LocationFormat extends CompoundFormat<Location> {
          */
         if (bbox != null || envelope != null) {
             final CoordinateSystem cs = (crs != null) ? crs.getCoordinateSystem() : null;
-            String[] geographic = null;
-            String[] projected  = null;
-            String[] unitSymbol = null;
-            Format   geogFormat = null;
-            Format   projFormat = null;
-            Format   unitFormat = null;
-            int      maxGeogLength = 0;
-            int      maxProjLength = 0;
-            int      maxUnitLength = 0;
-            boolean  showProj  = false;
-            if (bbox != null) {
+            String[]     geographic = null;
+            String[]     projected  = null;
+            String[]     unitSymbol = null;
+            AngleFormat  geogFormat = null;
+            NumberFormat projFormat = null;
+            UnitFormat   unitFormat = null;
+            int          maxGeogLength = 0;
+            int          maxProjLength = 0;
+            int          maxUnitLength = 0;
+            boolean      showProj  = false;
+            if (bbox != null || geopos != null) {
+                geogFormat = (AngleFormat) getFormat(Angle.class);
                 geographic = new String[BOUND_KEY.length];
-                geogFormat = getFormat(Angle.class);
+                Arrays.fill(geographic, "");
             }
-            if (envelope != null) {
+            if (envelope != null || position != null) {
+                projFormat = (NumberFormat) getFormat(Number.class);
+                unitFormat = (UnitFormat)   getFormat(Unit.class);
                 projected  = new String[BOUND_KEY.length];
                 unitSymbol = new String[BOUND_KEY.length];
-                projFormat = getFormat(Number.class);
-                unitFormat = getFormat(Unit.class);
+                Arrays.fill(projected,  "");
+                Arrays.fill(unitSymbol, "");
             }
             for (int i=0; i<BOUND_KEY.length; i++) {
+                RoundingMode rounding = RoundingMode.FLOOR;
                 double g = Double.NaN;
                 double p = Double.NaN;
                 int dimension = 0;
@@ -291,6 +331,7 @@ final class LocationFormat extends CompoundFormat<Location> {
                             break;
                     case 1: if (bbox     != null) g = bbox.getEastBoundLongitude();
                             if (envelope != null) p = envelope.getMaximum(0);
+                            rounding = RoundingMode.CEILING;
                             break;
                     case 2: if (bbox     != null) g = bbox.getSouthBoundLatitude();
                             if (envelope != null) p = envelope.getMinimum(1);
@@ -298,11 +339,13 @@ final class LocationFormat extends CompoundFormat<Location> {
                             break;
                     case 3: if (bbox     != null) g = bbox.getNorthBoundLatitude();
                             if (envelope != null) p = envelope.getMaximum(1);
+                            rounding = RoundingMode.CEILING;
                             dimension = 1;
                             break;
                     case 5: dimension = 1;                            // Fall through
                     case 4: if (geopos   != null) g = geopos  .getOrdinate(dimension);
                             if (position != null) p = position.getOrdinate(dimension);
+                            rounding = RoundingMode.HALF_EVEN;
                             break;
                 }
                 if (!Double.isNaN(p)) {
@@ -310,22 +353,25 @@ final class LocationFormat extends CompoundFormat<Location> {
                     if (cs != null) {
                         final Unit<?> unit = cs.getAxis(dimension).getUnit();
                         if (unit != null) {
-                            @SuppressWarnings("null")
                             final int length = (unitSymbol[i] = unitFormat.format(unit)).length();
                             if (length > maxUnitLength) {
                                 maxUnitLength = length;
                             }
                         }
                     }
-                    @SuppressWarnings("null")
+                    try {
+                        projFormat.setRoundingMode(rounding);
+                    } catch (UnsupportedOperationException e) {
+                        // Ignore.
+                    }
                     final int length = (projected[i] = projFormat.format(p)).length();
                     if (length > maxProjLength) {
                         maxProjLength = length;
                     }
                 }
                 if (!Double.isNaN(g)) {
+                    geogFormat.setRoundingMode(rounding);
                     final Angle angle = (dimension == 0) ? new Longitude(g) : new Latitude(g);
-                    @SuppressWarnings("null")
                     final int length = (geographic[i] = geogFormat.format(angle)).length();
                     if (length > maxGeogLength) {
                         maxGeogLength = length;
@@ -335,30 +381,31 @@ final class LocationFormat extends CompoundFormat<Location> {
             if (!showProj) {
                 projected  = null;          // All projected coordinates are identical to geographic ones.
                 unitSymbol = null;
+                maxProjLength = 0;
+                maxUnitLength = 0;
             } else if (maxProjLength != 0) {
+                if (maxUnitLength != 0) {
+                    maxUnitLength++;
+                }
                 maxGeogLength += 4;         // Arbitrary space between projected and geographic coordinates.
             }
             /*
              * At this point all coordinates have been formatted in advance.
              */
+            final String separator = (projected != null && geographic != null) ? "    —" : "";
             for (int i=0; i<BOUND_KEY.length; i++) {
-                final String p = (projected  != null) ? projected [i] : null;
-                final String g = (geographic != null) ? geographic[i] : null;
-                if (p != null || g != null) {
+                final String p = (projected  != null) ? projected [i] : "";
+                final String u = (unitSymbol != null) ? unitSymbol[i] : "";
+                final String g = (geographic != null) ? geographic[i] : "";
+                if (!p.isEmpty() || !g.isEmpty()) {
                     final short key = BOUND_KEY[i];
                     if (key != 0) {
                         vocabulary.appendLabel(key, table);
                     }
                     table.nextColumn();
-                    if (p != null) {
-                        table.append(CharSequences.spaces(maxProjLength - p.length())).append(p);
-                        String unit = unitSymbol[i];
-                        if (unit == null) unit = "";
-                        table.append(CharSequences.spaces(maxUnitLength - unit.length())).append(unit);
-                    }
-                    if (g != null) {
-                        table.append(CharSequences.spaces(maxGeogLength - g.length())).append(g);
-                    }
+                    table.append(CharSequences.spaces(maxProjLength - p.length())).append(p);
+                    table.append(CharSequences.spaces(maxUnitLength - u.length())).append(u).append(separator);
+                    table.append(CharSequences.spaces(maxGeogLength - g.length())).append(g);
                     table.nextLine();
                 }
             }
@@ -373,11 +420,33 @@ final class LocationFormat extends CompoundFormat<Location> {
         if (administrator != null) {
             append(table, vocabulary, Vocabulary.Keys.Administrator, toString(administrator.getName(), locale));
         }
+        table.appendHorizontalSeparator();
         table.flush();
         if (warning != null) {
             vocabulary.appendLabel(Vocabulary.Keys.Warnings, toAppendTo);
             toAppendTo.append(warning.toString()).append(System.lineSeparator());
         }
+    }
+
+    /**
+     * Creates the format to use for formatting a latitude, longitude or projected coordinate.
+     * This method is invoked by {@link #format(Location, Appendable)} when first needed.
+     *
+     * @param  valueType  {@code Angle.class}. {@code Number.class} or {@code Unit.class}.
+     * @return a new {@link AngleFormat}, {@link NumberFormat} or {@link UnitFormat} instance
+     *         depending on the argument value.
+     */
+    @Override
+    protected Format createFormat(final Class<?> valueType) {
+        final Format f = super.createFormat(valueType);
+        if (f instanceof NumberFormat) {
+            final NumberFormat nf = (NumberFormat) f;
+            nf.setMinimumFractionDigits(0);
+            nf.setMaximumFractionDigits(0);                     // 1 metre accuracy, assuming lengths in metres.
+        } else if (f instanceof AngleFormat) {
+            ((AngleFormat) f).applyPattern("D°MM′SS″");         // 30 metres accuracy.
+        }
+        return f;
     }
 
     /**
@@ -400,9 +469,24 @@ final class LocationFormat extends CompoundFormat<Location> {
 
     /**
      * Unsupported operation.
+     *
+     * @param  text  the character sequence for the location to parse.
+     * @param  pos   the position where to start the parsing.
+     * @return the parsed location, or {@code null} if the text is not recognized.
+     * @throws ParseException if an error occurred while parsing the location.
      */
     @Override
     public Location parse(CharSequence text, ParsePosition pos) throws ParseException {
         throw new ParseException(Errors.format(Errors.Keys.UnsupportedOperation_1, "parse"), pos.getIndex());
+    }
+
+    /**
+     * Returns a clone of this format.
+     *
+     * @return a clone of this format.
+     */
+    @Override
+    public LocationFormat clone() {
+        return (LocationFormat) super.clone();
     }
 }
