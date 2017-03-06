@@ -99,6 +99,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * <div class="warning"><b>Limitation:</b>
  * Current implementation supports only formatting, not parsing.
+ * This class is not thread-safe.
  * </div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

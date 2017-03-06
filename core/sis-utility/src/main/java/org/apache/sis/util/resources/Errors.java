@@ -870,6 +870,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnspecifiedFormatForClass_1 = 158;
 
         /**
+         * The “{0}” argument value is unsupported.
+         */
+        public static final short UnsupportedArgumentValue_1 = 170;
+
+        /**
          * The “{0}” datum is not supported by this operation.
          */
         public static final short UnsupportedDatum_1 = 168;

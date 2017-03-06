@@ -100,7 +100,7 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
      * In this simple implementation, this instance is its own geographic extent.
      */
     @Override
-    public final GeographicExtent getGeographicExtent() {
+    public GeographicExtent getGeographicExtent() {
         return this;
     }
 

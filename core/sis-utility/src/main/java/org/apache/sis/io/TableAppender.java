@@ -42,8 +42,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * <p>For example, the following code:</p>
  *
  * {@preformat java
- *     StringBuilder buffer = new StringBuilder();
- *     TableAppender table  = new TableAppender(buffer);
+ *     TableAppender table = new TableAppender(System.out);
  *     table.nextLine('═');
  *     table.append("English\tFrench\tr.e.d.\n");
  *     table.nextLine('-');
@@ -70,7 +69,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.util.collection.TreeTableFormat
@@ -264,6 +263,26 @@ public class TableAppender extends Appender implements Flushable {
     }
 
     /**
+     * Creates a new table formatter writing in the given output with the specified column separator and border.
+     *
+     * @param out          the underlying stream or buffer to write to.
+     * @param leftBorder   string to write on the left side of the table.
+     * @param separator    string to write between columns.
+     * @param rightBorder  string to write on the right side of the table.
+     *
+     * @since 0.8
+     */
+    public TableAppender(final Appendable out, final String leftBorder, final String separator, final String rightBorder) {
+        super(out);
+        ArgumentChecks.ensureNonNull("leftBorder",  leftBorder);
+        ArgumentChecks.ensureNonNull("separator",   separator);
+        ArgumentChecks.ensureNonNull("rightBorder", rightBorder);
+        this.leftBorder      = leftBorder;
+        this.rightBorder     = rightBorder;
+        this.columnSeparator = separator;
+    }
+
+    /**
      * Writes a border or a corner to the underlying stream or buffer.
      *
      * @param  horizontalBorder -1 for left border, +1 for right border,  0 for center.
@@ -293,7 +312,7 @@ public class TableAppender extends Appender implements Flushable {
         switch (horizontalBorder) {
             case -1: border = leftBorder;  break;
             case +1: border = rightBorder; break;
-            case  0: border = columnSeparator;   break;
+            case  0: border = columnSeparator; break;
             default: throw new AssertionError(horizontalBorder);
         }
         assert (verticalBorder >= -1) && (verticalBorder <= +1) : verticalBorder;
@@ -523,7 +542,9 @@ public class TableAppender extends Appender implements Flushable {
     }
 
     /**
-     * Writes an horizontal separator.
+     * Writes an horizontal separator using the {@code '─'} character.
+     *
+     * @see #nextLine(char)
      */
     public void appendHorizontalSeparator() {
         if (currentColumn != 0 || buffer.length() != 0) {
@@ -595,6 +616,8 @@ public class TableAppender extends Appender implements Flushable {
      *
      * @param  fill  character filling the rest of the line (default to whitespace).
      *              This character may be use as a row separator.
+     *
+     * @see #appendHorizontalSeparator()
      */
     public void nextLine(final char fill) {
         if (buffer.length() != 0) {

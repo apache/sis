@@ -501,6 +501,11 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         assertEquals("Easting",   584500.0, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 4539500.0, position.getOrdinate(1), STRICT);
 
+        position = decode(coder, "32TNL83");
+        assertEquals("32TNL83",   position, decode(coder, "32/T/NL/8/3"));
+        assertEquals("Easting",   585000.0, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 4535000.0, position.getOrdinate(1), STRICT);
+
         position = decode(coder, "32TNL");
         assertEquals("32TNL", position, decode(coder, "32/T/NL"));
         assertEquals("Easting",   550000.0, position.getOrdinate(0), STRICT);
