@@ -79,6 +79,8 @@ public final strictfp class CommonCRSTest extends TestCase {
             assertNoCodeCollision(codes, crs, crs.geographic);
             assertNoCodeCollision(codes, crs, crs.geocentric);
             assertNoCodeCollision(codes, crs, crs.geo3D);
+            assertNoCodeCollision(codes, crs, crs.northUPS);
+            assertNoCodeCollision(codes, crs, crs.southUPS);
             for (int zone = crs.firstZone; zone <= crs.lastZone; zone++) {
                 if (crs.northUTM != 0) assertNoCodeCollision(codes, crs, crs.northUTM + zone);
                 if (crs.southUTM != 0) assertNoCodeCollision(codes, crs, crs.southUTM + zone);
@@ -276,19 +278,54 @@ public final strictfp class CommonCRSTest extends TestCase {
     }
 
     /**
-     * Tests {@link CommonCRS#UTM(double, double)}.
+     * Tests {@link CommonCRS#universal(double, double)} with Universal Transverse Mercator (UTM) projections.
      *
      * @since 0.7
      */
     @Test
     @DependsOnMethod("testGeographic")
     public void testUTM() {
-        final ProjectedCRS crs = CommonCRS.WGS72.UTM(-45, -122);
+        final ProjectedCRS crs = CommonCRS.WGS72.universal(-45, -122);
         assertEquals("name", "WGS 72 / UTM zone 10S", crs.getName().getCode());
         final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
-        assertEquals(Constants.LATITUDE_OF_ORIGIN, -123, pg.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(), STRICT);
-        assertEquals(Constants.FALSE_NORTHING, 10000000, pg.parameter(Constants.FALSE_NORTHING).doubleValue(),   STRICT);
-        assertSame("Expected a cached instance.", crs, CommonCRS.WGS72.UTM(-45, -122));
-        assertNotSame("Expected a new instance.", crs, CommonCRS.WGS72.UTM(+45, -122));
+        assertEquals(Constants.LATITUDE_OF_ORIGIN,    0, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
+        assertEquals(Constants.CENTRAL_MERIDIAN,   -123, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
+        assertEquals(Constants.SCALE_FACTOR,     0.9996, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_EASTING,    500000, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_NORTHING, 10000000, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
+        assertSame("Expected a cached instance.", crs, CommonCRS.WGS72.universal(-45, -122));
+        assertNotSame("Expected a new instance.", crs, CommonCRS.WGS72.universal(+45, -122));
+    }
+
+    /**
+     * Tests {@link CommonCRS#universal(double, double)} with Universal Polar Stereographic (UPS) projections.
+     *
+     * @since 0.8
+     */
+    @Test
+    @DependsOnMethod("testGeographic")
+    public void testUPS() {
+        final ProjectedCRS crs = CommonCRS.WGS72.universal(-85, -122);
+        assertEquals("name", "WGS 72 / Universal Polar Stereographic South", crs.getName().getCode());
+        final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
+        assertEquals(Constants.LATITUDE_OF_ORIGIN, -90, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
+        assertEquals(Constants.CENTRAL_MERIDIAN,     0, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
+        assertEquals(Constants.SCALE_FACTOR,     0.994, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_EASTING,  2000000, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_NORTHING, 2000000, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
+        assertSame("Expected a cached instance.", crs, CommonCRS.WGS72.universal(-85, -122));
+        assertNotSame("Expected a new instance.", crs, CommonCRS.WGS72.universal(+85, -122));
+    }
+
+    /**
+     * Tests {@link CommonCRS#forDatum(CoordinateReferenceSystem)}.
+     *
+     * @sinc 0.8
+     */
+    @Test
+    @DependsOnMethod("testGeographic")
+    public void testForDatum() {
+        assertSame("WGS84", CommonCRS.WGS84, CommonCRS.forDatum(CommonCRS.WGS84.geographic()));
+        assertSame("WGS72", CommonCRS.WGS72, CommonCRS.forDatum(CommonCRS.WGS72.geographic()));
     }
 }

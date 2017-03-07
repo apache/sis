@@ -16,6 +16,7 @@
  */
 package org.apache.sis.console;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -204,7 +205,7 @@ final class IdentifierCommand extends FormattedOutputCommand {
     /**
      * Prints all non-null rows.
      */
-    private void print(final Iterable<Row> rows) {
+    private void print(final Iterable<Row> rows) throws IOException {
         int width = 0;
         for (final Row row : rows) {
             if (row != null) {
@@ -232,7 +233,8 @@ final class IdentifierCommand extends FormattedOutputCommand {
         states.remove(State.VALID);
         if (!states.isEmpty()) {
             out.println();
-            out.println(Vocabulary.getResources(locale).getLabel(Vocabulary.Keys.Legend));
+            Vocabulary.getResources(locale).appendLabel(Vocabulary.Keys.Legend, out);
+            out.println();
             final ResourceBundle resources = ResourceBundle.getBundle("org.apache.sis.console.IdentifierState", locale);
             for (final State state : states) {
                 final boolean warning = colors && state.text.startsWith("!");

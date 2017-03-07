@@ -81,7 +81,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  */
 class PropertyAccessor {
@@ -238,13 +238,15 @@ class PropertyAccessor {
      * @param  standard        the standard which define the {@code type} interface.
      * @param  type            the interface implemented by the metadata class.
      * @param  implementation  the class of metadata implementations, or {@code type} if none.
+     * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
+     *                         This is the same than {@code implementation} unless a custom implementation is used.
      */
-    PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation) {
+    PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
         assert type.isAssignableFrom(implementation) : implementation;
         this.standard       = standard;
         this.type           = type;
         this.implementation = implementation;
-        this.getters        = getGetters(type, implementation);
+        this.getters        = getGetters(type, implementation, standardImpl);
         int allCount = getters.length;
         int standardCount = allCount;
         if (allCount != 0 && getters[allCount-1] == EXTRA_GETTER) {
@@ -400,9 +402,10 @@ class PropertyAccessor {
      *
      * @param  type            the metadata interface.
      * @param  implementation  the class of metadata implementations, or {@code type} if none.
+     * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
      * @return the getters declared in the given interface (never {@code null}).
      */
-    private static Method[] getGetters(final Class<?> type, final Class<?> implementation) {
+    private static Method[] getGetters(final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
         /*
          * Indices map is used for choosing what to do in case of name collision.
          */
@@ -466,7 +469,7 @@ class PropertyAccessor {
          * keep the extra methods last. The code checking for the extra methods require
          * them to be last.
          */
-        Arrays.sort(getters, 0, count, new PropertyComparator(implementation));
+        Arrays.sort(getters, 0, count, new PropertyComparator(implementation, standardImpl));
         if (!hasExtraGetter) {
             if (getters.length == count) {
                 getters = Arrays.copyOf(getters, count+1);
@@ -1161,7 +1164,7 @@ class PropertyAccessor {
         assert implementation.isInstance(metadata) : metadata;
         if (setters != null) try {
             final Object[] arguments = new Object[1];
-            final Cloner cloner = new Cloner();
+            final Freezer freezer = new Freezer();
             for (int i=0; i<allCount; i++) {
                 final Method setter = setters[i];
                 if (setter != null) {
@@ -1180,7 +1183,7 @@ class PropertyAccessor {
                     }
                     final Method getter = getters[i];
                     final Object source = get(getter, metadata);
-                    final Object target = cloner.clone(source);
+                    final Object target = freezer.clone(source);
                     if (source != target) {
                         arguments[0] = target;
                         set(setter, metadata, arguments);
@@ -1198,6 +1201,42 @@ class PropertyAccessor {
         } catch (CloneNotSupportedException e) {
             throw new UnsupportedOperationException(e);
         }
+    }
+
+    /**
+     * Returns a potentially deep copy of the given metadata object.
+     *
+     * @param  metadata   the metadata object to copy.
+     * @param  copies     a map of metadata objects already copied.
+     * @return a copy of the given metadata object, or {@code metadata} itself if there is
+     *         no known implementation class or that implementation has no setter method.
+     * @throws Exception if an error occurred while creating the copy. This include any
+     *         checked checked exception that the no-argument constructor may throw.
+     */
+    final Object copy(final Object metadata, final MetadataCopier copier) throws Exception {
+        if (setters == null) {
+            return metadata;
+        }
+        Object copy = copier.copies.get(metadata);
+        if (copy == null) {
+            copy = implementation.newInstance();
+            copier.copies.put(metadata, copy);              // Need to be first in case of cyclic graphs.
+            final Object[] arguments = new Object[1];
+            for (int i=0; i<allCount; i++) {
+                final Method setter = setters[i];
+                if (setter != null && !setter.isAnnotationPresent(Deprecated.class)) {
+                    Object value = get(getters[i], metadata);
+                    if (value != null) {
+                        value = copier.copyAny(elementTypes[i], value);
+                        if (value != null) {
+                            arguments[0] = value;
+                            set(setter, copy, arguments);
+                        }
+                    }
+                }
+            }
+        }
+        return copy;
     }
 
     /**

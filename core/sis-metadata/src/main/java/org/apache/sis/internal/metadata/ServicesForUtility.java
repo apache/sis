@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.metadata;
 
+import java.text.Format;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.TimeZone;
 import javax.sql.DataSource;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
@@ -48,7 +50,7 @@ import static java.util.Collections.singleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class ServicesForUtility extends MetadataServices {
@@ -257,5 +259,19 @@ public final class ServicesForUtility extends MetadataServices {
             // More cases may be added in future SIS versions.
         }
         return ReferencingServices.getInstance().getInformation(key, locale);
+    }
+
+    /**
+     * Creates a format for {@link org.opengis.geometry.DirectPosition} instances.
+     *
+     * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
+     * @param  timezone  the timezone, or {@code null} for UTC.
+     * @return a {@link org.apache.sis.geometry.CoordinateFormat}.
+     *
+     * @since 0.8
+     */
+    @Override
+    public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {
+        return ReferencingServices.getInstance().createCoordinateFormat(locale, timezone);
     }
 }

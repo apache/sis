@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata;
 
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Errors;
 
@@ -96,9 +97,9 @@ final class CacheKey {
     @Debug
     @Override
     public String toString() {
-        String name = (type != null) ? type.getCanonicalName() : "null";
+        String name = Classes.getShortName(type);
         if (propertyType != Object.class) {
-            name = name + " as " + propertyType.getSimpleName();
+            name = name + " as " + Classes.getShortName(propertyType);
         }
         return name;
     }

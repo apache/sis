@@ -114,7 +114,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
         this.parent   = parent;
         this.metadata = metadata;
         this.accessor = accessor;
-        children = new TreeNode[accessor.count()];
+        this.children = new TreeNode[accessor.count()];
     }
 
     /**

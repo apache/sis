@@ -321,6 +321,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NoSuchOperationMethod_1 = 50;
 
         /**
+         * No horizontal component found in the “{0}” coordinate reference system.
+         */
+        public static final short NonHorizontalCRS_1 = 71;
+
+        /**
          * Non invertible {0}×{1} matrix.
          */
         public static final short NonInvertibleMatrix_2 = 51;

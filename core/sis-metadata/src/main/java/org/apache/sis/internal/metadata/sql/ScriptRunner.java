@@ -243,6 +243,7 @@ public class ScriptRunner implements AutoCloseable {
     /**
      * The regular expression to use for building {@link #statementsToSkip}.
      * At most one of {@code regexOfStmtToSkip} and {@code statementsToSkip} shall be non-null.
+     * Both fields may be null if there is no statement to skip.
      */
     private StringBuilder regexOfStmtToSkip;
 
@@ -659,13 +660,15 @@ parseLine:  while (pos < length) {
      * @return whether the given SQL statement is supported by the database engine.
      */
     protected boolean isSupported(final CharSequence sql) {
-        if (regexOfStmtToSkip == null) {
+        if (statementsToSkip != null) {
             return !statementsToSkip.reset(sql).matches();
-        } else {
+        } else if (regexOfStmtToSkip != null) {
             // We do not use Pattern.CASE_INSENTITIVE for performance reasons.
             statementsToSkip = Pattern.compile(regexOfStmtToSkip.toString(), Pattern.DOTALL).matcher(sql);
             regexOfStmtToSkip = null;
             return !statementsToSkip.matches();
+        } else {
+            return true;
         }
     }
 

@@ -45,6 +45,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.referencing.Builder;
 import org.apache.sis.referencing.CommonCRS;
@@ -230,27 +231,68 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      *
      * <blockquote><table class="sis">
      *   <caption>Transverse Mercator parameters</caption>
-     *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
+     *   <tr><th>Parameter name</th>                 <th>Parameter value</th></tr>
      *   <tr><td>Latitude of natural origin</td>     <td>Given latitude, snapped to 0° in the UTM case</td></tr>
      *   <tr><td>Longitude of natural origin</td>    <td>Given longitude, optionally snapped to a UTM zone</td></tr>
-     *   <tr><td>Scale factor at natural origin</td> <td>0.9996</td></tr>
-     *   <tr><td>False easting</td>                  <td>500000 metres</td></tr>
+     *   <tr><td>Scale factor at natural origin</td> <td>0.9996 in UTM case</td></tr>
+     *   <tr><td>False easting</td>                  <td>500000 metres in UTM case</td></tr>
      *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
      * </table></blockquote>
      *
-     * @param  isUTM      if {@code true}, the given central meridian will be snapped to the central meridian of a UTM zone.
+     * Note that calculation of UTM zone contains special cases for Norway and Svalbard.
+     * If not desired, those exceptions can be avoided by making sure that the given latitude is below 56°N.
+     *
+     * <p>If the given {@code zoner} is {@link TransverseMercator.Zoner#ANY ANY}, then this method will use the given
+     * latitude and longitude verbatim (without snapping them to a zone) but will still use the UTM scale factor,
+     * false easting and false northing.
+     *
+     * @param  zoner      whether to use UTM or MTM zones, or {@code ANY} for using arbitrary central meridian.
      * @param  latitude   the latitude in the center of the desired projection.
      * @param  longitude  the longitude in the center of the desired projection.
      * @return {@code this}, for method calls chaining.
      * @throws FactoryException if the operation method for the Transverse Mercator projection can not be obtained.
+     *
+     * @see CommonCRS#UTM(double, double)
      */
-    public GeodeticObjectBuilder setTransverseMercator(boolean isUTM, double latitude, double longitude)
+    public GeodeticObjectBuilder setTransverseMercator(TransverseMercator.Zoner zoner, double latitude, double longitude)
             throws FactoryException
     {
         ArgumentChecks.ensureBetween("latitude",   Latitude.MIN_VALUE,     Latitude.MAX_VALUE,     latitude);
         ArgumentChecks.ensureBetween("longitude", -Formulas.LONGITUDE_MAX, Formulas.LONGITUDE_MAX, longitude);
         setConversionMethod(TransverseMercator.NAME);
-        setConversionName(TransverseMercator.Zoner.UTM.setParameters(parameters, isUTM, latitude, longitude));
+        setConversionName(zoner.setParameters(parameters, latitude, longitude));
+        return this;
+    }
+
+    /**
+     * Sets the operation method, parameters and conversion name for a Polar Stereographic projection.
+     * This convenience method delegates to the following methods:
+     *
+     * <ul>
+     *   <li>{@link #setConversionName(String)} with a name like <cite>"Universal Polar Stereographic North"</cite>,
+     *       depending on the argument given to this method.</li>
+     *   <li>{@link #setConversionMethod(String)} with the name of the Polar Stereographic (variant A) projection method.</li>
+     *   <li>{@link #setParameter(String, double, Unit)} for each of the parameters enumerated below:</li>
+     * </ul>
+     *
+     * <blockquote><table class="sis">
+     *   <caption>Universal Polar Stereographic parameters</caption>
+     *   <tr><th>Parameter name</th>                 <th>Parameter value</th></tr>
+     *   <tr><td>Latitude of natural origin</td>     <td>90°N or 90°S</td></tr>
+     *   <tr><td>Longitude of natural origin</td>    <td>0°</td></tr>
+     *   <tr><td>Scale factor at natural origin</td> <td>0.994</td></tr>
+     *   <tr><td>False easting</td>                  <td>2000000 metres</td></tr>
+     *   <tr><td>False northing</td>                 <td>2000000 metres</td></tr>
+     * </table></blockquote>
+     *
+     * @param  north  {@code true} for North pole, or {@code false} for South pole.
+     * @return {@code this}, for method calls chaining.
+     * @throws FactoryException if the operation method for the Polar Stereographic (variant A)
+     *         projection can not be obtained.
+     */
+    public GeodeticObjectBuilder setPolarStereographic(final boolean north) throws FactoryException {
+        setConversionMethod(PolarStereographicA.NAME);
+        setConversionName(PolarStereographicA.setParameters(parameters, north));
         return this;
     }
 
