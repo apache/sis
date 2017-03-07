@@ -42,7 +42,7 @@ import org.opengis.metadata.citation.Party;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.coordinate.Position;
-import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.io.TabularFormat;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Range;
@@ -87,9 +87,11 @@ import org.apache.sis.util.resources.Vocabulary;
  * }
  * </div>
  *
+ * Like most {@link java.text.Format} implementations, this class is not thread-safe.
+ * Each thread should use its own {@code LocationFormat} instance or apply synchronization.
+ *
  * <div class="warning"><b>Limitation:</b>
- * Current implementation supports only formatting, not parsing.
- * This class is not thread-safe.
+ * the current implementation can only format locations — parsing is not yet implemented.
  * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -97,7 +99,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @version 0.8
  * @module
  */
-public class LocationFormat extends CompoundFormat<Location> {
+public class LocationFormat extends TabularFormat<Location> {
     /**
      * For cross-version compatibility.
      */
@@ -206,7 +208,7 @@ public class LocationFormat extends CompoundFormat<Location> {
         ArgumentChecks.ensureNonNull("location", location);
         final Locale locale = getLocale(Locale.Category.DISPLAY);
         final Vocabulary vocabulary = Vocabulary.getResources(locale);
-        final TableAppender table = new TableAppender(toAppendTo, "│ ", " ", " │");
+        final TableAppender table = new TableAppender(toAppendTo, "│ ", columnSeparator, " │");
         table.setMultiLinesCells(true);
         /*
          * Location type.
@@ -224,11 +226,11 @@ public class LocationFormat extends CompoundFormat<Location> {
         if (alt != null && !alt.isEmpty()) {
             boolean isFirst = true;
             vocabulary.appendLabel(Vocabulary.Keys.AlternativeIdentifiers, table);
-            table.nextColumn();
+            nextColumn(table);
             for (final InternationalString id : alt) {
                 if (!isFirst) {
                     isFirst = false;
-                    table.append(System.lineSeparator());
+                    table.append(lineSeparator);
                 }
                 table.append(id);
             }
@@ -399,7 +401,7 @@ public class LocationFormat extends CompoundFormat<Location> {
                 final String g = (geographic != null) ? geographic[i] : "";
                 if (!p.isEmpty() || !g.isEmpty()) {
                     vocabulary.appendLabel(BOUND_KEY[i], table);
-                    table.nextColumn();
+                    nextColumn(table);
                     table.append(CharSequences.spaces(maxProjLength - p.length())).append(p);
                     table.append(CharSequences.spaces(maxUnitLength - u.length())).append(u).append(separator);
                     table.append(CharSequences.spaces(maxGeogLength - g.length())).append(g);
@@ -421,7 +423,7 @@ public class LocationFormat extends CompoundFormat<Location> {
         table.flush();
         if (warning != null) {
             vocabulary.appendLabel(Vocabulary.Keys.Warnings, toAppendTo);
-            toAppendTo.append(warning.toString()).append(System.lineSeparator());
+            toAppendTo.append(warning.toString()).append(lineSeparator);
         }
     }
 
@@ -454,14 +456,21 @@ public class LocationFormat extends CompoundFormat<Location> {
      * @param key          key of the label to append.
      * @param value        value to append, or {@code null} if none.
      */
-    private static void append(final TableAppender table, final Vocabulary vocabulary, final short key,
-            final String value) throws IOException
+    private void append(final TableAppender table, final Vocabulary vocabulary, final short key, final String value)
+            throws IOException
     {
         if (value != null) {
             vocabulary.appendLabel(key, table);
-            table.nextColumn();
+            nextColumn(table);
             table.append(value).nextLine();
         }
+    }
+
+    /**
+     * Moves to the next column.
+     */
+    private void nextColumn(final TableAppender table) {
+        table.append(beforeFill).nextColumn(fillCharacter);
     }
 
     /**

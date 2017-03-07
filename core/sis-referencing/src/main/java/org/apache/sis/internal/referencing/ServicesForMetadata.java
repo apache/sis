@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.TimeZone;
+import java.text.Format;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 
@@ -62,6 +64,7 @@ import org.opengis.geometry.Envelope;
 
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -572,6 +575,20 @@ public final class ServicesForMetadata extends ReferencingServices {
                                        final CoordinateSystem derivedCS)
     {
         return DefaultDerivedCRS.create(properties, baseCRS, null, method, baseToDerived, derivedCS);
+    }
+
+    /**
+     * Creates a format for {@link DirectPosition} instances.
+     *
+     * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
+     * @param  timezone  the timezone, or {@code null} for UTC.
+     * @return a {@link org.apache.sis.geometry.CoordinateFormat}.
+     *
+     * @since 0.8
+     */
+    @Override
+    public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {
+        return new CoordinateFormat(locale, timezone);
     }
 
     /**
