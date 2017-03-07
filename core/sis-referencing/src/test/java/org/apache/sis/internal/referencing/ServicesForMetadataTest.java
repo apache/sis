@@ -50,7 +50,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -212,5 +212,15 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
         assertAxisDirectionsEqual("Shall be a three-dimensional geographic CRS.",
                 ((CoordinateReferenceSystem) components[1]).getCoordinateSystem(),
                 AxisDirection.UP, AxisDirection.NORTH, AxisDirection.EAST);
+    }
+
+    /**
+     * Tests {@link org.apache.sis.metadata.iso.extent.Extents#centroid(GeographicBoundingBox)}.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testGeographicBoundingBoxCentroid() {
+        org.apache.sis.metadata.iso.extent.ExtentsTest.testCentroid();
     }
 }

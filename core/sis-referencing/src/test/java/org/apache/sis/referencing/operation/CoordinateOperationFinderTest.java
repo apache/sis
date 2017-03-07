@@ -175,7 +175,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         testIdentityTransform(CommonCRS.WGS84.geographic3D());
         testIdentityTransform(CommonCRS.WGS84.geocentric());
         testIdentityTransform(CommonCRS.WGS84.spherical());
-        testIdentityTransform(CommonCRS.WGS84.UTM(0, 0));
+        testIdentityTransform(CommonCRS.WGS84.universal(0, 0));
         testIdentityTransform(CommonCRS.Vertical.DEPTH.crs());
         testIdentityTransform(CommonCRS.Temporal.JULIAN.crs());
     }

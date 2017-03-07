@@ -118,7 +118,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see DefaultParameterDescriptor
@@ -787,8 +787,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
             } else if (object instanceof ParameterValue<?>) {
                 final ParameterValue<?> that = (ParameterValue<?>) object;
                 return deepEquals(getDescriptor(), that.getDescriptor(), mode) &&
-                       deepEquals(getValue(),      that.getValue(), mode) &&
-                       Objects.equals(getUnit(),   that.getUnit());
+                       deepEquals(getValue(),      that.getValue(),      mode) &&
+                       deepEquals(getUnit(),       that.getUnit(),       mode);
             }
         }
         return false;

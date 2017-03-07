@@ -32,6 +32,7 @@ import java.text.SimpleDateFormat;
 import javax.measure.Unit;
 
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Range;
@@ -40,6 +41,7 @@ import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.LocalizedParseException;
 
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
@@ -54,22 +56,38 @@ import org.apache.sis.internal.jdk8.UncheckedIOException;
  * large blocks of data, for example a metadata tree or a <cite>Well Known Text</cite> (WKT).
  * Those blocks of data usually contain smaller elements like numbers and dates, whose parsing
  * and formatting can be delegated to {@link NumberFormat} and {@link DateFormat} respectively.
+ * Subclasses can obtain instances of those formats by call to {@link #getFormat(Class)} where
+ * the argument is the type of the value to parse or format.
+ * {@code CompoundFormat} supports at least the following value types, but subclasses may add more types:
  *
- * <p>Since {@code CompoundFormat} may work on larger texts than the usual {@code Format} classes,
+ * <table class="sis">
+ *   <caption>Supported value types</caption>
+ *   <tr><th>Value type</th>              <th>Format type</th>                                      <th>Remarks</th></tr>
+ *   <tr><td>{@link DirectPosition}</td>  <td>{@link org.apache.sis.geometry.CoordinateFormat}</td> <td>Requires {@code sis-referencing} module.</td></tr>
+ *   <tr><td>{@link Angle}</td>           <td>{@link AngleFormat}</td>                              <td></td></tr>
+ *   <tr><td>{@link Date}</td>            <td>{@link DateFormat}</td>                               <td>Timezone specified by {@link #getTimeZone()}.</td></tr>
+ *   <tr><td>{@link Number}</td>          <td>{@link NumberFormat}</td>                             <td></td></tr>
+ *   <tr><td>{@link Unit}</td>            <td>{@link UnitFormat}</td>                               <td></td></tr>
+ *   <tr><td>{@link Range}</td>           <td>{@link RangeFormat}</td>                              <td></td></tr>
+ *   <tr><td>{@link Class}</td>           <td>(internal)</td>                                       <td></td></tr>
+ * </table>
+ *
+ * <div class="section">Sources and destinations</div>
+ * Since {@code CompoundFormat} may work on larger texts than the usual {@code Format} classes,
  * it defines {@code parse} and {@code format} methods working with arbitrary {@link CharSequence}
  * and {@link Appendable} instances. The standard {@code Format} methods redirect to the above-cited
- * methods.</p>
+ * methods.
  *
- * <p>The abstract methods to be defined by subclasses are:</p>
- *
+ * <div class="section">Sub-classing</div>
+ * The abstract methods to be defined by subclasses are:
  * <ul>
- *   <li>{@link #getValueType()} returns the {@code <T>} class or a subclass.</li>
- *   <li>{@link #parse(CharSequence, ParsePosition)} may throws {@code ParseException}.</li>
- *   <li>{@link #format(Object, Appendable)} may throws {@code IOException}.</li>
+ *   <li>{@link #getValueType()}</li>
+ *   <li>{@link #format(Object, Appendable)}</li>
+ *   <li>{@link #parse(CharSequence, ParsePosition)}</li>
  * </ul>
  *
  * <div class="note"><b>API note:</b>
- * In the standard {@link Format} class, the {@code parse} methods either accept a {@link ParsePosition} argument
+ * in the standard {@link Format} class, the {@code parse} methods either accept a {@link ParsePosition} argument
  * and returns {@code null} on error, or does not take position argument and throws a {@link ParseException} on error.
  * In this {@code CompoundFormat} class, the {@code parse} method both takes a {@code ParsePosition} argument and
  * throws a {@code ParseException} on error. This allows both substring parsing and more accurate exception message
@@ -213,13 +231,14 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *     <ul>
      *       <li>this method returns {@code null}, or</li>
      *       <li>a {@code ParseException} is thrown with an {@linkplain ParseException#getErrorOffset() error offset}
-     *           set to the index of the first unparsable character. This is usually the same information than the
-     *           above-cited {@code pos} error index, but implementations are free to adopt a slightly different policy.</li>
+     *           set to the index of the first unparsable character.</li>
      *     </ul>
      *   </li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
+     * <div class="note"><b>Note:</b>
+     * if a {@code ParseException} is thrown, its error offset is usually the same than the {@code ParsePosition}
+     * error index, but implementations are free to adopt a slightly different policy. For example
      * if parsing of the {@code "30.0 40,0"} coordinate fails on the coma in the last number, then the {@code pos}
      * {@linkplain ParsePosition#getErrorIndex() error index} may be set to 5 (the beginning of the {@code "40.0"}
      * character sequence) or to 7 (the coma position), depending on the implementation.</div>
@@ -230,6 +249,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *
      * @param  text  the character sequence for the object to parse.
      * @param  pos   the position where to start the parsing.
+     *               On return, the position where the parsing stopped or where an error occurred.
      * @return the parsed object, or {@code null} if the text is not recognized.
      * @throws ParseException if an error occurred while parsing the object.
      */
@@ -399,18 +419,18 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * Creates a new format to use for parsing and formatting values of the given type.
      * This method is invoked by {@link #getFormat(Class)} the first time that a format
      * is needed for the given type.
-     *
-     * <p>The default implementation creates the following formats:</p>
+     * The class given in argument can be any of the classes listed in the "Value type" column below:
      *
      * <table class="sis">
-     *   <caption>Supported formats by type</caption>
-     *   <tr><th>Value type</th>     <th>Format</th></tr>
-     *   <tr><td>{@link Angle}</td>  <td>{@link AngleFormat}</td></tr>
-     *   <tr><td>{@link Date}</td>   <td>{@link DateFormat}</td></tr>
-     *   <tr><td>{@link Number}</td> <td>{@link NumberFormat}</td></tr>
-     *   <tr><td>{@link Unit}</td>   <td>{@link UnitFormat}</td></tr>
-     *   <tr><td>{@link Range}</td>  <td>{@link RangeFormat}</td></tr>
-     *   <tr><td>{@link Class}</td>  <td>(internal)</td></tr>
+     *   <caption>Supported value types</caption>
+     *   <tr><th>Value type</th>              <th>Format type</th></tr>
+     *   <tr><td>{@link DirectPosition}</td>  <td>{@link org.apache.sis.geometry.CoordinateFormat}</td></tr>
+     *   <tr><td>{@link Angle}</td>           <td>{@link AngleFormat}</td></tr>
+     *   <tr><td>{@link Date}</td>            <td>{@link DateFormat}</td></tr>
+     *   <tr><td>{@link Number}</td>          <td>{@link NumberFormat}</td></tr>
+     *   <tr><td>{@link Unit}</td>            <td>{@link UnitFormat}</td></tr>
+     *   <tr><td>{@link Range}</td>           <td>{@link RangeFormat}</td></tr>
+     *   <tr><td>{@link Class}</td>           <td>(internal)</td></tr>
      * </table>
      *
      * Subclasses can override this method for adding more types, or for configuring the
@@ -453,6 +473,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             return new UnitFormat(locale);
         } else if (valueType == Range.class) {
             return new RangeFormat(locale);
+        } else if (valueType == DirectPosition.class) {
+            return MetadataServices.getInstance().createCoordinateFormat(locale, getTimeZone());
         } else if (valueType == Class.class) {
             return ClassFormat.INSTANCE;
         } else {

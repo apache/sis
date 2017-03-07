@@ -55,6 +55,11 @@ public final class Modules {
     /**
      * The {@value} module name.
      */
+    public static final String REFERENCING_BY_IDENTIFIERS = "org.apache.sis.referencing.gazetteer";
+
+    /**
+     * The {@value} module name.
+     */
     public static final String STORAGE = "org.apache.sis.storage";
 
     /**

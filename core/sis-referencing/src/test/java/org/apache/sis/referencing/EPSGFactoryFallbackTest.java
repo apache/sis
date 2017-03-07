@@ -19,11 +19,13 @@ package org.apache.sis.referencing;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Set;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -74,6 +76,12 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(GeographicCRS.class));
         assertSetEquals(Arrays.asList("5714", "5715", "5703"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(VerticalCRS.class));
+        /*
+         * There is two many ProjectedCRS codes for enumerating all of them, so test only a sampling.
+         */
+        final Set<String> codes = EPSGFactoryFallback.INSTANCE.getAuthorityCodes(ProjectedCRS.class);
+        assertTrue(codes.containsAll(Arrays.asList("5041", "5042", "32601", "32660", "32701", "32760")));
+        assertTrue(Collections.disjoint(codes, Arrays.asList("7030", "6326", "4326", "4978", "32600", "32700", "5714")));
     }
 
     /**
@@ -141,6 +149,8 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
         verifyCreateCRS(CommonCRS.WGS84 .geographic3D(),          "4979");
         verifyCreateCRS(CommonCRS.WGS72 .geographic3D(),          "4985");
         verifyCreateCRS(CommonCRS.ETRS89.geographic3D(),          "4937");
+        verifyCreateCRS(CommonCRS.WGS84 .universal(-88, 120),     "5042");
+        verifyCreateCRS(CommonCRS.WGS84 .universal( 40, 14),     "32633");
         verifyCreateCRS(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(),  "5714");
         verifyCreateCRS(CommonCRS.Vertical.DEPTH.crs(),           "5715");
     }

@@ -83,7 +83,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -165,10 +165,17 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * </ul>
      *
      * @return an unmodifiable copy of this metadata.
+     *
+     * @see MetadataCopier
      */
     public AbstractMetadata unmodifiable() {
-        // Reminder: 'unmodifiable' is reset to null by checkWritePermission().
-        if (unmodifiable == null) {
+        /*
+         * The 'unmodifiable' field is reset to null by checkWritePermission().
+         * However this is not sufficient since the setter method of some child
+         * could have been invoked without invoking any setter method on 'this'.
+         * So we also need to perform an equality check.
+         */
+        if (unmodifiable == null || (unmodifiable != this && unmodifiable != FREEZING && !equals(unmodifiable))) {
             final ModifiableMetadata candidate;
             try {
                 /*
@@ -232,9 +239,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
-     * Checks if changes in the metadata are allowed. All {@code setFoo(...)} methods in
-     * subclasses should invoke this method (directly or indirectly) before to apply any
-     * change.
+     * Checks if changes in the metadata are allowed. All {@code setFoo(…)} methods in subclasses
+     * shall invoke this method (directly or indirectly) before to apply any change.
      *
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      *
@@ -388,7 +394,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             if (unmodifiable == FREEZING) {
                 /*
                  * freeze() method is under progress. The source collection is already
-                 * an unmodifiable instance created by Cloner.clone(Object).
+                 * an unmodifiable instance created by Freezer.clone(Object).
                  */
                 assert collectionType(elementType).isInstance(source);
                 return (Collection<E>) source;
@@ -671,6 +677,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * Creates a <strong>shallow</strong> copy of this metadata.
      * The clone operation is required for the internal working of the {@link #unmodifiable()} method,
      * which needs <em>shallow</em> copies of metadata entities.
+     * For deep copies, see {@link MetadataCopier}.
      *
      * <div class="section">API note</div>
      * While {@link Cloneable}, the {@code ModifiableMetadata} subclasses should not provide
@@ -684,6 +691,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *
      * @return a <em>shallow</em> copy of this metadata.
      * @throws CloneNotSupportedException if the clone is not supported.
+     *
+     * @see #unmodifiable()
+     * @see MetadataCopier
      */
     @Override
     protected ModifiableMetadata clone() throws CloneNotSupportedException {

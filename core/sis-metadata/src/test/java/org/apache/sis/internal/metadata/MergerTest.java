@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Iterator;
 import java.util.Collections;
 import java.nio.charset.StandardCharsets;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.opengis.metadata.content.ImagingCondition;
@@ -35,7 +36,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import org.opengis.metadata.citation.Citation;
 
 
 /**

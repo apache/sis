@@ -19,6 +19,7 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.UnitConverter;
@@ -45,6 +46,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.Context;
@@ -68,9 +70,6 @@ import static org.apache.sis.util.collection.Containers.property;
  * by DefaultCoordinateSystemAxis for skipping axis name comparisons when the axis name is unknown.
  */
 import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -567,12 +566,13 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * i.e. it is caller responsibility to determine if range shall be considered as metadata.
      *
      * @param  that  the axis to compare with this axis.
+     * @param  mode  whether the unit comparison is approximative or exact.
      * @param  cr    {@code true} for comparing also the range minimum and maximum values.
      * @return {@code true} if unit, direction and optionally range extremum are equal.
      */
-    private boolean equalsIgnoreMetadata(final CoordinateSystemAxis that, final boolean cr) {
-        return Objects.equals(getUnit(),      that.getUnit()) &&
-               Objects.equals(getDirection(), that.getDirection()) &&
+    private boolean equalsIgnoreMetadata(final CoordinateSystemAxis that, final ComparisonMode mode, final boolean cr) {
+        return Objects.equals(getDirection(), that.getDirection()) &&
+               Utilities.deepEquals(getUnit(), that.getUnit(), mode) &&
                (!cr || (doubleToLongBits(getMinimumValue()) == doubleToLongBits(that.getMinimumValue()) &&
                         doubleToLongBits(getMaximumValue()) == doubleToLongBits(that.getMaximumValue())));
     }
@@ -618,7 +618,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             }
             case BY_CONTRACT: {
                 final CoordinateSystemAxis that = (CoordinateSystemAxis) object;
-                return equalsIgnoreMetadata(that, true) &&
+                return equalsIgnoreMetadata(that, mode, true) &&
                        Objects.equals(getAbbreviation(), that.getAbbreviation()) &&
                        Objects.equals(getRangeMeaning(), that.getRangeMeaning());
             }
@@ -629,8 +629,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * coordinate operation may shift some ordinate values (typically ±360° on longitudes).
          */
         final CoordinateSystemAxis that = (CoordinateSystemAxis) object;
-        if (!equalsIgnoreMetadata(that, RangeMeaning.WRAPAROUND.equals(this.getRangeMeaning()) &&
-                                        RangeMeaning.WRAPAROUND.equals(that.getRangeMeaning())))
+        if (!equalsIgnoreMetadata(that, mode, RangeMeaning.WRAPAROUND.equals(this.getRangeMeaning()) &&
+                                              RangeMeaning.WRAPAROUND.equals(that.getRangeMeaning())))
         {
             return false;
         }

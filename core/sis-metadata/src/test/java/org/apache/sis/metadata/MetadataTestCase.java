@@ -194,7 +194,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
                 final Class<?> impl = getImplementation(type);
                 if (impl != null) {
                     assertTrue(type.isAssignableFrom(impl));
-                    testPropertyValues(new PropertyAccessor(standard.getCitation(), type, impl));
+                    testPropertyValues(new PropertyAccessor(standard.getCitation(), type, impl, impl));
                 }
             }
         }

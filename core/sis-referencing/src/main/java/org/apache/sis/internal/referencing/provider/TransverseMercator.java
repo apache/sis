@@ -141,7 +141,8 @@ public final class TransverseMercator extends AbstractMercator {
      */
     public static enum Zoner {
         /**
-         * Computes zones for the Universal Transverse Mercator (UTM) projections.
+         * Universal Transverse Mercator (UTM) projection zones.
+         * The zone computation includes special cases for Norway and Svalbard.
          *
          * <blockquote><table class="sis">
          *   <caption>Universal Transverse Mercator parameters</caption>
@@ -153,11 +154,37 @@ public final class TransverseMercator extends AbstractMercator {
          *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
          * </table></blockquote>
          */
-        UTM(Longitude.MIN_VALUE, 6, 0.9996, 500000, 10000000),
+        UTM(Longitude.MIN_VALUE, 6, 0.9996, 500000, 10000000) {
+            /** Computes the zone from a meridian in the zone. */
+            @Override public int zone(final double φ, final double λ) {
+                int zone = super.zone(φ, λ);
+                switch (zone) {
+                    /*
+                     * Between 56° and 64°, zone  32 is widened to 9° at the expense of zone 31 to accommodate Norway.
+                     * Between 72° and 84°, zones 33 and 35 are widened to 12° to accommodate Svalbard. To compensate,
+                     * zones 31 and 37 are widened to 9° and zones 32, 34, and 36 are eliminated.
+                     * In this switch statement, only the zones that are reduced or eliminated needs to appear.
+                     */
+                    case 31: if (isNorway  (φ)) {if (λ >=  3) zone++;             } break;   //  3° is zone 31 central meridian.
+                    case 32: if (isSvalbard(φ)) {if (λ >=  9) zone++; else zone--;} break;   //  9° is zone 32 central meridian.
+                    case 34: if (isSvalbard(φ)) {if (λ >= 21) zone++; else zone--;} break;   // 21° is zone 34 central meridian.
+                    case 36: if (isSvalbard(φ)) {if (λ >= 33) zone++; else zone--;} break;   // 33° is zone 36 central meridian.
+                }
+                return zone;
+            }
+
+            /** Indicates whether the given zone needs to be handled in a special way for the given latitude. */
+            @Override public boolean isSpecialCase(final int zone, final double φ) {
+                if (zone >= 31 && zone <= 37) {
+                    return isSvalbard(φ) || (zone <= 32 && isNorway(φ));
+                }
+                return false;
+            }
+        },
 
         /**
-         * Computes zones for the Modified Transverse Mercator (MTM) projections.
-         * This projection is in used in Canada only.
+         * Modified Transverse Mercator (MTM) projection zones.
+         * This projection is used in Canada only.
          *
          * <blockquote><table class="sis">
          *   <caption>Modified Transverse Mercator parameters</caption>
@@ -169,13 +196,23 @@ public final class TransverseMercator extends AbstractMercator {
          *   <tr><td>False northing</td>                 <td>0 metres</td></tr>
          * </table></blockquote>
          */
-        MTM(-51.5, -3, 0.9999, 304800, Double.NaN);
+        MTM(-51.5, -3, 0.9999, 304800, Double.NaN),
+
+        /**
+         * Like UTM, but allows <cite>latitude of origin</cite> and <cite>central meridian</cite> to be anywhere.
+         * The given central meridian is not snapped to the UTM zone center and no special case is applied for
+         * Norway or Svalbard.
+         *
+         * <p>This zoner matches the behavior of {@code AUTO(2):42002} authority code specified in the
+         * OGC <cite>Web Map Service</cite> (WMS) specification.</p>
+         */
+        ANY(Longitude.MIN_VALUE, 6, 0.9996, 500000, 10000000);
 
         /**
          * Longitude of the beginning of zone 1. This is the westmost longitude if {@link #width} is positive,
          * or the eastmost longitude if {@code width} is negative.
          */
-        private final double origin;
+        public final double origin;
 
         /**
          * Width of a zone, in degrees of longitude.
@@ -184,22 +221,22 @@ public final class TransverseMercator extends AbstractMercator {
          * @see #zone(double)
          * @see #centralMeridian(int)
          */
-        private final double width;
+        public final double width;
 
         /**
-         * The scale factor of UTM projections.
+         * The scale factor of zoned projections.
          */
-        private final double scale;
+        public final double scale;
 
         /**
-         * The false easting of UTM projections, in metres.
+         * The false easting of zoned projections, in metres.
          */
-        private final double easting;
+        public final double easting;
 
         /**
-         * The false northing in South hemisphere of UTM projection, in metres.
+         * The false northing in South hemisphere of zoned projection, in metres.
          */
-        private final double northing;
+        public final double northing;
 
         /**
          * Creates a new instance for computing zones using the given parameters.
@@ -220,32 +257,34 @@ public final class TransverseMercator extends AbstractMercator {
          *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
          *   <tr><td>Latitude of natural origin</td>     <td>Given latitude, or 0° if zoned projection</td></tr>
          *   <tr><td>Longitude of natural origin</td>    <td>Given longitude, optionally snapped to a zone central meridian</td></tr>
-         *   <tr><td>Scale factor at natural origin</td> <td>0.9996</td></tr>
-         *   <tr><td>False easting</td>                  <td>500000 metres</td></tr>
+         *   <tr><td>Scale factor at natural origin</td> <td>0.9996 for UTM or 0.9999 for MTM</td></tr>
+         *   <tr><td>False easting</td>                  <td>500000 metres for UTM or 304800 metres for MTM</td></tr>
          *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
          * </table></blockquote>
          *
          * @param  group      the parameters for which to set the values.
-         * @param  zoned      {@code true} for snapping the given latitude/longitude to a zone.
          * @param  latitude   the latitude in the center of the desired projection.
          * @param  longitude  the longitude in the center of the desired projection.
          * @return a name like <cite>"Transverse Mercator"</cite> or <cite>"UTM zone 10N"</cite>,
          *         depending on the arguments given to this method.
          */
-        public String setParameters(final ParameterValueGroup group,
-                final boolean zoned, double latitude, double longitude)
-        {
+        public final String setParameters(final ParameterValueGroup group, double latitude, double longitude) {
             final boolean isSouth = MathFunctions.isNegative(latitude);
-            int zone = zone(longitude);
-            if (zoned) {
-                latitude = 0;
+            int zone = zone(latitude, longitude);
+            String name;
+            if (this == ANY) {
+                name = "UTM";
+                if (latitude != 0 || longitude != centralMeridian(zone)) {
+                    name = NAME;
+                    zone = 0;
+                }
+            } else {
+                name      = name();
+                latitude  = 0;
                 longitude = centralMeridian(zone);
-            } else if (longitude != centralMeridian(zone)) {
-                zone = 0;
             }
-            String name = NAME;
             if (zone != 0) {
-                name = name() + " zone " + zone + (isSouth ? 'S' : 'N');
+                name = name + " zone " + zone + (isSouth ? 'S' : 'N');
             }
             group.parameter(Constants.LATITUDE_OF_ORIGIN).setValue(latitude,  Units.DEGREE);
             group.parameter(Constants.CENTRAL_MERIDIAN)  .setValue(longitude, Units.DEGREE);
@@ -256,14 +295,14 @@ public final class TransverseMercator extends AbstractMercator {
         }
 
         /**
-         * If the given parameter values are those of an UTM projection, returns the zone number (negative if South).
+         * If the given parameter values are those of a zoned projection, returns the zone number (negative if South).
          * Otherwise returns 0. It is caller's responsibility to verify that the operation method is {@value #NAME}.
          *
          * @param  group  the Transverse Mercator projection parameters.
-         * @return UTM zone number (positive if North, negative if South),
-         *         or 0 if the given parameters are not for a UTM projection.
+         * @return zone number (positive if North, negative if South),
+         *         or 0 if the given parameters are not for a zoned projection.
          */
-        public int zone(final ParameterValueGroup group) {
+        public final int zone(final ParameterValueGroup group) {
             if (Numerics.epsilonEqual(group.parameter(Constants.SCALE_FACTOR)      .doubleValue(Units.UNITY), scale,   Numerics.COMPARISON_THRESHOLD) &&
                 Numerics.epsilonEqual(group.parameter(Constants.FALSE_EASTING)     .doubleValue(Units.METRE), easting, Formulas.LINEAR_TOLERANCE) &&
                 Numerics.epsilonEqual(group.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(Units.DEGREE),      0, Formulas.ANGULAR_TOLERANCE))
@@ -272,7 +311,7 @@ public final class TransverseMercator extends AbstractMercator {
                 final boolean isNorth = Numerics.epsilonEqual(v, 0, Formulas.LINEAR_TOLERANCE);
                 if (isNorth || Numerics.epsilonEqual(v, northing, Formulas.LINEAR_TOLERANCE)) {
                     v = group.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(Units.DEGREE);
-                    int zone = zone(v);
+                    int zone = zone(0, v);
                     if (Numerics.epsilonEqual(centralMeridian(zone), v, Formulas.ANGULAR_TOLERANCE)) {
                         if (!isNorth) zone = -zone;
                         return zone;
@@ -283,31 +322,95 @@ public final class TransverseMercator extends AbstractMercator {
         }
 
         /**
-         * Computes the UTM zone from a meridian in the zone.
+         * Computes the zone from a meridian in the zone.
          *
-         * @param  longitude  a meridian inside the desired zone, in degrees relative to Greenwich.
-         *                    Positive longitudes are toward east, and negative longitudes toward west.
-         * @return the UTM zone number numbered from 1 to 60 inclusive, or 0 if the given central meridian was NaN.
+         * @param  φ  a latitude for which to get the zone. Used for taking in account the special cases.
+         * @param  λ  a meridian inside the desired zone, in degrees relative to Greenwich.
+         *            Positive longitudes are toward east, and negative longitudes toward west.
+         * @return the zone number numbered from 1 inclusive, or 0 if the given central meridian was NaN.
          */
-        public int zone(double longitude) {
+        public int zone(final double φ, final double λ) {
+            double z = (λ - origin) / width;                                              // Zone number with fractional part.
+            final double count = (Longitude.MAX_VALUE - Longitude.MIN_VALUE) / width;
+            z -= Math.floor(z / count) * count;                                           // Roll in the [0 … 60) range.
             /*
              * Casts to int are equivalent to Math.floor(double) for positive values, which is guaranteed
-             * to be the case here since we normalize the central meridian to the [MIN_VALUE … MAX_VALUE] range.
+             * to be the case here since we normalize the central meridian to the [MIN_VALUE … MAX_VALUE]
+             * range. We cast only after addition in order to handle NaN as documented.
              */
-            double z = (longitude - origin) / width;                                      // Zone number with fractional part.
-            z -= Math.floor(z / ((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / width))    // Roll in the [0 … 60) range.
-                              * ((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / width);
-            return (int) (z + 1);   // Cast only after addition in order to handle NaN as documented.
+            return (int) (z + 1);
         }
 
         /**
-         * Computes the central meridian of a given UTM zone.
+         * Returns the number of zones.
          *
-         * @param  zone  the UTM zone as a number in the [1 … 60] range.
-         * @return the central meridian of the given UTM zone.
+         * @return number of zones.
          */
-        public double centralMeridian(final int zone) {
+        public final int zoneCount() {
+            return (int) ((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / width);
+        }
+
+        /**
+         * Computes the central meridian of a given zone.
+         *
+         * @param  zone  the zone as a number starting with 1.
+         * @return the central meridian of the given zone.
+         */
+        public final double centralMeridian(final int zone) {
             return (zone - 0.5) * width + origin;
         }
+
+        /**
+         * Indicates whether the given zone needs to be handled in a special way for the given latitude.
+         *
+         * @param  zone  the zone to test if it is a special case.
+         * @param  φ     the latitude for which to test if there is a special case.
+         * @return whether the given zone at the given latitude is a special case.
+         */
+        public boolean isSpecialCase(final int zone, final double φ) {
+            return false;
+        }
+
+        /**
+         * First exception in UTM projection, corresponding to latitude band V.
+         * This method is public for {@code MilitaryGridReferenceSystemTest.verifyZonerConsistency()} purpose only.
+         *
+         * @param  φ  the latitude in degrees to test.
+         * @return whether the given latitude is in the Norway latitude band.
+         */
+        public static boolean isNorway(final double φ) {
+            return (φ >= 56) && (φ < 64);
+        }
+
+        /**
+         * Second exception in UTM projection, corresponding to latitude band X.
+         * This method is public for {@code MilitaryGridReferenceSystemTest.verifyZonerConsistency()} purpose only.
+         *
+         * @param  φ  the latitude in degrees to test.
+         * @return whether the given latitude is in the Svalbard latitude band.
+         */
+        public static boolean isSvalbard(final double φ) {
+            return (φ >= SVALBARD_BOUNDS) && (φ < NORTH_BOUNDS);
+        }
+
+        /**
+         * Southernmost bound of the first latitude band ({@code 'C'}), inclusive.
+         *
+         * @see #NORTH_BOUNDS
+         */
+        public static final double SOUTH_BOUNDS = -80;
+
+        /**
+         * Southernmost bounds (inclusive) of the last latitude band, which contains Svalbard.
+         * This latitude band is 12° height instead of 8°.
+         */
+        public static final double SVALBARD_BOUNDS = 72;
+
+        /**
+         * Northernmost bound of the last latitude band ({@code 'X'}), exclusive.
+         *
+         * @see #SOUTH_BOUNDS
+         */
+        public static final double NORTH_BOUNDS = 84;
     }
 }
