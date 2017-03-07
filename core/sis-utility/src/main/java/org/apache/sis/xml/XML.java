@@ -37,7 +37,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Result;
 import javax.xml.transform.stax.StAXSource;
+import javax.xml.transform.stax.StAXResult;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Workaround;
@@ -453,7 +455,21 @@ public final class XML extends Static {
                 marshaller.setProperty(entry.getKey(), entry.getValue());
             }
         }
-        marshaller.marshal(object, output);
+        /*
+         * STAX results are not handled by JAXB as of JDK 8. We have to handle those cases ourselves.
+         * This workaround should be removed if a future JDK version handles those cases.
+         */
+        if (output instanceof StAXResult) {
+            @Workaround(library = "JDK", version = "1.8")
+            final XMLStreamWriter writer = ((StAXResult) output).getXMLStreamWriter();
+            if (writer != null) {
+                marshaller.marshal(object, writer);
+            } else {
+                marshaller.marshal(object, ((StAXResult) output).getXMLEventWriter());
+            }
+        } else {
+            marshaller.marshal(object, output);
+        }
         pool.recycle(marshaller);
     }
 

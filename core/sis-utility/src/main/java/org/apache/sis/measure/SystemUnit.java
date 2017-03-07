@@ -28,6 +28,7 @@ import javax.measure.UnconvertibleException;
 import javax.measure.IncommensurableException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.converter.SurjectiveConverter;
 import org.apache.sis.math.Fraction;
@@ -482,17 +483,18 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     }
 
     /**
-     * Compares this unit with the given object for equality.
+     * Compares this unit with the given object for equality,
+     * optionally ignoring metadata and rounding errors.
      *
-     * @param  other  the other object to compares with this unit, or {@code null}.
-     * @return {@code true} if the given object is equals to this unit.
+     * @param  other  the other object to compare with this unit, or {@code null}.
+     * @return {@code true} if the given object is equal to this unit.
      */
     @Override
-    public boolean equals(final Object other) {
+    public boolean equals(final Object other, final ComparisonMode mode) {
         if (other == this) {
             return true;
         }
-        if (super.equals(other)) {
+        if (super.equals(other, mode)) {
             final SystemUnit<?> that = (SystemUnit<?>) other;
             return Objects.equals(quantity, that.quantity) && dimension.equals(that.dimension);
         }

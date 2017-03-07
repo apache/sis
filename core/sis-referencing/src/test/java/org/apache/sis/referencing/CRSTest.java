@@ -75,28 +75,30 @@ public final strictfp class CRSTest extends TestCase {
      *
      * @throws FactoryException if a CRS can not be constructed.
      *
-     * @see CommonCRSTest#testForCode()
+     * @see EPSGFactoryFallbackTest#testCreateCRS()
      */
     @Test
     public void testForEpsgCode() throws FactoryException {
-        verifyForCode(CommonCRS.WGS84 .geographic(),   "EPSG:4326");
-        verifyForCode(CommonCRS.WGS84 .geographic(),   "urn:ogc:def:crs:EPSG::4326");
-        verifyForCode(CommonCRS.WGS84 .geographic(),   "urn:x-ogc:def:crs:EPSG::4326");
-        verifyForCode(CommonCRS.WGS84 .geographic(),   "http://www.opengis.net/gml/srs/epsg.xml#4326");
-        verifyForCode(CommonCRS.WGS72 .geographic(),   "EPSG:4322");
-        verifyForCode(CommonCRS.SPHERE.geographic(),   "EPSG:4047");
-        verifyForCode(CommonCRS.NAD83 .geographic(),   "EPSG:4269");
-        verifyForCode(CommonCRS.NAD27 .geographic(),   "EPSG:4267");
-        verifyForCode(CommonCRS.ETRS89.geographic(),   "EPSG:4258");
-        verifyForCode(CommonCRS.ED50  .geographic(),   "EPSG:4230");
-        verifyForCode(CommonCRS.WGS84 .geocentric(),   "EPSG:4978");
-        verifyForCode(CommonCRS.WGS72 .geocentric(),   "EPSG:4984");
-        verifyForCode(CommonCRS.ETRS89.geocentric(),   "EPSG:4936");
-        verifyForCode(CommonCRS.WGS84 .geographic3D(), "EPSG:4979");
-        verifyForCode(CommonCRS.WGS72 .geographic3D(), "EPSG:4985");
-        verifyForCode(CommonCRS.ETRS89.geographic3D(), "EPSG:4937");
+        verifyForCode(CommonCRS.WGS84 .geographic(),           "EPSG:4326");
+        verifyForCode(CommonCRS.WGS84 .geographic(),           "urn:ogc:def:crs:EPSG::4326");
+        verifyForCode(CommonCRS.WGS84 .geographic(),           "urn:x-ogc:def:crs:EPSG::4326");
+        verifyForCode(CommonCRS.WGS84 .geographic(),           "http://www.opengis.net/gml/srs/epsg.xml#4326");
+        verifyForCode(CommonCRS.WGS72 .geographic(),           "EPSG:4322");
+        verifyForCode(CommonCRS.SPHERE.geographic(),           "EPSG:4047");
+        verifyForCode(CommonCRS.NAD83 .geographic(),           "EPSG:4269");
+        verifyForCode(CommonCRS.NAD27 .geographic(),           "EPSG:4267");
+        verifyForCode(CommonCRS.ETRS89.geographic(),           "EPSG:4258");
+        verifyForCode(CommonCRS.ED50  .geographic(),           "EPSG:4230");
+        verifyForCode(CommonCRS.WGS84 .geocentric(),           "EPSG:4978");
+        verifyForCode(CommonCRS.WGS72 .geocentric(),           "EPSG:4984");
+        verifyForCode(CommonCRS.ETRS89.geocentric(),           "EPSG:4936");
+        verifyForCode(CommonCRS.WGS84 .geographic3D(),         "EPSG:4979");
+        verifyForCode(CommonCRS.WGS72 .geographic3D(),         "EPSG:4985");
+        verifyForCode(CommonCRS.ETRS89.geographic3D(),         "EPSG:4937");
+        verifyForCode(CommonCRS.WGS84 .universal(88, 120),     "EPSG:5041");
+        verifyForCode(CommonCRS.WGS84 .universal(-40, 2),      "EPSG:32731");
         verifyForCode(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(), "EPSG:5714");
-        verifyForCode(CommonCRS.Vertical.DEPTH.crs(), "EPSG:5715");
+        verifyForCode(CommonCRS.Vertical.DEPTH.crs(),          "EPSG:5715");
     }
 
     /**
@@ -104,7 +106,7 @@ public final strictfp class CRSTest extends TestCase {
      *
      * @throws FactoryException if a CRS can not be constructed.
      *
-     * @see CommonCRSTest#testForCode()
+     * @see EPSGFactoryFallbackTest#testCreateCRS()
      */
     @Test
     @DependsOnMethod("testForEpsgCode")

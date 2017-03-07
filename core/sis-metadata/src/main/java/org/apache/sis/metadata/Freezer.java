@@ -19,35 +19,35 @@ package org.apache.sis.metadata;
 import java.util.Map;
 import java.util.Set;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import org.apache.sis.util.collection.Containers;
+import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
 
 
 /**
  * Returns unmodifiable view of metadata elements of arbitrary type.
- * Despite the {@code Cloner} class name, this class actually tries
- * to avoid creating new clones as much as possible.
+ * Despite the {@code Cloner} parent class name, this class actually
+ * tries to avoid creating new clones as much as possible.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
-final class Cloner extends org.apache.sis.internal.util.Cloner {
+final class Freezer extends Cloner {
     /**
-     * Creates a new {@code Cloner} instance.
+     * Creates a new {@code Freezer} instance.
      */
-    Cloner() {
+    Freezer() {
     }
 
     /**
-     * Tells {@link #clone(Object)} to return the original object
+     * Tells {@link Cloner#clone(Object)} to return the original object
      * if no public {@code clone()} method is found.
      */
     @Override
@@ -59,7 +59,7 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
      * Recursively clones all elements in the given array.
      */
     private void clones(final Object[] array) throws CloneNotSupportedException {
-        for (int i=0; i<array.length; i++) {
+        for (int i=0; i < array.length; i++) {
             array[i] = clone(array[i]);
         }
     }
@@ -134,7 +134,7 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
                          * is less destructive (no removal of duplicated values).
                          */
                         clones(array);
-                        collection = Containers.unmodifiableList(array);
+                        collection = UnmodifiableArrayList.wrap(array);
                     }
                     break;
                 }
@@ -146,9 +146,9 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
          *          by their unmodifiable variant. The keys are assumed already immutable.
          */
         if (object instanceof Map<?,?>) {
-            final Map<Object,Object> map = new LinkedHashMap<Object,Object>((Map<?,?>) object);
-            for (final Iterator<Map.Entry<Object,Object>> it=map.entrySet().iterator(); it.hasNext();) {
-                final Map.Entry<Object,Object> entry = it.next();
+            @SuppressWarnings("unchecked")
+            final Map<Object,Object> map = new LinkedHashMap<>((Map) object);
+            for (final Map.Entry<Object,Object> entry : map.entrySet()) {
                 entry.setValue(clone(entry.getValue()));
             }
             return CollectionsExt.unmodifiableOrCopy(map);

@@ -27,6 +27,8 @@ import javax.measure.Quantity;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -57,7 +59,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.8
  * @module
  */
-abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializable {
+abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientComparable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -270,16 +272,28 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     /**
      * Compares this unit with the given object for equality.
      *
-     * @param  other  the other object to compares with this unit, or {@code null}.
-     * @return {@code true} if the given object is equals to this unit.
+     * @param  other  the other object to compare with this unit, or {@code null}.
+     * @return {@code true} if the given object is equal to this unit.
      */
     @Override
-    public boolean equals(final Object other) {
-        if (other != null && other.getClass() == getClass()) {
-            final AbstractUnit<?> that = (AbstractUnit<?>) other;
-            return epsg == that.epsg && scope == that.scope && Objects.equals(symbol, that.symbol);
+    public final boolean equals(final Object other) {
+        return equals(other, ComparisonMode.STRICT);
+    }
+
+    /**
+     * Compares this unit with the given object for equality,
+     * optionally ignoring metadata and rounding errors.
+     */
+    @Override
+    public boolean equals(final Object other, final ComparisonMode mode) {
+        if (other == null || other.getClass() != getClass()) {
+            return false;
         }
-        return false;
+        if (mode.isIgnoringMetadata()) {
+            return true;
+        }
+        final AbstractUnit<?> that = (AbstractUnit<?>) other;
+        return epsg == that.epsg && scope == that.scope && Objects.equals(symbol, that.symbol);
     }
 
     /**

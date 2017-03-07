@@ -91,7 +91,7 @@ public class Cloner {
         try {
             if (valueType != type) {
                 method = valueType.getMethod("clone", (Class<?>[]) null);
-                type = valueType; // Set only if the above line succeed.
+                type = valueType;                                           // Set only if the above line succeed.
                 /*
                  * If the class implementing the 'clone()' method is not public, we may not be able to access that
                  * method even if it is public. Try to make the method accessible. If we fail for security reason,

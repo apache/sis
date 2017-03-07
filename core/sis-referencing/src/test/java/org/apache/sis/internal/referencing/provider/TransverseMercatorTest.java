@@ -37,13 +37,18 @@ import static org.junit.Assert.*;
  */
 public final strictfp class TransverseMercatorTest extends TestCase {
     /**
-     * Tests {@link TransverseMercator.Zoner#zone(double)}.
+     * Tests {@link TransverseMercator.Zoner#zone(double)},
+     * including the special cases for Norway and Svalbard.
      */
     @Test
     public void testZone() {
-        assertEquals(1,  TransverseMercator.Zoner.UTM.zone(-180));
-        assertEquals(10, TransverseMercator.Zoner.UTM.zone(-123));
-        assertEquals(60, TransverseMercator.Zoner.UTM.zone(179.9));
+        assertEquals("180°E",        1, TransverseMercator.Zoner.UTM.zone( 0, -180  ));
+        assertEquals("123°E",       10, TransverseMercator.Zoner.UTM.zone( 0, -123  ));
+        assertEquals("179.9°W",     60, TransverseMercator.Zoner.UTM.zone( 0,  179.9));
+        assertEquals( "4°E band T", 31, TransverseMercator.Zoner.UTM.zone(45,    4  ));
+        assertEquals( "4°E band V", 32, TransverseMercator.Zoner.UTM.zone(56,    4  ));
+        assertEquals("20°E band W", 34, TransverseMercator.Zoner.UTM.zone(71,   20  ));
+        assertEquals("20°E band X", 33, TransverseMercator.Zoner.UTM.zone(72,   20  ));
     }
 
     /**
@@ -57,7 +62,7 @@ public final strictfp class TransverseMercatorTest extends TestCase {
     }
 
     /**
-     * Tests {@link TransverseMercator.Zoner#setParameters(ParameterValueGroup, boolean, double, double)}
+     * Tests {@link TransverseMercator.Zoner#setParameters(ParameterValueGroup, double, double)}
      * followed by {@link TransverseMercator.Zoner#zone(ParameterValueGroup)}.
      */
     @Test
@@ -67,17 +72,17 @@ public final strictfp class TransverseMercatorTest extends TestCase {
     })
     public void testSetParameters() {
         final ParameterValueGroup p = TransverseMercator.PARAMETERS.createValue();
-        assertEquals("UTM zone 10N", TransverseMercator.Zoner.UTM.setParameters(p, true, 0, -122));
+        assertEquals("UTM zone 10N", TransverseMercator.Zoner.UTM.setParameters(p, 0, -122));
         assertEquals(Constants.CENTRAL_MERIDIAN, -123, p.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(), STRICT);
         assertEquals(Constants.FALSE_NORTHING, 0, p.parameter(Constants.FALSE_NORTHING).doubleValue(), STRICT);
         assertEquals("UTM.zone(parameters)", 10, TransverseMercator.Zoner.UTM.zone(p));
 
-        assertEquals("Transverse Mercator", TransverseMercator.Zoner.UTM.setParameters(p, false, 0, -122));
+        assertEquals("Transverse Mercator", TransverseMercator.Zoner.ANY.setParameters(p, 0, -122));
         assertEquals(Constants.CENTRAL_MERIDIAN, -122, p.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(), STRICT);
         assertEquals(Constants.FALSE_NORTHING, 0, p.parameter(Constants.FALSE_NORTHING).doubleValue(), STRICT);
         assertEquals("UTM.zone(parameters)", 0, TransverseMercator.Zoner.UTM.zone(p));
 
-        assertEquals("UTM zone 10S", TransverseMercator.Zoner.UTM.setParameters(p, false, -0.0, -123));
+        assertEquals("UTM zone 10S", TransverseMercator.Zoner.ANY.setParameters(p, -0.0, -123));
         assertEquals(Constants.CENTRAL_MERIDIAN, -123, p.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(), STRICT);
         assertEquals(Constants.FALSE_NORTHING, 10000000, p.parameter(Constants.FALSE_NORTHING).doubleValue(), STRICT);
         assertEquals("UTM.zone(parameters)", -10, TransverseMercator.Zoner.UTM.zone(p));

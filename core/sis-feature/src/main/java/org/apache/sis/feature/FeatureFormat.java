@@ -73,8 +73,11 @@ import org.apache.sis.util.Characters;
  *   └────────────┴─────────┴─────────────┴───────────┘
  * }</div>
  *
+ * Like most {@link java.text.Format} implementations, this class is not thread-safe.
+ * Each thread should use its own {@code FeatureFormat} instance or apply synchronization.
+ *
  * <div class="warning"><b>Limitation:</b>
- * Current implementation supports only formatting, not parsing.
+ * the current implementation can only format features — parsing is not yet implemented.
  * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)

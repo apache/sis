@@ -365,11 +365,12 @@ public class MetadataStandard implements Serializable {
                 if (v instanceof PropertyAccessor) {
                     return v;
                 }
+                final Class<?> standardImpl = getImplementation(type);
                 final PropertyAccessor accessor;
                 if (SpecialCases.isSpecialCase(type)) {
-                    accessor = new SpecialCases(citation, type, key.type);
+                    accessor = new SpecialCases(citation, type, k.type, standardImpl);
                 } else {
-                    accessor = new PropertyAccessor(citation, type, key.type);
+                    accessor = new PropertyAccessor(citation, type, k.type, standardImpl);
                 }
                 return accessor;
             }
@@ -594,7 +595,7 @@ public class MetadataStandard implements Serializable {
 
     /**
      * Returns the implementation class for the given interface, or {@code null} if none.
-     * The default implementation returns {@code null} if every cases. Subclasses shall
+     * The default implementation returns {@code null} in every cases. Subclasses shall
      * override this method in order to map GeoAPI interfaces to their implementation.
      *
      * @param  <T>   the compile-time {@code type}.

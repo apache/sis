@@ -90,7 +90,7 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
      */
     @Test
     public final void testTransform() throws FactoryException, TransformException {
-        final ProjectedCRS    targetCRS  = CommonCRS.WGS84.UTM(10, -123.5);
+        final ProjectedCRS    targetCRS  = CommonCRS.WGS84.universal(10, -123.5);
         final GeographicCRS   sourceCRS  = targetCRS.getBaseCRS();
         final Conversion      conversion = targetCRS.getConversionFromBase();
         final MathTransform2D transform  = (MathTransform2D) conversion.getMathTransform();
@@ -199,7 +199,7 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
     @Test
     @DependsOnMethod("testTransform")
     public final void testTransformNotOverPole() throws FactoryException, TransformException {
-        final ProjectedCRS  sourceCRS  = CommonCRS.WGS84.UTM(10, -3.5);
+        final ProjectedCRS  sourceCRS  = CommonCRS.WGS84.universal(10, -3.5);
         final GeographicCRS targetCRS  = sourceCRS.getBaseCRS();
         final Conversion    conversion = inverse(sourceCRS.getConversionFromBase());
         final G rectangle = createFromExtremums(sourceCRS, 199980, 4490220, 309780, 4600020);
