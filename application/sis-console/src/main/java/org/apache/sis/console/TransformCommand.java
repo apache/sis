@@ -281,9 +281,9 @@ final class TransformCommand extends FormattedOutputCommand {
      *
      * @param  key  a {@code Vocabulary.Keys} constant for the header to print.
      */
-    private void printHeader(final short key) {
+    private void printHeader(final short key) throws IOException {
         printCommentLinePrefix();
-        outHeader.append(resources.getLabel(key));
+        resources.appendLabel(key, outHeader);
         outHeader.nextColumn();
     }
 
@@ -354,7 +354,7 @@ final class TransformCommand extends FormattedOutputCommand {
     /**
      * Prints the accuracy.
      */
-    private void printAccuracy(double accuracy) {
+    private void printAccuracy(double accuracy) throws IOException {
         if (accuracy >= 0) {
             if (accuracy == 0) {
                 accuracy = Formulas.LINEAR_TOLERANCE;
@@ -384,7 +384,7 @@ final class TransformCommand extends FormattedOutputCommand {
      *
      * <blockquote>Canada - onshore and offshore</blockquote>
      */
-    private void printDomainOfValidity(final Extent domain) {
+    private void printDomainOfValidity(final Extent domain) throws IOException {
         if (domain != null) {
             final InternationalString description = domain.getDescription();
             if (description != null) {
@@ -410,7 +410,7 @@ final class TransformCommand extends FormattedOutputCommand {
      * Prints the coordinate operation or math transform in Well Known Text format.
      * This information is printed only if the {@code --verbose} option was specified.
      */
-    private void printDetails() {
+    private void printDetails() throws IOException {
         final boolean debug = options.containsKey(Option.DEBUG);
         final WKTFormat f = new WKTFormat(locale, timezone);
         if (colors) f.setColors(Colors.DEFAULT);

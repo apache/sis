@@ -46,6 +46,7 @@ public abstract class OptionalDependency extends SystemListener {
      * @param dependency  the Maven artifact name (<strong>not</strong> a name from the {@link Modules} class)
      *        of the optional module on which the {@code module} depend.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     protected OptionalDependency(final String module, final String dependency) {
         super(module);
         this.dependency = dependency;

@@ -86,10 +86,10 @@ public final strictfp class TreeTableFormatTest extends TestCase {
             "  ├─Title…………………………………………………………………………… Undercurrent\n" +
             "  ├─Alternate title………………………………………………… Andākarento\n" +
             "  ├─Identifier\n" +
-            "  │   ├─Code…………………………………………………………………… 9782505004509\n" +
-            "  │   └─Authority\n" +
-            "  │       ├─Title……………………………………………………… International Standard Book Number\n" +
-            "  │       └─Alternate title…………………………… ISBN\n" +
+            "  │   ├─Authority\n" +
+            "  │   │   ├─Title……………………………………………………… International Standard Book Number\n" +
+            "  │   │   └─Alternate title…………………………… ISBN\n" +
+            "  │   └─Code…………………………………………………………………… 9782505004509\n" +
             "  ├─Cited responsible party (1 of 2)\n" +
             "  │   ├─Role…………………………………………………………………… Author\n" +
             "  │   └─Party\n" +

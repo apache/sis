@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
+import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import javax.measure.UnitConverter;
@@ -42,15 +43,13 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.measure.Units;
 
 import static java.lang.Math.*;
 import static java.lang.Double.*;
 import static org.apache.sis.util.ArgumentChecks.ensureStrictlyPositive;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -717,7 +716,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                  */
                 final Ellipsoid that = (Ellipsoid) object;
                 final Unit<Length> unit = getAxisUnit();  // In case the user override this method.
-                if (!Objects.equals(unit, that.getAxisUnit())) {
+                if (!Utilities.deepEquals(unit, that.getAxisUnit(), mode)) {
                     return false;
                 }
                 final UnitConverter c = mode.isApproximative() ? unit.getConverterTo(Units.METRE) : null;

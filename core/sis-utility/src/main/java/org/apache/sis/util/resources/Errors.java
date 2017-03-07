@@ -106,6 +106,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotConvertValue_2 = 8;
 
         /**
+         * Can not copy “{0}”.
+         */
+        public static final short CanNotCopy_1 = 169;
+
+        /**
          * Can not open “{0}”.
          */
         public static final short CanNotOpen_1 = 9;
@@ -865,6 +870,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnspecifiedFormatForClass_1 = 158;
 
         /**
+         * The “{0}” argument value is unsupported.
+         */
+        public static final short UnsupportedArgumentValue_1 = 170;
+
+        /**
+         * The “{0}” datum is not supported by this operation.
+         */
+        public static final short UnsupportedDatum_1 = 168;
+
+        /**
          * Version {1} of {0} format is not supported.
          */
         public static final short UnsupportedFormatVersion_2 = 159;
@@ -886,7 +901,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnsupportedOperation_1 = 162;
 
         /**
-         * The ‘{0}’ type is unsupported.
+         * The ‘{0}’ type is not supported in this context.
          */
         public static final short UnsupportedType_1 = 163;
 

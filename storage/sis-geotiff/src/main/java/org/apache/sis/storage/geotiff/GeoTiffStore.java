@@ -43,6 +43,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Thi Phuong Hao Nguyen (VNSC)
  * @since   0.8
  * @version 0.8
  * @module

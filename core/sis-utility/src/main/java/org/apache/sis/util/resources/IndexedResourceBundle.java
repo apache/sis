@@ -451,6 +451,25 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     }
 
     /**
+     * Writes the localized string identified by the given key followed by a colon.
+     * The way to write the colon depends on the language.
+     *
+     * @param  key         the key for the desired string.
+     * @param  toAppendTo  where to write the localized string followed by a colon.
+     * @throws IOException if an error occurred while writing to the given destination.
+     *
+     * @since 0.8
+     */
+    public final void appendLabel(final short key, final Appendable toAppendTo) throws IOException {
+        toAppendTo.append(getString(key));
+        if (Locale.FRENCH.getLanguage().equals(getLocale().getLanguage())) {
+            toAppendTo.append("\u00A0:");
+        } else {
+            toAppendTo.append(':');
+        }
+    }
+
+    /**
      * Gets a string for the given key and appends "…" to it.
      * This method is typically used for creating menu items.
      *
@@ -470,7 +489,10 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  key  the key for the desired string.
      * @return the string for the given key.
      * @throws MissingResourceException if no object for the given key can be found.
+     *
+     * @deprecated Replaced by {@link #appendLabel(short, Appendable)}.
      */
+    @Deprecated
     public final String getLabel(final short key) throws MissingResourceException {
         String label = getString(key);
         if (Locale.FRENCH.getLanguage().equals(getLocale().getLanguage())) {

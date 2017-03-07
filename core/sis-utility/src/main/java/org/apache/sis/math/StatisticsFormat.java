@@ -41,16 +41,32 @@ import static java.lang.Math.*;
 /**
  * Formats a {@link Statistics} object.
  * By default, newly created {@code StatisticsFormat} instances will format statistical values
- * in a tabular format using spaces as the column separator. This default configuration matches
- * the {@link Statistics#toString()} format.
+ * in a tabular format using spaces as the column separator.
  *
- * <div class="section">Limitations</div>
- * The current implementation can only format statistics - parsing is not yet implemented.
+ * <div class="note"><b>Example:</b>
+ * {@preformat text
+ *     Number of values:     8726
+ *     Minimum value:       6.853
+ *     Maximum value:       8.259
+ *     Mean value:          7.421
+ *     Root Mean Square:    7.846
+ *     Standard deviation:  6.489
+ * }
+ * </div>
+ *
+ * Like most {@link java.text.Format} implementations, this class is not thread-safe.
+ * Each thread should use its own {@code StatisticsFormat} instance or apply synchronization.
+ *
+ * <div class="warning"><b>Limitation:</b>
+ * the current implementation can only format statistics — parsing is not yet implemented.
+ * </div>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3
  * @version 0.8
  * @module
+ *
+ * @see Statistics#toString()
  */
 public class StatisticsFormat extends TabularFormat<Statistics> {
     /**

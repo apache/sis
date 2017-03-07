@@ -44,6 +44,9 @@
       <fileset dir="${project.root}/core/sis-referencing/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>
+      <fileset dir="${project.root}/core/sis-referencing-by-identifiers/target/generated-resources">
+        <include name="**/*.utf"/>
+      </fileset>
       <fileset dir="${project.root}/core/sis-feature/target/generated-resources">
         <include name="**/*.utf"/>
       </fileset>

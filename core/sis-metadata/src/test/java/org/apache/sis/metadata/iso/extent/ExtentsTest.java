@@ -22,6 +22,7 @@ import java.util.Collections;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.MeasurementRange;
@@ -148,5 +149,27 @@ public final strictfp class ExtentsTest extends TestCase {
         box.setBounds(167.65, -129.99, 47.88, 74.71);
         assertTrue(DefaultGeographicBoundingBoxTest.isSpanningAntiMeridian(box));
         assertEquals(9845438, Extents.area(box) / 1E6, 1);                              // Compare in km²
+    }
+
+    /**
+     * Tests the {@link Extents#centroid(GeographicBoundingBox)} method. This method is defined here but executed from
+     * the {@link org.apache.sis.internal.referencing.ServicesForMetadataTest} class in {@code sis-referencing} module.
+     * This method can not be executed in the {@code sis-metadata} module because it has a dependency to a referencing
+     * implementation class.
+     *
+     * @since 0.8
+     */
+    public static void testCentroid() {
+        final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(140, 160, 30, 50);
+        DirectPosition pos = Extents.centroid(bbox);
+        assertEquals("longitude", 150, pos.getOrdinate(0), STRICT);
+        assertEquals("latitude",   40, pos.getOrdinate(1), STRICT);
+        /*
+         * Test crossing anti-meridian.
+         */
+        bbox.setEastBoundLongitude(-160);
+        pos = Extents.centroid(bbox);
+        assertEquals("longitude", 170, pos.getOrdinate(0), STRICT);
+        assertEquals("latitude",   40, pos.getOrdinate(1), STRICT);
     }
 }

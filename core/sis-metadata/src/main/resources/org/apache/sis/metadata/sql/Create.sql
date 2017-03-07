@@ -96,19 +96,22 @@ INSERT INTO metadata."CI_Party" (ID, "name") VALUES
   ('Apache', 'The Apache Software Foundation'),
   ('OGC',    'Open Geospatial Consortium'),
   ('ISO',    'International Organization for Standardization'),
-  ('IOGP',   'International Association of Oil & Gas producers');
+  ('IOGP',   'International Association of Oil & Gas producers'),
+  ('NATO',   'North Atlantic Treaty Organization');
 
 INSERT INTO metadata."CI_Responsibility" (ID, "party", "role") VALUES
   ('Apache', 'Apache', 'principalInvestigator'),
   ('OGC',    'OGC',    'principalInvestigator'),
   ('ISO',    'ISO',    'principalInvestigator'),
-  ('IOGP',   'IOGP',   'principalInvestigator');
+  ('IOGP',   'IOGP',   'principalInvestigator'),
+  ('NATO',   'NATO',   'principalInvestigator');
 
 INSERT INTO metadata."CI_Citation" (ID, "edition", "citedResponsibleParty", "title") VALUES
   ('SIS',         NULL,                  'Apache',  'Apache Spatial Information System'),
   ('ISO 19115-1', 'ISO 19115-1:2014(E)', 'ISO',     'Geographic Information — Metadata Part 1: Fundamentals'),
   ('ISO 19115-2', 'ISO 19115-2:2009(E)', 'ISO',     'Geographic Information — Metadata Part 2: Extensions for imagery and gridded data'),
-  ('EPSG',        NULL,                  'IOGP',    'EPSG Geodetic Parameter Dataset');
+  ('EPSG',        NULL,                  'IOGP',    'EPSG Geodetic Parameter Dataset'),
+  ('MGRS',        NULL,                  'NATO',    'Military Grid Reference System');
 
 
 --

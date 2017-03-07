@@ -82,6 +82,17 @@ public final class JDK8 {
         return buffer.toString();
     }
 
+    /**
+     * Returns {@code true} if the given value is neither NaN or infinite.
+     *
+     * @param  value  the value to test.
+     * @return whether the given value is finite.
+     *
+     * @since 0.8
+     */
+    public static boolean isFinite(final double value) {
+        return !Double.isNaN(value) && !Double.isInfinite(value);
+    }
 
     /**
      * Compares two numbers as unsigned long.

@@ -26,6 +26,8 @@ import javax.measure.IncommensurableException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.internal.util.Numerics;
@@ -439,19 +441,21 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     }
 
     /**
-     * Compares this unit with the given object for equality.
+     * Compares this unit with the given object for equality,
+     * optionally ignoring metadata and rounding errors.
      *
-     * @param  other  the other object to compares with this unit, or {@code null}.
-     * @return {@code true} if the given object is equals to this unit.
+     * @param  other  the other object to compare with this unit, or {@code null}.
+     * @return {@code true} if the given object is equal to this unit.
      */
     @Override
-    public boolean equals(final Object other) {
+    public boolean equals(final Object other, final ComparisonMode mode) {
         if (other == this) {
             return true;
         }
-        if (super.equals(other)) {
+        if (super.equals(other, mode)) {
             final ConventionalUnit<?> that = (ConventionalUnit<?>) other;
-            return target.equals(that.target) && toTarget.equals(that.toTarget);
+            return Utilities.deepEquals(target,   that.target,   mode) &&
+                   Utilities.deepEquals(toTarget, that.toTarget, mode);
         }
         return false;
     }

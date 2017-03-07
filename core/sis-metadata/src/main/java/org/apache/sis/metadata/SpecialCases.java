@@ -31,7 +31,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 final class SpecialCases extends PropertyAccessor {
@@ -47,9 +47,11 @@ final class SpecialCases extends PropertyAccessor {
      * @param  type            the interface implemented by the metadata, which must be
      *                         the value returned by {@link #getStandardType(Class, String)}.
      * @param  implementation  the class of metadata implementations, or {@code type} if none.
+     * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
+     *                         This is the same than {@code implementation} unless a custom implementation is used.
      */
-    SpecialCases(final Citation standard, final Class<?> type, final Class<?> implementation) {
-        super(standard, type, implementation);
+    SpecialCases(final Citation standard, final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
+        super(standard, type, implementation, standardImpl);
         assert isSpecialCase(type) : type;
         westBoundLongitude = indexOf("westBoundLongitude", true);
         eastBoundLongitude = indexOf("eastBoundLongitude", true);
