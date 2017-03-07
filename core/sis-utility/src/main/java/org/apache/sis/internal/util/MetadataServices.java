@@ -16,7 +16,9 @@
  */
 package org.apache.sis.internal.util;
 
+import java.text.Format;
 import java.util.Locale;
+import java.util.TimeZone;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.system.Modules;
@@ -30,7 +32,7 @@ import org.apache.sis.internal.system.OptionalDependency;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public class MetadataServices extends OptionalDependency {
@@ -131,5 +133,18 @@ public class MetadataServices extends OptionalDependency {
      */
     public String getInformation(String key, Locale locale) {
         return null;
+    }
+
+    /**
+     * Creates a format for {@link org.opengis.geometry.DirectPosition} instances.
+     *
+     * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
+     * @param  timezone  the timezone, or {@code null} for UTC.
+     * @return a {@link org.apache.sis.geometry.CoordinateFormat}.
+     *
+     * @since 0.8
+     */
+    public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {
+        throw moduleNotFound();
     }
 }

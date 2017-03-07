@@ -19,6 +19,8 @@ package org.apache.sis.internal.metadata;
 import java.util.Map;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.TimeZone;
+import java.text.Format;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
@@ -515,6 +517,19 @@ public class ReferencingServices extends OptionalDependency {
             }
         }
         return null;
+    }
+
+    /**
+     * Creates a format for {@link DirectPosition} instances.
+     *
+     * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
+     * @param  timezone  the timezone, or {@code null} for UTC.
+     * @return a {@link org.apache.sis.geometry.CoordinateFormat}.
+     *
+     * @since 0.8
+     */
+    public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {
+        throw moduleNotFound();
     }
 
     /**

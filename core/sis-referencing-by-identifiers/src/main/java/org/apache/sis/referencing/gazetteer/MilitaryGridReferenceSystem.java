@@ -78,9 +78,10 @@ import org.opengis.referencing.gazetteer.LocationType;
  *         └─<b>Grid coordinate</b>      (example: “12345 67890”)<br>
  * </blockquote>
  *
- * <p>Conversions between MGRS references and spatial coordinates can be performed by the {@link Coder Coder}
- * inner class. The result of decoding a MGRS reference is an envelope rather than a point,
- * but a representative point can be obtained.</p>
+ * <p>Conversions between MGRS references and spatial coordinates can be performed by the {@link Coder Coder} inner class.
+ * The result of decoding a MGRS reference is an envelope rather than a point, but a representative point can be obtained.
+ * The encoding and decoding processes take in account Norway and Svalbard special cases (they have wider UTM zones for
+ * historical reasons).</p>
  *
  * <div class="note"><b>Example:</b>
  * the following code:
@@ -120,6 +121,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @version 0.8
  * @module
  *
+ * @see CommonCRS#universal(double, double)
  * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
  */
 public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
