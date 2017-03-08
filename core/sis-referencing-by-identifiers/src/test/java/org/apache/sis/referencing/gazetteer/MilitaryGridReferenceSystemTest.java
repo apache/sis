@@ -313,36 +313,72 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     public void testDecodeLimitCases() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         DirectPosition position;
+        ProjectedCRS crs;
         /*
          * Cell on the West border of a UTM zone in the South hemisphere.
-         * The Easting value would be 250000 if the cell was not clipped.
+         * Easting value before clipping: 250000
+         * Easting value after  clipping: 251256
          */
+        coder.setClipToValidArea(false);
         position = decode(coder, "19JBK");                                            // South hemisphere
-        assertSame("crs", CommonCRS.WGS84.universal(-10, -69), position.getCoordinateReferenceSystem());
+        crs = CommonCRS.WGS84.universal(-10, -69);
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   250000, position.getOrdinate(0), 1);
+        assertEquals("Northing", 6950000, position.getOrdinate(1), STRICT);
+
+        coder.setClipToValidArea(true);
+        position = decode(coder, "19JBK");
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
         assertEquals("Easting",   251256, position.getOrdinate(0), 1);
         assertEquals("Northing", 6950000, position.getOrdinate(1), STRICT);
         /*
          * Easting range before clipping is [300000 … 400000] metres.
-         * The east boung become 343828 metres after clipping.
-         * The easting value would be 350000 if the cell was not clipped.
+         * The east bound become 343828 metres after clipping.
+         * Easting value before clipping: 350000
+         * Easting value after  clipping: 371914
          */
+        coder.setClipToValidArea(false);
         position = decode(coder, "1VCK");                                // North of Norway latitude band
-        assertSame("crs", CommonCRS.WGS84.universal(62, -180), position.getCoordinateReferenceSystem());
+        crs = CommonCRS.WGS84.universal(62, -180);
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   350000, position.getOrdinate(0), 1);
+        assertEquals("Northing", 6950000, position.getOrdinate(1), STRICT);
+
+        coder.setClipToValidArea(true);
+        position = decode(coder, "1VCK");
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
         assertEquals("Easting",   371914, position.getOrdinate(0), 1);
         assertEquals("Northing", 6950000, position.getOrdinate(1), STRICT);
         /*
-         * Northing value would be 7350000 if the cell was not clipped.
+         * Northing value before clipping: 7350000
+         * Northing value after  clipping: 7371306
          */
+        coder.setClipToValidArea(false);
         position = decode(coder, "57KTP");
-        assertSame("crs", CommonCRS.WGS84.universal(-24, 156), position.getCoordinateReferenceSystem());
+        crs = CommonCRS.WGS84.universal(-24, 156);
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   250000, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 7350000, position.getOrdinate(1), 1);
+
+        coder.setClipToValidArea(true);
+        position = decode(coder, "57KTP");
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
         assertEquals("Easting",   250000, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 7371306, position.getOrdinate(1), 1);
         /*
-         * Easting  value would be  650000 if the cell was not clipped.
-         * Northing value would be 6250000 if the cell was not clipped.
+         * Easting and northing values before clipping:  650000   6250000
+         * Easting and northing values after  clipping:  643536   6253618
          */
+        coder.setClipToValidArea(false);
         position = decode(coder, "56VPH");
-        assertSame("crs", CommonCRS.WGS84.universal(55, 154), position.getCoordinateReferenceSystem());
+        crs = CommonCRS.WGS84.universal(55, 154);
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   650000, position.getOrdinate(0), 1);
+        assertEquals("Northing", 6250000, position.getOrdinate(1), 1);
+
+        coder.setClipToValidArea(true);
+        position = decode(coder, "56VPH");
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
         assertEquals("Easting",   643536, position.getOrdinate(0), 1);
         assertEquals("Northing", 6253618, position.getOrdinate(1), 1);
     }

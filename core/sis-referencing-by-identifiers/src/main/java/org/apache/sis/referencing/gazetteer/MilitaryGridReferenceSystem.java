@@ -371,6 +371,13 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         private String trimmedSeparator;
 
         /**
+         * Whether the decoded locations should be clipped to the valid area of MGRS cell.
+         *
+         * @see #getClipToValidArea()
+         */
+        private boolean clipToValidArea = true;
+
+        /**
          * Cached information needed for building a MGRS reference from a direct position in the given CRS.
          */
         private final Map<CoordinateReferenceSystem,Encoder> encoders;
@@ -473,6 +480,29 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             ArgumentChecks.ensureNonNull("separator", separator);
             this.separator = separator;
             trimmedSeparator = CharSequences.trimWhitespaces(separator);
+        }
+
+        /**
+         * Returns whether the decoded locations should be clipped to the valid area.
+         * The default value is {@code true}.
+         *
+         * @return {@code true} if decoded locations are clipped to the valid area.
+         */
+        public boolean getClipToValidArea() {
+            return clipToValidArea;
+        }
+
+        /**
+         * Sets whether the decoded locations should be clipped to the valid area.
+         * MGRS 100 km squares can actually be smaller than 100 km when the square overlaps two UTM zones or
+         * two latitude bands. We may have half of a square in a zone and the other half in the other zone.
+         * By default, the {@link #decode(CharSequence)} method clips the square to the zone where it belongs.
+         * Invoking this method with the {@code false} value disables this behavior.
+         *
+         * @param clip  whether the decoded locations should be clipped to the valid area.
+         */
+        public void setClipToValidArea(final boolean clip) {
+            clipToValidArea = clip;
         }
 
         /**
@@ -1283,7 +1313,7 @@ parse:                  switch (part) {
                  * MGRS reference. If the cell is valid, we can now check for cells that are on a zone border.
                  * Those cells will be clipped to the zone valid area.
                  */
-                if (isValid) {
+                if (isValid && owner.getClipToValidArea()) {
                     final boolean changed;
                     if (zone != 0) {
                         double width = ZONER.width;
