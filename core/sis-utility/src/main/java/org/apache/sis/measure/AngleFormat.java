@@ -299,7 +299,7 @@ public class AngleFormat extends Format implements Localized {
     /**
      * The rounding mode, or {@code null} for the default mode (which is {@link RoundingMode#HALF_EVEN}).
      *
-     * @see #RoundingMode()
+     * @see #getRoundingMode()
      */
     private RoundingMode roundingMode;
 

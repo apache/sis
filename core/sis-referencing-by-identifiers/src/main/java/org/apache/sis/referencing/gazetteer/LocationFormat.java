@@ -30,15 +30,12 @@ import java.text.ParsePosition;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.opengis.referencing.gazetteer.Location;
-import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.citation.Party;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.coordinate.Position;
@@ -62,6 +59,11 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+
+// Branch-dependent imports
+import org.opengis.metadata.citation.Party;
+import org.opengis.referencing.gazetteer.Location;
+import org.opengis.referencing.gazetteer.LocationType;
 
 
 /**

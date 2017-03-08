@@ -18,19 +18,21 @@ package org.apache.sis.referencing.gazetteer;
 
 import java.util.Collection;
 import java.util.Collections;
-import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.coordinate.Position;
-import org.opengis.referencing.gazetteer.Location;
-import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.util.Debug;
+
+// Branch-dependent imports
+import org.opengis.metadata.citation.Party;
+import org.opengis.referencing.gazetteer.Location;
+import org.opengis.referencing.gazetteer.LocationType;
 
 
 /**
