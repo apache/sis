@@ -18,6 +18,7 @@ package org.apache.sis.referencing.gazetteer;
 
 import java.util.Locale;
 import java.util.Random;
+import java.util.Iterator;
 import java.lang.reflect.Field;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
@@ -73,7 +74,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
-     * Verifies relationship between static fields documented in {@link Encoder}.
+     * Verifies relationship between static fields documented in {@link MilitaryGridReferenceSystem}.
      */
     @Test
     public void verifyInvariants() {
@@ -606,7 +607,10 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod({"testEncodeUTM", "testDecodeUTM"})
+    @DependsOnMethod({
+        "testEncodeUTM", "testDecodeUTM",
+        "testEncodeUPS", "testDecodeUPS"
+    })
     public void verifyConsistency() throws TransformException {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final MilitaryGridReferenceSystem.Coder coder = coder();
@@ -628,6 +632,47 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
                    + "Projected φ, λ = " + expected  + lineSeparator
                    + "Distance (m)   = " + distance  + lineSeparator);
             }
+        }
+    }
+
+    /**
+     * Tests iteration over all codes in a given area of interest. The geographic area used for this test is based on
+     * <a href="https://www.ff-reichertshausen.de/cms/wp-content/uploads/2012/10/utmmeldegitter.jpg">this picture</a>
+     * (checked on March 2017).
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod({"testEncodeUTM","testEncodeUPS"})
+    public void testIterator() throws TransformException {
+        final MilitaryGridReferenceSystem.Coder coder = coder();
+        coder.setPrecision(100000);
+        final Iterator<String> it = coder.encode(new Envelope2D(CommonCRS.defaultGeographic(), 5, 47, 8, 10));
+
+        // TODO: following list of expected codes is not yet accurate.
+        final String[] expected = {
+            "31TFN", "31TGN", "31TFP", "31TGP",
+            "31UFQ", "31UGQ", "31UFR", "31UGR", "31UFS", "31UGS",
+            "31UFT", "31UGT", "31UFU", "31UGU", "31UFV", "31UGV",
+            "31UFA", "31UFB", "31UFC",
+            "32TLT", "32TMT", "32TNT", "32TPT", "32TQT",
+            "32TLU", "32TMU", "32TNU", "32TPU", "32TQU",
+            "32ULV", "32UMV", "32UNV", "32UPV", "32UQV",
+            "32ULA", "32UMA", "32UNA", "32UPA", "32UQA",
+            "32ULB", "32UMB", "32UNB", "32UPB", "32UQB",
+            "32ULC", "32UMC", "32UNC", "32UPC", "32UQC",
+            "32ULD", "32UMD", "32UND", "32UPD", "32UQD",
+            "32ULE", "32UME", "32UNE", "32UPE", "32UQE",
+                     "32UMF", "32UNF", "32UPF",
+                     "32UMG", "32UNG", "32UPG",
+                     "32UMH", "32UNH", "32UPH",
+            "32VKJ", "32VLJ", "32VMJ", "32VNJ", "32VPJ",
+            "33TUN", "33TUP",
+            "33UUQ", "33UUR", "33UUS", "33UUT", "33UUU", "33UUV"
+        };
+        for (final String e : expected) {
+            assertTrue(e, it.hasNext());
+            assertEquals(e, it.next());
         }
     }
 }
