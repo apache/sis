@@ -16,6 +16,10 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Iterator;
@@ -648,31 +652,33 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         coder.setPrecision(100000);
         final Iterator<String> it = coder.encode(new Envelope2D(CommonCRS.defaultGeographic(), 5, 47, 8, 10));
-
+        /*
+         * Following is the list of MGRS references that we expect to find in the above area of interest.
+         * The references are distributed in 3 zones (31, 32 and 33) and 3 latitude bands (T, U and V).
+         * This test includes the Norway special case: between 56° and 64°N (latitude band V), zone 32
+         * is widened to 9° at the expense of zone 31. The test needs to be insensitive to iteration order.
+         */
         // TODO: following list of expected codes is not yet accurate.
-        final String[] expected = {
-            "31TFN", "31TGN", "31TFP", "31TGP",
-            "31UFQ", "31UGQ", "31UFR", "31UGR", "31UFS", "31UGS",
-            "31UFT", "31UGT", "31UFU", "31UGU", "31UFV", "31UGV",
-            "31UFA", "31UFB", "31UFC",
-            "32TLT", "32TMT", "32TNT", "32TPT", "32TQT",
-            "32TLU", "32TMU", "32TNU", "32TPU", "32TQU",
-            "32ULV", "32UMV", "32UNV", "32UPV", "32UQV",
-            "32ULA", "32UMA", "32UNA", "32UPA", "32UQA",
-            "32ULB", "32UMB", "32UNB", "32UPB", "32UQB",
-            "32ULC", "32UMC", "32UNC", "32UPC", "32UQC",
-            "32ULD", "32UMD", "32UND", "32UPD", "32UQD",
-            "32ULE", "32UME", "32UNE", "32UPE", "32UQE",
-                     "32UMF", "32UNF", "32UPF",
-                     "32UMG", "32UNG", "32UPG",
-                     "32UMH", "32UNH", "32UPH",
-            "32VKJ", "32VLJ", "32VMJ", "32VNJ", "32VPJ",
-            "33TUN", "33TUP",
-            "33UUQ", "33UUR", "33UUS", "33UUT", "33UUU", "33UUV"
-        };
-        for (final String e : expected) {
-            assertTrue(e, it.hasNext());
-            assertEquals(e, it.next());
+        final List<String> expected = Arrays.asList(
+            "31TFN", "31TGN",    "32TKT", "32TLT", "32TMT", "32TNT", "32TPT", "32TQT",    "33TTN", "33TUN", "33TTP", "33TUP",
+            "31TFP", "31TGP",    "32TKU", "32TLU", "32TMU", "32TNU", "32TPU", "32TQU",
+            "31UFQ", "31UGQ",    "32UKV", "32ULV", "32UMV", "32UNV", "32UPV", "32UQV",    "33UTQ", "33UUQ",
+            "31UFR", "31UGR",    "32UKA", "32ULA", "32UMA", "32UNA", "32UPA", "32UQA",    "33UTR", "33UUR",
+            "31UFS", "31UGS",    "32UKB", "32ULB", "32UMB", "32UNB", "32UPB", "32UQB",    "33UTS", "33UUS",
+            "31UFT", "31UGT",    "32UKC", "32ULC", "32UMC", "32UNC", "32UPC", "32UQC",    "33UTT", "33UUT",
+            "31UFU", "31UGU",    "32UKD", "32ULD", "32UMD", "32UND", "32UPD", "32UQD",    "33UTU", "33UUU",
+            "31UFV", "31UGV",    "32UKE", "32ULE", "32UME", "32UNE", "32UPE", "32UQE",    "33UTV", "33UUV",
+            "31UFA",                      "32ULF", "32UMF", "32UNF", "32UPF",             "33UUA",
+            "31UFB",                      "32ULG", "32UMG", "32UNG", "32UPG",             "33UUB",
+            "31UFC",                      "32ULH", "32UMH", "32UNH", "32UPH",             "33UUC",
+            /* Norway case */    "32VKJ", "32VLJ", "32VMJ", "32VNJ", "32VPJ",             "33VUD");
+
+        final Set<String> remaining = new HashSet<>(expected);
+        assertEquals("List of expected codes has duplicated values.", expected.size(), remaining.size());
+        while (it.hasNext()) {
+            final String code = it.next();
+            assertTrue(code, remaining.remove(code));
         }
+        assertTrue(remaining.toString(), remaining.isEmpty());
     }
 }
