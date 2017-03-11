@@ -658,10 +658,10 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
          * This test includes the Norway special case: between 56° and 64°N (latitude band V), zone 32
          * is widened to 9° at the expense of zone 31. The test needs to be insensitive to iteration order.
          */
-        // TODO: following list of expected codes is not yet accurate.
         final List<String> expected = Arrays.asList(
-            "31TFN", "31TGN",    "32TKT", "32TLT", "32TMT", "32TNT", "32TPT", "32TQT",    "33TTN", "33TUN", "33TTP", "33TUP",
-            "31TFP", "31TGP",    "32TKU", "32TLU", "32TMU", "32TNU", "32TPU", "32TQU",
+            "31TFN", "31TGN",    "32TKT", "32TLT", "32TMT", "32TNT", "32TPT", "32TQT",    "33TTN", "33TUN",
+            "31TFP", "31TGP",    "32TKU", "32TLU", "32TMU", "32TNU", "32TPU", "32TQU",    "33TTP", "33TUP",
+            "31UFP", "31UGP",    "32UKU", "32ULU", "32UMU", "32UNU", "32UPU", "32UQU",    "33UTP", "33UUP",
             "31UFQ", "31UGQ",    "32UKV", "32ULV", "32UMV", "32UNV", "32UPV", "32UQV",    "33UTQ", "33UUQ",
             "31UFR", "31UGR",    "32UKA", "32ULA", "32UMA", "32UNA", "32UPA", "32UQA",    "33UTR", "33UUR",
             "31UFS", "31UGS",    "32UKB", "32ULB", "32UMB", "32UNB", "32UPB", "32UQB",    "33UTS", "33UUS",
@@ -671,6 +671,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
             "31UFA",                      "32ULF", "32UMF", "32UNF", "32UPF",             "33UUA",
             "31UFB",                      "32ULG", "32UMG", "32UNG", "32UPG",             "33UUB",
             "31UFC",                      "32ULH", "32UMH", "32UNH", "32UPH",             "33UUC",
+            /* Norway case */    "32VKH", "32VLH", "32VMH", "32VNH", "32VPH",             "33VUC",
             /* Norway case */    "32VKJ", "32VLJ", "32VMJ", "32VNJ", "32VPJ",             "33VUD");
 
         final Set<String> remaining = new HashSet<>(expected);
