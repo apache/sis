@@ -31,10 +31,10 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.CommonCRS;
@@ -69,7 +69,12 @@ public final class LocationViewer extends JPanel {
     /**
      * The coordinate reference system to use for displaying the shapes.
      */
-    private final CoordinateReferenceSystem displayCRS;
+    private final SingleCRS displayCRS;
+
+    /**
+     * The envelope projected to {@link #displayCRS}.
+     */
+    private Shape envelope;
 
     /**
      * The locations to show, together with their label.
@@ -87,7 +92,7 @@ public final class LocationViewer extends JPanel {
      *
      * @param displayCRS  the coordinate reference system to use for displaying the location shapes.
      */
-    public LocationViewer(final CoordinateReferenceSystem displayCRS) {
+    public LocationViewer(final SingleCRS displayCRS) {
         this.displayCRS = displayCRS;
         this.locations  = new LinkedHashMap<>();
         setBackground(Color.BLACK);
@@ -103,10 +108,10 @@ public final class LocationViewer extends JPanel {
      * @throws TransformException if an error occurred while transforming an envelope.
      */
     public static void show(final MilitaryGridReferenceSystem.Coder coder, final Envelope areaOfInterest,
-            CoordinateReferenceSystem displayCRS) throws FactoryException, TransformException
+            SingleCRS displayCRS) throws FactoryException, TransformException
     {
         if (displayCRS == null) {
-            displayCRS = areaOfInterest.getCoordinateReferenceSystem();
+            displayCRS = CRS.getHorizontalComponent(areaOfInterest.getCoordinateReferenceSystem());
         }
         final LocationViewer viewer = new LocationViewer(displayCRS);
         viewer.addLocations(coder, areaOfInterest);
@@ -132,7 +137,10 @@ public final class LocationViewer extends JPanel {
         while (it.hasNext()) {
             final String code = it.next();
             addLocation(code, coder.decode(code));
+System.out.print("\"" + code + "\", ");
         }
+        envelope = ((MathTransform2D) CRS.findOperation(areaOfInterest.getCoordinateReferenceSystem(), displayCRS, null)
+                        .getMathTransform()).createTransformedShape(new IntervalRectangle(areaOfInterest));
     }
 
     /**
@@ -174,8 +182,12 @@ public final class LocationViewer extends JPanel {
                -getHeight() / bounds.getHeight());
         tr.translate(-bounds.getMinX(), -bounds.getMaxY());
         gr.transform(tr);
-        gr.setColor(Color.YELLOW);
         gr.setStroke(new BasicStroke(0));
+        if (envelope != null) {
+            gr.setColor(Color.RED);
+            gr.draw(envelope);
+        }
+        gr.setColor(Color.YELLOW);
         for (final Shape location : locations.values()) {
             gr.draw(location);
         }

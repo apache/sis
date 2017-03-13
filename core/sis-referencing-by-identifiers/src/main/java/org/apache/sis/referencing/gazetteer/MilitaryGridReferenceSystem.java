@@ -666,6 +666,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
             /**
              * Creates a new iterator over MGRS cells in the given area of interest.
+             * The borders of the given envelope are considered <strong>exclusive</strong>.
              */
             @SuppressWarnings({"unchecked", "rawtypes"})        // Generic array creation.
             IteratorAllZones(final Envelope areaOfInterest) throws FactoryException, TransformException {
@@ -683,15 +684,15 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                 final Envelope geographicArea = Envelopes.transform(areaOfInterest, datum.normalizedGeographic());
                 final double φmin = geographicArea.getMinimum(1);
                 final double φmax = geographicArea.getMaximum(1);
-                boolean southPole = (φmin <  TransverseMercator.Zoner.SOUTH_BOUNDS);
-                boolean northPole = (φmax >= TransverseMercator.Zoner.NORTH_BOUNDS);
+                boolean southPole = (φmin < TransverseMercator.Zoner.SOUTH_BOUNDS);
+                boolean northPole = (φmax > TransverseMercator.Zoner.NORTH_BOUNDS);
                 boolean southUTM, northUTM;
-                final int zoneStart, zoneEnd;
+                int zoneStart, zoneEnd;
                 if (φmax >= TransverseMercator.Zoner.SOUTH_BOUNDS && φmin < TransverseMercator.Zoner.NORTH_BOUNDS) {
                     southUTM  = (φmin <  0);
                     northUTM  = (φmax >= 0);
-                    zoneStart = ZONER.zone(0, geographicArea.getMinimum(0));
-                    zoneEnd   = ZONER.zone(0, geographicArea.getMaximum(0)) + 1;
+                    zoneStart = ZONER.zone(0, geographicArea.getMinimum(0));                    // Inclusive
+                    zoneEnd   = ZONER.zone(0, geographicArea.getMaximum(0)) + 1;                // Exclusive
                 } else {
                     southUTM  = false;
                     northUTM  = false;
@@ -742,14 +743,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             }
 
             /**
-             * If this iterator is backed by only one worker iterator, returns that worker iterator.
-             * Otherwise returns {@code this}. This method should be invoked after construction.
-             */
-            final Spliterator<String> simplify() {
-                return (iterators.length == 1) ? iterators[0] : this;
-            }
-
-            /**
              * Creates an iterator over the first half of the zones covered by the given iterator.
              * After construction, the given iterator will cover the second half. This constructor
              * is for {@link #trySplit()} method only.
@@ -768,7 +761,15 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
              */
             @Override
             public Spliterator<String> trySplit() {
-                return new IteratorAllZones(this).simplify();
+                return (upper - index >= 2) ? new IteratorAllZones(this).simplify() : null;
+            }
+
+            /**
+             * If this iterator is backed by only one worker iterator, returns that worker iterator.
+             * Otherwise returns {@code this}. This method should be invoked after construction.
+             */
+            final Spliterator<String> simplify() {
+                return (upper - index == 1) ? iterators[index] : this;
             }
 
             /**
@@ -936,6 +937,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Returns a new iterator for creating MGRS codes in a single UTM or UPS zone.
+         * The borders of the {@code areaOfInterest} rectangle are considered <strong>exclusive</strong>.
          *
          * @param areaOfInterest  the envelope for which to return MGRS codes. This envelope can be in any CRS.
          * @param geographicArea  the area of interest transformed into a normalized geographic CRS.
@@ -1004,10 +1006,10 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
              */
             final MathTransform2D op = (MathTransform2D) CRS.findOperation(sourceCRS, targetCRS, null).getMathTransform();
             final Rectangle2D bounds = Shapes2D.transform(op, areaOfInterest, null);
-            gridX  = (((int) (bounds.getMinX() / step))    ) * step;
-            gridY  = (((int) (bounds.getMinY() / step))    ) * step;
-            xEnd   = (((int) (bounds.getMaxX() / step)) + 1) * step;
-            yEnd   = (((int) (bounds.getMaxY() / step)) + 1) * step;
+            gridX = (((int)          (bounds.getMinX() / step))) * step;                    // Inclusive
+            gridY = (((int)          (bounds.getMinY() / step))) * step;
+            xEnd  = (((int) Math.ceil(bounds.getMaxX() / step))) * step;                    // Exclusive
+            yEnd  = (((int) Math.ceil(bounds.getMaxY() / step))) * step;
             /*
              * Determine if we should iterate on rows upward or downward. The intend is to iterate from equator to pole
              * in UTM zones, or from projection center to projection border in UPS cases.  Those directions enable some
@@ -1098,6 +1100,10 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         @Override
         public void forEachRemaining(final Consumer<? super String> action) {
             advance(action, true);
+            if (pending != null) {
+                action.accept(pending);
+                pending = null;
+            }
         }
 
         /**
@@ -1154,14 +1160,19 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                         if (ref != null) {
                             /*
                              * If there is a change of latitude band, we may have missed a cell before this one.
-                             * We verify that by encoding the cell for the position just below current cell and
+                             * We verify that by encoding the cell for the position just before current cell and
                              * comparing the latitude band of the result with our previous latitude band.
                              */
-                            final char previous = latitudeBand;
+                            char previous = latitudeBand;
                             latitudeBand = encoder.latitudeBand;
                             if (latitudeBand != previous && previous != 0) {
                                 pending = ref;
-                                normalized.setOrdinate(1, gridY - 1);
+                                int y = gridY - 1;
+                                if (downward) {
+                                    y += step;              // If iterating downward, the previous cell is upward.
+                                    previous = latitudeBand;
+                                }
+                                normalized.setOrdinate(1, y);
                                 ref = encoder.encode(this, normalized, false, separator, digits);
                                 if (ref == null || encoder.latitudeBand == previous) {
                                     ref = pending;  // No result or same result than previous iteration - cancel.
@@ -1962,7 +1973,7 @@ parse:                  switch (part) {
                             final int zc = ZONER.zoneCount();
                             if (zoneError > zc/2) zoneError -= zc;
                             if (ZONER.isSpecialCase(zone, φ)) {
-                                isValid = Math.abs(zoneError) == 1;         // Tolerance in zone numbers for high latitudes.
+                                isValid = Math.abs(zoneError) <= 2;         // Tolerance in zone numbers for high latitudes.
                             } else {
                                 final double rλ = Math.IEEEremainder(λ - ZONER.origin, ZONER.width);    // Distance to closest zone change, in degrees of longitude.
                                 final double cv = (minX - ZONER.easting) / (λ - λ0);                    // Approximative conversion factor from degrees to metres.

@@ -200,7 +200,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     /**
      * Returns a coder instance to test.
      */
-    private MilitaryGridReferenceSystem.Coder coder() {
+    private static MilitaryGridReferenceSystem.Coder coder() {
         return new MilitaryGridReferenceSystem().createCoder();
     }
 
@@ -644,21 +644,20 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      * <a href="https://www.ff-reichertshausen.de/cms/wp-content/uploads/2012/10/utmmeldegitter.jpg">this picture</a>
      * (checked on March 2017).
      *
+     * <div class="note"><b>Tip:</b> in case of test failure, see {@link LocationViewer} as a debugging tool.</div>
+     *
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod({"testEncodeUTM","testEncodeUPS"})
-    public void testIterator() throws TransformException {
-        final MilitaryGridReferenceSystem.Coder coder = coder();
-        coder.setPrecision(100000);
-        final Iterator<String> it = coder.encode(new Envelope2D(CommonCRS.defaultGeographic(), 5, 47, 8, 10));
+    @DependsOnMethod("testEncodeUTM")
+    public void testIteratorNorthUTM() throws TransformException {
         /*
          * Following is the list of MGRS references that we expect to find in the above area of interest.
          * The references are distributed in 3 zones (31, 32 and 33) and 3 latitude bands (T, U and V).
          * This test includes the Norway special case: between 56° and 64°N (latitude band V), zone 32
          * is widened to 9° at the expense of zone 31. The test needs to be insensitive to iteration order.
          */
-        final List<String> expected = Arrays.asList(
+        testIterator(new Envelope2D(CommonCRS.defaultGeographic(), 5, 47, 8, 10), Arrays.asList(
             "31TFN", "31TGN",    "32TKT", "32TLT", "32TMT", "32TNT", "32TPT", "32TQT",    "33TTN", "33TUN",
             "31TFP", "31TGP",    "32TKU", "32TLU", "32TMU", "32TNU", "32TPU", "32TQU",    "33TTP", "33TUP",
             "31UFP", "31UGP",    "32UKU", "32ULU", "32UMU", "32UNU", "32UPU", "32UQU",    "33UTP", "33UUP",
@@ -672,14 +671,50 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
             "31UFB",                      "32ULG", "32UMG", "32UNG", "32UPG",             "33UUB",
             "31UFC",                      "32ULH", "32UMH", "32UNH", "32UPH",             "33UUC",
             /* Norway case */    "32VKH", "32VLH", "32VMH", "32VNH", "32VPH",             "33VUC",
-            /* Norway case */    "32VKJ", "32VLJ", "32VMJ", "32VNJ", "32VPJ",             "33VUD");
+            /* Norway case */    "32VKJ", "32VLJ", "32VMJ", "32VNJ", "32VPJ",             "33VUD"));
+    }
 
+    /**
+     * Tests iteration over codes in an area in South hemisphere.
+     *
+     * <div class="note"><b>Tip:</b> in case of test failure, see {@link LocationViewer} as a debugging tool.</div>
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod("testEncodeUTM")
+    public void testIteratorSouthUTM() throws TransformException {
+        testIterator(new Envelope2D(CommonCRS.defaultGeographic(), 5, -42, 8, 4), Arrays.asList(
+            "31HFT", "31HGT", "32HKC", "32HLC", "32HMC", "32HNC", "32HPC", "32HQC", "33HTT", "33HUT",
+            "31HFS", "31HGS", "32HKB", "32HLB", "32HMB", "32HNB", "32HPB", "32HQB", "33HTS", "33HUS",
+            "31HFR", "31HGR", "32HKA", "32HLA", "32HMA", "32HNA", "32HPA", "32HQA", "33HTR", "33HUR",
+            "31GFR", "31GGR", "32GKA", "32GLA", "32GMA", "32GNA", "32GPA", "32GQA", "33GTR", "33GUR",
+            "31GFQ", "31GGQ", "32GKV", "32GLV", "32GMV", "32GNV", "32GPV", "32GQV", "33GTQ", "33GUQ",
+            "31GFP", "31GGP", "32GKU", "32GLU", "32GMU", "32GNU", "32GPU", "32GQU", "33GTP", "33GUP"));
+    }
+
+    /**
+     * Implementation of {@link #testIteratorUTM()}.
+     */
+    private static void testIterator(final Envelope2D areaOfInterest, final List<String> expected) throws TransformException {
+        final MilitaryGridReferenceSystem.Coder coder = coder();
+        coder.setPrecision(100000);
+        /*
+         * Test sequential iteration using iterator.
+         */
         final Set<String> remaining = new HashSet<>(expected);
         assertEquals("List of expected codes has duplicated values.", expected.size(), remaining.size());
-        while (it.hasNext()) {
+        for (final Iterator<String> it = coder.encode(areaOfInterest); it.hasNext();) {
             final String code = it.next();
             assertTrue(code, remaining.remove(code));
         }
+        assertTrue(remaining.toString(), remaining.isEmpty());
+        /*
+         * Test parallel iteration using stream.
+         */
+        assertTrue(remaining.addAll(expected));
+        assertEquals("List of expected codes has duplicated values.", expected.size(), remaining.size());
+        coder.encode(areaOfInterest, true).forEach((code) -> assertTrue(code, remaining.remove(code)));
         assertTrue(remaining.toString(), remaining.isEmpty());
     }
 }
