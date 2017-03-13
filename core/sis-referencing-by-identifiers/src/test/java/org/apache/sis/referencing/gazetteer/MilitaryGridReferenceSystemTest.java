@@ -16,15 +16,22 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.Iterator;
 import java.lang.reflect.Field;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
@@ -73,7 +80,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
-     * Verifies relationship between static fields documented in {@link Encoder}.
+     * Verifies relationship between static fields documented in {@link MilitaryGridReferenceSystem}.
      */
     @Test
     public void verifyInvariants() {
@@ -195,7 +202,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     /**
      * Returns a coder instance to test.
      */
-    private MilitaryGridReferenceSystem.Coder coder() {
+    private static MilitaryGridReferenceSystem.Coder coder() {
         return new MilitaryGridReferenceSystem().createCoder();
     }
 
@@ -313,36 +320,72 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     public void testDecodeLimitCases() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         DirectPosition position;
+        ProjectedCRS crs;
         /*
          * Cell on the West border of a UTM zone in the South hemisphere.
-         * The Easting value would be 250000 if the cell was not clipped.
+         * Easting value before clipping: 250000
+         * Easting value after  clipping: 251256
          */
+        coder.setClipToValidArea(false);
         position = decode(coder, "19JBK");                                            // South hemisphere
-        assertSame("crs", CommonCRS.WGS84.universal(-10, -69), position.getCoordinateReferenceSystem());
+        crs = CommonCRS.WGS84.universal(-10, -69);
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   250000, position.getOrdinate(0), 1);
+        assertEquals("Northing", 6950000, position.getOrdinate(1), STRICT);
+
+        coder.setClipToValidArea(true);
+        position = decode(coder, "19JBK");
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
         assertEquals("Easting",   251256, position.getOrdinate(0), 1);
         assertEquals("Northing", 6950000, position.getOrdinate(1), STRICT);
         /*
          * Easting range before clipping is [300000 … 400000] metres.
-         * The east boung become 343828 metres after clipping.
-         * The easting value would be 350000 if the cell was not clipped.
+         * The east bound become 343828 metres after clipping.
+         * Easting value before clipping: 350000
+         * Easting value after  clipping: 371914
          */
+        coder.setClipToValidArea(false);
         position = decode(coder, "1VCK");                                // North of Norway latitude band
-        assertSame("crs", CommonCRS.WGS84.universal(62, -180), position.getCoordinateReferenceSystem());
+        crs = CommonCRS.WGS84.universal(62, -180);
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   350000, position.getOrdinate(0), 1);
+        assertEquals("Northing", 6950000, position.getOrdinate(1), STRICT);
+
+        coder.setClipToValidArea(true);
+        position = decode(coder, "1VCK");
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
         assertEquals("Easting",   371914, position.getOrdinate(0), 1);
         assertEquals("Northing", 6950000, position.getOrdinate(1), STRICT);
         /*
-         * Northing value would be 7350000 if the cell was not clipped.
+         * Northing value before clipping: 7350000
+         * Northing value after  clipping: 7371306
          */
+        coder.setClipToValidArea(false);
         position = decode(coder, "57KTP");
-        assertSame("crs", CommonCRS.WGS84.universal(-24, 156), position.getCoordinateReferenceSystem());
+        crs = CommonCRS.WGS84.universal(-24, 156);
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   250000, position.getOrdinate(0), STRICT);
+        assertEquals("Northing", 7350000, position.getOrdinate(1), 1);
+
+        coder.setClipToValidArea(true);
+        position = decode(coder, "57KTP");
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
         assertEquals("Easting",   250000, position.getOrdinate(0), STRICT);
         assertEquals("Northing", 7371306, position.getOrdinate(1), 1);
         /*
-         * Easting  value would be  650000 if the cell was not clipped.
-         * Northing value would be 6250000 if the cell was not clipped.
+         * Easting and northing values before clipping:  650000   6250000
+         * Easting and northing values after  clipping:  643536   6253618
          */
+        coder.setClipToValidArea(false);
         position = decode(coder, "56VPH");
-        assertSame("crs", CommonCRS.WGS84.universal(55, 154), position.getCoordinateReferenceSystem());
+        crs = CommonCRS.WGS84.universal(55, 154);
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
+        assertEquals("Easting",   650000, position.getOrdinate(0), 1);
+        assertEquals("Northing", 6250000, position.getOrdinate(1), 1);
+
+        coder.setClipToValidArea(true);
+        position = decode(coder, "56VPH");
+        assertSame("crs", crs, position.getCoordinateReferenceSystem());
         assertEquals("Easting",   643536, position.getOrdinate(0), 1);
         assertEquals("Northing", 6253618, position.getOrdinate(1), 1);
     }
@@ -570,7 +613,10 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod({"testEncodeUTM", "testDecodeUTM"})
+    @DependsOnMethod({
+        "testEncodeUTM", "testDecodeUTM",
+        "testEncodeUPS", "testDecodeUPS"
+    })
     public void verifyConsistency() throws TransformException {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final MilitaryGridReferenceSystem.Coder coder = coder();
@@ -593,5 +639,147 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
                    + "Distance (m)   = " + distance  + lineSeparator);
             }
         }
+    }
+
+    /**
+     * Tests iteration over all codes in a given area of interest. The geographic area used for this test is based on
+     * <a href="https://www.ff-reichertshausen.de/cms/wp-content/uploads/2012/10/utmmeldegitter.jpg">this picture</a>
+     * (checked on March 2017).
+     *
+     * <div class="note"><b>Tip:</b> in case of test failure, see {@link LocationViewer} as a debugging tool.</div>
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod("testEncodeUTM")
+    public void testIteratorNorthUTM() throws TransformException {
+        /*
+         * Following is the list of MGRS references that we expect to find in the above area of interest.
+         * The references are distributed in 3 zones (31, 32 and 33) and 3 latitude bands (T, U and V).
+         * This test includes the Norway special case: between 56° and 64°N (latitude band V), zone 32
+         * is widened to 9° at the expense of zone 31. The test needs to be insensitive to iteration order.
+         */
+        testIterator(new Envelope2D(CommonCRS.defaultGeographic(), 5, 47, 8, 10), Arrays.asList(
+            "31TFN", "31TGN",    "32TKT", "32TLT", "32TMT", "32TNT", "32TPT", "32TQT",    "33TTN", "33TUN",
+            "31TFP", "31TGP",    "32TKU", "32TLU", "32TMU", "32TNU", "32TPU", "32TQU",    "33TTP", "33TUP",
+            "31UFP", "31UGP",    "32UKU", "32ULU", "32UMU", "32UNU", "32UPU", "32UQU",    "33UTP", "33UUP",
+            "31UFQ", "31UGQ",    "32UKV", "32ULV", "32UMV", "32UNV", "32UPV", "32UQV",    "33UTQ", "33UUQ",
+            "31UFR", "31UGR",    "32UKA", "32ULA", "32UMA", "32UNA", "32UPA", "32UQA",    "33UTR", "33UUR",
+            "31UFS", "31UGS",    "32UKB", "32ULB", "32UMB", "32UNB", "32UPB", "32UQB",    "33UTS", "33UUS",
+            "31UFT", "31UGT",    "32UKC", "32ULC", "32UMC", "32UNC", "32UPC", "32UQC",    "33UTT", "33UUT",
+            "31UFU", "31UGU",    "32UKD", "32ULD", "32UMD", "32UND", "32UPD", "32UQD",    "33UTU", "33UUU",
+            "31UFV", "31UGV",    "32UKE", "32ULE", "32UME", "32UNE", "32UPE", "32UQE",    "33UTV", "33UUV",
+            "31UFA",                      "32ULF", "32UMF", "32UNF", "32UPF",             "33UUA",
+            "31UFB",                      "32ULG", "32UMG", "32UNG", "32UPG",             "33UUB",
+            "31UFC",                      "32ULH", "32UMH", "32UNH", "32UPH",             "33UUC",
+            /* Norway case */    "32VKH", "32VLH", "32VMH", "32VNH", "32VPH",             "33VUC",
+            /* Norway case */    "32VKJ", "32VLJ", "32VMJ", "32VNJ", "32VPJ",             "33VUD"));
+    }
+
+    /**
+     * Tests iteration over codes in an area in South hemisphere.
+     *
+     * <div class="note"><b>Tip:</b> in case of test failure, see {@link LocationViewer} as a debugging tool.</div>
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod("testEncodeUTM")
+    public void testIteratorSouthUTM() throws TransformException {
+        testIterator(new Envelope2D(CommonCRS.defaultGeographic(), 5, -42, 8, 4), Arrays.asList(
+            "31HFT", "31HGT", "32HKC", "32HLC", "32HMC", "32HNC", "32HPC", "32HQC", "33HTT", "33HUT",
+            "31HFS", "31HGS", "32HKB", "32HLB", "32HMB", "32HNB", "32HPB", "32HQB", "33HTS", "33HUS",
+            "31HFR", "31HGR", "32HKA", "32HLA", "32HMA", "32HNA", "32HPA", "32HQA", "33HTR", "33HUR",
+            "31GFR", "31GGR", "32GKA", "32GLA", "32GMA", "32GNA", "32GPA", "32GQA", "33GTR", "33GUR",
+            "31GFQ", "31GGQ", "32GKV", "32GLV", "32GMV", "32GNV", "32GPV", "32GQV", "33GTQ", "33GUQ",
+            "31GFP", "31GGP", "32GKU", "32GLU", "32GMU", "32GNU", "32GPU", "32GQU", "33GTP", "33GUP"));
+    }
+
+    /**
+     * Tests iteration spanning the anti-meridian.
+     *
+     * <div class="note"><b>Tip:</b> in case of test failure, see {@link LocationViewer} as a debugging tool.</div>
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod("testEncodeUTM")
+    public void testIteratorOverAntiMeridian() throws TransformException {
+        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(CommonCRS.defaultGeographic());
+        areaOfInterest.setRange(0, 170, -175);
+        areaOfInterest.setRange(1,  40,  42);
+        testIterator(areaOfInterest, Arrays.asList(
+            "59SME", "59SNE", "59SPE", "59SQE", "60STK", "60SUK", "60SVK", "60SWK", "60SXK", "60SYK", "1SBE", "1SCE", "1SDE", "1SEE", "1SFE",
+            "59TME", "59TNE", "59TPE", "59TQE", "60TTK", "60TUK", "60TVK", "60TWK", "60TXK", "60TYK", "1TBE", "1TCE", "1TDE", "1TEE", "1TFE",
+            "59TMF", "59TNF", "59TPF", "59TQF", "60TTL", "60TUL", "60TVL", "60TWL", "60TXL", "60TYL", "1TBF", "1TCF", "1TDF", "1TEF", "1TFF",
+            "59TMG", "59TNG", "59TPG", "59TQG", "60TTM", "60TUM", "60TVM", "60TWM", "60TXM", "60TYM", "1TBG", "1TCG", "1TDG", "1TEG", "1TFG"));
+    }
+
+    /**
+     * Tests iterating over part of North pole, in an area between 10°W to 70°E.
+     * This area is restricted to the lower part of UPS projection, which allow
+     * {@code IteratorAllZones} to simplify to a single {@code IteratorOneZone}.
+     *
+     * <div class="note"><b>Tip:</b> in case of test failure, see {@link LocationViewer} as a debugging tool.</div>
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod("testEncodeUPS")
+    public void testIteratorNorthPole() throws TransformException {
+        testIterator(new Envelope2D(CommonCRS.defaultGeographic(), -10, 85, 80, 5), Arrays.asList(
+            "YZG", "ZAG", "ZBG", "ZCG",
+            "YZF", "ZAF", "ZBF", "ZCF", "ZFF", "ZGF", "ZHF",
+            "YZE", "ZAE", "ZBE", "ZCE", "ZFE", "ZGE", "ZHE",
+            "YZD", "ZAD", "ZBD", "ZCD", "ZFD", "ZGD",
+            "YZC", "ZAC", "ZBC", "ZCC", "ZFC",
+            "YZB", "ZAB", "ZBB", "ZCB"));
+    }
+
+    /**
+     * Tests iterating over part of South pole, both lower and upper parts of UPS projection
+     * together with some UTM zones. This is a test mixing a bit of everything together.
+     *
+     * <div class="note"><b>Tip:</b> in case of test failure, see {@link LocationViewer} as a debugging tool.</div>
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod({"testEncodeUPS", "testEncodeUTM"})
+    public void testIteratorSouthPole() throws TransformException {
+        testIterator(new Envelope2D(CommonCRS.defaultGeographic(), -120, -83, 50, 5), Arrays.asList(
+                   "AKR", "ALR", "APR",
+                   "AKQ", "ALQ", "APQ", "AQQ",
+            "AJP", "AKP", "ALP", "APP", "AQP",
+            "AJN", "AKN", "ALN", "APN", "AQN",
+            "AJM", "AKM", "ALM", "APM", "AQM",
+            "AJL", "AKL", "ALL", "APL", "AQL",
+                   "AKK", "ALK", "APK", "AQK",
+                   "AKJ", "ALJ", "APJ", "AQJ", "ARJ",
+                   "AKH", "ALH", "APH", "AQH", "ARH",
+                          "ALG", "APG",
+
+            "11CMP", "11CNP", "12CVU", "12CWU", "13CDP", "13CEP", "14CMU", "14CNU", "15CVP", "15CWP", "16CDU", "16CEU", "17CMP", "17CNP", "18CVU", "18CWU", "19CDP",
+            "11CMN", "11CNN", "12CVT", "12CWT", "13CDN", "13CEN", "14CMT", "14CNT", "15CVN", "15CWN", "16CDT", "16CET", "17CMN", "17CNN", "18CVT", "18CWT", "19CDN",
+            "11CMM", "11CNM", "12CVS", "12CWS", "13CDM", "13CEM", "14CMS", "14CNS", "15CVM", "15CWM", "16CDS", "16CES", "17CMM", "17CNM", "18CVS", "18CWS", "19CDM"));
+    }
+
+    /**
+     * Implementation of {@link #testIteratorUTM()}.
+     */
+    private static void testIterator(final Envelope areaOfInterest, final List<String> expected) throws TransformException {
+        final MilitaryGridReferenceSystem.Coder coder = coder();
+        coder.setClipToValidArea(false);
+        coder.setPrecision(100000);
+        /*
+         * Test sequential iteration using iterator.
+         */
+        final Set<String> remaining = new HashSet<>(expected);
+        assertEquals("List of expected codes has duplicated values.", expected.size(), remaining.size());
+        for (final Iterator<String> it = coder.encode(areaOfInterest); it.hasNext();) {
+            final String code = it.next();
+            assertTrue(code, remaining.remove(code));
+        }
+        assertTrue(remaining.toString(), remaining.isEmpty());
     }
 }

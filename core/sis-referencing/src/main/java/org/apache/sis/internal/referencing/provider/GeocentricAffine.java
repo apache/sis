@@ -132,7 +132,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
         RX = createRotation(builder.addIdentifier("8608"), "X-axis rotation", "ex");
         RY = createRotation(builder.addIdentifier("8609"), "Y-axis rotation", "ey");
         RZ = createRotation(builder.addIdentifier("8610"), "Z-axis rotation", "ez");
-        DS = builder.addIdentifier("8611").addName("Scale difference").addName(Citations.OGC, "ppm").create(1, Units.PPM);
+        DS = builder.addIdentifier("8611").addName("Scale difference").addName(Citations.OGC, "ppm").create(0, Units.PPM);
     }
 
     /**
