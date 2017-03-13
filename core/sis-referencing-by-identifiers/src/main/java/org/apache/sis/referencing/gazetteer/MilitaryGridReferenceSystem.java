@@ -32,6 +32,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
@@ -595,6 +596,13 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * If the CRS is geographic, the envelope is allowed to span the anti-meridian.
          * The MGRS references may be returned in any iteration order.
          *
+         * <div class="note"><b>Possible evolution:</b>
+         * current implementation does not clip the cells to UPS/UTM valid areas before to test for intersection
+         * with {@code areaOfInterest}. Consequently the iterator may return slightly more cells than expected.
+         * A future version may filter the cells more accurately. If an application needs the same set of cells
+         * than what current the implementation returns, it can invoke <code>{@linkplain #setClipToValidArea
+         * setClipToValidArea}(false)</code> for preserving current behavior in future Apache SIS versions.</div>
+         *
          * @param  areaOfInterest  envelope of desired MGRS references.
          * @return an iterator over MGRS references intersecting the given area of interest.
          * @throws TransformException if an error occurred while transforming the area of interest.
@@ -613,6 +621,13 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * The given envelope must have a Coordinate Reference System (CRS) associated to it.
          * If the CRS is geographic, the envelope is allowed to span the anti-meridian.
          * The MGRS references may be returned in any order.
+         *
+         * <div class="note"><b>Possible evolution:</b>
+         * current implementation does not clip the cells to UPS/UTM valid areas before to test for intersection
+         * with {@code areaOfInterest}. Consequently the iterator may return slightly more cells than expected.
+         * A future version may filter the cells more accurately. If an application needs the same set of cells
+         * than what current the implementation returns, it can invoke <code>{@linkplain #setClipToValidArea
+         * setClipToValidArea}(false)</code> for preserving current behavior in future Apache SIS versions.</div>
          *
          * @param  areaOfInterest  envelope of desired MGRS references.
          * @param  parallel        {@code true} for a parallel stream, or {@code false} for a sequential stream.
@@ -889,7 +904,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * The first <var>northing</var> value to use in iteration.
          * The {@link #gridY} value will need to be reset to this value for each new column.
          */
-        private final int yStart;
+        private int yStart;
 
         /**
          * The {@link #gridY} values where to stop iteration, exclusive. Invariants:
@@ -1050,7 +1065,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
              * Now we can project that area to the CRS managed by this iterator. All values after projection
              * should be positive (because UPS and UTM are designed that way).
              */
-            final MathTransform2D op = (MathTransform2D) CRS.findOperation(sourceCRS, targetCRS, null).getMathTransform();
+            final CoordinateOperation op = CRS.findOperation(sourceCRS, targetCRS, null);
             final Rectangle2D bounds = Shapes2D.transform(op, areaOfInterest, null);
             gridX = (((int)          (bounds.getMinX() / step))) * step;                    // Inclusive
             gridY = (((int)          (bounds.getMinY() / step))) * step;
@@ -1064,7 +1079,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             if (zone != Encoder.POLE) {
                 downward = (encoder.crsZone < 0);           // Upward in UTM North zones, downward in UTM South zones.
             } else {
-                downward = gridY < PolarStereographicA.UPS_SHIFT;    // Upward ONLY if AOI is fully in the upper half.
+                downward = yEnd <= PolarStereographicA.UPS_SHIFT;  // Downward only if AOI is fully in the lower half.
+                isSpecialCase = (gridX < PolarStereographicA.UPS_SHIFT);         // Can not optimize left side of UPS.
             }
             if (downward) {
                 final int y = gridY;
@@ -1072,7 +1088,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                 yEnd  = y    - step;
             }
             yStart    = gridY;
-            gridToAOI = op.inverse();
+            gridToAOI = (MathTransform2D) op.getMathTransform().inverse();
             /*
              * To be strict, we should also test that the region of interest does not intersect both the upper half
              * and lower half of Universal Polar Stereographic (UPS) projection domain. We do not check that because
@@ -1083,8 +1099,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         }
 
         /**
-         * Creates an iterator for the upper half of a Universal Polar Stereographic (UPS) projection,
-         * and modifies the given iterator for restricting it to the lower half of UPS projection.
+         * Creates an iterator for the lower half of a Universal Polar Stereographic (UPS) projection,
+         * and modifies the given iterator for restricting it to the upper half of UPS projection.
          * This method is for {@link #trySplit()} usage only.
          */
         private IteratorOneZone(final IteratorOneZone other) {
@@ -1095,24 +1111,25 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             optimize       = other.optimize;
             step           = other.step;
             gridX          = other.gridX;
-            gridY          = other.gridY;
             xCenter        = other.xCenter;
             xEnd           = other.xEnd;
-            yEnd           = other.yEnd;
-            yStart         = 0;                 // This iterator will be for the upper half.
-            other.yEnd     = 0;                 // Other iterator will be for the lower half.
-            downward       = false;
-            assert other.downward;              // Fail if the other iterator is not for lower half.
+            yEnd           = other.yStart - step;                   // Bottom of the zone to iterate, exclusive.
+            yStart         = PolarStereographicA.UPS_SHIFT - step;  // Top of the zone to iterate, inclusive.
+            other.yStart   = PolarStereographicA.UPS_SHIFT;         // Other iterator will be for the upper half.
+            other.gridY    = other.yStart;
+            gridY          = yStart;
+            downward       = true;
+            assert !other.downward;                                 // Fail if the other iterator is not for upper half.
         }
 
         /**
          * If this iterator intersects both the upper and lower half on UPS domain, returns an iterator for the
-         * upper half and modify this iterator for the lower half. This method <strong>must</strong> be invoked
+         * lower half and modifies this iterator for the upper half. This method <strong>must</strong> be invoked
          * before {@code IteratorOneZone} can be used.
          */
         @Override
         public Spliterator<String> trySplit() {
-            if (downward && Math.abs(encoder.crsZone) == Encoder.POLE && gridY >= PolarStereographicA.UPS_SHIFT) {
+            if (!downward && Math.abs(encoder.crsZone) == Encoder.POLE && gridY < PolarStereographicA.UPS_SHIFT) {
                 return new IteratorOneZone(this);
             }
             return null;
@@ -1194,13 +1211,11 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                     cell.setRect(Shapes2D.transform(gridToAOI, cell, cell));
                     if (cell.intersects(areaOfInterest)) {          // Must be invoked on Envelope2D implementation.
                         int x = gridX;
-                        if (x < xCenter) {
-                            // Use the 'x' value closest to projection center (see above comment for explanation),
-                            // minus one metre for preventing the position to be considered as part of next cell.
-                            x += step - 1;
-                        }
+                        int y = gridY;
+                        if (x < xCenter) x += step - 1;
+                        if (downward)    y += step - 1;
                         normalized.setOrdinate(0, x);
-                        normalized.setOrdinate(1, gridY);
+                        normalized.setOrdinate(1, y);
                         String ref = encoder.encode(this, normalized, false, separator, digits);
                         if (ref != null) {
                             /*
@@ -1212,12 +1227,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                             latitudeBand = encoder.latitudeBand;
                             if (latitudeBand != previous && previous != 0) {
                                 pending = ref;
-                                int y = gridY - 1;
-                                if (downward) {
-                                    y += step;              // If iterating downward, the previous cell is upward.
-                                    previous = latitudeBand;
-                                }
-                                normalized.setOrdinate(1, y);
+                                normalized.setOrdinate(1, y + (downward ? +1 : -1));
                                 ref = encoder.encode(this, normalized, false, separator, digits);
                                 if (ref == null || encoder.latitudeBand == previous) {
                                     ref = pending;  // No result or same result than previous iteration - cancel.
@@ -1273,8 +1283,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         @Debug
         @Override
         public String toString() {
-            return org.apache.sis.internal.util.Utilities.toString(getClass(),
-                    "zone", encoder.crsZone, "gridX", gridX, "gridY", gridY);
+            return org.apache.sis.internal.util.Utilities.toString(getClass(), "zone", encoder.crsZone,
+                    "downward", downward, "yStart", yStart, "yEnd", yEnd, "gridX", gridX, "xEnd", xEnd);
         }
     }
 

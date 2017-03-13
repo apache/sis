@@ -704,6 +704,7 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
+    @DependsOnMethod("testEncodeUTM")
     public void testIteratorOverAntiMeridian() throws TransformException {
         final GeneralEnvelope areaOfInterest = new GeneralEnvelope(CommonCRS.defaultGeographic());
         areaOfInterest.setRange(0, 170, -175);
@@ -716,10 +717,60 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
+     * Tests iterating over part of North pole, in an area between 10°W to 70°E.
+     * This area is restricted to the lower part of UPS projection, which allow
+     * {@code IteratorAllZones} to simplify to a single {@code IteratorOneZone}.
+     *
+     * <div class="note"><b>Tip:</b> in case of test failure, see {@link LocationViewer} as a debugging tool.</div>
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod("testEncodeUPS")
+    public void testIteratorNorthPole() throws TransformException {
+        testIterator(new Envelope2D(CommonCRS.defaultGeographic(), -10, 85, 80, 5), Arrays.asList(
+            "YZG", "ZAG", "ZBG", "ZCG",
+            "YZF", "ZAF", "ZBF", "ZCF", "ZFF", "ZGF", "ZHF",
+            "YZE", "ZAE", "ZBE", "ZCE", "ZFE", "ZGE", "ZHE",
+            "YZD", "ZAD", "ZBD", "ZCD", "ZFD", "ZGD",
+            "YZC", "ZAC", "ZBC", "ZCC", "ZFC",
+            "YZB", "ZAB", "ZBB", "ZCB"));
+    }
+
+    /**
+     * Tests iterating over part of South pole, both lower and upper parts of UPS projection
+     * together with some UTM zones. This is a test mixing a bit of everything together.
+     *
+     * <div class="note"><b>Tip:</b> in case of test failure, see {@link LocationViewer} as a debugging tool.</div>
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    @DependsOnMethod({"testEncodeUPS", "testEncodeUTM"})
+    public void testIteratorSouthPole() throws TransformException {
+        testIterator(new Envelope2D(CommonCRS.defaultGeographic(), -120, -83, 50, 5), Arrays.asList(
+                   "AKR", "ALR", "APR",
+                   "AKQ", "ALQ", "APQ", "AQQ",
+            "AJP", "AKP", "ALP", "APP", "AQP",
+            "AJN", "AKN", "ALN", "APN", "AQN",
+            "AJM", "AKM", "ALM", "APM", "AQM",
+            "AJL", "AKL", "ALL", "APL", "AQL",
+                   "AKK", "ALK", "APK", "AQK",
+                   "AKJ", "ALJ", "APJ", "AQJ", "ARJ",
+                   "AKH", "ALH", "APH", "AQH", "ARH",
+                          "ALG", "APG",
+
+            "11CMP", "11CNP", "12CVU", "12CWU", "13CDP", "13CEP", "14CMU", "14CNU", "15CVP", "15CWP", "16CDU", "16CEU", "17CMP", "17CNP", "18CVU", "18CWU", "19CDP",
+            "11CMN", "11CNN", "12CVT", "12CWT", "13CDN", "13CEN", "14CMT", "14CNT", "15CVN", "15CWN", "16CDT", "16CET", "17CMN", "17CNN", "18CVT", "18CWT", "19CDN",
+            "11CMM", "11CNM", "12CVS", "12CWS", "13CDM", "13CEM", "14CMS", "14CNS", "15CVM", "15CWM", "16CDS", "16CES", "17CMM", "17CNM", "18CVS", "18CWS", "19CDM"));
+    }
+
+    /**
      * Implementation of {@link #testIteratorUTM()}.
      */
     private static void testIterator(final Envelope areaOfInterest, final List<String> expected) throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
+        coder.setClipToValidArea(false);
         coder.setPrecision(100000);
         /*
          * Test sequential iteration using iterator.
