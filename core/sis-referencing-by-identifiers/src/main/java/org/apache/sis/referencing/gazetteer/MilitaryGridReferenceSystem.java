@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
@@ -60,6 +59,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.measure.Longitude;
@@ -592,6 +592,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         /**
          * Returns an iterator over all MGRS references that intersect the given envelope.
          * The given envelope must have a Coordinate Reference System (CRS) associated to it.
+         * If the CRS is geographic, the envelope is allowed to span the anti-meridian.
          * The MGRS references may be returned in any iteration order.
          *
          * @param  areaOfInterest  envelope of desired MGRS references.
@@ -610,6 +611,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         /**
          * Returns a stream of all MGRS references that intersect the given envelope.
          * The given envelope must have a Coordinate Reference System (CRS) associated to it.
+         * If the CRS is geographic, the envelope is allowed to span the anti-meridian.
          * The MGRS references may be returned in any order.
          *
          * @param  areaOfInterest  envelope of desired MGRS references.
@@ -680,24 +682,45 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                     throw new GazetteerException(Errors.format(Errors.Keys.ValueOutOfRange_4,
                             "precision", 1, (int) GRID_SQUARE_SIZE, precision));
                 }
-                final IntervalRectangle aoi = new IntervalRectangle(areaOfInterest);
+                /*
+                 * Convert area of interest (AOI) from an envelope to a Rectangle2D for use with
+                 * Envelope2D.intersect(Rectangle2D) during IteratorOneZone.advance(…) execution.
+                 * We need to use the constructor expecting the two corners in order to preserve
+                 * envelope spanning the anti-meridian.
+                 */
+                final IntervalRectangle aoi = new IntervalRectangle(areaOfInterest.getLowerCorner(),
+                                                                    areaOfInterest.getUpperCorner());
+                /*
+                 * Project the area of interest (AOI) to normalized geographic coordinates for computing UTM zones
+                 * and for IteratorOneZone construction. For computing UTM zones, envelopes that cross the anti-
+                 * meridian should have a negative width. For IteratorOneZone construction, it does not matter.
+                 */
                 final Envelope geographicArea = Envelopes.transform(areaOfInterest, datum.normalizedGeographic());
-                final double φmin = geographicArea.getMinimum(1);
-                final double φmax = geographicArea.getMaximum(1);
-                boolean southPole = (φmin < TransverseMercator.Zoner.SOUTH_BOUNDS);
-                boolean northPole = (φmax > TransverseMercator.Zoner.NORTH_BOUNDS);
-                boolean southUTM, northUTM;
-                int zoneStart, zoneEnd;
+                final double φmin   = geographicArea.getMinimum(1);
+                final double φmax   = geographicArea.getMaximum(1);
+                boolean   southPole = (φmin < TransverseMercator.Zoner.SOUTH_BOUNDS);
+                boolean   northPole = (φmax > TransverseMercator.Zoner.NORTH_BOUNDS);
+                boolean   southUTM  = false;
+                boolean   northUTM  = false;                    // Default value for UPS, to be modified later if UTM.
+                int       zoneStart = 0;                        // Zero-based (i.e. standard zone number minus 1).
+                int       zoneEnd   = 0;                        // Exclusive.
+                final int zoneCount = ZONER.zoneCount();
                 if (φmax >= TransverseMercator.Zoner.SOUTH_BOUNDS && φmin < TransverseMercator.Zoner.NORTH_BOUNDS) {
-                    southUTM  = (φmin <  0);
-                    northUTM  = (φmax >= 0);
-                    zoneStart = ZONER.zone(0, geographicArea.getMinimum(0));                    // Inclusive
-                    zoneEnd   = ZONER.zone(0, geographicArea.getMaximum(0)) + 1;                // Exclusive
-                } else {
-                    southUTM  = false;
-                    northUTM  = false;
-                    zoneStart = 1;              // Need a valid zone number, but we will not iterate on them.
-                    zoneEnd   = 1;
+                    southUTM = (φmin <  0);
+                    northUTM = (φmax >= 0);
+                    if (geographicArea.getSpan(0) > (Longitude.MAX_VALUE - Longitude.MIN_VALUE) - ZONER.width) {
+                        zoneEnd = zoneCount;
+                    } else {
+                        /*
+                         * Use of lower and upper corners below are not the same than calls to Envelope.getMinimum(0)
+                         * or Envelope.getMaximum(0) if the envelope crosses the anti-meridian.
+                         */
+                        zoneStart = ZONER.zone(0, geographicArea.getLowerCorner().getOrdinate(0)) - 1;  // Inclusive.
+                        zoneEnd   = ZONER.zone(0, geographicArea.getUpperCorner().getOrdinate(0));      // Exclusive.
+                        if (zoneEnd < zoneStart) {
+                            zoneEnd += zoneCount;                              // Envelope crosses the anti-meridian.
+                        }
+                    }
                 }
                 /*
                  * At this point we finished collecting the information that we will need (whether we will
@@ -713,7 +736,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                 int zone = zoneStart;
                 upper = 0;
                 do {
-                    final double λ = ZONER.centralMeridian(zone);
+                    final double λ = ZONER.centralMeridian((zone % zoneCount) + 1);
                     final double φ;
                     if (southPole) {
                         φ = Latitude.MIN_VALUE;
@@ -836,10 +859,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * The region for which to return MGRS codes. This envelope can be in any CRS.
          * This shape shall not be modified since the same instance will be shared by
          * many {@code IteratorOneZone}s.
-         *
-         * <p><b>Note:</b> {@link #optimize} must be {@code false} if this shape is not a rectangle.</p>
          */
-        private final Shape areaOfInterest;
+        private final Rectangle2D areaOfInterest;
 
         /**
          * The transform from the CRS of {@link #encoder} to the CRS of {@link #areaOfInterest}.
@@ -931,13 +952,19 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         private String pending;
 
         /**
-         * Temporary rectangle for computation purpose.
+         * Temporary rectangle for computation purpose. Needs to be an implementation from the
+         * {@link org.apache.sis.geometry} in order to support AOI spanning the anti-meridian.
          */
-        private final IntervalRectangle cell = new IntervalRectangle();
+        private final Envelope2D cell = new Envelope2D();
 
         /**
          * Returns a new iterator for creating MGRS codes in a single UTM or UPS zone.
          * The borders of the {@code areaOfInterest} rectangle are considered <strong>exclusive</strong>.
+         *
+         * <p>For envelopes that cross the anti-meridian, it does not matter if {@code geographicArea} uses
+         * the negative width convention or is expanded to the [-180 … 180]° of longitude range, because it
+         * will be clipped to the projection domain of validity anyway. However the {@code areaOfInterest}
+         * should use the negative width convention.</p>
          *
          * @param areaOfInterest  the envelope for which to return MGRS codes. This envelope can be in any CRS.
          * @param geographicArea  the area of interest transformed into a normalized geographic CRS.
@@ -958,36 +985,39 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
              * (φ,λ₀). We will need to clip the area of interest to those bounds before to project that area, because
              * the UPS and UTM projections can not cover the whole world.
              */
+            double λmin, λmax, φmin, φmax;
             final int zone = Math.abs(encoder.crsZone);
             if (zone == Encoder.POLE) {
                 xCenter = PolarStereographicA.UPS_SHIFT;
                 if (encoder.crsZone < 0) {
-                    cell.ymin = Latitude.MIN_VALUE;
-                    cell.ymax = TransverseMercator.Zoner.SOUTH_BOUNDS;
+                    φmin = Latitude.MIN_VALUE;
+                    φmax = TransverseMercator.Zoner.SOUTH_BOUNDS;
                 } else {
-                    cell.ymin = TransverseMercator.Zoner.NORTH_BOUNDS;
-                    cell.ymax = Latitude.MAX_VALUE;
+                    φmin = TransverseMercator.Zoner.NORTH_BOUNDS;
+                    φmax = Latitude.MAX_VALUE;
                 }
-                cell.xmin = Longitude.MIN_VALUE;
-                cell.xmax = Longitude.MAX_VALUE;
+                λmin = Longitude.MIN_VALUE;
+                λmax = Longitude.MAX_VALUE;
             } else {
                 xCenter = (int) ZONER.easting;
                 if (encoder.crsZone < 0) {
-                    cell.ymin = TransverseMercator.Zoner.SOUTH_BOUNDS;
+                    φmin = TransverseMercator.Zoner.SOUTH_BOUNDS;
+                    φmax = 0;
                 } else {
-                    cell.ymax = TransverseMercator.Zoner.NORTH_BOUNDS;
+                    φmin = 0;
+                    φmax = TransverseMercator.Zoner.NORTH_BOUNDS;
                 }
                 final double λ0 = ZONER.centralMeridian(zone);
-                cell.xmin = λ0 - ZONER.width;
-                cell.xmax = λ0 + ZONER.width;
+                λmin = λ0 - ZONER.width / 2;
+                λmax = λ0 + ZONER.width / 2;
             }
             double t;
             boolean clip = false;
-            if ((t = geographicArea.getMinimum(1)) >= cell.ymin) cell.ymin = t; else clip = true;
-            if ((t = geographicArea.getMaximum(1)) <= cell.ymax) cell.ymax = t; else clip = true;
-            if ((t = geographicArea.getMinimum(0)) >= cell.xmin) cell.xmin = t; else clip = true;
-            if ((t = geographicArea.getMaximum(0)) <= cell.xmax) cell.xmax = t; else clip = true;
-            boolean isSpecialCase = ZONER.isSpecialCase(cell.ymin, cell.ymax, cell.xmin, cell.xmax);
+            if ((t = geographicArea.getMinimum(1)) >= φmin) φmin = t; else clip = true;
+            if ((t = geographicArea.getMaximum(1)) <= φmax) φmax = t; else clip = true;
+            if ((t = geographicArea.getMinimum(0)) >= λmin) λmin = t; else clip = true;
+            if ((t = geographicArea.getMaximum(0)) <= λmax) λmax = t; else clip = true;
+            boolean isSpecialCase = ZONER.isSpecialCase(φmin, φmax, λmin, λmax);
             if (clip) {
                 /*
                  * If we detected that the given area of interest is larger than UPS or UTM domain of validity
@@ -995,9 +1025,25 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                  * to the envelope CRS so we can clip it. Here, "domain of validity" is relative to MGRS grid,
                  * not necessarily to the ISO 19111 domain of validity.
                  */
-                final Rectangle2D bounds = Shapes2D.transform(CRS.findOperation(
-                        geographicArea.getCoordinateReferenceSystem(), sourceCRS, null), cell, cell);
-                areaOfInterest = bounds.createIntersection(areaOfInterest);
+                final IntervalRectangle r = new IntervalRectangle(λmin, φmin, λmax, φmax);
+                r.setRect(Shapes2D.transform(CRS.findOperation(geographicArea.getCoordinateReferenceSystem(), sourceCRS, null), r, r));
+                r.intersect(areaOfInterest);
+                /*
+                 * We need an envelope that do not cross the anti-meridian. If the specified area of interest (AOI)
+                 * crosses the anti-meridian (which should happen only with geographic envelopes), then the call to
+                 * r.intersect(areaOfInterest) may have overwritten our computation with the AOI longitude range.
+                 * Overwrite again that range with the domain of validity of current UTM zone,
+                 * based on the following assumptions:
+                 *
+                 *   1) 'sourceCRS' is geographic (otherwise the AOI should not cross the anti-meridian).
+                 *   2) the "normalized" AOI longitude range is [-180 … 180]°, in which case intersection
+                 *      with [λmin … λmax] is [λmin … λmax] itself.
+                 */
+                if (r.xmax < r.xmin) {
+                    r.xmin = λmin;
+                    r.xmax = λmax;
+                }
+                areaOfInterest = r;             // Never cross the anti-meridian, even if the original AOI did.
             }
             /*
              * At this point, the area of interest has been clipped to the UPS or UTM domain of validity.
@@ -1056,9 +1102,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             yStart         = 0;                 // This iterator will be for the upper half.
             other.yEnd     = 0;                 // Other iterator will be for the lower half.
             downward       = false;
-            if (!other.downward) {
-                throw new AssertionError();
-            }
+            assert other.downward;              // Fail if the other iterator is not for lower half.
         }
 
         /**
@@ -1147,7 +1191,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                      * is on the left side.
                      */
                     cell.setRect(gridX, gridY, step, step);
-                    if (areaOfInterest.intersects(Shapes2D.transform(gridToAOI, cell, cell))) {
+                    cell.setRect(Shapes2D.transform(gridToAOI, cell, cell));
+                    if (cell.intersects(areaOfInterest)) {          // Must be invoked on Envelope2D implementation.
                         int x = gridX;
                         if (x < xCenter) {
                             // Use the 'x' value closest to projection center (see above comment for explanation),
@@ -1442,6 +1487,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                     toActualZone = CRS.findOperation(datum.geographic(), datum.universal(φ, λ), null).getMathTransform();
                     actualZone   = signedZone;
                 }
+                geographic.setOrdinate(1, Longitude.normalize(λ));
                 owner.normalized = position = toActualZone.transform(geographic, owner.normalized);
             }
             /*
@@ -1971,7 +2017,8 @@ parse:                  switch (part) {
                         int zoneError = ZONER.zone(φ, λ) - zone;
                         if (zoneError != 0) {
                             final int zc = ZONER.zoneCount();
-                            if (zoneError > zc/2) zoneError -= zc;
+                            if (zoneError < zc/-2) zoneError += zc;         // If change of zone crosses the anti-meridian.
+                            if (zoneError > zc/+2) zoneError -= zc;
                             if (ZONER.isSpecialCase(zone, φ)) {
                                 isValid = Math.abs(zoneError) <= 2;         // Tolerance in zone numbers for high latitudes.
                             } else {
