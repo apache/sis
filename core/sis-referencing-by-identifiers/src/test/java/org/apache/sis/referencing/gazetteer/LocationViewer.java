@@ -32,7 +32,6 @@ import javax.swing.JPanel;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
@@ -41,6 +40,9 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Debug;
+
+// Branch-dependent imports
+import org.opengis.referencing.gazetteer.Location;
 
 
 /**
