@@ -18,6 +18,8 @@ package org.apache.sis.internal.referencing.j2d;
 
 import java.awt.geom.Rectangle2D;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.util.Classes;
 
 
@@ -25,7 +27,7 @@ import org.apache.sis.util.Classes;
  * Rectangle defines by intervals instead than by a size.
  * Instead of ({@code x}, {@code y}, {@code width}, {@code height}) values as do standard Java2D implementations,
  * this class contains ({@link #xmin}, {@link #xmax}, {@link #ymin}, {@link #ymax}) values. This choice provides
- * two benefits:
+ * three benefits:
  *
  * <ul>
  *   <li>Allows this class to work correctly with {@linkplain java.lang.Double#isInfinite() infinite} and
@@ -33,7 +35,16 @@ import org.apache.sis.util.Classes;
  *       alternative is ambiguous.</li>
  *   <li>Slightly faster {@code contains(…)} and {@code intersects(…)} methods since there is no addition or
  *       subtraction to perform.</li>
+ *   <li>Better inter-operability with {@link Envelope2D} when a rectangle spans the anti-meridian.
+ *       This {@code IntervalRectangle} class does not support such envelopes by itself, but it is
+ *       okay to create a rectangle with negative width and gives it in argument to
+ *       {@link Envelope2D#contains(Rectangle2D)} or {@link Envelope2D#intersects(Rectangle2D)} methods.</li>
  * </ul>
+ *
+ * This class does <strong>not</strong> support by itself rectangles spanning the anti-meridian of a geographic CRS.
+ * However the {@link #getX()}, {@link #getY()}, {@link #getWidth()} and {@link #getHeight()} methods are defined in
+ * the straightforward way expected by {@link Envelope2D#intersects(Rectangle2D)} and similar methods for computing
+ * correct result if the given {@code Rectangle2D} crosses the anti-meridian.
  *
  * <div class="note"><b>Internal usage of inheritance:</b>
  * this class may also be opportunistically extended by some Apache SIS internal classes that need a rectangle in
@@ -61,6 +72,19 @@ public class IntervalRectangle extends Rectangle2D {
 
     /**
      * Constructs a rectangle initialized to the two first dimensions of the given envelope.
+     * If the given envelope crosses the anti-meridian, then the new rectangle will span the
+     * full longitude range (i.e. this constructor does not preserve the convention of using
+     * negative width for envelopes crossing anti-meridian).
+     *
+     * <div class="note"><b>Note:</b> this constructor expands envelopes that cross the anti-meridian
+     * because the methods defined in this class are not designed for handling such envelopes.
+     * If a rectangle with negative width is nevertheless desired for envelope spanning the anti-meridian,
+     * one can use the following constructor:
+     *
+     * {@preformat java
+     *     new IntervalRectangle(envelope.getLowerCorner(), envelope.getUpperCorner());
+     * }
+     * </div>
      *
      * @param envelope  the envelope from which to copy the values.
      */
@@ -69,6 +93,27 @@ public class IntervalRectangle extends Rectangle2D {
         xmax = envelope.getMaximum(0);
         ymin = envelope.getMinimum(1);
         ymax = envelope.getMaximum(1);
+    }
+
+    /**
+     * Constructs a rectangle initialized to the two first dimensions of the given corners.
+     * This constructor unconditionally assigns {@code lower} ordinates to {@link #xmin}, {@link #ymin} and
+     * {@code upper} ordinates to {@link #xmax}, {@link #ymax} regardless of their values; this constructor
+     * does not verify if {@code lower} ordinates are smaller than {@code upper} ordinates.
+     * This is sometime useful for creating a rectangle spanning the anti-meridian,
+     * even if {@code IntervalRectangle} class does not support such rectangles by itself.
+     *
+     * @param lower  the limits in the direction of decreasing ordinate values for each dimension.
+     * @param upper  the limits in the direction of increasing ordinate values for each dimension.
+     *
+     * @see Envelope#getLowerCorner()
+     * @see Envelope#getUpperCorner()
+     */
+    public IntervalRectangle(final DirectPosition lower, final DirectPosition upper) {
+        xmin = lower.getOrdinate(0);
+        xmax = upper.getOrdinate(0);
+        ymin = lower.getOrdinate(1);
+        ymax = upper.getOrdinate(1);
     }
 
     /**
@@ -119,7 +164,9 @@ public class IntervalRectangle extends Rectangle2D {
     }
 
     /**
-     * Returns the width of the rectangle.
+     * Returns the width of the rectangle. May be negative if the rectangle crosses the anti-meridian.
+     * This {@code IntervalRectangle} class does not support such envelopes itself, but other classes
+     * like {@link Envelope2D} will handle correctly the negative width.
      *
      * @return the width of the rectangle.
      */
@@ -221,10 +268,12 @@ public class IntervalRectangle extends Rectangle2D {
      */
     @Override
     public final void setRect(final Rectangle2D r) {
-        xmin = r.getMinX();
-        ymin = r.getMinY();
-        xmax = r.getMaxX();
-        ymax = r.getMaxY();
+        if (r != this) {        // Optimization for methods chaining like r.setRect(Shapes.transform(…, r))
+            xmin = r.getMinX();
+            ymin = r.getMinY();
+            xmax = r.getMaxX();
+            ymax = r.getMaxY();
+        }
     }
 
     /**
@@ -355,6 +404,30 @@ public class IntervalRectangle extends Rectangle2D {
         else if (y < ymin)  out |= OUT_TOP;
         else if (y > ymax)  out |= OUT_BOTTOM;
         return out;
+    }
+
+    /**
+     * Intersects a {@link Rectangle2D} object with this rectangle.
+     * The resulting* rectangle is the intersection of the two {@code Rectangle2D} objects.
+     * Invoking this method is equivalent to invoking the following code, except that this
+     * method behaves correctly with infinite values and {@link Envelope2D} implementation.
+     *
+     * {@preformat java
+     *     Rectangle2D.intersect(this, rect, this);
+     * }
+     *
+     * @param  rect  the {@code Rectangle2D} to intersect with this rectangle.
+     *
+     * @see #intersect(Rectangle2D, Rectangle2D, Rectangle2D)
+     * @see #createIntersection(Rectangle2D)
+     */
+    public final void intersect(final Rectangle2D rect) {
+        double t;
+        // Must use getMin/Max methods, not getX/Y/Width/Height, for inter-operability with Envelope2D.
+        if ((t = rect.getMinX()) > xmin) xmin = t;
+        if ((t = rect.getMaxX()) < xmax) xmax = t;
+        if ((t = rect.getMinY()) > ymin) ymin = t;
+        if ((t = rect.getMaxY()) < ymax) ymax = t;
     }
 
     /**

@@ -36,6 +36,7 @@ import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
@@ -55,7 +56,7 @@ import org.apache.sis.util.Debug;
 @SuppressWarnings("serial")
 public final class LocationViewer extends JPanel {
     /**
-     * Shows the locations tested by {@link MilitaryGridReferenceSystemTest#testIterator()}.
+     * Shows the locations tested by {@link MilitaryGridReferenceSystemTest#testIteratorNorthUTM()}.
      *
      * @param  args  ignored.
      * @throws Exception if an error occurred while transforming an envelope to the display CRS.
@@ -63,7 +64,40 @@ public final class LocationViewer extends JPanel {
     public static void main(final String[] args) throws Exception {
         final MilitaryGridReferenceSystem.Coder coder = new MilitaryGridReferenceSystem().createCoder();
         coder.setPrecision(100000);
-        show(coder, new Envelope2D(CommonCRS.defaultGeographic(), 5, 47, 8, 10), CommonCRS.WGS84.universal(1, 9));
+        switch (1) {
+            /*
+             * UTM North: 3 zones (31, 32 and 33) and 3 latitude bands (T, U and V).
+             * Include the Norway special case: in latitude band V, zone 32 is widened at the expense of zone 31.
+             */
+            case 1: {
+                show(coder, new Envelope2D(CommonCRS.defaultGeographic(), 5, 47, 8, 10), CommonCRS.WGS84.universal(1, 9));
+                break;
+            }
+            /*
+             * UTM South: 3 zones (31, 32 and 33) and 2 latitude bands (G and H).
+             */
+            case 2: {
+                show(coder, new Envelope2D(CommonCRS.defaultGeographic(), 5, -42, 8, 4), CommonCRS.WGS84.universal(1, 9));
+                break;
+            }
+            /*
+             * Crossing the anti-meridian. There is two columns of cells: on the west side and on the east side.
+             */
+            case 3: {
+                final GeneralEnvelope ge = new GeneralEnvelope(CommonCRS.defaultGeographic());
+                ge.setRange(0, 170, -175);
+                ge.setRange(1,  40,   42);
+                show(coder, ge, null);
+                break;
+            }
+            /*
+             * Polar case.
+             */
+            case 4: {
+                show(coder, new Envelope2D(CommonCRS.defaultGeographic(), -180, 80, 360, 10), CommonCRS.WGS84.universal(90, 9));
+                break;
+            }
+        }
     }
 
     /**
@@ -137,7 +171,6 @@ public final class LocationViewer extends JPanel {
         while (it.hasNext()) {
             final String code = it.next();
             addLocation(code, coder.decode(code));
-System.out.print("\"" + code + "\", ");
         }
         envelope = ((MathTransform2D) CRS.findOperation(areaOfInterest.getCoordinateReferenceSystem(), displayCRS, null)
                         .getMathTransform()).createTransformedShape(new IntervalRectangle(areaOfInterest));

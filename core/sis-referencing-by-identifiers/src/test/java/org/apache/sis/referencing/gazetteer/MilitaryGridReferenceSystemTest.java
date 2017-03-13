@@ -23,13 +23,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Iterator;
+import java.util.Collections;
 import java.lang.reflect.Field;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
@@ -694,9 +697,28 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
+     * Tests iteration spanning the anti-meridian.
+     *
+     * <div class="note"><b>Tip:</b> in case of test failure, see {@link LocationViewer} as a debugging tool.</div>
+     *
+     * @throws TransformException if an error occurred while computing the coordinate.
+     */
+    @Test
+    public void testIteratorOverAntiMeridian() throws TransformException {
+        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(CommonCRS.defaultGeographic());
+        areaOfInterest.setRange(0, 170, -175);
+        areaOfInterest.setRange(1,  40,  42);
+        testIterator(areaOfInterest, Arrays.asList(
+            "59SME", "59SNE", "59SPE", "59SQE", "60STK", "60SUK", "60SVK", "60SWK", "60SXK", "60SYK", "1SBE", "1SCE", "1SDE", "1SEE", "1SFE",
+            "59TME", "59TNE", "59TPE", "59TQE", "60TTK", "60TUK", "60TVK", "60TWK", "60TXK", "60TYK", "1TBE", "1TCE", "1TDE", "1TEE", "1TFE",
+            "59TMF", "59TNF", "59TPF", "59TQF", "60TTL", "60TUL", "60TVL", "60TWL", "60TXL", "60TYL", "1TBF", "1TCF", "1TDF", "1TEF", "1TFF",
+            "59TMG", "59TNG", "59TPG", "59TQG", "60TTM", "60TUM", "60TVM", "60TWM", "60TXM", "60TYM", "1TBG", "1TCG", "1TDG", "1TEG", "1TFG"));
+    }
+
+    /**
      * Implementation of {@link #testIteratorUTM()}.
      */
-    private static void testIterator(final Envelope2D areaOfInterest, final List<String> expected) throws TransformException {
+    private static void testIterator(final Envelope areaOfInterest, final List<String> expected) throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         coder.setPrecision(100000);
         /*
@@ -713,8 +735,9 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
          * Test parallel iteration using stream.
          */
         assertTrue(remaining.addAll(expected));
-        assertEquals("List of expected codes has duplicated values.", expected.size(), remaining.size());
-        coder.encode(areaOfInterest, true).forEach((code) -> assertTrue(code, remaining.remove(code)));
-        assertTrue(remaining.toString(), remaining.isEmpty());
+        final Set<String> sync = Collections.synchronizedSet(remaining);
+        assertEquals("List of expected codes has duplicated values.", expected.size(), sync.size());
+        coder.encode(areaOfInterest, true).forEach((code) -> assertTrue(code, sync.remove(code)));
+        assertTrue(sync.toString(), sync.isEmpty());
     }
 }
