@@ -180,6 +180,14 @@ public final class TransverseMercator extends AbstractMercator {
                 }
                 return false;
             }
+
+            /** Indicates whether the given geographic area intersects the regions that need to be handled in a special way. */
+            @Override public boolean isSpecialCase(final double φmin, final double φmax, final double λmin, final double λmax) {
+                if (φmax >= NORWAY_BOUNDS && φmin < NORTH_BOUNDS) {
+                    return super.zone(0, λmax) >= 31 && super.zone(0, λmin) <= 37;
+                }
+                return false;
+            }
         },
 
         /**
@@ -372,6 +380,19 @@ public final class TransverseMercator extends AbstractMercator {
         }
 
         /**
+         * Indicates whether the given geographic area intersects the regions that need to be handled in a special way.
+         *
+         * @param  φmin  southernmost latitude in degrees.
+         * @param  φmax  northernmost latitude in degrees.
+         * @param  λmin  westernmost longitude in degrees.
+         * @param  λmax  easternmost longitude in degrees.
+         * @return whether the given area intersects a region that needs to be handled as a special case.
+         */
+        public boolean isSpecialCase(final double φmin, final double φmax, final double λmin, final double λmax) {
+            return false;
+        }
+
+        /**
          * First exception in UTM projection, corresponding to latitude band V.
          * This method is public for {@code MilitaryGridReferenceSystemTest.verifyZonerConsistency()} purpose only.
          *
@@ -379,7 +400,7 @@ public final class TransverseMercator extends AbstractMercator {
          * @return whether the given latitude is in the Norway latitude band.
          */
         public static boolean isNorway(final double φ) {
-            return (φ >= 56) && (φ < 64);
+            return (φ >= NORWAY_BOUNDS) && (φ < 64);
         }
 
         /**
@@ -399,6 +420,12 @@ public final class TransverseMercator extends AbstractMercator {
          * @see #NORTH_BOUNDS
          */
         public static final double SOUTH_BOUNDS = -80;
+
+        /**
+         * Southernmost bounds (inclusive) of the latitude band that contains Norway ({@code 'V'}).
+         * This is the first latitude band where we may need to handle special cases (Norway and Svalbard).
+         */
+        private static final double NORWAY_BOUNDS = 56;
 
         /**
          * Southernmost bounds (inclusive) of the last latitude band, which contains Svalbard.
