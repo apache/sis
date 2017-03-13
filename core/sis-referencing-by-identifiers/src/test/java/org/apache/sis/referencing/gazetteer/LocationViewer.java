@@ -56,7 +56,7 @@ import org.apache.sis.util.Debug;
 @SuppressWarnings("serial")
 public final class LocationViewer extends JPanel {
     /**
-     * Shows the locations tested by {@link MilitaryGridReferenceSystemTest#testIteratorNorthUTM()}.
+     * Shows the locations tested by {@code MilitaryGridReferenceSystemTest.testIterator()} methods.
      *
      * @param  args  ignored.
      * @throws Exception if an error occurred while transforming an envelope to the display CRS.
@@ -70,14 +70,16 @@ public final class LocationViewer extends JPanel {
              * Include the Norway special case: in latitude band V, zone 32 is widened at the expense of zone 31.
              */
             case 1: {
-                show(coder, new Envelope2D(CommonCRS.defaultGeographic(), 5, 47, 8, 10), CommonCRS.WGS84.universal(1, 9));
+                show("UTM zones 31, 32 and 33 North", coder,
+                     new Envelope2D(CommonCRS.defaultGeographic(), 5, 47, 8, 10), CommonCRS.WGS84.universal(1, 9));
                 break;
             }
             /*
              * UTM South: 3 zones (31, 32 and 33) and 2 latitude bands (G and H).
              */
             case 2: {
-                show(coder, new Envelope2D(CommonCRS.defaultGeographic(), 5, -42, 8, 4), CommonCRS.WGS84.universal(1, 9));
+                show("UTM zones 31, 32 and 33 South", coder,
+                     new Envelope2D(CommonCRS.defaultGeographic(), 5, -42, 8, 4), CommonCRS.WGS84.universal(1, 9));
                 break;
             }
             /*
@@ -87,14 +89,40 @@ public final class LocationViewer extends JPanel {
                 final GeneralEnvelope ge = new GeneralEnvelope(CommonCRS.defaultGeographic());
                 ge.setRange(0, 170, -175);
                 ge.setRange(1,  40,   42);
-                show(coder, ge, null);
+                show("15° of longitude spanning the anti-meridian", coder, ge, null);
                 break;
             }
             /*
-             * Polar case.
+             * Complete North pole case surrounded by part of V latitude band.
+             * This include the Svalbard special case in zones 31 to 37.
              */
             case 4: {
-                show(coder, new Envelope2D(CommonCRS.defaultGeographic(), -180, 80, 360, 10), CommonCRS.WGS84.universal(90, 9));
+                show("North pole surrounded by V latitude band", coder,
+                     new Envelope2D(CommonCRS.defaultGeographic(), -180, 80, 360, 10), CommonCRS.WGS84.universal(90, 0));
+                break;
+            }
+            /*
+             * Complete South pole case surrounded by one latitude band.
+             */
+            case 5: {
+                show("South pole surrounded by C latitude band",
+                     coder, new Envelope2D(CommonCRS.defaultGeographic(), -180, -90, 360, 12), CommonCRS.WGS84.universal(-90, 0));
+                break;
+            }
+            /*
+             * Partial North pole case.
+             */
+            case 6: {
+                show("10°W to 70°E close to North pole", coder,
+                     new Envelope2D(CommonCRS.defaultGeographic(), -10, 85, 80, 5), CommonCRS.WGS84.universal(90, 0));
+                break;
+            }
+            /*
+             * Partial South pole case with zone UTM zones.
+             */
+            case 7: {
+                show("70°W to 120°W close to South pole", coder,
+                     new Envelope2D(CommonCRS.defaultGeographic(), -120, -83, 50, 5), CommonCRS.WGS84.universal(-90, 0));
                 break;
             }
         }
@@ -135,13 +163,14 @@ public final class LocationViewer extends JPanel {
     /**
      * Shows all locations in the given area of interest.
      *
+     * @param  title           the window title.
      * @param  coder           the encoder to use for computing locations and their envelopes.
      * @param  areaOfInterest  the geographic or projected area where to get locations.
      * @param  displayCRS      the CRS to use for displaying the location shapes, or {@code null} for the envelope CRS.
      * @throws FactoryException if a transformation to the display CRS can not be obtained.
      * @throws TransformException if an error occurred while transforming an envelope.
      */
-    public static void show(final MilitaryGridReferenceSystem.Coder coder, final Envelope areaOfInterest,
+    public static void show(final String title, final MilitaryGridReferenceSystem.Coder coder, final Envelope areaOfInterest,
             SingleCRS displayCRS) throws FactoryException, TransformException
     {
         if (displayCRS == null) {
@@ -149,7 +178,7 @@ public final class LocationViewer extends JPanel {
         }
         final LocationViewer viewer = new LocationViewer(displayCRS);
         viewer.addLocations(coder, areaOfInterest);
-        final JFrame frame = new JFrame("Locations viewer (debug)");
+        final JFrame frame = new JFrame(title);
         frame.getContentPane().add(viewer);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 600);
