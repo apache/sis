@@ -239,8 +239,9 @@ public class IntervalRectangle extends Rectangle2D {
     }
 
     /**
-     * Tests if the interior of this rectangle intersects the interior of a specified set of
-     * rectangular coordinates.
+     * Tests if the interior of this rectangle intersects the interior of a specified set of rectangular coordinates.
+     * The edges are considered exclusive; this method returns {@code false} if the two rectangles just touch to each
+     * other.
      *
      * @param  x       the <var>x</var> minimal ordinate value.
      * @param  y       the <var>y</var> minimal ordinate value.
@@ -259,6 +260,8 @@ public class IntervalRectangle extends Rectangle2D {
 
     /**
      * Tests if the interior of this shape intersects the interior of a specified rectangle.
+     * The edges are considered exclusive; this method returns {@code false} if the two rectangles
+     * just touch to each other.
      *
      * @param  rect  the specified rectangle.
      * @return {@code true} if this shape and the specified rectangle intersect each other.
