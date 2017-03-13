@@ -390,6 +390,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *         the expected number of dimensions.
      */
     public void setEnvelope(final Envelope envelope) throws MismatchedDimensionException {
+        if (envelope == this) {
+            return;     // Optimization for methods chaining like env.setEnvelope(Envelopes.transform(env, crs))
+        }
         ensureNonNull("envelope", envelope);
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;

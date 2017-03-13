@@ -24,6 +24,11 @@ package org.apache.sis.internal.jdk8;
  */
 public abstract interface Spliterator<T> {
     /**
+     * Flag for iterators that return only distinct values.
+     */
+    public static final int DISTINCT = 0x1;
+
+    /**
      * Flag for iterators that return the values in some specified order.
      */
     public static final int ORDERED = 0x10;
