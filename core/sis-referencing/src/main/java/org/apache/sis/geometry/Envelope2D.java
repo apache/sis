@@ -98,13 +98,12 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  *
  * @see GeneralEnvelope
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
  */
-@SuppressWarnings("CloneableClassWithoutClone")    // No additional fields compared to parent.
 public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiable, Cloneable {
     /**
      * Serial number for inter-operability with different versions.
@@ -284,6 +283,29 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
+     * Sets this envelope to the given rectangle. If the given rectangle is also an instance of {@link Envelope}
+     * (typically as another {@code Envelope2D}) and has a non-null Coordinate Reference System (CRS), then the
+     * CRS of this envelope will be set to the CRS of the given envelope.
+     *
+     * @param rect  the rectangle to copy coordinates from.
+     *
+     * @since 0.8
+     */
+    @Override
+    public void setRect(final Rectangle2D rect) {
+        if (rect == this) {
+            return;         // Optimization for methods chaining like env.setRect(Shapes.transform(…, env))
+        }
+        if (rect instanceof Envelope) {
+            final CoordinateReferenceSystem envelopeCRS = ((Envelope) rect).getCoordinateReferenceSystem();
+            if (envelopeCRS != null) {
+                setCoordinateReferenceSystem(envelopeCRS);
+            }
+        }
+        super.setRect(rect);
+    }
+
+    /**
      * Returns the number of dimensions, which is always 2.
      *
      * @return always 2 for bi-dimensional objects.
@@ -444,6 +466,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
 
     /**
      * Returns the {@linkplain #getMinimum(int) minimal} ordinate value for dimension 0.
+     * The default implementation invokes <code>{@linkplain #getMinimum(int) getMinimum}(0)</code>.
+     * The result is the standard {@link Rectangle2D} value (namely {@linkplain #x x})
+     * only if the envelope is not spanning the anti-meridian.
      *
      * @return the minimal ordinate value for dimension 0.
      */
@@ -454,6 +479,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
 
     /**
      * Returns the {@linkplain #getMinimum(int) minimal} ordinate value for dimension 1.
+     * The default implementation invokes <code>{@linkplain #getMinimum(int) getMinimum}(1)</code>.
+     * The result is the standard {@link Rectangle2D} value (namely {@linkplain #y y})
+     * only if the envelope is not spanning the anti-meridian.
      *
      * @return the minimal ordinate value for dimension 1.
      */
@@ -464,6 +492,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
 
     /**
      * Returns the {@linkplain #getMaximum(int) maximal} ordinate value for dimension 0.
+     * The default implementation invokes <code>{@linkplain #getMaximum(int) getMinimum}(0)</code>.
+     * The result is the standard {@link Rectangle2D} value (namely {@linkplain #x x} + {@linkplain #width width})
+     * only if the envelope is not spanning the anti-meridian.
      *
      * @return the maximal ordinate value for dimension 0.
      */
@@ -474,6 +505,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
 
     /**
      * Returns the {@linkplain #getMaximum(int) maximal} ordinate value for dimension 1.
+     * The default implementation invokes <code>{@linkplain #getMaximum(int) getMinimum}(1)</code>.
+     * The result is the standard {@link Rectangle2D} value (namely {@linkplain #y y} + {@linkplain #height height})
+     * only if the envelope is not spanning the anti-meridian.
      *
      * @return the maximal ordinate value for dimension 1.
      */
@@ -484,6 +518,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
 
     /**
      * Returns the {@linkplain #getMedian(int) median} ordinate value for dimension 0.
+     * The default implementation invokes <code>{@linkplain #getMedian(int) getMedian}(0)</code>.
+     * The result is the standard {@link Rectangle2D} value (namely {@linkplain #x x} + {@linkplain #width width}/2)
+     * only if the envelope is not spanning the anti-meridian.
      *
      * @return the median ordinate value for dimension 0.
      */
@@ -494,6 +531,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
 
     /**
      * Returns the {@linkplain #getMedian(int) median} ordinate value for dimension 1.
+     * The default implementation invokes <code>{@linkplain #getMedian(int) getMedian}(1)</code>.
+     * The result is the standard {@link Rectangle2D} value (namely {@linkplain #y y} + {@linkplain #height height}/2)
+     * only if the envelope is not spanning the anti-meridian.
      *
      * @return the median ordinate value for dimension 1.
      */
@@ -504,6 +544,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
 
     /**
      * Returns the {@linkplain #getSpan(int) span} for dimension 0.
+     * The default implementation invokes <code>{@linkplain #getSpan(int) getSpan}(0)</code>.
+     * The result is the standard {@link Rectangle2D} value (namely {@linkplain #width width})
+     * only if the envelope is not spanning the anti-meridian.
      *
      * @return the span for dimension 0.
      */
@@ -514,6 +557,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
 
     /**
      * Returns the {@linkplain #getSpan(int) span} for dimension 1.
+     * The default implementation invokes <code>{@linkplain #getSpan(int) getSpan}(1)</code>.
+     * The result is the standard {@link Rectangle2D} value (namely {@linkplain #height height})
+     * only if the envelope is not spanning the anti-meridian.
      *
      * @return the span for dimension 1.
      */
@@ -756,7 +802,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
             final Envelope2D env = (Envelope2D) rect;
             return intersects(env.x, env.y, env.width, env.height);
         }
-        return super.contains(rect);
+        return super.intersects(rect);
     }
 
     /**
@@ -885,7 +931,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      */
     @Override
     public Envelope2D createUnion(final Rectangle2D rect) {
-        final Envelope2D union = (Envelope2D) clone();
+        final Envelope2D union = clone();
         union.add(rect);
         assert union.isEmpty() || (union.contains(this) && union.contains(rect)) : union;
         return union;
@@ -1087,6 +1133,16 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
             }
         }
         return true;
+    }
+
+    /**
+     * Returns a clone of this envelope.
+     *
+     * @return a clone of this envelope.
+     */
+    @Override
+    public Envelope2D clone() {
+        return (Envelope2D) super.clone();
     }
 
     /**

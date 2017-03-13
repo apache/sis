@@ -159,7 +159,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
     /**
      * Creates a new location type of the given name.
      *
-     * @param name the location type name.
+     * @param name  the location type name.
      */
     public ModifiableLocationType(final CharSequence name) {
         ArgumentChecks.ensureNonNull("name", name);

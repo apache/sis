@@ -21,12 +21,18 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.awt.geom.Rectangle2D;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
@@ -36,8 +42,9 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.crs.DefaultProjectedCRS;
+import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
@@ -47,9 +54,13 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.geometry.Shapes2D;
+import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.measure.Longitude;
@@ -57,6 +68,11 @@ import org.apache.sis.measure.Latitude;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
+import org.apache.sis.internal.jdk8.Spliterator;
+import org.apache.sis.internal.jdk8.Spliterators;
+import org.apache.sis.internal.jdk8.Stream;
+import org.apache.sis.internal.jdk8.Consumer;
+import org.apache.sis.internal.jdk8.StreamSupport;
 import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;
@@ -372,6 +388,13 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         private String trimmedSeparator;
 
         /**
+         * Whether the decoded locations should be clipped to the valid area of MGRS cell.
+         *
+         * @see #getClipToValidArea()
+         */
+        private boolean clipToValidArea;
+
+        /**
          * Cached information needed for building a MGRS reference from a direct position in the given CRS.
          */
         private final Map<CoordinateReferenceSystem,Encoder> encoders;
@@ -385,16 +408,30 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         /**
          * A buffer where to create reference, to be reused for each new reference.
          */
-        final StringBuilder buffer;
+        final StringBuilder buffer = new StringBuilder(18);      // Length of "4 Q FJ 12345 67890" sample value.
 
         /**
-         * Creates a new coder initialized to the default precision.
+         * Creates a new coder initialized to the default precision and separator.
          */
         protected Coder() {
-            digits     = METRE_PRECISION_DIGITS;     // 1 metre precision.
-            separator  = trimmedSeparator = "";
-            buffer     = new StringBuilder(18);      // Length of "4 Q FJ 12345 67890" sample value.
-            encoders   = new IdentityHashMap<>();
+            digits    = METRE_PRECISION_DIGITS;     // 1 metre precision.
+            separator = trimmedSeparator = "";
+            encoders  = new IdentityHashMap<>();
+            clipToValidArea = true;
+        }
+
+        /**
+         * Creates a new coder initialized to the same setting than the given separator.
+         * The new instance will share the same {@link #encoders} map than the original instance.
+         * This is okay only if all calls to {@link #encoder(CoordinateReferenceSystem)} are done
+         * in the same thread before any call to {@link IteratorAllZones#trySplit()}.
+         */
+        Coder(final Coder other) {
+            digits           = other.digits;
+            separator        = other.separator;
+            trimmedSeparator = other.trimmedSeparator;
+            clipToValidArea  = other.clipToValidArea;
+            encoders         = other.encoders;
         }
 
         /**
@@ -448,6 +485,13 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         }
 
         /**
+         * For internal use by other internal classes in this Java source file.
+         */
+        final int digits() {
+            return digits;
+        }
+
+        /**
          * Returns the separator to insert between each component of the MGRS identifier.
          * Components are zone number, latitude band, 100 000-metres square identifier and numerical values.
          * By default the separator is an empty string, which produce references like "4QFJ12345678".
@@ -477,6 +521,29 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         }
 
         /**
+         * Returns whether the decoded locations should be clipped to the valid area.
+         * The default value is {@code true}.
+         *
+         * @return {@code true} if decoded locations are clipped to the valid area.
+         */
+        public boolean getClipToValidArea() {
+            return clipToValidArea;
+        }
+
+        /**
+         * Sets whether the decoded locations should be clipped to the valid area.
+         * MGRS 100 km squares can actually be smaller than 100 km when the square overlaps two UTM zones or
+         * two latitude bands. We may have half of a square in a zone and the other half in the other zone.
+         * By default, the {@link #decode(CharSequence)} method clips the square to the zone where it belongs.
+         * Invoking this method with the {@code false} value disables this behavior.
+         *
+         * @param clip  whether the decoded locations should be clipped to the valid area.
+         */
+        public void setClipToValidArea(final boolean clip) {
+            clipToValidArea = clip;
+        }
+
+        /**
          * Bridge to {@link MilitaryGridReferenceSystem#datum}
          * for the {@link Encoder} and {@link Decoder} classes.
          */
@@ -486,12 +553,13 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Returns the encoder for the given coordinate reference system.
+         * All calls to this method must be done in the same thread.
          *
          * @throws IllegalArgumentException if the given CRS do not use one of the supported datums.
          * @throws FactoryException if the creation of a coordinate operation failed.
          * @throws TransformException if the creation of an inverse operation failed.
          */
-        private Encoder encoder(final CoordinateReferenceSystem crs) throws FactoryException, TransformException {
+        final Encoder encoder(final CoordinateReferenceSystem crs) throws FactoryException, TransformException {
             if (crs == null) {
                 throw new GazetteerException(Errors.format(Errors.Keys.UnspecifiedCRS));
             }
@@ -517,9 +585,63 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         public String encode(final DirectPosition position) throws TransformException {
             ArgumentChecks.ensureNonNull("position", position);
             try {
-                return encoder(position.getCoordinateReferenceSystem()).encode(this, position, separator, digits);
+                return encoder(position.getCoordinateReferenceSystem()).encode(this, position, true, getSeparator(), digits());
             } catch (IllegalArgumentException | FactoryException e) {
                 throw new GazetteerException(e.getLocalizedMessage(), e);
+            }
+        }
+
+        /**
+         * Returns an iterator over all MGRS references that intersect the given envelope.
+         * The given envelope must have a Coordinate Reference System (CRS) associated to it.
+         * If the CRS is geographic, the envelope is allowed to span the anti-meridian.
+         * The MGRS references may be returned in any iteration order.
+         *
+         * <div class="note"><b>Possible evolution:</b>
+         * current implementation does not clip the cells to UPS/UTM valid areas before to test for intersection
+         * with {@code areaOfInterest}. Consequently the iterator may return slightly more cells than expected.
+         * A future version may filter the cells more accurately. If an application needs the same set of cells
+         * than what current the implementation returns, it can invoke <code>{@linkplain #setClipToValidArea
+         * setClipToValidArea}(false)</code> for preserving current behavior in future Apache SIS versions.</div>
+         *
+         * @param  areaOfInterest  envelope of desired MGRS references.
+         * @return an iterator over MGRS references intersecting the given area of interest.
+         * @throws TransformException if an error occurred while transforming the area of interest.
+         */
+        public Iterator<String> encode(final Envelope areaOfInterest) throws TransformException {
+            ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
+            try {
+                return Spliterators.iterator(new IteratorAllZones(areaOfInterest).simplify());
+            } catch (IllegalArgumentException | FactoryException e) {
+                throw new GazetteerException(e);
+            }
+        }
+
+        /**
+         * Returns a stream of all MGRS references that intersect the given envelope.
+         * The given envelope must have a Coordinate Reference System (CRS) associated to it.
+         * If the CRS is geographic, the envelope is allowed to span the anti-meridian.
+         * The MGRS references may be returned in any order.
+         *
+         * <div class="note"><b>Possible evolution:</b>
+         * current implementation does not clip the cells to UPS/UTM valid areas before to test for intersection
+         * with {@code areaOfInterest}. Consequently the iterator may return slightly more cells than expected.
+         * A future version may filter the cells more accurately. If an application needs the same set of cells
+         * than what current the implementation returns, it can invoke <code>{@linkplain #setClipToValidArea
+         * setClipToValidArea}(false)</code> for preserving current behavior in future Apache SIS versions.</div>
+         *
+         * @param  areaOfInterest  envelope of desired MGRS references.
+         * @param  parallel        {@code true} for a parallel stream, or {@code false} for a sequential stream.
+         * @return a stream of MGRS references intersecting the given area of interest.
+         * @throws TransformException if an error occurred while transforming the area of interest.
+         */
+        // Public on the JDK8 branch only.
+        final Stream<String> encode(final Envelope areaOfInterest, final boolean parallel) throws TransformException {
+            ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
+            try {
+                return StreamSupport.stream(new IteratorAllZones(areaOfInterest).simplify(), parallel);
+            } catch (IllegalArgumentException | FactoryException e) {
+                throw new GazetteerException(e);
             }
         }
 
@@ -534,6 +656,637 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         public Location decode(final CharSequence reference) throws TransformException {
             ArgumentChecks.ensureNonNull("reference", reference);
             return new Decoder(this, reference);
+        }
+
+
+
+        /**
+         * Iterator over the cells inside all UPS and UTM zones inside a given area of interest.
+         * Each UPS or UTM zone is processed by a separated iterator, each of them with its own
+         * {@link Encoder} instance.
+         *
+         * @see IteratorOneZone
+         */
+        private final class IteratorAllZones implements Spliterator<String> {
+            /**
+             * The iterators over a single UTM zone.
+             */
+            private final Spliterator<String>[] iterators;
+
+            /**
+             * Index of the current iterator.
+             */
+            private int index;
+
+            /**
+             * Index after the last iterator to return.
+             */
+            private int upper;
+
+            /**
+             * Creates a new iterator over MGRS cells in the given area of interest.
+             * The borders of the given envelope are considered <strong>exclusive</strong>.
+             */
+            @SuppressWarnings({"unchecked", "rawtypes"})        // Generic array creation.
+            IteratorAllZones(final Envelope areaOfInterest) throws FactoryException, TransformException {
+                final SingleCRS sourceCRS = CRS.getHorizontalComponent(areaOfInterest.getCoordinateReferenceSystem());
+                if (sourceCRS == null) {
+                    throw new GazetteerException(org.apache.sis.internal.referencing.Resources.format(
+                            org.apache.sis.internal.referencing.Resources.Keys.NonHorizontalCRS_1, "areaOfInterest"));
+                }
+                final int precision = (int) getPrecision();
+                if (precision <= 0 || precision > (int) GRID_SQUARE_SIZE) {
+                    throw new GazetteerException(Errors.format(Errors.Keys.ValueOutOfRange_4,
+                            "precision", 1, (int) GRID_SQUARE_SIZE, precision));
+                }
+                /*
+                 * Convert area of interest (AOI) from an envelope to a Rectangle2D for use with
+                 * Envelope2D.intersect(Rectangle2D) during IteratorOneZone.advance(…) execution.
+                 * We need to use the constructor expecting the two corners in order to preserve
+                 * envelope spanning the anti-meridian.
+                 */
+                final IntervalRectangle aoi = new IntervalRectangle(areaOfInterest.getLowerCorner(),
+                                                                    areaOfInterest.getUpperCorner());
+                /*
+                 * Project the area of interest (AOI) to normalized geographic coordinates for computing UTM zones
+                 * and for IteratorOneZone construction. For computing UTM zones, envelopes that cross the anti-
+                 * meridian should have a negative width. For IteratorOneZone construction, it does not matter.
+                 */
+                final Envelope geographicArea = Envelopes.transform(areaOfInterest, datum.normalizedGeographic());
+                final double φmin   = geographicArea.getMinimum(1);
+                final double φmax   = geographicArea.getMaximum(1);
+                boolean   southPole = (φmin < TransverseMercator.Zoner.SOUTH_BOUNDS);
+                boolean   northPole = (φmax > TransverseMercator.Zoner.NORTH_BOUNDS);
+                boolean   southUTM  = false;
+                boolean   northUTM  = false;                    // Default value for UPS, to be modified later if UTM.
+                int       zoneStart = 0;                        // Zero-based (i.e. standard zone number minus 1).
+                int       zoneEnd   = 0;                        // Exclusive.
+                final int zoneCount = ZONER.zoneCount();
+                if (φmax >= TransverseMercator.Zoner.SOUTH_BOUNDS && φmin < TransverseMercator.Zoner.NORTH_BOUNDS) {
+                    southUTM = (φmin <  0);
+                    northUTM = (φmax >= 0);
+                    if (geographicArea.getSpan(0) > (Longitude.MAX_VALUE - Longitude.MIN_VALUE) - ZONER.width) {
+                        zoneEnd = zoneCount;
+                    } else {
+                        /*
+                         * Use of lower and upper corners below are not the same than calls to Envelope.getMinimum(0)
+                         * or Envelope.getMaximum(0) if the envelope crosses the anti-meridian.
+                         */
+                        zoneStart = ZONER.zone(0, geographicArea.getLowerCorner().getOrdinate(0)) - 1;  // Inclusive.
+                        zoneEnd   = ZONER.zone(0, geographicArea.getUpperCorner().getOrdinate(0));      // Exclusive.
+                        if (zoneEnd < zoneStart) {
+                            zoneEnd += zoneCount;                              // Envelope crosses the anti-meridian.
+                        }
+                    }
+                }
+                /*
+                 * At this point we finished collecting the information that we will need (whether we will
+                 * iterate over the north or south pole, the range of UTM zones, etc). For each UPS or UTM
+                 * zone, we pick a representative φ value for the purpose of CommonCRS.universal(…) method
+                 * call and we prepare an iterator on which we will delegate computations.
+                 */
+                upper = zoneEnd - zoneStart;
+                if (southUTM & northUTM) upper *= 2;
+                if (southPole)           upper += 2;
+                if (northPole)           upper += 2;
+                iterators = new Spliterator[upper];
+                int zone = zoneStart;
+                upper = 0;
+                do {
+                    final double λ = ZONER.centralMeridian((zone % zoneCount) + 1);
+                    final double φ;
+                    if (southPole) {
+                        φ = Latitude.MIN_VALUE;
+                        southPole = false;              // For next iteration.
+                    } else if (southUTM) {
+                        φ = -1;
+                        if (++zone >= zoneEnd) {
+                            zone = zoneStart;
+                            southUTM = false;           // For next iteration.
+                        }
+                    } else if (northUTM) {
+                        φ = +1;
+                        if (++zone >= zoneEnd) {
+                            northUTM = false;           // For next iteration.
+                        }
+                    } else if (northPole) {
+                        φ = Latitude.MAX_VALUE;
+                        northPole = false;              // For loop termination.
+                    } else {
+                        throw new AssertionError();
+                    }
+                    final ProjectedCRS targetCRS = datum.universal(φ, λ);
+                    Spliterator<String> iter = new IteratorOneZone(Coder.this, aoi, geographicArea, sourceCRS, targetCRS, precision);
+                    do iterators[upper++] = iter;
+                    while ((iter = iter.trySplit()) != null);
+                } while (southPole | northPole | southUTM | northUTM);
+            }
+
+            /**
+             * Creates an iterator over the first half of the zones covered by the given iterator.
+             * After construction, the given iterator will cover the second half. This constructor
+             * is for {@link #trySplit()} method only.
+             */
+            private IteratorAllZones(final IteratorAllZones half) {
+                iterators  =  half.iterators;
+                index      =  half.index;
+                upper      = (half.upper + index) / 2;
+                half.index = upper;
+            }
+
+            /**
+             * If this iterator can be partitioned, returns an iterator covering approximatively
+             * the first half of MGRS references and update this iterator for covering the other
+             * half. Each iterator will use a disjoint set of projected CRS.
+             */
+            @Override
+            public Spliterator<String> trySplit() {
+                return (upper - index >= 2) ? new IteratorAllZones(this).simplify() : null;
+            }
+
+            /**
+             * If this iterator is backed by only one worker iterator, returns that worker iterator.
+             * Otherwise returns {@code this}. This method should be invoked after construction.
+             */
+            final Spliterator<String> simplify() {
+                return (upper - index == 1) ? iterators[index] : this;
+            }
+
+            /**
+             * Guess the number of elements to be returned. The value returned by this method is very approximative,
+             * and likely greater than the real amount of elements that will actually be returned.
+             */
+            @Override
+            public long estimateSize() {
+                long n = 0;
+                for (int i=index; i<upper; i++) {
+                    n += iterators[i].estimateSize();
+                }
+                return n;
+            }
+
+            /**
+             * Performs the given action on the remaining MGRS reference, if any.
+             */
+            @Override
+            public boolean tryAdvance(final Consumer<? super String> action) {
+                while (index < upper) {
+                    if (iterators[index].tryAdvance(action)) {
+                        return true;
+                    }
+                    index++;
+                }
+                return false;
+            }
+
+            /**
+             * Performs the given action on all remaining MGRS references.
+             */
+            @Override
+            public void forEachRemaining(final Consumer<? super String> action) {
+                while (index < upper) {
+                    iterators[index++].forEachRemaining(action);
+                }
+            }
+
+            /**
+             * Specifies that the list of elements is immutable, that all elements will be distinct
+             * and that this iterator never return {@code null} element.
+             */
+            @Override
+            public int characteristics() {
+                return IMMUTABLE | DISTINCT | NONNULL;
+            }
+        }
+    }
+
+    /**
+     * Iterator over the cells in a single UTM or UPS zone. There is exactly one {@code IteratorOneZone} instance
+     * for each Universal Polar Stereographic (UPS) or Universal Transverse Mercator (UTM) projection covered by
+     * the area of interest. A given {@code IteratorOneZone} instance use the same projection for all cells.
+     *
+     * <p>This class extends {@link Coder} in order to freeze the configuration (separator, precision, <i>etc</i>)
+     * to the values they have at iterator creation time, and because if we parallelize the iteration, each iterator
+     * will need its own {@link Coder#buffer}, {@link Coder#normalized} and {@link Coder#geographic} cache.</p>
+     *
+     * @see Coder.IteratorAllZones
+     */
+    private final class IteratorOneZone extends Coder implements Spliterator<String> {
+        /**
+         * The region for which to return MGRS codes. This envelope can be in any CRS.
+         * This shape shall not be modified since the same instance will be shared by
+         * many {@code IteratorOneZone}s.
+         */
+        private final Rectangle2D areaOfInterest;
+
+        /**
+         * The transform from the CRS of {@link #encoder} to the CRS of {@link #areaOfInterest}.
+         */
+        private final MathTransform2D gridToAOI;
+
+        /**
+         * The encoder to use for creating MGRS codes.
+         */
+        private final Encoder encoder;
+
+        /**
+         * The easting value of the projection natural origin. This information is used for determining
+         * whether {@link #gridX} is on the left side or on right side of the center of UPS or UTM zone.
+         * We use this information for choosing the cell corner which is closest to map projection origin.
+         */
+        private final int xCenter;
+
+        /**
+         * The {@link #gridX} value where to stop iteration, exclusive. This value is always greater than
+         * {@code gridX} (unless the iteration finished), but is not necessarily greater than {@link #xCenter}.
+         */
+        private final int xEnd;
+
+        /**
+         * The first <var>northing</var> value to use in iteration.
+         * The {@link #gridY} value will need to be reset to this value for each new column.
+         */
+        private int yStart;
+
+        /**
+         * The {@link #gridY} values where to stop iteration, exclusive. Invariants:
+         * <ul>
+         *   <li>{@code gridY < yEnd} shall be true in the North hemisphere, and
+         *       {@code gridY > yEnd} shall be true in the South hemisphere.</li>
+         * </ul>
+         *
+         * The reason of {@code gridY} relationship dependency to the hemisphere is because
+         * we try to iterate from equator to the pole.
+         */
+        private int yEnd;
+
+        /**
+         * Position of the next MGRS reference to encode. Position is composed of the latitude band number,
+         * the row and column indices of current 100 km square, and finally the grid coordinates inside the
+         * current 100 km square. All those components are inferred from the (easting, northing) values.
+         */
+        private int gridX, gridY;
+
+        /**
+         * The amount of metres to add to {@code gridX} and to add or subtract to {@code gridY} during iteration.
+         * The sign to use when updating the {@code gridY} value depends on whether we are in the North or South
+         * hemisphere.
+         */
+        private final int step;
+
+        /**
+         * Whether this iterator should iterates downward over rows. If {@code true}, then {@link #step} shall be
+         * subtracted to {@link #gridY} instead of added. We iterate downward in UTM south zones in order to go
+         * from equator to pole. This direction allows some optimizations.
+         */
+        private final boolean downward;
+
+        /**
+         * Whether this iterator is allowed to skip some cells when testing for inclusion in the area of interest.
+         * Since {@code IteratorOneZone} iterates in UTM zone from equator to pole, the range of longitude values
+         * will only decrease (the minimal longitude increase and the maximal longitude decrease). Consequently
+         * if we found a longitude out of range, we don't need to test that longitude again in next row.
+         *
+         * <p>This optimization is allowed only under the following conditions:</p>
+         * <ul>
+         *   <li>{@link #areaOfInterest} is a rectangle in geographic coordinates.</li>
+         *   <li>{@link #areaOfInterest} does not intersect Norway and Svalbard special cases.</li>
+         *   <li>We iterate in a UTM zone, or in a UPS zone contained fully in the upper half or fully in lower half.</li>
+         * </ul>
+         */
+        private final boolean optimize;
+
+        /**
+         * Latitude band of the last MGRS reference encoded by the iterator.
+         * This information is used for detecting when we moved to a new latitude band.
+         */
+        private char latitudeBand;
+
+        /**
+         * A MGRS reference which was pending return by {@link #tryAdvance(Consumer)} before to continue iteration.
+         * This field may be non-null immediately after a change of latitude band, and should be null otherwise.
+         */
+        private String pending;
+
+        /**
+         * Temporary rectangle for computation purpose. Needs to be an implementation from the
+         * {@link org.apache.sis.geometry} in order to support AOI spanning the anti-meridian.
+         */
+        private final Envelope2D cell = new Envelope2D();
+
+        /**
+         * Returns a new iterator for creating MGRS codes in a single UTM or UPS zone.
+         * The borders of the {@code areaOfInterest} rectangle are considered <strong>exclusive</strong>.
+         *
+         * <p>For envelopes that cross the anti-meridian, it does not matter if {@code geographicArea} uses
+         * the negative width convention or is expanded to the [-180 … 180]° of longitude range, because it
+         * will be clipped to the projection domain of validity anyway. However the {@code areaOfInterest}
+         * should use the negative width convention.</p>
+         *
+         * @param areaOfInterest  the envelope for which to return MGRS codes. This envelope can be in any CRS.
+         * @param geographicArea  the area of interest transformed into a normalized geographic CRS.
+         * @param sourceCRS       the horizontal part of the {@code areaOfInterest} CRS.
+         * @param targetCRS       the UTM or UPS projected CRS of the zone for which to create MGRS references.
+         * @param step            the amount of metres to add or subtract to grid coordinates during iteration.
+         */
+        IteratorOneZone(final Coder coder, Rectangle2D areaOfInterest, final Envelope geographicArea,
+                        final SingleCRS sourceCRS, final ProjectedCRS targetCRS, final int step)
+                        throws FactoryException, TransformException
+        {
+            super(coder);
+            this.areaOfInterest = areaOfInterest;
+            this.encoder        = encoder(targetCRS);
+            this.step           = step;
+            /*
+             * Compute the geographic bounds of the UPS or UTM zone of validity, together with a representative point
+             * (φ,λ₀). We will need to clip the area of interest to those bounds before to project that area, because
+             * the UPS and UTM projections can not cover the whole world.
+             */
+            double λmin, λmax, φmin, φmax;
+            final int zone = Math.abs(encoder.crsZone);
+            if (zone == Encoder.POLE) {
+                xCenter = PolarStereographicA.UPS_SHIFT;
+                if (encoder.crsZone < 0) {
+                    φmin = Latitude.MIN_VALUE;
+                    φmax = TransverseMercator.Zoner.SOUTH_BOUNDS;
+                } else {
+                    φmin = TransverseMercator.Zoner.NORTH_BOUNDS;
+                    φmax = Latitude.MAX_VALUE;
+                }
+                λmin = Longitude.MIN_VALUE;
+                λmax = Longitude.MAX_VALUE;
+            } else {
+                xCenter = (int) ZONER.easting;
+                if (encoder.crsZone < 0) {
+                    φmin = TransverseMercator.Zoner.SOUTH_BOUNDS;
+                    φmax = 0;
+                } else {
+                    φmin = 0;
+                    φmax = TransverseMercator.Zoner.NORTH_BOUNDS;
+                }
+                final double λ0 = ZONER.centralMeridian(zone);
+                λmin = λ0 - ZONER.width / 2;
+                λmax = λ0 + ZONER.width / 2;
+            }
+            double t;
+            boolean clip = false;
+            if ((t = geographicArea.getMinimum(1)) >= φmin) φmin = t; else clip = true;
+            if ((t = geographicArea.getMaximum(1)) <= φmax) φmax = t; else clip = true;
+            if ((t = geographicArea.getMinimum(0)) >= λmin) λmin = t; else clip = true;
+            if ((t = geographicArea.getMaximum(0)) <= λmax) λmax = t; else clip = true;
+            boolean isSpecialCase = ZONER.isSpecialCase(φmin, φmax, λmin, λmax);
+            if (clip) {
+                /*
+                 * If we detected that the given area of interest is larger than UPS or UTM domain of validity
+                 * (in which case above code clipped the geographic bounds), project the CRS domain of validity
+                 * to the envelope CRS so we can clip it. Here, "domain of validity" is relative to MGRS grid,
+                 * not necessarily to the ISO 19111 domain of validity.
+                 */
+                final IntervalRectangle r = new IntervalRectangle(λmin, φmin, λmax, φmax);
+                r.setRect(Shapes2D.transform(CRS.findOperation(geographicArea.getCoordinateReferenceSystem(), sourceCRS, null), r, r));
+                r.intersect(areaOfInterest);
+                /*
+                 * We need an envelope that do not cross the anti-meridian. If the specified area of interest (AOI)
+                 * crosses the anti-meridian (which should happen only with geographic envelopes), then the call to
+                 * r.intersect(areaOfInterest) may have overwritten our computation with the AOI longitude range.
+                 * Overwrite again that range with the domain of validity of current UTM zone,
+                 * based on the following assumptions:
+                 *
+                 *   1) 'sourceCRS' is geographic (otherwise the AOI should not cross the anti-meridian).
+                 *   2) the "normalized" AOI longitude range is [-180 … 180]°, in which case intersection
+                 *      with [λmin … λmax] is [λmin … λmax] itself.
+                 */
+                if (r.xmax < r.xmin) {
+                    r.xmin = λmin;
+                    r.xmax = λmax;
+                }
+                areaOfInterest = r;             // Never cross the anti-meridian, even if the original AOI did.
+            }
+            /*
+             * At this point, the area of interest has been clipped to the UPS or UTM domain of validity.
+             * Now we can project that area to the CRS managed by this iterator. All values after projection
+             * should be positive (because UPS and UTM are designed that way).
+             */
+            final CoordinateOperation op = CRS.findOperation(sourceCRS, targetCRS, null);
+            final Rectangle2D bounds = Shapes2D.transform(op, areaOfInterest, null);
+            gridX = (((int)          (bounds.getMinX() / step))) * step;                    // Inclusive
+            gridY = (((int)          (bounds.getMinY() / step))) * step;
+            xEnd  = (((int) Math.ceil(bounds.getMaxX() / step))) * step;                    // Exclusive
+            yEnd  = (((int) Math.ceil(bounds.getMaxY() / step))) * step;
+            /*
+             * Determine if we should iterate on rows upward or downward. The intend is to iterate from equator to pole
+             * in UTM zones, or from projection center to projection border in UPS cases.  Those directions enable some
+             * optimizations.
+             */
+            if (zone != Encoder.POLE) {
+                downward = (encoder.crsZone < 0);           // Upward in UTM North zones, downward in UTM South zones.
+            } else {
+                downward = yEnd <= PolarStereographicA.UPS_SHIFT;  // Downward only if AOI is fully in the lower half.
+                isSpecialCase = (gridX < PolarStereographicA.UPS_SHIFT);         // Can not optimize left side of UPS.
+            }
+            if (downward) {
+                final int y = gridY;
+                gridY = yEnd - step;
+                yEnd  = y    - step;
+            }
+            yStart    = gridY;
+            gridToAOI = (MathTransform2D) op.getMathTransform().inverse();
+            /*
+             * To be strict, we should also test that the region of interest does not intersect both the upper half
+             * and lower half of Universal Polar Stereographic (UPS) projection domain. We do not check that because
+             * we need the 'optimize' flag to have the value that we get after 'trySplit()' execution. This implies
+             * that invoking 'trySplit()' is mandatory before using this iterator, but IteratorAllZones ensures that.
+             */
+            optimize = !isSpecialCase && Utilities.equalsIgnoreMetadata(geographicArea.getCoordinateReferenceSystem(), sourceCRS);
+        }
+
+        /**
+         * Creates an iterator for the lower half of a Universal Polar Stereographic (UPS) projection,
+         * and modifies the given iterator for restricting it to the upper half of UPS projection.
+         * This method is for {@link #trySplit()} usage only.
+         */
+        private IteratorOneZone(final IteratorOneZone other) {
+            super(other);
+            areaOfInterest = other.areaOfInterest;
+            gridToAOI      = other.gridToAOI;
+            encoder        = other.encoder;
+            optimize       = other.optimize;
+            step           = other.step;
+            gridX          = other.gridX;
+            xCenter        = other.xCenter;
+            xEnd           = other.xEnd;
+            yEnd           = other.yStart - step;                   // Bottom of the zone to iterate, exclusive.
+            yStart         = PolarStereographicA.UPS_SHIFT - step;  // Top of the zone to iterate, inclusive.
+            other.yStart   = PolarStereographicA.UPS_SHIFT;         // Other iterator will be for the upper half.
+            other.gridY    = other.yStart;
+            gridY          = yStart;
+            downward       = true;
+            assert !other.downward;                                 // Fail if the other iterator is not for upper half.
+        }
+
+        /**
+         * If this iterator intersects both the upper and lower half on UPS domain, returns an iterator for the
+         * lower half and modifies this iterator for the upper half. This method <strong>must</strong> be invoked
+         * before {@code IteratorOneZone} can be used.
+         */
+        @Override
+        public Spliterator<String> trySplit() {
+            if (!downward && Math.abs(encoder.crsZone) == Encoder.POLE && gridY < PolarStereographicA.UPS_SHIFT) {
+                return new IteratorOneZone(this);
+            }
+            return null;
+        }
+
+        /**
+         * Returns an estimation of the number of cells in the area covered by this iterator. The returned value
+         * may be greater than the real amount since we do not take in account the fact that the number of cells
+         * in a row become lower as we approach poles.
+         */
+        @Override
+        public long estimateSize() {
+            return (xEnd - (long) gridX) * Math.abs(yEnd - (long) yStart) / (step * (long) step);
+        }
+
+        /**
+         * Computes the next cell reference, if any. This method computes the bounding box in UPS or UTM
+         * coordinates, verifies if that box intersects the area of interest, and (if it intersects)
+         * delegates to {@link Encoder} for creating the MGRS reference.
+         */
+        @Override
+        public boolean tryAdvance(final Consumer<? super String> action) {
+            return advance(action, false);
+        }
+
+        /**
+         * Performs the given action for each remaining MGRS codes.
+         */
+        @Override
+        public void forEachRemaining(final Consumer<? super String> action) {
+            advance(action, true);
+            if (pending != null) {
+                action.accept(pending);
+                pending = null;
+            }
+        }
+
+        /**
+         * Implementation of {@link #tryAdvance(Consumer)} and {@link #forEachRemaining(Consumer)}.
+         * The {@code all} argument specifies whether this method is invoked for a single element
+         * or for all remaining ones.
+         */
+        private boolean advance(final Consumer<? super String> action, final boolean all) {
+            final int digits = digits();
+            final String separator = getSeparator();
+            if (normalized == null) {
+                normalized = new DirectPosition2D();
+            }
+            boolean found = false;
+            try {
+                do {
+                    if (pending != null) {
+                        action.accept(pending);
+                        pending = null;
+                        found = true;
+                        continue;
+                    }
+                    /*
+                     * Verifies if the current cell should be accepted.
+                     * To be accepted, the cell must complies with two conditions:
+                     *
+                     *   1) It must be inside the area of interest (AOI). Note that the AOI may be in any CRS.
+                     *   2) It must be inside the area of validity (AOV). Since the constructor clipped the AOI
+                     *      to the area of validity, this test #2 is redundant with test #1 if both AOI and AOV
+                     *      use the same CRS. However if AOI and AOV do not use the same CRS, then condition #1
+                     *      does not automatically implies condition #2, so we test both.
+                     *
+                     * Condition #1 is verified by the call to 'areaOfInterest.intersects(…)' below.
+                     * Condition #2 is verified indirectly by the call to 'encoder.encode(…)', which return null
+                     * if the given point is outside the area of validity.
+                     *
+                     * Since MGRS references are created by calls to Encoder.encode(…, DirectPosition, …), we need
+                     * to select the corner closest to projection center. Otherwise Encoder.encode(…) may consider
+                     * that a position is outside the domain of validity while another corner of the same cell would
+                     * have been ok. We resolve this issue by shifting 'gridX' toward projection center if 'gridX'
+                     * is on the left side.
+                     */
+                    cell.setRect(gridX, gridY, step, step);
+                    cell.setRect(Shapes2D.transform(gridToAOI, cell, cell));
+                    if (cell.intersects(areaOfInterest)) {          // Must be invoked on Envelope2D implementation.
+                        int x = gridX;
+                        int y = gridY;
+                        if (x < xCenter) x += step - 1;
+                        if (downward)    y += step - 1;
+                        normalized.setOrdinate(0, x);
+                        normalized.setOrdinate(1, y);
+                        String ref = encoder.encode(this, normalized, false, separator, digits);
+                        if (ref != null) {
+                            /*
+                             * If there is a change of latitude band, we may have missed a cell before this one.
+                             * We verify that by encoding the cell for the position just before current cell and
+                             * comparing the latitude band of the result with our previous latitude band.
+                             */
+                            char previous = latitudeBand;
+                            latitudeBand = encoder.latitudeBand;
+                            if (latitudeBand != previous && previous != 0) {
+                                pending = ref;
+                                normalized.setOrdinate(1, y + (downward ? +1 : -1));
+                                ref = encoder.encode(this, normalized, false, separator, digits);
+                                if (ref == null || encoder.latitudeBand == previous) {
+                                    ref = pending;  // No result or same result than previous iteration - cancel.
+                                    pending = null;
+                                }
+                            }
+                            action.accept(ref);
+                            found = true;
+                        }
+                    } else if (optimize) {
+                        /*
+                         * If this cell is not in the area of interest (AOI) when iterating away from projection
+                         * origin (from equator to pole in UTM case), then all other cells after this one in the
+                         * same column will not be inside the AOI neither. Set 'gridY' to the limit value so the
+                         * condition below will stop the iteration in this column and move to the next column.
+                         */
+                        gridY = yEnd;
+                    }
+                    /*
+                     * Move to the next cell. We need to do that regardless if the previous block found a cell or not.
+                     * We move from equator to pole (UTM case) or projection center to projection border (UPS case)
+                     * on the same column, than move one column on the right side when we have reached the last row.
+                     */
+                    final boolean end = downward ? ((gridY -= step) <= yEnd)        // UTM South or lower part of UPS.
+                                                 : ((gridY += step) >= yEnd);       // UTM North or upper part of UPS.
+                    if (end) {
+                        gridY = yStart;
+                        latitudeBand = 0;
+                        if ((gridX += step) >= xEnd) {
+                            break;
+                        }
+                    }
+                } while (all || !found);
+            } catch (FactoryException | TransformException e) {
+                // Should never happen since we clipped the area of interest to UPS or UTM domain of valididty.
+                throw (ArithmeticException) new ArithmeticException(Errors.format(Errors.Keys.OutsideDomainOfValidity)).initCause(e);
+            }
+            return found;
+        }
+
+        /**
+         * Specifies that the list of elements is immutable, that all elements will be distinct
+         * and that this iterator never return {@code null} element.
+         */
+        @Override
+        public int characteristics() {
+            return IMMUTABLE | DISTINCT | NONNULL;
+        }
+
+        /**
+         * Returns a string representation of this iterator for debugging purpose.
+         */
+        @Debug
+        @Override
+        public String toString() {
+            return org.apache.sis.internal.util.Utilities.toString(getClass(), "zone", encoder.crsZone,
+                    "downward", downward, "yStart", yStart, "yEnd", yEnd, "gridX", gridX, "xEnd", xEnd);
         }
     }
 
@@ -572,10 +1325,11 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         /**
          * UTM zone of position CRS (negative for South hemisphere), or {@value #POLE} (negative of positive)
          * if the CRS is a Universal Polar Stereographic projection, or 0 if the CRS is not a recognized projection.
-         * Note that this is not necessarily the same zone than the one to use for formatting any given coordinate in
-         * that projected CRS, since the {@link #zone(double, char)} method has special rules for some latitudes.
+         * Note that this is not necessarily the same zone than the one to use for formatting any given coordinate
+         * in that projected CRS, since the {@link TransverseMercator.Zoner#zone(double, double)} method has special
+         * rules for some latitudes.
          */
-        private final int crsZone;
+        final int crsZone;
 
         /**
          * Coordinate conversion from the position CRS to a CRS of the same type but with normalized axes,
@@ -609,6 +1363,12 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * a given position is not located in the zone of the CRS given at construction time.
          */
         private int actualZone;
+
+        /**
+         * The latitude band of the last encoded reference.
+         * This information is provided for {@link IteratorOneZone} purpose.
+         */
+        char latitudeBand;
 
         /**
          * Creates a new converter from direct positions to MGRS references.
@@ -700,12 +1460,14 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          *
          * @param  owner      the {@code Coder} which own this {@code Encoder}.
          * @param  position   the direct position to format as a MGRS reference.
+         * @param  reproject  whether this method is allowed to reproject {@code position} when needed.
          * @param  separator  the separator to insert between each component of the MGRS identifier.
          * @param  digits     number of digits to use for formatting the numerical part of a MGRS reference.
-         * @return the value of {@code buffer.toString()}.
+         * @return the value of {@code buffer.toString()}, or {@code null} if a reprojection was necessary
+         *         but {@code reproject} is {@code false}.
          */
-        String encode(final Coder owner, DirectPosition position, final String separator, final int digits)
-                throws FactoryException, TransformException
+        String encode(final Coder owner, DirectPosition position, final boolean reproject,
+                final String separator, final int digits) throws FactoryException, TransformException
         {
             final StringBuilder buffer = owner.buffer;
             if (toNormalized != null) {
@@ -729,11 +1491,15 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
              * than the coordinate one, or because the coordinate is geographic instead than projected.
              */
             if (signedZone != crsZone) {
+                if (!reproject) {
+                    return null;
+                }
                 if (signedZone != actualZone) {
                     actualZone   = 0;                           // In case an exception is thrown on the next line.
                     toActualZone = CRS.findOperation(datum.geographic(), datum.universal(φ, λ), null).getMathTransform();
                     actualZone   = signedZone;
                 }
+                geographic.setOrdinate(1, Longitude.normalize(λ));
                 owner.normalized = position = toActualZone.transform(geographic, owner.normalized);
             }
             /*
@@ -741,12 +1507,13 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
              */
             buffer.setLength(0);
             if (isUTM) {
-                buffer.append(zone).append(separator).append(latitudeBand(φ));
+                buffer.append(zone).append(separator);
+                latitudeBand = latitudeBand(φ);
             } else {
-                char z = (signedZone < 0) ? 'A' : 'Y';
-                if (λ >= 0) z++;
-                buffer.append(z);
+                latitudeBand = (signedZone < 0) ? 'A' : 'Y';
+                if (λ >= 0) latitudeBand++;
             }
+            buffer.append(latitudeBand);
             /*
              * 100 kilometres square identification.
              */
@@ -795,7 +1562,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                      * over with column letter A.
                      */
                     final byte[] columns = POLAR_COLUMNS;
-                    col -= (int) (PolarStereographicA.UPS_SHIFT / GRID_SQUARE_SIZE);
+                    col -= PolarStereographicA.UPS_SHIFT / GRID_SQUARE_SIZE;
                     if (!(λ >= 0)) {                    // Same condition than in GZD block. Use of ! is for NaN.
                         col += columns.length;          // Letters Z to A from right to left.
                     }
@@ -989,7 +1756,7 @@ parse:                  switch (part) {
                                 col = Arrays.binarySearch(POLAR_COLUMNS, (byte) c);
                                 if (col < 0) break;                                     // Invalid column letter.
                                 if (west) col -= POLAR_COLUMNS.length;
-                                col += (int) (PolarStereographicA.UPS_SHIFT / GRID_SQUARE_SIZE);
+                                col += PolarStereographicA.UPS_SHIFT / GRID_SQUARE_SIZE;
                                 i = nextComponent(owner, reference, base, ni, end);
                                 continue;
                             }
@@ -1246,15 +2013,10 @@ parse:                  switch (part) {
                  * if the given 100 kilometres square identification is consistent with grid zone designation.
                  * We verify both φ and λ, but the verification of φ is actually redundant with the check of
                  * 100 km square validity that we did previously with the help of ROW_RESOLVER bitmask.
-                 * We check φ anyway in case of bug, but we have to allow a tolerance threshold on the south
-                 * bound because the 100 km square may overlap two latitude bands. We do not need equivalent
-                 * tolerance threshold for the upper bound because the coordinate that we are testing is the
-                 * lower-left corner of the cell area.
+                 * We check φ anyway in case of bug.
                  */
                 if (isValid && zone != 0) {
-                    final double λ = (westBoundLongitude + eastBoundLongitude) / 2;
-                    final double φ = (southBoundLatitude + northBoundLatitude) / 2;
-                    isValid = (φ >= φs - LATITUDE_BAND_HEIGHT/2) && (φ < upperBound(φs));   // See above comment.
+                    isValid = (northBoundLatitude >= φs) && (southBoundLatitude < upperBound(φs));
                     if (isValid) {
                         /*
                          * Verification of UTM zone. We allow a tolerance for latitudes close to a pole because
@@ -1262,12 +2024,15 @@ parse:                  switch (part) {
                          * the neighbor zone at those high latitudes is less significant. For other latitudes,
                          * we allow a tolerance if the point is close to a line of zone change.
                          */
+                        final double λ = (westBoundLongitude + eastBoundLongitude) / 2;
+                        final double φ = (southBoundLatitude + northBoundLatitude) / 2;
                         int zoneError = ZONER.zone(φ, λ) - zone;
                         if (zoneError != 0) {
                             final int zc = ZONER.zoneCount();
-                            if (zoneError > zc/2) zoneError -= zc;
+                            if (zoneError < zc/-2) zoneError += zc;         // If change of zone crosses the anti-meridian.
+                            if (zoneError > zc/+2) zoneError -= zc;
                             if (ZONER.isSpecialCase(zone, φ)) {
-                                isValid = Math.abs(zoneError) == 1;         // Tolerance in zone numbers for high latitudes.
+                                isValid = Math.abs(zoneError) <= 2;         // Tolerance in zone numbers for high latitudes.
                             } else {
                                 final double rλ = Math.IEEEremainder(λ - ZONER.origin, ZONER.width);    // Distance to closest zone change, in degrees of longitude.
                                 final double cv = (minX - ZONER.easting) / (λ - λ0);                    // Approximative conversion factor from degrees to metres.
@@ -1284,7 +2049,7 @@ parse:                  switch (part) {
                  * MGRS reference. If the cell is valid, we can now check for cells that are on a zone border.
                  * Those cells will be clipped to the zone valid area.
                  */
-                if (isValid) {
+                if (isValid && owner.getClipToValidArea()) {
                     final boolean changed;
                     if (zone != 0) {
                         double width = ZONER.width;
@@ -1306,7 +2071,7 @@ parse:                  switch (part) {
             if (!isValid) {
                 final String gzd;
                 try {
-                    gzd = owner.encoder(crs).encode(owner, getDirectPosition(), "", 0);
+                    gzd = owner.encoder(crs).encode(owner, getDirectPosition(), true, "", 0);
                 } catch (IllegalArgumentException | FactoryException e) {
                     throw new GazetteerException(e.getLocalizedMessage(), e);
                 }
