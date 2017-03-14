@@ -38,7 +38,11 @@ import org.apache.sis.util.resources.Errors;
  * @module
  *
  * @see <a href="http://en.wikipedia.org/wiki/Geohash">Wikipedia: Geohash</a>
+ *
+ * @deprecated Moved to {@link org.apache.sis.referencing.gazetteer.GeohashReferenceSystem}.
+ *             Note that axis order of {@code encode(double, double)} method differs.
  */
+@Deprecated
 public class GeoHashCoder implements Serializable {
     /**
      * For cross-version compatibility.
@@ -47,7 +51,10 @@ public class GeoHashCoder implements Serializable {
 
     /**
      * The encoding format used by {@link GeoHashCoder}.
+     *
+     * @deprecated Moved to {@link org.apache.sis.referencing.gazetteer.GeohashReferenceSystem.Format}.
      */
+    @Deprecated
     public static enum Format {
         /**
          * Format consisting of 32 symbols used at {@code http://geohash.org}. This encoding uses digits 0 to 9,

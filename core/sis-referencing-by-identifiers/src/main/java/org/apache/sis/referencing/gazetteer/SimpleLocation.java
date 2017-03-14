@@ -344,6 +344,42 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
         }
 
         /**
+         * Returns the western-most coordinate of the limit of the dataset extent.
+         * The value is expressed in longitude in decimal degrees (positive east).
+         */
+        @Override
+        public final double getWestBoundLongitude() {
+            return westBoundLongitude;
+        }
+
+        /**
+         * Returns the eastern-most coordinate of the limit of the dataset extent.
+         * The value is expressed in longitude in decimal degrees (positive east).
+         */
+        @Override
+        public final double getEastBoundLongitude() {
+            return eastBoundLongitude;
+        }
+
+        /**
+         * Returns the southern-most coordinate of the limit of the dataset extent.
+         * The value is expressed in latitude in decimal degrees (positive north).
+         */
+        @Override
+        public final double getSouthBoundLatitude()  {
+            return southBoundLatitude;
+        }
+
+        /**
+         * Returns the northern-most, coordinate of the limit of the dataset extent.
+         * The value is expressed in latitude in decimal degrees (positive north).
+         */
+        @Override
+        public final double getNorthBoundLatitude()   {
+            return northBoundLatitude;
+        }
+
+        /**
          * Computes the geographic bounding box from the current values of {@link #minX}, {@link #minY}, {@link #maxX}
          * and {@link #maxY} fields. This method performs a work similar to the {@code Envelopes.transform(…)} methods
          * but using a much simpler (and faster) algorithm: this method projects only the 4 corners, without any check
@@ -430,41 +466,33 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
             if (ymin > minY + ty) minY = ymin;
             if (ymax < maxY - ty) maxY = ymax;
         }
+    }
 
-        /**
-         * Returns the western-most coordinate of the limit of the dataset extent.
-         * The value is expressed in longitude in decimal degrees (positive east).
-         */
-        @Override
-        public final double getWestBoundLongitude() {
-            return westBoundLongitude;
-        }
-
-        /**
-         * Returns the eastern-most coordinate of the limit of the dataset extent.
-         * The value is expressed in longitude in decimal degrees (positive east).
-         */
-        @Override
-        public final double getEastBoundLongitude() {
-            return eastBoundLongitude;
-        }
-
-        /**
-         * Returns the southern-most coordinate of the limit of the dataset extent.
-         * The value is expressed in latitude in decimal degrees (positive north).
-         */
-        @Override
-        public final double getSouthBoundLatitude()  {
-            return southBoundLatitude;
-        }
-
-        /**
-         * Returns the northern-most, coordinate of the limit of the dataset extent.
-         * The value is expressed in latitude in decimal degrees (positive north).
-         */
-        @Override
-        public final double getNorthBoundLatitude()   {
-            return northBoundLatitude;
+    /**
+     * Converts the current envelope using the given math transform.
+     * The given transform usually performs nothing more than axis swapping or unit conversions.
+     *
+     * @param  mt      the math transform to use for conversion.
+     * @param  buffer  a temporary buffer of length 8 or more.
+     * @throws TransformException if an error occurred while converting the points.
+     */
+    final void convert(final MathTransform mt, final double[] buffer) throws TransformException {
+        buffer[3] = buffer[7] = maxY;
+        buffer[4] = buffer[6] = maxX;
+        buffer[1] = buffer[5] = minY;
+        buffer[0] = buffer[2] = minX;
+        minX = maxX = minY = maxY = Double.NaN;
+        mt.transform(buffer, 0, buffer, 0, 4);
+        for (int i=0; i<8;) {
+            final double x = buffer[i++];
+            final double y = buffer[i++];
+            if (Double.isNaN(x) || Double.isNaN(y)) {
+                throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope));
+            }
+            if (!(x >= minX)) minX = x;     // Use '!' for accepting NaN.
+            if (!(x <= maxX)) maxX = x;
+            if (!(y >= minY)) minY = y;
+            if (!(y <= maxY)) maxY = y;
         }
     }
 }
