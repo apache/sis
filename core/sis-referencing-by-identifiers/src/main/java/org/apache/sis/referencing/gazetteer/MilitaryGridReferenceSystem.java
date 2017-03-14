@@ -277,7 +277,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.8")
-    private static AbstractLocationType[] types() {
+    private static ModifiableLocationType[] types() {
         final ModifiableLocationType gzd    = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.GridZoneDesignator));
         final ModifiableLocationType square = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.SquareIdentifier100));
         final ModifiableLocationType coord  = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.GridCoordinates));
@@ -285,14 +285,14 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         coord .addIdentification(Vocabulary.formatInternational(Vocabulary.Keys.Coordinate));
         square.addParent(gzd);
         coord .addParent(square);
-        return new AbstractLocationType[] {gzd};
+        return new ModifiableLocationType[] {gzd};
     }
 
     /**
      * Returns the first location types, which should be the grid zone identifier.
      */
     final AbstractLocationType rootType() {
-        return super.getLocationTypes().get(0);     // Use super.… for protecting from method overriding.
+        return locationTypes.get(0);
     }
 
     /**
@@ -636,8 +636,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * Decodes the given MGRS reference into a position and an envelope.
          * The Coordinate Reference System (CRS) associated to the returned position depends on the given reference.
          *
-         * <div class="warning"><b>Warning:</b>
-         * in a future SIS version, the type of returned elements may be generalized
+         * <div class="warning"><b>Upcoming API change — generalization</b><br>
+         * in a future SIS version, the type of returned element may be generalized
          * to the {@code org.opengis.referencing.gazetteer.Location} interface.
          * This change is pending GeoAPI revision.</div>
          *
