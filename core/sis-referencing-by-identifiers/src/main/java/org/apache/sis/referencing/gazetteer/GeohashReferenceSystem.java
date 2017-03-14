@@ -233,7 +233,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
          */
         protected Coder() {
             length = 12;
-            coordinates = denormalize.getMathTransform().isIdentity() ? null : new double[4];
+            coordinates = denormalize.getMathTransform().isIdentity() ? null : new double[8];
         }
 
         /**
@@ -259,11 +259,14 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Encodes the given latitude and longitude into a geohash.
+         * This method does <strong>not</strong> take in account the axis order and units of the coordinate
+         * reference system (CRS) given to the {@link GeohashReferenceSystem} constructor. For geohashing of
+         * coordinates in different CRS, use {@link #encode(DirectPosition)} instead.
          *
          * @param  φ  latitude to encode,  as decimal degrees in the [-90 … 90]° range.
          * @param  λ  longitude to encode, as decimal degrees in the [-180 … 180]° range.
          * @return geohash encoding of the given longitude and latitude.
-         * @throws TransformException if an error occurred while transforming the given coordinate to a geohash reference.
+         * @throws TransformException if an error occurred while formatting the given coordinate.
          */
         public String encode(double φ, double λ) throws TransformException {
             φ = Latitude.clamp(φ);
