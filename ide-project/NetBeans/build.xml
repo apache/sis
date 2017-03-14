@@ -37,9 +37,9 @@
         <include name="class-index.properties"/>
       </fileset>
     </copy>
-    <copy todir="${build.classes.dir}/org/apache/sis/util/resources">
-      <fileset dir="${project.root}/core/sis-utility/target/generated-resources/org/apache/sis/util/resources">
-        <include name="*.utf"/>
+    <copy todir="${build.classes.dir}">
+      <fileset dir="${project.root}/core/sis-utility/target/generated-resources">
+        <include name="**/*.utf"/>
       </fileset>
       <fileset dir="${project.root}/core/sis-referencing/target/generated-resources">
         <include name="**/*.utf"/>
