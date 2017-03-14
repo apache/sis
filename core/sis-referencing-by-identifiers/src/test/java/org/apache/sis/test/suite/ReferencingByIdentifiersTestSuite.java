@@ -33,6 +33,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.gazetteer.LocationFormatTest.class,
     org.apache.sis.referencing.gazetteer.LocationTypeTest.class,
     org.apache.sis.referencing.gazetteer.ReferencingByIdentifiersTest.class,
+    org.apache.sis.referencing.gazetteer.GeohashReferenceSystemTest.class,
     org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystemTest.class
 })
 public final strictfp class ReferencingByIdentifiersTestSuite extends TestSuite {

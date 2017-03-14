@@ -48,8 +48,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.wkt.StoreTest.class,
     org.apache.sis.internal.storage.csv.StoreProviderTest.class,
     org.apache.sis.internal.storage.csv.StoreTest.class,
-    org.apache.sis.storage.DataStoresTest.class,
-    org.apache.sis.index.GeoHashCoderTest.class
+    org.apache.sis.storage.DataStoresTest.class
 })
 public final strictfp class StorageTestSuite extends TestSuite {
     /**

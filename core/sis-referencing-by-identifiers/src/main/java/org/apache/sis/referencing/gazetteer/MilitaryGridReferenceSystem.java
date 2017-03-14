@@ -18,11 +18,11 @@ package org.apache.sis.referencing.gazetteer;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.awt.geom.Rectangle2D;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -45,7 +45,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
-import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -135,6 +134,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * @see CommonCRS#universal(double, double)
  * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
  */
+@XmlTransient
 public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
     /**
      * For cross-version compatibility.
@@ -264,12 +264,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
     @Workaround(library="JDK", version="1.8")
     private static Map<String,?> properties() {
         AbstractParty party = new AbstractParty("North Atlantic Treaty Organization", null);
-        final Map<String,Object> properties = new HashMap<>(6);
-        properties.put(NAME_KEY, new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null));
-        properties.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
-        properties.put(THEME_KEY, Vocabulary.formatInternational(Vocabulary.Keys.Mapping));
-        properties.put(OVERALL_OWNER_KEY, party);
-        return properties;
+        return properties(new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null), party);
     }
 
     /**
@@ -286,13 +281,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         square.addParent(gzd);
         coord .addParent(square);
         return new ModifiableLocationType[] {gzd};
-    }
-
-    /**
-     * Returns the first location types, which should be the grid zone identifier.
-     */
-    final AbstractLocationType rootType() {
-        return locationTypes.get(0);
     }
 
     /**
@@ -423,6 +411,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Returns the reference system for which MGRS references will be encoded or decoded.
+         *
+         * @return the enclosing reference system.
          */
         final MilitaryGridReferenceSystem getReferenceSystem() {
             return MilitaryGridReferenceSystem.this;
@@ -646,7 +636,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @throws TransformException if an error occurred while parsing the given string.
          */
         public AbstractLocation decode(final CharSequence reference) throws TransformException {
-            ArgumentChecks.ensureNonNull("reference", reference);
+            ArgumentChecks.ensureNonEmpty("reference", reference);
             return new Decoder(this, reference);
         }
 
@@ -1619,8 +1609,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
 
     /**
-     * The result of decoding a MGRS reference. The {@linkplain #getPosition() position}
-     * represents the lower-left corner (not the centroid) of the decoded MGRS reference.
+     * The result of decoding a MGRS reference.
+     * The {@linkplain #getPosition() position} represents the centroid of the decoded MGRS reference.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.8

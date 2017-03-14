@@ -19,6 +19,7 @@ package org.apache.sis.referencing.gazetteer;
 import java.util.Map;
 import java.util.List;
 import java.util.Objects;
+import java.util.HashMap;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.InternationalString;
 import org.apache.sis.referencing.AbstractReferenceSystem;
@@ -29,8 +30,10 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Debug;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.util.resources.Vocabulary;
 
 // Branch-dependent imports
 import org.apache.sis.metadata.iso.citation.AbstractParty;
@@ -185,6 +188,21 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
     }
 
     /**
+     * Convenience method for helping subclasses to build their argument for the constructor.
+     * The returned properties have the domain of validity set to the whole word and the theme to "mapping".
+     *
+     * @param name   the reference system name as an {@link org.opengis.metadata.Identifier} or a {@link String}.
+     * @param party  the overall owner, or {@code null} if none.
+     */
+    static Map<String,Object> properties(final Object name, final AbstractParty party) {
+        final Map<String,Object> properties = new HashMap<>(6);
+        properties.put(NAME_KEY, name);
+        properties.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
+        properties.put(THEME_KEY, Vocabulary.formatInternational(Vocabulary.Keys.Mapping));
+        properties.put(OVERALL_OWNER_KEY, party);
+        return properties;
+    }
+    /**
      * Property used to characterize the spatial reference system.
      *
      * @return property used to characterize the spatial reference system.
@@ -228,6 +246,13 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Because the collection is unmodifiable.
     public List<? extends ModifiableLocationType> getLocationTypes() {
         return ModifiableLocationTypeAdapter.copy(locationTypes);
+    }
+
+    /**
+     * Returns the first location type.
+     */
+    final AbstractLocationType rootType() {
+        return locationTypes.get(0);
     }
 
     /**
