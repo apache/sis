@@ -219,7 +219,7 @@ public class LocationFormat extends TabularFormat<AbstractLocation> {
          * Location type.
          */
         table.appendHorizontalSeparator();
-        final AbstractLocationType type = location.getLocationType();
+        final AbstractLocationType type = location.type();
         if (type != null) {
             append(table, vocabulary, Vocabulary.Keys.LocationType, toString(type.getName(), locale));
         }

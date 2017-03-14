@@ -218,11 +218,21 @@ public abstract class AbstractLocation {
      * <div class="warning"><b>Upcoming API change — generalization</b><br>
      * in a future SIS version, the type of returned element may be generalized to the
      * {@code org.opengis.referencing.gazetteer.Location} interface.
-     * This change is pending GeoAPI revision.</div>
+     * This change is pending GeoAPI revision.
+     * If applied, this method will be made non-final.</div>
      *
      * @return the nature of the identifier and its associated geographic location.
      */
-    public AbstractLocationType getLocationType() {
+    public final ModifiableLocationType getLocationType() {
+        return ModifiableLocationTypeAdapter.copy(type);
+    }
+
+    /**
+     * Workaround for the lack of {@code LocationType} interface in GeoAPI 3.0.
+     * This workaround will be removed in a future SIS version if the location
+     * type interface is introduced in a future GeoAPI version.
+     */
+    final AbstractLocationType type() {
         return type;
     }
 
@@ -241,7 +251,6 @@ public abstract class AbstractLocation {
      * @see ReferencingByIdentifiers#getOverallOwner()
      */
     public AbstractParty getAdministrator() {
-        final AbstractLocationType type = getLocationType();
         return (type != null) ? type.getOwner() : null;
     }
 

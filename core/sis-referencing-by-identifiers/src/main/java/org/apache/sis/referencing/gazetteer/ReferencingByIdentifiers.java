@@ -226,8 +226,8 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
      * @see ModifiableLocationType#getReferenceSystem()
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Because the collection is unmodifiable.
-    public List<? extends AbstractLocationType> getLocationTypes() {
-        return locationTypes;
+    public List<? extends ModifiableLocationType> getLocationTypes() {
+        return ModifiableLocationTypeAdapter.copy(locationTypes);
     }
 
     /**
