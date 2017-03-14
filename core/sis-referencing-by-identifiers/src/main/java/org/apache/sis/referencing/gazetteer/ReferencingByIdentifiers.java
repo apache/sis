@@ -179,7 +179,7 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem implements
      *
      * @return property used to characterize the spatial reference system.
      *
-     * @see AbstractLocationType#getTheme()
+     * @see ModifiableLocationType#getTheme()
      */
     @Override
     public InternationalString getTheme() {
@@ -209,7 +209,7 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem implements
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Because the collection is unmodifiable.
-    public List<LocationType> getLocationTypes() {
+    public List<? extends LocationType> getLocationTypes() {
         return locationTypes;
     }
 
@@ -250,8 +250,8 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem implements
             }
             default: {
                 // Theme and owner are metadata, so they can be ignored.
-                return Utilities.deepEquals(getLocationTypes(),
-                        ((ReferenceSystemUsingIdentifiers) object).getLocationTypes(), mode);
+                final ReferenceSystemUsingIdentifiers that = (ReferenceSystemUsingIdentifiers) object;
+                return Utilities.deepEquals(getLocationTypes(), that.getLocationTypes(), mode);
             }
         }
     }
