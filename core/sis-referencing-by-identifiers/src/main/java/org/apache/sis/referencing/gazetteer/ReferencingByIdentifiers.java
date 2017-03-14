@@ -189,7 +189,7 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
      *
      * @return property used to characterize the spatial reference system.
      *
-     * @see AbstractLocationType#getTheme()
+     * @see ModifiableLocationType#getTheme()
      */
     public InternationalString getTheme() {
         return theme;
