@@ -97,12 +97,11 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *   <tr><td><code>{@linkplain IdentifiedObject}[]</code></td><td>Accepted only for {@link ContentLevel#NAME_SUMMARY}.</td></tr>
  * </table>
  *
- * Like most {@link java.text.Format} implementations, this class is not thread-safe.
- * Each thread should use its own {@code ParameterFormat} instance or apply synchronization.
- *
- * <div class="warning"><b>Limitation:</b>
- * the current implementation can only format parameters — parsing is not yet implemented.
- * </div>
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>The current implementation can only format features — parsing is not yet implemented.</li>
+ *   <li>{@code ParameterFormat}, like most {@code java.text.Format} subclasses, is not thread-safe.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
