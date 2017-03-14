@@ -198,7 +198,7 @@ public class LocationFormat extends TabularFormat<AbstractLocation> {
     /**
      * Writes a textual representation of the given location in the given stream or buffer.
      *
-     * <div class="warning"><b>Warning:</b>
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
      * in a future SIS version, the type of {@code location} parameter may be generalized
      * to the {@code org.opengis.referencing.gazetteer.Location} interface.
      * This change is pending GeoAPI revision.</div>

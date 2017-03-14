@@ -99,7 +99,7 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
      *
      * @see #getLocationTypes()
      */
-    private final List<AbstractLocationType> locationTypes;
+    final List<AbstractLocationType> locationTypes;
 
     /**
      * Creates a reference system from the given properties.
@@ -163,15 +163,16 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
      * {@link ModifiableLocationType#snapshot(ReferenceSystemUsingIdentifiers, LocationType...)}.
      * Changes in the given location types after construction will not affect this {@code ReferencingByIdentifiers}.
      *
-     * <div class="warning"><b>Warning:</b> In a future SIS version, the type of array elements may be
-     * generalized to the {@code org.opengis.referencing.gazetteer.LocationType} interface.
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * In a future SIS version, the type of array elements may be generalized to the
+     * {@code org.opengis.referencing.gazetteer.LocationType} interface.
      * This change is pending GeoAPI revision.</div>
      *
      * @param properties  the properties to be given to the reference system.
      * @param types       description of location type(s) in the spatial reference system.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public ReferencingByIdentifiers(final Map<String,?> properties, final AbstractLocationType... types) {
+    public ReferencingByIdentifiers(final Map<String,?> properties, final ModifiableLocationType... types) {
         super(properties);
         theme = Types.toInternationalString(properties, THEME_KEY);
         overallOwner = Containers.property(properties, OVERALL_OWNER_KEY, AbstractParty.class);
@@ -197,7 +198,7 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
     /**
      * Authority with overall responsibility for the spatial reference system.
      *
-     * <div class="warning"><b>Warning:</b>
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
      * in a future SIS version, the type of returned element may be generalized to the
      * {@code org.opengis.metadata.citation.Party} interface. This change is pending
      * GeoAPI revision for upgrade from ISO 19115:2003 to ISO 19115:2014.</div>
@@ -215,12 +216,17 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
      * Description of location type(s) in the spatial reference system.
      * The collection returned by this method is unmodifiable.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * in a future SIS version, the type of elements type may be generalized to the
+     * {@code org.opengis.referencing.gazetteer.Location} interface.
+     * This change is pending GeoAPI revision.</div>
+     *
      * @return description of location type(s) in the spatial reference system.
      *
      * @see ModifiableLocationType#getReferenceSystem()
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Because the collection is unmodifiable.
-    public List<AbstractLocationType> getLocationTypes() {
+    public List<? extends AbstractLocationType> getLocationTypes() {
         return locationTypes;
     }
 
@@ -261,8 +267,8 @@ public class ReferencingByIdentifiers extends AbstractReferenceSystem {
             }
             default: {
                 // Theme and owner are metadata, so they can be ignored.
-                return Utilities.deepEquals(getLocationTypes(),
-                        ((ReferencingByIdentifiers) object).getLocationTypes(), mode);
+                final ReferencingByIdentifiers that = (ReferencingByIdentifiers) object;
+                return Utilities.deepEquals(locationTypes, that.locationTypes, mode);
             }
         }
     }

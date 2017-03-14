@@ -88,10 +88,24 @@ public abstract class AbstractLocation {
      * Creates a new location for the given geographic identifier.
      * This constructor accepts {@code null} arguments, but this is not recommended.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * in a future SIS version, the type of {@code type} argument may be generalized to the
+     * {@code org.opengis.referencing.gazetteer.Location} interface.
+     * This change is pending GeoAPI revision.</div>
+     *
      * @param type        the description of the nature of this geographic identifier.
      * @param identifier  the geographic identifier to be returned by {@link #getGeographicIdentifier()}.
      */
-    protected AbstractLocation(final AbstractLocationType type, final CharSequence identifier) {
+    protected AbstractLocation(final ModifiableLocationType type, final CharSequence identifier) {
+        this.type       = type;
+        this.identifier = identifier;
+    }
+
+    /**
+     * Temporary workaround for the lack of {@code LocationType} interface and {@code AbstractLocationType}
+     * being package-private. We do not want to expose {@code AbstractLocationType} in public API for now.
+     */
+    AbstractLocation(final AbstractLocationType type, final CharSequence identifier) {
         this.type       = type;
         this.identifier = identifier;
     }
@@ -201,6 +215,11 @@ public abstract class AbstractLocation {
     /**
      * Returns a description of the nature of this geographic identifier.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * in a future SIS version, the type of returned element may be generalized to the
+     * {@code org.opengis.referencing.gazetteer.Location} interface.
+     * This change is pending GeoAPI revision.</div>
+     *
      * @return the nature of the identifier and its associated geographic location.
      */
     public AbstractLocationType getLocationType() {
@@ -211,7 +230,7 @@ public abstract class AbstractLocation {
      * Returns the organization responsible for defining the characteristics of the location instance.
      * The default implementation returns the {@linkplain ModifiableLocationType#getOwner() owner}.
      *
-     * <div class="warning"><b>Warning:</b>
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
      * in a future SIS version, the type of returned element may be generalized to the
      * {@code org.opengis.metadata.citation.Party} interface. This change is pending
      * GeoAPI revision for upgrade from ISO 19115:2003 to ISO 19115:2014.</div>
@@ -230,7 +249,7 @@ public abstract class AbstractLocation {
      * Returns location instances of a different location type, for which this location instance is a sub-division.
      * The default implementation returns an empty list.
      *
-     * <div class="warning"><b>Warning:</b>
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
      * in a future SIS version, the type of collection elements may be generalized
      * to the {@code org.opengis.referencing.gazetteer.Location} interface.
      * This change is pending GeoAPI revision.</div>
@@ -247,7 +266,7 @@ public abstract class AbstractLocation {
      * Returns location instances of a different location type which subdivides this location instance.
      * The default implementation returns an empty list.
      *
-     * <div class="warning"><b>Warning:</b>
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
      * in a future SIS version, the type of collection elements may be generalized
      * to the {@code org.opengis.referencing.gazetteer.Location} interface.
      * This change is pending GeoAPI revision.</div>

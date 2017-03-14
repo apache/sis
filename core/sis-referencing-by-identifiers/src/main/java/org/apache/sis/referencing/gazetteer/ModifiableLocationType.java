@@ -368,7 +368,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * If no organization has been explicitely set, then this method inherits the value from
      * the parents providing that all parents specify the same organization.
      *
-     * <div class="warning"><b>Warning:</b>
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
      * in a future SIS version, the type of returned element may be generalized to the
      * {@code org.opengis.metadata.citation.Party} interface. This change is pending
      * GeoAPI revision for upgrade from ISO 19115:2003 to ISO 19115:2014.</div>
@@ -393,7 +393,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * The given value is typically an instance of {@link DefaultOrganisation}.
      * For an alternative where only the organization name is specified, see {@link #setOwner(CharSequence)}.
      *
-     * <div class="warning"><b>Warning:</b>
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
      * in a future SIS version, the argument type may be generalized to the
      * {@code org.opengis.metadata.citation.Party} interface. This change is pending
      * GeoAPI revision for upgrade from ISO 19115:2003 to ISO 19115:2014.</div>
@@ -505,7 +505,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * the reference system is always null. The reference system is defined when the location types are
      * given to the {@link ReferencingByIdentifiers} constructor for example.
      *
-     * <div class="warning"><b>Warning:</b>
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
      * in a future SIS version, the type of returned element may be generalized to the
      * {@code org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers} interface.
      * This change is pending GeoAPI revision.</div>
