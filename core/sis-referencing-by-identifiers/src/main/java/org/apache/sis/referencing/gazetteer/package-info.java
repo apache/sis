@@ -27,7 +27,7 @@
  *
  * <p>This package provides also implementations on top of above base classes.
  * Some implementation classes are {@link org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystem}
- * (also for civilian use).</p>
+ * (also for civilian use) and {@link org.apache.sis.referencing.gazetteer.GeohashReferenceSystem}.</p>
  *
  * @author  Chris Mattmann (JPL)
  * @author  Martin Desruisseaux (Geomatys)
