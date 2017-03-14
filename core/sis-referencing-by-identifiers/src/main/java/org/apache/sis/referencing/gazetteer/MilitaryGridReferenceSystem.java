@@ -1074,7 +1074,15 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                 downward = (encoder.crsZone < 0);           // Upward in UTM North zones, downward in UTM South zones.
             } else {
                 downward = yEnd <= PolarStereographicA.UPS_SHIFT;  // Downward only if AOI is fully in the lower half.
-                isSpecialCase = (gridX < PolarStereographicA.UPS_SHIFT);         // Can not optimize left side of UPS.
+                /*
+                 * In the polar case, we can not apply the shortcut documented in 'optimize' if there is a hole
+                 * in the UPS projection center. There is a hole if the latitude of the area of interest does not
+                 * reach the pole, or if the longitude range does not make a full circle around the Earth.
+                 */
+                isSpecialCase        |=        λmin != Longitude.MIN_VALUE ||
+                                               λmax != Longitude.MAX_VALUE ||
+                        (encoder.crsZone < 0 ? φmin != Latitude .MIN_VALUE
+                                             : φmax != Latitude .MAX_VALUE);
             }
             if (downward) {
                 final int y = gridY;
