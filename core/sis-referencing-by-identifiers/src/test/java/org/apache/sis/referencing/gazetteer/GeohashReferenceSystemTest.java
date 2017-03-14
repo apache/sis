@@ -19,8 +19,10 @@ package org.apache.sis.referencing.gazetteer;
 import java.util.Locale;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.geometry.DirectPosition;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.TestUtilities;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -86,7 +88,7 @@ public final strictfp class GeohashReferenceSystemTest extends TestCase {
     };
 
     /**
-     * Tests the {@link GeohashReferenceSystem#encode(double, double)} method.
+     * Tests the {@link GeohashReferenceSystem.Coder#encode(double, double)} method.
      *
      * @throws TransformException if an exception occurred while formatting the geohash.
      */
@@ -99,18 +101,54 @@ public final strictfp class GeohashReferenceSystemTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GeohashReferenceSystem#decode(String)} method.
+     * Tests the {@link GeohashReferenceSystem.Coder#encode(DirectPosition)} method.
+     *
+     * @throws TransformException if an exception occurred while formatting the geohash.
+     */
+    @Test
+    @DependsOnMethod("testEncode")
+    public void testEncodePosition() throws TransformException {
+        final GeohashReferenceSystem.Coder coder = instance().createCoder();
+        final DirectPosition2D position = new DirectPosition2D(CommonCRS.WGS84.geographic());
+        for (final Place place : PLACES) {
+            position.x = place.latitude;
+            position.y = place.longitude;
+            assertEquals(place.name, place.geohash, coder.encode(position));
+        }
+    }
+
+    /**
+     * Tests the {@link GeohashReferenceSystem.Coder#decode(CharSequence)} method.
      *
      * @throws TransformException if an exception occurred while parsing the geohash.
      */
     @Test
     public void testDecode() throws TransformException {
-        final GeohashReferenceSystem.Coder coder = instance().createCoder();
+        testDecode(instance().createCoder(), 0, 1);
+    }
+
+    /**
+     * Tests the {@link GeohashReferenceSystem.Coder#decode(CharSequence)} method
+     * to a different target CRS than the default one.
+     *
+     * @throws TransformException if an exception occurred while parsing the geohash.
+     */
+    @Test
+    @DependsOnMethod("testDecode")
+    public void testDecodeToCRS() throws TransformException {
+        testDecode(new GeohashReferenceSystem(GeohashReferenceSystem.Format.BASE32,
+                        CommonCRS.WGS84.geographic()).createCoder(), 1, 0);
+    }
+
+    /**
+     * Implementation of {@link #testDecode()} and {@link #testDecodeToCRS()}.
+     */
+    private void testDecode(final GeohashReferenceSystem.Coder coder, final int λi, final int φi) throws TransformException {
         for (final Place place : PLACES) {
             final Location location = coder.decode(place.geohash);
             final DirectPosition result = location.getPosition().getDirectPosition();
-            assertEquals(place.name, place.longitude, result.getOrdinate(0), TOLERANCE);
-            assertEquals(place.name, place.latitude,  result.getOrdinate(1), TOLERANCE);
+            assertEquals(place.name, place.longitude, result.getOrdinate(λi), TOLERANCE);
+            assertEquals(place.name, place.latitude,  result.getOrdinate(φi), TOLERANCE);
         }
     }
 
