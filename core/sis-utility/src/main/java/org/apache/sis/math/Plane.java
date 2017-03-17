@@ -261,26 +261,28 @@ public class Plane implements Cloneable, Serializable {
      * is equivalent to invoking {@link #fit(Vector, Vector, Vector)} where all vectors have a length of
      * {@code nx} × {@code ny} and the <var>x</var> and <var>y</var> vectors have the following content:
      *
+     * <blockquote>
      * <table class="compact" summary="x and y vector content">
      *   <tr>
      *     <th><var>x</var> vector</th>
      *     <th><var>y</var> vector</th>
      *   </tr><tr>
-     *     <td>{@preformat math
-     *          0 1 2 3 4 5 … n<sub>x</sub>-1
-     *          0 1 2 3 4 5 … n<sub>x</sub>-1
-     *          0 1 2 3 4 5 … n<sub>x</sub>-1
-     *          …
-     *          0 1 2 3 4 5 … n<sub>x</sub>-1
-     *     }</td>
-     *     <td>{@preformat math
-     *          0 0 0 0 0 0 … 0
-     *          1 1 1 1 1 1 … 1
-     *          2 2 2 2 2 2 … 2
-     *          n<sub>y</sub>-1 n<sub>y</sub>-1 n<sub>y</sub>-1 … n<sub>y</sub>-1
-     *     }</td>
+     *     <td>
+     *       0 1 2 3 4 5 … n<sub>x</sub>-1<br>
+     *       0 1 2 3 4 5 … n<sub>x</sub>-1<br>
+     *       0 1 2 3 4 5 … n<sub>x</sub>-1<br>
+     *       …<br>
+     *       0 1 2 3 4 5 … n<sub>x</sub>-1<br>
+     *     </td><td>
+     *       0 0 0 0 0 0 … 0<br>
+     *       1 1 1 1 1 1 … 1<br>
+     *       2 2 2 2 2 2 … 2<br>
+     *       …<br>
+     *       n<sub>y</sub>-1 n<sub>y</sub>-1 n<sub>y</sub>-1 … n<sub>y</sub>-1<br>
+     *     </td>
      *   </tr>
      * </table>
+     * </blockquote>
      *
      * This method uses a linear regression in the least-square sense, with the assumption that
      * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
@@ -405,18 +407,19 @@ public class Plane implements Cloneable, Serializable {
              *
              * Note that for exclusive upper bound, we need to replace n by n-1 in above formulas.
              */
-            int i = 0, n = 0;
+            int n = 0;
             for (int y=0; y<ny; y++) {
                 for (int x=0; x<nx; x++) {
-                    final double z = vz.doubleValue(i++);
-                    if (!Double.isNaN(z)) {
-                        zx.setToProduct(z, x);
-                        zy.setToProduct(z, y);
-                        sum_z .add(z );
-                        sum_zx.add(zx);
-                        sum_zy.add(zy);
-                        n++;
+                    final double z = vz.doubleValue(n);
+                    if (Double.isNaN(z)) {
+                        throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, "z[" + n + ']'));
                     }
+                    zx.setToProduct(z, x);
+                    zy.setToProduct(z, y);
+                    sum_z .add(z );
+                    sum_zx.add(zx);
+                    sum_zy.add(zy);
+                    n++;
                 }
             }
             sum_x .value = n/2d;  sum_x .multiply(nx-1,   0);                     // Division by 2 is exact.
