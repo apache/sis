@@ -220,8 +220,8 @@ public class Line implements Cloneable, Serializable {
     /**
      * Given a set of data points <var>x</var>[0 … <var>n</var>-1], <var>y</var>[0 … <var>n</var>-1],
      * fits them to a straight line <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var> in a
-     * least-squares senses. This method assume that the <var>x</var> values are precise and all uncertainty
-     * is in <var>y</var>.
+     * least-squares senses.
+     * This method assumes that the <var>x</var> values are precise and all uncertainty is in <var>y</var>.
      *
      * <p>The default implementation delegates to {@link #fit(Vector, Vector)}.</p>
      *
@@ -240,8 +240,8 @@ public class Line implements Cloneable, Serializable {
     /**
      * Given a set of data points <var>x</var>[0 … <var>n</var>-1], <var>y</var>[0 … <var>n</var>-1],
      * fits them to a straight line <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var> in a
-     * least-squares senses. This method assume that the <var>x</var> values are precise and all uncertainty
-     * is in <var>y</var>.
+     * least-squares senses.
+     * This method assumes that the <var>x</var> values are precise and all uncertainty is in <var>y</var>.
      *
      * <p>The default implementation delegates to {@link #fit(Iterable)}.</p>
      *
@@ -260,12 +260,11 @@ public class Line implements Cloneable, Serializable {
     }
 
     /**
-     * Given a sequence of points, fits them to a straight line <var>y</var> = <var>slope</var>⋅<var>x</var> +
-     * <var>y₀</var> in a least-squares senses. This method assume that the <var>x</var> values are precise and
-     * all uncertainty is in <var>y</var>.
-     *
-     * <p>Points shall be two dimensional with ordinate values in the (<var>x</var>,<var>y</var>) order.
-     * {@link Double#NaN} ordinate values are ignored.</p>
+     * Given a sequence of points, fits them to a straight line
+     * <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var> in a least-squares senses.
+     * Points shall be two dimensional with ordinate values in the (<var>x</var>,<var>y</var>) order.
+     * This method assumes that the <var>x</var> values are precise and all uncertainty is in <var>y</var>.
+     * {@link Double#NaN} ordinate values are ignored.
      *
      * @param  points  the two-dimensional points.
      * @return estimation of the correlation coefficient. The closer this coefficient is to +1 or -1, the better the fit.
