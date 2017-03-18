@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
 import java.awt.geom.AffineTransform;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.geometry.DirectPosition1D;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -42,9 +43,11 @@ import static org.junit.Assert.*;
 public final strictfp class LinearTransformBuilderTest extends TestCase {
     /**
      * Tests a very simple case where an exact answer is expected.
+     *
+     * @throws FactoryException if the transform can not be created.
      */
     @Test
-    public void testMinimalist1D() {
+    public void testMinimalist1D() throws FactoryException {
         final LinearTransformBuilder builder = new LinearTransformBuilder();
         final Map<DirectPosition1D,DirectPosition1D> pos = new HashMap<>(4);
         assertNull(pos.put(new DirectPosition1D(1), new DirectPosition1D(1)));
@@ -55,7 +58,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         assertArrayEquals(new double[] {3}, builder.getControlPoint(new int[] {2}), STRICT);
         assertNull(                         builder.getControlPoint(new int[] {3}));
 
-        final Matrix m = builder.create().getMatrix();
+        final Matrix m = builder.create(null).getMatrix();
         assertEquals("m₀₀",  2, m.getElement(0, 0), STRICT);
         assertEquals("m₀₁", -1, m.getElement(0, 1), STRICT);
         assertArrayEquals("correlation", new double[] {1}, builder.correlation(), STRICT);
@@ -66,9 +69,11 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * Tolerance threshold is set to zero because the math transform has been built from exactly 3 points,
      * in which case we expect an exact solution without rounding errors at the scale of the {@code double}
      * type. This is possible because SIS implementation uses double-double arithmetic.
+     *
+     * @throws FactoryException if the transform can not be created.
      */
     @Test
-    public void testMinimalist2D() {
+    public void testMinimalist2D() throws FactoryException {
         final LinearTransformBuilder builder = new LinearTransformBuilder();
         builder.setSourcePoints(
                 new DirectPosition2D(1, 1),
@@ -84,7 +89,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         assertArrayEquals(new double[] {5, 5}, builder.getControlPoint(new int[] {2, 2}), STRICT);
         assertNull(                            builder.getControlPoint(new int[] {2, 1}));
 
-        final Matrix m = builder.create().getMatrix();
+        final Matrix m = builder.create(null).getMatrix();
 
         // First row (x)
         assertEquals("m₀₀",  2, m.getElement(0, 0), STRICT);
@@ -102,10 +107,12 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     /**
      * Tests a two-dimensional case where sources coordinates are explicitely given.
      *
+     * @throws FactoryException if the transform can not be created.
+     *
      * @since 0.8
      */
     @Test
-    public void testExplicitSource2D() {
+    public void testExplicitSource2D() throws FactoryException {
         testSetAllPoints(new LinearTransformBuilder());
         testSetEachPoint(new LinearTransformBuilder());
     }
@@ -114,11 +121,15 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * Same test than {@link #testExplicitSource2D()}, but using the
      * {@link LinearTransformBuilder#LinearTransformBuilder(int...)} constructor.
      *
+     * @throws FactoryException if the transform can not be created.
+     *
+     * @see LocalizationGridBuilderTest#testSixPoints()
+     *
      * @since 0.8
      */
     @Test
     @DependsOnMethod("testExplicitSource2D")
-    public void testImplicitSource2D() {
+    public void testImplicitSource2D() throws FactoryException {
         testSetAllPoints(new LinearTransformBuilder(2, 3));
         testSetEachPoint(new LinearTransformBuilder(2, 3));
     }
@@ -127,7 +138,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * Execution of {@link #testExplicitSource2D()} and {@link #testImplicitSource2D()}
      * where all control points are specified by a map.
      */
-    private void testSetAllPoints(final LinearTransformBuilder builder) {
+    private void testSetAllPoints(final LinearTransformBuilder builder) throws FactoryException {
         final Map<DirectPosition2D,DirectPosition2D> pos = new HashMap<>(8);
         assertNull(pos.put(new DirectPosition2D(0, 0), new DirectPosition2D(3, 9)));
         assertNull(pos.put(new DirectPosition2D(0, 1), new DirectPosition2D(4, 7)));
@@ -143,7 +154,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * Execution of {@link #testExplicitSource2D()} and {@link #testImplicitSource2D()}
      * where all control points are specified one-by-one.
      */
-    private void testSetEachPoint(final LinearTransformBuilder builder) {
+    private void testSetEachPoint(final LinearTransformBuilder builder) throws FactoryException {
         builder.setControlPoint(new int[] {0, 0}, new double[] {3, 9});
         builder.setControlPoint(new int[] {0, 1}, new double[] {4, 7});
         builder.setControlPoint(new int[] {0, 2}, new double[] {6, 6});
@@ -156,8 +167,8 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     /**
      * Verifies the transform created by {@link #testExplicitSource2D()} and {@link #testImplicitSource2D()}.
      */
-    private void verify(final LinearTransformBuilder builder) {
-        final Matrix m = builder.create().getMatrix();
+    private void verify(final LinearTransformBuilder builder) throws FactoryException {
+        final Matrix m = builder.create(null).getMatrix();
 
         assertArrayEquals(new double[] {3, 9}, builder.getControlPoint(new int[] {0, 0}), STRICT);
         assertArrayEquals(new double[] {4, 7}, builder.getControlPoint(new int[] {0, 1}), STRICT);
@@ -165,7 +176,9 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         assertArrayEquals(new double[] {4, 8}, builder.getControlPoint(new int[] {1, 0}), STRICT);
         assertArrayEquals(new double[] {5, 4}, builder.getControlPoint(new int[] {1, 1}), STRICT);
         assertArrayEquals(new double[] {8, 2}, builder.getControlPoint(new int[] {1, 2}), STRICT);
-
+        /*
+         * Expect STRICT results because Apache SIS uses double-double arithmetic.
+         */
         assertEquals("m₀₀",  16 / 12d, m.getElement(0, 0), STRICT);        // First row (x)
         assertEquals("m₀₁",  21 / 12d, m.getElement(0, 1), STRICT);
         assertEquals("m₀₂",  31 / 12d, m.getElement(0, 2), STRICT);
@@ -178,10 +191,12 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
 
     /**
      * Tests with a random number of points with an exact solution expected.
+     *
+     * @throws FactoryException if the transform can not be created.
      */
     @Test
     @DependsOnMethod("testMinimalist1D")
-    public void testExact1D() {
+    public void testExact1D() throws FactoryException {
         final Random rd = TestUtilities.createRandomNumberGenerator(-6080923837183751016L);
         for (int i=0; i<10; i++) {
             test1D(rd, rd.nextInt(900) + 100, false, 1E-14, 1E-12);
@@ -194,10 +209,12 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * <p><b>Note:</b> this test can pass with a random seed most of the time. But we fix the seed anyway
      * because there is always a small probability that truly random points are all colinear, in which case
      * the test would fail. Even if the probability is low, we do not take the risk of random build failures.</p>
+     *
+     * @throws FactoryException if the transform can not be created.
      */
     @Test
     @DependsOnMethod("testMinimalist2D")
-    public void testExact2D() {
+    public void testExact2D() throws FactoryException {
         final Random rd = TestUtilities.createRandomNumberGenerator(41632405806929L);
         for (int i=0; i<10; i++) {
             test2D(rd, rd.nextInt(900) + 100, false, 1E-14, 1E-12);
@@ -206,10 +223,12 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
 
     /**
      * Tests with a random number of points and a random errors in target points.
+     *
+     * @throws FactoryException if the transform can not be created.
      */
     @Test
     @DependsOnMethod("testExact1D")
-    public void testNonExact1D() {
+    public void testNonExact1D() throws FactoryException {
         final Random rd = TestUtilities.createRandomNumberGenerator(8819436190826166876L);
         for (int i=0; i<4; i++) {
             test1D(rd, rd.nextInt(900) + 100, true, 0.02, 0.5);
@@ -224,10 +243,12 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * of errors are in the same directions (thus introducing a larger bias than expected), in which case
      * the test would fail. Even if the probability is low, we do not take the risk of such random build
      * failures.</p>
+     *
+     * @throws FactoryException if the transform can not be created.
      */
     @Test
     @DependsOnMethod("testExact2D")
-    public void testNonExact2D() {
+    public void testNonExact2D() throws FactoryException {
         final Random rd = TestUtilities.createRandomNumberGenerator(270575025643864L);
         for (int i=0; i<4; i++) {
             test2D(rd, rd.nextInt(900) + 100, true, 0.02, 0.5);
@@ -243,7 +264,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * @param  scaleTolerance  tolerance threshold for floating point comparisons.
      */
     private static void test1D(final Random rd, final int numPts, final boolean addErrors,
-            final double scaleTolerance, final double translationTolerance)
+            final double scaleTolerance, final double translationTolerance) throws FactoryException
     {
         final double scale  = rd.nextDouble() * 30 - 12;
         final double offset = rd.nextDouble() * 10 - 4;
@@ -261,7 +282,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
          */
         final LinearTransformBuilder builder = new LinearTransformBuilder();
         builder.setControlPoints(pos);
-        final Matrix m = builder.create().getMatrix();
+        final Matrix m = builder.create(null).getMatrix();
         assertEquals("m₀₀", scale,  m.getElement(0, 0), scaleTolerance);
         assertEquals("m₀₁", offset, m.getElement(0, 1), translationTolerance);
         assertEquals("correlation", 1, StrictMath.abs(builder.correlation()[0]), scaleTolerance);
@@ -276,7 +297,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * @param  scaleTolerance  tolerance threshold for floating point comparisons.
      */
     private static void test2D(final Random rd, final int numPts, final boolean addErrors,
-            final double scaleTolerance, final double translationTolerance)
+            final double scaleTolerance, final double translationTolerance) throws FactoryException
     {
         /*
          * Create an AffineTransform to use as the reference implementation.
@@ -301,7 +322,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
          */
         final LinearTransformBuilder builder = new LinearTransformBuilder();
         builder.setControlPoints(pos);
-        final Matrix m = builder.create().getMatrix();
+        final Matrix m = builder.create(null).getMatrix();
         /*
          * Compare the coefficients with the reference implementation.
          */

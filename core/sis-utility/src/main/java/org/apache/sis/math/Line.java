@@ -195,6 +195,21 @@ public class Line implements Cloneable, Serializable {
     }
 
     /**
+     * Sets this line from values of arbitrary {@code Number} type. This method is invoked by algorithms that
+     * may produce other kind of numbers (for example with different precision) than the usual {@code double}
+     * primitive type. The default implementation delegates to {@link #setEquation(double, double)}, but
+     * subclasses can override this method if they want to process other kind of numbers in a special way.
+     *
+     * @param  slope  the slope.
+     * @param  y0     the <var>y</var> value at <var>x</var> = 0.
+     *
+     * @since 0.8
+     */
+    public void setEquation(final Number slope, final Number y0) {
+        setEquation(slope.doubleValue(), y0.doubleValue());
+    }
+
+    /**
      * Sets a line through the specified points.
      * The line will continue toward infinity after the points.
      *
@@ -344,7 +359,7 @@ public class Line implements Cloneable, Serializable {
         b.multiply(a);
         b.negate();
         b.add(mean_y);          // y₀ = mean_y - mean_x * slope
-        setEquation(a.value, b.value);
+        setEquation(a, b);
         /*
          * Compute the correlation coefficient:
          * mean_xy / sqrt(mean_x2 * (mean_y2 - mean_y * mean_y))

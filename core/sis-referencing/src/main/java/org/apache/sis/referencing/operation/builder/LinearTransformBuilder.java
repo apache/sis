@@ -19,9 +19,12 @@ package org.apache.sis.referencing.operation.builder;
 import java.util.Map;
 import java.util.Arrays;
 import java.io.IOException;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.coordinate.Position;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Line;
 import org.apache.sis.math.Plane;
@@ -29,7 +32,7 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -54,11 +57,12 @@ import org.apache.sis.util.Debug;
  * @version 0.8
  * @module
  *
+ * @see LocalizationGridBuilder
  * @see LinearTransform
  * @see Line
  * @see Plane
  */
-public class LinearTransformBuilder {
+public class LinearTransformBuilder extends TransformBuilder {
     /**
      * Number of grid columns and rows, or {@code null} if the coordinates are not distributed on a regular grid.
      * If the grid size is known, then the {@link #sources} coordinates do not need to be specified.
@@ -94,7 +98,7 @@ public class LinearTransformBuilder {
      * The product of all {@link #gridSize} values, or 0 if none if {@link #gridSize} is null.
      * If non-zero, then this is the length of {@link #targets} arrays to create.
      */
-    private final int gridLength;
+    final int gridLength;
 
     /**
      * Number of valid positions in the {@link #sources} or {@link #targets} arrays.
@@ -164,6 +168,14 @@ public class LinearTransformBuilder {
             this.gridSize = gridSize;
             gridLength = (int) length;
         }
+    }
+
+    /**
+     * Returns the grid size for the given dimension. It is caller's responsibility to ensure that
+     * this method is invoked only on instances created by {@link #LinearTransformBuilder(int...)}.
+     */
+    final int gridSize(final int srcDim) {
+        return gridSize[srcDim];
     }
 
     /**
@@ -283,6 +295,44 @@ search: for (int j=0; j<numPoints; j++) {
      */
     private String mismatchedDimension(final String name, final int expected, final int actual) {
         return Errors.format(Errors.Keys.MismatchedDimension_3, name + '[' + numPoints + ']', expected, actual);
+    }
+
+    /**
+     * Returns the error message to be given to {@link IllegalStateException} when there is no data.
+     */
+    private static String noData() {
+        return Errors.format(Errors.Keys.MissingValueForProperty_1, "sourceToTarget");
+    }
+
+    /**
+     * Returns the number of dimensions in source positions.
+     *
+     * @return the dimension of source points.
+     * @throws IllegalStateException if the number of source dimensions is not yet known.
+     *
+     * @see LinearTransform#getSourceDimensions()
+     *
+     * @since 0.8
+     */
+    public int getSourceDimensions() {
+        if (gridSize != null) return gridSize.length;
+        if (sources  != null) return sources.length;
+        throw new IllegalStateException(noData());
+    }
+
+    /**
+     * Returns the number of dimensions in target positions.
+     *
+     * @return the dimension of target points.
+     * @throws IllegalStateException if the number of target dimensions is not yet known.
+     *
+     * @see LinearTransform#getTargetDimensions()
+     *
+     * @since 0.8
+     */
+    public int getTargetDimensions() {
+        if (targets != null) return targets.length;
+        throw new IllegalStateException(noData());
     }
 
     /**
@@ -486,6 +536,19 @@ search: for (int j=0; j<numPoints; j++) {
     }
 
     /**
+     * More straightforward version of {@link #getControlPoint(int[])} for the case where this
+     * {@code LinearTransformBuilder} is known to have been built for grid source coordinates.
+     * This method is for {@link LocalizationGridBuilder#create()} internal usage.
+     */
+    final void getControlPoint2D(final int[] source, final double[] target) {
+        assert gridSize != null;
+        final int index = flatIndex(source);
+        for (int i=0; i<target.length; i++) {
+            target[i] = targets[i][index];
+        }
+    }
+
+    /**
      * Sets the source points, overwriting any previous setting. The number of source points will need to be the same
      * than the number of {@linkplain #setTargetPoints target points} when the {@link #create()} method will be invoked.
      * In current Apache SIS implementation, the source points must be one or two-dimensional.
@@ -564,56 +627,93 @@ search: for (int j=0; j<numPoints; j++) {
      * This method assumes that source positions are precise and that all uncertainty is in the target positions.
      *
      * @return the fitted linear transform.
-     * @throws IllegalStateException if the source or target points have not be specified
-     *         or if those two sets do not have the same number of points.
+     *
+     * @deprecated Replaced by {@link #create(MathTransformFactory)}.
      */
+    @Deprecated
     public LinearTransform create() {
+        try {
+            return create(null);
+        } catch (FactoryException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Creates a linear transform approximation from the source positions to the target positions.
+     * This method assumes that source positions are precise and that all uncertainty is in the target positions.
+     *
+     * @param  factory  the factory to use for creating the transform, or {@code null} for the default factory.
+     *                  The {@link MathTransformFactory#createAffineTransform(Matrix)} method of that factory
+     *                  shall return {@link LinearTransform} instances.
+     * @return the fitted linear transform.
+     * @throws FactoryException if the transform can not be created,
+     *         for example because the source or target points have not be specified.
+     *
+     * @since 0.8
+     */
+    @Override
+    @SuppressWarnings("serial")
+    public LinearTransform create(final MathTransformFactory factory) throws FactoryException {
         if (transform == null) {
             processPendings();
             final double[][] sources = this.sources;                    // Protect from changes.
             final double[][] targets = this.targets;
             if (targets == null) {
-                throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForProperty_1, "sourceToTarget"));
+                throw new FactoryException(noData());
             }
             final int sourceDim = (sources != null) ? sources.length : gridSize.length;
             final int targetDim = targets.length;
             correlation = new double[targetDim];
-            final MatrixSIS matrix = Matrices.createZero(targetDim + 1, sourceDim + 1);
+            final MatrixSIS matrix = Matrices.create(targetDim + 1, sourceDim + 1,  ExtendedPrecisionMatrix.ZERO);
             matrix.setElement(targetDim, sourceDim, 1);
             for (int j=0; j < targetDim; j++) {
                 final double c;
                 switch (sourceDim) {
                     case 1: {
-                        final Line line = new Line();
+                        final int row = j;
+                        final Line line = new Line() {
+                            @Override public void setEquation(final Number slope, final Number y0) {
+                                super.setEquation(slope, y0);
+                                matrix.setNumber(row, 0, slope);    // Preserve the extended precision (double-double).
+                                matrix.setNumber(row, 1, y0);
+                            }
+                        };
                         if (sources != null) {
                             c = line.fit(vector(sources[0]), vector(targets[j]));
                         } else {
                             c = line.fit(Vector.createSequence(0, 1, gridSize[0]),
                                          Vector.create(targets[j], false));
                         }
-                        matrix.setElement(j, 0, line.slope());
-                        matrix.setElement(j, 1, line.y0());
                         break;
                     }
                     case 2: {
-                        final Plane plan = new Plane();
+                        final int row = j;
+                        final Plane plan = new Plane() {
+                            @Override public void setEquation(final Number sx, final Number sy, final Number z0) {
+                                super.setEquation(sx, sy, z0);
+                                matrix.setNumber(row, 0, sx);       // Preserve the extended precision (double-double).
+                                matrix.setNumber(row, 1, sy);
+                                matrix.setNumber(row, 2, z0);
+                            }
+                        };
                         if (sources != null) {
                             c = plan.fit(vector(sources[0]), vector(sources[1]), vector(targets[j]));
-                        } else {
+                        } else try {
                             c = plan.fit(gridSize[0], gridSize[1], Vector.create(targets[j], false));
+                        } catch (IllegalArgumentException e) {
+                            // This may happen if the z vector still contain some "NaN" values.
+                            throw new FactoryException(noData(), e);
                         }
-                        matrix.setElement(j, 0, plan.slopeX());
-                        matrix.setElement(j, 1, plan.slopeY());
-                        matrix.setElement(j, 2, plan.z0());
                         break;
                     }
                     default: {
-                        throw new UnsupportedOperationException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, sourceDim));
+                        throw new FactoryException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, sourceDim));
                     }
                 }
                 correlation[j] = c;
             }
-            transform = MathTransforms.linear(matrix);
+            transform = (LinearTransform) nonNull(factory).createAffineTransform(matrix);
         }
         return transform;
     }
