@@ -233,9 +233,9 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     }
 
     /**
-     * Computes the conversion factors needed by {@link #interpolateAtNormalized(double, double, double[])}.
-     * This method takes only the 2 first dimensions. If a conversion factor can not be computed, then it is
-     * set to NaN.
+     * Computes the conversion factors needed by {@link #interpolateInCell(double, double, double[])}.
+     * This method takes only the 2 first dimensions. If a conversion factor can not be computed,
+     * then it is set to NaN.
      */
     @SuppressWarnings("fallthrough")
     private void computeConversionFactors() {
@@ -308,7 +308,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * validity will still be accepted, but the extrapolated results may be very wrong.
      *
      * <p>The unit of measurement for the coordinate values in the returned envelope is
-     * given by {@link #getCoordinateUnit()}. The complete CRS is undefined.</p>
+     * given by {@link #getCoordinateUnit()}. The envelope CRS is undefined.</p>
      *
      * @return the domain covered by this grid.
      * @throws TransformException if an error occurred while computing the envelope.
@@ -327,6 +327,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @return the unit of measurement of input values before conversion to grid indices.
      *
+     * @see #getTranslationUnit()
      * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getInterpolationCRS()
      */
     public Unit<C> getCoordinateUnit() {
@@ -339,7 +340,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * given by {@link #getCoordinateUnit()}.
      * The output points are grid indices with integer values in the center of grid cells.
      *
-     * <p>This transform is usually two-dimensional and linear, in which case conversions from (<var>x</var>,<var>y</var>)
+     * <p>This transform is usually two-dimensional, in which case conversions from (<var>x</var>,<var>y</var>)
      * coordinates to ({@code gridX}, {@code gridY}) indices can be done with the following formulas:</p>
      * <ul>
      *   <li><var>gridX</var> = (<var>x</var> - <var>x₀</var>) / <var>Δx</var></li>
@@ -416,6 +417,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @return the unit of measurement of output values interpolated by {@code interpolateAt(…)}.
      *
+     * @see #getCoordinateUnit()
      * @see #interpolateAt
      */
     public Unit<T> getTranslationUnit() {
@@ -461,7 +463,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     /**
      * Interpolates the translation to apply for the given two-dimensional grid indices. The result is stored in
      * the given {@code vector} array, which shall have a length of at least {@link #getTranslationDimensions()}.
-     * The output unit of measurement is the same than the one documented in {@link #getCellValue}.
+     * The output unit of measurement is the same than the one documented in {@link #getCellValue(int, int, int)}.
      *
      * <div class="section">Default implementation</div>
      * The default implementation performs the following steps for each dimension <var>dim</var>,

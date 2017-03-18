@@ -213,6 +213,22 @@ public class Plane implements Cloneable, Serializable {
     }
 
     /**
+     * Sets this plane from values of arbitrary {@code Number} type. This method is invoked by algorithms that
+     * may produce other kind of numbers (for example with different precision) than the usual {@code double}
+     * primitive type. The default implementation delegates to {@link #setEquation(double, double, double)},
+     * but subclasses can override this method if they want to process other kind of numbers in a special way.
+     *
+     * @param sx  the slope along the <var>x</var> values.
+     * @param sy  the slope along the <var>y</var> values.
+     * @param z0  the <var>z</var> value at (<var>x</var>,<var>y</var>) = (0,0).
+     *
+     * @since 0.8
+     */
+    public void setEquation(final Number sx, final Number sy, final Number z0) {
+        setEquation(sx.doubleValue(), sy.doubleValue(), z0.doubleValue());
+    }
+
+    /**
      * Computes the plane's coefficients from the given ordinate values.
      * This method uses a linear regression in the least-square sense, with the assumption that
      * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
@@ -258,8 +274,9 @@ public class Plane implements Cloneable, Serializable {
 
     /**
      * Computes the plane's coefficients from values distributed on a regular grid. Invoking this method
-     * is equivalent to invoking {@link #fit(Vector, Vector, Vector)} where all vectors have a length of
-     * {@code nx} × {@code ny} and the <var>x</var> and <var>y</var> vectors have the following content:
+     * is equivalent (except for NaN handling) to invoking {@link #fit(Vector, Vector, Vector)} where all
+     * vectors have a length of {@code nx} × {@code ny} and the <var>x</var> and <var>y</var> vectors have
+     * the following content:
      *
      * <blockquote>
      * <table class="compact" summary="x and y vector content">
@@ -286,13 +303,14 @@ public class Plane implements Cloneable, Serializable {
      *
      * This method uses a linear regression in the least-square sense, with the assumption that
      * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
-     * {@link Double#NaN} values are ignored. The result is undetermined if all points are colinear.
+     * The result is undetermined if all points are colinear.
      *
      * @param  nx  number of columns.
      * @param  ny  number of rows.
      * @param  z   values of a matrix of {@code nx} columns by {@code ny} rows organized in a row-major fashion.
      * @return an estimation of the Pearson correlation coefficient.
-     * @throws IllegalArgumentException if <var>z</var> does not have the expected length.
+     * @throws IllegalArgumentException if <var>z</var> does not have the expected length or if a <var>z</var>
+     *         value is {@link Double#NaN}.
      *
      * @since 0.8
      */
@@ -307,7 +325,7 @@ public class Plane implements Cloneable, Serializable {
         final Fit r = new Fit(nx, ny, z);
         r.resolve();
         final double p = r.correlation(nx, length, z, null);
-        setEquation(r.sx.value, r.sy.value, r.z0.value);
+        setEquation(r.sx, r.sy, r.z0);
         return p;
     }
 
@@ -331,7 +349,7 @@ public class Plane implements Cloneable, Serializable {
          * Store the result only when we are done, so we have a "all or nothing" behavior.
          * We invoke the setEquation(sx, sy, z₀) method in case the user override it.
          */
-        setEquation(r.sx.value, r.sy.value, r.z0.value);
+        setEquation(r.sx, r.sy, r.z0);
         return p;
     }
 
