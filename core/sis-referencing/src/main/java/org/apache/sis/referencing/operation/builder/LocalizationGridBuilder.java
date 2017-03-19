@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.builder;
 
 import org.opengis.util.FactoryException;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -25,9 +24,12 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.math.MathFunctions;
 
 
 /**
@@ -76,15 +78,46 @@ public class LocalizationGridBuilder extends TransformBuilder {
     private LinearTransform sourceToGrid;
 
     /**
+     * The desired precision of inverse transformations in unit of source coordinates, or 0 in unspecified.
+     * If no {@link #sourceToGrid} transform has been specified, than this is in unit of grid cell.
+     */
+    private double precision;
+
+    /**
+     * Arbitrary default {@link #precision} value. May change in any future SIS version.
+     */
+    static final double DEFAULT_PRECISION = 1E-7;
+
+    /**
      * Creates a new, initially empty, builder.
      *
      * @param width   the number of columns in the grid of target positions.
      * @param height  the number of rows in the grid of target positions.
      */
     public LocalizationGridBuilder(final int width, final int height) {
-        linear = new LinearTransformBuilder(width, height);
-        tmp    = new int[2];
+        linear       = new LinearTransformBuilder(width, height);
+        tmp          = new int[2];
         sourceToGrid = MathTransforms.identity(2);
+    }
+
+    /**
+     * Sets the desired precision of <em>inverse</em> transformations, in units of source coordinates.
+     * If a conversion from "real world" to grid coordinates {@linkplain #setSourceToGrid has been specified},
+     * then the given precision is in "real world" units. Otherwise the precision is in units of grid cells.
+     *
+     * <div class="note"><b>Note:</b>
+     * there is no method for setting the desired target precision because forward transformations <em>precision</em>
+     * (not to be confused with <em>accuracy</em>) are limited only by rounding errors. Of course the accuracy of both
+     * forward and inverse transformations still limited by the accuracy of given control points and the grid resolution.
+     * </div>
+     *
+     * @param precision  desired precision of the results of inverse transformations.
+     *
+     * @see DatumShiftGrid#getCellPrecision()
+     */
+    public void setDesiredPrecision(final double precision) {
+        ArgumentChecks.ensureStrictlyPositive("precision", precision);
+        this.precision = precision;
     }
 
     /**
@@ -114,6 +147,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * }
      *
      * If this method is never invoked, then the default conversion is identity.
+     * If a {@linkplain #setDesiredPrecision(double) desired precision} has been specified before this method call,
+     * it is caller's responsibility to convert that value to new source units if needed.
      *
      * @param sourceToGrid  conversion from the "real world" source coordinates to grid indices including fractional parts.
      *
@@ -121,7 +156,18 @@ public class LocalizationGridBuilder extends TransformBuilder {
      */
     public void setSourceToGrid(final LinearTransform sourceToGrid) {
         ArgumentChecks.ensureNonNull("sourceToGrid", sourceToGrid);
-        this.sourceToGrid = sourceToGrid;
+        int isTarget = 0;
+        int dim = sourceToGrid.getSourceDimensions();
+        if (dim >= 2) {
+            isTarget = 1;
+            dim = sourceToGrid.getTargetDimensions();
+            if (dim == 2) {
+                this.sourceToGrid = sourceToGrid;
+                return;
+            }
+        }
+        throw new MismatchedDimensionException(Resources.format(
+                Resources.Keys.MismatchedTransformDimension_3, isTarget, 2, dim));
     }
 
     /**
@@ -155,19 +201,6 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
-     * Returns whether the result of last call to {@link LinearTransformBuilder#create()} can be considered
-     * a good fit. If {@code true}, then {@link #create()} will return the linear transform directly.
-     */
-    private boolean isLinear() {
-        for (final double c : linear.correlation()) {
-            if (c < 0.99) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Creates a transform from the source points to the target points.
      * This method assumes that source points are precise and all uncertainty is in the target points.
      * If this transform is close enough to an affine transform, then an instance of {@link LinearTransform} is returned.
@@ -182,45 +215,75 @@ public class LocalizationGridBuilder extends TransformBuilder {
     @Override
     public MathTransform create(final MathTransformFactory factory) throws FactoryException {
         final LinearTransform gridToCoord = linear.create(factory);
-        if (isLinear()) {
+        /*
+         * Make a first check about whether the result of above LinearTransformBuilder.create() call
+         * can be considered a good fit. If true, then we may return the linear transform directly.
+         */
+        boolean isExact  = true;
+        boolean isLinear = true;
+        for (final double c : linear.correlation()) {
+            isExact &= (c == 1);
+            if (c < 0.9999) {                               // Empirical threshold (may need to be revisited).
+                isLinear = false;
+                break;
+            }
+        }
+        if (isExact) {
             return gridToCoord;
         }
-        final int      width  = linear.gridSize(0);
-        final int      height = linear.gridSize(1);
-        final int      tgtDim = gridToCoord.getTargetDimensions();
-        final double[] data   = new double[tgtDim * linear.gridLength];
-        final double[] point  = new double[tgtDim];
+        final int      width    = linear.gridSize(0);
+        final int      height   = linear.gridSize(1);
+        final int      tgtDim   = gridToCoord.getTargetDimensions();
+        final double[] residual = new double[tgtDim * linear.gridLength];
+        final double[] point    = new double[tgtDim + 1];
+        double gridPrecision    = precision;
         try {
+            /*
+             * If the user specified a precision, we need to convert it from source units to grid units.
+             * We convert each dimension separately, then retain the largest magnitude of vector results.
+             */
+            if (gridPrecision > 0 && !sourceToGrid.isIdentity()) {
+                final double[] vector = new double[sourceToGrid.getSourceDimensions()];
+                final double[] offset = new double[sourceToGrid.getTargetDimensions()];
+                double converted = 0;
+                for (int i=0; i<vector.length; i++) {
+                    vector[i] = precision;
+                    sourceToGrid.deltaTransform(vector, 0, offset, 0, 1);
+                    final double length = MathFunctions.magnitude(offset);
+                    if (length > converted) converted = length;
+                    vector[i] = 0;
+                }
+                gridPrecision = converted;
+            }
+            /*
+             * Compute the residuals, i.e. the differences between the coordinates that we get by a linear
+             * transformation and the coordinates that we want to get. If at least one residual is greater
+             * than the desired precision,  then the returned MathTransform will need to apply corrections
+             * after linear transforms. Those corrections will be done by InterpolatedTransform.
+             */
+            final MatrixSIS coordToGrid = MatrixSIS.castOrCopy(gridToCoord.inverse().getMatrix());
             final DirectPosition2D src = new DirectPosition2D();
-            DirectPosition tgt = null;
+            point[tgtDim] = 1;
             for (int k=0,y=0; y<height; y++) {
                 src.y  = y;
                 tmp[1] = y;
                 for (int x=0; x<width; x++) {
                     src.x  = x;
                     tmp[0] = x;
-                    linear.getControlPoint2D(tmp, point);               // Expected position.
-                    tgt = gridToCoord.transform(src, tgt);              // Interpolated position.
-                    for (int i=0; i<tgtDim; i++) {
-                        data[k++] = point[i] - tgt.getOrdinate(i);      // Residual.
-                    }
+                    linear.getControlPoint2D(tmp, point);                           // Expected position.
+                    double[] grid = coordToGrid.multiply(point);                    // As grid coordinate.
+                    isLinear &= (residual[k++] = grid[0] - x) <= gridPrecision;
+                    isLinear &= (residual[k++] = grid[1] - y) <= gridPrecision;
                 }
             }
-            /*
-             * At this point, we computed the residual of all coordinate values.
-             * Now we need to express those residuals in grid units instead than
-             * "real world" unit, because InterpolatedTransform works that way.
-             */
-            final LinearTransform coordToGrid = gridToCoord.inverse();
-            if (tgtDim == 2) {
-                coordToGrid.deltaTransform(data, 0, data, 0, linear.gridLength);
-            } else {
-                throw new UnsupportedOperationException();          // TODO: use a fallback.
-            }
         } catch (TransformException e) {
-            throw new FactoryException(e);                          // Should never happen.
+            throw new FactoryException(e);                                          // Should never happen.
+        }
+        if (isLinear) {
+            return gridToCoord;
         }
         return InterpolatedTransform.createGeodeticTransformation(nonNull(factory),
-                new ResidualGrid(sourceToGrid, gridToCoord, width, height, tgtDim, data));
+                new ResidualGrid(sourceToGrid, gridToCoord, width, height, tgtDim, residual,
+                (gridPrecision > 0) ? gridPrecision : DEFAULT_PRECISION));
     }
 }

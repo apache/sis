@@ -35,6 +35,11 @@ import org.opengis.referencing.operation.Matrix;
  */
 final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless> {
     /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -6661539177698674636L;
+
+    /**
      * The parameter descriptors for the "Localization grid" operation.
      */
     private static final ParameterDescriptorGroup PARAMETERS;
@@ -70,13 +75,13 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
      * @param residuals     the residual data, as translations to apply on the result of affine transform.
      */
     ResidualGrid(final LinearTransform sourceToGrid, final LinearTransform gridToTarget,
-            final int nx, final int ny, final int numDim, final double[] residuals)
+            final int nx, final int ny, final int numDim, final double[] residuals, final double precision)
     {
         super(Units.UNITY, Units.UNITY, true, sourceToGrid, nx, ny, PARAMETERS);
         this.gridToTarget = gridToTarget;
         this.numDim       = numDim;
         this.offsets      = residuals;
-        this.accuracy     = 0.01;           // TODO
+        this.accuracy     = precision;
     }
 
     /**
@@ -122,6 +127,15 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
     @Override
     public int getTranslationDimensions() {
         return numDim;
+    }
+
+    /**
+     * Returns the desired precision in iterative calculation performed by inverse transform.
+     * The returned value is in unit of grid cell.
+     */
+    @Override
+    public double getCellPrecision() {
+        return accuracy;
     }
 
     /**
