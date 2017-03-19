@@ -29,7 +29,7 @@ import static org.apache.sis.referencing.operation.matrix.Matrix3.SIZE;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn(SolverTest.class)
@@ -121,5 +121,15 @@ public final strictfp class Matrix3Test extends MatrixTestCase {
     @Test
     public void testConvertAfter() {
         testConvertAfter(new Matrix3());
+    }
+
+    /**
+     * Tests {@link MatrixSIS#multiply(double[])} using {@link AffineTranform} as a reference implementation.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testMultiplyVector() {
+        testMultiplyVector(new Matrix3());
     }
 }

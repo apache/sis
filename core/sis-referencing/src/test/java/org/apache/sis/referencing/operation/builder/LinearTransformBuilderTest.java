@@ -123,8 +123,6 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      *
      * @throws FactoryException if the transform can not be created.
      *
-     * @see LocalizationGridBuilderTest#testSixPoints()
-     *
      * @since 0.8
      */
     @Test

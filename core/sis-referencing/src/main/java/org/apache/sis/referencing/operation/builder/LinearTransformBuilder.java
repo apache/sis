@@ -543,7 +543,8 @@ search: for (int j=0; j<numPoints; j++) {
     final void getControlPoint2D(final int[] source, final double[] target) {
         assert gridSize != null;
         final int index = flatIndex(source);
-        for (int i=0; i<target.length; i++) {
+        final int tgtDim = targets.length;
+        for (int i=0; i<tgtDim; i++) {
             target[i] = targets[i][index];
         }
     }
