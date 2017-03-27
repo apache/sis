@@ -87,12 +87,11 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * }
  * </div>
  *
- * Like most {@link java.text.Format} implementations, this class is not thread-safe.
- * Each thread should use its own {@code LocationFormat} instance or apply synchronization.
- *
- * <div class="warning"><b>Limitation:</b>
- * the current implementation can only format locations — parsing is not yet implemented.
- * </div>
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>The current implementation can only format features — parsing is not yet implemented.</li>
+ *   <li>{@code LocationFormat}, like most {@code java.text.Format} subclasses, is not thread-safe.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8

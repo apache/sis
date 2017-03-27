@@ -16,16 +16,21 @@
  */
 package org.apache.sis.math;
 
+import java.util.Iterator;
 import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.ulp;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -44,7 +49,7 @@ import static java.lang.Math.ulp;
  * @author  Martin Desruisseaux (MPO, IRD)
  * @author  Howard Freeland (MPO, for algorithmic inspiration)
  * @since   0.5
- * @version 0.5
+ * @version 0.8
  * @module
  *
  * @see Line
@@ -211,13 +216,28 @@ public class Plane implements Cloneable, Serializable {
     }
 
     /**
-     * Computes the plane's coefficients from the given ordinate values.
-     * This method uses a linear regression in the least-square sense,
-     * with the assumption that the (<var>x</var>,<var>y</var>) values are precise
-     * and all uncertainty is in <var>z</var>.
+     * Sets this plane from values of arbitrary {@code Number} type. This method is invoked by algorithms that
+     * may produce other kind of numbers (for example with different precision) than the usual {@code double}
+     * primitive type. The default implementation delegates to {@link #setEquation(double, double, double)},
+     * but subclasses can override this method if they want to process other kind of numbers in a special way.
      *
-     * <p>{@link Double#NaN} values are ignored.
-     * The result is undetermined if all points are colinear.</p>
+     * @param sx  the slope along the <var>x</var> values.
+     * @param sy  the slope along the <var>y</var> values.
+     * @param z0  the <var>z</var> value at (<var>x</var>,<var>y</var>) = (0,0).
+     *
+     * @since 0.8
+     */
+    public void setEquation(final Number sx, final Number sy, final Number z0) {
+        setEquation(sx.doubleValue(), sy.doubleValue(), z0.doubleValue());
+    }
+
+    /**
+     * Computes the plane's coefficients from the given ordinate values.
+     * This method uses a linear regression in the least-square sense, with the assumption that
+     * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
+     * {@link Double#NaN} values are ignored. The result is undetermined if all points are colinear.
+     *
+     * <p>The default implementation delegates to {@link #fit(Vector, Vector, Vector)}.</p>
      *
      * @param  x  vector of <var>x</var> coordinates.
      * @param  y  vector of <var>y</var> coordinates.
@@ -226,154 +246,313 @@ public class Plane implements Cloneable, Serializable {
      * @throws IllegalArgumentException if <var>x</var>, <var>y</var> and <var>z</var> do not have the same length.
      */
     public double fit(final double[] x, final double[] y, final double[] z) {
-        // Do not invoke an overrideable method with our tricky iterable.
-        return fit(new CompoundDirectPositions(x, y, z), true, true, true);
+        ArgumentChecks.ensureNonNull("x", x);
+        ArgumentChecks.ensureNonNull("y", y);
+        ArgumentChecks.ensureNonNull("z", z);
+        return fit(new ArrayVector.Doubles(x), new ArrayVector.Doubles(y), new ArrayVector.Doubles(z));
+    }
+
+    /**
+     * Computes the plane's coefficients from the given ordinate values.
+     * This method uses a linear regression in the least-square sense, with the assumption that
+     * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
+     * {@link Double#NaN} values are ignored. The result is undetermined if all points are colinear.
+     *
+     * <p>The default implementation delegates to {@link #fit(Iterable)}.</p>
+     *
+     * @param  x  vector of <var>x</var> coordinates.
+     * @param  y  vector of <var>y</var> coordinates.
+     * @param  z  vector of <var>z</var> values.
+     * @return an estimation of the Pearson correlation coefficient.
+     * @throws IllegalArgumentException if <var>x</var>, <var>y</var> and <var>z</var> do not have the same length.
+     *
+     * @since 0.8
+     */
+    public double fit(final Vector x, final Vector y, final Vector z) {
+        ArgumentChecks.ensureNonNull("x", x);
+        ArgumentChecks.ensureNonNull("y", y);
+        ArgumentChecks.ensureNonNull("z", z);
+        return fit(new CompoundDirectPositions(x, y, z));
+    }
+
+    /**
+     * Computes the plane's coefficients from values distributed on a regular grid. Invoking this method
+     * is equivalent (except for NaN handling) to invoking {@link #fit(Vector, Vector, Vector)} where all
+     * vectors have a length of {@code nx} × {@code ny} and the <var>x</var> and <var>y</var> vectors have
+     * the following content:
+     *
+     * <blockquote>
+     * <table class="compact" summary="x and y vector content">
+     *   <tr>
+     *     <th><var>x</var> vector</th>
+     *     <th><var>y</var> vector</th>
+     *   </tr><tr>
+     *     <td>
+     *       0 1 2 3 4 5 … n<sub>x</sub>-1<br>
+     *       0 1 2 3 4 5 … n<sub>x</sub>-1<br>
+     *       0 1 2 3 4 5 … n<sub>x</sub>-1<br>
+     *       …<br>
+     *       0 1 2 3 4 5 … n<sub>x</sub>-1<br>
+     *     </td><td>
+     *       0 0 0 0 0 0 … 0<br>
+     *       1 1 1 1 1 1 … 1<br>
+     *       2 2 2 2 2 2 … 2<br>
+     *       …<br>
+     *       n<sub>y</sub>-1 n<sub>y</sub>-1 n<sub>y</sub>-1 … n<sub>y</sub>-1<br>
+     *     </td>
+     *   </tr>
+     * </table>
+     * </blockquote>
+     *
+     * This method uses a linear regression in the least-square sense, with the assumption that
+     * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
+     * The result is undetermined if all points are colinear.
+     *
+     * @param  nx  number of columns.
+     * @param  ny  number of rows.
+     * @param  z   values of a matrix of {@code nx} columns by {@code ny} rows organized in a row-major fashion.
+     * @return an estimation of the Pearson correlation coefficient.
+     * @throws IllegalArgumentException if <var>z</var> does not have the expected length or if a <var>z</var>
+     *         value is {@link Double#NaN}.
+     *
+     * @since 0.8
+     */
+    public double fit(final int nx, final int ny, final Vector z) {
+        ArgumentChecks.ensureStrictlyPositive("nx", nx);
+        ArgumentChecks.ensureStrictlyPositive("ny", ny);
+        ArgumentChecks.ensureNonNull("z", z);
+        final int length = JDK8.multiplyExact(nx, ny);
+        if (z.size() != length) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, length, z.size()));
+        }
+        final Fit r = new Fit(nx, ny, z);
+        r.resolve();
+        final double p = r.correlation(nx, length, z, null);
+        setEquation(r.sx, r.sy, r.z0);
+        return p;
     }
 
     /**
      * Computes the plane's coefficients from the given sequence of points.
-     * This method uses a linear regression in the least-square sense,
-     * with the assumption that the (<var>x</var>,<var>y</var>) values are precise
-     * and all uncertainty is in <var>z</var>.
-     *
-     * <p>Points shall be three dimensional with ordinate values in the (<var>x</var>,<var>y</var>,<var>z</var>) order.
-     * {@link Double#NaN} ordinate values are ignored.
-     * The result is undetermined if all points are colinear.</p>
+     * This method uses a linear regression in the least-square sense, with the assumption that
+     * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
+     * Points shall be three dimensional with ordinate values in the (<var>x</var>,<var>y</var>,<var>z</var>) order.
+     * {@link Double#NaN} values are ignored. The result is undetermined if all points are colinear.
      *
      * @param  points  the three-dimensional points.
      * @return an estimation of the Pearson correlation coefficient.
      * @throws MismatchedDimensionException if a point is not three-dimensional.
      */
     public double fit(final Iterable<? extends DirectPosition> points) {
-        return fit(points, true, true, true);
-    }
-
-    /**
-     * Implementation of public {@code fit(…)} methods.
-     * This method needs to iterate over the points two times:
-     * one for computing the coefficients, and one for the computing the Pearson coefficient.
-     * The second pass can also opportunistically checks if some small coefficients can be replaced by zero.
-     */
-    private double fit(final Iterable<? extends DirectPosition> points,
-            boolean detectZeroSx, boolean detectZeroSy, boolean detectZeroZ0)
-    {
-        int i = 0, n = 0;
-        final DoubleDouble sum_x  = new DoubleDouble();
-        final DoubleDouble sum_y  = new DoubleDouble();
-        final DoubleDouble sum_z  = new DoubleDouble();
-        final DoubleDouble sum_xx = new DoubleDouble();
-        final DoubleDouble sum_yy = new DoubleDouble();
-        final DoubleDouble sum_xy = new DoubleDouble();
-        final DoubleDouble sum_zx = new DoubleDouble();
-        final DoubleDouble sum_zy = new DoubleDouble();
-        final DoubleDouble xx     = new DoubleDouble();
-        final DoubleDouble yy     = new DoubleDouble();
-        final DoubleDouble xy     = new DoubleDouble();
-        final DoubleDouble zx     = new DoubleDouble();
-        final DoubleDouble zy     = new DoubleDouble();
-        for (final DirectPosition p : points) {
-            final int dimension = p.getDimension();
-            if (dimension != DIMENSION) {
-                throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, "points[" + i + ']', DIMENSION, dimension));
-            }
-            i++;
-            final double x = p.getOrdinate(0); if (Double.isNaN(x)) continue;
-            final double y = p.getOrdinate(1); if (Double.isNaN(y)) continue;
-            final double z = p.getOrdinate(2); if (Double.isNaN(z)) continue;
-            xx.setToProduct(x, x);
-            yy.setToProduct(y, y);
-            xy.setToProduct(x, y);
-            zx.setToProduct(z, x);
-            zy.setToProduct(z, y);
-            sum_x.add(x);
-            sum_y.add(y);
-            sum_z.add(z);
-            sum_xx.add(xx);
-            sum_yy.add(yy);
-            sum_xy.add(xy);
-            sum_zx.add(zx);
-            sum_zy.add(zy);
-            n++;
-        }
-        /*
-         *    ( sum_zx - sum_z*sum_x )  =  sx*(sum_xx - sum_x*sum_x) + sy*(sum_xy - sum_x*sum_y)
-         *    ( sum_zy - sum_z*sum_y )  =  sx*(sum_xy - sum_x*sum_y) + sy*(sum_yy - sum_y*sum_y)
-         */
-        zx.setFrom(sum_x); zx.divide(-n, 0); zx.multiply(sum_z); zx.add(sum_zx);    // zx = sum_zx - sum_z*sum_x/n
-        zy.setFrom(sum_y); zy.divide(-n, 0); zy.multiply(sum_z); zy.add(sum_zy);    // zy = sum_zy - sum_z*sum_y/n
-        xx.setFrom(sum_x); xx.divide(-n, 0); xx.multiply(sum_x); xx.add(sum_xx);    // xx = sum_xx - sum_x*sum_x/n
-        xy.setFrom(sum_y); xy.divide(-n, 0); xy.multiply(sum_x); xy.add(sum_xy);    // xy = sum_xy - sum_x*sum_y/n
-        yy.setFrom(sum_y); yy.divide(-n, 0); yy.multiply(sum_y); yy.add(sum_yy);    // yy = sum_yy - sum_y*sum_y/n
-        /*
-         * den = (xy*xy - xx*yy)
-         */
-        final DoubleDouble tmp = new DoubleDouble(xx); tmp.multiply(yy);
-        final DoubleDouble den = new DoubleDouble(xy); den.multiply(xy);
-        den.subtract(tmp);
-        /*
-         * sx = (zy*xy - zx*yy) / den
-         * sy = (zx*xy - zy*xx) / den
-         * z₀ = (sum_z - (sx*sum_x + sy*sum_y)) / n
-         */
-        final DoubleDouble sx = new DoubleDouble(zy); sx.multiply(xy); tmp.setFrom(zx); tmp.multiply(yy); sx.subtract(tmp); sx.divide(den);
-        final DoubleDouble sy = new DoubleDouble(zx); sy.multiply(xy); tmp.setFrom(zy); tmp.multiply(xx); sy.subtract(tmp); sy.divide(den);
-        final DoubleDouble z0 = new DoubleDouble(sy);
-        z0.multiply(sum_y);
-        tmp.setFrom(sx);
-        tmp.multiply(sum_x);
-        tmp.add(z0);
-        z0.setFrom(sum_z);
-        z0.subtract(tmp);
-        z0.divide(n, 0);
-        /*
-         * At this point, the model is computed. Now computes an estimation of the Pearson
-         * correlation coefficient. Note that both the z array and the z computed from the
-         * model have the same average, called sum_z below (the name is not true anymore).
-         *
-         * We do not use double-double arithmetic here since the Pearson coefficient is
-         * for information purpose (quality estimation).
-         */
-        final double mean_x = sum_x.value / n;
-        final double mean_y = sum_y.value / n;
-        final double mean_z = sum_z.value / n;
-        final double offset = abs((sx.value * mean_x + sy.value * mean_y) + z0.value); // Offsetted z₀ - see comment before usage.
-        double sum_ds2 = 0, sum_dz2 = 0, sum_dsz = 0;
-        for (final DirectPosition p : points) {
-            final double x = (p.getOrdinate(0) - mean_x) * sx.value;
-            final double y = (p.getOrdinate(1) - mean_y) * sy.value;
-            final double z = (p.getOrdinate(2) - mean_z);
-            final double s = x + y;
-            if (!Double.isNaN(s) && !Double.isNaN(z)) {
-                sum_ds2 += s * s;
-                sum_dz2 += z * z;
-                sum_dsz += s * z;
-            }
-            /*
-             * Algorithm for detecting if a coefficient should be zero:
-             * If for every points given by the user, adding (sx⋅x) in (sx⋅x + sy⋅y + z₀) does not make any difference
-             * because (sx⋅x) is smaller than 1 ULP of (sy⋅y + z₀), then it is not worth adding it and  sx  can be set
-             * to zero. The same rational applies to (sy⋅y) and z₀.
-             *
-             * Since we work with differences from the means, the  z = sx⋅x + sy⋅y + z₀  equation can be rewritten as:
-             *
-             *     Δz = sx⋅Δx + sy⋅Δy + (sx⋅mx + sy⋅my + z₀ - mz)    where the term between (…) is close to zero.
-             *
-             * The check for (sx⋅Δx) and (sy⋅Δy) below ignore the (…) term since it is close to zero.
-             * The check for  z₀  is derived from an equation without the  -mz  term.
-             */
-            if (detectZeroSx && abs(x) >= ulp(y * ZERO_THRESHOLD)) detectZeroSx = false;
-            if (detectZeroSy && abs(y) >= ulp(x * ZERO_THRESHOLD)) detectZeroSy = false;
-            if (detectZeroZ0 && offset >= ulp(s * ZERO_THRESHOLD)) detectZeroZ0 = false;
-        }
+        ArgumentChecks.ensureNonNull("points", points);
+        final Fit r = new Fit(points);
+        r.resolve();
+        final double p = r.correlation(0, 0, null, points.iterator());
         /*
          * Store the result only when we are done, so we have a "all or nothing" behavior.
          * We invoke the setEquation(sx, sy, z₀) method in case the user override it.
          */
-        setEquation(detectZeroSx ? 0 : sx.value,
-                    detectZeroSy ? 0 : sy.value,
-                    detectZeroZ0 ? 0 : z0.value);
-        return Math.min(sum_dsz / sqrt(sum_ds2 * sum_dz2), 1);
+        setEquation(r.sx, r.sy, r.z0);
+        return p;
+    }
+
+    /**
+     * Computes the plane coefficients. This class needs to iterate over the points two times:
+     * one for computing the coefficients, and one for the computing the Pearson coefficient.
+     * The second pass can also opportunistically checks if some small coefficients can be replaced by zero.
+     */
+    private static final class Fit {
+        private final DoubleDouble sum_x  = new DoubleDouble();
+        private final DoubleDouble sum_y  = new DoubleDouble();
+        private final DoubleDouble sum_z  = new DoubleDouble();
+        private final DoubleDouble sum_xx = new DoubleDouble();
+        private final DoubleDouble sum_yy = new DoubleDouble();
+        private final DoubleDouble sum_xy = new DoubleDouble();
+        private final DoubleDouble sum_zx = new DoubleDouble();
+        private final DoubleDouble sum_zy = new DoubleDouble();
+        private final DoubleDouble xx     = new DoubleDouble();
+        private final DoubleDouble yy     = new DoubleDouble();
+        private final DoubleDouble xy     = new DoubleDouble();
+        private final DoubleDouble zx     = new DoubleDouble();
+        private final DoubleDouble zy     = new DoubleDouble();
+        private final int n;
+
+        /** Solution of the plane equation. */ DoubleDouble sx, sy, z0;
+
+        /**
+         * Computes the values of all {@code sum_*} fields from randomly distributed points.
+         * Value of all other fields are undetermined..
+         */
+        Fit(final Iterable<? extends DirectPosition> points) {
+            int i = 0, n = 0;
+            for (final DirectPosition p : points) {
+                final int dimension = p.getDimension();
+                if (dimension != DIMENSION) {
+                    throw new MismatchedDimensionException(Errors.format(
+                            Errors.Keys.MismatchedDimension_3, "points[" + i + ']', DIMENSION, dimension));
+                }
+                i++;
+                final double x = p.getOrdinate(0); if (Double.isNaN(x)) continue;
+                final double y = p.getOrdinate(1); if (Double.isNaN(y)) continue;
+                final double z = p.getOrdinate(2); if (Double.isNaN(z)) continue;
+                xx.setToProduct(x, x);
+                yy.setToProduct(y, y);
+                xy.setToProduct(x, y);
+                zx.setToProduct(z, x);
+                zy.setToProduct(z, y);
+                sum_x .add(x );
+                sum_y .add(y );
+                sum_z .add(z );
+                sum_xx.add(xx);
+                sum_yy.add(yy);
+                sum_xy.add(xy);
+                sum_zx.add(zx);
+                sum_zy.add(zy);
+                n++;
+            }
+            this.n = n;
+        }
+
+        /**
+         * Computes the values of all {@code sum_*} fields from the <var>z</var> values on a regular grid.
+         * Value of all other fields are undetermined..
+         */
+        Fit(final int nx, final int ny, final Vector vz) {
+            /*
+             * Computes the sum of x, y and z values. Computes also the sum of x², y², x⋅y, z⋅x and z⋅y values.
+             * When possible, we will avoid to compute the sum inside the loop and use the following identities
+             * instead:
+             *
+             *           1 + 2 + 3 ... + n    =    n⋅(n+1)/2              (arithmetic series)
+             *        1² + 2² + 3² ... + n²   =    n⋅(n+0.5)⋅(n+1)/3
+             *
+             * Note that for exclusive upper bound, we need to replace n by n-1 in above formulas.
+             */
+            int n = 0;
+            for (int y=0; y<ny; y++) {
+                for (int x=0; x<nx; x++) {
+                    final double z = vz.doubleValue(n);
+                    if (Double.isNaN(z)) {
+                        throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, "z[" + n + ']'));
+                    }
+                    zx.setToProduct(z, x);
+                    zy.setToProduct(z, y);
+                    sum_z .add(z );
+                    sum_zx.add(zx);
+                    sum_zy.add(zy);
+                    n++;
+                }
+            }
+            sum_x .value = n/2d;  sum_x .multiply(nx-1,   0);                     // Division by 2 is exact.
+            sum_y .value = n/2d;  sum_y .multiply(ny-1,   0);
+            sum_xx.value = n;     sum_xx.multiply(nx-0.5, 0); sum_xx.multiply(nx-1, 0); sum_xx.divide(3, 0);
+            sum_yy.value = n;     sum_yy.multiply(ny-0.5, 0); sum_yy.multiply(ny-1, 0); sum_yy.divide(3, 0);
+            sum_xy.value = n/4d;  sum_xy.multiply(ny-1,   0); sum_xy.multiply(nx-1, 0);
+            this.n = n;
+        }
+
+        /**
+         * Computes the {@link #sx}, {@link #sy} and {@link #z0} values using the sums computed by the constructor.
+         */
+        private void resolve() {
+            /*
+             *    ( sum_zx - sum_z⋅sum_x )  =  sx⋅(sum_xx - sum_x⋅sum_x) + sy⋅(sum_xy - sum_x⋅sum_y)
+             *    ( sum_zy - sum_z⋅sum_y )  =  sx⋅(sum_xy - sum_x⋅sum_y) + sy⋅(sum_yy - sum_y⋅sum_y)
+             */
+            zx.setFrom(sum_x); zx.divide(-n, 0); zx.multiply(sum_z); zx.add(sum_zx);    // zx = sum_zx - sum_z⋅sum_x/n
+            zy.setFrom(sum_y); zy.divide(-n, 0); zy.multiply(sum_z); zy.add(sum_zy);    // zy = sum_zy - sum_z⋅sum_y/n
+            xx.setFrom(sum_x); xx.divide(-n, 0); xx.multiply(sum_x); xx.add(sum_xx);    // xx = sum_xx - sum_x⋅sum_x/n
+            xy.setFrom(sum_y); xy.divide(-n, 0); xy.multiply(sum_x); xy.add(sum_xy);    // xy = sum_xy - sum_x⋅sum_y/n
+            yy.setFrom(sum_y); yy.divide(-n, 0); yy.multiply(sum_y); yy.add(sum_yy);    // yy = sum_yy - sum_y⋅sum_y/n
+            /*
+             * den = (xy⋅xy - xx⋅yy)
+             */
+            final DoubleDouble tmp = new DoubleDouble(xx); tmp.multiply(yy);
+            final DoubleDouble den = new DoubleDouble(xy); den.multiply(xy);
+            den.subtract(tmp);
+            /*
+             * sx = (zy⋅xy - zx⋅yy) / den
+             * sy = (zx⋅xy - zy⋅xx) / den
+             * z₀ = (sum_z - (sx⋅sum_x + sy⋅sum_y)) / n
+             */
+            sx = new DoubleDouble(zy); sx.multiply(xy); tmp.setFrom(zx); tmp.multiply(yy); sx.subtract(tmp); sx.divide(den);
+            sy = new DoubleDouble(zx); sy.multiply(xy); tmp.setFrom(zy); tmp.multiply(xx); sy.subtract(tmp); sy.divide(den);
+            z0 = new DoubleDouble(sy);
+            z0.multiply(sum_y);
+            tmp.setFrom(sx);
+            tmp.multiply(sum_x);
+            tmp.add(z0);
+            z0.setFrom(sum_z);
+            z0.subtract(tmp);
+            z0.divide(n, 0);
+        }
+
+        /**
+         * Computes an estimation of the Pearson correlation coefficient. We do not use double-double arithmetic
+         * here since the Pearson coefficient is for information purpose (quality estimation).
+         *
+         * <p>Only one of ({@code nx}, {@code length}, {@code z}) tuple or {@code points} argument should be non-null.</p>
+         */
+        double correlation(final int nx, final int length, final Vector vz,
+                           final Iterator<? extends DirectPosition> points)
+        {
+            boolean detectZeroSx = true;
+            boolean detectZeroSy = true;
+            boolean detectZeroZ0 = true;
+            final double sx     = this.sx.value;
+            final double sy     = this.sy.value;
+            final double z0     = this.z0.value;
+            final double mean_x = sum_x.value / n;
+            final double mean_y = sum_y.value / n;
+            final double mean_z = sum_z.value / n;
+            final double offset = abs((sx * mean_x + sy * mean_y) + z0);    // Offsetted z₀ - see comment before usage.
+            int index = 0;
+            double sum_ds2 = 0, sum_dz2 = 0, sum_dsz = 0;
+            for (;;) {
+                double x, y, z;
+                if (vz != null) {
+                    if (index >= length) break;
+                    x = index % nx;
+                    y = index / nx;
+                    z = vz.doubleValue(index++);
+                } else {
+                    if (!points.hasNext()) break;
+                    final DirectPosition p = points.next();
+                    x = p.getOrdinate(0);
+                    y = p.getOrdinate(1);
+                    z = p.getOrdinate(2);
+                }
+                x = (x - mean_x) * sx;
+                y = (y - mean_y) * sy;
+                z = (z - mean_z);
+                final double s = x + y;
+                if (!Double.isNaN(s) && !Double.isNaN(z)) {
+                    sum_ds2 += s * s;
+                    sum_dz2 += z * z;
+                    sum_dsz += s * z;
+                }
+                /*
+                 * Algorithm for detecting if a coefficient should be zero:
+                 * If for every points given by the user, adding (sx⋅x) in (sx⋅x + sy⋅y + z₀) does not make any difference
+                 * because (sx⋅x) is smaller than 1 ULP of (sy⋅y + z₀), then it is not worth adding it and  sx  can be set
+                 * to zero. The same rational applies to (sy⋅y) and z₀.
+                 *
+                 * Since we work with differences from the means, the  z = sx⋅x + sy⋅y + z₀  equation can be rewritten as:
+                 *
+                 *     Δz = sx⋅Δx + sy⋅Δy + (sx⋅mx + sy⋅my + z₀ - mz)    where the term between (…) is close to zero.
+                 *
+                 * The check for (sx⋅Δx) and (sy⋅Δy) below ignore the (…) term since it is close to zero.
+                 * The check for  z₀  is derived from an equation without the  -mz  term.
+                 */
+                if (detectZeroSx && abs(x) >= ulp(y * ZERO_THRESHOLD)) detectZeroSx = false;
+                if (detectZeroSy && abs(y) >= ulp(x * ZERO_THRESHOLD)) detectZeroSy = false;
+                if (detectZeroZ0 && offset >= ulp(s * ZERO_THRESHOLD)) detectZeroZ0 = false;
+            }
+            if (detectZeroSx) this.sx.clear();
+            if (detectZeroSy) this.sy.clear();
+            if (detectZeroZ0) this.z0.clear();
+            return Math.min(sum_dsz / sqrt(sum_ds2 * sum_dz2), 1);
+        }
     }
 
     /**
