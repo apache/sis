@@ -46,7 +46,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public abstract strictfp class MatrixTestCase extends TestCase {
@@ -269,7 +269,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
          * End of initialization - now perform the actual test.
          */
         assertEqualsJAMA(reference, matrix, STRICT);
-        for (int k=0; k<50; k++) {
+        for (int k=0; k<NUMBER_OF_REPETITIONS; k++) {
             final int    j = random.nextInt(numRow);
             final int    i = random.nextInt(numCol);
             final double e = random.nextDouble() * 100;
@@ -410,7 +410,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             matrix.setElement(0, 1, at.getShearX());
             matrix.setElement(1, 0, at.getShearY());
         }
-        for (int i=0; i<100; i++) {
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             /*
              * 1) For the first  30 iterations, test the result of applying only a scale.
              * 2) For the next   30 iterations, test the result of applying only a translation.
@@ -476,7 +476,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final AffineTransform at = AffineTransform.getShearInstance(nextNonZeroRandom(), nextNonZeroRandom());
         matrix.setElement(0, 1, at.getShearX());
         matrix.setElement(1, 0, at.getShearY());
-        for (int i=0; i<30; i++) {
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             final Number scale  = nextNonZeroRandom();
             final Number offset = nextNonZeroRandom();
             final int tgtDim = (i & 1);
@@ -493,6 +493,41 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             at.preConcatenate(pre);
             matrix.convertAfter(tgtDim, scale, offset);
             assertCoefficientsEqual(at, matrix);
+        }
+    }
+
+    /**
+     * Tests {@link MatrixSIS#multiply(double[])} using {@link AffineTranform} as a reference implementation.
+     * This test can be run only with matrices of size 3×3. Consequently it is sub-classes responsibility to
+     * add a {@code testMultiplyVector()} method which invoke this method.
+     *
+     * @param  matrix  the matrix of size 3×3 to test.
+     *
+     * @since 0.8
+     */
+    final void testMultiplyVector(final MatrixSIS matrix) {
+        initialize(8433903323905121506L);
+        final AffineTransform at = new AffineTransform();
+        final double vector[] = new double[3];
+        for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
+            if ((n % 10) == 0) {
+                at.setToRotation(random.nextDouble() * StrictMath.PI);
+                at.scale(nextNonZeroRandom(), nextNonZeroRandom());
+                at.translate(random.nextDouble() * 100 - 50,
+                             random.nextDouble() * 100 - 50);
+                matrix.setElements(new double[] {
+                    at.getScaleX(), at.getShearX(), at.getTranslateX(),
+                    at.getShearY(), at.getScaleY(), at.getTranslateY(),
+                                 0,              0,                  1
+                });
+            }
+            vector[0] = random.nextDouble() * 50 - 25;
+            vector[1] = random.nextDouble() * 50 - 25;
+            vector[2] = 1;
+            final double[] result = matrix.multiply(vector);        // The result to verify.
+            at.transform(vector, 0, vector, 0, 1);                  // The expected result.
+            assertEquals("x", vector[0], result[0], TOLERANCE);
+            assertEquals("y", vector[1], result[1], TOLERANCE);
         }
     }
 

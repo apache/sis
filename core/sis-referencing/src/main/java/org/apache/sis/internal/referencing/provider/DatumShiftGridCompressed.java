@@ -27,9 +27,9 @@ import org.apache.sis.math.DecimalFunctions;
  * increase the precision in the common case where the shifts are specified with no more than
  * 5 digits in base 10 in ASCII files.
  *
- * @param <C> Dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
- * @param <T> Dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
- *            or {@link javax.measure.quantity.Length}).
+ * @param  <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
+ * @param  <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
+ *              or {@link javax.measure.quantity.Length}).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -123,7 +123,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
      * Returns a new grid with the same geometry than this grid but different data arrays.
      */
     @Override
-    final DatumShiftGridFile<C,T> setData(final Object[] other) {
+    protected final DatumShiftGridFile<C,T> setData(final Object[] other) {
         return new DatumShiftGridCompressed<>(this, averages, (short[][]) other, scale);
     }
 
@@ -140,11 +140,13 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
     }
 
     /**
-     * Returns direct references (not cloned) to the data arrays.
+     * Returns direct references (not cloned) to the data arrays. This method is for cache management,
+     * {@link #equals(Object)} and {@link #hashCode()} implementations only and should not be invoked
+     * in other context.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    final Object[] getData() {
+    protected final Object[] getData() {
         return data;
     }
 

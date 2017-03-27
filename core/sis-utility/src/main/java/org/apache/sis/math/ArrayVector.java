@@ -213,7 +213,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code double[]}.
      */
-    private static final class Doubles extends ArrayVector<Double> {
+    static final class Doubles extends ArrayVector<Double> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -2900375382498345812L;
 
