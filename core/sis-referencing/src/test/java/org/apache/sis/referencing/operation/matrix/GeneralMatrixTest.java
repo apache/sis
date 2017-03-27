@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public final strictfp class GeneralMatrixTest extends MatrixTestCase {
@@ -116,5 +116,16 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     public void testConvertAfter() {
         testConvertAfter(new GeneralMatrix(3, 3, true, 1));    // Double precision
         testConvertAfter(new GeneralMatrix(3, 3, true, 2));    // Double-double precision
+    }
+
+    /**
+     * Tests {@link MatrixSIS#multiply(double[])} using {@link AffineTranform} as a reference implementation.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testMultiplyVector() {
+        testMultiplyVector(new GeneralMatrix(3, 3, true, 1));    // Double precision
+        testMultiplyVector(new GeneralMatrix(3, 3, true, 2));    // Double-double precision
     }
 }

@@ -55,6 +55,9 @@ import org.opengis.parameter.ParameterValueGroup;
  * current implementation can only be backed by the Transverse Mercator projection,
  * but future versions could apply to some other projections if needed.</div>
  *
+ * <p>Examples of CRS using this projection are <cite>WGS 84 / UTM grid system</cite>
+ * EPSG:32600 (northern hemisphere) and EPSG:32700 (southern hemisphere).</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8

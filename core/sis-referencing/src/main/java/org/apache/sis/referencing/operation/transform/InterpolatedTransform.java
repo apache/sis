@@ -59,7 +59,7 @@ import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
  * If the grid indices are non-integer values, then the translations are interpolated using a bilinear interpolation.
  * If the grid indices are outside the grid domain ([0 … <var>width</var>-2] × [0 … <var>height</var>-2]
  * where <var>width</var> and <var>height</var> are the number of columns and rows in the grid),
- * then the translations are extrapolated. The translation is then added to the input coordinates.</p>
+ * then the translations are extrapolated. The translation is finally added to the input coordinates.</p>
  *
  * <p>The input and output coordinates can have any number of dimensions, provided that they are the same
  * than the number of {@linkplain DatumShiftGrid#getTranslationDimensions() translation dimensions}.
@@ -72,6 +72,9 @@ import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
  * @since   0.7
  * @version 0.8
  * @module
+ *
+ * @see DatumShiftGrid
+ * @see org.apache.sis.referencing.operation.builder.LocalizationGridBuilder
  */
 public class InterpolatedTransform extends DatumShiftTransform {
     /**
@@ -148,7 +151,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
             ((DatumShiftGridFile<?,?>) grid).setFileParameters(context);
         }
         /*
-         * Set the normalization matrix to the conversion from grid coordinates (e.g. seconds of angle)
+         * Set the normalization matrix to the conversion from source coordinates (e.g. seconds of angle)
          * to grid indices. This will allow us to invoke DatumShiftGrid.interpolateAtCell(x, y, vector)
          * directly in the transform(…) methods.
          */
@@ -177,9 +180,20 @@ public class InterpolatedTransform extends DatumShiftTransform {
             }
         }
         /*
-         * Denormalization is the inverse of all above conversions.
+         * Denormalization is the inverse of all above conversions in the usual case (NADCON and NTv2) where the
+         * source coordinate system is the same than the target coordinate system, for example with axis unit in
+         * degrees. However we also use this InterpolatedTransform implementation for other operation, like the
+         * one created by LocalizationGridBuilder. Those later operations may require a different denormalization
+         * matrix.
          */
-        context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).setMatrix(normalize.inverse());
+        Matrix denormalize = null;
+        if (grid instanceof DatumShiftGridFile<?,?>) {
+            denormalize = ((DatumShiftGridFile<?,?>) grid).gridToTarget();
+        }
+        if (denormalize == null) {
+            denormalize = normalize.inverse();                      // Normal NACDON and NTv2 case.
+        }
+        context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).setMatrix(denormalize);
         inverse = createInverse();
     }
 

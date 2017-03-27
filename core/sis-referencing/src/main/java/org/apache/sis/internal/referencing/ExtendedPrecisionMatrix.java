@@ -25,10 +25,17 @@ import org.opengis.referencing.operation.Matrix;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public interface ExtendedPrecisionMatrix extends Matrix {
+    /**
+     * A sentinel value for {@link org.apache.sis.referencing.operation.matrix.Matrices#create(int, int, Number[])}
+     * meaning that we request an extended precision matrix with all elements initialized to zero.
+     * This is a non-public feature because we try to hide our extended-precision mechanism from the users.
+     */
+    Number[] ZERO = new Number[0];
+
     /**
      * A sentinel value for {@link org.apache.sis.referencing.operation.matrix.Matrices#create(int, int, Number[])}
      * meaning that we request an extended precision matrix initialized to the identity (or diagonal) matrix.
