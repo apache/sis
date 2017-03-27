@@ -70,6 +70,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short AmbiguousName_3 = 1;
 
         /**
+         * This object can iterate only once.
+         */
+        public static final short CanIterateOnlyOnce = 172;
+
+        /**
          * No element can be added to this set because properties ‘{0}’ and ‘{1}’ are mutually
          * exclusive.
          */
@@ -638,6 +643,11 @@ public final class Errors extends IndexedResourceBundle {
          * Text “{0}” is not a Unicode identifier.
          */
         public static final short NotAUnicodeIdentifier_1 = 112;
+
+        /**
+         * {0} is not an integer value.
+         */
+        public static final short NotAnInteger_1 = 171;
 
         /**
          * Argument ‘{0}’ shall not be null.

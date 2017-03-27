@@ -68,7 +68,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.parameter.TensorParameters
@@ -203,8 +203,12 @@ public final class Matrices extends Static {
      */
     public static MatrixSIS create(final int numRow, final int numCol, final Number[] elements) {
         ArgumentChecks.ensureNonNull("elements", elements);
-        if (elements == ExtendedPrecisionMatrix.IDENTITY) { // Intentionally undocumented features.
-            return GeneralMatrix.createExtendedPrecision(numRow, numCol, true);
+        /*
+         * Below is an intantionally undocumented feature. We use those sentinel values as a way to create
+         * matrices with extended precision without exposing our double-double arithmetic in public API.
+         */
+        if (elements == ExtendedPrecisionMatrix.IDENTITY || elements == ExtendedPrecisionMatrix.ZERO) {
+            return GeneralMatrix.createExtendedPrecision(numRow, numCol, elements == ExtendedPrecisionMatrix.IDENTITY);
         }
         final GeneralMatrix matrix = GeneralMatrix.createExtendedPrecision(numRow, numCol, false);
         if (matrix.setElements(elements)) {

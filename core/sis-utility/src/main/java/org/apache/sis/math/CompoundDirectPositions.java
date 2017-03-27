@@ -35,14 +35,14 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.8
  * @module
  */
 final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPosition>, Iterator<DirectPosition> {
     /**
      * The arrays of ordinate values, for example (x[], y[], z[]).
      */
-    private final double[][] ordinates;
+    private final Vector[] ordinates;
 
     /**
      * Length of all ordinate values minus one.
@@ -57,15 +57,16 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     /**
      * Wraps the given array of ordinate values.
      */
-    CompoundDirectPositions(final double[]... ordinates) {
+    CompoundDirectPositions(final Vector... ordinates) {
         this.ordinates = ordinates;
-        final int length = ordinates[0].length;
+        final int length = ordinates[0].size();
         for (int i=1; i<ordinates.length; i++) {
-            if (ordinates[i].length != length) {
+            if (ordinates[i].size() != length) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
             }
         }
-        last = length - 1;
+        last  = length - 1;
+        index = length;
     }
 
     /**
@@ -75,6 +76,9 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
      */
     @Override
     public Iterator<DirectPosition> iterator() {
+        if (hasNext()) {
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.CanIterateOnlyOnce));
+        }
         index = -1;
         return this;
     }
@@ -131,7 +135,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
      */
     @Override
     public double getOrdinate(final int dimension) {
-        return ordinates[dimension][index];
+        return ordinates[dimension].doubleValue(index);
     }
 
     /**

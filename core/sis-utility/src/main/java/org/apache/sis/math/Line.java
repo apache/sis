@@ -22,6 +22,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.Double.*;
 
@@ -42,7 +43,7 @@ import static java.lang.Double.*;
  *
  * @author  Martin Desruisseaux (MPO, IRD)
  * @since   0.5
- * @version 0.5
+ * @version 0.8
  * @module
  *
  * @see Plane
@@ -194,6 +195,21 @@ public class Line implements Cloneable, Serializable {
     }
 
     /**
+     * Sets this line from values of arbitrary {@code Number} type. This method is invoked by algorithms that
+     * may produce other kind of numbers (for example with different precision) than the usual {@code double}
+     * primitive type. The default implementation delegates to {@link #setEquation(double, double)}, but
+     * subclasses can override this method if they want to process other kind of numbers in a special way.
+     *
+     * @param  slope  the slope.
+     * @param  y0     the <var>y</var> value at <var>x</var> = 0.
+     *
+     * @since 0.8
+     */
+    public void setEquation(final Number slope, final Number y0) {
+        setEquation(slope.doubleValue(), y0.doubleValue());
+    }
+
+    /**
      * Sets a line through the specified points.
      * The line will continue toward infinity after the points.
      *
@@ -219,8 +235,10 @@ public class Line implements Cloneable, Serializable {
     /**
      * Given a set of data points <var>x</var>[0 … <var>n</var>-1], <var>y</var>[0 … <var>n</var>-1],
      * fits them to a straight line <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var> in a
-     * least-squares senses. This method assume that the <var>x</var> values are precise and all uncertainty
-     * is in <var>y</var>.
+     * least-squares senses.
+     * This method assumes that the <var>x</var> values are precise and all uncertainty is in <var>y</var>.
+     *
+     * <p>The default implementation delegates to {@link #fit(Vector, Vector)}.</p>
      *
      * @param  x  vector of <var>x</var> values (independent variable).
      * @param  y  vector of <var>y</var> values (dependent variable).
@@ -229,30 +247,46 @@ public class Line implements Cloneable, Serializable {
      * @throws IllegalArgumentException if <var>x</var> and <var>y</var> do not have the same length.
      */
     public double fit(final double[] x, final double[] y) {
-        // Do not invoke an overrideable method with our tricky iterable.
-        return doFit(new CompoundDirectPositions(x, y));
+        ArgumentChecks.ensureNonNull("x", x);
+        ArgumentChecks.ensureNonNull("y", y);
+        return fit(new ArrayVector.Doubles(x), new ArrayVector.Doubles(y));
     }
 
     /**
-     * Given a sequence of points, fits them to a straight line <var>y</var> = <var>slope</var>⋅<var>x</var> +
-     * <var>y₀</var> in a least-squares senses. This method assume that the <var>x</var> values are precise and
-     * all uncertainty is in <var>y</var>.
+     * Given a set of data points <var>x</var>[0 … <var>n</var>-1], <var>y</var>[0 … <var>n</var>-1],
+     * fits them to a straight line <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var> in a
+     * least-squares senses.
+     * This method assumes that the <var>x</var> values are precise and all uncertainty is in <var>y</var>.
      *
-     * <p>Points shall be two dimensional with ordinate values in the (<var>x</var>,<var>y</var>) order.
-     * {@link Double#NaN} ordinate values are ignored.</p>
+     * <p>The default implementation delegates to {@link #fit(Iterable)}.</p>
+     *
+     * @param  x  vector of <var>x</var> values (independent variable).
+     * @param  y  vector of <var>y</var> values (dependent variable).
+     * @return estimation of the correlation coefficient. The closer this coefficient is to +1 or -1, the better the fit.
+     *
+     * @throws IllegalArgumentException if <var>x</var> and <var>y</var> do not have the same length.
+     *
+     * @since 0.8
+     */
+    public double fit(final Vector x, final Vector y) {
+        ArgumentChecks.ensureNonNull("x", x);
+        ArgumentChecks.ensureNonNull("y", y);
+        return fit(new CompoundDirectPositions(x, y));
+    }
+
+    /**
+     * Given a sequence of points, fits them to a straight line
+     * <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var> in a least-squares senses.
+     * Points shall be two dimensional with ordinate values in the (<var>x</var>,<var>y</var>) order.
+     * This method assumes that the <var>x</var> values are precise and all uncertainty is in <var>y</var>.
+     * {@link Double#NaN} ordinate values are ignored.
      *
      * @param  points  the two-dimensional points.
      * @return estimation of the correlation coefficient. The closer this coefficient is to +1 or -1, the better the fit.
      * @throws MismatchedDimensionException if a point is not two-dimensional.
      */
     public double fit(final Iterable<? extends DirectPosition> points) {
-        return doFit(points);
-    }
-
-    /**
-     * Implementation of public {@code fit(…)} methods.
-     */
-    private double doFit(final Iterable<? extends DirectPosition> points) {
+        ArgumentChecks.ensureNonNull("points", points);
         int i = 0, n = 0;
         final DoubleDouble mean_x = new DoubleDouble();
         final DoubleDouble mean_y = new DoubleDouble();
@@ -325,7 +359,7 @@ public class Line implements Cloneable, Serializable {
         b.multiply(a);
         b.negate();
         b.add(mean_y);          // y₀ = mean_y - mean_x * slope
-        setEquation(a.value, b.value);
+        setEquation(a, b);
         /*
          * Compute the correlation coefficient:
          * mean_xy / sqrt(mean_x2 * (mean_y2 - mean_y * mean_y))
