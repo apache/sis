@@ -190,6 +190,7 @@
     <module>sis-utility</module>
     <module>sis-metadata</module>
     <module>sis-referencing</module>
+    <module>sis-referencing-by-identifiers</module>
     <module>sis-feature</module>
   </modules>
 

@@ -37,6 +37,12 @@ import org.apache.sis.referencing.datum.GeodeticDatumMock;
  * @module
  */
 public strictfp class CoordinateDomain {
+    /*
+     * Note: this class is not declared as an enum yet because moving ARTICLE_CIRCLE and HEIGHT constants
+     *       after the enum declarations causes an "illegal forward reference" compiler error with JDK 8.
+     */
+
+
     /**
      * Latitude of the Article circle, which is 66°33′45.7″ as of March 30, 2015
      * Note that this value fluctuate by 2° over 40,000-year periods.

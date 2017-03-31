@@ -90,7 +90,7 @@ public final strictfp class StoreTest extends TestCase {
     }
 
     /**
-     * Verifies the feature type, then tests {@link Store#getFeatures()}.
+     * Verifies the feature type, then tests {@link Store#features()}.
      *
      * @throws DataStoreException if an error occurred while parsing the data.
      */
@@ -99,7 +99,7 @@ public final strictfp class StoreTest extends TestCase {
         try (Store store = new Store(null, new StorageConnector(testData()))) {
             verifyFeatureType(store.featureType);
             assertEquals("foliation", Foliation.TIME, store.foliation);
-            final Iterator<Feature> it = store.getFeatures().iterator();
+            final Iterator<Feature> it = store.features().iterator();
             assertPropertyEquals(it.next(), "a", "12:33:51", "12:36:11", new double[] {11, 2, 12, 3},        "walking", 1);
             assertPropertyEquals(it.next(), "b", "12:33:51", "12:36:51", new double[] {10, 2, 11, 3},        "walking", 2);
             assertPropertyEquals(it.next(), "a", "12:36:11", "12:36:51", new double[] {12, 3, 10, 3},        "walking", 2);

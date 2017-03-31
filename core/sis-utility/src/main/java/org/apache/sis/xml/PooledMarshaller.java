@@ -36,6 +36,7 @@ import javax.xml.validation.Schema;
 import org.xml.sax.ContentHandler;
 import org.w3c.dom.Node;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.TypeRegistration;
 
 
 /**
@@ -53,7 +54,7 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 final class PooledMarshaller extends Pooled implements Marshaller {
@@ -90,7 +91,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
         if (key instanceof String) {
             final String k = (String) key;
             if (value == null && (k.endsWith(".xmlHeaders") || k.equals(JAXB_SCHEMA_LOCATION))) {
-                value = ""; // Null value doesn't seem to be accepted for those properties.
+                value = "";      // Null value does not seem to be accepted for those properties.
             }
             marshaller.setProperty(k, value);
         } else if (key == AttachmentMarshaller.class) {
@@ -114,14 +115,30 @@ final class PooledMarshaller extends Pooled implements Marshaller {
     }
 
     /**
+     * Converts the given arbitrary object to an implementation having JAXB annotations.
+     * If the given object is not recognized or is already an instance of the expected class,
+     * then it is returned unchanged.
+     */
+    private Object toImplementation(final Object value) throws JAXBException {
+        final TypeRegistration[] converters = getRootAdapters();
+        if (converters != null) {
+            for (final TypeRegistration t : converters) {
+                final Object c = t.toImplementation(value);
+                if (c != null) return c;
+            }
+        }
+        return value;
+    }
+
+    /**
      * Marshals to the given output with on-the-fly substitution of namespaces.
      * This method is invoked only when the user asked to marshal to a different GML version
      * than the one supported natively by SIS, i.e. when {@link #getFilterVersion()} returns
      * a non-null value.
      *
-     * @param object  the object to marshall.
-     * @param output  the writer created by SIS (<b>not</b> the writer given by the user).
-     * @param version Identify the namespace substitutions to perform.
+     * @param object   the object to marshall.
+     * @param output   the writer created by SIS (<b>not</b> the writer given by the user).
+     * @param version  identifies the namespace substitutions to perform.
      */
     private void marshal(final Object object, XMLStreamWriter output, final FilterVersion version)
             throws XMLStreamException, JAXBException
@@ -129,7 +146,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
         output = new FilteredStreamWriter(output, version);
         final Context context = begin();
         try {
-            marshaller.marshal(object, output);
+            marshaller.marshal(toImplementation(object), output);
         } finally {
             context.finish();
         }
@@ -150,7 +167,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(object, output);
+                marshaller.marshal(toImplementation(object), output);
             } finally {
                 context.finish();
             }
@@ -171,7 +188,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(object, output);
+                marshaller.marshal(toImplementation(object), output);
             } finally {
                 context.finish();
             }
@@ -194,7 +211,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(object, output);
+                marshaller.marshal(toImplementation(object), output);
             } finally {
                 context.finish();
             }
@@ -215,7 +232,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(object, output);
+                marshaller.marshal(toImplementation(object), output);
             } finally {
                 context.finish();
             }
@@ -236,7 +253,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(object, output);
+                marshaller.marshal(toImplementation(object), output);
             } finally {
                 context.finish();
             }
@@ -257,7 +274,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(object, output);
+                marshaller.marshal(toImplementation(object), output);
             } finally {
                 context.finish();
             }
@@ -275,7 +292,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
         }
         final Context context = begin();
         try {
-            marshaller.marshal(object, output);
+            marshaller.marshal(toImplementation(object), output);
         } finally {
             context.finish();
         }
@@ -295,7 +312,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
             // Marshalling to the default GML version.
             final Context context = begin();
             try {
-                marshaller.marshal(object, output);
+                marshaller.marshal(toImplementation(object), output);
             } finally {
                 context.finish();
             }
@@ -314,7 +331,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
         } else {
             final Context context = begin();
             try {
-                return marshaller.getNode(object);
+                return marshaller.getNode(toImplementation(object));
             } finally {
                 context.finish();
             }

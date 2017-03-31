@@ -56,7 +56,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see Matrices
@@ -553,6 +553,46 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(getNumRow(), nc, false);
         result.setToProduct(this, matrix);
         return result;
+    }
+
+    /**
+     * Returns a new vector which is the result of multiplying this matrix with the specified vector.
+     * In other words, returns {@code this} × {@code vector}. The length of the given vector must be
+     * equal to the number of columns in this matrix, and the length of the returned vector will be
+     * equal to the number of rows in this matrix.
+     *
+     * <div class="section">Relationship with coordinate operations</div>
+     * In the context of coordinate operations, {@code Matrix.multiply(vector)} is related to
+     * <code>{@linkplain AffineTransform#transform(double[], int, double[], int, int) AffineTransform.transform}(…)</code>
+     * except that the last {@code vector} number is implicitly 1 in {@code AffineTransform} operations.
+     * While this {@code multiply(double[])} method could be used for coordinate transformation, it is not its purpose.
+     * This method is designed for occasional uses when accuracy is more important than performance.
+     *
+     * @param  vector  the vector to multiply to this matrix.
+     * @return the result of {@code this} × {@code vector}.
+     * @throws MismatchedMatrixSizeException if the length of the given vector is not equals to the
+     *         number of columns in this matrix.
+     *
+     * @since 0.8
+     */
+    public double[] multiply(final double[] vector) {
+        final int numCol = getNumCol();
+        if (vector.length != numCol) {
+            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2,  numCol, vector.length));
+        }
+        final double[] target = new double[getNumRow()];
+        final DoubleDouble ele = new DoubleDouble();
+        final DoubleDouble sum = new DoubleDouble();
+        for (int j=0; j<target.length; j++) {
+            for (int i=0; i<numCol; i++) {
+                get(j, i, ele);
+                ele.multiply(vector[i]);
+                sum.add(ele);
+            }
+            target[j] = sum.value;
+            sum.clear();
+        }
+        return target;
     }
 
     /**

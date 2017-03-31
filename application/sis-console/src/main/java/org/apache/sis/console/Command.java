@@ -71,7 +71,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class Command {
@@ -115,11 +115,6 @@ public final class Command {
     public static final int OTHER_ERROR_EXIT_CODE = 199;
 
     /**
-     * The sub-command name.
-     */
-    private final String commandName;
-
-    /**
      * The sub-command to execute.
      */
     private final CommandRunner command;
@@ -153,8 +148,7 @@ public final class Command {
         if (commandName == null) {
             command = new HelpCommand(-1, args);
         } else {
-            commandName = commandName.toLowerCase(Locale.US);
-            switch (commandName) {
+            switch (commandName.toLowerCase(Locale.US)) {
                 case "help":       command = new HelpCommand      (commandIndex, args); break;
                 case "about":      command = new AboutCommand     (commandIndex, args); break;
                 case "mime-type":  command = new MimeTypeCommand  (commandIndex, args); break;
@@ -166,7 +160,6 @@ public final class Command {
                             Errors.Keys.UnknownCommand_1, commandName), commandName);
             }
         }
-        this.commandName = commandName;
         CommandRunner.instance = command;       // For ResourcesDownloader only.
     }
 
@@ -184,7 +177,7 @@ public final class Command {
             return INVALID_OPTION_EXIT_CODE;
         }
         if (command.options.containsKey(Option.HELP)) {
-            command.help(commandName);
+            command.help(command.commandName.toLowerCase(Locale.US));
         } else try {
             return command.run();
         } catch (Exception e) {

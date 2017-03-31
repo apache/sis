@@ -44,6 +44,7 @@ import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
 
 
@@ -121,13 +122,12 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * The indentation value to give to the {@link #setIndentation(int)}
      * method for formatting the complete object on a single line.
+     *
+     * @see #getIndentation()
+     * @see #setIndentation(int)
+     * @see org.apache.sis.setup.OptionKey#INDENTATION
      */
     public static final int SINGLE_LINE = -1;
-
-    /**
-     * The default indentation value.
-     */
-    static final byte DEFAULT_INDENTATION = 2;
 
     /**
      * The symbols to use for this formatter.
@@ -240,7 +240,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         symbols      = Symbols.getDefault();
         keywordCase  = KeywordCase.DEFAULT;
         keywordStyle = KeywordStyle.DEFAULT;
-        indentation  = DEFAULT_INDENTATION;
+        indentation  = Constants.DEFAULT_INDENTATION;
     }
 
     /**
@@ -537,6 +537,8 @@ public class WKTFormat extends CompoundFormat<Object> {
      * The {@value #SINGLE_LINE} value means that the whole WKT is to be formatted on a single line.
      *
      * @param  indentation  the new indentation to use.
+     *
+     * @see org.apache.sis.setup.OptionKey#INDENTATION
      */
     public void setIndentation(final int indentation) {
         ArgumentChecks.ensureBetween("indentation", SINGLE_LINE, Byte.MAX_VALUE, indentation);
@@ -698,10 +700,12 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Creates an object from the given character sequence.
      * The parsing begins at the index given by the {@code pos} argument.
+     * After successful parsing, {@link ParsePosition#getIndex()} gives the position after the last parsed character.
+     * In case of error, {@link ParseException#getErrorOffset()} gives the position of the first illegal character.
      *
      * @param  wkt  the character sequence for the object to parse.
      * @param  pos  the position where to start the parsing.
-     * @return the parsed object.
+     * @return the parsed object (never {@code null}).
      * @throws ParseException if an error occurred while parsing the WKT.
      */
     @Override

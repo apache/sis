@@ -97,9 +97,11 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *   <tr><td><code>{@linkplain IdentifiedObject}[]</code></td><td>Accepted only for {@link ContentLevel#NAME_SUMMARY}.</td></tr>
  * </table>
  *
- * <div class="warning"><b>Limitation:</b>
- * Current implementation supports only formatting, not parsing.
- * </div>
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>The current implementation can only format features — parsing is not yet implemented.</li>
+ *   <li>{@code ParameterFormat}, like most {@code java.text.Format} subclasses, is not thread-safe.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
@@ -1012,7 +1014,7 @@ public class ParameterFormat extends TabularFormat<Object> {
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
         throw new ParseException(Errors.getResources(displayLocale)
-                .getString(Errors.Keys.UnsupportedOperation_1, "parse"), 0);
+                .getString(Errors.Keys.UnsupportedOperation_1, "parse"), pos.getIndex());
     }
 
     /**

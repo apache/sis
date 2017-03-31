@@ -71,7 +71,7 @@ scan:   while (offset < length) {
                     case '(': parenthesis++; break;
                     case ')': parenthesis--; break;
                     default: {
-                        if (Character.isWhitespace(c)) break;           // Not supposed to be valid, but be lenient.
+                        if (Character.isSpaceChar(c)) break;            // Not supposed to be valid, but be lenient.
                         if (parenthesis != 0) break;
                         break scan;                                     // Non-valid character outside parenthesis.
                     }

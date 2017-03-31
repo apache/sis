@@ -113,6 +113,8 @@ public class OptionKey<T> implements Serializable {
      * <p>If this option is not provided, then the default value is format specific.
      * That default is often, but not necessarily, the {@linkplain Charset#defaultCharset() platform default}.</p>
      *
+     * @see javax.xml.bind.Marshaller#JAXB_ENCODING
+     *
      * @since 0.4
      */
     public static final OptionKey<Charset> ENCODING = new OptionKey<>("ENCODING", Charset.class);
@@ -177,6 +179,27 @@ public class OptionKey<T> implements Serializable {
      * </ul>
      */
     public static final OptionKey<ByteBuffer> BYTE_BUFFER = new OptionKey<>("BYTE_BUFFER", ByteBuffer.class);
+
+    /**
+     * The number of spaces to use for indentation when formatting text files in WKT or XML formats.
+     * A value of {@value org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE} means to format the whole WKT
+     * or XML document on a single line without line feeds or indentation.
+     *
+     * <p>If this option is not provided, then the most typical default value used in Apache SIS is 2.
+     * Such small indentation value is used because XML documents defined by OGC standards tend to be
+     * verbose.</p>
+     *
+     * @see org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE
+     * @see javax.xml.bind.Marshaller#JAXB_FORMATTED_OUTPUT
+     *
+     * @since 0.8
+     */
+    public static final OptionKey<Integer> INDENTATION = new OptionKey<>("INDENTATION", Integer.class);
+
+    /*
+     * Note: we do not provide a LINE_SEPARATOR option for now because we can not control the line separator
+     * in JDK's JAXB implementation, and Apache SIS provides an org.apache.sis.io.LineAppender alternative.
+     */
 
     /**
      * The name of this key. For {@code OptionKey} instances, it shall be the name of the static constants.

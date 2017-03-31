@@ -17,14 +17,21 @@
 package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Units;
 
 
 /**
  * The provider for <cite>"Polar Stereographic (Variant A)"</cite> projection (EPSG:9810).
+ * Also used for the definition of Universal Polar Stereographic (UPS) projection.
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
@@ -100,5 +107,65 @@ public final class PolarStereographicA extends AbstractStereographic {
      */
     public PolarStereographicA() {
         super(PARAMETERS);
+    }
+
+    /**
+     * False Easting and false Northing value used in Universal Polar Stereographic (UPS) projections.
+     * Represented as an integer for the convenience of Military Reference Grid System (MGRS) or other
+     * grid systems.
+     */
+    public static final int UPS_SHIFT = 2000000;
+
+    /**
+     * Sets the parameter values for a Universal Polar Stereographic projection
+     * and returns a suggested conversion name.
+     *
+     * <blockquote><table class="sis">
+     *   <caption>Universal Polar Stereographic parameters</caption>
+     *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
+     *   <tr><td>Latitude of natural origin</td>     <td>90°N or 90°S</td></tr>
+     *   <tr><td>Longitude of natural origin</td>    <td>0°</td></tr>
+     *   <tr><td>Scale factor at natural origin</td> <td>0.994</td></tr>
+     *   <tr><td>False easting</td>                  <td>2000000 metres</td></tr>
+     *   <tr><td>False northing</td>                 <td>2000000 metres</td></tr>
+     * </table></blockquote>
+     *
+     * @param  group  the parameters for which to set the values.
+     * @param  north  {@code true} for North pole, or {@code false} for South pole.
+     * @return a name like <cite>"Universal Polar Stereographic North"</cite>,
+     *         depending on the arguments given to this method.
+     *
+     * @since 0.8
+     */
+    public static String setParameters(final ParameterValueGroup group, final boolean north) {
+        group.parameter(Constants.LATITUDE_OF_ORIGIN).setValue(north ? Latitude.MAX_VALUE : Latitude.MIN_VALUE, Units.DEGREE);
+        group.parameter(Constants.CENTRAL_MERIDIAN)  .setValue(0,         Units.DEGREE);
+        group.parameter(Constants.SCALE_FACTOR)      .setValue(0.994,     Units.UNITY);
+        group.parameter(Constants.FALSE_EASTING)     .setValue(UPS_SHIFT, Units.METRE);
+        group.parameter(Constants.FALSE_NORTHING)    .setValue(UPS_SHIFT, Units.METRE);
+        return "Universal Polar Stereographic " + (north ? "North" : "South");
+    }
+
+    /**
+     * If the given parameter values are those of a Universal Polar Stereographic projection,
+     * returns -1 for South pole or +1 for North pole. Otherwise returns 0. It is caller's
+     * responsibility to verify that the operation method is {@value #NAME}.
+     *
+     * @param  group  the Transverse Mercator projection parameters.
+     * @return +1 if UPS north, -1 if UPS south, or 0 if the given parameters are not for a UPS projection.
+     *
+     * @since 0.8
+     */
+    public static int isUPS(final ParameterValueGroup group) {
+        if (Numerics.epsilonEqual(group.parameter(Constants.SCALE_FACTOR)    .doubleValue(Units.UNITY),     0.994, Numerics.COMPARISON_THRESHOLD) &&
+            Numerics.epsilonEqual(group.parameter(Constants.FALSE_EASTING)   .doubleValue(Units.METRE), UPS_SHIFT, Formulas.LINEAR_TOLERANCE) &&
+            Numerics.epsilonEqual(group.parameter(Constants.FALSE_NORTHING)  .doubleValue(Units.METRE), UPS_SHIFT, Formulas.LINEAR_TOLERANCE) &&
+            Numerics.epsilonEqual(group.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(Units.DEGREE),        0, Formulas.ANGULAR_TOLERANCE))
+        {
+            final double φ = group.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(Units.DEGREE);
+            if (Numerics.epsilonEqual(φ, Latitude.MAX_VALUE, Formulas.ANGULAR_TOLERANCE)) return +1;
+            if (Numerics.epsilonEqual(φ, Latitude.MIN_VALUE, Formulas.ANGULAR_TOLERANCE)) return -1;
+        }
+        return 0;
     }
 }

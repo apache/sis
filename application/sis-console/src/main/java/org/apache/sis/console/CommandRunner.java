@@ -23,6 +23,7 @@ import java.util.EnumSet;
 import java.util.EnumMap;
 import java.util.TimeZone;
 import java.io.Console;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
@@ -34,11 +35,13 @@ import org.apache.sis.internal.util.X364;
 
 
 /**
- * Base class of sub-commands.
+ * Base class of all sub-commands.
+ * A subclasses is initialized by the {@link Command} constructor,
+ * then the {@link #run()} method is invoked by {@link Command#run()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 abstract class CommandRunner {
@@ -58,6 +61,12 @@ abstract class CommandRunner {
     static CommandRunner instance;
 
     /**
+     * The name of this command, as specified by the user on the command-line.
+     * May contain a mix of lower-case and upper-case letters if the user specified the command that way.
+     */
+    protected final String commandName;
+
+    /**
      * The set of legal options for this command.
      *
      * @see #help(String)
@@ -70,8 +79,8 @@ abstract class CommandRunner {
     protected final EnumMap<Option,String> options;
 
     /**
-     * The locale specified by the {@code "--locale"} option. If no such option was
-     * provided, then this field is set to the {@linkplain Locale#getDefault() default locale}.
+     * The locale specified by the {@code "--locale"} option. If no such option was provided,
+     * then this field is set to the {@linkplain Locale#getDefault() default locale}.
      */
     protected final Locale locale;
 
@@ -130,6 +139,7 @@ abstract class CommandRunner {
      * only when a command needs to delegates part of its work to an other command.
      */
     CommandRunner(final CommandRunner parent) {
+        this.commandName  = parent.commandName;
         this.validOptions = parent.validOptions;
         this.options      = parent.options;
         this.locale       = parent.locale;
@@ -149,7 +159,7 @@ abstract class CommandRunner {
      * The argument at index {@code commandIndex} is the name of this command, and will be ignored except for
      * the special {@value #TEST} value which is used only at JUnit testing time.
      *
-     * @param  commandIndex  index of the {@code args} element containing the sub-command name.
+     * @param  commandIndex  index of the {@code arguments} element containing the sub-command name, or -1 if none.
      * @param  arguments     the command-line arguments provided by the user.
      * @param  validOptions  the command-line options allowed by this sub-command.
      * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
@@ -158,16 +168,15 @@ abstract class CommandRunner {
     protected CommandRunner(final int commandIndex, final String[] arguments, final EnumSet<Option> validOptions)
             throws InvalidOptionException
     {
-        boolean isTest = false;
+        commandName = (commandIndex >= 0) ? arguments[commandIndex] : null;
         this.validOptions = validOptions;
         options = new EnumMap<>(Option.class);
         files = new ArrayList<>(arguments.length);
-        for (int i=0; i<arguments.length; i++) {
-            final String arg = arguments[i];
+        for (int i=0; i < arguments.length; i++) {
             if (i == commandIndex) {
-                isTest = arg.equals(TEST);
                 continue;
             }
+            final String arg = arguments[i];
             if (arg.startsWith(Option.PREFIX)) {
                 final String name = arg.substring(Option.PREFIX.length());
                 final Option option = Option.forLabel(name);
@@ -222,7 +231,7 @@ abstract class CommandRunner {
          * output to a StringBuffer. Otherwise the output will be sent to the java.io.Console if possible,
          * or to the standard output stream otherwise.
          */
-        if (isTest) {
+        if (TEST.equals(commandName)) {
             final StringWriter s = new StringWriter();
             outputBuffer = s.getBuffer();
             out = new PrintWriter(s);
@@ -322,19 +331,22 @@ abstract class CommandRunner {
     }
 
     /**
-     * Shows the help instructions for a specific command. This method is invoked
-     * instead of {@link #run()} if the the user provided the {@code --help} option.
+     * Shows the help instructions for a specific command. This method is invoked instead of {@link #run()}
+     * if the the user provided the {@code --help} option. The default implementation builds a description
+     * from the texts associated to the given {@code resourceKey} in various resource bundles provided in
+     * this {@code sis-console} module. Subclasses can override if needed.
      *
-     * @param commandName  the command name converted to lower cases.
+     * @param  resourceKey  the key for the resource to print. This is usually {@link #commandName} in lower-cases.
+     * @throws IOException should never happen, because we are writing to a {@code PrintWriter}.
      */
-    protected void help(final String commandName) {
-        new HelpCommand(this).help(false, new String[] {commandName}, validOptions);
+    protected void help(final String resourceKey) throws IOException {
+        new HelpCommand(this).help(false, new String[] {resourceKey}, validOptions);
     }
 
     /**
      * Executes the sub-command.
      *
-     * @return 0 on success, or an exit code if the command failed for a reason other than a Java exception.
+     * @return 0 on success, or an exit code if the command failed for a reason other than an uncaught Java exception.
      * @throws Exception if an error occurred while executing the sub-command.
      */
     public abstract int run() throws Exception;

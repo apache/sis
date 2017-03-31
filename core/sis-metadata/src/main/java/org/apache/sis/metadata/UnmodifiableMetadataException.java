@@ -22,8 +22,8 @@ package org.apache.sis.metadata;
  * This exception may happen in the following scenarios:
  *
  * <ul>
- *   <li>A metadata instance was initially {@linkplain org.apache.sis.metadata.ModifiableMetadata
- *       modifiable}, but that instance has since be declared unmodifiable.</li>
+ *   <li>A metadata instance was initially {@linkplain org.apache.sis.metadata.ModifiableMetadata modifiable},
+ *       but that instance has since be declared unmodifiable.</li>
  *   <li>A write operation has been attempted on the {@linkplain AbstractMetadata#asMap() map view},
  *       but the metadata object has no corresponding setter methods.</li>
  * </ul>

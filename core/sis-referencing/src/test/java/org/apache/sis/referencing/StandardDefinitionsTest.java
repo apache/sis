@@ -71,18 +71,42 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
     }
 
     /**
-     * Tests {@link StandardDefinitions#createUTM(int, GeographicCRS, double, boolean, CartesianCS)}.
+     * Tests {@link StandardDefinitions#createUniversal(int, GeographicCRS, boolean, double, double, CartesianCS)}
+     * for a Universal Transverse Mercator (UTM) projection.
      *
      * @since 0.7
      */
     @Test
     @DependsOnMethod("testCreateGeographicCRS")
     public void testCreateUTM() {
-        final ProjectedCRS crs = StandardDefinitions.createUTM(32610, HardCodedCRS.WGS84, 15, -122, HardCodedCS.PROJECTED);
+        final ProjectedCRS crs = StandardDefinitions.createUniversal(32610, HardCodedCRS.WGS84, true, 15, -122, HardCodedCS.PROJECTED);
         assertEquals("name", "WGS 84 / UTM zone 10N", crs.getName().getCode());
         final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
-        assertEquals(Constants.LATITUDE_OF_ORIGIN, -123, pg.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(), STRICT);
-        assertEquals(Constants.FALSE_NORTHING,        0, pg.parameter(Constants.FALSE_NORTHING).doubleValue(),   STRICT);
+        assertEquals(Constants.LATITUDE_OF_ORIGIN,    0, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
+        assertEquals(Constants.CENTRAL_MERIDIAN,   -123, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
+        assertEquals(Constants.SCALE_FACTOR,     0.9996, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_EASTING,    500000, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_NORTHING,        0, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
+    }
+
+    /**
+     * Tests {@link StandardDefinitions#createUniversal(int, GeographicCRS, boolean, double, double, CartesianCS)}
+     * for a Universal Polar Stereographic (UPS) projection. This test cheats a little bit on the coordinate system
+     * by laziness; we are more interested in the projection parameters.
+     *
+     * @since 0.8
+     */
+    @Test
+    @DependsOnMethod("testCreateGeographicCRS")
+    public void testCreateUPS() {
+        final ProjectedCRS crs = StandardDefinitions.createUniversal(5041, HardCodedCRS.WGS84, false, 90, -122, HardCodedCS.PROJECTED);
+        assertEquals("name", "WGS 84 / Universal Polar Stereographic North", crs.getName().getCode());
+        final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
+        assertEquals(Constants.LATITUDE_OF_ORIGIN,  90, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
+        assertEquals(Constants.CENTRAL_MERIDIAN,     0, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
+        assertEquals(Constants.SCALE_FACTOR,     0.994, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_EASTING,  2000000, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_NORTHING, 2000000, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
     }
 
     /**

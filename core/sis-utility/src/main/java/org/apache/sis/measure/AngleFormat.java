@@ -16,6 +16,7 @@
  */
 package org.apache.sis.measure;
 
+import java.math.RoundingMode;
 import java.util.Objects;
 import java.util.Locale;
 import java.text.Format;
@@ -32,11 +33,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.LocalizedParseException;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.rint;
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
-import static java.lang.Double.isInfinite;
 import static org.apache.sis.math.MathFunctions.pow10;
 import static org.apache.sis.math.MathFunctions.truncate;
 import static org.apache.sis.math.MathFunctions.isNegative;
@@ -120,12 +118,13 @@ import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  *
  * @see Angle
  * @see Latitude
  * @see Longitude
+ * @see org.apache.sis.geometry.CoordinateFormat
  */
 public class AngleFormat extends Format implements Localized {
     /**
@@ -296,6 +295,13 @@ public class AngleFormat extends Format implements Localized {
                    degreesSuffix,
                    minutesSuffix,
                    secondsSuffix;
+
+    /**
+     * The rounding mode, or {@code null} for the default mode (which is {@link RoundingMode#HALF_EVEN}).
+     *
+     * @see #getRoundingMode()
+     */
+    private RoundingMode roundingMode;
 
     /**
      * {@code true} if the {@link #parse(String, ParsePosition)} method is allowed to fallback
@@ -721,6 +727,68 @@ public class AngleFormat extends Format implements Localized {
     }
 
     /**
+     * Returns the rounding mode. Default value is {@link RoundingMode#HALF_EVEN}.
+     *
+     * @return the rounding mode.
+     *
+     * @see NumberFormat#getRoundingMode()
+     *
+     * @since 0.8
+     */
+    public RoundingMode getRoundingMode() {
+        return (roundingMode != null) ? roundingMode : RoundingMode.HALF_EVEN;
+    }
+
+    /**
+     * Sets the rounding mode to the specified value. The given mode can be one of the following:
+     *
+     * <table class="sis">
+     *   <caption>Supported rounding modes</caption>
+     *   <tr><th>Rounding mode</th>                             <th>Result</th></tr>
+     *   <tr><td>{@link RoundingMode#UP        UP}</td>         <td>Round away from zero.</td></tr>
+     *   <tr><td>{@link RoundingMode#DOWN      DOWN}</td>       <td>Round towards zero.</td></tr>
+     *   <tr><td>{@link RoundingMode#CEILING   CEILING}</td>    <td>Round towards positive infinity.</td></tr>
+     *   <tr><td>{@link RoundingMode#FLOOR     FLOOR}</td>      <td>Round towards negative infinity.</td></tr>
+     *   <tr><td>{@link RoundingMode#HALF_EVEN HALF_EVEN}</td>  <td>Round towards nearest neighbor.</td></tr>
+     * </table>
+     *
+     * The {@link RoundingMode#HALF_UP} and {@link RoundingMode#HALF_DOWN HALF_DOWN} values are not supported
+     * by the current {@code AngleFormat} implementation.
+     *
+     * @param  mode  the new rounding mode.
+     *
+     * @see NumberFormat#setRoundingMode(RoundingMode)
+     *
+     * @since 0.8
+     */
+    public void setRoundingMode(final RoundingMode mode) {
+        ArgumentChecks.ensureNonNull("mode", mode);
+        if (mode == RoundingMode.HALF_UP || mode == RoundingMode.HALF_DOWN) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, mode));
+        }
+        roundingMode = mode;
+    }
+
+    /**
+     * Rounds the given value according current {@link #roundingMode}.
+     *
+     * @param  sign   the sign of the value to round.
+     * @param  value  the positive value to round.
+     * @return the rounded positive value.
+     */
+    private double round(final double sign, final double value) {
+        if (roundingMode != null) {
+            switch (roundingMode) {
+                case UP:      return Math.ceil (value);
+                case DOWN:    return Math.floor(value);
+                case CEILING: return Math.abs(Math.ceil (Math.copySign(value, sign)));
+                case FLOOR:   return Math.abs(Math.floor(Math.copySign(value, sign)));
+            }
+        }
+        return Math.rint(value);
+    }
+
+    /**
      * Returns the minimum number of digits allowed in the fraction portion of the last field.
      * This value can be set by the repetition of {@code 'd'}, {@code 'm'} or {@code 's'} symbol
      * in the pattern.
@@ -899,7 +967,7 @@ public class AngleFormat extends Format implements Localized {
     public StringBuffer format(final double angle, StringBuffer toAppendTo, final FieldPosition pos) {
         final int offset = toAppendTo.length();
         final int fieldPos = getField(pos);
-        if (isNaN(angle) || isInfinite(angle)) {
+        if (!Double.isFinite(angle)) {
             toAppendTo = numberFormat().format(angle, toAppendTo, dummyFieldPosition());
             if (fieldPos >= DEGREES_FIELD && fieldPos <= SECONDS_FIELD) {
                 pos.setBeginIndex(offset);
@@ -915,8 +983,11 @@ public class AngleFormat extends Format implements Localized {
         double minutes = NaN;
         double seconds = NaN;
         int maximumFractionDigits = fractionFieldWidth;
-        if (minutesFieldWidth != 0 && !isNaN(angle)) {
-            minutes = abs(degrees - (degrees = truncate(degrees))) * 60;
+        if (minutesFieldWidth == 0) {
+            final double p = pow10(maximumFractionDigits);
+            degrees = round(angle, degrees * p) / p;
+        } else {
+            minutes = Math.abs(degrees - (degrees = truncate(degrees))) * 60;
             /*
              * Limit the maximal number of fraction digits to the amount of significant digits for a 'double' value.
              * The intend is to avoid non-significant garbage that are pure artifacts from the conversion from base
@@ -928,13 +999,13 @@ public class AngleFormat extends Format implements Localized {
             final double p = pow10(maximumFractionDigits);
             if (secondsFieldWidth != 0) {
                 seconds = (minutes - (minutes = truncate(minutes))) * 60;
-                seconds = rint(seconds * p) / p;                            // Correction for rounding errors.
+                seconds = round(angle, seconds * p) / p;                     // Correction for rounding errors.
                 if (seconds >= 60) {                    // We do not expect > 60 (only == 60), but let be safe.
                     seconds = 0;
                     minutes++;
                 }
             } else {
-                minutes = rint(minutes * p) / p;        // Correction for rounding errors.
+                minutes = round(angle, minutes * p) / p;                     // Correction for rounding errors.
             }
             if (minutes >= 60) {                        // We do not expect > 60 (only == 60), but let be safe.
                 minutes = 0;
@@ -1115,7 +1186,7 @@ public class AngleFormat extends Format implements Localized {
     {
         try {
             showLeadingFields = true;
-            toAppendTo = format(abs(angle), toAppendTo, pos);
+            toAppendTo = format(Math.abs(angle), toAppendTo, pos);
         } finally {
             showLeadingFields = false;
         }
@@ -1758,8 +1829,8 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
     @Override
     public int hashCode() {
         return Objects.hash(degreesFieldWidth, minutesFieldWidth, secondsFieldWidth, fractionFieldWidth,
-                minimumFractionDigits, useDecimalSeparator, isFallbackAllowed, optionalFields, locale,
-                prefix, degreesSuffix, minutesSuffix, secondsSuffix) ^ (int) serialVersionUID;
+                minimumFractionDigits, useDecimalSeparator, isFallbackAllowed, optionalFields, roundingMode,
+                locale, prefix, degreesSuffix, minutesSuffix, secondsSuffix) ^ (int) serialVersionUID;
     }
 
     /**
@@ -1782,6 +1853,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                    useDecimalSeparator   == cast.useDecimalSeparator   &&
                    isFallbackAllowed     == cast.isFallbackAllowed     &&
                    optionalFields        == cast.optionalFields        &&
+                   roundingMode          == cast.roundingMode          &&
                    Objects.equals(locale,        cast.locale)          &&
                    Objects.equals(prefix,        cast.prefix)          &&
                    Objects.equals(degreesSuffix, cast.degreesSuffix)   &&

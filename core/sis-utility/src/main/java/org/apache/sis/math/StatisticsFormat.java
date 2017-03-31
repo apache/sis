@@ -31,6 +31,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -40,16 +41,31 @@ import static java.lang.Math.*;
 /**
  * Formats a {@link Statistics} object.
  * By default, newly created {@code StatisticsFormat} instances will format statistical values
- * in a tabular format using spaces as the column separator. This default configuration matches
- * the {@link Statistics#toString()} format.
+ * in a tabular format using spaces as the column separator.
  *
- * <div class="section">Limitations</div>
- * The current implementation can only format statistics - parsing is not yet implemented.
+ * <div class="note"><b>Example:</b>
+ * {@preformat text
+ *     Number of values:     8726
+ *     Minimum value:       6.853
+ *     Maximum value:       8.259
+ *     Mean value:          7.421
+ *     Root Mean Square:    7.846
+ *     Standard deviation:  6.489
+ * }
+ * </div>
+ *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>The current implementation can only format features — parsing is not yet implemented.</li>
+ *   <li>{@code StatisticsFormat}, like most {@code java.text.Format} subclasses, is not thread-safe.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
+ *
+ * @see Statistics#toString()
  */
 public class StatisticsFormat extends TabularFormat<Statistics> {
     /**
@@ -209,14 +225,15 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     }
 
     /**
-     * Not yet implemented.
+     * Not yet supported.
      *
      * @return currently never return.
-     * @throws ParseException currently never thrown.
+     * @throws ParseException currently always thrown.
      */
     @Override
     public Statistics parse(CharSequence text, ParsePosition pos) throws ParseException {
-        throw new UnsupportedOperationException();
+        throw new ParseException(Errors.getResources(getLocale())
+                .getString(Errors.Keys.UnsupportedOperation_1, "parse"), pos.getIndex());
     }
 
     /**

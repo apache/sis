@@ -25,6 +25,8 @@ import javax.measure.UnitConverter;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Fraction;
@@ -49,7 +51,7 @@ import org.apache.sis.internal.util.Numerics;
  * @version 0.8
  * @module
  */
-final class LinearConverter extends AbstractConverter {
+final class LinearConverter extends AbstractConverter implements LenientComparable {
     /**
      * For cross-version compatibility.
      */
@@ -103,6 +105,11 @@ final class LinearConverter extends AbstractConverter {
      * Those terms are pre-divided by the {@linkplain #divisor}.
      */
     private transient volatile BigDecimal scale10, offset10;
+
+    /**
+     * The inverse of this unit converter. Computed when first needed.
+     */
+    private transient volatile LinearConverter inverse;
 
     /**
      * Creates a new linear converter for the given scale and offset.
@@ -253,7 +260,11 @@ final class LinearConverter extends AbstractConverter {
      */
     @Override
     public synchronized UnitConverter inverse() {
-        return isIdentity() ? this : new LinearConverter(divisor, -offset, scale);
+        if (inverse == null) {
+            inverse = isIdentity() ? this : new LinearConverter(divisor, -offset, scale);
+            inverse.inverse = this;
+        }
+        return inverse;
     }
 
     /**
@@ -438,6 +449,18 @@ final class LinearConverter extends AbstractConverter {
                    Numerics.equals(divisor, o.divisor);
         }
         return false;
+    }
+
+    /**
+     * Compares this converter with the given object for equality, optionally ignoring rounding errors.
+     */
+    @Override
+    public boolean equals(final Object other, final ComparisonMode mode) {
+        if (mode.isApproximative()) {
+            return (other instanceof LinearConverter) && equivalent((LinearConverter) other);
+        } else {
+            return equals(other);
+        }
     }
 
     /**

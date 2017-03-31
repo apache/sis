@@ -17,12 +17,14 @@
 package org.apache.sis.io.wkt;
 
 import java.io.Console;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.xml.bind.annotation.XmlTransient;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.X364;
+import org.apache.sis.internal.util.Constants;
 
 
 /**
@@ -186,7 +188,7 @@ public abstract class FormattableObject {
         formatter.configure(convention, null, colorize ? Colors.DEFAULT : null,
                 convention.toUpperCase           ? (byte) +1 : 0,
                 (convention.majorVersion() == 1) ? (byte) -1 : 0,
-                WKTFormat.DEFAULT_INDENTATION);
+                Constants.DEFAULT_INDENTATION);
         if (!strict) {
             formatter.transliterator = Transliterator.IDENTITY;
         }
@@ -207,6 +209,8 @@ public abstract class FormattableObject {
             }
             formatter.appendWarnings();
             wkt = formatter.toWKT();
+        } catch (IOException e) {
+            throw new UnformattableObjectException(e);      // Should never happen since we write to a StringBuffer.
         } finally {
             formatter.clear();
         }

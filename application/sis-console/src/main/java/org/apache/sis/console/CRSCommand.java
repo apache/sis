@@ -16,14 +16,9 @@
  */
 package org.apache.sis.console;
 
-import java.io.IOException;
-import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.io.wkt.Convention;
 
 
 /**
@@ -32,32 +27,24 @@ import org.apache.sis.io.wkt.Convention;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
-final class CRSCommand extends MetadataCommand {
+final class CRSCommand extends FormattedOutputCommand {
     /**
      * Creates the {@code "crs"} sub-command.
      */
     CRSCommand(final int commandIndex, final String... args) throws InvalidOptionException {
-        super(commandIndex, args);
-
-        // Default output format.
-        outputFormat = Format.WKT;
-        convention = Convention.WKT2_SIMPLIFIED;
+        super(commandIndex, args, MetadataCommand.options(), OutputFormat.WKT, OutputFormat.XML);
     }
 
     /**
      * Prints metadata or CRS information.
      *
-     * @throws DataStoreException if an error occurred while reading the file.
-     * @throws JAXBException if an error occurred while producing the XML output.
-     * @throws FactoryException if an error occurred while looking for a CRS identifier.
-     * @throws IOException should never happen, since we are appending to a print writer.
+     * @return 0 on success, or an exit code if the command failed for a reason other than an uncaught Java exception.
      */
     @Override
-    public int run() throws InvalidOptionException, DataStoreException, JAXBException, FactoryException, IOException {
-        parseArguments();
+    public int run() throws Exception {
         final Object metadata = readMetadataOrCRS();
         if (hasUnexpectedFileCount) {
             return Command.INVALID_ARGUMENT_EXIT_CODE;

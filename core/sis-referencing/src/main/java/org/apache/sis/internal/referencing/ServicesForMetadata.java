@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.TimeZone;
+import java.text.Format;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 
@@ -57,9 +59,12 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.VerticalExtent;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -98,7 +103,7 @@ import org.apache.sis.util.Utilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class ServicesForMetadata extends ReferencingServices {
@@ -390,6 +395,21 @@ public final class ServicesForMetadata extends ReferencingServices {
         }
     }
 
+    /**
+     * Creates a two-dimensional geographic position associated to the default geographic CRS.
+     * Axis order is (longitude, latitude).
+     *
+     * @param  λ  the longitude value.
+     * @param  φ  the latitude value.
+     * @return the direct position for the given geographic coordinate.
+     *
+     * @since 0.8
+     */
+    @Override
+    public DirectPosition geographic(final double λ, final double φ) {
+        return new DirectPosition2D(CommonCRS.defaultGeographic(), λ, φ);
+    }
+
 
 
 
@@ -555,6 +575,20 @@ public final class ServicesForMetadata extends ReferencingServices {
                                        final CoordinateSystem derivedCS)
     {
         return DefaultDerivedCRS.create(properties, baseCRS, null, method, baseToDerived, derivedCS);
+    }
+
+    /**
+     * Creates a format for {@link DirectPosition} instances.
+     *
+     * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
+     * @param  timezone  the timezone, or {@code null} for UTC.
+     * @return a {@link org.apache.sis.geometry.CoordinateFormat}.
+     *
+     * @since 0.8
+     */
+    @Override
+    public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {
+        return new CoordinateFormat(locale, timezone);
     }
 
     /**

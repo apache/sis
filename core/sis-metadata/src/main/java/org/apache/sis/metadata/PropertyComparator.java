@@ -44,7 +44,7 @@ import org.opengis.annotation.Obligation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  */
 final class PropertyComparator implements Comparator<Method> {
@@ -92,10 +92,32 @@ final class PropertyComparator implements Comparator<Method> {
      * Creates a new comparator for the given implementation class.
      *
      * @param implementation  the implementation class, or the interface if the implementation class is unknown.
+     * @param standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
+     *                        This is the same than {@code implementation} unless a custom implementation is used.
      */
-    PropertyComparator(Class<?> implementation) {
-        this.implementation = implementation;
+    PropertyComparator(Class<?> implementation, final Class<?> standardImpl) {
         order = new HashMap<>();
+        defineOrder(implementation, order);
+        if (order.isEmpty() && standardImpl != null && !standardImpl.isAssignableFrom(implementation)) {
+            /*
+             * We enter in this block only if the user specified its own metadata implementation and that
+             * custom implementation does not have any JAXB @XmlType annotation. In such case this method
+             * can not sort the properties. So we will use the class defined by org.apache.sis.metadata.iso
+             * instead.
+             */
+            implementation = standardImpl;
+            defineOrder(implementation, order);
+        }
+        this.implementation = implementation;
+    }
+
+    /**
+     * Uses the {@link XmlType} annotation for defining the property order.
+     *
+     * @param implementation  the implementation class where to search for {@code XmlType} annotation.
+     * @param order           the {@link #order} map where to store the properties order.
+     */
+    private static void defineOrder(Class<?> implementation, final Map<Object,Integer> order) {
         do {
             final XmlType xml = implementation.getAnnotation(XmlType.class);
             if (xml != null) {

@@ -27,6 +27,8 @@ import javax.measure.Quantity;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -57,7 +59,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.8
  * @module
  */
-abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializable {
+abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientComparable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -270,16 +272,28 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     /**
      * Compares this unit with the given object for equality.
      *
-     * @param  other  the other object to compares with this unit, or {@code null}.
-     * @return {@code true} if the given object is equals to this unit.
+     * @param  other  the other object to compare with this unit, or {@code null}.
+     * @return {@code true} if the given object is equal to this unit.
      */
     @Override
-    public boolean equals(final Object other) {
-        if (other != null && other.getClass() == getClass()) {
-            final AbstractUnit<?> that = (AbstractUnit<?>) other;
-            return epsg == that.epsg && scope == that.scope && Objects.equals(symbol, that.symbol);
+    public final boolean equals(final Object other) {
+        return equals(other, ComparisonMode.STRICT);
+    }
+
+    /**
+     * Compares this unit with the given object for equality,
+     * optionally ignoring metadata and rounding errors.
+     */
+    @Override
+    public boolean equals(final Object other, final ComparisonMode mode) {
+        if (other == null || other.getClass() != getClass()) {
+            return false;
         }
-        return false;
+        if (mode.isIgnoringMetadata()) {
+            return true;
+        }
+        final AbstractUnit<?> that = (AbstractUnit<?>) other;
+        return epsg == that.epsg && scope == that.scope && Objects.equals(symbol, that.symbol);
     }
 
     /**
@@ -308,8 +322,11 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, Serializa
     /**
      * Returns {@code true} if the given Unicode code point is a valid character for a unit symbol.
      * Current implementation accepts letters, subscripts and the degree sign, but the set of legal
-     * characters may be expanded in any future SIS version. The most important goal is to avoid
-     * confusion with exponents and to detect where a unit symbol ends.
+     * characters may be expanded in any future SIS version (however it should never allow spaces).
+     * The goal is to avoid confusion with exponents and to detect where a unit symbol ends.
+     *
+     * <p>Space characters must be excluded from the set of legal characters because allowing them
+     * would make harder for {@link UnitFormat} to detect correctly where a unit symbol ends.</p>
      *
      * <p>Note that some units defined in the {@link Units} class break this rule. In particular,
      * some of those units contains superscripts or division sign. But the hard-coded symbols in

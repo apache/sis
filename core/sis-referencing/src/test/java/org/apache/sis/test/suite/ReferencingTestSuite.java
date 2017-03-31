@@ -162,6 +162,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.MercatorTest.class,
     org.apache.sis.referencing.operation.projection.LambertConicConformalTest.class,
     org.apache.sis.referencing.operation.projection.TransverseMercatorTest.class,
+    org.apache.sis.referencing.operation.projection.ZonedGridSystemTest.class,
     org.apache.sis.referencing.operation.projection.PolarStereographicTest.class,
     org.apache.sis.referencing.operation.projection.ObliqueStereographicTest.class,
     org.apache.sis.referencing.operation.projection.CylindricalEqualAreaTest.class,
@@ -224,6 +225,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.CoordinateOperationFinderTest.class,
     org.apache.sis.referencing.operation.DefaultCoordinateOperationFactoryTest.class,
     org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
+    org.apache.sis.referencing.operation.builder.LocalizationGridBuilderTest.class,
 
     // Geometry
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
@@ -239,6 +241,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.Shapes2DTest.class,                 // Simpler than EnvelopesTest.
     org.apache.sis.geometry.EnvelopesTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
+    org.apache.sis.geometry.CoordinateFormatTest.class,
 
     org.apache.sis.distance.LatLonPointRadiusTest.class,        // Pending refactoring in a geometry package.
 

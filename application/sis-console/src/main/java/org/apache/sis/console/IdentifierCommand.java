@@ -16,14 +16,13 @@
  */
 package org.apache.sis.console;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.ResourceBundle;
-import java.io.IOException;
-import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -32,10 +31,9 @@ import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -44,10 +42,10 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
-final class IdentifierCommand extends MetadataCommand {
+final class IdentifierCommand extends FormattedOutputCommand {
     /**
      * The state to write in the left margin before the identifier.
      *
@@ -91,27 +89,31 @@ final class IdentifierCommand extends MetadataCommand {
     }
 
     /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private static EnumSet<Option> options() {
+        final EnumSet<Option> options = MetadataCommand.options();
+        options.remove(Option.TIMEZONE);
+        options.remove(Option.FORMAT);
+        return options;
+    }
+
+    /**
      * Creates the {@code "identifier"} sub-command.
      */
     IdentifierCommand(final int commandIndex, final String... args) throws InvalidOptionException {
-        super(commandIndex, args);
+        super(commandIndex, args, options(), OutputFormat.TEXT);
     }
 
     /**
      * Prints identifier information.
      *
-     * @throws DataStoreException if an error occurred while reading the file.
-     * @throws JAXBException if an error occurred while producing the XML output.
-     * @throws FactoryException if an error occurred while looking for a CRS identifier.
-     * @throws IOException should never happen, since we are appending to a print writer.
+     * @return 0 on success, or an exit code if the command failed for a reason other than an uncaught Java exception.
      */
     @Override
-    public int run() throws InvalidOptionException, DataStoreException, JAXBException, FactoryException, IOException {
-        parseArguments();
-        if (outputFormat != Format.TEXT) {
-            final String format = outputFormat.name();
-            throw new InvalidOptionException(Errors.format(Errors.Keys.IncompatibleFormat_2, "identifier", format), format);
-        }
+    public int run() throws Exception {
         /*
          * Read metadata from the data storage only after we verified that the arguments are valid.
          * The input can be a file given on the command line, or the standard input stream.
@@ -203,7 +205,7 @@ final class IdentifierCommand extends MetadataCommand {
     /**
      * Prints all non-null rows.
      */
-    private void print(final Iterable<Row> rows) {
+    private void print(final Iterable<Row> rows) throws IOException {
         int width = 0;
         for (final Row row : rows) {
             if (row != null) {
@@ -231,7 +233,8 @@ final class IdentifierCommand extends MetadataCommand {
         states.remove(State.VALID);
         if (!states.isEmpty()) {
             out.println();
-            out.println(Vocabulary.getResources(locale).getLabel(Vocabulary.Keys.Legend));
+            Vocabulary.getResources(locale).appendLabel(Vocabulary.Keys.Legend, out);
+            out.println();
             final ResourceBundle resources = ResourceBundle.getBundle("org.apache.sis.console.IdentifierState", locale);
             for (final State state : states) {
                 final boolean warning = colors && state.text.startsWith("!");
