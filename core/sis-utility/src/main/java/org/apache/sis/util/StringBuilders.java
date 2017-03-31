@@ -161,6 +161,72 @@ public final class StringBuilders extends Static {
     }
 
     /**
+     * Inserts the given character <var>n</var> time at the given position.
+     * This method does nothing if the given {@code count} is zero.
+     *
+     * @param  buffer  the buffer where to insert the character.
+     * @param  offset  position where to insert the characters.
+     * @param  c       the character to repeat.
+     * @param  count   number of time to repeat the given character.
+     * @throws NullPointerException if the given buffer is null.
+     * @throws IndexOutOfBoundsException if the given index is invalid.
+     * @throws IllegalArgumentException if the given count is negative.
+     *
+     * @since 0.8
+     */
+    public static void repeat(final StringBuilder buffer, final int offset, final char c, final int count) {
+        ArgumentChecks.ensureNonNull("buffer", buffer);
+        switch (count) {
+            case 0:  break;
+            case 1:  buffer.insert(offset, c); break;
+            default: {
+                ArgumentChecks.ensurePositive("count", count);
+                final CharSequence r;
+                switch (c) {
+                    case ' ': r = CharSequences.spaces(count); break;
+                    case '0': r = Repeat.ZERO; break;
+                    default:  r = new Repeat(c, count); break;
+                }
+                buffer.insert(offset, r, 0, count);
+                break;
+            }
+        }
+    }
+
+    /**
+     * A sequence of a constant character. This implementation does not perform any argument
+     * check since it is for {@link StringBuilder#append(CharSequence, int, int)} usage only.
+     * The intend is to allow {@code StringBuilder} to append the characters in one operation
+     * instead than looping on {@link StringBuilder#insert(int, char)} (which would require
+     * memory move on each call).
+     */
+    private static final class Repeat implements CharSequence {
+        /** An infinite sequence of {@code '0'} character. */
+        static final Repeat ZERO = new Repeat('0', Integer.MAX_VALUE);
+
+        /** The character to repeat. */
+        private final char c;
+
+        /** Number of times the character is repeated. */
+        private final int n;
+
+        /** Creates a new sequence of constant character. */
+        Repeat(final char c, final int n) {
+            this.c = c;
+            this.n = n;
+        }
+
+        /** Returns the number of times the character is repeated. */
+        @Override public int length() {return n;}
+
+        /** Returns the constant character, regardless the index. */
+        @Override public char charAt(int i) {return c;}
+
+        /** Returns a sequence of the same constant character but different length. */
+        @Override public CharSequence subSequence(int start, int end) {return new Repeat(c, end - start);}
+    }
+
+    /**
      * Trims the fractional part of the given formatted number, provided that it doesn't change
      * the value. This method assumes that the number is formatted in the US locale, typically
      * by the {@link Double#toString(double)} method.
@@ -183,11 +249,9 @@ public final class StringBuilders extends Static {
     public static void trimFractionalPart(final StringBuilder buffer) {
         ArgumentChecks.ensureNonNull ("buffer", buffer);
         for (int i=buffer.length(); i > 0;) {
-            final int c = buffer.codePointBefore(i);
-            i -= charCount(c);
-            switch (c) {
+            switch (buffer.charAt(--i)) {               // No need to use Unicode code points here.
                 case '0': continue;
-                case '.': buffer.setLength(i); // Fall through
+                case '.': buffer.setLength(i);          // Fall through
                 default : return;
             }
         }

@@ -144,7 +144,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
     public void writeStartDocument() throws Exception {
         final Charset encoding = owner.encoding;
         if (encoding != null) {
-            writer.writeStartDocument(encoding.name());
+            writer.writeStartDocument(encoding.name(), null);
         } else {
             writer.writeStartDocument();
         }
@@ -293,6 +293,11 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
         if (m == null) {
             m = getMarshallerPool().acquireMarshaller();
             m.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.FALSE);     // Formatting will be done by FormattedWriter.
+            final Charset encoding = owner.encoding;
+            if (encoding != null) {
+                m.setProperty(Marshaller.JAXB_ENCODING, encoding.name());
+            }
             for (final Map.Entry<String,?> entry : ((Map<String,?>) owner.configuration).entrySet()) {
                 m.setProperty(entry.getKey(), entry.getValue());
             }
@@ -307,7 +312,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
         }
         marshaller = null;
         m.marshal(new JAXBElement<>(qn, type, object), out);
-        marshaller = m;                 // Allow reuse or recycling only on success.
+        marshaller = m;                                                   // Allow reuse or recycling only on success.
     }
 
     /**

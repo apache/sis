@@ -282,7 +282,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * Mapping from long localized and unlocalized names to unit instances.
      * This map is used only for parsing and created when first needed.
      *
-     * @see #nameToUnit()
+     * @see #fromName(String)
      */
     private transient volatile Map<String,Unit<?>> nameToUnit;
 
@@ -291,7 +291,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * if the user create many {@code UnitFormat} instances. Note that we do not cache {@link #symbolToName} because
      * {@link ResourceBundle} already provides its own caching mechanism.
      *
-     * @see #nameToUnit()
+     * @see #fromName(String)
      */
     private static final WeakValueHashMap<Locale, Map<String,Unit<?>>> SHARED = new WeakValueHashMap<>(Locale.class);
 
@@ -383,8 +383,9 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *
      * <div class="section">Restriction on character set</div>
      * Current implementation accepts only {@linkplain Character#isLetter(int) letters},
-     * {@linkplain Characters#isSubScript(int) subscripts}, {@linkplain Character#isWhitespace(int) whitespaces}
-     * and the degree sign (°),
+     * {@linkplain Characters#isSubScript(int) subscripts}, {@linkplain Character#isSpaceChar(int) spaces}
+     * (including non-breaking spaces but <strong>not</strong> CR/LF characters), the degree sign (°) and
+     * a few other characters like underscore,
      * but the set of legal characters may be expanded in future Apache SIS versions.
      * However the following restrictions are likely to remain:
      *
@@ -405,7 +406,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         ArgumentChecks.ensureNonEmpty("label", label);
         for (int i=0; i < label.length();) {
             final int c = label.codePointAt(i);
-            if (!AbstractUnit.isSymbolChar(c) && !Character.isWhitespace(c)) {
+            if (!AbstractUnit.isSymbolChar(c) && !Character.isSpaceChar(c)) {       // NOT Character.isWhitespace(int)
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "label", label));
             }
             i += Character.charCount(c);
@@ -444,16 +445,36 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
-     * Returns the mapping from long localized and unlocalized names to unit instances.
-     * This mapping is somewhat the converse of {@link #symbolToName()}, but includes
+     * Returns the unit instance for the given long (un)localized or name.
+     * This method is somewhat the converse of {@link #symbolToName()}, but recognizes also
      * international and American spelling of unit names in addition of localized names.
      * The intend is to recognize "meter" as well as "metre".
      *
      * <p>While we said that {@code UnitFormat} is not thread safe, we make an exception for this method
      * for allowing the singleton {@link #INSTANCE} to parse symbols in a multi-threads environment.</p>
      */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private Map<String,Unit<?>> nameToUnit() {
+    @SuppressWarnings("fallthrough")
+    private Unit<?> fromName(String uom) {
+        /*
+         * Before to search in resource bundles, check for degrees units. The "deg" unit can be both angular
+         * and Celsius degrees. We try to resolve this ambiguity by looking for the "C" suffix. We perform a
+         * special case for the degrees units because SI symbols are case-sentive and unit names in resource
+         * bundles are case-insensitive, but the "deg" case is a mix of both.
+         */
+        if (uom.regionMatches(true, 0, "deg", 0, 3)) {
+            final int length = uom.length();
+            switch (length) {
+                case 3: return Units.DEGREE;                    // Exactly "deg"  (ignoring case)
+                case 5: final char c = uom.charAt(3);
+                        if (c != '_' && !Character.isSpaceChar(c)) break;
+                        // else fallthrough
+                case 4: switch (uom.charAt(length - 1)) {
+                            case 'K':                           // Unicode U+212A
+                            case 'K': return Units.KELVIN;      // Exactly "degK" (ignoring case except for 'K')
+                            case 'C': return Units.CELSIUS;
+                        }
+            }
+        }
         Map<String,Unit<?>> map = nameToUnit;
         if (map == null) {
             map = SHARED.get(locale);
@@ -489,7 +510,17 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
             }
             nameToUnit = map;
         }
-        return map;
+        /*
+         * The 'nameToUnit' map contains plural forms (declared in UnitAliases.properties),
+         * but we make a special case for "degrees", "metres" and "meters" because they
+         * appear in numerous places.
+         */
+        uom = uom.replace('_', ' ').toLowerCase(locale);
+        uom = CharSequences.replace(CharSequences.replace(CharSequences.replace(CharSequences.toASCII(uom),
+                "meters",  "meter"),
+                "metres",  "metre"),
+                "degrees", "degree").toString();
+        return map.get(uom);
     }
 
     /**
@@ -775,15 +806,30 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * Returns {@code true} if the given character is a digit in the sense of the {@code UnitFormat} parser.
      * Note that "digit" is taken here in a much more restrictive way than {@link Character#isDigit(int)}.
      */
-    private static boolean isDigit(final int c) {
+    private static boolean isDigit(final char c) {
         return c >= '0' && c <= '9';
     }
 
     /**
      * Returns {@code true} if the given character is the sign of a number according the {@code UnitFormat} parser.
      */
-    private static boolean isSign(final int c) {
+    private static boolean isSign(final char c) {
         return c == '+' || c == '-';
+    }
+
+    /**
+     * Returns {@code true} if the given character sequence contains at least one digit.
+     * This is a hack for allowing to recognize units like "100 feet" (in principle not
+     * legal, but seen in practice). This verification has some value if digits are not
+     * allowed as unit label or symbol.
+     */
+    private static boolean hasDigit(final CharSequence symbol, int lower, final int upper) {
+        while (lower < upper) {
+            if (isDigit(symbol.charAt(lower++))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -810,7 +856,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         final ParsePosition position = new ParsePosition(0);
         final Unit<?> unit = parse(symbols, position);
         final int length = symbols.length();
-        final int unrecognized = CharSequences.skipTrailingWhitespaces(symbols, position.getIndex(), length);
+        final int unrecognized = CharSequences.skipLeadingWhitespaces(symbols, position.getIndex(), length);
         if (unrecognized < length) {
             throw new ParserException(Errors.format(Errors.Keys.UnexpectedCharactersAfter_2,
                     CharSequences.trimWhitespaces(symbols, 0, unrecognized),
@@ -845,25 +891,27 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         ArgumentChecks.ensureNonNull("position", position);
         /*
          * Check for authority codes (currently only EPSG, but more could be added later).
-         * If the unit is not an authority code (which is the most common case), then we
-         * will check for hard-coded unit symbols.
-         *
-         * DefinitionURI.codeOf(…) returns 'uom' directly (provided that whitespaces were already trimmed)
-         * if no ':' character were found, in which case the string is assumed to be the code directly.
-         * This is the intended behavior for AuthorityFactory, but in the particular case of this method
-         * we want to try to parse as a xpointer before to give up.
+         * Example: "urn:ogc:def:uom:EPSG::9001". If the unit is not an authority code
+         * (which is the most common case), only then we will parse the unit symbols.
          */
-        int start = CharSequences.skipLeadingWhitespaces(symbols, position.getIndex(), symbols.length());
-        int end = XPaths.endOfURI(symbols, start);
-        if (end >= 0) {
-            final String uom = symbols.subSequence(start, end).toString();
+        int end   = symbols.length();
+        int start = CharSequences.skipLeadingWhitespaces(symbols, position.getIndex(), end);
+        int endOfURI = XPaths.endOfURI(symbols, start);
+        if (endOfURI >= 0) {
+            final String uom = symbols.subSequence(start, endOfURI).toString();
             String code = DefinitionURI.codeOf("uom", Constants.EPSG, uom);
-            if (code != null && code != uom) {                  // Really identity check, see above comment.
+            /*
+             * DefinitionURI.codeOf(…) returns 'uom' directly (provided that whitespaces were already trimmed)
+             * if no ':' character were found, in which case the string is assumed to be the code directly.
+             * This is the intended behavior for AuthorityFactory, but in the particular case of this method
+             * we want to try to parse as a xpointer before to give up.
+             */
+            if (code != null && code != uom) {
                 NumberFormatException failure = null;
                 try {
                     final Unit<?> unit = Units.valueOfEPSG(Integer.parseInt(code));
                     if (unit != null) {
-                        position.setIndex(end);
+                        position.setIndex(endOfURI);
                         return unit;
                     }
                 } catch (NumberFormatException e) {
@@ -871,12 +919,28 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 }
                 throw (ParserException) new ParserException(Errors.format(Errors.Keys.UnknownUnit_1,
                         Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code),
-                        symbols, start + Math.max(0, uom.indexOf(code))).initCause(failure);
+                        symbols, start + Math.max(0, uom.lastIndexOf(code))).initCause(failure);
             }
+            /*
+             * Not an EPSG code. Maybe it is a URI like this example:
+             * http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
+             *
+             * If we find such 'uom' value, we could replace 'symbols' by that 'uom'. But it would cause a wrong
+             * error index to be reported in case of parsing failure. We will rather try to adjust the indices
+             * (and replace 'symbols' only in last resort).
+             */
             code = XPaths.xpointer("uom", uom);
             if (code != null) {
-                symbols = code;
-                start = 0;
+                final int base = start;
+                start = endOfURI - code.length();
+                do if (--start < base) {          // Should never happen (see above comment), but we are paranoiac.
+                    symbols = code;
+                    start = 0;
+                    break;
+                } while (!CharSequences.regionMatches(symbols, start, code));
+                end = start + code.length();
+            } else {
+                endOfURI = -1;
             }
         }
         /*
@@ -887,7 +951,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          */
         int operation = NOOP;            // Enumeration value: IMPLICIT, MULTIPLY, DIVIDE.
         Unit<?> unit = null;
-        end = symbols.length();
+        boolean hasSpaces = false;
         int i = start;
 scan:   for (int n; i < end; i += n) {
             final int c = Character.codePointAt(symbols, i);
@@ -896,7 +960,7 @@ scan:   for (int n; i < end; i += n) {
             switch (c) {
                 /*
                  * For any character that are is not an operator or parenthesis, either continue the scanning of
-                 * character or stop it, depending on whether the character is valid for a unit symbol or not.
+                 * characters or stop it, depending on whether the character is valid for a unit symbol or not.
                  * In the later case, we consider that we reached the end of a unit symbol.
                  */
                 default:  {
@@ -906,7 +970,11 @@ scan:   for (int n; i < end; i += n) {
                         }
                         continue;
                     }
-                    if (Character.isWhitespace(c) || Character.isDigit(c) || Characters.isSuperScript(c)) {
+                    if (Character.isDigit(c) || Characters.isSuperScript(c)) {
+                        continue;
+                    }
+                    if (Character.isSpaceChar(c)) {                         // NOT Character.isWhitespace(int)
+                        hasSpaces = true;
                         continue;
                     }
                     break scan;
@@ -972,15 +1040,54 @@ scan:   for (int n; i < end; i += n) {
             if (operation != IMPLICIT) {
                 unit = apply(operation, unit, parseSymbol(symbols, start, i));
             }
+            hasSpaces = false;
             operation = next;
             start = i + n;
         }
         /*
-         * At this point we either found an unrecognized character or reached the end of string. Parse the
-         * remaining characters as a unit and apply the pending unit operation (multiplication or division).
+         * At this point we either found an unrecognized character or reached the end of string. We will
+         * parse the remaining characters as a unit and apply the pending unit operation (multiplication
+         * or division). But before, we need to check if the parsing should stop at the first whitespace.
+         * This verification assumes that spaces are allowed only in labels specified by the label(…)
+         * method and in resource bundles, not in labels specified by AbstractUnit.alternate(String).
          */
-        unit = apply(operation, unit, parseSymbol(symbols, start, i));
-        position.setIndex(i);
+        Unit<?> component = null;
+        if (hasSpaces) {
+            end = i;
+            start = CharSequences.skipLeadingWhitespaces(symbols, start, i);
+search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)) > start) {
+                final String uom = symbols.subSequence(start, i).toString();
+                if ((component = labelToUnit.get(uom)) != null) break;
+                if ((component =        fromName(uom)) != null) break;
+                int j=i, c;
+                do {
+                    c = Character.codePointBefore(symbols, j);
+                    j -= Character.charCount(c);
+                    if (j <= start) break search;
+                } while (!Character.isWhitespace(c));
+                /*
+                 * Really use Character.isWhitespace(c) above, not Character.isSpaceChar(c), because we want
+                 * to exclude non-breaking spaces.   This block should be the only place in UnitFormat class
+                 * where we use isWhitespace(c) instead of isSpaceChar(c).
+                 */
+                i = j;                  // Will become the index of first space after search loop completion.
+            }
+            /*
+             * At this point we did not found any user-specified label or localized name matching the substring.
+             * Assume that the parsing should stop at the first space, on the basis that spaces are not allowed
+             * in unit symbols. We make an exception if we detect that the part before the first space contains
+             * digits (not allowed in unit symbols neither), in which case the substring may be something like
+             * "100 feet".
+             */
+            if (hasDigit(symbols, start, i)) {
+                i = end;                        // Restore the full length (until the first illegal character).
+            }
+        }
+        if (component == null) {
+            component = parseSymbol(symbols, start, i);
+        }
+        unit = apply(operation, unit, component);
+        position.setIndex(endOfURI >= 0 ? endOfURI : i);
         return unit;
     }
 
@@ -1017,7 +1124,6 @@ scan:   for (int n; i < end; i += n) {
      * @return the parsed unit symbol (never {@code null}).
      * @throws ParserException if a problem occurred while parsing the given symbols.
      */
-    @SuppressWarnings("fallthrough")
     private Unit<?> parseSymbol(final CharSequence symbols, final int lower, final int upper) throws ParserException {
         final String uom = CharSequences.trimWhitespaces(symbols, lower, upper).toString();
         /*
@@ -1109,38 +1215,10 @@ scan:   for (int n; i < end; i += n) {
                     }
                 }
                 /*
-                 * Check for degrees units. Note that "deg" could be both angular and Celsius degrees.
-                 * We try to resolve this ambiguity in the code below by looking for the "C" suffix.
-                 * We perform a special case for those checks because the above check for unit symbol
-                 * is case-sentive, the check for unit name (later) is case-insensitive, while this
-                 * check for "deg" is a mix of both.
-                 */
-                if (uom.regionMatches(true, 0, "deg", 0, 3)) {
-                    switch (length) {
-                        case 3: return Units.DEGREE;                    // Exactly "deg"  (ignoring case)
-                        case 5: final char c = uom.charAt(3);
-                                if (c != '_' && !Character.isSpaceChar(c)) break;
-                                // else fallthrough
-                        case 4: switch (uom.charAt(length - 1)) {
-                                    case 'K':                           // Unicode U+212A
-                                    case 'K': return Units.KELVIN;      // Exactly "degK" (ignoring case except for 'K')
-                                    case 'C': return Units.CELSIUS;
-                                }
-                    }
-                }
-                /*
                  * At this point, we have determined that the label is not a known unit symbol.
                  * It may be a unit name, in which case the label is not case-sensitive anymore.
-                 * The 'nameToUnit' map contains plural forms (declared in UnitAliases.properties),
-                 * but we make a special case for "degrees", "metres" and "meters" because they
-                 * appear in numerous places.
                  */
-                String lc = uom.replace('_', ' ').toLowerCase(locale);
-                lc = CharSequences.replace(CharSequences.replace(CharSequences.replace(CharSequences.toASCII(lc),
-                        "meters",  "meter"),
-                        "metres",  "metre"),
-                        "degrees", "degree").toString();
-                unit = nameToUnit().get(lc);
+                unit = fromName(uom);
                 if (unit == null) {
                     if (CharSequences.regionMatches(symbols, lower, UNITY, true)) {
                         return Units.UNITY;

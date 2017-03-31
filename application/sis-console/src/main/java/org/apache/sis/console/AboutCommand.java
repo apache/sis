@@ -59,20 +59,27 @@ import org.apache.sis.internal.util.X364;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class AboutCommand extends CommandRunner {
     /**
      * Creates the {@code "about"} sub-command.
+     *
+     * @param  commandIndex  index of the {@code arguments} element containing the {@code "about"} command name, or -1 if none.
+     * @param  arguments     the command-line arguments provided by the user.
+     * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
-    AboutCommand(final int commandIndex, final String... args) throws InvalidOptionException {
-        super(commandIndex, args, EnumSet.of(Option.LOCALE, Option.TIMEZONE, Option.ENCODING,
+    AboutCommand(final int commandIndex, final String... arguments) throws InvalidOptionException {
+        super(commandIndex, arguments, EnumSet.of(Option.LOCALE, Option.TIMEZONE, Option.ENCODING,
                 Option.BRIEF, Option.VERBOSE, Option.HELP, Option.DEBUG));
     }
 
     /**
      * Prints the information to the output stream.
+     *
+     * @return 0 on success, or an exit code if the command failed for a reason other than an uncaught Java exception.
+     * @throws Exception if an error occurred while executing the sub-command.
      */
     @Override
     public int run() throws Exception {
@@ -154,7 +161,7 @@ final class AboutCommand extends CommandRunner {
                 out.print(X364.BOLD.sequence());
                 out.print(' ');
             }
-            out.print(Vocabulary.getResources(locale).getLabel(Vocabulary.Keys.Warnings));
+            Vocabulary.getResources(locale).appendLabel(Vocabulary.Keys.Warnings, out);
             if (colors) {
                 out.print(' ');
                 out.println(X364.RESET.sequence());

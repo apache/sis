@@ -43,6 +43,7 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.EngineeringDatum;
+import org.apache.sis.internal.referencing.provider.TransverseMercator.Zoner;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -59,9 +60,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.SimpleInternationalString;
-
-import static org.apache.sis.internal.referencing.provider.TransverseMercator.zone;
-import static org.apache.sis.internal.referencing.provider.TransverseMercator.centralMeridian;
 
 
 /**
@@ -178,14 +176,18 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.ce
  *
  * <div class="note"><b>Examples:</b>
  * {@code "AUTO2:42001,1,-100,45"} identifies a Universal Transverse Mercator (UTM) projection
- * for a zone containing the point at (45°N, 100°W).</div>
+ * for a zone containing the point at (45°N, 100°W) with axes in metres.</div>
  *
  * Codes in the {@code "AUTO"} namespace are the same than codes in the {@code "AUTO2"} namespace, except that
  * the {@linkplain org.apache.sis.measure.Units#valueOfEPSG(int) EPSG code} of the desired unit of measurement
  * was used instead than the unit factor.
  * The {@code "AUTO"} namespace was defined in the <cite>Web Map Service</cite> (WMS) 1.1.1 specification
  * while the {@code "AUTO2"} namespace is defined in WMS 1.3.0.
- * In Apache SIS implementation, the unit parameter (either as factor or as EPSG code) is optional and default to metres.
+ * In Apache SIS implementation, the unit parameter (either as factor or as EPSG code) is optional and defaults to metres.
+ *
+ * <p>In the {@code AUTO(2):42001} case, the UTM zone is calculated as specified in WMS 1.3 specification,
+ * i.e. <strong>without</strong> taking in account the Norway and Svalbard special cases and without
+ * switching to polar stereographic projections for high latitudes.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -588,23 +590,26 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
              * 42005: WGS 84 / Auto Mollweide         —   defined by "Central_Meridian" only.
              */
             case 42001: isUTM  = true; break;
-            case 42002: isUTM  = (latitude == 0) && (centralMeridian(zone(longitude)) == longitude); break;
-            case 42003: method = "Orthographic";       param = Constants.LATITUDE_OF_ORIGIN;         break;
-            case 42004: method = "Equirectangular";    param = Constants.STANDARD_PARALLEL_1;        break;
-            case 42005: method = "Mollweide";                                                        break;
+            case 42002: isUTM  = (latitude == 0) && (Zoner.UTM.centralMeridian(Zoner.UTM.zone(0, longitude)) == longitude); break;
+            case 42003: method = "Orthographic";       param = Constants.LATITUDE_OF_ORIGIN;  break;
+            case 42004: method = "Equirectangular";    param = Constants.STANDARD_PARALLEL_1; break;
+            case 42005: method = "Mollweide";                                                 break;
             default: throw noSuchAuthorityCode(String.valueOf(projection), code, null);
         }
         /*
          * For the (Universal) Transverse Mercator case (AUTO:42001 and 42002), we delegate to the CommonCRS
          * enumeration if possible because CommonCRS will itself delegate to the EPSG factory if possible.
+         * The Math.signum(latitude) instruction is for preventing "AUTO:42001" to handle the UTM special cases
+         * (Norway and Svalbard) or to switch on the Universal Polar Stereographic projection for high latitudes,
+         * because the WMS specification does not said that we should.
          */
         final CommonCRS datum = CommonCRS.WGS84;
-        final GeographicCRS baseCRS;
-        final ProjectedCRS crs;
-        CartesianCS cs;
+        final GeographicCRS baseCRS;                // To be set, directly or indirectly, to WGS84.geographic().
+        final ProjectedCRS crs;                     // Temporary UTM projection, for extracting other properties.
+        CartesianCS cs;                             // Coordinate system with (E,N) axes in metres.
         try {
             if (isUTM != null && isUTM) {
-                crs = datum.UTM(latitude, longitude);
+                crs = datum.universal(Math.signum(latitude), longitude);
                 if (factor == (isLegacy ? Constants.EPSG_METRE : 1)) {
                     return crs;
                 }
@@ -613,7 +618,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             } else {
                 cs = projectedCS;
                 if (cs == null) {
-                    crs = datum.UTM(latitude, longitude);
+                    crs = datum.universal(Math.signum(latitude), longitude);
                     projectedCS = cs = crs.getCoordinateSystem();
                     baseCRS = crs.getBaseCRS();
                 } else {
@@ -641,10 +646,10 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
              */
             final GeodeticObjectBuilder builder = new GeodeticObjectBuilder();
             if (isUTM != null) {
-                if (isUTM) {
+                if (isUTM && crs != null) {
                     builder.addName(crs.getName());
                 } // else default to the conversion name, which is "Transverse Mercator".
-                builder.setTransverseMercator(isUTM, latitude, longitude);
+                builder.setTransverseMercator(isUTM ? Zoner.UTM : Zoner.ANY, latitude, longitude);
             } else {
                 builder.setConversionMethod(method)
                        .addName(PROJECTION_NAMES[projection - FIRST_PROJECTION_CODE])

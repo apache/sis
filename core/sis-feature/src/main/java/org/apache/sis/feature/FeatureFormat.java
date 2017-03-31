@@ -73,9 +73,11 @@ import org.apache.sis.util.Characters;
  *   └────────────┴─────────┴─────────────┴───────────┘
  * }</div>
  *
- * <div class="warning"><b>Limitation:</b>
- * Current implementation supports only formatting, not parsing.
- * </div>
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>The current implementation can only format features — parsing is not yet implemented.</li>
+ *   <li>{@code FeatureFormat}, like most {@code java.text.Format} subclasses, is not thread-safe.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -501,7 +503,7 @@ header: for (int i=0; ; i++) {
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
         throw new ParseException(Errors.getResources(displayLocale)
-                .getString(Errors.Keys.UnsupportedOperation_1, "parse"), 0);
+                .getString(Errors.Keys.UnsupportedOperation_1, "parse"), pos.getIndex());
     }
 
     /**

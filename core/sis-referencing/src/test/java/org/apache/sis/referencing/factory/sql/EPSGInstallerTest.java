@@ -209,7 +209,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
              * This implies the creation of a coordinate operation.
              */
             final ProjectedCRS p = factory.createProjectedCRS("EPSG:32215");
-            assertTrue(Utilities.deepEquals(CommonCRS.WGS72.UTM(1, -93), p, ComparisonMode.DEBUG));
+            assertTrue(Utilities.deepEquals(CommonCRS.WGS72.universal(1, -93), p, ComparisonMode.DEBUG));
             /*
              * Get the authority codes. We choose a type that implies an SQL statement
              * with both "DEPRECATED" and "SHOW_CRS" conditions in their "WHERE" clause.

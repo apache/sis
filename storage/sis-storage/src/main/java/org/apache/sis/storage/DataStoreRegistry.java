@@ -208,18 +208,18 @@ final class DataStoreRegistry {
              */
             if (deferred != null) {
 search:         while (!deferred.isEmpty() && connector.prefetch()) {
-                    for (final Iterator<ProbeProviderPair> it=deferred.iterator(); it.hasNext();) {
+                    for (final Iterator<ProbeProviderPair> it = deferred.iterator(); it.hasNext();) {
                         final ProbeProviderPair p = it.next();
-                        p.probe = provider.probeContent(connector);
+                        p.probe = p.provider.probeContent(connector);
                         if (p.probe.isSupported()) {
                             selected = p;
                             break search;
                         }
                         if (!ProbeResult.INSUFFICIENT_BYTES.equals(p.probe)) {
                             if (ProbeResult.UNDETERMINED.equals(p.probe)) {
-                                selected = p; // To be used only if we don't find a better match.
+                                selected = p;                   // To be used only if we don't find a better match.
                             }
-                            it.remove(); // UNSUPPORTED_* or UNDETERMINED: do not try again those providers.
+                            it.remove();        // UNSUPPORTED_* or UNDETERMINED: do not try again those providers.
                         }
                     }
                 }
@@ -233,7 +233,7 @@ search:         while (!deferred.isEmpty() && connector.prefetch()) {
              */
             if (open && selected != null) {
                 selected.store = selected.provider.open(connector);
-                connector = null; // For preventing it to be closed.
+                connector = null;                                               // For preventing it to be closed.
             }
         } finally {
             if (connector != null && connector != storage) {

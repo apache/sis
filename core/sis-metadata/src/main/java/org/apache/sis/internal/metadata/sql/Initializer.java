@@ -273,7 +273,7 @@ public abstract class Initializer {
                  */
                 path   = path.normalize();
                 create = !Files.exists(path);
-                source = forJavaDB(path.toString());
+                source = forJavaDB(path.toString().replace(path.getFileSystem().getSeparator(), "/"));
             } else if (home != null) {
                 final Path path = Paths.get(home);
                 create = !Files.exists(path.resolve(DATABASE)) && Files.isDirectory(path);

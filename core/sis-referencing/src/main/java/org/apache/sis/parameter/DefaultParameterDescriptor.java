@@ -28,6 +28,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Range;
@@ -67,7 +68,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  *
  * @see DefaultParameterValue
@@ -468,7 +469,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                     final ParameterDescriptor<?> that = (ParameterDescriptor<?>) object;
                     return getValueClass() == that.getValueClass() &&
                            Objects.deepEquals(getDefaultValue(), that.getDefaultValue()) &&
-                           Objects.equals(getUnit(), that.getUnit()) &&
+                           Utilities.deepEquals(getUnit(), that.getUnit(), mode) &&
                            (isHeuristicMatchForName(that.getName().getCode()) ||
                             IdentifiedObjects.isHeuristicMatchForName(that, getName().getCode()));
                 }
@@ -481,7 +482,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                            Objects.    equals(getMinimumValue(), that.getMinimumValue()) &&
                            Objects.    equals(getMaximumValue(), that.getMaximumValue()) &&
                            Objects.deepEquals(getDefaultValue(), that.getDefaultValue()) &&
-                           Objects.    equals(getUnit(),         that.getUnit());
+                           Utilities.deepEquals(getUnit(),       that.getUnit(), mode);
                 }
                 case STRICT: {
                     final DefaultParameterDescriptor<?> that = (DefaultParameterDescriptor<?>) object;

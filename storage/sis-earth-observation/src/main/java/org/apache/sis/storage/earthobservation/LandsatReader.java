@@ -904,7 +904,7 @@ final class LandsatReader {
          */
         if (datum != null) {
             if (utmZone > 0) {
-                metadata.add(datum.UTM(1, TransverseMercator.centralMeridian(utmZone)));
+                metadata.add(datum.universal(1, TransverseMercator.Zoner.UTM.centralMeridian(utmZone)));
             }
             if (projection != null) {
                 final double sp = projection.parameter(Constants.STANDARD_PARALLEL_1).doubleValue();

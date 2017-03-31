@@ -39,7 +39,7 @@ import org.apache.sis.internal.util.LocalizedParseException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.
@@ -125,15 +125,39 @@ final class DefaultFormat extends Format {
      */
     @Override
     public Object parseObject(String source, final ParsePosition pos) {
-        final int length = source.length();
-        final int index = CharSequences.skipLeadingWhitespaces(source, pos.getIndex(), length);
-        source = source.substring(index, CharSequences.skipTrailingWhitespaces(source, index, length));
+        boolean exponent = false;
+        final int index = CharSequences.skipLeadingWhitespaces(source, pos.getIndex(), source.length());
+        int end;
+        for (end = index; end < source.length(); end++) {
+            final char c = source.charAt(end);
+            switch (c) {
+                default: {
+                    if (c >= '+' && c <= '9') continue;
+                    break;
+                    /*
+                     * ASCII characters in above range are +,-./0123456789
+                     * But the , and / characters are excluded by the case below.
+                     */
+                }
+                case ',': case '/': break;
+                case 'E': case 'e': {
+                    if (exponent) break;
+                    exponent = true;
+                    continue;
+                }
+            }
+            break;
+        }
+        source = source.substring(index, end);
+        final Object value;
         try {
-            return valueOf(source);
+            value = valueOf(source);
         } catch (NumberFormatException cause) {
             pos.setErrorIndex(index);
             return null;
         }
+        pos.setIndex(end);
+        return value;
     }
 
     /**

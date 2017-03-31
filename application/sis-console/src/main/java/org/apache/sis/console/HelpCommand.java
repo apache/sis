@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class HelpCommand extends CommandRunner {
@@ -46,8 +46,8 @@ final class HelpCommand extends CommandRunner {
     };
 
     /**
-     * Copies the configuration of the given sub-command. This constructor is used
-     * for printing help about an other command.
+     * Copies the configuration of the given sub-command.
+     * This constructor is used for printing help about another command.
      */
     HelpCommand(final CommandRunner parent) {
         super(parent);
@@ -55,16 +55,23 @@ final class HelpCommand extends CommandRunner {
 
     /**
      * Creates the {@code "help"} sub-command.
+     *
+     * @param  commandIndex  index of the {@code arguments} element containing the {@code "help"} command name, or -1 if none.
+     * @param  arguments     the command-line arguments provided by the user.
+     * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
-    HelpCommand(final int commandIndex, final String... args) throws InvalidOptionException {
-        super(commandIndex, args, EnumSet.of(Option.LOCALE, Option.ENCODING, Option.HELP, Option.DEBUG));
+    HelpCommand(final int commandIndex, final String... arguments) throws InvalidOptionException {
+        super(commandIndex, arguments, EnumSet.of(Option.LOCALE, Option.ENCODING, Option.HELP, Option.DEBUG));
     }
 
     /**
      * Prints the help instructions.
+     *
+     * @return 0 on success, or an exit code if the command failed for a reason other than a Java exception.
+     * @throws IOException should never happen, because we are writing to a {@code PrintWriter}.
      */
     @Override
-    public int run() {
+    public int run() throws IOException {
         if (hasUnexpectedFileCount(0, 0)) {
             return Command.INVALID_ARGUMENT_EXIT_CODE;
         }
@@ -78,8 +85,9 @@ final class HelpCommand extends CommandRunner {
      * @param  showHeader    {@code true} for printing the "Apache SIS" header.
      * @param  commandNames  the names of the commands to list.
      * @param  validOptions  the options to list.
+     * @throws IOException should never happen, because we are writing to a {@code PrintWriter}.
      */
-    void help(final boolean showHeader, final String[] commandNames, final EnumSet<Option> validOptions) {
+    void help(final boolean showHeader, final String[] commandNames, final EnumSet<Option> validOptions) throws IOException {
         final ResourceBundle commands = ResourceBundle.getBundle("org.apache.sis.console.Commands", locale);
         final ResourceBundle options  = ResourceBundle.getBundle("org.apache.sis.console.Options",  locale);
         final Vocabulary vocabulary = Vocabulary.getResources(locale);
@@ -91,34 +99,30 @@ final class HelpCommand extends CommandRunner {
             out.print(vocabulary.getString(Vocabulary.Keys.Commands));
             out.println(':');
         }
-        try {
-            final TableAppender table = new TableAppender(out, "  ");
-            for (final String command : commandNames) {
-                if (showHeader) {
-                    table.append("  ");
-                }
-                table.append(command);
-                if (!showHeader) {
-                    table.append(':');
-                }
-                table.nextColumn();
-                table.append(commands.getString(command));
-                table.nextLine();
+        final TableAppender table = new TableAppender(out, "  ");
+        for (final String command : commandNames) {
+            if (showHeader) {
+                table.append("  ");
             }
-            table.flush();
-            out.println();
-            out.print(vocabulary.getString(Vocabulary.Keys.Options));
-            out.println(':');
-            for (final Option option : validOptions) {
-                final String name = option.label();
-                table.append("  ").append(Option.PREFIX).append(name);
-                table.nextColumn();
-                table.append(options.getString(name));
-                table.nextLine();
+            table.append(command);
+            if (!showHeader) {
+                table.append(':');
             }
-            table.flush();
-        } catch (IOException e) {
-            throw new AssertionError(e);            // Should never happen, because we are writing to a PrintWriter.
+            table.nextColumn();
+            table.append(commands.getString(command));
+            table.nextLine();
         }
+        table.flush();
+        out.println();
+        out.print(vocabulary.getString(Vocabulary.Keys.Options));
+        out.println(':');
+        for (final Option option : validOptions) {
+            final String name = option.label();
+            table.append("  ").append(Option.PREFIX).append(name);
+            table.nextColumn();
+            table.append(options.getString(name));
+            table.nextLine();
+        }
+        table.flush();
     }
 }

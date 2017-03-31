@@ -23,7 +23,13 @@
  * <p>The most commonly used kinds of Reference Systems in Apache SIS are the <cite>Coordinate Reference Systems</cite>
  * (CRS), which handle coordinates of arbitrary dimensions. The SIS implementations can handle 2D and 3D coordinates,
  * as well as 4D, 5D, <i>etc</i>. An other less-frequently used kind of Reference System uses labels instead, as in
- * postal address. This package is the root for both kinds, with an emphasis on the one for coordinates.</p>
+ * postal address. This package is the root for both kinds, with an emphasis on the one for coordinates.
+ * The two kinds of referencing system are implemented in the following packages:</p>
+ * <ul>
+ *   <li>{@link org.apache.sis.referencing.crs} for <cite>referencing by coordinates</cite> (ISO 19111)</li>
+ *   <li>{@link org.apache.sis.referencing.gazetteer} for <cite>referencing by geographic identifiers</cite>
+ *       (ISO 19112), together with the linking from geographic identifiers to coordinates.</li>
+ * </ul>
  *
  * <div class="section">Fetching geodetic object instances</div>
  * Geodetic objects can be instantiated either

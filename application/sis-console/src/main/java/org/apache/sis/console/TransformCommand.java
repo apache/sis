@@ -58,7 +58,6 @@ import org.apache.sis.internal.util.X364;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Colors;
-import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
@@ -81,10 +80,10 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
-final class TransformCommand extends MetadataCommand {
+final class TransformCommand extends FormattedOutputCommand {
     /**
      * The coordinate operation from the given source CRS to target CRS.
      */
@@ -136,16 +135,19 @@ final class TransformCommand extends MetadataCommand {
     private NumberFormatException errorCause;
 
     /**
+     * Returns valid options for the {@code "transform"} commands.
+     */
+    private static EnumSet<Option> options() {
+        return EnumSet.of(Option.SOURCE_CRS, Option.TARGET_CRS, Option.VERBOSE,
+                Option.LOCALE, Option.TIMEZONE, Option.ENCODING, Option.COLORS, Option.HELP, Option.DEBUG);
+    }
+
+    /**
      * Creates the {@code "transform"} sub-command.
      */
     TransformCommand(final int commandIndex, final String... args) throws InvalidOptionException {
-        super(commandIndex, args, EnumSet.of(Option.SOURCE_CRS, Option.TARGET_CRS, Option.VERBOSE,
-                Option.LOCALE, Option.TIMEZONE, Option.ENCODING, Option.COLORS, Option.HELP, Option.DEBUG));
-
-        // Default output format for CRS.
-        outputFormat = Format.WKT;
-        convention   = Convention.WKT2_SIMPLIFIED;
-        resources    = Vocabulary.getResources(locale);
+        super(commandIndex, args, options(), OutputFormat.WKT, OutputFormat.TEXT);
+        resources = Vocabulary.getResources(locale);
     }
 
     /**
@@ -185,14 +187,11 @@ final class TransformCommand extends MetadataCommand {
 
     /**
      * Transforms coordinates from the files given in argument or from the standard input stream.
+     *
+     * @return 0 on success, or an exit code if the command failed for a reason other than an uncaught Java exception.
      */
     @Override
     public int run() throws Exception {
-        parseArguments();
-        if (outputFormat == Format.XML) {
-            final String format = outputFormat.name();
-            throw new InvalidOptionException(Errors.format(Errors.Keys.IncompatibleFormat_2, "transform", format), format);
-        }
         final CoordinateReferenceSystem sourceCRS = fetchCRS(Option.SOURCE_CRS);
         final CoordinateReferenceSystem targetCRS = fetchCRS(Option.TARGET_CRS);
         /*
@@ -282,9 +281,9 @@ final class TransformCommand extends MetadataCommand {
      *
      * @param  key  a {@code Vocabulary.Keys} constant for the header to print.
      */
-    private void printHeader(final short key) {
+    private void printHeader(final short key) throws IOException {
         printCommentLinePrefix();
-        outHeader.append(resources.getLabel(key));
+        resources.appendLabel(key, outHeader);
         outHeader.nextColumn();
     }
 
@@ -355,7 +354,7 @@ final class TransformCommand extends MetadataCommand {
     /**
      * Prints the accuracy.
      */
-    private void printAccuracy(double accuracy) {
+    private void printAccuracy(double accuracy) throws IOException {
         if (accuracy >= 0) {
             if (accuracy == 0) {
                 accuracy = Formulas.LINEAR_TOLERANCE;
@@ -385,7 +384,7 @@ final class TransformCommand extends MetadataCommand {
      *
      * <blockquote>Canada - onshore and offshore</blockquote>
      */
-    private void printDomainOfValidity(final Extent domain) {
+    private void printDomainOfValidity(final Extent domain) throws IOException {
         if (domain != null) {
             final InternationalString description = domain.getDescription();
             if (description != null) {
@@ -411,7 +410,7 @@ final class TransformCommand extends MetadataCommand {
      * Prints the coordinate operation or math transform in Well Known Text format.
      * This information is printed only if the {@code --verbose} option was specified.
      */
-    private void printDetails() {
+    private void printDetails() throws IOException {
         final boolean debug = options.containsKey(Option.DEBUG);
         final WKTFormat f = new WKTFormat(locale, timezone);
         if (colors) f.setColors(Colors.DEFAULT);

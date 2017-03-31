@@ -196,6 +196,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GeographicBoundingBox)
+     * @see #setBounds(GeographicBoundingBox)
      */
     public DefaultGeographicBoundingBox(final GeographicBoundingBox object) {
         super(object);
@@ -489,8 +490,8 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     }
 
     /**
-     * Constructs a geographic bounding box from the specified envelope. If the envelope contains
-     * a CRS, then the bounding box may be projected to a geographic CRS. Otherwise, the envelope
+     * Sets the bounding box to the specified envelope. If the envelope contains* a CRS,
+     * then the bounding box may be projected to a geographic CRS. Otherwise, the envelope
      * is assumed already in appropriate CRS.
      *
      * <p>When coordinate transformation is required, the target geographic CRS is not necessarily

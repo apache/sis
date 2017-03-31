@@ -56,7 +56,6 @@
  *      ({@link org.apache.sis.measure.ValueRange})</li>
  *   <li>Formatters
  *      ({@link org.apache.sis.measure.AngleFormat},
- *       {@link org.apache.sis.measure.CoordinateFormat},
  *       {@link org.apache.sis.measure.RangeFormat})</li>
  * </ul>
  *

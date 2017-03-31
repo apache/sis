@@ -57,7 +57,7 @@ public final strictfp class SpecialCasesTest extends TestCase {
      */
     public SpecialCasesTest() {
         accessor = new SpecialCases(HardCodedCitations.ISO_19115,
-                GeographicBoundingBox.class, DefaultGeographicBoundingBox.class);
+                GeographicBoundingBox.class, DefaultGeographicBoundingBox.class, DefaultGeographicBoundingBox.class);
     }
 
     /**

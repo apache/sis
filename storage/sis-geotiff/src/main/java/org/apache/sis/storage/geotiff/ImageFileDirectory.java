@@ -43,6 +43,7 @@ import org.apache.sis.measure.Units;
  * @author  Rémi Marechal (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
+ * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8

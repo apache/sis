@@ -169,7 +169,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *   </tr>
      * </table>
      *
-     * @param properties  The properties to be given to the coordinate reference system.
+     * @param properties  the properties to be given to the coordinate reference system.
      * @param cs          the coordinate system.
      */
     public AbstractCRS(final Map<String,?> properties, final CoordinateSystem cs) {
