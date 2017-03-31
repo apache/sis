@@ -658,7 +658,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>3.3.0</version>
         <extensions>true</extensions>
         <configuration>
           <excludeDependencies>true</excludeDependencies>
@@ -825,12 +825,12 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.12</version>
+          <version>3.0.0</version>
         </plugin>
         <plugin>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
-          <version>9.4.0.v20161208</version>
+          <version>9.4.3.v20170317</version>
         </plugin>
       </plugins>
     </pluginManagement>
