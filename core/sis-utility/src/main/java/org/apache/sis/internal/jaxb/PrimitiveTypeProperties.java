@@ -29,8 +29,8 @@ import org.apache.sis.xml.NilReason;
  * This class provides a workaround using specific instances of those wrappers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  *
  * @see NilReason#createNilObject(Class)

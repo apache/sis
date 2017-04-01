@@ -38,8 +38,8 @@ import org.apache.sis.util.Workaround;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public class DataStoreException extends Exception implements LocalizedException {

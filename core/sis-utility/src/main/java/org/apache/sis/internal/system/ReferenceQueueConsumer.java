@@ -46,8 +46,8 @@ import org.apache.sis.util.logging.Logging;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class ReferenceQueueConsumer extends DaemonThread {

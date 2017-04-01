@@ -38,8 +38,8 @@ import org.apache.sis.util.CharSequences;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  *
  * @see Files#probeContentType(Path)

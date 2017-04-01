@@ -32,8 +32,8 @@ import org.opengis.referencing.IdentifiedObject;
  * {@code append(…)} method is an instance of an unsupported class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  *
  * @see Formatter#setInvalidWKT(IdentifiedObject, Exception)

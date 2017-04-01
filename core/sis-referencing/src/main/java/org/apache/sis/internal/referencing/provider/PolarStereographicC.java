@@ -26,8 +26,8 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * This is very similar to variant B except in the way to use the false northing.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @XmlTransient

@@ -71,8 +71,8 @@ package org.apache.sis.xml;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see NilReason#createNilObject(Class)

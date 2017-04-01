@@ -60,8 +60,8 @@
  * </ul>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 package org.apache.sis.measure;

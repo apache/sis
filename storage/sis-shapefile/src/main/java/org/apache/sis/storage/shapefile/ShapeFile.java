@@ -28,8 +28,8 @@ import org.apache.sis.internal.shapefile.jdbc.DBase3FieldDescriptor;
  * Provides a ShapeFile Reader.
  *
  * @author  Travis L. Pinney
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  *
  * @see <a href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">ESRI Shapefile Specification</a>

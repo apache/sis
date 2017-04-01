@@ -58,8 +58,8 @@ import org.apache.sis.referencing.CommonCRS;
  * However this class may move in a public package later if we feel confident that its API is mature enough.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {

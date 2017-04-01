@@ -25,8 +25,8 @@ import org.opengis.util.MemberName;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class GO_MemberName extends MetadataAdapter<MemberName, DefaultMemberName> {

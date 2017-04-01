@@ -27,8 +27,8 @@ import org.opengis.filter.expression.Literal;
  * @param  <T>  literal value type
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class DefaultLiteral<T> extends AbstractExpression implements Literal {

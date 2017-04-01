@@ -30,8 +30,8 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final strictfp class DefaultProcessStepTest extends XMLTestCase {

@@ -67,8 +67,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * Users can create their own {@code Symbols} instance for parsing or formatting a WKT with different symbols.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  *
  * @see WKTFormat#getSymbols()

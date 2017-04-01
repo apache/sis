@@ -58,8 +58,8 @@ import org.apache.sis.internal.util.Utilities;
  *              or {@link javax.measure.quantity.Length}).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  *
  * @see org.apache.sis.referencing.operation.transform.InterpolatedTransform
@@ -333,8 +333,8 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
      * </ul>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     static final class Float<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {

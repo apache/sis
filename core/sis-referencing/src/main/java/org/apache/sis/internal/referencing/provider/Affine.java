@@ -57,8 +57,8 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * </table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
 @XmlTransient

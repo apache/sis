@@ -30,8 +30,8 @@ import org.apache.sis.measure.Units;
  * Collection of axes for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public final strictfp class HardCodedAxes {

@@ -104,8 +104,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 public class ParameterFormat extends TabularFormat<Object> {
@@ -132,8 +132,8 @@ public class ParameterFormat extends TabularFormat<Object> {
      *
      * <p>The enumeration value javadoc provide examples of formatting output.</p>
      *
-     * @since   0.4
      * @version 0.4
+     * @since   0.4
      * @module
      */
     public enum ContentLevel {

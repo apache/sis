@@ -30,8 +30,8 @@ import org.apache.sis.internal.util.Numerics;
  * └     ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  *
  * @see Matrix2

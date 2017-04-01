@@ -28,8 +28,8 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link Vector} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final strictfp class VectorTest extends TestCase {

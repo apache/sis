@@ -33,8 +33,8 @@ import org.opengis.referencing.crs.ProjectedCRS;
  * Conical map projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  *
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS

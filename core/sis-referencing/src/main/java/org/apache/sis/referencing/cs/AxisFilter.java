@@ -45,8 +45,8 @@ import javax.measure.Unit;
  * For changing axis order in addition to axis directions or units, see {@link AxesConvention}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  *
  * @see CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)

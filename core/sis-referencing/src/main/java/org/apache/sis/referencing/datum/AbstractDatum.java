@@ -65,8 +65,8 @@ import java.util.Objects;
  * and static constants can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  *
  * @see org.apache.sis.referencing.cs.AbstractCS

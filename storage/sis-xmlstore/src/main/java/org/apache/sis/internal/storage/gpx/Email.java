@@ -26,8 +26,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * at unmarshalling time.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class Email extends XmlAdapter<Email, String> {

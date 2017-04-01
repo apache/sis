@@ -117,8 +117,8 @@ import static java.lang.Math.*;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  *
  * @see ContextualParameters
@@ -221,8 +221,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * {@link #CENTRAL_MERIDIAN}, {@link #SCALE_FACTOR}, {@link #FALSE_EASTING} and {@link #FALSE_NORTHING}.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.6
      * @version 0.6
+     * @since   0.6
      * @module
      *
      * @see NormalizedProjection#NormalizedProjection(OperationMethod, Parameters, Map)
@@ -707,8 +707,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Inverse of a normalized map projection.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.6
      * @version 0.6
+     * @since   0.6
      * @module
      */
     private final class Inverse extends AbstractMathTransform2D.Inverse {

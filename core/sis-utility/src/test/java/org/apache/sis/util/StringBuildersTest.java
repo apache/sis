@@ -28,8 +28,8 @@ import static org.apache.sis.util.StringBuilders.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final strictfp class StringBuildersTest extends TestCase {

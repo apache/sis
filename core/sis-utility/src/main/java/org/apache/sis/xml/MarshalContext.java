@@ -26,8 +26,8 @@ import org.opengis.util.InternationalString;
  * Context of a marshalling or unmarshalling process.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract class MarshalContext {

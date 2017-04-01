@@ -47,8 +47,8 @@ import static org.opengis.test.Assert.*;
  * Tests {@link GeocentricTranslation} and {@link GeocentricTranslation3D}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @DependsOn({

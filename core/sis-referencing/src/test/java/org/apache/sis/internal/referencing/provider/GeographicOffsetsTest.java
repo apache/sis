@@ -36,8 +36,8 @@ import org.junit.Test;
  * Tests the {@link GeographicOffsets}, {@link GeographicOffsets2D} and {@link VerticalOffset} classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 @DependsOn(AffineTest.class)

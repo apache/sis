@@ -29,8 +29,8 @@ import org.opengis.parameter.InvalidParameterCardinalityException;
  * All those objects share in common a {@link #getName()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public abstract class NamedElement {

@@ -31,8 +31,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * This provider creates transforms from geocentric to geographic coordinate reference systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  *
  * @see GeographicToGeocentric

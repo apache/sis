@@ -59,8 +59,8 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  *
  * @see Mercator
@@ -588,8 +588,8 @@ public class TransverseMercator extends ConformalProjection {
      * @author  André Gosselin (MPO)
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @author  Rueben Schulz (UBC)
-     * @since   0.6
      * @version 0.6
+     * @since   0.6
      * @module
      */
     private static final class Spherical extends TransverseMercator {

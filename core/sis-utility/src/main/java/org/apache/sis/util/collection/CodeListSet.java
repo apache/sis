@@ -53,8 +53,8 @@ import org.apache.sis.internal.util.CheckedArrayList;
  * @param <E> The type of code list elements in the set.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  *
  * @see java.util.EnumSet

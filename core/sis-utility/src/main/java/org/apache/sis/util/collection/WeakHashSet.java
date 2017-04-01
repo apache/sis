@@ -70,8 +70,8 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * @param  <E>  the type of elements in the set.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see java.util.WeakHashMap

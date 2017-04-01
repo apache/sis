@@ -51,8 +51,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * on the value of the containing object's {@code CoordinateReferenceSystem}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see DirectPosition1D

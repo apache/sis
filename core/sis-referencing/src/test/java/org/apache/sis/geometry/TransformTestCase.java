@@ -47,8 +47,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @param  <G>  the type of geometric objects, either {@link GeneralEnvelope} or {@link java.awt.geom.Rectangle2D}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @DependsOn(CurveExtremumTest.class)

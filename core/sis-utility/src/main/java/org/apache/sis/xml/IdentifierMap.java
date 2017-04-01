@@ -35,8 +35,8 @@ import org.opengis.metadata.citation.Citation;
  * class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see IdentifiedObject#getIdentifierMap()

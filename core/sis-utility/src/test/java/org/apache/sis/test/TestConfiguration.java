@@ -23,8 +23,8 @@ import org.apache.sis.util.Static;
  * Information about the configuration of tests
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public final strictfp class TestConfiguration extends Static {

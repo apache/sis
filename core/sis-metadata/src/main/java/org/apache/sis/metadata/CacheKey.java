@@ -25,8 +25,8 @@ import org.apache.sis.util.resources.Errors;
  * A key in the {@link MetadataStandard} internal cache.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class CacheKey {

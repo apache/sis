@@ -60,8 +60,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @XmlType(name = "GeodeticCRSType", propOrder = {

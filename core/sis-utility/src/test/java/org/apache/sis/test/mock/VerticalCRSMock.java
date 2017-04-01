@@ -34,8 +34,8 @@ import org.apache.sis.measure.Units;
  * A dummy implementation of {@link VerticalCRS}, which is also its own datum, coordinate system and axis.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @SuppressWarnings("serial")

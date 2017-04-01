@@ -45,8 +45,8 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * See {@code EPSGDataFormatter} in the test directory for more information about how the scripts are formatted.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 final class EPSGInstaller extends ScriptRunner {

@@ -61,8 +61,8 @@ import static java.lang.Math.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  *
  * @see Statistics#toString()

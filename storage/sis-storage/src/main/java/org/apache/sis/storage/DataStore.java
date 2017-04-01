@@ -34,8 +34,8 @@ import org.apache.sis.util.logging.WarningListeners;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  *
  * @see DataStores#open(Object)

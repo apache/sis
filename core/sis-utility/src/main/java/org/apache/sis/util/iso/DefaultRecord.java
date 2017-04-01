@@ -53,8 +53,8 @@ import org.apache.sis.internal.util.AbstractMapEntry;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  *
  * @see DefaultRecordType

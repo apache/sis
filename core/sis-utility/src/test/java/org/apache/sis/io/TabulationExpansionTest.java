@@ -27,8 +27,8 @@ import static org.junit.Assert.*;
  * Tests {@link LineAppender} implementation when used for expanding tabulations to spaces.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see LineAppender#setTabulationExpanded(boolean)

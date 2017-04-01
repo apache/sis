@@ -25,8 +25,8 @@ import org.opengis.util.FactoryException;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class MetadataStoreException extends FactoryException {

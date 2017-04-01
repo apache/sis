@@ -97,8 +97,8 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Marechal (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class MetadataBuilder {

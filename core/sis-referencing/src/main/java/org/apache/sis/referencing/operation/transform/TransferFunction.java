@@ -55,8 +55,8 @@ import org.apache.sis.util.Debug;
  * same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 public class TransferFunction implements Cloneable, Serializable {

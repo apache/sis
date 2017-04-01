@@ -26,8 +26,8 @@ import static org.junit.Assert.*;
  * Tests the {@link Compression} base class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final strictfp class CompressionTest extends TestCase {

@@ -82,8 +82,8 @@ import org.apache.sis.util.Numbers;
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  *
  * @see RangeFormat

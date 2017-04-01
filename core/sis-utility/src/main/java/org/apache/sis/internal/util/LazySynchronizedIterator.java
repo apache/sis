@@ -31,8 +31,8 @@ import java.util.Iterator;
  * @param  <E>  the type of elements to be returned by the iterator.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final class LazySynchronizedIterator<E> extends AbstractIterator<E> {

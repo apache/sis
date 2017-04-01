@@ -30,8 +30,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * Utilities methods working on {@link java.io} objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class IO extends Static {

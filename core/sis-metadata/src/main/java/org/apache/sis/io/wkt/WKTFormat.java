@@ -106,8 +106,8 @@ import org.apache.sis.internal.util.StandardDateFormat;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>

@@ -97,8 +97,8 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  *
  * @see GeneralEnvelope

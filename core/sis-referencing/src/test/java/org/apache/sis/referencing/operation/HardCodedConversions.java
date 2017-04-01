@@ -25,8 +25,8 @@ import org.apache.sis.internal.referencing.provider.Mercator1SP;
  * Collection of defining conversions for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final strictfp class HardCodedConversions {

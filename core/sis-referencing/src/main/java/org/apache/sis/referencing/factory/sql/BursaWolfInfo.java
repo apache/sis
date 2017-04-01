@@ -43,8 +43,8 @@ import org.apache.sis.measure.Units;
  * <p><b>Note:</b> this class contains many hard-coded EPSG codes relative to Bursa-Wolf parameters.</p>
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  *
  * @see BursaWolfParameters

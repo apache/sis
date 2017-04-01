@@ -37,8 +37,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * only in SIS. However we will need to revisit this issue if we move this interface to public API.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see Marshaller#setAdapter(XmlAdapter)

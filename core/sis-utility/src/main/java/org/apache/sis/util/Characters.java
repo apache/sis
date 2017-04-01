@@ -27,8 +27,8 @@ import org.apache.sis.util.resources.Errors;
  * symbols. For those symbols, constants are declared in this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.6
+ * @since   0.3
  * @module
  */
 public final class Characters extends Static {
@@ -306,8 +306,8 @@ public final class Characters extends Static {
      * left are {@linkplain #LETTERS_AND_DIGITS letters and digits}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see java.lang.Character.Subset

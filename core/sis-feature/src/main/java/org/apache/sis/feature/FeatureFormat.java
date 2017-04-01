@@ -80,8 +80,8 @@ import org.apache.sis.util.Characters;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 public class FeatureFormat extends TabularFormat<Object> {

@@ -42,8 +42,8 @@ import static java.lang.Double.*;
  * and (<var>x₂</var>,<var>y₂</var>) points, {@code Line} objects extend toward infinity.</div>
  *
  * @author  Martin Desruisseaux (MPO, IRD)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  *
  * @see Plane

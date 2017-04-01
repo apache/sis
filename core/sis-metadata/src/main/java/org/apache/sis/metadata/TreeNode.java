@@ -59,8 +59,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * order depends on the instantiation order).</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 class TreeNode implements Node {

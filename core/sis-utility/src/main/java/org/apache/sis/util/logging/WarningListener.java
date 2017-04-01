@@ -37,8 +37,8 @@ import java.util.logging.LogRecord;
  * @param  <S>  the base type of objects that emit warnings (the <cite>source</cite>).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see WarningListeners

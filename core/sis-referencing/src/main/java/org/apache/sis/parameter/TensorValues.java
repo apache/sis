@@ -56,8 +56,8 @@ import org.apache.sis.util.resources.Errors;
  * @param <E> The type of tensor element values.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 @XmlTransient

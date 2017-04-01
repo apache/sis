@@ -33,8 +33,8 @@ import org.apache.sis.util.Deprecable;
  * new field.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 public final class DeprecatedName extends NamedIdentifier implements Deprecable {

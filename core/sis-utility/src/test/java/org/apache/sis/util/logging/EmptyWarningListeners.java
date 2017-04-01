@@ -32,8 +32,8 @@ import org.apache.sis.util.resources.Errors;
  * @param <S> if the listener list had a source, that would be type type of the source.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class EmptyWarningListeners<S> extends WarningListeners<S> {

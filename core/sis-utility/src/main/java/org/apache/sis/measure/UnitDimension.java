@@ -54,8 +54,8 @@ import org.apache.sis.internal.util.CollectionsExt;
  * All {@code UnitDimension} instances are immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class UnitDimension implements Dimension, Serializable {

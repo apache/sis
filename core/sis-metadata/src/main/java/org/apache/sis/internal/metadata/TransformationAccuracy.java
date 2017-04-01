@@ -34,8 +34,8 @@ import org.apache.sis.util.Static;
  * Creates a record reporting coordinate transformation accuracy.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 public final class TransformationAccuracy extends Static {

@@ -28,8 +28,8 @@ import org.apache.sis.util.CharSequences;
  * Miscellaneous utilities which should not be put in public API.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final class Utilities extends Static {

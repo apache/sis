@@ -34,8 +34,8 @@ import org.apache.sis.referencing.factory.IdentifiedObjectSet;
  * {@link EPSGDataAccess#createFromCoordinateReferenceSystemCodes(String, String)} method.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperation> {

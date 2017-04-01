@@ -58,8 +58,8 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public class ObliqueStereographic extends NormalizedProjection {
@@ -376,8 +376,8 @@ public class ObliqueStereographic extends NormalizedProjection {
      *
      * @author  Rémi Maréchal (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     static final class Spherical extends ObliqueStereographic {

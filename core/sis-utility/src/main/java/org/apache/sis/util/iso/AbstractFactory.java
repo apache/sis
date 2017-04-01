@@ -25,8 +25,8 @@ import org.apache.sis.internal.simple.SimpleCitation;
  * Base class of factories provided in the Apache SIS library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract class AbstractFactory implements Factory {

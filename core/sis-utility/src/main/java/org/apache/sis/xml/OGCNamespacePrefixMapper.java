@@ -32,8 +32,8 @@ import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see <a href="http://java.sun.com/webservices/docs/1.5/jaxb/vendorProperties.html">JAXB extensions</a>

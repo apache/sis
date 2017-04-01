@@ -27,8 +27,8 @@ import org.apache.sis.util.logging.WarningListeners;
  * that a complete line has been received.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class LogAdapter implements Appendable {

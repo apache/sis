@@ -39,8 +39,8 @@ import java.lang.ref.Reference;
  * @param  <V>  the type of value objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {

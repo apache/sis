@@ -44,8 +44,8 @@ import static org.opengis.test.Assert.*;
  * package-private methods in {@link ConcurrentAuthorityFactory}, and for keeping all GIGS tests together.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 @RunWith(JUnit4.class)

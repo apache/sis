@@ -45,8 +45,8 @@ package org.apache.sis.util;
  * Error during {@code dispose()} execution should not result in any lost of data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see java.awt.Graphics#dispose()

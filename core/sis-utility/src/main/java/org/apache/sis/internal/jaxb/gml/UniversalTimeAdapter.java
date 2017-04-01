@@ -36,8 +36,8 @@ import static org.apache.sis.internal.jaxb.XmlUtilities.getDatatypeFactory;
  * The milliseconds are omitted if not different than zero.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  *
  * @see DateAdapter

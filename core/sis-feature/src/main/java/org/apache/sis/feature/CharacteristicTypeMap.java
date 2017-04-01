@@ -46,8 +46,8 @@ import org.opengis.feature.AttributeType;
  * amount of attribute instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 final class CharacteristicTypeMap extends AbstractMap<String,AttributeType<?>> {

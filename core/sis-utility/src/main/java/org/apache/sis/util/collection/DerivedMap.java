@@ -61,8 +61,8 @@ import org.apache.sis.math.FunctionProperty;
  * @param  <V>   the type of values in this map.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements

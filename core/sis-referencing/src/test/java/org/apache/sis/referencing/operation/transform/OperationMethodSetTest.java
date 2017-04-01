@@ -41,8 +41,8 @@ import static org.junit.Assert.*;
  * Tests {@link OperationMethodSet}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn({

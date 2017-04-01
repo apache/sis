@@ -38,8 +38,8 @@ import org.opengis.feature.PropertyType;
  * <p>This class inherits all tests defined in {@link FeatureTestCase}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @DependsOn({

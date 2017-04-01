@@ -77,8 +77,8 @@ package org.apache.sis.referencing.operation.transform;
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public enum IterationStrategy {

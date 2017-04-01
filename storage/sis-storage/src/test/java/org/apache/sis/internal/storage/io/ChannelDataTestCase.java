@@ -29,8 +29,8 @@ import org.apache.sis.util.Debug;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 abstract strictfp class ChannelDataTestCase extends TestCase {

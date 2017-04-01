@@ -55,8 +55,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @param  <C>  the conversion type, either {@code Conversion} or {@code Projection}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @XmlType(name = "AbstractGeneralDerivedCRSType")

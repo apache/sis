@@ -27,8 +27,8 @@ import org.apache.sis.test.DependsOnMethod;
  * Tests the {@link ArrayConverter} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class ArrayConverterTest extends TestCase {

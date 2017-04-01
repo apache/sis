@@ -37,8 +37,8 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator.html">Transverse Mercator on RemoteSensing.org</a>
@@ -135,8 +135,8 @@ public final class TransverseMercator extends AbstractMercator {
      * Computes zone numbers and central meridian.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.8
      * @version 0.8
+     * @since   0.8
      * @module
      */
     public enum Zoner {

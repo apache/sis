@@ -29,8 +29,8 @@ import org.apache.sis.util.ObjectConverter;
  * @param  <E>  the type of elements in this set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class DerivedIterator<S,E> implements Iterator<E> {

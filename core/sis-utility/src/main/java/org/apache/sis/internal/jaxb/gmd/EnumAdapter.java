@@ -35,8 +35,8 @@ import org.apache.sis.util.iso.Types;
  * @param  <BoundType>  the enum being adapted.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
 public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundType>,

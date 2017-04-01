@@ -103,8 +103,8 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  * {@code "urn:ogc:def:crs,crs:EPSG:6.3:27700,crs:EPSG:6.3:5701"}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  *
  * @see org.apache.sis.internal.metadata.NameMeaning

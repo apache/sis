@@ -47,8 +47,8 @@ import static java.lang.Double.doubleToRawLongBits;
  * is faster. This kind of transform is extensively used by {@link org.apache.sis.coverage.grid.GridCoverage2D}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.7
+ * @since   0.5
  * @module
  *
  * @see LogarithmicTransform1D

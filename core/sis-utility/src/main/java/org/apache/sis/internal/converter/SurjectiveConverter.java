@@ -39,8 +39,8 @@ import org.apache.sis.util.resources.Errors;
  * @param  <T>  the type of converted objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {

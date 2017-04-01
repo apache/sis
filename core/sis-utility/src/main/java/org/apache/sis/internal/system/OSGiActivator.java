@@ -28,8 +28,8 @@ import org.osgi.framework.BundleListener;
  * {@code sis-utility/pom.xml} file. This class should not be used directly.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  *
  * @see ServletListener

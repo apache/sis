@@ -52,8 +52,8 @@ import org.apache.sis.util.Version;
  * However the {@code DataStore} instances created by the providers do not need to be thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public abstract class DataStoreProvider {

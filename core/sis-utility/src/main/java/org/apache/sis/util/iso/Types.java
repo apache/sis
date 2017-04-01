@@ -93,8 +93,8 @@ import org.apache.sis.internal.system.Loggers;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final class Types extends Static {
@@ -343,8 +343,8 @@ public final class Types extends Static {
      * The {@link InternationalString} returned by the {@code Types.getDescription(…)} methods.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private static class Description extends ResourceInternationalString {
@@ -419,8 +419,8 @@ public final class Types extends Static {
      * If this method is updated, please update {@code CodeListUID(CodeList)} accordingly.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private static final class CodeTitle extends Description {

@@ -22,8 +22,8 @@ package org.apache.sis.storage;
  * for internal usage by {@link DataStoreRegistry} only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 final class ProbeProviderPair {

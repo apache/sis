@@ -30,8 +30,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 final class SC_GeographicCRS extends PropertyType<SC_GeographicCRS, GeographicCRS> {

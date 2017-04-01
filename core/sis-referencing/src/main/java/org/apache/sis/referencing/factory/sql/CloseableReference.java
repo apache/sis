@@ -30,8 +30,8 @@ import org.apache.sis.util.logging.Logging;
  * Those weak references are stored in the {@link EPSGDataAccess#authorityCodes} map.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 final class CloseableReference<T> extends WeakReference<T> implements Disposable {

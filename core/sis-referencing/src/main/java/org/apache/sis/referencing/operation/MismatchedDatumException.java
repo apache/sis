@@ -34,8 +34,8 @@ package org.apache.sis.referencing.operation;
  * construction time.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  *
  * @see org.opengis.geometry.MismatchedReferenceSystemException

@@ -25,8 +25,8 @@ import org.apache.sis.util.CharSequences;
  * geometries are line strings represented by an array of ordinate values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class GeometryParser extends SurjectiveConverter<String,double[]> {

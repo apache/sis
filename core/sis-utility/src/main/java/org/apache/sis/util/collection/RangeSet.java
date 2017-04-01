@@ -103,8 +103,8 @@ import static org.apache.sis.util.Numbers.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see Range
@@ -131,8 +131,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @param  <E>  the type of range elements.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private static final class Compare<E extends Comparable<? super E>>
@@ -994,8 +994,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * Instances of this class are created by the {@link RangeSet#intersect(Range)} method.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see RangeSet#intersect(Range)
@@ -1232,8 +1232,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * </ul>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private final class SubIter extends Iter {
@@ -1312,8 +1312,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * All elements are {@link Range} objects.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private class Iter implements Iterator<Range<E>> {

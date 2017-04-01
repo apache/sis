@@ -55,8 +55,8 @@ import org.apache.sis.util.resources.Errors;
  * @param  <Q>  the kind of quantity to be measured using this units.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientComparable, Serializable {

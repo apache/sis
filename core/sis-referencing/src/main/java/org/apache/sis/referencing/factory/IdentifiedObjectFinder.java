@@ -58,8 +58,8 @@ import org.apache.sis.util.Utilities;
  * is thread-safe. If concurrent searches are desired, then a new instance should be created for each thread.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  *
  * @see GeodeticAuthorityFactory#newIdentifiedObjectFinder()
@@ -70,8 +70,8 @@ public class IdentifiedObjectFinder {
      * The domain of the search (for example whether to include deprecated objects in the search).
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     public enum Domain {

@@ -42,8 +42,8 @@ import static org.junit.Assert.*;
  * Tests {@link CC_GeneralOperationParameter} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>

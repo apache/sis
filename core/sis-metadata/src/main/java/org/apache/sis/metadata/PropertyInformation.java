@@ -55,8 +55,8 @@ import org.apache.sis.util.logging.Logging;
  *            or the type of elements in the collection otherwise.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see InformationMap

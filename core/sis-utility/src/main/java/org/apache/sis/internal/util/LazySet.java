@@ -44,8 +44,8 @@ import org.apache.sis.internal.system.DefaultFactories;
  * @param  <E>  the type of elements in the set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 @Workaround(library="JDK", version="1.8.0_31-b13")

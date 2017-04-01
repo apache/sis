@@ -53,8 +53,8 @@ import org.apache.sis.xml.Namespaces;
  * The two later use a quite different XML structure, with an {@code aName} element instead than a XML value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @XmlSeeAlso({

@@ -86,8 +86,8 @@ import org.apache.sis.internal.converter.SurjectiveConverter;
  * so users wanting serialization may need to provide their own schema.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see DefaultRecord

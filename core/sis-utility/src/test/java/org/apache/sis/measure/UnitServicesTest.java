@@ -33,8 +33,8 @@ import static org.apache.sis.test.Assert.*;
  * Test {@link UnitServices}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @DependsOn(UnitsTest.class)

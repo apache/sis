@@ -38,8 +38,8 @@ import org.apache.sis.math.MathFunctions;
  * @param  <E>  the type of elements in the collection.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {

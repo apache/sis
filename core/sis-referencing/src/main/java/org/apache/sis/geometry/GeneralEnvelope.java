@@ -111,8 +111,8 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see Envelope2D

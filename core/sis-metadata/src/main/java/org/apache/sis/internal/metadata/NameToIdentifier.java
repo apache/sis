@@ -41,8 +41,8 @@ import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
  * Current version does not yet work with URN or HTTP syntax.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 public final class NameToIdentifier implements Identifier {

@@ -30,8 +30,8 @@ import org.opengis.referencing.operation.Matrix;
  * └             ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  *
  * @see Matrix1

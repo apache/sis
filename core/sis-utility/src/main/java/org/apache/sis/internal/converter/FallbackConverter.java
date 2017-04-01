@@ -55,8 +55,8 @@ import org.apache.sis.util.Debug;
  * @param  <T>  the base type of converted objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class FallbackConverter<S,T> extends SystemConverter<S,T> {

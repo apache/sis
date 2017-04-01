@@ -21,8 +21,8 @@ package org.apache.sis.internal.book;
  * Throws when an error is found in the content of the HTML files used for building the developer guide.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  */
 @SuppressWarnings("serial")
 public class BookException extends Exception {

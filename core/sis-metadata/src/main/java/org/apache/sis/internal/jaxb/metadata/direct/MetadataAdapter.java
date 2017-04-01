@@ -26,8 +26,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * @param  <ValueType>  the SIS class implementing the interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract class MetadataAdapter<BoundType, ValueType extends BoundType>

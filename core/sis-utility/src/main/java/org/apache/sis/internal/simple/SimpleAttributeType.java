@@ -35,8 +35,8 @@ import org.opengis.util.TypeName;
  * @param  <V>  the type of attribute value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class SimpleAttributeType<V> implements AttributeType<V>, Type, Serializable {

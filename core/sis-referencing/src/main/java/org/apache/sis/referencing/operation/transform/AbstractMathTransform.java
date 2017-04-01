@@ -79,8 +79,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  *
  * @see DefaultMathTransformFactory
@@ -991,8 +991,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * running the same SIS version.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.5
      * @version 0.6
+     * @since   0.5
      * @module
      */
     protected abstract class Inverse extends AbstractMathTransform implements Serializable {

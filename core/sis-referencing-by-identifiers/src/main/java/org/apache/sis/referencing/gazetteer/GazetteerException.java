@@ -23,8 +23,8 @@ import org.opengis.referencing.operation.TransformException;
  * Thrown when a coordinate can not be converted to a geographic identifier, or conversely.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class GazetteerException extends TransformException {

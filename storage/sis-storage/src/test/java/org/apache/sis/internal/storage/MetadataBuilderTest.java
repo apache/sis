@@ -31,8 +31,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link MetadataBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final strictfp class MetadataBuilderTest extends TestCase {

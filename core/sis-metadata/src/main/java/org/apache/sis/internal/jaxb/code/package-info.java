@@ -30,8 +30,8 @@
  * </ul>
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter

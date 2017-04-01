@@ -37,8 +37,8 @@ import static org.opengis.test.Assert.*;
  * is that reported statistics will be incomplete.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @DependsOn(SolverTest.class)

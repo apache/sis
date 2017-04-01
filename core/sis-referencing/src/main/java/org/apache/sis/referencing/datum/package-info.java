@@ -54,8 +54,8 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/datums.xsd",

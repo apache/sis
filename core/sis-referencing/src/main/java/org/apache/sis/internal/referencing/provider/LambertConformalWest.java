@@ -37,8 +37,8 @@ import org.apache.sis.parameter.ParameterBuilder;
  * axis directions in {@link org.apache.sis.referencing.cs.CoordinateSystems}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @XmlTransient

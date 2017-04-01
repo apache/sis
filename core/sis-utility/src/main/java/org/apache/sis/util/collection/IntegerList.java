@@ -34,8 +34,8 @@ import org.apache.sis.util.ArgumentChecks;
  * <p>This class is <strong>not</strong> thread-safe. Synchronizations (if wanted) are user's responsibility.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  *
  * @see org.apache.sis.math.Vector

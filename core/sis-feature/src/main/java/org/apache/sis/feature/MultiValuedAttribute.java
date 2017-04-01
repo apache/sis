@@ -49,8 +49,8 @@ import org.opengis.feature.MultiValuedPropertyException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  *
  * @see DefaultAttributeType

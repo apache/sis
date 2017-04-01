@@ -89,8 +89,8 @@ import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
  * components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  *
  * @see AbstractCS

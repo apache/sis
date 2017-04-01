@@ -22,8 +22,8 @@
  * The reports are for example the list of all supported EPSG codes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 package org.apache.sis.referencing.report;

@@ -45,8 +45,8 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * see {@link IO#flush(Appendable)} and {@link IO#close(Appendable)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see java.io.FilterWriter

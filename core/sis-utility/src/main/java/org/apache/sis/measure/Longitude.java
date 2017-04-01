@@ -35,8 +35,8 @@ import org.opengis.referencing.cs.AxisDirection;
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  *
  * @see Latitude

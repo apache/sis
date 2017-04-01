@@ -47,8 +47,8 @@ import org.apache.sis.internal.simple.SimpleCharacterIterator;
  * will still been seen as 3 separated fields by this implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")     // Not needed - see comment about clone() at the end of this file.

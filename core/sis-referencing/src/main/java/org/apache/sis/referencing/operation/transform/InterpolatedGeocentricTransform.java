@@ -79,8 +79,8 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  *
  * @see InterpolatedMolodenskyTransform
@@ -457,8 +457,8 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * </ol>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     static class Inverse extends InterpolatedGeocentricTransform {

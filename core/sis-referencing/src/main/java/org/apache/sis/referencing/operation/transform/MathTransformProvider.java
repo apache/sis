@@ -76,8 +76,8 @@ import org.opengis.referencing.operation.MathTransformFactory;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  *
  * @see org.apache.sis.referencing.operation.DefaultOperationMethod

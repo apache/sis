@@ -160,8 +160,8 @@ import org.apache.sis.util.resources.Errors;
  * There is typically only one {@code MathTransformFactory} instance for the whole application.
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  *
  * @see MathTransformProvider

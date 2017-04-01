@@ -112,8 +112,8 @@ import org.apache.sis.internal.metadata.sql.TestDatabase;
  * </ol>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 public final class EPSGDataFormatter extends ScriptRunner {

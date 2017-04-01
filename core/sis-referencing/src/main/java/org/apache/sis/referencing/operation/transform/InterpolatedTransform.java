@@ -69,8 +69,8 @@ import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @author  Rueben Schulz (UBC)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  *
  * @see DatumShiftGrid

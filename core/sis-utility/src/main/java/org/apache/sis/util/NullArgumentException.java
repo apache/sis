@@ -29,8 +29,8 @@ package org.apache.sis.util;
  * is now the recommended one in the <cite>Effective Java</cite> book.</div>
  *
  * @author Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see ArgumentChecks#ensureNonNull(String, Object)

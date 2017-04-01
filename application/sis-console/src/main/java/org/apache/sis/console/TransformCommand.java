@@ -79,8 +79,8 @@ import org.apache.sis.util.CharSequences;
  * The output is a comma separated values (CSV) file, with {@code '#'} as the first character of comment lines.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 final class TransformCommand extends FormattedOutputCommand {

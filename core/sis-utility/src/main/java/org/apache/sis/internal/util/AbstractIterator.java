@@ -29,8 +29,8 @@ import java.util.NoSuchElementException;
  * @param <E> the type of elements to be returned by the iterator.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public abstract class AbstractIterator<E> implements Iterator<E> {

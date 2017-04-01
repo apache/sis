@@ -61,8 +61,8 @@ import org.apache.sis.util.Debug;
  * ({@linkplain #tX}, {@linkplain #tY}, {@linkplain #tZ}) parameters of a Molodensky transformation.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  *
  * @see InterpolatedGeocentricTransform
@@ -338,8 +338,8 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
      * </ol>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     static class Inverse extends InterpolatedMolodenskyTransform {

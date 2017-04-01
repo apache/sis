@@ -75,8 +75,8 @@ import java.util.function.Function;
  * @param <T> The type of converted objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see ObjectConverters

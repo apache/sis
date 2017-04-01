@@ -71,8 +71,8 @@ import org.apache.sis.internal.converter.SurjectiveConverter;
  * {@link java.io.Serializable} interface) returning a system-wide static constant for their schema.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  *
  * @see DefaultRecordType

@@ -109,8 +109,8 @@ import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForNa
  * In other words, this class is intended for users rather than implementors.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @XmlTransient

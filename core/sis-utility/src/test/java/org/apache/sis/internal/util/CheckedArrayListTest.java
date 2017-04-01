@@ -31,8 +31,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link CheckedArrayList} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.5
+ * @since   0.4
  * @module
  */
 public final strictfp class CheckedArrayListTest extends TestCase {

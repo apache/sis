@@ -30,8 +30,8 @@ import java.util.Queue;
  * @param  <E>  type of elements in the collection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class EmptyQueue<E> extends AbstractQueue<E> implements Serializable {

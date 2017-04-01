@@ -32,8 +32,8 @@ import org.apache.sis.math.FunctionProperty;
  * @param  <T>  the base type of converted objects.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see org.apache.sis.util.ObjectConverters#identity(Class)

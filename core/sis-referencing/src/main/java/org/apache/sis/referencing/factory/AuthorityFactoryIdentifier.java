@@ -40,8 +40,8 @@ import org.apache.sis.internal.referencing.Resources;
  * Identification of an authority factory by its type, namespace and version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 final class AuthorityFactoryIdentifier {

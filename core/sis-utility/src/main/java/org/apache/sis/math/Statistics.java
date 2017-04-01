@@ -86,8 +86,8 @@ import java.util.function.DoubleConsumer;
  * }
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Serializable {
@@ -571,8 +571,8 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * which are stored in a {@link #delta} statistics object.
      *
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private static final class WithDelta extends Statistics {

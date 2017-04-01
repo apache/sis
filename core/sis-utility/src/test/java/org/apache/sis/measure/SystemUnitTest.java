@@ -40,8 +40,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link SystemUnit} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @DependsOn(UnitDimensionTest.class)

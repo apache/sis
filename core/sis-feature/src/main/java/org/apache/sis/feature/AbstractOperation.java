@@ -62,8 +62,8 @@ import org.opengis.feature.Property;
  * experience on this aspect of ISO 19109.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  *
  * @see DefaultFeatureType

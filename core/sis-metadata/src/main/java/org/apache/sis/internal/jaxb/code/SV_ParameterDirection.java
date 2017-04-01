@@ -28,8 +28,8 @@ import org.apache.sis.xml.Namespaces;
  * about the handling of {@code CodeList} in ISO-19139.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class SV_ParameterDirection extends EnumAdapter<SV_ParameterDirection, ParameterDirection> {

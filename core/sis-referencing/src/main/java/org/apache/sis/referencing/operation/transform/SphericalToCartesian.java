@@ -48,8 +48,8 @@ import static java.lang.Math.*;
  * {@code sin(Ω)} needs to be replaced by {@code cos(Ω)} and conversely.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  *
  * @see CartesianToSpherical

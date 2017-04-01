@@ -34,8 +34,8 @@ import java.util.Collection;
  * @param  <E>  the base type of elements in the container.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public interface CheckedContainer<E> {

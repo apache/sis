@@ -28,8 +28,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListUID;
  * about the handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class MD_KeywordTypeCode extends CodeListAdapter<MD_KeywordTypeCode, KeywordType> {

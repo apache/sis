@@ -34,8 +34,8 @@
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Minh Chinh Vu (VNSC)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 package org.apache.sis.storage.earthobservation;

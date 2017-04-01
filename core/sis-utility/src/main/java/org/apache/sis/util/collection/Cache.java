@@ -133,8 +133,8 @@ import java.util.function.Supplier;
  * @param  <V>  the type of value objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public class Cache<K,V> extends AbstractMap<K,V> {
@@ -561,8 +561,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * @param  <V>  the type of value objects.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     public interface Handler<V> {

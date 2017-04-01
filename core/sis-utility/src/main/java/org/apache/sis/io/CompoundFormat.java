@@ -96,8 +96,8 @@ import java.io.UncheckedIOException;
  * @param  <T>  the base type of objects parsed and formatted by this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public abstract class CompoundFormat<T> extends Format implements Localized {

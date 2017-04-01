@@ -42,8 +42,8 @@ import org.apache.sis.internal.system.DefaultFactories;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  *
  * @see org.apache.sis.xml.MarshallerPool

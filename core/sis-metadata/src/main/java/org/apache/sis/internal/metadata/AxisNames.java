@@ -27,8 +27,8 @@ import org.apache.sis.internal.system.Modules;
  * Constants for axis names specified by ISO 19111 and ISO 19162.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public final class AxisNames {

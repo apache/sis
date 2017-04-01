@@ -27,8 +27,8 @@ import org.apache.sis.util.Workaround;
  * is performed.
  *
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @Workaround(library = "JDK", version = "1.8")

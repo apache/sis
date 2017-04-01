@@ -49,8 +49,8 @@ import java.sql.SQLException;
  * of exceptions for robustness.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class BackingStoreException extends RuntimeException {

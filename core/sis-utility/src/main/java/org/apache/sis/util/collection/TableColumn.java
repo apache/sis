@@ -94,8 +94,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * @param  <V>  base type of all values in the column identified by this instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class TableColumn<V> implements CheckedContainer<V> {
@@ -184,8 +184,8 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * @param  <V>  base type of all values in the column identified by this instance.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private static final class Constant<V> extends TableColumn<V> implements Serializable {

@@ -33,8 +33,8 @@ import javax.xml.bind.annotation.XmlType;
  * The few exceptions are documented in {@link GO_Decimal}.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @XmlType(name = "Real_PropertyType")

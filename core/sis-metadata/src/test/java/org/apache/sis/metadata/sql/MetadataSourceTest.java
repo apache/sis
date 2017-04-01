@@ -38,8 +38,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link MetadataSource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @DependsOn(org.apache.sis.internal.metadata.sql.ScriptRunnerTest.class)

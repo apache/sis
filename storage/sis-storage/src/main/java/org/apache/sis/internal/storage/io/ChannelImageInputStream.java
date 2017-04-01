@@ -43,8 +43,8 @@ import javax.imageio.stream.ImageInputStream;
  * <p>This class is used when compatibility with {@link javax.imageio.ImageReader} is needed.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see javax.imageio.stream.FileImageInputStream

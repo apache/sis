@@ -50,8 +50,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 public final class Classes extends Static {

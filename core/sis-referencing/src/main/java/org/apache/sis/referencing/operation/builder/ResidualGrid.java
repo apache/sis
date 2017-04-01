@@ -29,8 +29,8 @@ import org.opengis.referencing.operation.Matrix;
  * The residuals after an affine approximation has been created for a set of matching control point pairs.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless> {

@@ -74,8 +74,8 @@ import org.apache.sis.setup.OptionKey;
  * is serializable.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public class StorageConnector implements Serializable {

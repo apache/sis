@@ -57,8 +57,8 @@ import org.apache.sis.util.Version;
  * the part of the caller. However the {@link NetcdfStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  *
  * @see NetcdfStore
