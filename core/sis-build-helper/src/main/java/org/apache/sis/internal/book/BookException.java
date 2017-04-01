@@ -18,7 +18,7 @@ package org.apache.sis.internal.book;
 
 
 /**
- * Throws when an error is found in the content of the HTML files used for building the developer guide.
+ * Thrown when an error is found in the content of the HTML files used for building the developer guide.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7

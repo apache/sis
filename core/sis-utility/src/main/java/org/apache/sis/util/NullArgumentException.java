@@ -18,7 +18,7 @@ package org.apache.sis.util;
 
 
 /**
- * Throws when a null argument has been given to a method that doesn't accept them.
+ * Thrown when a null argument has been given to a method that doesn't accept them.
  * This exception extends {@link NullPointerException} in order to stress out that
  * the error is an illegal argument rather than an unexpected usage of a null pointer
  * inside a method body.
