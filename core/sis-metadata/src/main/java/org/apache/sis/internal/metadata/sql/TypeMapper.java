@@ -40,7 +40,7 @@ public final class TypeMapper {
         new TypeMapper(Boolean.class, Types.BOOLEAN,   "BOOLEAN"),
         new TypeMapper(Date   .class, Types.TIMESTAMP, "TIMESTAMP"),
         new TypeMapper(Double .class, Types.DOUBLE,    "DOUBLE PRECISION"),
-        new TypeMapper(Float  .class, Types.REAL  ,    "REAL"),
+        new TypeMapper(Float  .class, Types.REAL,      "REAL"),
         new TypeMapper(Long   .class, Types.BIGINT,    "BIGINT"),
         new TypeMapper(Integer.class, Types.INTEGER,   "INTEGER"),
         new TypeMapper(Short  .class, Types.SMALLINT,  "SMALLINT"),

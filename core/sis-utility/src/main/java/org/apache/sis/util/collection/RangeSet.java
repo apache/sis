@@ -440,12 +440,12 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     final int binarySearch(final E value, final int lower, final int upper) {
         switch (elementCode) {
             case DOUBLE:    return Arrays.binarySearch((double[]) array, lower, upper, (Double)    value);
-            case FLOAT:     return Arrays.binarySearch((float []) array, lower, upper, (Float)     value);
-            case LONG:      return Arrays.binarySearch((long  []) array, lower, upper, (Long)      value);
-            case INTEGER:   return Arrays.binarySearch((int   []) array, lower, upper, (Integer)   value);
-            case SHORT:     return Arrays.binarySearch((short []) array, lower, upper, (Short)     value);
-            case BYTE:      return Arrays.binarySearch((byte  []) array, lower, upper, (Byte)      value);
-            case CHARACTER: return Arrays.binarySearch((char  []) array, lower, upper, (Character) value);
+            case FLOAT:     return Arrays.binarySearch((float[])  array, lower, upper, (Float)     value);
+            case LONG:      return Arrays.binarySearch((long[])   array, lower, upper, (Long)      value);
+            case INTEGER:   return Arrays.binarySearch((int[])    array, lower, upper, (Integer)   value);
+            case SHORT:     return Arrays.binarySearch((short[])  array, lower, upper, (Short)     value);
+            case BYTE:      return Arrays.binarySearch((byte[])   array, lower, upper, (Byte)      value);
+            case CHARACTER: return Arrays.binarySearch((char[])   array, lower, upper, (Character) value);
             default:        return Arrays.binarySearch((Object[]) array, lower, upper,             value);
         }
     }
@@ -1580,12 +1580,12 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             final Object a2 = that.array;
             switch (elementCode) {
                 case DOUBLE:    return Arrays.equals((double[]) a1, (double[]) a2);
-                case FLOAT:     return Arrays.equals((float []) a1, ( float[]) a2);
-                case LONG:      return Arrays.equals((long  []) a1, (  long[]) a2);
-                case INTEGER:   return Arrays.equals((int   []) a1, (   int[]) a2);
-                case SHORT:     return Arrays.equals((short []) a1, ( short[]) a2);
-                case BYTE:      return Arrays.equals((byte  []) a1, (  byte[]) a2);
-                case CHARACTER: return Arrays.equals((char  []) a1, (  char[]) a2);
+                case FLOAT:     return Arrays.equals((float[])  a1, (float[])  a2);
+                case LONG:      return Arrays.equals((long[])   a1, (long[])   a2);
+                case INTEGER:   return Arrays.equals((int[])    a1, (int[])    a2);
+                case SHORT:     return Arrays.equals((short[])  a1, (short[])  a2);
+                case BYTE:      return Arrays.equals((byte[])   a1, (byte[])   a2);
+                case CHARACTER: return Arrays.equals((char[])   a1, (char[])   a2);
                 default:        return Arrays.equals((Object[]) a1, (Object[]) a2);
             }
         }

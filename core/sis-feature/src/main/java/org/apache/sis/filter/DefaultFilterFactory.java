@@ -712,7 +712,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public Function function(final String name, final Expression ... parameters) {
+    public Function function(final String name, final Expression... parameters) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -1009,7 +1009,7 @@ final class LandsatReader {
      * Invoked when a non-fatal exception occurred while reading metadata. This method
      * sends a record to the registered listeners if any, or logs the record otherwise.
      */
-    private void warning(String key, final BufferedReader reader ,final Exception e) {
+    private void warning(String key, final BufferedReader reader, final Exception e) {
         if (key != null) {
             String file = getFilename();
             if (reader instanceof LineNumberReader) {
