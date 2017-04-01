@@ -74,7 +74,7 @@ public class IdentifiedObjectFinder {
      * @version 0.7
      * @module
      */
-    public static enum Domain {
+    public enum Domain {
         /**
          * Fast lookup based only on embedded identifiers and names. If those identification information
          * does not allow to locate an object in the factory, then the search will return an empty set.

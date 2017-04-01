@@ -122,7 +122,7 @@ public interface TreeTable {
      * @version 0.8
      * @module
      */
-    public static interface Node {
+    public interface Node {
         /**
          * Returns the parent node, or {@code null} if this node is the root of the tree.
          *

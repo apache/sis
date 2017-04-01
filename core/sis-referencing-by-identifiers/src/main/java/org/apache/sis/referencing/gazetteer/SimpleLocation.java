@@ -307,7 +307,7 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
      * @version 0.8
      * @module
      */
-    static abstract class Projected extends SimpleLocation implements GeographicBoundingBox {
+    abstract static class Projected extends SimpleLocation implements GeographicBoundingBox {
         /**
          * The western-most coordinate of the limit of the dataset extent.
          * The value is expressed in longitude in decimal degrees (positive east).

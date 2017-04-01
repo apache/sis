@@ -246,7 +246,7 @@ public class MetadataBuilder {
     /**
      * The type of party to create (individual, organization or unknown).
      */
-    public static enum PartyType {
+    public enum PartyType {
         /**
          * Instructs {@link #newParty(PartyType)} that the next party to create should be an instance of
          * {@link DefaultIndividual}.
@@ -659,7 +659,7 @@ public class MetadataBuilder {
     /**
      * Specify if an information apply to data, to metadata or to both.
      */
-    public static enum Scope {
+    public enum Scope {
         /**
          * Information applies only to data.
          */

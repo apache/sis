@@ -695,6 +695,10 @@ Apache SIS is a free software, Java language library for developing geospatial a
               <consoleOutput>true</consoleOutput>
               <checkstyleRules>
                 <module name="Checker">
+                  <!--
+                    Whether whitespaces should be present before or after various kind of tokens,
+                    and where line wraps are allowed or mandated.
+                  -->
                   <module name="FileTabCharacter"/>         <!-- No tab characters in the file. -->
                   <module name="NewlineAtEndOfFile"/>       <!-- Newline at the end of each file. -->
                   <module name="TreeWalker">
@@ -731,7 +735,30 @@ Apache SIS is a free software, Java language library for developing geospatial a
                       <property name="allowEmptyLambdas"      value="true"/>
                       <property name="allowEmptyCatches"      value="true"/>
                     </module>
+                    <!--
+                      Code formatting on other aspects than whitespaces. When there is different ways to express
+                      the same thing (e.g. Java-style versus C-style of array declarations), the following rules
+                      enforce one specific convention.
+                    -->
+                    <module name="UpperEll"/>               <!-- Upper-case 'L' suffix for longs, not 'l'. -->
+                    <module name="ArrayTypeStyle"/>         <!-- Java-style arrays, not C-style. -->
+                    <module name="ModifierOrder"/>          <!-- Order of public, static, etc. keywords. -->
+                    <module name="AvoidEscapedUnicodeCharacters">
+                      <property name="allowEscapesForControlCharacters" value="true"/>
+                      <property name="allowNonPrintableEscapes"         value="true"/>
+                      <property name="allowIfAllCharactersEscaped"      value="true"/>
+                      <property name="allowByTailComment"               value="true"/>
+                    </module>
+                    <!--
+                      Programming language constructs: number of elements, modifiers, etc.
+                    -->
+                    <module name="OuterTypeFilename"/>      <!-- Outer type name and file name shall match. -->
+                    <module name="OuterTypeNumber"/>        <!-- Only one outer type per file. -->
+                    <module name="RedundantModifier">       <!-- No modifiers that were implicit. -->
+                      <property name="tokens" value="VARIABLE_DEF, ANNOTATION_FIELD_DEF, INTERFACE_DEF, CLASS_DEF, ENUM_DEF, RESOURCE"/>
+                    </module>
                   </module>
+                  <module name="UniqueProperties"/>       <!-- No duplicated keys in *.properties files. -->
                 </module>
               </checkstyleRules>
             </configuration>

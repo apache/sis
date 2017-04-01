@@ -36,8 +36,8 @@ import com.sun.tools.doclets.Taglet;
  * just before the parts to copy in the javadoc.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class Include extends InlineTaglet {
@@ -97,7 +97,7 @@ public final class Include extends InlineTaglet {
         file = new File(file.getParentFile(), reference.substring(0, sep));
         final String anchor = reference.substring(sep + 1);
         final StringBuilder buffer = new StringBuilder();
-        try (final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
             /*
              * Search the anchor.
              */

@@ -597,7 +597,7 @@ pathTree:   for (int j=0; ; j++) {
             }
             final File file = entry.getKey();
             if (file.isFile() && file.canRead()) {
-                try (final JarFile jar = new JarFile(file)) {
+                try (JarFile jar = new JarFile(file)) {
                     final Manifest manifest = jar.getManifest();
                     if (manifest != null) {
                         final Attributes attributes = manifest.getMainAttributes();

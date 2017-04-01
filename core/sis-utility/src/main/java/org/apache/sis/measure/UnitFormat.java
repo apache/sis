@@ -134,7 +134,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * @version 0.8
      * @module
      */
-    public static enum Style {
+    public enum Style {
         /**
          * Format unit symbols using Unicode characters. Units formatted in this style use superscript digits
          * for exponents (as in “m³”), the dot operator (“⋅”) for multiplications, specialized characters when

@@ -53,7 +53,7 @@ public final strictfp class MetadataSourceTest extends TestCase {
     @Test
     public void testOnDerby() throws Exception {
         final DataSource ds = TestDatabase.create("temporary");
-        try (final MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, ds, "metadata", null, null)) {
+        try (MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, ds, "metadata", null, null)) {
             source.install();
             verifyFormats(source);
             testSearch(source);

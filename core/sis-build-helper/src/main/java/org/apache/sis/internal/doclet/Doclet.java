@@ -50,8 +50,8 @@ import com.sun.tools.doclets.formats.html.HtmlDoclet;
  * <p>This class presumes that all CSS files are encoded in UTF-8.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.7
+ * @since   0.5
  * @module
  */
 public final class Doclet extends HtmlDoclet {
@@ -163,8 +163,8 @@ public final class Doclet extends HtmlDoclet {
              * Copy the standard CSS file, skipping the import of DejaVu font
              * since our custom CSS file does not use it.
              */
-            try (final BufferedReader in  = openReader(stylesheetFile);
-                 final BufferedWriter out = openWriter(standardFile))
+            try (BufferedReader in  = openReader(stylesheetFile);
+                 BufferedWriter out = openWriter(standardFile))
             {
                 String line;
                 while ((line = in.readLine()) != null) {
@@ -178,8 +178,8 @@ public final class Doclet extends HtmlDoclet {
         /*
          * Copy the custom CSS file, skipping comments for more compact file.
          */
-        try (final BufferedReader in  = openReader(inputFile);
-             final BufferedWriter out = openWriter(stylesheetFile))
+        try (BufferedReader in  = openReader(inputFile);
+             BufferedWriter out = openWriter(stylesheetFile))
         {
             String line;
             while ((line = in.readLine()) != null) {
@@ -217,8 +217,8 @@ public final class Doclet extends HtmlDoclet {
              */
             final byte[] buffer = new byte[4096];
             for (final File input : inputFiles) {
-                try (final FileInputStream  in  = new FileInputStream(input);
-                     final FileOutputStream out = new FileOutputStream(new File(outputDirectory, input.getName())))
+                try (FileInputStream  in  = new FileInputStream(input);
+                     FileOutputStream out = new FileOutputStream(new File(outputDirectory, input.getName())))
                 {
                     int c;
                     while ((c = in.read(buffer)) >= 0) {

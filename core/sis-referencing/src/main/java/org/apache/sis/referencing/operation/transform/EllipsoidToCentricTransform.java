@@ -119,7 +119,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * @version 0.7
      * @module
      */
-    public static enum TargetType {
+    public enum TargetType {
         /**
          * Indicates conversions from
          * {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal} to

@@ -85,7 +85,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      *
      * @see AbstractMap#entryIterator()
      */
-    protected static abstract class EntryIterator<K,V> {
+    protected abstract static class EntryIterator<K,V> {
         /**
          * Moves the iterator to the next position, and returns {@code true} if there is at least one remaining element.
          *
@@ -550,7 +550,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Base class of iterators overs keys, values or entries.
      * Those iterators wrap an {@link EntryIterator} instance.
      */
-    private static abstract class Iter<K,V> {
+    private abstract static class Iter<K,V> {
         /** The wrapped entry iterator. */
         private final EntryIterator<K,V> iterator;
 
