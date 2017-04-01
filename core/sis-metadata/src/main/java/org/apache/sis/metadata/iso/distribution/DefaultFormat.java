@@ -248,7 +248,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @XmlElement(name = "specification")
     public InternationalString getSpecification() {
         final Citation citation = getFormatSpecificationCitation();
-        return (citation != null) ? citation.getTitle(): null;
+        return (citation != null) ? citation.getTitle() : null;
     }
 
     /**
@@ -317,7 +317,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     @XmlElement(name = "version", required = true)
     public InternationalString getVersion() {
         final Citation citation = getFormatSpecificationCitation();
-        return (citation != null) ? citation.getEdition(): null;
+        return (citation != null) ? citation.getEdition() : null;
     }
 
     /**

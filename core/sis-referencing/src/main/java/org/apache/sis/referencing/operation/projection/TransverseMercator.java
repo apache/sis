@@ -440,8 +440,8 @@ public class TransverseMercator extends ConformalProjection {
         //-- dQ_dλ = 0;
         final double dQ_dφ  = 1 / cosφ - eccentricitySquared * cosφ / (1 - ℯsinφ * ℯsinφ);
 
-        final double dη0_dλ =   cosλ * coshQ         / cosh2Q_sin2λ;
-        final double dη0_dφ = - dQ_dφ * sinλ * sinhQ / cosh2Q_sin2λ;
+        final double dη0_dλ =  cosλ * coshQ         / cosh2Q_sin2λ;
+        final double dη0_dφ = -dQ_dφ * sinλ * sinhQ / cosh2Q_sin2λ;
 
         final double dξ0_dλ = sinhQ * sinhη0 * cosλ / (cosh2Q_sin2λ * sqrt1_thQchη0);
         final double dξ0_dφ = (dQ_dφ * coshη0 / cosh2Q + dη0_dφ * sinhη0 * tanhQ) / sqrt1_thQchη0;

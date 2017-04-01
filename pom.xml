@@ -677,6 +677,13 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>2.17</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>7.6.1</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <goals>
@@ -688,11 +695,42 @@ Apache SIS is a free software, Java language library for developing geospatial a
               <consoleOutput>true</consoleOutput>
               <checkstyleRules>
                 <module name="Checker">
-                  <module name="FileTabCharacter"/>     <!-- Checks that there are no tab characters in the file. -->
-                  <module name="NewlineAtEndOfFile"/>   <!-- Checks that there is a newline at the end of each file. -->
+                  <module name="FileTabCharacter"/>         <!-- No tab characters in the file. -->
+                  <module name="NewlineAtEndOfFile"/>       <!-- Newline at the end of each file. -->
                   <module name="TreeWalker">
-                    <module name="RedundantImport"/>    <!-- Checks for redundant import statements. -->
-                    <module name="GenericWhitespace"/>  <!-- Checks that the whitespace around the Generic tokens follow the typical convention. -->
+                    <module name="NoLineWrap"/>             <!-- Imports and package statements are not line-wrapped. -->
+                    <module name="RedundantImport"/>        <!-- No redundant import statements. -->
+                    <module name="GenericWhitespace"/>      <!-- Whitespace around the Generic tokens follow typical convention. -->
+                    <module name="TypecastParenPad"/>       <!-- No space inside parentheses for typecasts. -->
+                    <module name="SeparatorWrap">           <!-- No line wrapping before comma. -->
+                      <property name="tokens" value="COMMA"/>
+                    </module>
+                    <module name="WhitespaceAfter">         <!-- Checks that a token is followed by whitespace. -->
+                      <property name="tokens" value="TYPECAST, LITERAL_IF, LITERAL_ELSE, LITERAL_WHILE, LITERAL_DO, LITERAL_FOR, DO_WHILE"/>
+                    </module>
+                    <module name="NoWhitespaceAfter">       <!-- No whitespace after "++" in ++x, etc. -->
+                      <property name="tokens" value="INC, DEC, BNOT, LNOT"/>
+                    </module>
+                    <module name="NoWhitespaceBefore">      <!-- No whitespace before "++" in x++, etc. -->
+                      <property name="tokens" value="COMMA, POST_INC, POST_DEC, ELLIPSIS"/>
+                    </module>
+                    <module name="WhitespaceAround">
+                      <property name="tokens" value="
+                        MINUS_ASSIGN, STAR_ASSIGN, DIV_ASSIGN, MOD_ASSIGN, MOD,
+                        SL, SL_ASSIGN, SR, SR_ASSIGN, BSR, BSR_ASSIGN,
+                        BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BXOR, BXOR_ASSIGN,
+                        TYPE_EXTENSION_AND, LAND, LOR, QUESTION, LAMBDA,
+                        COLON, DO_WHILE, LITERAL_DO, LITERAL_WHILE, LITERAL_FOR,
+                        LITERAL_ELSE, LITERAL_SWITCH,
+                        LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY,
+                        LITERAL_SYNCHRONIZED"/>
+                      <property name="allowEmptyConstructors" value="true"/>
+                      <property name="allowEmptyMethods"      value="true"/>
+                      <property name="allowEmptyTypes"        value="true"/>
+                      <property name="allowEmptyLoops"        value="true"/>
+                      <property name="allowEmptyLambdas"      value="true"/>
+                      <property name="allowEmptyCatches"      value="true"/>
+                    </module>
                   </module>
                 </module>
               </checkstyleRules>

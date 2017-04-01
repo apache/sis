@@ -265,7 +265,7 @@ class MathTransformParser extends AbstractParser {
     final void parseParameters(final Element element, final ParameterValueGroup parameters,
             final Unit<?> defaultUnit, final Unit<Angle> defaultAngularUnit) throws ParseException
     {
-        final Unit<?> defaultSI = (defaultUnit != null) ? defaultUnit.getSystemUnit(): null;
+        final Unit<?> defaultSI = (defaultUnit != null) ? defaultUnit.getSystemUnit() : null;
         Element param = element;
         try {
             while ((param = element.pullElement(OPTIONAL, WKTKeywords.Parameter)) != null) {
