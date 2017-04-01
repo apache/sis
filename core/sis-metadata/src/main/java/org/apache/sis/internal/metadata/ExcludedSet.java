@@ -31,8 +31,8 @@ import org.apache.sis.util.resources.Errors;
  * @param  <E>  the type of elements that the collection would have if it was non-empty.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see Collections#emptySet()

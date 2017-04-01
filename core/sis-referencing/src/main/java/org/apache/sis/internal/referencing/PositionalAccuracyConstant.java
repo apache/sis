@@ -43,8 +43,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * Pre-defined positional accuracy resulting from some coordinate operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  *
  * @see org.opengis.referencing.operation.Transformation#getCoordinateOperationAccuracy()

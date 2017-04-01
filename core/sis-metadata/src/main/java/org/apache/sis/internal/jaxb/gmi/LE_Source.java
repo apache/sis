@@ -27,8 +27,8 @@ import org.apache.sis.metadata.iso.lineage.DefaultSource;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @XmlType(name = "LE_Source_Type")

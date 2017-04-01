@@ -47,8 +47,8 @@ import org.apache.sis.internal.util.Numerics;
  * and know how to copy the {@code UnitConverter} coefficients into an affine transform matrix.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class LinearConverter extends AbstractConverter implements LenientComparable {

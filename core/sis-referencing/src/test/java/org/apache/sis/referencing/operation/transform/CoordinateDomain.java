@@ -32,8 +32,8 @@ import org.apache.sis.referencing.datum.GeodeticDatumMock;
  * This class can generate random number suitable for their domain.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
 public strictfp class CoordinateDomain {

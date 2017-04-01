@@ -45,8 +45,8 @@ import org.apache.sis.parameter.DefaultParameterValue;
  * @param  <T>  the type of the value stored in this parameter.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                         // No additional fields compared to parent.

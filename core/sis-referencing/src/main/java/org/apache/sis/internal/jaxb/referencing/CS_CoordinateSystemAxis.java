@@ -28,8 +28,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 public final class CS_CoordinateSystemAxis extends PropertyType<CS_CoordinateSystemAxis, CoordinateSystemAxis> {

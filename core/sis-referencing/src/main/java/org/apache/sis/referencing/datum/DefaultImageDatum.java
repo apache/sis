@@ -46,8 +46,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  *
  * @see org.apache.sis.referencing.crs.DefaultImageCRS

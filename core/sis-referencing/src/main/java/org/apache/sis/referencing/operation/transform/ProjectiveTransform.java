@@ -34,8 +34,8 @@ import org.apache.sis.util.ArgumentChecks;
  * lines in the source is preserved in the output.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.7
+ * @since   0.5
  * @module
  *
  * @see java.awt.geom.AffineTransform

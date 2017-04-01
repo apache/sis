@@ -37,8 +37,8 @@ import org.apache.sis.util.ComparisonMode;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see org.apache.sis.referencing.AbstractReferenceSystem

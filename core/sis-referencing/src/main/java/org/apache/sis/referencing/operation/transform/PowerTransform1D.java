@@ -39,8 +39,8 @@ import org.apache.sis.util.ComparisonMode;
  * same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class PowerTransform1D extends AbstractMathTransform1D implements Serializable {

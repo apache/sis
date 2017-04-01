@@ -59,8 +59,8 @@ import org.apache.sis.util.resources.Errors;
  * and do not change any public {@code GenericName} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see org.apache.sis.referencing.NamedIdentifier
@@ -343,8 +343,8 @@ public abstract class AbstractName implements GenericName, Serializable {
      * This class is immutable is the list given to the constructor is immutable.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private static final class International extends SimpleInternationalString {

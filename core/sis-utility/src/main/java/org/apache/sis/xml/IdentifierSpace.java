@@ -45,8 +45,8 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @param  <T>  the type of object used as identifier values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see org.apache.sis.metadata.iso.citation.Citations

@@ -42,8 +42,8 @@ import org.apache.sis.internal.util.Citations;
  * @param  <T>  the value type, typically {@link XLink}, {@link UUID} or {@link String}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Serializable {

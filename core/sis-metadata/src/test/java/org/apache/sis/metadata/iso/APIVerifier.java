@@ -49,8 +49,8 @@ import static org.junit.Assert.*;
  * by the trunk is behind the snapshot developments.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final strictfp class APIVerifier extends TestCase {

@@ -31,8 +31,8 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * {@link DefaultMetadataScope} instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 abstract class MetadataScopeAdapter<L> extends LegacyPropertyAdapter<L,MetadataScope> {

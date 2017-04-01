@@ -34,8 +34,8 @@ import org.opengis.feature.AttributeType;
  * This implementation adds its own criterion to the attribute quality evaluation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @SuppressWarnings("serial")

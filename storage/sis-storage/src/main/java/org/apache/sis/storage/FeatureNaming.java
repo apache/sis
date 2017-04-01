@@ -88,8 +88,8 @@ import org.apache.sis.internal.storage.Resources;
  * @param <E> the type of elements associated with the names.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  *
  * @see org.apache.sis.util.iso.AbstractName

@@ -27,8 +27,8 @@ import org.apache.sis.util.resources.Errors;
  * An empty {@link InternationalString} which is nil for the given reason.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 final class NilInternationalString implements InternationalString, NilObject, Serializable {

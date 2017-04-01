@@ -122,8 +122,8 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  *
  * @see DefaultEllipsoid

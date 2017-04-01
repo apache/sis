@@ -55,8 +55,8 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  *
  * @see Matrices

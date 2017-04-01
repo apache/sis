@@ -127,8 +127,8 @@ import org.apache.sis.measure.Units;
  *              or {@link javax.measure.quantity.Length}).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  *
  * @see org.apache.sis.referencing.operation.transform.DatumShiftTransform

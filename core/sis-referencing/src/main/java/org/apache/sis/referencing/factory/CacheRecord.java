@@ -35,8 +35,8 @@ import org.apache.sis.util.Debug;
  * Instance of this class represent a single record in the cache content to be listed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  *
  * @see ConcurrentAuthorityFactory#printCacheContent(PrintWriter)

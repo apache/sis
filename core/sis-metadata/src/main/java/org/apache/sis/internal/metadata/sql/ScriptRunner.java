@@ -52,8 +52,8 @@ import java.util.function.BiFunction;
  * functionalities other than what we need for those scripts.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 public class ScriptRunner implements AutoCloseable {

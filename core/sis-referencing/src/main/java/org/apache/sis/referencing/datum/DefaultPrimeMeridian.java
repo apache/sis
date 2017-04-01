@@ -82,8 +82,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  *
  * @see org.apache.sis.referencing.CommonCRS#primeMeridian()

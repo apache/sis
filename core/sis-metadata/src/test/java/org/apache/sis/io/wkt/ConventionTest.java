@@ -27,8 +27,8 @@ import static org.junit.Assert.*;
  * Tests the {@link Convention} enumeration.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final strictfp class ConventionTest extends TestCase {

@@ -27,8 +27,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class CS_CylindricalCS extends PropertyType<CS_CylindricalCS, CylindricalCS> {

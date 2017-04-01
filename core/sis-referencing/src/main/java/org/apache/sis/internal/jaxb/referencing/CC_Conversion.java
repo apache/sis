@@ -29,8 +29,8 @@ import org.apache.sis.referencing.operation.DefaultConversion;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 public final class CC_Conversion extends PropertyType<CC_Conversion, Conversion> {

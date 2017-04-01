@@ -132,8 +132,8 @@ import org.opengis.referencing.gazetteer.LocationType;
  * are not thread-safe; it is recommended to create a new {@code Coder} instance for each thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  *
  * @see CommonCRS#universal(double, double)
@@ -352,8 +352,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * or synchronization must be applied by the caller.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.8
      * @version 0.8
+     * @since   0.8
      * @module
      */
     public class Coder {
@@ -1299,8 +1299,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * or synchronization must be applied by the caller.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.8
      * @version 0.8
+     * @since   0.8
      * @module
      *
      * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
@@ -1619,8 +1619,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * The {@linkplain #getPosition() position} represents the centroid of the decoded MGRS reference.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.8
      * @version 0.8
+     * @since   0.8
      * @module
      */
     static final class Decoder extends SimpleLocation.Projected {

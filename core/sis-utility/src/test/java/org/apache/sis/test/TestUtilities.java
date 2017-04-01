@@ -53,8 +53,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * Miscellaneous utility methods for test cases.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final strictfp class TestUtilities extends Static {

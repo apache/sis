@@ -30,8 +30,8 @@
  * so some serialized classes still exist in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 package org.apache.sis.internal.util;

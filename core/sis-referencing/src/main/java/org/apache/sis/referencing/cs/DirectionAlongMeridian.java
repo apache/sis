@@ -47,8 +47,8 @@ import org.apache.sis.util.resources.Errors;
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 final class DirectionAlongMeridian extends FormattableObject implements Comparable<DirectionAlongMeridian> {

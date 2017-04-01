@@ -27,8 +27,8 @@ import java.nio.file.Files;
  * Assumption methods used by the SIS project in addition of the JUnit ones.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final strictfp class Assume extends org.junit.Assume {

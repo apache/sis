@@ -33,8 +33,8 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  *
  * @see org.apache.sis.feature.DefaultAssociationRole

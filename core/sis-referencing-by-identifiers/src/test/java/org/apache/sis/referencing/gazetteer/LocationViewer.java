@@ -50,8 +50,8 @@ import org.opengis.referencing.gazetteer.Location;
  * This is used for debugging purpose only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @Debug

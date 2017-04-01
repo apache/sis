@@ -58,8 +58,8 @@ import org.opengis.referencing.IdentifiedObject;
  * ignored by the user.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
 public class CorruptedObjectException extends RuntimeException {

@@ -53,8 +53,8 @@ import org.opengis.feature.FeatureAssociationRole;
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  *
  * @see DefaultFeatureType

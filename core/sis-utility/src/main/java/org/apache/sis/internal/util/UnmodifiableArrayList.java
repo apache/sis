@@ -57,8 +57,8 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @param  <E>  the type of elements in the list.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomAccess, CheckedContainer<E>, Serializable {
@@ -308,8 +308,8 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * @param  <E>  the type of elements in the list.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private static final class SubList<E> extends UnmodifiableArrayList<E> {

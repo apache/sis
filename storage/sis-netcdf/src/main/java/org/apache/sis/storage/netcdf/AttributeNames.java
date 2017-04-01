@@ -129,8 +129,8 @@ import org.opengis.metadata.extent.GeographicDescription;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public class AttributeNames {
@@ -424,8 +424,8 @@ public class AttributeNames {
      * in a NetCDF file.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see org.apache.sis.storage.netcdf.AttributeNames.Dimension
@@ -722,8 +722,8 @@ public class AttributeNames {
      * identified in a NetCDF file.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see org.apache.sis.storage.netcdf.AttributeNames.Responsible

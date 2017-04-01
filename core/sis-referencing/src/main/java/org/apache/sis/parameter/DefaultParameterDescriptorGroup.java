@@ -85,8 +85,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  *
  * @see DefaultParameterValueGroup

@@ -38,8 +38,8 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * the {@link org.apache.sis.referencing.operation.projection} package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 public final strictfp class EquirectangularTest extends MapProjectionTestCase {

@@ -58,8 +58,8 @@ import org.apache.sis.internal.util.X364;
  * See {@link org.apache.sis.console} package javadoc for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 final class AboutCommand extends CommandRunner {

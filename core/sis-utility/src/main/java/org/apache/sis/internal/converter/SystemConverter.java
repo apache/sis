@@ -36,8 +36,8 @@ import org.apache.sis.util.resources.Errors;
  * @param  <T>  the base type of converted objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConverter<S,T> {

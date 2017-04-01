@@ -67,8 +67,8 @@ import java.lang.reflect.Array;
  * objects.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  *
  * @see Arrays

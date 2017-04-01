@@ -45,8 +45,8 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  *              This is the type used by external frameworks like Log4J.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see Logging

@@ -74,8 +74,8 @@ import org.apache.sis.util.Localized;
  * subclass.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  *
  * @see EPSGDataAccess

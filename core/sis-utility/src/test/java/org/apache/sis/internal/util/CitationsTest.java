@@ -35,8 +35,8 @@ import static org.junit.Assert.*;
  * Tests the internal {@link Citations} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 public final strictfp class CitationsTest extends TestCase {

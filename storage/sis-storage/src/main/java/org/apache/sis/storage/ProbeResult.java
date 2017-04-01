@@ -46,8 +46,8 @@ import org.apache.sis.internal.util.Utilities;
  * In such cases, SIS will revisit those providers only if no better suited provider is found.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  *
  * @see DataStoreProvider#probeContent(StorageConnector)

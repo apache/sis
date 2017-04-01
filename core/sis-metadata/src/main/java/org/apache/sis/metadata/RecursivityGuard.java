@@ -37,8 +37,8 @@ import java.util.IdentityHashMap;
  * @param  <V>  the kind of values to store in the maps.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see #HASH_CODES

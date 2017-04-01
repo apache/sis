@@ -102,8 +102,8 @@ import java.util.function.Predicate;
  * then {@link CoordinateOperationFinder} will use its own fallback.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 class CoordinateOperationRegistry {

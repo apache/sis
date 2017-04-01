@@ -29,8 +29,8 @@ import static org.junit.Assert.*;
  * Tests the {@link WarningListeners} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class WarningListenersTest extends TestCase implements WarningListener<String> {

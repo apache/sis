@@ -77,8 +77,8 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * @param  <V>  the class of value elements.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  *
  * @see java.util.WeakHashMap
@@ -511,8 +511,8 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * The set of entries.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private final class EntrySet extends AbstractSet<Map.Entry<K,V>> {

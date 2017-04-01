@@ -29,8 +29,8 @@ import org.apache.sis.metadata.iso.extent.Extents;
  * @param  <T>  the type of object to be selected.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class ExtentSelector<T> {

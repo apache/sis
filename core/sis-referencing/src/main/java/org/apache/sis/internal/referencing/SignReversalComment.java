@@ -30,8 +30,8 @@ import org.apache.sis.util.iso.AbstractInternationalString;
  * <p>This approach may change in any future SIS version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  *
  * @see org.apache.sis.internal.referencing.provider.AbstractProvider#isInvertible()

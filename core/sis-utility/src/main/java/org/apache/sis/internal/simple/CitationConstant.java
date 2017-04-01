@@ -40,8 +40,8 @@ import org.apache.sis.internal.util.MetadataServices;
  * is available, then that simple primary key will be used as the citation title.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  *
  * @see IdentifierSpace

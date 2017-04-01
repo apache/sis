@@ -26,8 +26,8 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * {@link InternationalStringAdapter}, this converter doesn't wrap the string in a new object.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class InternationalStringConverter extends XmlAdapter<String,InternationalString> {

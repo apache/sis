@@ -65,8 +65,8 @@ import org.apache.sis.util.resources.Errors;
  * @param <V> the type of mapped values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 public abstract class AbstractMap<K,V> implements Map<K,V> {

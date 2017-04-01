@@ -53,8 +53,8 @@ import org.apache.sis.util.Classes;
  * recommended approach, but for Apache SIS private classes this is a way to reduce pressure on garbage collector.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")

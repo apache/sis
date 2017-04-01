@@ -39,8 +39,8 @@ import static org.apache.sis.util.CharSequences.*;
  * Utilities methods related to {@link AxisDirection}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public final class AxisDirections extends Static {

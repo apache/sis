@@ -58,8 +58,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  *
  * @see MathTransforms#compound(MathTransform...)

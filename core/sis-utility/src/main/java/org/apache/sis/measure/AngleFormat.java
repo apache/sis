@@ -117,8 +117,8 @@ import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
  * </div>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  *
  * @see Angle
@@ -202,8 +202,8 @@ public class AngleFormat extends Format implements Localized {
      * {@link AngleFormat#formatToCharacterIterator(Object)}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     public static final class Field extends FormatField {

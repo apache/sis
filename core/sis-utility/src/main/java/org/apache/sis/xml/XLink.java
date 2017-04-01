@@ -72,8 +72,8 @@ import org.apache.sis.internal.system.Loggers;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see <a href="http://www.w3.org/TR/xlink/">XML Linking Language</a>
@@ -207,8 +207,8 @@ public class XLink implements Serializable {
      * attribute values in a {@link XLink} instance.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see XLink#getType()
@@ -530,8 +530,8 @@ public class XLink implements Serializable {
      * from the starting resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see XLink#getShow()
@@ -605,8 +605,8 @@ public class XLink implements Serializable {
      * resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see XLink#getActuate()

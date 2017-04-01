@@ -109,8 +109,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  *
  * @see SimpleFormatter

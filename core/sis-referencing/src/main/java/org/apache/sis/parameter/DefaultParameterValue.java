@@ -117,8 +117,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @param  <T>  the type of the value stored in this parameter.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  *
  * @see DefaultParameterDescriptor

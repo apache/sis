@@ -62,8 +62,8 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  * convenience method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  *
  * @see org.apache.sis.referencing.operation.transform.MathTransforms#linear(Matrix)

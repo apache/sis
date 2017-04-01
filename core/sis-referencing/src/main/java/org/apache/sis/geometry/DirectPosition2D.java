@@ -59,8 +59,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * Collections that do not rely on hash codes, like {@code ArrayList}, are safe in all cases.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see DirectPosition1D

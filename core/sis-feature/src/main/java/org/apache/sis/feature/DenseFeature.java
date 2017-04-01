@@ -38,8 +38,8 @@ import org.opengis.feature.PropertyNotFoundException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Marc le Bihan
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  *
  * @see SparseFeature

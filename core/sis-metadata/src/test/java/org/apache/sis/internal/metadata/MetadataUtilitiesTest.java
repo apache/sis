@@ -27,8 +27,8 @@ import static org.junit.Assert.*;
  * Tests the {@link MetadataUtilities} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final strictfp class MetadataUtilitiesTest extends TestCase {

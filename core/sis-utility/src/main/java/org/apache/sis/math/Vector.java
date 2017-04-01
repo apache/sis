@@ -84,8 +84,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * without concern about whether the data were really stored as {@code double} or as {@code float} values.</div>
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  *
  * @see org.apache.sis.util.collection.IntegerList

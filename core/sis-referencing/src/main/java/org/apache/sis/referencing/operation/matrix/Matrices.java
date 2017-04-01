@@ -67,8 +67,8 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  *
  * @see org.apache.sis.parameter.TensorParameters

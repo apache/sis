@@ -26,8 +26,8 @@ import org.apache.sis.internal.storage.xml.GeographicEnvelope;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final class Bounds extends GeographicEnvelope {

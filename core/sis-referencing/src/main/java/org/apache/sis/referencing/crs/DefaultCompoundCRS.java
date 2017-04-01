@@ -107,8 +107,8 @@ import org.apache.sis.io.wkt.Convention;
  * SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCompoundCRS(String)

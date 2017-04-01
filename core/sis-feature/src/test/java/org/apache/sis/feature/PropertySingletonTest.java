@@ -31,8 +31,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link PropertySingleton}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final strictfp class PropertySingletonTest extends TestCase {

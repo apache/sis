@@ -31,8 +31,8 @@ import org.apache.sis.geometry.DirectPosition2D;
  * Concatenated transform in which the resulting transform is two-dimensional.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class ConcatenatedTransform2D extends ConcatenatedTransform implements MathTransform2D {

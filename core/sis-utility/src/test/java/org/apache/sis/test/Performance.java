@@ -30,8 +30,8 @@ import java.lang.annotation.Target;
  * in order to test the impact on performance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @Documented

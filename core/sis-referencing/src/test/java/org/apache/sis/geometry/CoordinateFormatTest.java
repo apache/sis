@@ -36,8 +36,8 @@ import static org.junit.Assert.*;
  * Tests the {@link CoordinateFormat} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  *
  * @see org.apache.sis.measure.CoordinateFormatTest

@@ -31,8 +31,8 @@ import org.apache.sis.measure.ValueRange;
  * @param  <E>  the type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see PropertyInformation#getDomainValue()

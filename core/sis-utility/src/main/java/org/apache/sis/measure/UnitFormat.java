@@ -71,8 +71,8 @@ import org.apache.sis.util.iso.DefaultNameSpace;
  * different threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  *
  * @see Units#valueOf(String)
@@ -130,8 +130,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * </ul>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.8
      * @version 0.8
+     * @since   0.8
      * @module
      */
     public enum Style {

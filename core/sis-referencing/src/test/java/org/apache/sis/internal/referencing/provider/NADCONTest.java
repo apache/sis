@@ -43,8 +43,8 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 public final strictfp class NADCONTest extends TestCase {

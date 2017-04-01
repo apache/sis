@@ -29,8 +29,8 @@ import static org.junit.Assert.*;
  * Tests {@link DataStores}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @DependsOn(StoreTest.class)

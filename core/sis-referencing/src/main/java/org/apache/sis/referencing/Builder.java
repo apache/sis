@@ -171,8 +171,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @param <B> The builder subclass.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public abstract class Builder<B extends Builder<B>> {

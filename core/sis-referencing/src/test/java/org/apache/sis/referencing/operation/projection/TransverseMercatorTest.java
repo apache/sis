@@ -36,8 +36,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link TransverseMercator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 @DependsOn(NormalizedProjectionTest.class)

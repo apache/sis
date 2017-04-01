@@ -42,8 +42,8 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-121">GEOTK-121</a>

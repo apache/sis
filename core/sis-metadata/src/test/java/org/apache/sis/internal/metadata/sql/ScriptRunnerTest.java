@@ -29,8 +29,8 @@ import static org.junit.Assert.*;
  * Tests {@link ScriptRunner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final strictfp class ScriptRunnerTest extends TestCase {

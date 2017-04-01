@@ -67,8 +67,8 @@ import org.opengis.geometry.Geometry;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  *
  * @see org.apache.sis.geometry.Envelopes

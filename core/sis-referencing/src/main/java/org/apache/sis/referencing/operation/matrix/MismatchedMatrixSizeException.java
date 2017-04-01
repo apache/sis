@@ -28,8 +28,8 @@ import org.opengis.geometry.MismatchedDimensionException;
  * that the operation involves two Coordinate Reference Systems of incompatible dimensions.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  *
  * @see org.opengis.geometry.MismatchedReferenceSystemException

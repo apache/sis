@@ -26,8 +26,8 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * terms can be set to a non-null value.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @XmlTransient

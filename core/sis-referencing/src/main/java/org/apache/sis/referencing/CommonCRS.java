@@ -124,8 +124,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  *
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
@@ -1192,8 +1192,8 @@ public enum CommonCRS {
      * The {@link #MEAN_SEA_LEVEL} value can be used instead as an approximation of geoidal heights.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.4
      * @version 0.7
+     * @since   0.4
      * @module
      *
      * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
@@ -1495,8 +1495,8 @@ public enum CommonCRS {
      * </table></blockquote>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.4
      * @version 0.4
+     * @since   0.4
      * @module
      */
     public enum Temporal {

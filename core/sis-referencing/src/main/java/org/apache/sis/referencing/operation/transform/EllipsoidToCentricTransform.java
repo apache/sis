@@ -97,8 +97,8 @@ import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetwe
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public class EllipsoidToCentricTransform extends AbstractMathTransform implements Serializable {
@@ -115,8 +115,8 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * See <a href="http://issues.apache.org/jira/browse/SIS-302">SIS-302</a>.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     public enum TargetType {
@@ -779,8 +779,8 @@ next:   while (--numPts >= 0) {
      * to ellipsoidal coordinates (λ,φ) or (λ,φ,<var>h</var>).
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     private final class Inverse extends AbstractMathTransform.Inverse implements Serializable {

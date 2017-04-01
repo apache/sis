@@ -31,8 +31,8 @@ import org.opengis.feature.Property;
  * This is used for testing purpose only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @SuppressWarnings("serial")

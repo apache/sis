@@ -72,8 +72,8 @@ import static java.lang.Character.*;
  * {@code 0} or {@code false} primitive type calculated as if the input was an empty string.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  *
  * @see StringBuilders

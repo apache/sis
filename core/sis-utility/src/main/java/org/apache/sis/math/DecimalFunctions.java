@@ -46,8 +46,8 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * since base 10 is not more "real" than base 2 for natural phenomenon.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  *
  * @see MathFunctions#pow10(int)

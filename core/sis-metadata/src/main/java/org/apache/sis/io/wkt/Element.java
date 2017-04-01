@@ -53,8 +53,8 @@ import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
  *
  * @author  Rémi Ève (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 final class Element implements Serializable {

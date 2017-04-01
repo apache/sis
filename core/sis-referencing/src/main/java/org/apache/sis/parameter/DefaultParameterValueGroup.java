@@ -103,8 +103,8 @@ import java.util.Objects;
  * <p>Calls to {@code values().clear()} restore this {@code DefaultParameterValueGroup} to its initial state.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  *
  * @see DefaultParameterDescriptorGroup

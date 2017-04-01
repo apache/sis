@@ -80,8 +80,8 @@ import org.apache.sis.util.collection.WeakHashSet;
  *
  * @author  Martin Desruisseaux (IRD)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see RangeFormat

@@ -37,8 +37,8 @@ import static org.opengis.test.Assert.*;
  * Tests {@link MathTransformParser}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn(org.apache.sis.referencing.operation.transform.MathTransformsTest.class)

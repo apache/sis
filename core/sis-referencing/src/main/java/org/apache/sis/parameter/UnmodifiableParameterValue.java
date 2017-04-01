@@ -51,8 +51,8 @@ import org.apache.sis.util.resources.Errors;
  * @param <T> The type of the value stored in this parameter.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @XmlTransient

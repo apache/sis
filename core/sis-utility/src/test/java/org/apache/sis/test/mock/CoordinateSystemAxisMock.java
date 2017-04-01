@@ -28,8 +28,8 @@ import org.opengis.referencing.cs.RangeMeaning;
  * Implements also {@link CoordinateSystem} for the purpose of tests which need some context.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @SuppressWarnings("serial")

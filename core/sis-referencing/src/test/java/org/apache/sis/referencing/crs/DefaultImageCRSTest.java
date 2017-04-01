@@ -39,8 +39,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests {@link DefaultImageCRS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public final strictfp class DefaultImageCRSTest extends XMLTestCase {

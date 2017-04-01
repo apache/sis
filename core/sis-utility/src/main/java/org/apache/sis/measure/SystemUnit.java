@@ -43,8 +43,8 @@ import org.apache.sis.math.Fraction;
  * @param  <Q>  the kind of quantity to be measured using this units.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {

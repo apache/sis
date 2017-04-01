@@ -21,8 +21,8 @@
  * lists (except base classes), which are defined in their own package.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter

@@ -47,8 +47,8 @@ import static org.apache.sis.internal.referencing.provider.AlbersEqualArea.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class AlbersEqualArea extends EqualAreaProjection {
@@ -286,8 +286,8 @@ public class AlbersEqualArea extends EqualAreaProjection {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @author  Rémi Maréchal (Geomatys)
-     * @since   0.8
      * @version 0.8
+     * @since   0.8
      * @module
      */
     static final class Spherical extends AlbersEqualArea {

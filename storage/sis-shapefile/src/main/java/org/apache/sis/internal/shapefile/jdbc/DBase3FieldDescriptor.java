@@ -25,8 +25,8 @@ import org.apache.sis.internal.shapefile.AutoChecker;
  * Field descriptor.
  *
  * @author  Travis L. Pinney
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public class DBase3FieldDescriptor extends AutoChecker {

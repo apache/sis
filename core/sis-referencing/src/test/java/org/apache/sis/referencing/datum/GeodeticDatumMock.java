@@ -33,8 +33,8 @@ import org.apache.sis.measure.Units;
  * A dummy implementation of {@link GeodeticDatum}, which is also its own ellipsoid.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @SuppressWarnings("serial")

@@ -106,8 +106,8 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  *
  * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)

@@ -69,8 +69,8 @@ import static org.apache.sis.internal.util.Citations.equalsFiltered;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public final class Citations extends Static {

@@ -86,8 +86,8 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see org.apache.sis.metadata.iso.extent.Extents

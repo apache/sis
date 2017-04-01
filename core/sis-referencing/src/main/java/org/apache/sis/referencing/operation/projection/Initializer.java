@@ -57,8 +57,8 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Marechal (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 final class Initializer {

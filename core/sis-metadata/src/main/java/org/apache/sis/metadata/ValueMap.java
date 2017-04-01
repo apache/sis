@@ -31,8 +31,8 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  * are the value returned by the {@code getFoo()} method using reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
@@ -173,8 +173,8 @@ final class ValueMap extends PropertyMap<Object> {
      * A map entry for a given property.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     final class Property extends AbstractMapEntry<String,Object> {
@@ -234,8 +234,8 @@ final class ValueMap extends PropertyMap<Object> {
      * The iterator over the {@link Property} elements contained in an {@link Entries} set.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private final class Iter implements Iterator<Map.Entry<String,Object>> {
@@ -312,8 +312,8 @@ final class ValueMap extends PropertyMap<Object> {
      * View of the entries contained in the map.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private final class Entries extends PropertyMap<Object>.Entries {

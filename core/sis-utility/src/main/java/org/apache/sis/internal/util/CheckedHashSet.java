@@ -40,8 +40,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @param  <E>  the type of elements in the set.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  *
  * @see Collections#checkedSet(Set, Class)

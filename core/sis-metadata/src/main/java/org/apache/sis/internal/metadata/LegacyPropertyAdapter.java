@@ -37,8 +37,8 @@ import org.apache.sis.util.ArgumentChecks;
  * @param  <N>  the new type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {

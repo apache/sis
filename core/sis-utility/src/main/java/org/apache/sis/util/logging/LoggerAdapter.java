@@ -86,8 +86,8 @@ import org.apache.sis.util.Debug;
  * of this rule.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see Logging

@@ -40,8 +40,8 @@ import org.apache.sis.util.CharSequences;
  * It is rather designed for explicit execution from an IDE or the command line for visual inspection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @SuppressWarnings("serial")

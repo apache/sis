@@ -48,8 +48,8 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  *
  * @see DefaultPolarCS

@@ -46,8 +46,8 @@ import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
  * For now, it doesn't seem worth to cache the handlers.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class NilObjectHandler implements InvocationHandler {

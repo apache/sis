@@ -37,8 +37,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link DefaultGeographicCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @DependsOn({

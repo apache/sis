@@ -33,8 +33,8 @@ import org.opengis.util.FactoryException;
  * For unimplemented operation methods, use {@link org.opengis.util.NoSuchIdentifierException} instead.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  *
  * @see ConcurrentAuthorityFactory#newDataAccess()

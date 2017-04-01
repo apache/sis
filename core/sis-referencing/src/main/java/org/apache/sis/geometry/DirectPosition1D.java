@@ -36,8 +36,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * A one-dimensional position within some coordinate reference system.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see DirectPosition2D

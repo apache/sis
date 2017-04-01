@@ -67,8 +67,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  *
  * @see DefaultParameterValue

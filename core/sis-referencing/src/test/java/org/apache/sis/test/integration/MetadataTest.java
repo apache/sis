@@ -94,8 +94,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest

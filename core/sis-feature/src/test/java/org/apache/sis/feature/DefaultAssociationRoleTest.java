@@ -39,8 +39,8 @@ import org.opengis.feature.FeatureType;
  * Tests {@link DefaultAssociationRole}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn(DefaultFeatureTypeTest.class)

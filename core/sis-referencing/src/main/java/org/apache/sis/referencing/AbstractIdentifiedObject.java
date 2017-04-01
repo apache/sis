@@ -116,8 +116,8 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @XmlType(name = "IdentifiedObjectType", propOrder = {

@@ -35,8 +35,8 @@ import javax.xml.bind.annotation.XmlType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see GO_Real

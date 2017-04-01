@@ -85,8 +85,8 @@ import org.apache.sis.util.ArgumentChecks;
  * any public {@code NamedIdentifier} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  *
  * @see org.apache.sis.metadata.iso.DefaultIdentifier

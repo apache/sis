@@ -33,8 +33,8 @@ import org.apache.sis.util.resources.Errors;
  * 90°. The datum is unspecified.
  *
  * @author  Chris Mattmann (JPL)
- * @since   0.1
  * @version 0.8
+ * @since   0.1
  * @module
  *
  * @see <a href="http://en.wikipedia.org/wiki/Geohash">Wikipedia: Geohash</a>

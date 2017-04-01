@@ -43,8 +43,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * state.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see DefaultTypeName

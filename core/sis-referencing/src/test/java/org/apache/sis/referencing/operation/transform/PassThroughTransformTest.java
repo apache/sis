@@ -40,8 +40,8 @@ import org.opengis.test.ToleranceModifier;
  * Tests {@link PassThroughTransform}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn({

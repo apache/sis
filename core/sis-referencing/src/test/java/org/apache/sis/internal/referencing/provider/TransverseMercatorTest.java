@@ -31,8 +31,8 @@ import static org.junit.Assert.*;
  * see {@link org.apache.sis.referencing.operation.projection.TransverseMercatorTest} instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 public final strictfp class TransverseMercatorTest extends TestCase {

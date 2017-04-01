@@ -43,8 +43,8 @@ import static org.junit.Assert.*;
  * Tests the static methods in the {@link Parameters} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @DependsOn({

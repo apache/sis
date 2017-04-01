@@ -31,8 +31,8 @@ import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
  * Test {@link XmlUtilities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class XmlUtilitiesTest extends XMLTestCase {

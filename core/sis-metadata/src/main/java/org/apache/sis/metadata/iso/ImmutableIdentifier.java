@@ -119,8 +119,8 @@ import static org.apache.sis.util.collection.Containers.property;
  * </li></ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  *
  * @see DefaultIdentifier

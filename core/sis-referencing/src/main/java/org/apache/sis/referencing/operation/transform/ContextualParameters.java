@@ -126,8 +126,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  *
  * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
@@ -139,8 +139,8 @@ public class ContextualParameters extends Parameters implements Serializable {
      * before or after a non-linear operation.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      *
      * @see ContextualParameters#getMatrix(MatrixRole)

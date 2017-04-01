@@ -45,8 +45,8 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link NTv2} grid loader.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  *
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()

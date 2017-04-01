@@ -40,8 +40,8 @@ import static org.apache.sis.test.Assert.*;
  * isolated.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn({

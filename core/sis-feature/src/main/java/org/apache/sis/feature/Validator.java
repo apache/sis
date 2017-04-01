@@ -47,8 +47,8 @@ import org.opengis.feature.FeatureAssociationRole;
  * Provides validation methods to be shared by different implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.7
+ * @since   0.5
  * @module
  */
 final class Validator {

@@ -66,8 +66,8 @@ import static org.apache.sis.math.MathFunctions.isNegative;
  * (see {@link java.lang.Number} for an example of a similar in purpose class having mutable subclasses).
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  *
  * @see Latitude

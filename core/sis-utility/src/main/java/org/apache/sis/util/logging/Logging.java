@@ -47,8 +47,8 @@ import org.apache.sis.internal.system.Modules;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.6
+ * @since   0.3
  * @module
  */
 public final class Logging extends Static {

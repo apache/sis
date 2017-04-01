@@ -78,8 +78,8 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  *
  * @see ResourceBundle#getBundle(String, Locale)

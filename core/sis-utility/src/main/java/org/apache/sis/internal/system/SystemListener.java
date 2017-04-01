@@ -27,8 +27,8 @@ import org.apache.sis.util.ArraysExt;
  * to keep the SIS library OSGi-independent.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.6
+ * @since   0.3
  * @module
  */
 public abstract class SystemListener implements EventListener {

@@ -48,8 +48,8 @@ import org.apache.sis.util.ArraysExt;
  * The output dimensions can be verified with a call to {@link #getTargetDimensions()}.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public class TransformSeparator {

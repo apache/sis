@@ -63,8 +63,8 @@ import org.apache.sis.measure.Units;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  *
  * @see org.apache.sis.measure.Measure

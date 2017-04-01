@@ -34,8 +34,8 @@ import static java.lang.Math.*;
  * Axis order shall match the order defined by {@code Normalizer} in {@link org.apache.sis.referencing.cs} package.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 final class CartesianToSpherical extends CoordinateSystemTransform implements Serializable {

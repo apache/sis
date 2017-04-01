@@ -41,8 +41,8 @@ package org.apache.sis.util;
  * {@link #IGNORE_METADATA} level but not necessarily at the {@link #STRICT} level.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  *
  * @see LenientComparable#equals(Object, ComparisonMode)

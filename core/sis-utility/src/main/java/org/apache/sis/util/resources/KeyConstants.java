@@ -29,8 +29,8 @@ import org.apache.sis.util.CharSequences;
  * from its name and conversely.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  *
  * @see IndexedResourceBundle#getKeyConstants()

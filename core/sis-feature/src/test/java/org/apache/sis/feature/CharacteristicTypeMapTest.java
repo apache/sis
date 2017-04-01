@@ -35,8 +35,8 @@ import org.apache.sis.util.iso.Names;
  * Tests {@link CharacteristicTypeMap} indirectly, through {@link DefaultAttributeType} construction.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 @DependsOn(DefaultAttributeTypeTest.class)

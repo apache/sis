@@ -29,8 +29,8 @@ import org.apache.sis.storage.DataStoreException;
  * {@link java.nio.file.Files#probeContentType(Path)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public class StoreTypeDetector extends FileTypeDetector {

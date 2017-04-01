@@ -94,8 +94,8 @@ import org.apache.sis.util.resources.Messages;
  * @param  <DAO>  the type of factory used as Data Access Object (DAO)
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFactory>
@@ -1733,8 +1733,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * go to the {@link #create(AuthorityFactoryProxy, String)} method from a non-overridden public method.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     private static final class Finder extends IdentifiedObjectFinder {

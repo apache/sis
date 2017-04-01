@@ -48,8 +48,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * bit tedious to explain, which is an other indication that they should not be in public API.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final class CollectionsExt extends Static {

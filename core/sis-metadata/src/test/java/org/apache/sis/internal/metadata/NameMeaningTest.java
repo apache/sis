@@ -31,8 +31,8 @@ import static org.junit.Assert.*;
  * Tests {@link NameMeaning}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from 0.4)
  * @version 0.7
+ * @since   0.5 (derived from 0.4)
  * @module
  */
 public final strictfp class NameMeaningTest extends TestCase {

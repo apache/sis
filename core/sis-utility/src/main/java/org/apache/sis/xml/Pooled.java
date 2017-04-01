@@ -49,8 +49,8 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * "endorsed JAR" names if needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 abstract class Pooled {

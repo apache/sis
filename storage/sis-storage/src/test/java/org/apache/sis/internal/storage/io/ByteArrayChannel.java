@@ -29,8 +29,8 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.7
+ * @since   0.5
  * @module
  *
  * @see ChannelDataOutputTest

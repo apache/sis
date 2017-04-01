@@ -54,8 +54,8 @@ import org.apache.sis.internal.util.X364;
  * {@link #setTabulationExpanded(boolean)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public class LineAppender extends Appender implements Flushable {

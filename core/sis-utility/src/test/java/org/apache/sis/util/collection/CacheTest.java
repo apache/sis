@@ -42,8 +42,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Cache} with simple tests and a {@linkplain #stress() stress} test.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(WeakValueHashMapTest.class)

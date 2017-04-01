@@ -48,8 +48,8 @@ import org.apache.sis.util.resources.Errors;
  * @param  <E>  the type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3
  * @version 0.6
+ * @since   0.3
  * @module
  *
  * @see RangeFormat

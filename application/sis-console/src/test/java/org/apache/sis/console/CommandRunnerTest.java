@@ -33,8 +33,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link CommandRunner} base class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class CommandRunnerTest extends TestCase {

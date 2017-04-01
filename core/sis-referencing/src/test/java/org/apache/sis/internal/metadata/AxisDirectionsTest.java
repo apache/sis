@@ -43,8 +43,8 @@ import static org.apache.sis.internal.metadata.AxisDirections.COUNTER_CLOCKWISE;
  * {@code sis-referencing} module because those tests use {@link HardCodedAxes} constants.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public final strictfp class AxisDirectionsTest extends TestCase {

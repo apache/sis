@@ -29,8 +29,8 @@ import org.apache.sis.util.resources.Errors;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {

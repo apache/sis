@@ -37,8 +37,8 @@ import static org.junit.Assert.*;
  * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)} method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 @RunWith(TestRunner.class)

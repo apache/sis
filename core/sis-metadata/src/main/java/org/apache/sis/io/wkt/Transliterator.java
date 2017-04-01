@@ -89,8 +89,8 @@ import org.apache.sis.util.Characters;
  * methods are responsible for doing the transliteration at formatting and parsing time, respectively.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  *
  * @see org.apache.sis.util.Characters#isValidWKT(int)

@@ -39,8 +39,8 @@ import static org.junit.Assert.*;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn({PropertyAccessorTest.class, PropertyInformationTest.class})

@@ -40,8 +40,8 @@ import org.apache.sis.math.FunctionProperty;
  * @param  <S>  the source type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 class ObjectToString<S> extends SystemConverter<S,String> {

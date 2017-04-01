@@ -57,8 +57,8 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
  * @param  <E>  the type of elements in this set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>, Serializable {

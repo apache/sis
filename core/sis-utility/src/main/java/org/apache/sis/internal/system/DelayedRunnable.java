@@ -30,8 +30,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract class DelayedRunnable implements Delayed, Runnable {
@@ -91,8 +91,8 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * ordered in a "first created, first executed" basis.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     public abstract static class Immediate extends DelayedRunnable {

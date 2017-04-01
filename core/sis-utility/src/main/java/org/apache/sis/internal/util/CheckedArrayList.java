@@ -49,8 +49,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @param  <E>  the type of elements in the list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @see Collections#checkedList(List, Class)
