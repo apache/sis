@@ -42,7 +42,7 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>parent</artifactId>
-  <version>0.8-jdk8-SNAPSHOT</version>
+  <version>0.8-jdk9-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
