@@ -42,8 +42,8 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * file for more information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 @Mojo(name = "pack", defaultPhase = LifecyclePhase.INSTALL)

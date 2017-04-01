@@ -39,8 +39,8 @@ import org.codehaus.plexus.util.FileUtils;
  * by {@code javac}), which is why the usual Maven resources mechanism doesn't fit.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @Mojo(name = "javamaker", defaultPhase = LifecyclePhase.PROCESS_CLASSES)

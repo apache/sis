@@ -85,7 +85,7 @@ final class AuthorityFactoryIdentifier {
      * The interfaces or abstract base classes for the above constants.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static final Class<? extends AuthorityFactory> TYPES[] = new Class[6];
+    private static final Class<? extends AuthorityFactory>[] TYPES = new Class[6];
     static {
         TYPES[CRS]       = CRSAuthorityFactory.class;
         TYPES[CS]        = CSAuthorityFactory.class;

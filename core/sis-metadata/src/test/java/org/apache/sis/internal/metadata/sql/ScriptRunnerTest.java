@@ -43,7 +43,7 @@ public final strictfp class ScriptRunnerTest extends TestCase {
     @Test
     public void testOnDerby() throws Exception {
         final DataSource ds = TestDatabase.create("temporary");
-        try (final Connection c = ds.getConnection()) {
+        try (Connection c = ds.getConnection()) {
             final ScriptRunner sr = new ScriptRunner(c, 3);
             testSupportedFlags(sr);
             testRegularExpressions(sr);

@@ -215,7 +215,7 @@ public final class Store extends StaxDataStore {
             /*
              * Get the writer if no read or other write operation is in progress, then write the data.
              */
-            try (final Writer writer = new Writer(this, org.apache.sis.internal.storage.gpx.Metadata.castOrCopy(metadata, locale))) {
+            try (Writer writer = new Writer(this, org.apache.sis.internal.storage.gpx.Metadata.castOrCopy(metadata, locale))) {
                 writer.writeStartDocument();
                 if (features != null) {
                     features.forEachOrdered(writer);

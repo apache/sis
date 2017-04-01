@@ -23,8 +23,8 @@ import java.util.ListResourceBundle;
  * Localized resources, for internal usage only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  */
 public class Resources extends ListResourceBundle {
     @Override

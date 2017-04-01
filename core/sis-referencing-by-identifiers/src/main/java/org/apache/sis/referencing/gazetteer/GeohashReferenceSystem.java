@@ -62,7 +62,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
     /**
      * The encoding format used by {@link GeoHashCoder}.
      */
-    public static enum Format {
+    public enum Format {
         /**
          * Format consisting of 32 symbols used at {@code http://geohash.org}. This encoding uses digits 0 to 9,
          * and lower-case letters {@code 'b'} to {@code 'z'} excluding {@code 'i'}, {@code 'l'} and {@code 'o'}.
@@ -226,7 +226,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
         /**
          * Temporary array for coordinate transformation, or {@code null} if not needed.
          */
-        private transient final double[] coordinates;
+        private final transient double[] coordinates;
 
         /**
          * Creates a new geohash coder/decoder initialized to the default precision.

@@ -234,7 +234,7 @@ public final strictfp class NTv2Test extends TestCase {
         }
         writeString(buffer, "END");
         nextRecord(buffer);
-        try (final WritableByteChannel c = Files.newByteChannel(out, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+        try (WritableByteChannel c = Files.newByteChannel(out, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
             buffer.flip();
             c.write(buffer);
         }

@@ -49,7 +49,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
     /**
      * The {@link ShapeUtilities} methods to test.
      */
-    private static enum Method {
+    private enum Method {
         INTERSECTION_POINT,
         NEAREAST_COLINEAR_POINT,
         COLINEAR_POINT,

@@ -1198,7 +1198,7 @@ public enum CommonCRS {
      *
      * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
      */
-    public static enum Vertical {
+    public enum Vertical {
         /**
          * Height measured by atmospheric pressure in hectopascals (hPa).
          * Hectopascals are the units of measurement used by the worldwide meteorological community.
@@ -1499,7 +1499,7 @@ public enum CommonCRS {
      * @version 0.4
      * @module
      */
-    public static enum Temporal {
+    public enum Temporal {
         /**
          * Time measured as days since January 1st, 4713 BC at 12:00 UTC.
          */

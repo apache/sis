@@ -136,7 +136,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      * @version 0.4
      * @module
      */
-    public static enum ContentLevel {
+    public enum ContentLevel {
         /**
          * The most detailed content, which includes
          * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName() name} and

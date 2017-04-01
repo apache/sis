@@ -259,7 +259,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
                 connector.setOption(OptionKey.TIMEZONE, timezone);
                 connector.setOption(OptionKey.LOCALE,   locale);
                 connector.setOption(OptionKey.ENCODING, encoding);
-                try (final DataStore store = provider.open(connector)) {
+                try (DataStore store = provider.open(connector)) {
                     /*
                      * HACK: API used in this block is currently available only for GPX format,
                      * but we will generalize to more formats in a future Apache SIS version.

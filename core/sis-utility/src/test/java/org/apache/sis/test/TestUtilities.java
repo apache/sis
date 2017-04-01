@@ -459,7 +459,7 @@ public final strictfp class TestUtilities extends Static {
      */
     public static SeekableByteChannel createTemporaryFile(final Class<?> caller, final String resource) throws IOException {
         final SeekableByteChannel channel;
-        try (final ReadableByteChannel in = Channels.newChannel(caller.getResourceAsStream(resource))) {
+        try (ReadableByteChannel in = Channels.newChannel(caller.getResourceAsStream(resource))) {
             final int s = resource.lastIndexOf('.');
             final Path file = Files.createTempFile("SIS", (s >= 0) ? resource.substring(s) : null);
             channel = Files.newByteChannel(file, StandardOpenOption.DELETE_ON_CLOSE,

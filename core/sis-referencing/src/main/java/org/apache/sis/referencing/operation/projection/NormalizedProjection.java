@@ -227,7 +227,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * @see NormalizedProjection#NormalizedProjection(OperationMethod, Parameters, Map)
      */
-    protected static enum ParameterRole {
+    protected enum ParameterRole {
         /**
          * Maps the <cite>semi-major axis length</cite> parameter (symbol: <var>a</var>).
          * This value is used for computing {@link NormalizedProjection#eccentricity},

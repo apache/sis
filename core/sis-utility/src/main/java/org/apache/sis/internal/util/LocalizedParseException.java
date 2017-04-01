@@ -57,12 +57,12 @@ public final class LocalizedParseException extends ParseException implements Loc
      * The deserialized value will be 0, which will cause this {@code LocalizedParseException} to fallback
      * on {@code super.getMessage()}.</p>
      */
-    private transient final short key;
+    private final transient short key;
 
     /**
      * The parameters for the localization message.
      */
-    private transient final Object[] parameters;
+    private final transient Object[] parameters;
 
     /**
      * Constructs a {@code ParseException} with a message formatted from the given resource key and message parameters.

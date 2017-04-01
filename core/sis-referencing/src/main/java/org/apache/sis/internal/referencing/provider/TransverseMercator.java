@@ -139,7 +139,7 @@ public final class TransverseMercator extends AbstractMercator {
      * @version 0.8
      * @module
      */
-    public static enum Zoner {
+    public enum Zoner {
         /**
          * Universal Transverse Mercator (UTM) projection zones.
          * The zone computation includes special cases for Norway and Svalbard.

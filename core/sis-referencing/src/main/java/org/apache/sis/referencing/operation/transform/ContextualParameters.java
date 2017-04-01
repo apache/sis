@@ -145,7 +145,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see ContextualParameters#getMatrix(MatrixRole)
      */
-    public static enum MatrixRole {
+    public enum MatrixRole {
         /**
          * Matrix for converting angular degrees to radians, or any other linear operations needed
          * before to apply a non-linear operation. For example in a map projection, this matrix is

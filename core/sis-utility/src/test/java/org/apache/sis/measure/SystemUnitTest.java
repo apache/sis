@@ -353,6 +353,6 @@ public final strictfp class SystemUnitTest extends TestCase {
     /**
      * A dummy quantity type for tests using a quantity type unknown to Apache SIS.
      */
-    private static interface Strange extends Quantity<Strange> {
+    private interface Strange extends Quantity<Strange> {
     }
 }

@@ -80,7 +80,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      *
      * @see #getTitleProperty()
      */
-    private volatile transient String titleProperty;
+    private transient volatile String titleProperty;
 
     /**
      * Constructs an association to the given feature type. The properties map is given unchanged to

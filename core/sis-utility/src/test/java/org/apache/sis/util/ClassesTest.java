@@ -119,9 +119,9 @@ public final strictfp class ClassesTest extends TestCase {
     /**
      * Dummy class for {@link #testGetLeafInterfaces()}.
      */
-    private static abstract class T1 implements GeographicCRS {}
-    private static abstract class T2 extends T1 implements SingleCRS, CoordinateOperation {}
-    private static abstract class T3 extends T2 implements Transformation {}
+    private abstract static class T1 implements GeographicCRS {}
+    private abstract static class T2 extends T1 implements SingleCRS, CoordinateOperation {}
+    private abstract static class T3 extends T2 implements Transformation {}
 
     /**
      * Tests {@link Classes#findCommonClass(Iterable)}

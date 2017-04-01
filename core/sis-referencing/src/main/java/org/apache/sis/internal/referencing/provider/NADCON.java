@@ -162,7 +162,7 @@ public final class NADCON extends AbstractProvider {
                         // Note: buffer size must be divisible by the size of 'float' data type.
                         final ByteBuffer buffer = ByteBuffer.allocate(4096).order(ByteOrder.LITTLE_ENDIAN);
                         final FloatBuffer fb = buffer.asFloatBuffer();
-                        try (final ReadableByteChannel in = Files.newByteChannel(rlat)) {
+                        try (ReadableByteChannel in = Files.newByteChannel(rlat)) {
                             DatumShiftGridLoader.log(NADCON.class, CharSequences.commonPrefix(
                                     latitudeShifts.toString(), longitudeShifts.toString()).toString() + '…');
                             loader = new Loader(in, buffer, file);
@@ -170,7 +170,7 @@ public final class NADCON extends AbstractProvider {
                         }
                         buffer.clear();
                         file = longitudeShifts;
-                        try (final ReadableByteChannel in = Files.newByteChannel(rlon)) {
+                        try (ReadableByteChannel in = Files.newByteChannel(rlon)) {
                             new Loader(in, buffer, file).readGrid(fb, loader, null);
                         }
                     } catch (IOException | NoninvertibleTransformException | RuntimeException e) {

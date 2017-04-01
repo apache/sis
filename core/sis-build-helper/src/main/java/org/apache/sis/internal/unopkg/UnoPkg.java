@@ -39,8 +39,8 @@ import static java.util.jar.Pack200.Packer;
  * Creates an {@code .oxt} package for <a href="http://www.openoffice.org">OpenOffice.org</a> addins.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @Mojo(name = "unopkg", defaultPhase = LifecyclePhase.PACKAGE)

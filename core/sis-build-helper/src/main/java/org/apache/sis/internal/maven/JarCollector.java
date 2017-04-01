@@ -47,8 +47,8 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * creates a "{@code target/binaries/content.txt}" file listing the dependencies.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 @Mojo(name = "collect-jars",

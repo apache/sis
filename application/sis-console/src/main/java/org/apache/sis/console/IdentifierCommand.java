@@ -52,7 +52,7 @@ final class IdentifierCommand extends FormattedOutputCommand {
      * <b>MAINTENANCE NOTE:</b> if this enumeration is modified,
      * update {@code IdentifierState.properties} accordingly.
      */
-    private static enum State {
+    private enum State {
         VALID("   "), APPROXIMATIVE("~  "), AXIS_ORDER("!  "), MISMATCH("!! "), UNKNOWN("?  ");
 
         /** The string representation. */ final String text;

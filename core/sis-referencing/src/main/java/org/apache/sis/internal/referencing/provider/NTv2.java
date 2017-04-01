@@ -142,7 +142,7 @@ public final class NTv2 extends AbstractProvider {
             try {
                 grid = handler.peek();
                 if (grid == null) {
-                    try (final ReadableByteChannel in = Files.newByteChannel(resolved)) {
+                    try (ReadableByteChannel in = Files.newByteChannel(resolved)) {
                         DatumShiftGridLoader.log(NTv2.class, file);
                         final Loader loader = new Loader(in, file);
                         grid = loader.readGrid();

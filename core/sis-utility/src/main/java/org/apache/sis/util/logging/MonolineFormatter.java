@@ -771,7 +771,7 @@ loop:   for (int i=0; ; i++) {
         if (resources != null) {
             message = resources.getString(message);
         }
-        final Object parameters[] = record.getParameters();
+        final Object[] parameters = record.getParameters();
         if (parameters != null && parameters.length != 0) {
             int i = message.indexOf('{');
             if (i >= 0 && ++i < message.length()) {

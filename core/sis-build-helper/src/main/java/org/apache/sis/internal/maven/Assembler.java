@@ -48,8 +48,8 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * file for more information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @Mojo(name = "dist", defaultPhase = LifecyclePhase.INSTALL)

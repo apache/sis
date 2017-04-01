@@ -162,7 +162,7 @@ public final strictfp class APIVerifier extends TestCase {
         final List<String> incompatibleChanges = new ArrayList<>();
         final ClassLoader parent = APIVerifier.class.getClassLoader().getParent();
         final URL dependency = unitsJAR.toURI().toURL();
-        try (final JarFile newJARContent = new JarFile(snapshotJAR);
+        try (JarFile newJARContent = new JarFile(snapshotJAR);
              final URLClassLoader oldAPI = new URLClassLoader(new URL[] {releasedJAR.toURI().toURL(), dependency}, parent);
              final URLClassLoader newAPI = new URLClassLoader(new URL[] {snapshotJAR.toURI().toURL(), dependency}, parent))
         {

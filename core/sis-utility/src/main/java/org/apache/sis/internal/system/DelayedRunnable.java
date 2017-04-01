@@ -95,7 +95,7 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * @version 0.3
      * @module
      */
-    public static abstract class Immediate extends DelayedRunnable {
+    public abstract static class Immediate extends DelayedRunnable {
         /**
          * A counter for ordering the tasks in a "first created, first executed" basis.
          */

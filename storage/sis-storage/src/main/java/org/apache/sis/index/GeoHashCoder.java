@@ -55,7 +55,7 @@ public class GeoHashCoder implements Serializable {
      * @deprecated Moved to {@link org.apache.sis.referencing.gazetteer.GeohashReferenceSystem.Format}.
      */
     @Deprecated
-    public static enum Format {
+    public enum Format {
         /**
          * Format consisting of 32 symbols used at {@code http://geohash.org}. This encoding uses digits 0 to 9,
          * and lower-case letters {@code 'b'} to {@code 'z'} excluding {@code 'i'}, {@code 'l'} and {@code 'o'}.

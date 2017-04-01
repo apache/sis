@@ -87,7 +87,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
             }
             return c;
         });
-        try (final CoordinateOperationMethods writer = new CoordinateOperationMethods()) {
+        try (CoordinateOperationMethods writer = new CoordinateOperationMethods()) {
             writer.writeIndex(methods);
             for (final OperationMethod method : methods) {
                 writer.write(method);
