@@ -32,10 +32,11 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
+ *
+ * @since 0.3
+ * @module
  */
 final class ValueMap extends PropertyMap<Object> {
     /**

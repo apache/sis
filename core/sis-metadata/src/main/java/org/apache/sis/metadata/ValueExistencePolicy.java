@@ -39,10 +39,11 @@ import org.apache.sis.xml.NilReason;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.3
- * @module
  *
  * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
+ *
+ * @since 0.3
+ * @module
  */
 public enum ValueExistencePolicy {
     /**

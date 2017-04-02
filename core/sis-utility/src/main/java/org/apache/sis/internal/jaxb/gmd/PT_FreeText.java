@@ -57,10 +57,11 @@ import org.apache.sis.util.ArraysExt;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.3
- * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "PT_FreeText_PropertyType")
 public final class PT_FreeText extends GO_CharacterString {

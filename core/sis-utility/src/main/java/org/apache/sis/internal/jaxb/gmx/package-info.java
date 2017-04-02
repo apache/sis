@@ -20,10 +20,11 @@
  *
  * @author  Guilhem Legal (Geomatys)
  * @version 0.4
- * @since   0.3
- * @module
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+ *
+ * @since 0.3
+ * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMX, xmlns = {
     @XmlNs(prefix = "gmx", namespaceURI = Namespaces.GMX)

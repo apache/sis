@@ -37,10 +37,11 @@ import ucar.nc2.constants.CDM;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see NetcdfStoreProvider
+ *
+ * @since 0.3
+ * @module
  */
 public class NetcdfStore extends DataStore {
     /**

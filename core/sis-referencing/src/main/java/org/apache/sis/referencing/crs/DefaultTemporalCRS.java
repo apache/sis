@@ -59,12 +59,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTemporalCRS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "TemporalCRSType", propOrder = {
     "coordinateSystem",

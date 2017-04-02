@@ -39,11 +39,12 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.4
- * @module
  *
  * @see Files#probeContentType(Path)
  * @see DataStores#probeContentType(Object)
+ *
+ * @since 0.4
+ * @module
  */
 final class MimeTypeCommand extends CommandRunner {
     /**

@@ -38,10 +38,11 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
  * @version 0.8
- * @since   0.6
- * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator.html">Transverse Mercator on RemoteSensing.org</a>
+ *
+ * @since 0.6
+ * @module
  */
 @XmlTransient
 public final class TransverseMercator extends AbstractMercator {

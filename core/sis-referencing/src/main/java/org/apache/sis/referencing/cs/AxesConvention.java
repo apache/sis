@@ -106,11 +106,12 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.4
- * @module
  *
  * @see AbstractCS#forConvention(AxesConvention)
  * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
+ *
+ * @since 0.4
+ * @module
  */
 public enum AxesConvention implements AxisFilter {
     /**

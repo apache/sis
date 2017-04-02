@@ -67,10 +67,11 @@ import java.time.DateTimeException;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
+ *
+ * @since 0.3
+ * @module
  */
 public final class ChannelDecoder extends Decoder {
     /**

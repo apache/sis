@@ -67,16 +67,17 @@ import org.opengis.feature.MultiValuedPropertyException;
  *       to support cloning.</li>
  * </ul>
  *
- * @param  <V>  the type of attribute values.
- *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.5
- * @module
+ *
+ * @param <V>  the type of attribute values.
  *
  * @see AbstractFeature
  * @see DefaultAttributeType
+ *
+ * @since 0.5
+ * @module
  */
 @SuppressWarnings("CloneInNonCloneableClass")       // Decision left to subclasses - see javadoc
 public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Serializable {

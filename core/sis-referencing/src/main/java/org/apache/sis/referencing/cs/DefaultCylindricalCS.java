@@ -49,11 +49,12 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see DefaultPolarCS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCylindricalCS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "CylindricalCSType")
 @XmlRootElement(name = "CylindricalCS")

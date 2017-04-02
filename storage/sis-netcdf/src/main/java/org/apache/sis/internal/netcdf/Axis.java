@@ -28,10 +28,11 @@ import org.apache.sis.storage.netcdf.AttributeNames;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see GridGeometry#getAxes()
+ *
+ * @since 0.3
+ * @module
  */
 public final class Axis {
     /**

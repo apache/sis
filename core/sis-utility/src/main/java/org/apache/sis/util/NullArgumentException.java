@@ -30,10 +30,11 @@ package org.apache.sis.util;
  *
  * @author Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see ArgumentChecks#ensureNonNull(String, Object)
+ *
+ * @since 0.3
+ * @module
  */
 public class NullArgumentException extends NullPointerException {
     /**

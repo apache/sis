@@ -47,10 +47,11 @@ import org.apache.sis.internal.util.Utilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see DataStoreProvider#probeContent(StorageConnector)
+ *
+ * @since 0.4
+ * @module
  */
 public class ProbeResult implements Serializable {
     /**

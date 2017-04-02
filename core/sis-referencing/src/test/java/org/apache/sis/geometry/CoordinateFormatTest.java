@@ -37,10 +37,11 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see org.apache.sis.measure.CoordinateFormatTest
+ *
+ * @since 0.8
+ * @module
  */
 public final strictfp class CoordinateFormatTest extends TestCase {
     /**

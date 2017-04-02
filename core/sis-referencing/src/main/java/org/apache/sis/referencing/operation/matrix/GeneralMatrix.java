@@ -36,10 +36,11 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
- * @since   0.4
- * @module
  *
  * @see Matrices#createDiagonal(int, int)
+ *
+ * @since 0.4
+ * @module
  */
 class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     /**

@@ -70,11 +70,12 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @version 0.6
- * @since   0.6
- * @module
  *
  * @see TransverseMercator
  * @see ObliqueMercator
+ *
+ * @since 0.6
+ * @module
  */
 public class Mercator extends ConformalProjection {
     /**

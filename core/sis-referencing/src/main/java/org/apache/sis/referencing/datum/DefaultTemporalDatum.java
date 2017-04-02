@@ -71,13 +71,14 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.referencing.CommonCRS.Temporal#datum()
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
  * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTemporalDatum(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "TemporalDatumType")
 @XmlRootElement(name = "TemporalDatum")

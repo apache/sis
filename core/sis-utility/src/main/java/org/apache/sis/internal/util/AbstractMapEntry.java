@@ -27,12 +27,13 @@ import org.apache.sis.util.resources.Errors;
  * Provides default implementations of {@link #equals(Object)}, {@link #hashCode()} and {@link #toString()}
  * for a map entry.
  *
- * @param  <K>  the type of keys maintained by the map.
- * @param  <V>  the type of mapped values.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.5
+ *
+ * @param <K>  the type of keys maintained by the map.
+ * @param <V>  the type of mapped values.
+ *
+ * @since 0.5
  * @module
  */
 public abstract class AbstractMapEntry<K,V> implements Map.Entry<K,V> {

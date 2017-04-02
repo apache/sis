@@ -60,13 +60,14 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see org.apache.sis.referencing.NamedIdentifier
  * @see org.apache.sis.storage.FeatureNaming
  * @see org.apache.sis.feature.AbstractIdentifiedType#getName()
  * @see org.apache.sis.referencing.AbstractIdentifiedObject#getAlias()
+ *
+ * @since 0.3
+ * @module
  */
 
 /*

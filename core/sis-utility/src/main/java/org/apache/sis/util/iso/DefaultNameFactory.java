@@ -70,8 +70,6 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see Names
  * @see DefaultNameSpace
@@ -79,6 +77,9 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  * @see DefaultLocalName
  * @see DefaultTypeName
  * @see DefaultMemberName
+ *
+ * @since 0.3
+ * @module
  */
 public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     /**

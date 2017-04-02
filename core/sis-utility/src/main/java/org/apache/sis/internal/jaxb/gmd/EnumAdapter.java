@@ -31,12 +31,13 @@ import org.apache.sis.util.iso.Types;
  *   </srv:direction>
  * }
  *
- * @param  <ValueType>  the subclass implementing this adapter.
- * @param  <BoundType>  the enum being adapted.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.5
+ *
+ * @param <ValueType>  the subclass implementing this adapter.
+ * @param <BoundType>  the enum being adapted.
+ *
+ * @since 0.5
  * @module
  */
 public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundType>,

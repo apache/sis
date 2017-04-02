@@ -36,10 +36,11 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.7
- * @module
  *
  * @see ConcurrentAuthorityFactory#printCacheContent(PrintWriter)
+ *
+ * @since 0.7
+ * @module
  */
 @Debug
 final class CacheRecord implements Comparable<CacheRecord> {

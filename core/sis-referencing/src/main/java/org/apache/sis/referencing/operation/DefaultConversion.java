@@ -79,10 +79,11 @@ import org.apache.sis.util.Utilities;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.6
- * @module
  *
  * @see DefaultTransformation
+ *
+ * @since 0.6
+ * @module
  */
 @XmlType(name = "ConversionType")
 @XmlRootElement(name = "Conversion")

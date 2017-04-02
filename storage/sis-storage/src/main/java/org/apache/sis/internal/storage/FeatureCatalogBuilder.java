@@ -33,10 +33,11 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription
+ *
+ * @since 0.8
+ * @module
  */
 public class FeatureCatalogBuilder extends MetadataBuilder {
     /**

@@ -31,10 +31,11 @@ import org.opengis.referencing.AuthorityFactory;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.7
- * @module
  *
  * @see ConcurrentAuthorityFactory#newDataAccess()
+ *
+ * @since 0.7
+ * @module
  */
 public class UnavailableFactoryException extends MissingFactoryResourceException {
     /**

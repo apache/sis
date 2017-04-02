@@ -46,10 +46,11 @@ import javax.measure.Unit;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.6
- * @module
  *
  * @see CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)
+ *
+ * @since 0.6
+ * @module
  */
 public interface AxisFilter {
     /**

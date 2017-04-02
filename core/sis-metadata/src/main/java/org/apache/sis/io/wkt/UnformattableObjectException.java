@@ -33,10 +33,11 @@ import org.opengis.referencing.IdentifiedObject;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see Formatter#setInvalidWKT(IdentifiedObject, Exception)
+ *
+ * @since 0.4
+ * @module
  */
 public class UnformattableObjectException extends UnsupportedOperationException {
     /**

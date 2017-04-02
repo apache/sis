@@ -32,10 +32,11 @@ import org.apache.sis.measure.ValueRange;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see PropertyInformation#getDomainValue()
+ *
+ * @since 0.3
+ * @module
  */
 final class DomainRange<E extends Number & Comparable<? super E>> extends NumberRange<E>
         implements InternationalString

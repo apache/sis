@@ -26,10 +26,11 @@ import java.util.NoSuchElementException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see MetadataStandard#asTypeMap(Class, KeyNamePolicy, TypeValuePolicy)
+ *
+ * @since 0.3
+ * @module
  */
 final class TypeMap extends PropertyMap<Class<?>> {
     /**

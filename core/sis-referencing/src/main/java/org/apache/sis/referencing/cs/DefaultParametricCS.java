@@ -46,12 +46,13 @@ import org.opengis.referencing.cs.ParametricCS;
  *
  * @author  Johann Sorel (Geomatys)
  * @version 0.7
- * @since   0.7
- * @module
  *
  * @see org.apache.sis.referencing.crs.DefaultParametricCRS
  * @see org.apache.sis.referencing.datum.DefaultParametricDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createParametricCS(String)
+ *
+ * @since 0.7
+ * @module
  */
 @XmlType(name = "ParametricCSType")
 @XmlRootElement(name = "ParametricCS")

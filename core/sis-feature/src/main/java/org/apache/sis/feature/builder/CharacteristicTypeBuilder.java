@@ -42,10 +42,11 @@ import org.opengis.feature.AttributeType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see AttributeTypeBuilder#addCharacteristic(Class)
+ *
+ * @since 0.8
+ * @module
  */
 public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     /**

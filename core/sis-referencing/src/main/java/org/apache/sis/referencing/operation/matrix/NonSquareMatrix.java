@@ -25,10 +25,11 @@ import org.apache.sis.internal.referencing.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see Matrices#createDiagonal(int, int)
+ *
+ * @since 0.4
+ * @module
  */
 final class NonSquareMatrix extends GeneralMatrix {
     /**

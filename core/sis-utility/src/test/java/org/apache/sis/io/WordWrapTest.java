@@ -30,10 +30,11 @@ import static org.apache.sis.util.Characters.SOFT_HYPHEN;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see LineAppender#setMaximalLineLength(int)
+ *
+ * @since 0.3
+ * @module
  */
 @DependsOn(LineAppenderTest.class)
 public strictfp class WordWrapTest extends LineAppenderTest {

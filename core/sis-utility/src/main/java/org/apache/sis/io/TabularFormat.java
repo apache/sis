@@ -62,12 +62,12 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
- * @param  <T>  the base type of objects parsed and formatted by this class.
+ * @param <T>  the base type of objects parsed and formatted by this class.
  *
  * @see TableAppender
+ * @since 0.3
+ * @module
  */
 public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**

@@ -29,11 +29,12 @@ import org.apache.sis.internal.shapefile.jdbc.DBase3FieldDescriptor;
  *
  * @author  Travis L. Pinney
  * @version 0.5
- * @since   0.5
- * @module
  *
  * @see <a href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">ESRI Shapefile Specification</a>
  * @see <a href="http://ulisse.elettra.trieste.it/services/doc/dbase/DBFstruct.htm">dBASE III File Structure</a>
+ *
+ * @since 0.5
+ * @module
  */
 public class ShapeFile {
     /** Shapefile. */

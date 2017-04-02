@@ -27,10 +27,11 @@ import org.apache.sis.internal.storage.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see ConcurrentWriteException
+ *
+ * @since 0.8
+ * @module
  */
 public class ConcurrentReadException extends DataStoreException {
     /**

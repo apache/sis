@@ -36,12 +36,13 @@ import org.opengis.referencing.cs.AxisDirection;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see Latitude
  * @see AngleFormat
  * @see org.apache.sis.geometry.CoordinateFormat
+ *
+ * @since 0.3
+ * @module
  */
 public final class Longitude extends Angle {
     /**

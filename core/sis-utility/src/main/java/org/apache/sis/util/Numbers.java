@@ -38,10 +38,11 @@ import static java.lang.Double.doubleToLongBits;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see org.apache.sis.math.MathFunctions
+ *
+ * @since 0.3
+ * @module
  */
 @SuppressWarnings({
     "UnnecessaryBoxing",

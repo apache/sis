@@ -33,10 +33,11 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.3
- * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-165">GEOTK-165</a>
+ *
+ * @since 0.3
+ * @module
  */
 @DependsOn(NilReasonMarshallingTest.class)
 public final strictfp class UUIDMarshallingTest extends XMLTestCase {

@@ -38,10 +38,11 @@ import org.apache.sis.internal.storage.Capability;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see GeoTiffStore
+ *
+ * @since 0.8
+ * @module
  */
 @Capabilities(Capability.READ)
 public class GeoTiffStoreProvider extends DataStoreProvider {

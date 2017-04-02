@@ -35,12 +35,13 @@ package org.apache.sis.referencing.operation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.6
- * @module
  *
  * @see org.opengis.geometry.MismatchedReferenceSystemException
  * @see org.opengis.geometry.MismatchedDimensionException
  * @see org.apache.sis.referencing.operation.matrix.MismatchedMatrixSizeException
+ *
+ * @since 0.6
+ * @module
  */
 public class MismatchedDatumException extends IllegalArgumentException {
     /**

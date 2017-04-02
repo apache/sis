@@ -34,10 +34,11 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 0.6
- * @since   0.6
- * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator_south_oriented.html">Transverse Mercator (South Oriented) on RemoteSensing.org</a>
+ *
+ * @since 0.6
+ * @module
  */
 @XmlTransient
 public final class TransverseMercatorSouth extends AbstractMercator {

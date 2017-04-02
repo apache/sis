@@ -141,10 +141,11 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.6
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.referencing.operation.matrix.Matrices
+ *
+ * @since 0.4
+ * @module
  */
 public class TensorParameters<E> implements Serializable {
     /**

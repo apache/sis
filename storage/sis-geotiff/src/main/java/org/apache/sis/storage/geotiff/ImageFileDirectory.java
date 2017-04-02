@@ -46,10 +46,11 @@ import org.apache.sis.measure.Units;
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a>
+ *
+ * @since 0.8
+ * @module
  */
 final class ImageFileDirectory {
     /**

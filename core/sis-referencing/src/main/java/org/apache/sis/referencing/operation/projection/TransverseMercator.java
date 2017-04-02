@@ -60,11 +60,12 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @version 0.8
- * @since   0.6
- * @module
  *
  * @see Mercator
  * @see ObliqueMercator
+ *
+ * @since 0.6
+ * @module
  */
 public class TransverseMercator extends ConformalProjection {
     /**

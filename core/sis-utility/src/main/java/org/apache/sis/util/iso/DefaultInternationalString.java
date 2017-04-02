@@ -52,10 +52,11 @@ import org.apache.sis.internal.system.Modules;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see Types#toInternationalString(Map, String)
+ *
+ * @since 0.3
+ * @module
  */
 public class DefaultInternationalString extends AbstractInternationalString implements Serializable {
     /**

@@ -90,11 +90,12 @@ import org.apache.sis.util.Characters;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.6
- * @module
  *
  * @see org.apache.sis.util.Characters#isValidWKT(int)
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#39">WKT 2 specification §7.5.3</a>
+ *
+ * @since 0.6
+ * @module
  */
 public abstract class Transliterator implements Serializable {
     /**

@@ -46,10 +46,11 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see java.io.FilterWriter
+ *
+ * @since 0.3
+ * @module
  */
 abstract class Appender implements Appendable {
     /**

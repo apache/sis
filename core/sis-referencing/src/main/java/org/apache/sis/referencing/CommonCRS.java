@@ -125,10 +125,11 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
+ *
+ * @since 0.4
+ * @module
  */
 @SuppressWarnings("DoubleCheckedLocking")
 public enum CommonCRS {

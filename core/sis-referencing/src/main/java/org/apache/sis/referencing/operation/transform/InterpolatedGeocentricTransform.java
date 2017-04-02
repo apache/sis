@@ -80,10 +80,11 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.7
- * @module
  *
  * @see InterpolatedMolodenskyTransform
+ *
+ * @since 0.7
+ * @module
  */
 public class InterpolatedGeocentricTransform extends DatumShiftTransform {
     /**

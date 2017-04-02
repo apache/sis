@@ -47,10 +47,11 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @author  Chris Mattmann (JPL)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see <a href="http://en.wikipedia.org/wiki/Geohash">Geohash on Wikipedia</a>
+ *
+ * @since 0.8
+ * @module
  */
 @XmlTransient
 public class GeohashReferenceSystem extends ReferencingByIdentifiers {

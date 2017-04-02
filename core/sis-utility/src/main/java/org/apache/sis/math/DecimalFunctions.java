@@ -47,11 +47,12 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see MathFunctions#pow10(int)
  * @see Math#log10(double)
+ *
+ * @since 0.4
+ * @module
  */
 public final class DecimalFunctions extends Static {
     /**

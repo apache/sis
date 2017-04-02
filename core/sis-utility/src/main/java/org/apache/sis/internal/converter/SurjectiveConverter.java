@@ -35,12 +35,13 @@ import org.apache.sis.util.resources.Errors;
  * <p>This base class is stateless. Consequently sub-classes that choose to implement
  * {@link java.io.Serializable} do not need to care about this base class.</p>
  *
- * @param  <S>  the type of objects to convert.
- * @param  <T>  the type of converted objects.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
+ *
+ * @param <S>  the type of objects to convert.
+ * @param <T>  the type of converted objects.
+ *
+ * @since 0.3
  * @module
  */
 public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {

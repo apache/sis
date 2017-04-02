@@ -73,10 +73,11 @@ import static java.lang.Character.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.3
- * @module
  *
  * @see StringBuilders
+ *
+ * @since 0.3
+ * @module
  */
 public final class CharSequences extends Static {
     /**

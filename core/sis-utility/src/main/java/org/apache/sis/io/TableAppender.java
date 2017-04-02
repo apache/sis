@@ -69,10 +69,11 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see org.apache.sis.util.collection.TreeTableFormat
+ *
+ * @since 0.3
+ * @module
  */
 public class TableAppender extends Appender implements Flushable {
     /**

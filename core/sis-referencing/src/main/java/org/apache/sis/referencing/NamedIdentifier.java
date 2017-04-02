@@ -86,12 +86,13 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.metadata.iso.DefaultIdentifier
  * @see org.apache.sis.util.iso.AbstractName
  * @see AbstractIdentifiedObject#getName()
+ *
+ * @since 0.4
+ * @module
  */
 public class NamedIdentifier extends ImmutableIdentifier implements GenericName {
     /**

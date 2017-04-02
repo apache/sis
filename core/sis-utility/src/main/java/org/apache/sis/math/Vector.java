@@ -85,10 +85,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see org.apache.sis.util.collection.IntegerList
+ *
+ * @since 0.8
+ * @module
  */
 public abstract class Vector extends AbstractList<Number> implements RandomAccess {
     /**

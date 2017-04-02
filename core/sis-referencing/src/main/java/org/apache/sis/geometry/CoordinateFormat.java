@@ -79,12 +79,13 @@ import java.io.UncheckedIOException;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see AngleFormat
  * @see org.apache.sis.measure.UnitFormat
  * @see GeneralDirectPosition
+ *
+ * @since 0.8
+ * @module
  */
 public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**

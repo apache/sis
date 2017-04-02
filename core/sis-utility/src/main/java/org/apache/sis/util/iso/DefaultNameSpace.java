@@ -52,14 +52,15 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see DefaultScopedName
  * @see DefaultLocalName
  * @see DefaultTypeName
  * @see DefaultMemberName
  * @see DefaultNameFactory
+ *
+ * @since 0.3
+ * @module
  */
 public class DefaultNameSpace implements NameSpace, Serializable {
     /**

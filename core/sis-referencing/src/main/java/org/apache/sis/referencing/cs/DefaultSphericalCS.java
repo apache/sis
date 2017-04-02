@@ -53,10 +53,11 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createSphericalCS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "SphericalCSType")
 @XmlRootElement(name = "SphericalCS")

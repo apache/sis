@@ -73,11 +73,12 @@ import org.apache.sis.internal.system.Loggers;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see <a href="http://www.w3.org/TR/xlink/">XML Linking Language</a>
  * @see <a href="http://schemas.opengis.net/xlink/1.0.0/xlinks.xsd">OGC schema</a>
+ *
+ * @since 0.3
+ * @module
  */
 @XmlTransient
 public class XLink implements Serializable {

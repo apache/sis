@@ -28,10 +28,11 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see LineAppender#setTabulationExpanded(boolean)
+ *
+ * @since 0.3
+ * @module
  */
 @DependsOn(LineAppenderTest.class)
 public final strictfp class TabulationExpansionTest extends LineAppenderTest {

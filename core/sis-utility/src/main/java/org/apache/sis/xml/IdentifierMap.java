@@ -36,10 +36,11 @@ import org.opengis.metadata.citation.Citation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see IdentifiedObject#getIdentifierMap()
+ *
+ * @since 0.3
+ * @module
  */
 public interface IdentifierMap extends Map<Citation,String> {
     /**

@@ -32,10 +32,11 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see Collections#emptySet()
+ *
+ * @since 0.3
+ * @module
  */
 public final class ExcludedSet<E> extends AbstractSet<E> implements Serializable {
     /**

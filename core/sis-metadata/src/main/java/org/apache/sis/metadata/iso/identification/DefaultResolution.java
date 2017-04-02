@@ -55,10 +55,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @version 0.6
- * @since   0.3
- * @module
  *
  * @see AbstractIdentification#getSpatialResolutions()
+ *
+ * @since 0.3
+ * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Resolution_Type") // No need for propOrder since this structure is a union (see javadoc).

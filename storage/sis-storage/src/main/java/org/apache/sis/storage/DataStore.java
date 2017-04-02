@@ -35,10 +35,11 @@ import org.apache.sis.util.logging.WarningListeners;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see DataStores#open(Object)
+ *
+ * @since 0.3
+ * @module
  */
 public abstract class DataStore implements Localized, AutoCloseable {
     /**

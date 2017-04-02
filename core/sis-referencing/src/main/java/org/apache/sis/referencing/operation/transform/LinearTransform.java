@@ -63,13 +63,14 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.referencing.operation.transform.MathTransforms#linear(Matrix)
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
  * @see java.awt.geom.AffineTransform
  * @see <a href="http://mathworld.wolfram.com/AffineTransformation.html">Affine transformation on MathWorld</a>
+ *
+ * @since 0.4
+ * @module
  */
 public interface LinearTransform extends MathTransform {
     /**

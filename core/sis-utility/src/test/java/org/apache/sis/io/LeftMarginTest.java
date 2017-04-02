@@ -28,10 +28,11 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see LineAppender#onLineBegin(boolean)
+ *
+ * @since 0.3
+ * @module
  */
 @DependsOn(LineAppenderTest.class)
 public final strictfp class LeftMarginTest extends LineAppenderTest {

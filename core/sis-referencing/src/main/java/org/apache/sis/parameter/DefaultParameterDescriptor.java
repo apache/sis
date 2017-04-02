@@ -68,11 +68,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 0.8
- * @since   0.4
- * @module
  *
  * @see DefaultParameterValue
  * @see DefaultParameterDescriptorGroup
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "OperationParameterType")
 @XmlRootElement(name = "OperationParameter")

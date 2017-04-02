@@ -56,11 +56,12 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see DefaultNameSpace
  * @see DefaultScopedName
+ *
+ * @since 0.3
+ * @module
  */
 
 /*

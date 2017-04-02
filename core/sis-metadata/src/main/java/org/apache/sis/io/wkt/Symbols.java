@@ -68,11 +68,12 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.6
- * @since   0.4
- * @module
  *
  * @see WKTFormat#getSymbols()
  * @see WKTFormat#setSymbols(Symbols)
+ *
+ * @since 0.4
+ * @module
  */
 public class Symbols implements Localized, Cloneable, Serializable {
     /**

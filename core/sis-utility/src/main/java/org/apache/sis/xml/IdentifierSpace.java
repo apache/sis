@@ -42,16 +42,17 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * The values defined in this interface can be used as keys in the map returned by
  * {@link IdentifiedObject#getIdentifierMap()}.
  *
- * @param  <T>  the type of object used as identifier values.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
+ *
+ * @param <T>  the type of object used as identifier values.
  *
  * @see org.apache.sis.metadata.iso.citation.Citations
  * @see IdentifiedObject
  * @see IdentifierMap
+ *
+ * @since 0.3
+ * @module
  */
 public interface IdentifierSpace<T> extends Citation {
     /**

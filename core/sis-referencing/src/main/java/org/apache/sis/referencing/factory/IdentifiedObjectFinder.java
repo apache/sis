@@ -59,11 +59,12 @@ import org.apache.sis.util.Utilities;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.7
- * @module
  *
  * @see GeodeticAuthorityFactory#newIdentifiedObjectFinder()
  * @see IdentifiedObjects#newFinder(String)
+ *
+ * @since 0.7
+ * @module
  */
 public class IdentifiedObjectFinder {
     /**

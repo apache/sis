@@ -76,10 +76,11 @@ import java.util.function.Function;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see ObjectConverters
+ *
+ * @since 0.3
+ * @module
  */
 public interface ObjectConverter<S,T> extends Function<S,T> {
     /**

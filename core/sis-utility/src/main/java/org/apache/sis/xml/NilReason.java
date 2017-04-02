@@ -55,10 +55,11 @@ import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.3
- * @module
  *
  * @see NilObject
+ *
+ * @since 0.3
+ * @module
  */
 public final class NilReason implements Serializable {
     /**

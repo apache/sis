@@ -34,12 +34,13 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see org.apache.sis.feature.DefaultAssociationRole
  * @see FeatureTypeBuilder#addAssociation(FeatureType)
  * @see FeatureTypeBuilder#addAssociation(GenericName)
+ *
+ * @since 0.8
+ * @module
  */
 public final class AssociationRoleBuilder extends PropertyTypeBuilder {
     /**

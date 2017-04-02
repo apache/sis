@@ -61,12 +61,13 @@ import org.opengis.referencing.gazetteer.LocationType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see ModifiableLocationType
  * @see ReferencingByIdentifiers
  * @see LocationFormat
+ *
+ * @since 0.8
+ * @module
  */
 public abstract class AbstractLocation implements Location {
     /**

@@ -48,11 +48,12 @@ import static java.lang.Double.doubleToRawLongBits;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.5
- * @module
  *
  * @see LogarithmicTransform1D
  * @see ExponentialTransform1D
+ *
+ * @since 0.5
+ * @module
  */
 class LinearTransform1D extends AbstractMathTransform1D implements LinearTransform, Serializable {
     /**

@@ -41,16 +41,17 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * This base class is safe for multi-threads usage. Subclasses registered in {@code META-INF/services/}
  * shall make sure that any overridden methods remain safe to call from multiple threads.
  *
- * @param  <L>  the type of loggers used for the implementation backend.
- *              This is the type used by external frameworks like Log4J.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
+ *
+ * @param <L>  the type of loggers used for the implementation backend.
+ *             This is the type used by external frameworks like Log4J.
  *
  * @see Logging
  * @see LoggerAdapter
+ *
+ * @since 0.3
+ * @module
  */
 public abstract class LoggerFactory<L> {
     /**

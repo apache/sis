@@ -37,14 +37,15 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>Does not accept null elements.</li>
  * </ul>
  *
- * @param  <E>  the type of elements in the set.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.3
- * @module
+ *
+ * @param <E>  the type of elements in the set.
  *
  * @see Collections#checkedSet(Set, Class)
+ *
+ * @since 0.3
+ * @module
  */
 public final class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContainer<E> {
     /**

@@ -34,10 +34,11 @@ import org.opengis.referencing.cs.AxisDirection;        // For javadoc
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.referencing.cs.CoordinateSystems#angle(AxisDirection, AxisDirection)
+ *
+ * @since 0.4
+ * @module
  */
 public final class ElevationAngle extends Angle {
     /**

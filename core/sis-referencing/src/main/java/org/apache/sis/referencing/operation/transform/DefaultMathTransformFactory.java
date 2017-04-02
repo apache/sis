@@ -161,11 +161,12 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
  * @version 0.8
- * @since   0.6
- * @module
  *
  * @see MathTransformProvider
  * @see AbstractMathTransform
+ *
+ * @since 0.6
+ * @module
  */
 public class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory, Parser {
     /*

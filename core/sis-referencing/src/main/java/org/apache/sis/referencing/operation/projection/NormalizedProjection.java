@@ -118,11 +118,12 @@ import static java.lang.Math.*;
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
  * @version 0.7
- * @since   0.6
- * @module
  *
  * @see ContextualParameters
  * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
+ *
+ * @since 0.6
+ * @module
  */
 public abstract class NormalizedProjection extends AbstractMathTransform2D implements Serializable {
     /**

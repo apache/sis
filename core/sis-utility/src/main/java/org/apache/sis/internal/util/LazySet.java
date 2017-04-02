@@ -41,11 +41,12 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * <p>This class is not thread-safe. Synchronization, if desired, shall be done by the caller.</p>
  *
- * @param  <E>  the type of elements in the set.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
- * @since   0.6
+ *
+ * @param <E>  the type of elements in the set.
+ *
+ * @since 0.6
  * @module
  */
 @Workaround(library="JDK", version="1.8.0_31-b13")

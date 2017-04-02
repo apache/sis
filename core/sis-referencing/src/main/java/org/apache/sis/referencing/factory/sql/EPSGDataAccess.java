@@ -160,10 +160,11 @@ import org.apache.sis.internal.util.StandardDateFormat;
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
  * @version 0.8
- * @since   0.7
- * @module
  *
  * @see <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
+ *
+ * @since 0.7
+ * @module
  */
 public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized, AutoCloseable

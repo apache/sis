@@ -104,10 +104,11 @@ import static org.apache.sis.util.Numbers.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see Range
+ *
+ * @since 0.3
+ * @module
  */
 public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range<E>>
         implements CheckedContainer<Range<E>>, SortedSet<Range<E>>, Cloneable, Serializable
@@ -128,12 +129,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * comparator throws an exception. Such ambiguities should not happen in sequences
      * of ranges created by {@code RangeSet}.</p>
      *
-     * @param  <E>  the type of range elements.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
-     * @since   0.3
-     * @module
+     * @param <E>  the type of range elements.
      */
     private static final class Compare<E extends Comparable<? super E>>
             implements Comparator<Range<E>>, Serializable

@@ -120,11 +120,12 @@ import static org.apache.sis.util.collection.Containers.property;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.3
- * @module
  *
  * @see DefaultIdentifier
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "RS_Identifier_Type", propOrder = {
     "authority",

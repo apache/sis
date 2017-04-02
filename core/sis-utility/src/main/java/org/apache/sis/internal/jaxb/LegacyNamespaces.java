@@ -24,10 +24,11 @@ import org.apache.sis.util.Version;
  *
  * @author  Guilhem Legal (Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.xml.Namespaces
+ *
+ * @since 0.4
+ * @module
  */
 public final class LegacyNamespaces {
     /**

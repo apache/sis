@@ -62,10 +62,11 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.7
- * @module
  *
  * @see InterpolatedGeocentricTransform
+ *
+ * @since 0.7
+ * @module
  */
 public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
     /**

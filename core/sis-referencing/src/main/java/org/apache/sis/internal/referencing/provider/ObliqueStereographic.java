@@ -31,10 +31,11 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.6
- * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/oblique_stereographic.html">Oblique Stereographic on RemoteSensing.org</a>
+ *
+ * @since 0.6
+ * @module
  */
 @XmlTransient
 public final class ObliqueStereographic extends AbstractStereographic {

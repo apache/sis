@@ -24,10 +24,11 @@ package org.apache.sis.metadata;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see MetadataStandard#asTypeMap(Class, KeyNamePolicy, TypeValuePolicy)
+ *
+ * @since 0.3
+ * @module
  */
 public enum TypeValuePolicy {
     /**

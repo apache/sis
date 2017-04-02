@@ -41,10 +41,11 @@ import org.opengis.feature.AttributeType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.5
- * @module
  *
  * @see DefaultAttributeType
+ *
+ * @since 0.5
+ * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")     // Nothing to add compared to subclass.
 final class SingletonAttribute<V> extends AbstractAttribute<V> implements Cloneable {

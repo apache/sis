@@ -41,10 +41,11 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.5
- * @module
  *
  * @see org.apache.sis.referencing.AbstractIdentifiedObject
+ *
+ * @since 0.5
+ * @module
  */
 public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparable, Serializable {
     /**

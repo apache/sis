@@ -68,10 +68,11 @@ import org.opengis.geometry.Geometry;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see org.apache.sis.geometry.Envelopes
+ *
+ * @since 0.3
+ * @module
  */
 public final class Extents extends Static {
     /**

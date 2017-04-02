@@ -57,10 +57,11 @@ import org.apache.sis.measure.Angle;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCartesianCS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "CartesianCSType")
 @XmlRootElement(name = "CartesianCS")

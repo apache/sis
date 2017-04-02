@@ -36,10 +36,11 @@ import org.apache.sis.internal.util.Constants;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.7
- * @module
  *
  * @see GeocentricToGeographic
+ *
+ * @since 0.7
+ * @module
  */
 public final class GeographicToGeocentric extends AbstractProvider {
     /**

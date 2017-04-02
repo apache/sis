@@ -86,11 +86,12 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 0.6
- * @since   0.4
- * @module
  *
  * @see DefaultParameterValueGroup
  * @see DefaultParameterDescriptor
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "OperationParameterGroupType")
 @XmlRootElement(name = "OperationParameterGroup")

@@ -35,10 +35,11 @@ import static java.lang.Character.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see CharSequences
+ *
+ * @since 0.3
+ * @module
  */
 public final class StringBuilders extends Static {
     /**

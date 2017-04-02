@@ -56,10 +56,11 @@ import org.apache.sis.util.resources.Messages;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.3
- * @module
  *
  * @see org.apache.sis.internal.jaxb.gmd.PT_FreeText
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "CharacterString_PropertyType")
 @XmlSeeAlso({

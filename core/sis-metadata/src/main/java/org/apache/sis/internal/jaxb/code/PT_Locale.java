@@ -57,12 +57,13 @@ import org.apache.sis.internal.jaxb.gmd.LanguageCode;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.3
- * @module
  *
  * @see LanguageCode
  * @see Country
  * @see org.apache.sis.internal.jaxb.gmd.LocaleAdapter
+ *
+ * @since 0.3
+ * @module
  */
 public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     /**

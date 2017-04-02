@@ -27,10 +27,11 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.6
- * @module
  *
  * @see org.apache.sis.internal.jaxb.gml.MeasureList
+ *
+ * @since 0.6
+ * @module
  */
 final class IntegerList {
     /**

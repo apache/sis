@@ -25,10 +25,11 @@ import java.io.IOException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see InputStreamAdapter
+ *
+ * @since 0.8
+ * @module
  */
 final class OutputStreamAdapter extends OutputStream implements Markable {
     /**

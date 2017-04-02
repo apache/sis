@@ -28,10 +28,11 @@ import org.apache.sis.internal.jaxb.gml.Measure;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see Measure
+ *
+ * @since 0.3
+ * @module
  */
 public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
     /**

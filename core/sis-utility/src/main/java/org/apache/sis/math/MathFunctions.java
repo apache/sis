@@ -58,11 +58,12 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 0.7
- * @since   0.3
- * @module
  *
  * @see DecimalFunctions
  * @see org.apache.sis.util.Numbers
+ *
+ * @since 0.3
+ * @module
  */
 public final class MathFunctions extends Static {
     /**

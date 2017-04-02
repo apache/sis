@@ -72,11 +72,12 @@ import org.apache.sis.internal.converter.SurjectiveConverter;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.5
- * @module
  *
  * @see DefaultRecordType
  * @see DefaultRecord
+ *
+ * @since 0.5
+ * @module
  */
 public class DefaultRecordSchema implements RecordSchema {
     /**

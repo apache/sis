@@ -81,12 +81,13 @@ import org.apache.sis.util.collection.WeakHashSet;
  * @author  Martin Desruisseaux (IRD)
  * @author  Jody Garnett (for parameterized type inspiration)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
  * @see <a href="http://en.wikipedia.org/wiki/Interval_%28mathematics%29">Wikipedia: Interval</a>
+ *
+ * @since 0.3
+ * @module
  */
 public class NumberRange<E extends Number & Comparable<? super E>> extends Range<E> {
     /**
