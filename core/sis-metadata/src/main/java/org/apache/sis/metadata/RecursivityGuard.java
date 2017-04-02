@@ -34,10 +34,10 @@ import java.util.IdentityHashMap;
  * would not suit since it invokes {@code equals(Object)} and {@code hashCode()}, which are precisely
  * the methods that we want to avoid invoking twice.
  *
- * @param  <V>  the kind of values to store in the maps.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
+ *
+ * @param <V>  the kind of values to store in the maps.
  *
  * @see #HASH_CODES
  * @see ObjectPair#CURRENT

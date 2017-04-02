@@ -277,9 +277,9 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Makes this representative fraction unmodifiable. After invocation to this method,
      * any call to a setter method will throw an {@link UnmodifiableMetadataException}.
      *
-     * @since 0.7
-     *
      * @see org.apache.sis.metadata.ModifiableMetadata#freeze()
+     *
+     * @since 0.7
      */
     public void freeze() {
         isUnmodifiable = true;

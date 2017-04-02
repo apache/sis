@@ -122,12 +122,12 @@ import org.apache.sis.measure.Units;
  * same version of Apache SIS. But for long term storage, an established datum shift grid format like
  * NTv2 should be preferred.
  *
- * @param  <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
- * @param  <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
- *              or {@link javax.measure.quantity.Length}).
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
+ *
+ * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
+ * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
+ *             or {@link javax.measure.quantity.Length}).
  *
  * @see org.apache.sis.referencing.operation.transform.DatumShiftTransform
  *

@@ -652,9 +652,9 @@ public final class Types extends Static {
      * @param  title  the title for which to get a code or enumeration value, or {@code null}.
      * @return the code or enumeration value associated with the given title, or {@code null}.
      *
-     * @since 0.7
-     *
      * @see #getCodeTitle(ControlledVocabulary)
+     *
+     * @since 0.7
      */
     public static ControlledVocabulary forCodeTitle(final CharSequence title) {
         return (title instanceof CodeTitle) ? ((CodeTitle) title).code : null;

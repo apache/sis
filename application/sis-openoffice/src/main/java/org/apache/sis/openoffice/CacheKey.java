@@ -26,11 +26,12 @@ import java.util.Objects;
 /**
  * Key of cached results.
  *
- * @param <T> the type of cached values.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @param <T>  the type of cached values.
+ *
+ * @since 0.8
  * @module
  */
 final class CacheKey<T> {

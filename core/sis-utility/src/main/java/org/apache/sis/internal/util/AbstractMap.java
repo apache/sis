@@ -61,12 +61,13 @@ import org.apache.sis.util.resources.Errors;
  *   <li>{@link #addValue(Object)} (non-standard, optional method)</li>
  * </ul>
  *
- * @param <K> the type of keys maintained by the map.
- * @param <V> the type of mapped values.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.5
+ *
+ * @param <K>  the type of keys maintained by the map.
+ * @param <V>  the type of mapped values.
+ *
+ * @since 0.5
  * @module
  */
 public abstract class AbstractMap<K,V> implements Map<K,V> {

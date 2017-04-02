@@ -29,11 +29,12 @@ import org.apache.sis.util.resources.Errors;
  * <p>This class is used in some modules like {@code sis-netcdf}, when a JUnit test is testing some low-level
  * component where the real {@link WarningListeners} instance is not yet available.</p>
  *
- * @param <S> if the listener list had a source, that would be type type of the source.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
+ *
+ * @param <S>  if the listener list had a source, that would be type type of the source.
+ *
+ * @since 0.3
  * @module
  */
 public final strictfp class EmptyWarningListeners<S> extends WarningListeners<S> {

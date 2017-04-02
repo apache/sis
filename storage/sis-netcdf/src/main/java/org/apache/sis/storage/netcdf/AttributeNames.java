@@ -425,10 +425,11 @@ public class AttributeNames {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
-     * @since   0.3
-     * @module
      *
      * @see org.apache.sis.storage.netcdf.AttributeNames.Dimension
+     *
+     * @since 0.3
+     * @module
      */
     public static class Responsible implements Serializable {
         /**
@@ -723,10 +724,11 @@ public class AttributeNames {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
-     * @since   0.3
-     * @module
      *
      * @see org.apache.sis.storage.netcdf.AttributeNames.Responsible
+     *
+     * @since 0.3
+     * @module
      */
     public static class Dimension implements Serializable {
         /**

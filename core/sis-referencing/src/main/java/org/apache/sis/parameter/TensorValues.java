@@ -53,11 +53,12 @@ import org.apache.sis.util.resources.Errors;
  * {@code "num_col"} parameter values. Consequently, this {@code ParameterValueGroup} is also its own
  * mutable {@code ParameterDescriptorGroup}.
  *
- * @param <E> The type of tensor element values.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.6
- * @since   0.4
+ *
+ * @param <E>  the type of tensor element values.
+ *
+ * @since 0.4
  * @module
  */
 @XmlTransient

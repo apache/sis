@@ -234,11 +234,11 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     /**
      * Invoked on serialization for writing the member names and their type.
      *
-     * @serialData the number of members as an {@code int}, followed by a
-     *             ({@code MemberName}, {@code Type}) pair for each member.
-     *
      * @param  out  the output stream where to serialize this object.
      * @throws IOException if an I/O error occurred while writing.
+     *
+     * @serialData the number of members as an {@code int}, followed by a
+     *             ({@code MemberName}, {@code Type}) pair for each member.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         final int size = size();

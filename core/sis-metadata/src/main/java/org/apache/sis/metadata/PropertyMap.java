@@ -29,10 +29,10 @@ import java.util.Iterator;
  * The map values depend on the actual {@code PropertyMap} subclasses; they may be
  * property values, property classes or property information.
  *
- * @param <V> The type of values in the map.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
+ *
+ * @param <V>  the type of values in the map.
  *
  * @see ValueMap
  * @see NameMap

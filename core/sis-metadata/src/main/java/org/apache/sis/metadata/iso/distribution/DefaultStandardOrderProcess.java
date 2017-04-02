@@ -209,9 +209,9 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @param  newValue  the new currency.
      *
-     * @since 0.5
-     *
      * @see #setFees(InternationalString)
+     *
+     * @since 0.5
      */
     public void setCurrency(final Currency newValue) {
         checkWritePermission();

@@ -50,10 +50,10 @@ import org.apache.sis.internal.util.CheckedArrayList;
  *   Collections.addAll(codes, AxisDirection.EAST, AxisDirection.NORTH, AxisDirection.UP),
  * }
  *
- * @param <E> The type of code list elements in the set.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
+ *
+ * @param <E>  the type of code list elements in the set.
  *
  * @see java.util.EnumSet
  *

@@ -61,11 +61,11 @@ import org.opengis.feature.AttributeType;
  *   <li>cardinality     — the minimum and maximum occurrences of attribute values.</li>
  * </ul>
  *
- * @param <V> the class of attribute values.
- *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
+ *
+ * @param <V>  the class of attribute values.
  *
  * @see FeatureTypeBuilder#addAttribute(Class)
  * @see org.apache.sis.feature.DefaultAttributeType

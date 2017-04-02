@@ -71,11 +71,11 @@ import java.util.function.Function;
  *       can be declared as an injective function if the other values meet the criteria.
  * </ul>
  *
- * @param <S> The type of objects to convert.
- * @param <T> The type of converted objects.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
+ *
+ * @param <S>  the type of objects to convert.
+ * @param <T>  the type of converted objects.
  *
  * @see ObjectConverters
  *

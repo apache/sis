@@ -223,10 +223,11 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.6
-     * @since   0.6
-     * @module
      *
      * @see NormalizedProjection#NormalizedProjection(OperationMethod, Parameters, Map)
+     *
+     * @since 0.6
+     * @module
      */
     protected enum ParameterRole {
         /**

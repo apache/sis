@@ -99,11 +99,11 @@ import static org.apache.sis.util.Numbers.*;
  * use {@code RangeSet<Long>} with millisecond values because {@code RangeSet} will internally
  * use {@code long[]} arrays in the later case.</p>
  *
- * @param <E> The type of range elements.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @version 0.5
+ *
+ * @param <E>  the type of range elements.
  *
  * @see Range
  *
@@ -988,11 +988,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     /**
      * A view over a subset of {@link RangeSet}.
      * Instances of this class are created by the {@link RangeSet#intersect(Range)} method.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
-     * @since   0.3
-     * @module
      *
      * @see RangeSet#intersect(Range)
      */

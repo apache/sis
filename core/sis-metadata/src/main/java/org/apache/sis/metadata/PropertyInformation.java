@@ -51,11 +51,11 @@ import org.apache.sis.util.logging.Logging;
  * <div class="section">Immutability and thread safety</div>
  * This final class is immutable and thus thread-safe.
  *
- * @param <E> The value type, either the method return type if not a collection,
- *            or the type of elements in the collection otherwise.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
+ *
+ * @param <E>  the value type, either the method return type if not a collection,
+ *             or the type of elements in the collection otherwise.
  *
  * @see InformationMap
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)

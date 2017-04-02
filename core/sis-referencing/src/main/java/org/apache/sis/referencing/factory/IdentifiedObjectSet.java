@@ -77,11 +77,12 @@ import org.apache.sis.util.Classes;
  * However, implementors are encouraged to wrap in {@linkplain java.util.Collections#unmodifiableSet unmodifiable set}
  * if they intend to cache {@code IdentifiedObjectSet} instances.
  *
- * @param  <T>  the type of objects to be included in this set.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.7
+ *
+ * @param <T>  the type of objects to be included in this set.
+ *
+ * @since 0.7
  * @module
  */
 public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet<T> implements CheckedContainer<T>, Localized {

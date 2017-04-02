@@ -28,10 +28,10 @@ import org.apache.sis.measure.ValueRange;
  * in order to make possible to return this range from the {@link PropertyInformation#getDomainValue()}
  * method.
  *
- * @param  <E>  the type of range elements as a subclass of {@link Number}.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
+ *
+ * @param <E>  the type of range elements as a subclass of {@link Number}.
  *
  * @see PropertyInformation#getDomainValue()
  *

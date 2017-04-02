@@ -1301,10 +1301,11 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8
-     * @since   0.8
-     * @module
      *
      * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
+     *
+     * @since 0.8
+     * @module
      */
     static final class Encoder {
         /**

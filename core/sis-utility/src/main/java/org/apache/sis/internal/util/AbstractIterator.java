@@ -26,11 +26,12 @@ import java.util.NoSuchElementException;
  * The {@link #hasNext()} method shall set the {@code #next} field to a non-null value if there is more elements to
  * return.
  *
- * @param <E> the type of elements to be returned by the iterator.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.7
+ *
+ * @param <E> the type of elements to be returned by the iterator.
+ *
+ * @since 0.7
  * @module
  */
 public abstract class AbstractIterator<E> implements Iterator<E> {
