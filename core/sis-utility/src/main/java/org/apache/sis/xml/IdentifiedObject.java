@@ -60,12 +60,13 @@ import org.opengis.metadata.citation.Citation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see IdentifierSpace
  * @see org.apache.sis.metadata.iso.ISOMetadata
  * @see ReferenceResolver#newIdentifiedObject(MarshalContext, Class, Identifier[])
+ *
+ * @since 0.3
+ * @module
  */
 public interface IdentifiedObject {
     /**

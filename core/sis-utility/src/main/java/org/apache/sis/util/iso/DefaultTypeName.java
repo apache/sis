@@ -125,11 +125,12 @@ import org.apache.sis.util.UnknownNameException;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see DefaultMemberName
  * @see DefaultNameFactory
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "TypeName_Type")
 @XmlRootElement(name = "TypeName")

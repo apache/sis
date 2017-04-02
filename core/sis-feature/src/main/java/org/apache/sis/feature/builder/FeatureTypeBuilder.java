@@ -59,10 +59,11 @@ import org.opengis.feature.Operation;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see org.apache.sis.parameter.ParameterBuilder
+ *
+ * @since 0.8
+ * @module
  */
 public class FeatureTypeBuilder extends TypeBuilder {
     /**

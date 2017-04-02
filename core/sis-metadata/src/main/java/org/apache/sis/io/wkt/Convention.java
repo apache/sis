@@ -50,11 +50,12 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.4
- * @module
  *
  * @see WKTFormat#getConvention()
  * @see WKTFormat#setConvention(Convention)
+ *
+ * @since 0.4
+ * @module
  */
 public enum Convention {
     /**

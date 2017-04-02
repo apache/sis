@@ -59,10 +59,11 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
- * @since   0.5
- * @module
  *
  * @see MathTransforms#compound(MathTransform...)
+ *
+ * @since 0.5
+ * @module
  */
 public class PassThroughTransform extends AbstractMathTransform implements Serializable {
     /**

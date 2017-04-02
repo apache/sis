@@ -60,11 +60,12 @@ import org.apache.sis.internal.system.Modules;
  *     }
  * }
  *
- * @param  <T>  the type of option values.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
+ *
+ * @param <T>  the type of option values.
+ *
+ * @since 0.3
  * @module
  */
 public class OptionKey<T> implements Serializable {

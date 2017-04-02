@@ -72,10 +72,11 @@ import org.apache.sis.util.iso.DefaultNameSpace;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see Units#valueOf(String)
+ *
+ * @since 0.8
+ * @module
  */
 public class UnitFormat extends Format implements javax.measure.format.UnitFormat, Localized {
     /**

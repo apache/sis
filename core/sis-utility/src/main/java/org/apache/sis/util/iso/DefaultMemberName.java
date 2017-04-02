@@ -44,12 +44,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Guilhem Legal (Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see DefaultTypeName
  * @see DefaultNameFactory
  * @see DefaultRecordType
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "MemberName_Type")
 @XmlRootElement(name = "MemberName")

@@ -40,11 +40,12 @@ import org.apache.sis.math.Fraction;
  * units otherwise. No other type is allowed since {@code SystemUnit} is always a combination of fundamental units
  * without scale factor or offset.
  *
- * @param  <Q>  the kind of quantity to be measured using this units.
- *
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @param <Q>  the kind of quantity to be measured using this units.
+ *
+ * @since 0.8
  * @module
  */
 final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {

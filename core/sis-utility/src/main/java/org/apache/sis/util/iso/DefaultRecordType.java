@@ -87,12 +87,13 @@ import org.apache.sis.internal.converter.SurjectiveConverter;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see DefaultRecord
  * @see DefaultRecordSchema
  * @see DefaultMemberName
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "RecordType")
 public class DefaultRecordType extends RecordDefinition implements RecordType, Serializable {

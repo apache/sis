@@ -41,11 +41,12 @@ import org.apache.sis.internal.util.MetadataServices;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.6
- * @module
  *
  * @see IdentifierSpace
  * @see org.apache.sis.metadata.iso.citation.Citations
+ *
+ * @since 0.6
+ * @module
  */
 public class CitationConstant extends SimpleCitation {
     /**
@@ -58,7 +59,7 @@ public class CitationConstant extends SimpleCitation {
      * The most typical example is the "EPSG" authority which manage the codes identifying Coordinate Reference
      * System (CRS) objects in the EPSG namespace.
      *
-     * @param  <T>  the type of object used as identifier values.
+     * @param <T>  the type of object used as identifier values.
      */
     public static class Authority<T> extends CitationConstant implements IdentifierSpace<T> {
         /**

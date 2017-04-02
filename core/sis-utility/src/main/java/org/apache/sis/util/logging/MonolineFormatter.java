@@ -110,11 +110,12 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.3
- * @module
  *
  * @see SimpleFormatter
  * @see Handler#setFormatter(Formatter)
+ *
+ * @since 0.3
+ * @module
  */
 public class MonolineFormatter extends Formatter {
     /** Do not format source class name.       */ private static final int NO_SOURCE    = 0;

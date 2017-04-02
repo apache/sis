@@ -48,10 +48,11 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.6
- * @since   0.6
- * @module
  *
  * @see DefaultConversion
+ *
+ * @since 0.6
+ * @module
  */
 @XmlType(name = "TransformationType")
 @XmlRootElement(name = "Transformation")

@@ -52,11 +52,12 @@ import org.apache.sis.util.resources.Errors;
  * In Apache SIS implementation, base and derived units are represented by the same class: {@link SystemUnit}.
  * All unit instances shall be immutable and thread-safe.
  *
- * @param  <Q>  the kind of quantity to be measured using this units.
- *
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @param <Q>  the kind of quantity to be measured using this units.
+ *
+ * @since 0.8
  * @module
  */
 abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientComparable, Serializable {

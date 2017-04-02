@@ -26,10 +26,11 @@ import javax.imageio.stream.ImageInputStream;
  *
  * @author  Martin Desruisseaux (IRD)
  * @version 0.8
- * @since   0.4
- * @module
  *
  * @see OutputStreamAdapter
+ *
+ * @since 0.4
+ * @module
  */
 public final class InputStreamAdapter extends InputStream implements Markable {
     /**

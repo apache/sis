@@ -31,11 +31,12 @@ import java.util.Collection;
  *     class MyList<E> extends AbstractList<E> implements CheckedContainer<E> { ... }
  * }
  *
- * @param  <E>  the base type of elements in the container.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
- * @since   0.3
+ *
+ * @param <E>  the base type of elements in the container.
+ *
+ * @since 0.3
  * @module
  */
 public interface CheckedContainer<E> {

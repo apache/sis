@@ -30,11 +30,12 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.5
- * @module
  *
  * @see ChannelDataOutputTest
  * @see ChannelImageOutputStream
+ *
+ * @since 0.5
+ * @module
  */
 final strictfp class ByteArrayChannel implements SeekableByteChannel {
     /**

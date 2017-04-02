@@ -30,10 +30,11 @@ import org.apache.sis.xml.NilReason;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see NilReason#createNilObject(Class)
+ *
+ * @since 0.4
+ * @module
  */
 public final class PrimitiveTypeProperties {
     /**

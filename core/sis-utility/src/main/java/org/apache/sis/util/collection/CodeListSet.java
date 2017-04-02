@@ -54,10 +54,11 @@ import org.apache.sis.internal.util.CheckedArrayList;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.3
- * @module
  *
  * @see java.util.EnumSet
+ *
+ * @since 0.3
+ * @module
  */
 public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
         implements CheckedContainer<E>, Cloneable, Serializable

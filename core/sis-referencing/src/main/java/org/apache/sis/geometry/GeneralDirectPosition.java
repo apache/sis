@@ -52,12 +52,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see DirectPosition1D
  * @see DirectPosition2D
  * @see CoordinateFormat
+ *
+ * @since 0.3
+ * @module
  */
 public class GeneralDirectPosition extends AbstractDirectPosition implements Serializable, Cloneable {
     /**

@@ -34,10 +34,11 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.3
- * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-149">GEOTK-149</a>
+ *
+ * @since 0.3
+ * @module
  */
 public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     /**

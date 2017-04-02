@@ -61,12 +61,13 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see Extents#getGeographicBoundingBox(Extent)
  * @see org.apache.sis.referencing.AbstractReferenceSystem#getDomainOfValidity()
  * @see org.apache.sis.referencing.datum.AbstractDatum#getDomainOfValidity()
+ *
+ * @since 0.3
+ * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "EX_Extent_Type", propOrder = {

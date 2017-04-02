@@ -127,11 +127,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.6
- * @module
  *
  * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
  * @see AbstractMathTransform#getContextualParameters()
+ *
+ * @since 0.6
+ * @module
  */
 public class ContextualParameters extends Parameters implements Serializable {
     /**

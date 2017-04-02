@@ -44,10 +44,11 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.5
- * @module
  *
  * @see org.opengis.referencing.operation.Transformation#getCoordinateOperationAccuracy()
+ *
+ * @since 0.5
+ * @module
  */
 @XmlTransient
 @SuppressWarnings("CloneableClassWithoutClone")       // ModifiableMetadata needs shallow clones.

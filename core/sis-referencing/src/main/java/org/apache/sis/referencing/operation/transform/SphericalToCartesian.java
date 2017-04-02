@@ -49,12 +49,13 @@ import static java.lang.Math.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.7
- * @module
  *
  * @see CartesianToSpherical
  * @see EllipsoidToCentricTransform
  * @see <a href="https://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
+ *
+ * @since 0.7
+ * @module
  */
 final class SphericalToCartesian extends CoordinateSystemTransform implements Serializable {
     /**

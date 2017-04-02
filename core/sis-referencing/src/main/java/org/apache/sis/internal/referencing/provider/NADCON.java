@@ -57,10 +57,11 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rueben Schulz (UBC)
  * @version 0.8
- * @since   0.7
- * @module
  *
  * @see <a href="http://www.ngs.noaa.gov/cgi-bin/nadcon.prl">NADCON on-line computation</a>
+ *
+ * @since 0.7
+ * @module
  */
 @XmlTransient
 public final class NADCON extends AbstractProvider {

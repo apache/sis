@@ -77,11 +77,12 @@ import org.apache.sis.internal.util.Citations;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @version 0.7
- * @since   0.3
- * @module
  *
  * @see ImmutableIdentifier
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
+ *
+ * @since 0.3
+ * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_Identifier_Type", propOrder = {

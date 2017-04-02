@@ -58,10 +58,11 @@ import org.apache.sis.util.Version;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see NetcdfStore
+ *
+ * @since 0.3
+ * @module
  */
 @Capabilities(Capability.READ)
 public class NetcdfStoreProvider extends DataStoreProvider {

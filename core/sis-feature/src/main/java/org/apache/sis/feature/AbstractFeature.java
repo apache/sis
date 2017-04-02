@@ -78,10 +78,11 @@ import org.opengis.feature.Operation;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.5
- * @module
  *
  * @see DefaultFeatureType#newInstance()
+ *
+ * @since 0.5
+ * @module
  */
 public abstract class AbstractFeature implements Feature, Serializable {
     /**

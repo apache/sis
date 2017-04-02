@@ -51,9 +51,10 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see <a href="http://download.oracle.com/javase/6/docs/technotes/guides/logging/overview.html">Java Logging Overview</a>
+ *
+ * @since 0.3
+ * @module
  */
 package org.apache.sis.util.logging;

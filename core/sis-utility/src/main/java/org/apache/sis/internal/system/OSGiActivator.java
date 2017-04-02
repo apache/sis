@@ -29,10 +29,11 @@ import org.osgi.framework.BundleListener;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.3
- * @module
  *
  * @see ServletListener
+ *
+ * @since 0.3
+ * @module
  */
 public final class OSGiActivator implements BundleActivator, BundleListener {
     /**

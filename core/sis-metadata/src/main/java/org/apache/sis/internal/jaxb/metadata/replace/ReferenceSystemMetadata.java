@@ -38,10 +38,11 @@ import org.apache.sis.util.ComparisonMode;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see org.apache.sis.referencing.AbstractReferenceSystem
+ *
+ * @since 0.3
+ * @module
  */
 @XmlRootElement(name = "MD_ReferenceSystem")
 public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements ReferenceSystem {

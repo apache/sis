@@ -50,10 +50,11 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+ *
+ * @since 0.3
+ * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
     @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),

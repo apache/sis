@@ -56,12 +56,13 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see InformationMap
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
  * @see <a href="https://issues.apache.org/jira/browse/SIS-80">SIS-80</a>
+ *
+ * @since 0.3
+ * @module
  */
 final class PropertyInformation<E> extends SimpleIdentifier
         implements ExtendedElementInformation, CheckedContainer<E>

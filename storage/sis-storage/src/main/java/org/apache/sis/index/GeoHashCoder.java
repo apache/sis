@@ -34,10 +34,11 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Chris Mattmann (JPL)
  * @version 0.8
- * @since   0.1
- * @module
  *
  * @see <a href="http://en.wikipedia.org/wiki/Geohash">Wikipedia: Geohash</a>
+ *
+ * @since 0.1
+ * @module
  *
  * @deprecated Moved to {@link org.apache.sis.referencing.gazetteer.GeohashReferenceSystem}.
  *             Note that axis order of {@code encode(double, double)} method differs.

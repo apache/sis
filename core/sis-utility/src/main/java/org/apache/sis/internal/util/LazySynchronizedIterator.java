@@ -28,11 +28,12 @@ import java.util.Iterator;
  * different threads can safely use their iterators concurrently even if the underlying {@code Iterable}s
  * were not thread-safe, because of the synchronization on {@code Iterable<E>} instances.</p>
  *
- * @param  <E>  the type of elements to be returned by the iterator.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.7
+ *
+ * @param <E>  the type of elements to be returned by the iterator.
+ *
+ * @since 0.7
  * @module
  */
 public final class LazySynchronizedIterator<E> extends AbstractIterator<E> {

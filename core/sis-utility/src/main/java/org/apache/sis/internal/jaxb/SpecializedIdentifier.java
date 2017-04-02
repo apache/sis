@@ -39,11 +39,12 @@ import org.apache.sis.internal.util.Citations;
  * The {@linkplain #authority} is typically an instance of {@link NonMarshalledAuthority}. The value
  * is an object of a type constrained by the authority.
  *
- * @param  <T>  the value type, typically {@link XLink}, {@link UUID} or {@link String}.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.3
+ *
+ * @param <T>  the value type, typically {@link XLink}, {@link UUID} or {@link String}.
+ *
+ * @since 0.3
  * @module
  */
 public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Serializable {

@@ -38,12 +38,13 @@ import java.util.IdentityHashMap;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see #HASH_CODES
  * @see ObjectPair#CURRENT
  * @see Pruner#MAPS
+ *
+ * @since 0.3
+ * @module
  */
 final class RecursivityGuard<V> extends ThreadLocal<Map<Object,V>> {
     /**

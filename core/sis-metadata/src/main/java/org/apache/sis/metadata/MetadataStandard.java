@@ -90,10 +90,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see AbstractMetadata
+ *
+ * @since 0.3
+ * @module
  */
 public class MetadataStandard implements Serializable {
     /**

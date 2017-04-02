@@ -90,11 +90,12 @@ import org.apache.sis.internal.util.LocalizedParseException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see Range#toString()
  * @see <a href="http://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
+ *
+ * @since 0.3
+ * @module
  */
 public class RangeFormat extends Format {
     /**

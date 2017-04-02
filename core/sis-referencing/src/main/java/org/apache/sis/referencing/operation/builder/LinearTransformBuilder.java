@@ -54,13 +54,14 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.5
- * @module
  *
  * @see LocalizationGridBuilder
  * @see LinearTransform
  * @see Line
  * @see Plane
+ *
+ * @since 0.5
+ * @module
  */
 public class LinearTransformBuilder extends TransformBuilder {
     /**

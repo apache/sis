@@ -118,13 +118,14 @@ import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see Angle
  * @see Latitude
  * @see Longitude
  * @see org.apache.sis.geometry.CoordinateFormat
+ *
+ * @since 0.3
+ * @module
  */
 public class AngleFormat extends Format implements Localized {
     /**

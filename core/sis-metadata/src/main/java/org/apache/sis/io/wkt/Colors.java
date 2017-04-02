@@ -37,11 +37,12 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see WKTFormat#getColors()
  * @see WKTFormat#setColors(Colors)
+ *
+ * @since 0.4
+ * @module
  */
 public class Colors implements Cloneable, Serializable {
     /**

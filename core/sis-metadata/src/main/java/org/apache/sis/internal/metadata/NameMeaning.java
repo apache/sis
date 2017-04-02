@@ -40,12 +40,13 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.5
- * @module
  *
  * @see org.apache.sis.internal.util.DefinitionURI
  * @see <a href="http://www.opengeospatial.org/ogcna">http://www.opengeospatial.org/ogcna</a>
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
+ *
+ * @since 0.5
+ * @module
  */
 public final class NameMeaning extends Static {
     /**

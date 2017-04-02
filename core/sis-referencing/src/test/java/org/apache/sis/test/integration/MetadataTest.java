@@ -95,10 +95,11 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.5
- * @module
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
+ *
+ * @since 0.5
+ * @module
  */
 @DependsOn({
     org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class

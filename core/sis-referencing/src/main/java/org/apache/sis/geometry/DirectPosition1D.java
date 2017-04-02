@@ -37,12 +37,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see DirectPosition2D
  * @see GeneralDirectPosition
  * @see CoordinateFormat
+ *
+ * @since 0.3
+ * @module
  */
 public class DirectPosition1D extends AbstractDirectPosition implements Serializable, Cloneable {
     /**

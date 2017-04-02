@@ -37,11 +37,12 @@ import static org.apache.sis.internal.jaxb.XmlUtilities.getDatatypeFactory;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see DateAdapter
  * @see org.apache.sis.internal.jaxb.gco.GO_DateTime
+ *
+ * @since 0.4
+ * @module
  */
 public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
     /**

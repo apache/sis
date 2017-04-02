@@ -33,10 +33,11 @@ import org.apache.sis.util.logging.Logging;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see <a href="https://jcp.org/en/jsr/detail?id=330">JSR-330</a>
+ *
+ * @since 0.3
+ * @module
  */
 public final class DefaultFactories extends SystemListener {
     /**

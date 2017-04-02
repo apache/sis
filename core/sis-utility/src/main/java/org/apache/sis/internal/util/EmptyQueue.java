@@ -27,11 +27,12 @@ import java.util.Queue;
 /**
  * An immutable and serializable empty queue.
  *
- * @param  <E>  type of elements in the collection.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
+ *
+ * @param <E>  type of elements in the collection.
+ *
+ * @since 0.3
  * @module
  */
 final class EmptyQueue<E> extends AbstractQueue<E> implements Serializable {

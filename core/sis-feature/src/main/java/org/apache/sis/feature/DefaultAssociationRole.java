@@ -54,11 +54,12 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.5
- * @module
  *
  * @see DefaultFeatureType
  * @see AbstractAssociation
+ *
+ * @since 0.5
+ * @module
  */
 public class DefaultAssociationRole extends FieldType implements FeatureAssociationRole {
     /**

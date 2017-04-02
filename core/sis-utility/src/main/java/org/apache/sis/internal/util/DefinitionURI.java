@@ -104,12 +104,13 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.internal.metadata.NameMeaning
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
  * @see <a href="http://www.opengeospatial.org/ogcna">OGC Naming Authority</a>
+ *
+ * @since 0.4
+ * @module
  */
 public final class DefinitionURI {
     /**

@@ -128,10 +128,11 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.7
- * @module
  *
  * @see org.apache.sis.referencing.operation.transform.DatumShiftTransform
+ *
+ * @since 0.7
+ * @module
  */
 public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T>> implements Serializable {
     /**

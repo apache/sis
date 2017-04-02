@@ -48,12 +48,13 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTimeCS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "TimeCSType")
 @XmlRootElement(name = "TimeCS")

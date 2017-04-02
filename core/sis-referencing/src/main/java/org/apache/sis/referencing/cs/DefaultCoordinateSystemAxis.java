@@ -90,11 +90,12 @@ import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
- * @since   0.4
- * @module
  *
  * @see AbstractCS
  * @see Unit
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "CoordinateSystemAxisType", propOrder = {
     "abbreviation",

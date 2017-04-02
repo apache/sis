@@ -37,10 +37,11 @@ import org.apache.sis.xml.XLink;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.7
- * @module
  *
  * @see org.apache.sis.xml.IdentifiedObject
+ *
+ * @since 0.7
+ * @module
  */
 public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
     /**

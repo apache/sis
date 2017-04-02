@@ -80,10 +80,11 @@ import org.apache.sis.util.collection.CodeListSet;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see ModifiableMetadata#unmodifiable()
+ *
+ * @since 0.8
+ * @module
 */
 public class MetadataCopier {
     /**

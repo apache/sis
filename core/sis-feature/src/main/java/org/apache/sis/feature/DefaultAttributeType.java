@@ -99,11 +99,12 @@ import org.opengis.feature.AttributeType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.5
- * @module
  *
  * @see DefaultFeatureType
  * @see AbstractAttribute
+ *
+ * @since 0.5
+ * @module
  */
 public class DefaultAttributeType<V> extends FieldType implements AttributeType<V> {
     /**

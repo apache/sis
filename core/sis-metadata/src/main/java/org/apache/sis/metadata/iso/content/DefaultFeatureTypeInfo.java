@@ -42,11 +42,12 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.5
- * @module
  *
  * @see org.apache.sis.storage.FeatureNaming
  * @see org.apache.sis.feature.DefaultFeatureType
+ *
+ * @since 0.5
+ * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
 @XmlType(name = "MD_FeatureTypeInfo", propOrder = {

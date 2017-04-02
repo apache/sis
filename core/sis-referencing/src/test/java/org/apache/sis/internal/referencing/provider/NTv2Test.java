@@ -46,11 +46,12 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.7
- * @module
  *
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
+ *
+ * @since 0.7
+ * @module
  */
 public final strictfp class NTv2Test extends TestCase {
     /**

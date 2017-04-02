@@ -28,10 +28,11 @@ import org.apache.sis.internal.jaxb.gml.CodeType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.5
- * @module
  *
  * @see org.apache.sis.internal.jaxb.gco.GO_GenericName
+ *
+ * @since 0.5
+ * @module
  */
 public final class GO_ScopedName extends XmlAdapter<CodeType.ScopedName, ScopedName> {
     /**

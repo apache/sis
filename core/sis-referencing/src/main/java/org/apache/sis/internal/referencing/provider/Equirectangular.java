@@ -66,10 +66,11 @@ import static java.lang.Math.*;
  * @author  John Grange
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.6
- * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/equirectangular.html">Equirectangular on RemoteSensing.org</a>
+ *
+ * @since 0.6
+ * @module
  */
 @XmlTransient
 public final class Equirectangular extends AbstractProvider {

@@ -52,10 +52,11 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.5
- * @module
  *
  * @see MathTransformFactory
+ *
+ * @since 0.5
+ * @module
  */
 public final class MathTransforms extends Static {
     /**

@@ -31,10 +31,11 @@ import org.apache.sis.util.Workaround;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see javax.xml.stream.util.StreamReaderDelegate
+ *
+ * @since 0.8
+ * @module
  */
 @Workaround(library = "JDK", version = "1.8")
 public class StreamWriterDelegate implements XMLStreamWriter {

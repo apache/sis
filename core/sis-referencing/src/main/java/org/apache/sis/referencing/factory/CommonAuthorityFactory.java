@@ -191,10 +191,11 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
- * @since   0.7
- * @module
  *
  * @see CommonCRS
+ *
+ * @since 0.7
+ * @module
  */
 public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory {
     /**

@@ -55,12 +55,13 @@
  *   <li>All measurements are in metric units.</li>
  * </ul>
  *
+ * @author  Johann Sorel (Geomatys)
+ * @version 0.8
+ *
  * @see <a href="https://en.wikipedia.org/wiki/GPS_Exchange_Format">GPS Exchange Format on Wikipedia</a>
  * @see <a href="http://www.topografix.com/GPX/1/1/">GPX 1.1 Schema Documentation</a>
  *
- * @author  Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @since 0.8
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Tags.NAMESPACE_V11, xmlns = {

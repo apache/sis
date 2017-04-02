@@ -40,11 +40,12 @@ import org.apache.sis.io.wkt.Formatter;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.referencing.crs.DefaultEngineeringCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringDatum(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "EngineeringDatumType")
 @XmlRootElement(name = "EngineeringDatum")

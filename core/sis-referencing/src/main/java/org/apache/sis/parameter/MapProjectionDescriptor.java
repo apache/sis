@@ -47,10 +47,11 @@ import org.apache.sis.util.Workaround;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.6
- * @module
  *
  * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/reference/StandardCoordinateTransforms.html">NetCDF projection parameters</a>
+ *
+ * @since 0.6
+ * @module
  */
 @XmlTransient
 final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {

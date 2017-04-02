@@ -43,10 +43,11 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see org.apache.sis.xml.MarshallerPool
+ *
+ * @since 0.3
+ * @module
  */
 public abstract class TypeRegistration {
     /**

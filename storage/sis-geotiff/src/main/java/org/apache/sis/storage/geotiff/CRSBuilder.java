@@ -133,10 +133,11 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see GeoKeys
+ *
+ * @since 0.8
+ * @module
  */
 final class CRSBuilder {
     /**

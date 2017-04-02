@@ -33,11 +33,12 @@ import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
  *
  * @author  Cédric Briançon (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see <a href="http://java.sun.com/webservices/docs/1.5/jaxb/vendorProperties.html">JAXB extensions</a>
  * @see <a href="https://issues.apache.org/jira/browse/SIS-74">SIS-74</a>
+ *
+ * @since 0.3
+ * @module
  */
 final class OGCNamespacePrefixMapper extends NamespacePrefixMapper {
     /**

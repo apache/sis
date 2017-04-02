@@ -44,12 +44,13 @@ import javax.imageio.stream.ImageInputStream;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see javax.imageio.stream.FileImageInputStream
  * @see javax.imageio.ImageIO#createImageInputStream(Object)
  * @see java.nio.channels.Channels#newInputStream(ReadableByteChannel)
+ *
+ * @since 0.3
+ * @module
  */
 public class ChannelImageInputStream extends ChannelDataInput implements ImageInputStream {
     /**

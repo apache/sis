@@ -25,10 +25,11 @@ import org.apache.sis.storage.DataStoreProvider;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see FormattedOutputCommand
+ *
+ * @since 0.8
+ * @module
  */
 enum OutputFormat {
     /**

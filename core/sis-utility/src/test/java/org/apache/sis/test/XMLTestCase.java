@@ -53,10 +53,11 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.3
- * @module
  *
  * @see XMLComparator
+ *
+ * @since 0.3
+ * @module
  */
 public abstract strictfp class XMLTestCase extends TestCase {
     /**

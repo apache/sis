@@ -104,11 +104,12 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.4
- * @module
  *
  * @see DefaultParameterDescriptorGroup
  * @see DefaultParameterValue
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "ParameterValueGroupType", propOrder = {
     "values",

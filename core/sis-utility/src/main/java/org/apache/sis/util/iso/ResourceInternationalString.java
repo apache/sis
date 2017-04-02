@@ -79,10 +79,11 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see ResourceBundle#getBundle(String, Locale)
+ *
+ * @since 0.3
+ * @module
  */
 public class ResourceInternationalString extends AbstractInternationalString implements Serializable {
     /**

@@ -50,12 +50,13 @@ import org.opengis.referencing.datum.ParametricDatum;
  *
  * @author  Johann Sorel (Geomatys)
  * @version 0.7
- * @since   0.7
- * @module
  *
  * @see org.apache.sis.referencing.cs.DefaultParametricCS
  * @see org.apache.sis.referencing.crs.DefaultParametricCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createParametricDatum(String)
+ *
+ * @since 0.7
+ * @module
  */
 @XmlType(name = "ParametricDatumType")
 @XmlRootElement(name = "ParametricDatum")

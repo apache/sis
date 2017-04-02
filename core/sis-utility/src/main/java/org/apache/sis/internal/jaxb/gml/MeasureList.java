@@ -35,10 +35,11 @@ import org.apache.sis.util.ObjectConverters;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.6
- * @module
  *
  * @see Measure
+ *
+ * @since 0.6
+ * @module
  */
 @XmlType(name = "MeasureListType")
 public final class MeasureList {

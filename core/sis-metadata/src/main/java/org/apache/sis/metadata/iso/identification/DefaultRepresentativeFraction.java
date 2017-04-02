@@ -66,10 +66,11 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.3
- * @module
  *
  * @see DefaultResolution#getEquivalentScale()
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "MD_RepresentativeFraction_Type")
 @XmlRootElement(name = "MD_RepresentativeFraction")

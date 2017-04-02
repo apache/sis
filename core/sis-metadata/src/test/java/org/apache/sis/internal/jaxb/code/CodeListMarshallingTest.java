@@ -43,10 +43,11 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-121">GEOTK-121</a>
+ *
+ * @since 0.3
+ * @module
  */
 public final strictfp class CodeListMarshallingTest extends XMLTestCase {
     /**

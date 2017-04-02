@@ -70,10 +70,11 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
- * @since   0.6
- * @module
  *
  * @see WKTFormat#getWarnings()
+ *
+ * @since 0.6
+ * @module
  */
 public final class Warnings implements Localized, Serializable {
     /**

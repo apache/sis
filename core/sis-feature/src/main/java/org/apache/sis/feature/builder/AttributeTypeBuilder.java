@@ -66,11 +66,12 @@ import org.opengis.feature.AttributeType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see FeatureTypeBuilder#addAttribute(Class)
  * @see org.apache.sis.feature.DefaultAttributeType
+ *
+ * @since 0.8
+ * @module
  */
 public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     /**

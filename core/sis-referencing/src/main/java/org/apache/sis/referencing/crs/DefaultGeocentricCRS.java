@@ -70,10 +70,11 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlTransient
 public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements GeocentricCRS {

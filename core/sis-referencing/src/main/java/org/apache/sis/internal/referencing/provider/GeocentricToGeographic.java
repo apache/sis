@@ -32,10 +32,11 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.7
- * @module
  *
  * @see GeographicToGeocentric
+ *
+ * @since 0.7
+ * @module
  */
 public final class GeocentricToGeographic extends AbstractProvider {
     /**

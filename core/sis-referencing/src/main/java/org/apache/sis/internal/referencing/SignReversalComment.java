@@ -31,10 +31,11 @@ import org.apache.sis.util.iso.AbstractInternationalString;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- * @since   0.7
- * @module
  *
  * @see org.apache.sis.internal.referencing.provider.AbstractProvider#isInvertible()
+ *
+ * @since 0.7
+ * @module
  */
 public final class SignReversalComment extends AbstractInternationalString implements Serializable {
     /**

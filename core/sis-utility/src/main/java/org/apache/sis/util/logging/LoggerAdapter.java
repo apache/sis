@@ -87,10 +87,11 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see Logging
+ *
+ * @since 0.3
+ * @module
  */
 public abstract class LoggerAdapter extends Logger {
     /**

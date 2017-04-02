@@ -108,11 +108,12 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see AbstractLocation
  * @see ReferencingByIdentifiers
+ *
+ * @since 0.8
+ * @module
  */
 public class ModifiableLocationType extends AbstractLocationType {      // Not Serializable on intend.
     /**

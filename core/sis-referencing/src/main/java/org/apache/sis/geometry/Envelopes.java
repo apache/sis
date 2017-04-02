@@ -87,11 +87,12 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 0.5
- * @since   0.3
- * @module
  *
  * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
+ *
+ * @since 0.3
+ * @module
  */
 public final class Envelopes extends Static {
     /**

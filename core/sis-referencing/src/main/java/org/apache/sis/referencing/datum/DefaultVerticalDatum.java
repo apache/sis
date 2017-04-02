@@ -73,13 +73,14 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
- * @since   0.4
- * @module
  *
  * @see org.apache.sis.referencing.CommonCRS.Vertical#datum()
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
  * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalDatum(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "VerticalDatumType")
 @XmlRootElement(name = "VerticalDatum")

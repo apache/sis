@@ -129,12 +129,13 @@ import java.util.function.Supplier;
  * then creating <var>B</var> is not allowed to implies (directly or indirectly) the creation of
  * <var>A</var>. If this rule is not meet, deadlock may occur randomly.
  *
- * @param  <K>  the type of key objects.
- * @param  <V>  the type of value objects.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
- * @since   0.3
+ *
+ * @param <K>  the type of key objects.
+ * @param <V>  the type of value objects.
+ *
+ * @since 0.3
  * @module
  */
 public class Cache<K,V> extends AbstractMap<K,V> {

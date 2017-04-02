@@ -84,11 +84,12 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see java.util.ResourceBundle
  * @see java.text.MessageFormat
  * @see org.apache.sis.util.iso.ResourceInternationalString
+ *
+ * @since 0.3
+ * @module
  */
 package org.apache.sis.util.resources;

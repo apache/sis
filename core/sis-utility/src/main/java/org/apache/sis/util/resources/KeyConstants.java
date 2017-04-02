@@ -30,10 +30,11 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
- * @module
  *
  * @see IndexedResourceBundle#getKeyConstants()
+ *
+ * @since 0.8
+ * @module
  */
 public class KeyConstants {
     /**

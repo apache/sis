@@ -38,11 +38,12 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see Marshaller#setAdapter(XmlAdapter)
  * @see Unmarshaller#setAdapter(XmlAdapter)
+ *
+ * @since 0.3
+ * @module
  */
 public interface AdapterReplacement {
     /**

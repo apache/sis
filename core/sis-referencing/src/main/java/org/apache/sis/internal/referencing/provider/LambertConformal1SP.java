@@ -29,10 +29,11 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
  * @version 0.6
- * @since   0.6
- * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/lambert_conic_conformal_1sp.html">Lambert Conic Conformal 1SP on RemoteSensing.org</a>
+ *
+ * @since 0.6
+ * @module
  */
 @XmlTransient
 public final class LambertConformal1SP extends AbstractLambert {

@@ -118,11 +118,12 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
- * @since   0.4
- * @module
  *
  * @see DefaultParameterDescriptor
  * @see DefaultParameterValueGroup
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "ParameterValueType", propOrder = {
     "xmlValue",

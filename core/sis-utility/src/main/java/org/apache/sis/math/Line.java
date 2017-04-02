@@ -43,11 +43,12 @@ import static java.lang.Double.*;
  *
  * @author  Martin Desruisseaux (MPO, IRD)
  * @version 0.8
- * @since   0.5
- * @module
  *
  * @see Plane
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
+ *
+ * @since 0.5
+ * @module
  */
 public class Line implements Cloneable, Serializable {
     /**

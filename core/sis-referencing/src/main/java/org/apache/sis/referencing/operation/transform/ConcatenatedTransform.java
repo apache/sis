@@ -57,10 +57,11 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.5
- * @module
  *
  * @see org.opengis.referencing.operation.MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
+ *
+ * @since 0.5
+ * @module
  */
 class ConcatenatedTransform extends AbstractMathTransform implements Serializable {
     /**

@@ -46,12 +46,13 @@ package org.apache.sis.util;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
- * @since   0.3
- * @module
  *
  * @see java.awt.Graphics#dispose()
  * @see javax.imageio.ImageReader#dispose()
  * @see javax.imageio.ImageWriter#dispose()
+ *
+ * @since 0.3
+ * @module
  */
 public interface Disposable {
     /**

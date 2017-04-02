@@ -71,10 +71,11 @@ import org.apache.sis.util.collection.TreeTable;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.3
- * @module
  *
  * @see MetadataStandard
+ *
+ * @since 0.3
+ * @module
  */
 @XmlTransient
 public abstract class AbstractMetadata implements LenientComparable, Emptiable {

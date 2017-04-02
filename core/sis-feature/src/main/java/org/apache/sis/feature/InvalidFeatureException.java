@@ -33,10 +33,11 @@ import org.opengis.feature.InvalidPropertyValueException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.7
- * @module
  *
  * @see Features#validate(Feature)
+ *
+ * @since 0.7
+ * @module
  */
 final class InvalidFeatureException extends InvalidPropertyValueException implements LocalizedException {
     /**
