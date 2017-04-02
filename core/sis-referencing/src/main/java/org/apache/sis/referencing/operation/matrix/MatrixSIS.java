@@ -183,9 +183,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
      * @param  value   the new matrix element value.
      *
-     * @since 0.8
-     *
      * @see #setElement(int, int, double)
+     *
+     * @since 0.8
      */
     public void setNumber(int row, int column, final Number value) {
         if (value instanceof DoubleDouble) {

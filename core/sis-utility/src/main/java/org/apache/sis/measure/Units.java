@@ -450,9 +450,9 @@ public final class Units extends Static {
      *   <tr><td>Derived units:</td>    <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}.</td></tr>
      * </table></div>
      *
-     * @since 0.3
-     *
      * @see java.util.concurrent.TimeUnit#MILLISECONDS
+     *
+     * @since 0.3
      */
     public static final Unit<Time> MILLISECOND;
 
@@ -1698,9 +1698,9 @@ public final class Units extends Static {
      * @param  inAxis {@code true} for a unit used in Coordinate System Axis definition.
      * @return the EPSG code of the given units, or {@code null} if unknown.
      *
-     * @since 0.4
-     *
      * @see org.apache.sis.referencing.cs.CoordinateSystems#getEpsgCode(Unit, AxisDirection...)
+     *
+     * @since 0.4
      */
     public static Integer getEpsgCode(Unit<?> unit, final boolean inAxis) {
         if (unit != null) {

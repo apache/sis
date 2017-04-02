@@ -114,10 +114,10 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * Consequently, the above-cited methods provide single points that subclasses can override
  * for modifying the behavior of all getter and setter methods.
  *
- * @param  <T>  the type of the value stored in this parameter.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
+ *
+ * @param  <T>  the type of the value stored in this parameter.
  *
  * @see DefaultParameterDescriptor
  * @see DefaultParameterValueGroup
@@ -872,9 +872,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @param  parameter  the parameter to make unmodifiable, or {@code null}.
      * @return a unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
      *
-     * @since 0.6
-     *
      * @see DefaultParameterValueGroup#unmodifiable(ParameterValueGroup)
+     *
+     * @since 0.6
      */
     public static <T> DefaultParameterValue<T> unmodifiable(final ParameterValue<T> parameter) {
         return UnmodifiableParameterValue.create(parameter);

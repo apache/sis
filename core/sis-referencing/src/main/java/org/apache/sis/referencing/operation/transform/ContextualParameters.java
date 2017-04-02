@@ -141,10 +141,11 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
-     * @since   0.7
-     * @module
      *
      * @see ContextualParameters#getMatrix(MatrixRole)
+     *
+     * @since 0.7
+     * @module
      */
     public enum MatrixRole {
         /**

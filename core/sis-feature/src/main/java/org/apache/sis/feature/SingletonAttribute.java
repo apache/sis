@@ -36,11 +36,11 @@ import org.opengis.feature.AttributeType;
  *       the attribute is cloned, but not its {@linkplain #getValue() value}.</li>
  * </ul>
  *
- * @param  <V>  the type of the attribute value.
- *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
+ *
+ * @param <V>  the type of the attribute value.
  *
  * @see DefaultAttributeType
  *

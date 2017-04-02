@@ -76,11 +76,11 @@ import org.apache.sis.util.collection.WeakHashSet;
  * given to {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor parameter descriptor}.
  * Other methods do not check for shared instances, since the created object is often temporary.</p>
  *
- * @param <E> The type of range elements as a subclass of {@link Number}.
- *
  * @author  Martin Desruisseaux (IRD)
  * @author  Jody Garnett (for parameterized type inspiration)
  * @version 0.5
+ *
+ * @param <E>  the type of range elements as a subclass of {@link Number}.
  *
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet

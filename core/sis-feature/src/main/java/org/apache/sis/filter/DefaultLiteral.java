@@ -24,11 +24,12 @@ import org.opengis.filter.expression.Literal;
 /**
  * Immutable literal expression.
  *
- * @param  <T>  literal value type
- *
  * @author  Johann Sorel (Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @param <T>  literal value type.
+ *
+ * @since 0.8
  * @module
  */
 public class DefaultLiteral<T> extends AbstractExpression implements Literal {

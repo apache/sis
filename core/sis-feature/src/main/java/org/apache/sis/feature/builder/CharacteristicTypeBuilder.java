@@ -37,11 +37,11 @@ import org.opengis.feature.AttributeType;
  * For example all values of the "temperature" attribute typically have the same units of measurement.
  * Such common value can be specified as the characteristic {@linkplain #setDefaultValue(Object) default value}.</p>
  *
- * @param <V> the class of characteristic values.
- *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
+ *
+ * @param <V>  the class of characteristic values.
  *
  * @see AttributeTypeBuilder#addCharacteristic(Class)
  *

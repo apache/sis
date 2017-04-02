@@ -183,11 +183,6 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * and resolves deserialized instances to the singleton instances.
      *
      * @param  <V>  base type of all values in the column identified by this instance.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
-     * @since   0.3
-     * @module
      */
     private static final class Constant<V> extends TableColumn<V> implements Serializable {
         /**

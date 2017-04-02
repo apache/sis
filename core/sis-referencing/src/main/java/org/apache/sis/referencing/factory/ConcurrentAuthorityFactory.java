@@ -91,11 +91,12 @@ import org.apache.sis.util.resources.Messages;
  * {@link CRSAuthorityFactory} and {@link CoordinateOperationAuthorityFactory} interfaces.
  * Subclasses should select the interfaces that they choose to implement.
  *
- * @param  <DAO>  the type of factory used as Data Access Object (DAO)
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.7
+ *
+ * @param <DAO>  the type of factory used as Data Access Object (DAO).
+ *
+ * @since 0.7
  * @module
  */
 public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFactory>

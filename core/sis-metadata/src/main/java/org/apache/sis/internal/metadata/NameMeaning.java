@@ -151,9 +151,9 @@ public final class NameMeaning extends Static {
      * @param  code       the code.
      * @return an identifier using the URN syntax, or {@code null} if a mandatory information is missing.
      *
-     * @since 0.7
-     *
      * @see DefinitionURI#format(String, String, String, String)
+     *
+     * @since 0.7
      */
     public static String toURN(final Class<?> type, final String authority, String version, String code) {
         if (type != null && authority != null && code != null) {

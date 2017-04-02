@@ -28,10 +28,10 @@ import org.apache.sis.util.resources.Errors;
  * method. This set is used only for mutually exclusive properties, when a collection can not have
  * elements because the other property is set.
  *
- * @param  <E>  the type of elements that the collection would have if it was non-empty.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
+ *
+ * @param <E>  the type of elements that the collection would have if it was non-empty.
  *
  * @see Collections#emptySet()
  *

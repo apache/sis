@@ -31,7 +31,7 @@ import org.apache.sis.util.ArraysExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  *
- * @param  <E>  the type of elements in the set.
+ * @param <E>  the type of elements in the set.
  *
  * @since 0.7
  * @module

@@ -296,10 +296,10 @@ public final class Citations extends Static {
      *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
-     * @since 0.4
-     *
      * @see #OGC
      * @see #EPSG
+     *
+     * @since 0.4
      */
     public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<>("ESRI");
 

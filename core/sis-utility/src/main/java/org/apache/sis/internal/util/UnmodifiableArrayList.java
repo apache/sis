@@ -306,12 +306,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
     /**
      * A view over a portion of {@link UnmodifiableArrayList}.
      *
-     * @param  <E>  the type of elements in the list.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
-     * @since   0.3
-     * @module
+     * @param <E>  the type of elements in the list.
      */
     private static final class SubList<E> extends UnmodifiableArrayList<E> {
         /**

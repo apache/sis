@@ -131,9 +131,9 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * @return an unmodifiable group with the same parameters than the given group,
      *         or {@code null} if the given argument was null.
      *
-     * @since 0.7
-     *
      * @see DefaultParameterValue#unmodifiable(ParameterValue)
+     *
+     * @since 0.7
      */
     public static Parameters unmodifiable(final ParameterValueGroup parameters) {
         return UnmodifiableParameterValueGroup.create(parameters);
