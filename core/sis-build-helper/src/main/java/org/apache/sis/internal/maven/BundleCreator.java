@@ -62,6 +62,12 @@ public class BundleCreator extends AbstractMojo {
     private String rootDirectory;
 
     /**
+     * Invoked by reflection for creating the MOJO.
+     */
+    public BundleCreator() {
+    }
+
+    /**
      * Creates the Pack200 file from the JAR files collected in the "<code>target/binaries</code>" directory.
      *
      * @throws MojoExecutionException if the plugin execution failed.

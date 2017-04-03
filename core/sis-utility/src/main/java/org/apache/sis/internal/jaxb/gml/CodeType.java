@@ -77,6 +77,12 @@ public class CodeType {
     String codeSpace;
 
     /**
+     * Invoked by reflection by JAXB on unmarshalling.
+     */
+    public CodeType() {
+    }
+
+    /**
      * Sets the value from the given name.
      *
      * @param name  the name to marshal.

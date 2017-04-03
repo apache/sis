@@ -407,9 +407,8 @@ public final class ArgumentChecks extends Static {
      * @throws IllegalArgumentException if the given value is NaN or infinite.
      */
     public static void ensureFinite(final String name, final float value) {
-        final boolean isNaN;
-        if ((isNaN = Float.isNaN(value)) == true || Float.isInfinite(value)) {
-            throw new IllegalArgumentException(Errors.format(isNaN ?
+        if (!Float.isFinite(value)) {
+            throw new IllegalArgumentException(Errors.format(Float.isNaN(value) ?
                     Errors.Keys.NotANumber_1 : Errors.Keys.InfiniteArgumentValue_1, name));
         }
     }
@@ -424,9 +423,8 @@ public final class ArgumentChecks extends Static {
      * @throws IllegalArgumentException if the given value is NaN or infinite.
      */
     public static void ensureFinite(final String name, final double value) {
-        final boolean isNaN;
-        if ((isNaN = Double.isNaN(value)) == true || Double.isInfinite(value)) {
-            throw new IllegalArgumentException(Errors.format(isNaN ?
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException(Errors.format(Double.isNaN(value) ?
                     Errors.Keys.NotANumber_1 : Errors.Keys.InfiniteArgumentValue_1, name));
         }
     }

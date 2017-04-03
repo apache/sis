@@ -76,6 +76,12 @@ public final class Doclet extends HtmlDoclet {
     private static final String ENCODING = "UTF-8";
 
     /**
+     * Invoked by reflection for creating the doclet.
+     */
+    public Doclet() {
+    }
+
+    /**
      * Invoked by Javadoc for starting the doclet.
      *
      * @param  root  the root document.

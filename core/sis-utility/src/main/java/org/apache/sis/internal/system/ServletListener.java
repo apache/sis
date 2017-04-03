@@ -36,6 +36,12 @@ import javax.servlet.annotation.WebListener;
 @WebListener("Apache SIS shutdown hook")
 public final class ServletListener implements ServletContextListener {
     /**
+     * Invoked by reflection by the container.
+     */
+    public ServletListener() {
+    }
+
+    /**
      * Receives notification that the web application initialization process is starting.
      *
      * @param  event  the context of the servlet being initialized.

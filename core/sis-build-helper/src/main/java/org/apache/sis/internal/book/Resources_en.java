@@ -25,4 +25,9 @@ package org.apache.sis.internal.book;
  * @since   0.7
  */
 public final class Resources_en extends Resources {
+    /**
+     * Invoked by resource bundle reflection mechanism.
+     */
+    public Resources_en() {
+    }
 }
