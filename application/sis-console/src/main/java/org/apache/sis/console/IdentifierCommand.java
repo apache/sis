@@ -45,8 +45,8 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  * The "identifier" sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 final class IdentifierCommand extends FormattedOutputCommand {
@@ -56,7 +56,7 @@ final class IdentifierCommand extends FormattedOutputCommand {
      * <b>MAINTENANCE NOTE:</b> if this enumeration is modified,
      * update {@code IdentifierState.properties} accordingly.
      */
-    private static enum State {
+    private enum State {
         VALID("   "), APPROXIMATIVE("~  "), AXIS_ORDER("!  "), MISMATCH("!! "), UNKNOWN("?  ");
 
         /** The string representation. */ final String text;

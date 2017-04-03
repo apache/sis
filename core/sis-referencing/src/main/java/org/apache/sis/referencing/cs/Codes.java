@@ -34,8 +34,8 @@ import static org.apache.sis.internal.util.Constants.EPSG_PROJECTED_CS;
  *
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class Codes {

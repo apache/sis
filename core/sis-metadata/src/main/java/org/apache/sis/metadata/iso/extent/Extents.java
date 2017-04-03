@@ -65,11 +65,12 @@ import org.apache.sis.internal.jdk8.JDK8;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
- * @module
  *
  * @see org.apache.sis.geometry.Envelopes
+ *
+ * @since 0.3
+ * @module
  */
 public final class Extents extends Static {
     /**

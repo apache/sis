@@ -33,11 +33,12 @@ import org.opengis.referencing.cs.AxisDirection;        // For javadoc
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see org.apache.sis.referencing.cs.CoordinateSystems#angle(AxisDirection, AxisDirection)
+ *
+ * @since 0.4
+ * @module
  */
 public final class ElevationAngle extends Angle {
     /**

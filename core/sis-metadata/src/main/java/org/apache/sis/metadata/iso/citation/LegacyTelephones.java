@@ -29,8 +29,8 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  * {@link DefaultTelephone#getFacsimiles()} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class LegacyTelephones extends LegacyPropertyAdapter<String,Telephone> {

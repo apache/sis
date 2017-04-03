@@ -38,8 +38,8 @@
  * to use a more consistent vocabulary (compared to the rest of Apache SIS).</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 package org.apache.sis.internal.netcdf;

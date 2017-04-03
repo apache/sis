@@ -21,8 +21,8 @@ package org.apache.sis.internal.netcdf;
  * Information about the grid geometry and the conversion from grid coordinates to geodetic coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract class GridGeometry {

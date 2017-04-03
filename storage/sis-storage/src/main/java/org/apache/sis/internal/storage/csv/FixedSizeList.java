@@ -26,8 +26,8 @@ import java.util.AbstractList;
  * specification saying that "if the value equals the previous value, the text for the value can be omitted".
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class FixedSizeList extends AbstractList<Object> {

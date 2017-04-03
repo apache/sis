@@ -66,13 +66,14 @@ import static org.apache.sis.math.MathFunctions.isNegative;
  * (see {@link java.lang.Number} for an example of a similar in purpose class having mutable subclasses).
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.8
- * @module
  *
  * @see Latitude
  * @see Longitude
  * @see AngleFormat
+ *
+ * @since 0.3
+ * @module
  */
 public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**

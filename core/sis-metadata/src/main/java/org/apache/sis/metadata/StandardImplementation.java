@@ -29,8 +29,8 @@ import org.apache.sis.internal.system.Modules;
  * Information about an Apache SIS metadata standard implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class StandardImplementation extends MetadataStandard {

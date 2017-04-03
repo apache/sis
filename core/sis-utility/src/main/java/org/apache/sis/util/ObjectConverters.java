@@ -59,11 +59,12 @@ import org.apache.sis.internal.converter.SystemRegistry;
  * </div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see ObjectConverter
+ *
+ * @since 0.3
+ * @module
  */
 public final class ObjectConverters extends Static {
     /**

@@ -48,11 +48,12 @@ import org.apache.sis.util.resources.Errors;
  * Transverse Mercator</cite> (UTM) projections use the same scale factor (0.9996) and false easting (500000 metres).
  * </div>
  *
- * @param <T> The type of the value stored in this parameter.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ *
+ * @param <T>  the type of the value stored in this parameter.
+ *
+ * @since 0.6
  * @module
  */
 @XmlTransient

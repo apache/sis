@@ -82,12 +82,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.4
  * @version 0.7
- * @module
  *
  * @see org.apache.sis.referencing.CommonCRS#primeMeridian()
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createPrimeMeridian(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "PrimeMeridianType")
 @XmlRootElement(name = "PrimeMeridian")

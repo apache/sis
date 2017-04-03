@@ -50,8 +50,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.
@@ -213,9 +213,9 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @param  newValue  the new currency.
      *
-     * @since 0.5
-     *
      * @see #setFees(InternationalString)
+     *
+     * @since 0.5
      */
     public void setCurrency(final Currency newValue) {
         checkWritePermission();

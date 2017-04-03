@@ -27,8 +27,8 @@ import static org.junit.Assert.*;
  * Tests {@link SimpleIdentifier}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.internal.util.CitationsTest.class)

@@ -33,8 +33,8 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * in this class implement the {@code CheckedContainer} interface.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final class Containers extends Static {

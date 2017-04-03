@@ -39,12 +39,13 @@ import org.apache.sis.io.wkt.Formatter;
  * components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see org.apache.sis.referencing.crs.DefaultEngineeringCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringDatum(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "EngineeringDatumType")
 @XmlRootElement(name = "EngineeringDatum")

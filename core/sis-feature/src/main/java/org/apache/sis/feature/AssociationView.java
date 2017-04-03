@@ -33,8 +33,8 @@ import java.util.Objects;
  * implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 class AssociationView extends AbstractAssociation {

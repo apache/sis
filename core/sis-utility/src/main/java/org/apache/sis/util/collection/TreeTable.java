@@ -63,8 +63,8 @@ import java.util.List;
  * this column list does not provide the above type-safety.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public interface TreeTable {
@@ -118,11 +118,11 @@ public interface TreeTable {
      * {@link #getUserObject()} method. This object is not used directly by the tree tables.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3
      * @version 0.8
+     * @since   0.3
      * @module
      */
-    public static interface Node {
+    public interface Node {
         /**
          * Returns the parent node, or {@code null} if this node is the root of the tree.
          *

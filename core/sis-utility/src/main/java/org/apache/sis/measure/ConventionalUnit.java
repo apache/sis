@@ -37,8 +37,8 @@ import org.apache.sis.internal.util.Numerics;
  * A unit of measure which is related to a base or derived unit through a conversion formula.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {

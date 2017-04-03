@@ -33,11 +33,12 @@ import org.apache.sis.util.resources.Errors;
  * 90°. The datum is unspecified.
  *
  * @author  Chris Mattmann (JPL)
- * @since   0.1
  * @version 0.8
- * @module
  *
  * @see <a href="http://en.wikipedia.org/wiki/Geohash">Wikipedia: Geohash</a>
+ *
+ * @since 0.1
+ * @module
  *
  * @deprecated Moved to {@link org.apache.sis.referencing.gazetteer.GeohashReferenceSystem}.
  *             Note that axis order of {@code encode(double, double)} method differs.
@@ -55,7 +56,7 @@ public class GeoHashCoder implements Serializable {
      * @deprecated Moved to {@link org.apache.sis.referencing.gazetteer.GeohashReferenceSystem.Format}.
      */
     @Deprecated
-    public static enum Format {
+    public enum Format {
         /**
          * Format consisting of 32 symbols used at {@code http://geohash.org}. This encoding uses digits 0 to 9,
          * and lower-case letters {@code 'b'} to {@code 'z'} excluding {@code 'i'}, {@code 'l'} and {@code 'o'}.

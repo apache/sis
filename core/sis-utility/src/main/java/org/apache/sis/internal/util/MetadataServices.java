@@ -31,8 +31,8 @@ import org.apache.sis.internal.system.OptionalDependency;
  * implementation using Java reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 public class MetadataServices extends OptionalDependency {

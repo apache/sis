@@ -24,8 +24,8 @@ import javax.xml.bind.JAXBContext;
  * This enumeration allows to set vendor-specific marshaller properties.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 enum Implementation {

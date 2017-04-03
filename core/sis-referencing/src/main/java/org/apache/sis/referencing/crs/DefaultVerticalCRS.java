@@ -50,13 +50,14 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
- * @module
  *
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalCRS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "VerticalCRSType", propOrder = {
     "coordinateSystem",

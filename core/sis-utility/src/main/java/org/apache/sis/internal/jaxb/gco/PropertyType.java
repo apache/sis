@@ -102,16 +102,17 @@ import org.apache.sis.util.resources.Errors;
  *       abstract {@code getElement()} from this class.</li>
  * </ul></div>
  *
- * @param  <ValueType>  the adapter subclass.
- * @param  <BoundType>  the interface being adapted.
- *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
- * @module
+ *
+ * @param <ValueType>  the adapter subclass.
+ * @param <BoundType>  the interface being adapted.
  *
  * @see XmlAdapter
+ *
+ * @since 0.3
+ * @module
  */
 public abstract class PropertyType<ValueType extends PropertyType<ValueType,BoundType>, BoundType>
         extends XmlAdapter<ValueType,BoundType>

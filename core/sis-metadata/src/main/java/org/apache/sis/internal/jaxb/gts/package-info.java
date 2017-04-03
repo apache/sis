@@ -19,8 +19,8 @@
  * Temporary placeholder for the Temporal Schema JAXB adapters.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GTS, xmlns = {

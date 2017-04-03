@@ -26,11 +26,12 @@ import org.apache.sis.metadata.iso.extent.Extents;
  * Current implementation uses only the geographic extent.
  * This may be extended to other kind of extent in any future SIS version.
  *
- * @param  <T>  the type of object to be selected.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ *
+ * @param <T>  the type of object to be selected.
+ *
+ * @since   0.4
  * @module
  */
 public final class ExtentSelector<T> {

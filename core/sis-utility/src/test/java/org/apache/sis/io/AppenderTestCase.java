@@ -29,8 +29,8 @@ import static org.apache.sis.test.Assert.*;
  * This is public because JUnit requires it, but should be considered as an implementation details.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract class AppenderTestCase extends TestCase {

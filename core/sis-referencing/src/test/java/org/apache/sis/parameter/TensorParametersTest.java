@@ -39,8 +39,8 @@ import static org.apache.sis.internal.util.Constants.NUM_COL;
  * Tests the {@link TensorParameters} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 @DependsOn({

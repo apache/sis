@@ -72,12 +72,13 @@ import org.apache.sis.internal.system.Loggers;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see <a href="http://www.w3.org/TR/xlink/">XML Linking Language</a>
  * @see <a href="http://schemas.opengis.net/xlink/1.0.0/xlinks.xsd">OGC schema</a>
+ *
+ * @since 0.3
+ * @module
  */
 @XmlTransient
 public class XLink implements Serializable {
@@ -207,14 +208,14 @@ public class XLink implements Serializable {
      * attribute values in a {@link XLink} instance.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see XLink#getType()
      */
     @XmlEnum
-    public static enum Type {
+    public enum Type {
         /**
          * A simple link. Allows the {@link XLink#getHRef() href}, {@link XLink#getRole() role},
          * {@link XLink#getArcRole() arcrole}, {@link #getTitle() title}, {@link XLink#getShow()
@@ -530,14 +531,14 @@ public class XLink implements Serializable {
      * from the starting resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see XLink#getShow()
      */
     @XmlEnum
-    public static enum Show {
+    public enum Show {
         /**
          * Load ending resource in a new window, frame, pane, or other presentation context.
          */
@@ -605,14 +606,14 @@ public class XLink implements Serializable {
      * resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see XLink#getActuate()
      */
     @XmlEnum
-    public static enum Actuate {
+    public enum Actuate {
         /**
          * Traverse to the ending resource immediately on loading the starting resource.
          */

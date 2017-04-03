@@ -60,8 +60,8 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // Fields in this class do not need cloning.

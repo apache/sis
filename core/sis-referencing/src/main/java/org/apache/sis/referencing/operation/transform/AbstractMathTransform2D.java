@@ -58,8 +58,8 @@ import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public abstract class AbstractMathTransform2D extends AbstractMathTransform implements MathTransform2D {
@@ -325,8 +325,8 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      * running the same SIS version.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.5
      * @version 0.5
+     * @since   0.5
      * @module
      */
     protected abstract class Inverse extends AbstractMathTransform.Inverse implements MathTransform2D {

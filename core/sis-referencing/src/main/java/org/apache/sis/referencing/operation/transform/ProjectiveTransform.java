@@ -34,11 +34,12 @@ import org.apache.sis.util.ArgumentChecks;
  * lines in the source is preserved in the output.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.7
- * @module
  *
  * @see java.awt.geom.AffineTransform
+ *
+ * @since 0.5
+ * @module
  */
 class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPrecisionMatrix {
     /**

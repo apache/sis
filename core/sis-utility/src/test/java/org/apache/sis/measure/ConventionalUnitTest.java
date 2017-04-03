@@ -33,8 +33,8 @@ import static org.apache.sis.test.Assert.*;
  * but those methods just delegate to {@link ConventionalUnit#create(SystemUnit, UnitConverter)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @DependsOn({SystemUnitTest.class, LinearConverterTest.class})

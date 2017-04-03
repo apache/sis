@@ -28,8 +28,8 @@ import static org.apache.sis.referencing.operation.matrix.Matrix3.SIZE;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @DependsOn(SolverTest.class)

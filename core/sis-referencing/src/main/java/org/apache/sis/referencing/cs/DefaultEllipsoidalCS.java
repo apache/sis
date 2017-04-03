@@ -48,11 +48,12 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoidalCS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "EllipsoidalCSType")
 @XmlRootElement(name = "EllipsoidalCS")

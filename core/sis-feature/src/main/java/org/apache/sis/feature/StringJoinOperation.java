@@ -48,11 +48,12 @@ import org.apache.sis.util.Classes;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
- * @module
  *
  * @see <a href="https://en.wikipedia.org/wiki/Compound_key">Compound key on Wikipedia</a>
+ *
+ * @since 0.7
+ * @module
  */
 final class StringJoinOperation extends AbstractOperation {
     /**

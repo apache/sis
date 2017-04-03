@@ -89,8 +89,8 @@ import static org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParame
  * </table>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
 @XmlType(name = "AbstractGeneralOperationParameterType", propOrder = {

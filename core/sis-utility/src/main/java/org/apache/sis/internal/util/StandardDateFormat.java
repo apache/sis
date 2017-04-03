@@ -51,8 +51,8 @@ import org.apache.sis.internal.jdk8.DateTimeException;
  * but nevertheless allows to specify a timezone.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 public final class StandardDateFormat extends SimpleDateFormat {

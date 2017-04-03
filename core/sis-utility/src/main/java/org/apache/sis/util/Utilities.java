@@ -30,8 +30,8 @@ import org.apache.sis.util.collection.CheckedContainer;
  * Static methods for object comparisons in different ways (deeply, approximatively, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class Utilities extends Static {

@@ -47,11 +47,12 @@ import static org.junit.Assert.*;
  * Also opportunistically tests {@link CC_OperationMethod} because we use the same data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
- * @module
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
+ *
+ * @since 0.6
+ * @module
  */
 @DependsOn(CC_GeneralOperationParameterTest.class)
 public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {

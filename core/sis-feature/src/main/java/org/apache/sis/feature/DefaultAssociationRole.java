@@ -46,12 +46,13 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
- * @module
  *
  * @see DefaultFeatureType
  * @see AbstractAssociation
+ *
+ * @since 0.5
+ * @module
  */
 public class DefaultAssociationRole extends FieldType {
     /**
@@ -73,7 +74,7 @@ public class DefaultAssociationRole extends FieldType {
      *
      * @see #getTitleProperty()
      */
-    private volatile transient String titleProperty;
+    private transient volatile String titleProperty;
 
     /**
      * Constructs an association to the given feature type. The properties map is given unchanged to

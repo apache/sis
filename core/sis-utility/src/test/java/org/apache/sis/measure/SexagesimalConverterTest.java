@@ -30,8 +30,8 @@ import static org.apache.sis.test.Assert.*;
  * Test the {@link SexagesimalConverter} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final strictfp class SexagesimalConverterTest extends TestCase {

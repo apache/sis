@@ -27,8 +27,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests {@link DefaultTemporalCRS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final strictfp class DefaultTemporalCRSTest extends TestCase {

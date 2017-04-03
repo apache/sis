@@ -38,8 +38,8 @@ import static java.util.Collections.singleton;
  * above-cited public constants.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.6
+ * @since   0.3
  * @module
  */
 public final strictfp class HardCodedCitations extends Static {

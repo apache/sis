@@ -41,8 +41,8 @@ import org.apache.sis.util.Deprecable;
  * underlying {@code IdentifiedObject} instance is itself serializable, immutable or thread-safe.</p>
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 final class Properties extends AbstractMap<String,Object> implements Serializable {

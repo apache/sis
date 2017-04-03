@@ -29,8 +29,8 @@ import static org.junit.Assert.*;
  * Tests {@link LazySet}
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public final strictfp class LazySetTest extends TestCase {

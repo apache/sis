@@ -78,12 +78,13 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
- * @module
  *
  * @see AbstractCS
  * @see org.apache.sis.referencing.datum.AbstractDatum
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "AbstractCRSType", propOrder = {
     "domainOfValidity",

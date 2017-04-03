@@ -55,8 +55,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * from other modules and libraries.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public strictfp class ReferencingAssert extends MetadataAssert {

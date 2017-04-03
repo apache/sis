@@ -37,8 +37,8 @@ import static org.junit.Assert.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public class ImageInputStreamComparator implements ImageInputStream {

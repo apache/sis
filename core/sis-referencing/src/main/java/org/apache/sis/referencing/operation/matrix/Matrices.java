@@ -67,11 +67,12 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
- * @module
  *
  * @see org.apache.sis.parameter.TensorParameters
+ *
+ * @since 0.4
+ * @module
  */
 public final class Matrices extends Static {
     /**

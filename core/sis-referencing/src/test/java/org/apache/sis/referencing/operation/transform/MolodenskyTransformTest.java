@@ -47,8 +47,8 @@ import static org.apache.sis.test.Assert.*;
  * @author  Tara Athan
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @DependsOn({

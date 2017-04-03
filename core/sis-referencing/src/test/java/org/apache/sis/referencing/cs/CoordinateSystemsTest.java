@@ -45,8 +45,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link CoordinateSystems} class.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 @DependsOn({

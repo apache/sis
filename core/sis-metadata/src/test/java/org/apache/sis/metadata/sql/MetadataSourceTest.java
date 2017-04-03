@@ -36,8 +36,8 @@ import static org.junit.Assert.*;
  * Tests {@link MetadataSource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @DependsOn(org.apache.sis.internal.metadata.sql.ScriptRunnerTest.class)
@@ -51,7 +51,7 @@ public final strictfp class MetadataSourceTest extends TestCase {
     @Test
     public void testOnDerby() throws Exception {
         final DataSource ds = TestDatabase.create("temporary");
-        try (final MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, ds, "metadata", null, null)) {
+        try (MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, ds, "metadata", null, null)) {
             source.install();
             verifyFormats(source);
 //          testSearch(source);

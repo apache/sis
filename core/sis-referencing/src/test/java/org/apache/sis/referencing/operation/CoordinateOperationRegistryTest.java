@@ -60,8 +60,8 @@ import static org.junit.Assume.*;
  * The operations are tested with various axis order and dimension in source and target CRS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @DependsOn({

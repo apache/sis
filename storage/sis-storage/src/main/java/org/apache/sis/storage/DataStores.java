@@ -28,8 +28,8 @@ import org.apache.sis.internal.system.SystemListener;
  * but can also be any other objects documented in the {@link StorageConnector} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public final class DataStores extends Static {

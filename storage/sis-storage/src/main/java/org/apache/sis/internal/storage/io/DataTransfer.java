@@ -26,8 +26,8 @@ import org.apache.sis.util.Debug;
  * The kind of buffer and the primitive type in the array depend on the implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 interface DataTransfer {

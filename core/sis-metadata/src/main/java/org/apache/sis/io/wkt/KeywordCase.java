@@ -38,8 +38,8 @@ package org.apache.sis.io.wkt;
  * {@code keyword} is equivalent to {@code KeyWord} and to {@code kEYwORd}.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 public enum KeywordCase {

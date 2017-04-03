@@ -39,8 +39,8 @@ import org.apache.sis.measure.Units;
  * through geocentric coordinates.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 @XmlTransient

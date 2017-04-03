@@ -27,13 +27,14 @@ import org.apache.sis.math.DecimalFunctions;
  * increase the precision in the common case where the shifts are specified with no more than
  * 5 digits in base 10 in ASCII files.
  *
- * @param  <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
- * @param  <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
- *              or {@link javax.measure.quantity.Length}).
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ *
+ * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
+ * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
+ *             or {@link javax.measure.quantity.Length}).
+ *
+ * @since 0.7
  * @module
  */
 final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {

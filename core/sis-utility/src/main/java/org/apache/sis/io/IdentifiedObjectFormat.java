@@ -32,8 +32,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * Used by {@link CompoundFormat} for formatting the name of objects of type {@link IdentifiedObject}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")   // Because this class does not contain field that need to be cloned.

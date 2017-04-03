@@ -29,8 +29,8 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
  * Concatenated transform where both transforms are two-dimensional.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class ConcatenatedTransformDirect2D extends ConcatenatedTransformDirect implements MathTransform2D {

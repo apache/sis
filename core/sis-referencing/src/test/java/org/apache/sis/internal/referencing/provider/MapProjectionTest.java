@@ -34,8 +34,8 @@ import static org.apache.sis.internal.util.Constants.*;
  * Verifies some parameters of {@link MapProjection} and a few subclasses.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public final strictfp class MapProjectionTest extends TestCase {

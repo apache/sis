@@ -66,8 +66,8 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * {@code ValueConverter} to a (un)marshaller.
  *
  * @author Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 public class ValueConverter {

@@ -49,8 +49,8 @@ import org.apache.sis.internal.netcdf.DiscreteSampling;
  * Provides NetCDF decoding services based on the NetCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final class DecoderWrapper extends Decoder implements CancelTask {

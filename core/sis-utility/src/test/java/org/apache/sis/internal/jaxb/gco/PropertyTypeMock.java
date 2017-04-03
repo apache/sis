@@ -30,8 +30,8 @@ import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
  * GeoAPI {@link Result} interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final strictfp class PropertyTypeMock extends PropertyType<PropertyTypeMock, Result> {

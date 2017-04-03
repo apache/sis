@@ -53,8 +53,8 @@ import org.apache.sis.xml.Namespaces;
  * The two later use a quite different XML structure, with an {@code aName} element instead than a XML value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @XmlSeeAlso({
@@ -75,6 +75,12 @@ public class CodeType {
     @XmlAttribute
     @XmlSchemaType(name = "anyURI")
     String codeSpace;
+
+    /**
+     * Invoked by reflection by JAXB on unmarshalling.
+     */
+    public CodeType() {
+    }
 
     /**
      * Sets the value from the given name.

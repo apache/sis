@@ -46,13 +46,14 @@ import org.apache.sis.io.wkt.Formatter;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.7
  * @version 0.7
- * @module
  *
  * @see org.apache.sis.referencing.cs.DefaultParametricCS
  * @see org.apache.sis.referencing.crs.DefaultParametricCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createParametricDatum(String)
+ *
+ * @since 0.7
+ * @module
  */
 @XmlType(name = "ParametricDatumType")
 @XmlRootElement(name = "ParametricDatum")

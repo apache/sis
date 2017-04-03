@@ -53,11 +53,12 @@ import org.apache.sis.internal.jdk8.UncheckedIOException;
  * experience on this aspect of ISO 19109.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
- * @module
  *
  * @see DefaultFeatureType
+ *
+ * @since 0.6
+ * @module
  */
 public abstract class AbstractOperation extends AbstractIdentifiedType {
     /**

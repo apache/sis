@@ -42,12 +42,13 @@ import static java.lang.Double.*;
  * and (<var>x₂</var>,<var>y₂</var>) points, {@code Line} objects extend toward infinity.</div>
  *
  * @author  Martin Desruisseaux (MPO, IRD)
- * @since   0.5
  * @version 0.8
- * @module
  *
  * @see Plane
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
+ *
+ * @since 0.5
+ * @module
  */
 public class Line implements Cloneable, Serializable {
     /**

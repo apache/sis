@@ -53,8 +53,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * if no (un)marshalling is in progress.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public final class Context extends MarshalContext {

@@ -125,12 +125,13 @@ import java.util.Objects;
  * (case 1 above) over the <cite>early-binding</cite> approach (case 3 above).</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
- * @module
  *
  * @see DefaultGeodeticDatum#getBursaWolfParameters()
  * @see <a href="http://en.wikipedia.org/wiki/Helmert_transformation">Wikipedia: Helmert transformation</a>
+ *
+ * @since 0.4
+ * @module
  */
 public class BursaWolfParameters extends FormattableObject implements Cloneable, Serializable {
     /**

@@ -31,8 +31,8 @@ import org.apache.sis.referencing.datum.DatumShiftGrid;
  * An interpolated geocentric transform for two-dimensional input and output coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTransform implements MathTransform2D {
@@ -84,8 +84,8 @@ final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTran
      * The inverse of the enclosing {@link InterpolatedGeocentricTransform2D}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     static final class Inverse extends InterpolatedGeocentricTransform.Inverse implements MathTransform2D {

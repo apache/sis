@@ -32,13 +32,14 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
- * @module
  *
  * @see org.apache.sis.feature.DefaultAssociationRole
  * @see FeatureTypeBuilder#addAssociation(FeatureType)
  * @see FeatureTypeBuilder#addAssociation(GenericName)
+ *
+ * @since 0.8
+ * @module
  */
 public final class AssociationRoleBuilder extends PropertyTypeBuilder {
     /**

@@ -39,8 +39,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * Tests the {@link ConformalProjection} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn(NormalizedProjectionTest.class)

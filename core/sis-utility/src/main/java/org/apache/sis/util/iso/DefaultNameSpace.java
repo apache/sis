@@ -51,15 +51,16 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * remain safe to call from multiple threads and do not change any public {@code NameSpace} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see DefaultScopedName
  * @see DefaultLocalName
  * @see DefaultTypeName
  * @see DefaultMemberName
  * @see DefaultNameFactory
+ *
+ * @since 0.3
+ * @module
  */
 public class DefaultNameSpace implements NameSpace, Serializable {
     /**

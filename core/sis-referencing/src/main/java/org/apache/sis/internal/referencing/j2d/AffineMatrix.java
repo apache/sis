@@ -31,8 +31,8 @@ import org.apache.sis.util.ArgumentChecks;
  * used in double-double arithmetic.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Cloneable {

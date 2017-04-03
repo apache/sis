@@ -36,8 +36,8 @@ import org.apache.sis.internal.feature.FeatureUtilities;
  * </div>
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class GroupPointsAsPolylineOperation extends GroupAsPolylineOperation {

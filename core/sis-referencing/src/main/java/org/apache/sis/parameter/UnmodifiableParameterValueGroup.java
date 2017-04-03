@@ -44,8 +44,8 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * the addition of {@code semi_major} and {@code semi_minor} parameters by {@code DefaultMathTransformFactory}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 final class UnmodifiableParameterValueGroup extends Parameters implements LenientComparable, Serializable {

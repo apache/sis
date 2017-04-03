@@ -40,8 +40,8 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *       API in geoapi-pending, which is not very clear... We prefer to hide this for now.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDuration> {

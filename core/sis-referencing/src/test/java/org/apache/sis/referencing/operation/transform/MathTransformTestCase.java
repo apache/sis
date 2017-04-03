@@ -63,8 +63,8 @@ import static org.opengis.test.Assert.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
 public abstract strictfp class MathTransformTestCase extends TransformTestCase {

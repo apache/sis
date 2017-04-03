@@ -59,8 +59,8 @@ import static org.apache.sis.internal.referencing.provider.LambertCylindricalEqu
  * However this projection may be useful for computing areas.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class CylindricalEqualArea extends EqualAreaProjection {
@@ -282,8 +282,8 @@ public class CylindricalEqualArea extends EqualAreaProjection {
      * Provides the transform equations for the spherical case of the Cylindrical Equal Area projection.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.8
      * @version 0.8
+     * @since   0.8
      * @module
      */
     static final class Spherical extends CylindricalEqualArea {

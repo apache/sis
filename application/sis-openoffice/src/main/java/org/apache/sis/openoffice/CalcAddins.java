@@ -36,8 +36,8 @@ import org.apache.sis.util.logging.Logging;
  * Base class for methods to export as formulas in the Apache OpenOffice spread sheet.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public abstract class CalcAddins extends WeakBase implements XServiceName, XServiceInfo, XLocalizable {

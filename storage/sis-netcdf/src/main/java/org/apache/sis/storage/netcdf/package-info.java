@@ -48,8 +48,8 @@
  * Care must be taken for avoiding confusion when using SIS and UCAR libraries together.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 package org.apache.sis.storage.netcdf;

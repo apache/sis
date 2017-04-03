@@ -27,8 +27,8 @@ import org.apache.sis.util.resources.Errors;
  * Values may be {@code long} or {@code double} types.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 abstract class SequenceVector extends Vector implements Serializable {

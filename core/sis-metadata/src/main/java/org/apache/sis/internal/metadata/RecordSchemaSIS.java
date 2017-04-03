@@ -26,8 +26,8 @@ import org.apache.sis.util.iso.DefaultRecordSchema;
  * The system-wide schema in the "SIS" namespace.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 final class RecordSchemaSIS extends DefaultRecordSchema implements Serializable {

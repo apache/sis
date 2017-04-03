@@ -38,8 +38,8 @@ import static org.junit.Assert.*;
  * Tests {@link PositionVector7Param} and {@link PositionVector7Param3D}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @DependsOn({

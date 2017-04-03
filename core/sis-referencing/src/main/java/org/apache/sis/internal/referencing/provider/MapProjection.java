@@ -59,8 +59,8 @@ import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
  * {@linkplain ParameterDescriptorGroup descriptor group} named {@code PARAMETERS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 @XmlTransient

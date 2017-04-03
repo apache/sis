@@ -33,8 +33,8 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @XmlRootElement(name = "SecondDefiningParameter", namespace = Namespaces.GML)

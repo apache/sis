@@ -46,8 +46,8 @@ import org.apache.sis.feature.AbstractFeature;
  * </div>
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 class GroupAsPolylineOperation extends AbstractOperation {

@@ -90,8 +90,8 @@ import static java.util.Collections.singletonMap;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 class GeodeticObjectParser extends MathTransformParser implements Comparator<CoordinateSystemAxis> {

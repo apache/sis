@@ -49,8 +49,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * between two coordinate systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public final class CoordinateSystems extends Static {

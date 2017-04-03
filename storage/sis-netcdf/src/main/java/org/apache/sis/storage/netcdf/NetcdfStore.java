@@ -36,11 +36,12 @@ import ucar.nc2.constants.CDM;
  * Instances of this data store are created by {@link NetcdfStoreProvider#open(StorageConnector)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
- * @module
  *
  * @see NetcdfStoreProvider
+ *
+ * @since 0.3
+ * @module
  */
 public class NetcdfStore extends DataStore {
     /**

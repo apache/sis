@@ -30,8 +30,8 @@ import static org.opengis.test.Assert.*;
  * Tests {@link NetcdfStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 @DependsOn({

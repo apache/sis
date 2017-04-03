@@ -26,8 +26,8 @@ import java.util.Arrays;
  * faster.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class ConstantTransform1D extends LinearTransform1D {

@@ -54,8 +54,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link MultiAuthoritiesFactory}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 @DependsOn(AuthorityFactoryProxyTest.class)

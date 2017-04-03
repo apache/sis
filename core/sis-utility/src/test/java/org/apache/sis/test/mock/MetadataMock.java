@@ -32,8 +32,8 @@ import org.apache.sis.xml.Namespaces;
  * A dummy implementation of {@link Metadata} with minimal XML (un)marshalling capability.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.5
+ * @since   0.4
  * @module
  */
 @XmlRootElement(name = "MD_Metadata", namespace = Namespaces.GMD)

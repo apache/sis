@@ -39,8 +39,8 @@ import org.opengis.referencing.ReferenceIdentifier;
  * implementation is defined here since it is needed by some utility methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public final class Citations extends Static {

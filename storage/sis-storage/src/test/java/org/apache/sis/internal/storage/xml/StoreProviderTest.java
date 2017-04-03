@@ -31,8 +31,8 @@ import static org.junit.Assert.*;
  * Tests {@link StoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)

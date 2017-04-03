@@ -38,11 +38,12 @@ import org.apache.sis.xml.NilReason;
  * Those explanations can be obtained by calls to the {@link org.apache.sis.xml.NilReason#forObject(Object)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
  *
  * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
+ *
+ * @since 0.3
+ * @module
  */
 public enum ValueExistencePolicy {
     /**

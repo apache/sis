@@ -96,12 +96,13 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.8
- * @module
  *
  * @see GeneralEnvelope
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
+ *
+ * @since 0.3
+ * @module
  */
 public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiable, Cloneable {
     /**

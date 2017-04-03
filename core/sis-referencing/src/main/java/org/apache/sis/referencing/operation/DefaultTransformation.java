@@ -47,11 +47,12 @@ import org.apache.sis.util.ArgumentChecks;
  * by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see DefaultConversion
+ *
+ * @since 0.6
+ * @module
  */
 @XmlType(name = "TransformationType")
 @XmlRootElement(name = "Transformation")

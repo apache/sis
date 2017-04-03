@@ -33,8 +33,8 @@ import static org.apache.sis.test.Assert.*;
  * {@code "gmi"} namespace that GeoAPI merged with the object of same name in the {@code "gmd"} namespace.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final strictfp class DefaultLineageTest extends XMLTestCase {

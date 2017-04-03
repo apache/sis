@@ -33,8 +33,8 @@ import org.apache.sis.math.FunctionProperty;
  * and thread-safe too if they are intended to be cached in {@link ConverterRegistry}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {

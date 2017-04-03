@@ -26,8 +26,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * CRS are considered as a kind of metadata here.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 final class CRSCommand extends FormattedOutputCommand {

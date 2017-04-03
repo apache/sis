@@ -27,8 +27,8 @@ import org.apache.sis.util.iso.Types;
  * complying with OGC/ISO standard.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public final class CodeListUID {

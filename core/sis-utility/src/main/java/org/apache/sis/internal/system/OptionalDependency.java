@@ -29,8 +29,8 @@ import org.apache.sis.util.resources.Messages;
  * services of the {@code "sis-referencing"} module if the later is present on the classpath.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public abstract class OptionalDependency extends SystemListener {

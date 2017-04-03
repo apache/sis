@@ -44,8 +44,8 @@ import org.apache.sis.parameter.Parameters;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @XmlTransient

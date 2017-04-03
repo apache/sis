@@ -26,8 +26,8 @@ import org.apache.sis.util.resources.Errors;
  * <a href="http://www.geoapi.org">GeoAPI</a> interface.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class UnsupportedImplementationException extends UnsupportedOperationException {

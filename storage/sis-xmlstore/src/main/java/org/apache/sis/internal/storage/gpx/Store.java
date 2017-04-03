@@ -45,8 +45,8 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final class Store extends StaxDataStore {
@@ -215,7 +215,7 @@ public final class Store extends StaxDataStore {
             /*
              * Get the writer if no read or other write operation is in progress, then write the data.
              */
-            try (final Writer writer = new Writer(this, org.apache.sis.internal.storage.gpx.Metadata.castOrCopy(metadata, locale))) {
+            try (Writer writer = new Writer(this, org.apache.sis.internal.storage.gpx.Metadata.castOrCopy(metadata, locale))) {
                 writer.writeStartDocument();
                 if (features != null) {
                     features.forEachOrdered(writer);

@@ -51,8 +51,8 @@ import static java.util.Collections.singleton;
  * The above list may be extended in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 final class Store extends DataStore {

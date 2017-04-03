@@ -53,8 +53,8 @@ import static org.junit.Assert.*;
  * This test is executed only if {@link #RUN_EXTENSIVE_TESTS} is {@code true}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 public final strictfp class ConsistencyTest extends TestCase {

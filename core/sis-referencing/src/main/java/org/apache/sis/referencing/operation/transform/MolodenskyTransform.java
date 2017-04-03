@@ -82,8 +82,8 @@ import static java.lang.Math.*;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 public class MolodenskyTransform extends MolodenskyFormula {

@@ -25,8 +25,8 @@
  * See {@code application/sis-openoffice/src/main/unopkg/build-instruction.html} for more information.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 package org.apache.sis.openoffice;

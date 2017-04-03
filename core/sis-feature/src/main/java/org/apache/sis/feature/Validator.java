@@ -37,8 +37,8 @@ import org.apache.sis.util.resources.Errors;
  * Provides validation methods to be shared by different implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.7
+ * @since   0.5
  * @module
  */
 final class Validator {

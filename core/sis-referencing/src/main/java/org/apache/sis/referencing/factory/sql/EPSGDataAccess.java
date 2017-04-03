@@ -162,11 +162,12 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  * @author  Matthias Basler
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
- * @since   0.7
  * @version 0.8
- * @module
  *
  * @see <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
+ *
+ * @since 0.7
+ * @module
  */
 public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized, AutoCloseable

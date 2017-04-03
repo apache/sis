@@ -37,11 +37,12 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @since   0.6
  * @version 0.8
- * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator.html">Transverse Mercator on RemoteSensing.org</a>
+ *
+ * @since 0.6
+ * @module
  */
 @XmlTransient
 public final class TransverseMercator extends AbstractMercator {
@@ -135,11 +136,11 @@ public final class TransverseMercator extends AbstractMercator {
      * Computes zone numbers and central meridian.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.8
      * @version 0.8
+     * @since   0.8
      * @module
      */
-    public static enum Zoner {
+    public enum Zoner {
         /**
          * Universal Transverse Mercator (UTM) projection zones.
          * The zone computation includes special cases for Norway and Svalbard.

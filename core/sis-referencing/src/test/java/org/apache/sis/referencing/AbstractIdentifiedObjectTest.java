@@ -42,8 +42,8 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
  * Tests the {@link AbstractIdentifiedObject} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @DependsOn({

@@ -37,8 +37,8 @@ import static java.lang.StrictMath.*;
  * Those tests need {@link DoubleDouble#DISABLED} to be set to {@code false}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn(org.apache.sis.math.DecimalFunctionsTest.class)

@@ -42,11 +42,12 @@ import org.apache.sis.parameter.DefaultParameterValue;
  * {@code UnmodifiableParameterValue} instances anyway. So no matter which temporary instance we used, we will end
  * with the same objects in memory anyway.
  *
- * @param  <T>  the type of the value stored in this parameter.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ *
+ * @param <T>  the type of the value stored in this parameter.
+ *
+ * @since 0.7
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                         // No additional fields compared to parent.

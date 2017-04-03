@@ -38,8 +38,8 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
  * for reading NetCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 @DependsOn({

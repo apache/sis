@@ -32,8 +32,8 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 abstract class FieldType extends AbstractIdentifiedType {

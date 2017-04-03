@@ -30,11 +30,12 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/mercator_1sp.html">Mercator 1SP on RemoteSensing.org</a>
+ *
+ * @since 0.6
+ * @module
  */
 @XmlTransient
 public final class Mercator1SP extends AbstractMercator {

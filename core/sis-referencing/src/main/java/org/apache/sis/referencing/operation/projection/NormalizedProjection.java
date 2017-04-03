@@ -117,12 +117,13 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.6
  * @version 0.7
- * @module
  *
  * @see ContextualParameters
  * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
+ *
+ * @since 0.6
+ * @module
  */
 public abstract class NormalizedProjection extends AbstractMathTransform2D implements Serializable {
     /**
@@ -221,13 +222,14 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * {@link #CENTRAL_MERIDIAN}, {@link #SCALE_FACTOR}, {@link #FALSE_EASTING} and {@link #FALSE_NORTHING}.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.6
      * @version 0.6
-     * @module
      *
      * @see NormalizedProjection#NormalizedProjection(OperationMethod, Parameters, Map)
+     *
+     * @since 0.6
+     * @module
      */
-    protected static enum ParameterRole {
+    protected enum ParameterRole {
         /**
          * Maps the <cite>semi-major axis length</cite> parameter (symbol: <var>a</var>).
          * This value is used for computing {@link NormalizedProjection#eccentricity},
@@ -707,8 +709,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Inverse of a normalized map projection.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.6
      * @version 0.6
+     * @since   0.6
      * @module
      */
     private final class Inverse extends AbstractMathTransform2D.Inverse {

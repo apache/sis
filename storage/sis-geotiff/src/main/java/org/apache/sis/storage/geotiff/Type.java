@@ -37,8 +37,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * This enumeration rather match the Java primitive type names.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 enum Type {

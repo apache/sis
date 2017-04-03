@@ -38,8 +38,8 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public abstract class PropertyTypeBuilder extends TypeBuilder {

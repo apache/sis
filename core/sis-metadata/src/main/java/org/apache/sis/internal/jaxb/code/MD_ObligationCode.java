@@ -27,8 +27,8 @@ import org.apache.sis.util.iso.Types;
  * about the handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
+ * @version 0.5
  * @since   0.3
- * @version 0.3
  * @module
  */
 public final class MD_ObligationCode extends XmlAdapter<String, Obligation> {

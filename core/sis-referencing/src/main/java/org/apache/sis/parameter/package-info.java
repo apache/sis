@@ -84,8 +84,8 @@
  * if the given value is not assignable to the expected class or is not inside the value domain.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 @XmlSchema(elementFormDefault= XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {

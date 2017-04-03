@@ -35,8 +35,8 @@ import org.apache.sis.util.logging.Logging;
  * However we also have a few more specialized loggers, which are listed here.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 public final class Loggers extends Static {

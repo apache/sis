@@ -29,8 +29,8 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
  * or a more accurate transform using a localization grid.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public abstract class TransformBuilder {

@@ -39,8 +39,8 @@ import static org.apache.sis.storage.earthobservation.LandsatReader.DIM;
  * Tests {@link LandsatReader}.
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class LandsatReaderTest extends TestCase {

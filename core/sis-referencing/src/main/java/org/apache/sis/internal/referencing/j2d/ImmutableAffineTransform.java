@@ -27,8 +27,8 @@ import org.apache.sis.internal.referencing.Resources;
  * throw an exception (which is the default), then {@code AffineTransform} is immutable.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")    // No additional fields compared to parent.

@@ -27,12 +27,13 @@ import org.opengis.metadata.ExtendedElementInformation;
  * All values in this map are instances of {@link PropertyInformation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see PropertyInformation
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
+ *
+ * @since 0.3
+ * @module
  */
 final class InformationMap extends PropertyMap<ExtendedElementInformation> {
     /**

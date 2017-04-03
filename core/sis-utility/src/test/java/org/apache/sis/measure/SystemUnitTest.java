@@ -40,8 +40,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link SystemUnit} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @DependsOn(UnitDimensionTest.class)
@@ -353,6 +353,6 @@ public final strictfp class SystemUnitTest extends TestCase {
     /**
      * A dummy quantity type for tests using a quantity type unknown to Apache SIS.
      */
-    private static interface Strange extends Quantity<Strange> {
+    private interface Strange extends Quantity<Strange> {
     }
 }

@@ -48,8 +48,8 @@ import static org.junit.Assert.*;
  * A pseudo-authority factory with hard-coded objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactory implements CRSAuthorityFactory,

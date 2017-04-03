@@ -32,8 +32,8 @@ import static org.junit.Assert.*;
  * Tests the {@link OtherLocales} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final strictfp class OtherLocalesTest extends TestCase {

@@ -50,14 +50,15 @@ import org.apache.sis.internal.util.CheckedArrayList;
  *   Collections.addAll(codes, AxisDirection.EAST, AxisDirection.NORTH, AxisDirection.UP),
  * }
  *
- * @param <E> The type of code list elements in the set.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
+ *
+ * @param <E>  the type of code list elements in the set.
  *
  * @see java.util.EnumSet
+ *
+ * @since 0.3
+ * @module
  */
 public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
         implements CheckedContainer<E>, Cloneable, Serializable

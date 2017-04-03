@@ -29,8 +29,8 @@ package org.apache.sis.metadata;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class UnmodifiableMetadataException extends UnsupportedOperationException {

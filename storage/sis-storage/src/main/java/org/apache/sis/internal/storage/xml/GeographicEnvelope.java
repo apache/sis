@@ -46,8 +46,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * (<var>latitude</var>, <var>longitude</var>) axis order, as defined by EPSG:4326.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @XmlTransient

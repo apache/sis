@@ -58,13 +58,14 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
- * @module
  *
  * @see ModifiableLocationType
  * @see ReferencingByIdentifiers
  * @see LocationFormat
+ *
+ * @since 0.8
+ * @module
  */
 public abstract class AbstractLocation {
     /**

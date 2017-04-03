@@ -33,8 +33,8 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  * For tests using the name factory, see {@link DefaultNameFactoryTest}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class AbstractNameTest extends TestCase {

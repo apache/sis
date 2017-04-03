@@ -44,8 +44,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * amount of attribute instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 final class CharacteristicTypeMap extends AbstractMap<String,DefaultAttributeType<?>> {

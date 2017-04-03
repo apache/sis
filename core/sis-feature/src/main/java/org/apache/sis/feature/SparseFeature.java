@@ -38,12 +38,13 @@ import org.apache.sis.util.CorruptedObjectException;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
- * @module
  *
  * @see DenseFeature
  * @see DefaultFeatureType
+ *
+ * @since 0.5
+ * @module
  */
 final class SparseFeature extends AbstractFeature implements Cloneable {
     /**

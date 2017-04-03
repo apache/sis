@@ -26,8 +26,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final class CS_ParametricCS extends PropertyType<CS_ParametricCS, DefaultParametricCS> {

@@ -25,8 +25,8 @@ import org.apache.sis.util.Characters.Filter;
  * The filters used by {@link Types#forCodeName(Class, String, boolean)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class CodeListFilter implements CodeList.Filter {

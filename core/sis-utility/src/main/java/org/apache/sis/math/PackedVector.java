@@ -26,8 +26,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * This offers a compressed storage using only the minimal amount of bits per value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class PackedVector extends ArrayVector<Long> {

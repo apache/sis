@@ -41,8 +41,8 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
  * Tests the {@link ParameterFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 @DependsOn(ParameterBuilderTest.class)

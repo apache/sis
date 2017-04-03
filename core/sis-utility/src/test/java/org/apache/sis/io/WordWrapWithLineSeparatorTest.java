@@ -27,8 +27,8 @@ import org.apache.sis.test.DependsOn;
  * anyway, we want it to work.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(WordWrapTest.class)

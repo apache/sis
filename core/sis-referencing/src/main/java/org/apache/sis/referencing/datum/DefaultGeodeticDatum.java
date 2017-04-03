@@ -122,14 +122,15 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
- * @module
  *
  * @see DefaultEllipsoid
  * @see DefaultPrimeMeridian
  * @see org.apache.sis.referencing.CommonCRS#datum()
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeodeticDatum(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "GeodeticDatumType", propOrder = {
     "primeMeridian",

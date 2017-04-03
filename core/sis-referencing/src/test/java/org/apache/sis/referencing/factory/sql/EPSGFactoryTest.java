@@ -79,8 +79,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Vadim Semenov
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 @DependsOn({

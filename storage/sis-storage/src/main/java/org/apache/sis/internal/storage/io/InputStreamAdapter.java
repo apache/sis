@@ -25,11 +25,12 @@ import javax.imageio.stream.ImageInputStream;
  * Wraps an {@link ImageInputStream} as a standard {@link InputStream}.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.4
  * @version 0.8
- * @module
  *
  * @see OutputStreamAdapter
+ *
+ * @since 0.4
+ * @module
  */
 public final class InputStreamAdapter extends InputStream implements Markable {
     /**

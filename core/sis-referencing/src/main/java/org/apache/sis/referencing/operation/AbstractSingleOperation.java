@@ -70,8 +70,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * {@link DefaultPassThroughOperation}.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 @XmlType(name = "AbstractSingleOperationType", propOrder = {    // See note in class javadoc.

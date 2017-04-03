@@ -58,13 +58,14 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
- * @module
  *
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTemporalCRS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "TemporalCRSType", propOrder = {
     "coordinateSystem",

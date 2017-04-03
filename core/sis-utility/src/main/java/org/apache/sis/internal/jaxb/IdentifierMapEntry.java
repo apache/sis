@@ -29,8 +29,8 @@ import org.opengis.metadata.citation.Citation;
  * collection).
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.5
  * @since   0.3
- * @version 0.3
  * @module
  */
 final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> implements Identifier {
