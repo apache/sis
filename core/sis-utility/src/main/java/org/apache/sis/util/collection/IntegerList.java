@@ -116,13 +116,13 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Returns the array length required for holding a list of the given size.
      *
-     * @param  size  the list size.
+     * @param  capacity  the desired list size.
      * @return the array length for holding a list of the given size.
      */
-    private int length(int size) {
-        size *= bitCount;
-        int length = size >>> BASE_SHIFT;
-        if ((size & OFFSET_MASK) != 0) {
+    private int length(int capacity) {
+        capacity *= bitCount;
+        int length = capacity >>> BASE_SHIFT;
+        if ((capacity & OFFSET_MASK) != 0) {
             length++;
         }
         return length;

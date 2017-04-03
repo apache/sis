@@ -112,6 +112,12 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
     private transient String prefixGroup;
 
     /**
+     * Invoked by reflection for creating the MOJO.
+     */
+    public UnoPkg() {
+    }
+
+    /**
      * Tests if a specified file should be included in a file list.
      *
      * @param  directory  the directory in which the file was found.

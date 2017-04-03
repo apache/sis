@@ -173,7 +173,7 @@ all:    while (tk.hasMoreTokens()) {
      * Adds syntactic coloration for the given line.
      */
     private static void colorJava(final String line, final StringBuilder buffer) {
-        char quote = 0; // The kind of quoting in progress (" or ').
+        char quote = 0;                             // The kind of quoting in progress (" or ').
         final int length = line.length();
         for (int i=0; i<length; i++) {
             final char c = line.charAt(i);

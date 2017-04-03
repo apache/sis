@@ -68,6 +68,12 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
     private String rootDirectory;
 
     /**
+     * Invoked by reflection for creating the MOJO.
+     */
+    public Assembler() {
+    }
+
+    /**
      * Creates the distribution file.
      *
      * @throws MojoExecutionException if the plugin execution failed.

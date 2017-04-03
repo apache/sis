@@ -69,6 +69,12 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
     private String rootDirectory;
 
     /**
+     * Invoked by reflection for creating the MOJO.
+     */
+    public JarCollector() {
+    }
+
+    /**
      * Copies the {@code *.jar} files to the collect directory.
      *
      * @throws MojoExecutionException if the plugin execution failed.

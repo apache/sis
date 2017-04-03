@@ -30,7 +30,9 @@ import org.apache.sis.geometry.DirectPosition2D;
  * Class to reload the quad tree index from file.
  *
  */
-public class QuadTreeReader {
+public final class QuadTreeReader {
+  private QuadTreeReader() {
+  }
 
   /**
    * Loads the quad tree index from file.

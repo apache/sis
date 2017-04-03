@@ -98,10 +98,8 @@ public class BackingStoreException extends RuntimeException {
      * or re-throw the exception. More specifically, this method makes the following choices:
      *
      * <ul>
-     *   <li>If the cause {@linkplain Class#isInstance(Object) is an instance} of the given
-     *       type, returns the cause.</li>
-     *   <li>Otherwise if the cause is an instance of {@link RuntimeException}, throws
-     *       that exception.</li>
+     *   <li>If the cause {@linkplain Class#isInstance(Object) is an instance} of the given type, returns the cause.</li>
+     *   <li>Otherwise if the cause is an instance of {@link RuntimeException}, throws that exception.</li>
      *   <li>Otherwise re-throws {@code this}.</li>
      * </ul>
      *

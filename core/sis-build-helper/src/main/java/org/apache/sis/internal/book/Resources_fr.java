@@ -25,6 +25,17 @@ package org.apache.sis.internal.book;
  * @since   0.7
  */
 public final class Resources_fr extends Resources {
+    /**
+     * Invoked by resource bundle reflection mechanism.
+     */
+    public Resources_fr() {
+    }
+
+    /**
+     * Returns resources as pair of key-value.
+     *
+     * @return an array of key-value pairs.
+     */
     @Override
     protected Object[][] getContents() {
         final Object[][] resources = super.getContents();

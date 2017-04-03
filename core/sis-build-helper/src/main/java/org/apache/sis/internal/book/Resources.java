@@ -27,6 +27,17 @@ import java.util.ListResourceBundle;
  * @since   0.7
  */
 public class Resources extends ListResourceBundle {
+    /**
+     * Invoked by resource bundle reflection mechanism.
+     */
+    public Resources() {
+    }
+
+    /**
+     * Returns resources as pair of key-value.
+     *
+     * @return an array of key-value pairs.
+     */
     @Override
     protected Object[][] getContents() {
         return new Object[][] {

@@ -36,6 +36,12 @@ import org.apache.sis.internal.jaxb.gml.Measure;
  */
 public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
     /**
+     * Invoked by reflection by JAXB.
+     */
+    public UnitAdapter() {
+    }
+
+    /**
      * Returns a unit for the given string.
      *
      * @param  value  the unit symbol.
