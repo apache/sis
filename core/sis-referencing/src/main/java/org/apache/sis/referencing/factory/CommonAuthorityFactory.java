@@ -190,11 +190,12 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * switching to polar stereographic projections for high latitudes.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.8
- * @module
  *
  * @see CommonCRS
+ *
+ * @since 0.7
+ * @module
  */
 public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory {
     /**

@@ -50,8 +50,8 @@ import org.apache.sis.xml.ReferenceResolver;
  * if no (un)marshalling is in progress.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public final class Context extends MarshalContext {

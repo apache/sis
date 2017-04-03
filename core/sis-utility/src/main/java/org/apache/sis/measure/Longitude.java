@@ -35,13 +35,14 @@ import org.opengis.referencing.cs.AxisDirection;
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.8
- * @module
  *
  * @see Latitude
  * @see AngleFormat
  * @see org.apache.sis.geometry.CoordinateFormat
+ *
+ * @since 0.3
+ * @module
  */
 public final class Longitude extends Angle {
     /**

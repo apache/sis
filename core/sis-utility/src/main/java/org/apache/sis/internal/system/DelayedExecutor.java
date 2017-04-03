@@ -51,11 +51,12 @@ import org.apache.sis.util.logging.Logging;
  * {@code CacheTest.stress()} tests suggests that the lightweight solution is faster.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
- * @module
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a>
+ *
+ * @since 0.3
+ * @module
  */
 public final class DelayedExecutor extends DaemonThread {
     /**

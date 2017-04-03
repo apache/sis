@@ -29,8 +29,8 @@ import org.apache.sis.internal.jaxb.gmd.EnumAdapter;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guihem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 public final class MD_TopicCategoryCode extends EnumAdapter<MD_TopicCategoryCode, TopicCategory> {

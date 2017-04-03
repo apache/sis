@@ -27,8 +27,8 @@ import static org.apache.sis.test.Assert.*;
  * This class inherits all the tests from {@link TensorParametersTest}, but applies them on a different instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn(MatrixParametersTest.class)

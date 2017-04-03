@@ -52,11 +52,12 @@ import static org.apache.sis.test.Assert.*;
  * after each test for clearing the SIS internal {@link ThreadLocal} which was holding that context.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
- * @module
  *
  * @see XMLComparator
+ *
+ * @since 0.3
+ * @module
  */
 public abstract strictfp class XMLTestCase extends TestCase {
     /**

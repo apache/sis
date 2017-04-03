@@ -71,9 +71,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
- * @module
  *
  * @see DefaultNameFactory
  * @see DefaultNameSpace
@@ -81,6 +79,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see DefaultLocalName
  * @see DefaultTypeName
  * @see DefaultMemberName
+ *
+ * @since 0.5
+ * @module
  */
 public final class Names extends Static {
     /**

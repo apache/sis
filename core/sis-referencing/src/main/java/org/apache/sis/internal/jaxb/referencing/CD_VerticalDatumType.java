@@ -24,8 +24,8 @@ import org.apache.sis.internal.jaxb.gml.CodeListAdapter;
  * JAXB adapter for (un)marshalling of GeoAPI code list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class CD_VerticalDatumType extends CodeListAdapter<VerticalDatumType> {

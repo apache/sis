@@ -39,8 +39,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * Tests parsing and formatting done by the {@link RangeFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 @DependsOn(MeasurementRangeTest.class)

@@ -34,8 +34,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * Collection of datum for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public final strictfp class HardCodedDatum {

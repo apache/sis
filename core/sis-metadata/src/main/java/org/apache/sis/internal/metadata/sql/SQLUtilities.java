@@ -34,8 +34,8 @@ import org.apache.sis.util.resources.Errors;
  * This class is for Apache SIS internal usage and may change in any future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 public final class SQLUtilities extends Static {

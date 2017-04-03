@@ -36,8 +36,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link DefaultLegalConstraints}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.5
+ * @since   0.4
  * @module
  */
 public final strictfp class DefaultLegalConstraintsTest extends XMLTestCase implements WarningListener<Object> {

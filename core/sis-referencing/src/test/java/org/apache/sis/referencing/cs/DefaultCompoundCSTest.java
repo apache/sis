@@ -28,8 +28,8 @@ import static org.junit.Assert.*;
  * Tests the {@link DefaultCompoundCS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 @DependsOn(org.apache.sis.internal.metadata.AxisDirectionsTest.class)

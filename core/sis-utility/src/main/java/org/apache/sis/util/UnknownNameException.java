@@ -27,8 +27,8 @@ package org.apache.sis.util;
  * the exception for unrecognized identifiers is rather {@link org.opengis.util.NoSuchIdentifierException}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public class UnknownNameException extends RuntimeException {

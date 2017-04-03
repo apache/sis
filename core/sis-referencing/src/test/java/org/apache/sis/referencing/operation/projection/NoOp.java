@@ -33,8 +33,8 @@ import org.apache.sis.util.Workaround;
  * This is used for testing methods other than {@code transform(…)} and {@code inverseTransform(…)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @SuppressWarnings("serial")

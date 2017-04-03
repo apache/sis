@@ -24,8 +24,8 @@ import java.util.Locale;
  * Those classes are often parsers or formatters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public interface Localized {

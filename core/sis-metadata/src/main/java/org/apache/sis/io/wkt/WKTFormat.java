@@ -106,12 +106,13 @@ import org.apache.sis.internal.util.StandardDateFormat;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
- * @since   0.4
  * @version 0.8
- * @module
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
+ *
+ * @since 0.4
+ * @module
  */
 public class WKTFormat extends CompoundFormat<Object> {
     /**

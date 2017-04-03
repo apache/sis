@@ -53,8 +53,8 @@ import java.io.BufferedReader;
  * for writing the database; see above-cited web page for more information).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public abstract class InstallationResources {

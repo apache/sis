@@ -51,11 +51,12 @@ import org.apache.sis.internal.system.Modules;
  * SIS typically references them as if they were immutable because of their <cite>add-only</cite> behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see Types#toInternationalString(Map, String)
+ *
+ * @since 0.3
+ * @module
  */
 public class DefaultInternationalString extends AbstractInternationalString implements Serializable {
     /**

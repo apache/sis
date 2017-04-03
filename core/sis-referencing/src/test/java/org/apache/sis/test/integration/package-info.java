@@ -23,8 +23,8 @@
  * environment variable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 package org.apache.sis.test.integration;

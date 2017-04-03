@@ -40,8 +40,8 @@ import static org.opengis.test.Assert.*;
  * Tests {@link ContextualParameters}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn(DefaultParameterDescriptorGroupTest.class)

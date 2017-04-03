@@ -33,8 +33,8 @@ import static org.apache.sis.math.DecimalFunctions.*;
  * Tests the {@link DecimalFunctions} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn(org.apache.sis.internal.util.NumericsTest.class)

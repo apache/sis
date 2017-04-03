@@ -32,8 +32,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link ReferencingByIdentifiers}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @DependsOn(LocationTypeTest.class)

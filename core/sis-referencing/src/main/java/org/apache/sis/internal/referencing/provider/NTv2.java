@@ -60,8 +60,8 @@ import org.apache.sis.measure.Units;
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 @XmlTransient
@@ -142,7 +142,7 @@ public final class NTv2 extends AbstractProvider {
             try {
                 grid = handler.peek();
                 if (grid == null) {
-                    try (final ReadableByteChannel in = Files.newByteChannel(resolved)) {
+                    try (ReadableByteChannel in = Files.newByteChannel(resolved)) {
                         DatumShiftGridLoader.log(NTv2.class, file);
                         final Loader loader = new Loader(in, file);
                         grid = loader.readGrid();
@@ -167,8 +167,8 @@ public final class NTv2 extends AbstractProvider {
      *
      * @author  Simon Reynard (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     private static final class Loader extends DatumShiftGridLoader {

@@ -30,8 +30,8 @@ import static org.apache.sis.metadata.ValueExistencePolicy.*;
  * Implementation of {@link AbstractMetadata#isEmpty()} and {@link ModifiableMetadata#prune()} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 final class Pruner {

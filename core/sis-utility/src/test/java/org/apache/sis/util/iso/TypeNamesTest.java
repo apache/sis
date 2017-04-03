@@ -38,8 +38,8 @@ import static org.apache.sis.internal.util.Constants.OGC;
  * method on the {@link DefaultFactories#SIS_NAMES} instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn({

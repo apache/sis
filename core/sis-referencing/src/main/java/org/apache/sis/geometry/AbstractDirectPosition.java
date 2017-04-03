@@ -53,8 +53,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * serializable, is left to subclasses.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract class AbstractDirectPosition implements DirectPosition {

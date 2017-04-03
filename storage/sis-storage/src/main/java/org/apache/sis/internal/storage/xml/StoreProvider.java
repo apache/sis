@@ -28,8 +28,8 @@ import org.apache.sis.internal.storage.Capability;
  * The provider of {@link Store} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @Capabilities(Capability.READ)

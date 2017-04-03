@@ -32,8 +32,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the various {@link NumberConverter} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn(SystemRegistryTest.class)

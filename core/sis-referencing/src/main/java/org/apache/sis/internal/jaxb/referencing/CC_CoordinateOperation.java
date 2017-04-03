@@ -29,8 +29,8 @@ import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final class CC_CoordinateOperation extends PropertyType<CC_CoordinateOperation, CoordinateOperation> {

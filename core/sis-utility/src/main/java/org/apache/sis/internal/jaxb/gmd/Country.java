@@ -43,8 +43,8 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @XmlType(name = "Country_PropertyType")

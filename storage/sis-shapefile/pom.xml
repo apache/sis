@@ -91,6 +91,18 @@ Read and write files in the Shapefile format.
           </instructions>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <executions>
+          <execution>
+            <configuration>
+              <skip>true</skip>         <!-- Java code formatting in this module is different than other modules. -->
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 

@@ -38,13 +38,14 @@ import org.apache.sis.internal.jaxb.Context;
  * A subclass must exist for each code list, with a {@link #getElement()} method having a
  * {@code @XmlElement} annotation.
  *
+ * @author  Cédric Briançon (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.7
+ *
  * @param <ValueType> The subclass implementing this adapter.
  * @param <BoundType> The code list being adapted.
  *
- * @author  Cédric Briançon (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.7
+ * @since 0.3
  * @module
  */
 public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueType,BoundType>,

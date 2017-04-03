@@ -48,8 +48,8 @@ import org.apache.sis.internal.util.CollectionsExt;
  * {@link #computeTransientFields(Map)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @XmlTransient

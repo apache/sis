@@ -53,8 +53,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.internal.metadata.OtherLocalesTest.class)

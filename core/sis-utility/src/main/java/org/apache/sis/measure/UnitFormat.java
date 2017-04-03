@@ -71,11 +71,12 @@ import org.apache.sis.util.iso.DefaultNameSpace;
  * different threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
- * @module
  *
  * @see Units#valueOf(String)
+ *
+ * @since 0.8
+ * @module
  */
 public class UnitFormat extends Format implements javax.measure.format.UnitFormat, Localized {
     /**
@@ -130,11 +131,11 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * </ul>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.8
      * @version 0.8
+     * @since   0.8
      * @module
      */
-    public static enum Style {
+    public enum Style {
         /**
          * Format unit symbols using Unicode characters. Units formatted in this style use superscript digits
          * for exponents (as in “m³”), the dot operator (“⋅”) for multiplications, specialized characters when

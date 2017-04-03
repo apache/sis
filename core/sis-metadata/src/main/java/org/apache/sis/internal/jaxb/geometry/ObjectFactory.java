@@ -30,8 +30,8 @@ import org.apache.sis.util.Workaround;
  * in the GML module.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @XmlRegistry

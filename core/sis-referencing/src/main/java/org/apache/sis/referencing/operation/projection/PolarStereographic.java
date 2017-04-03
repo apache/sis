@@ -55,11 +55,12 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see ObliqueStereographic
+ *
+ * @since 0.6
+ * @module
  */
 public class PolarStereographic extends ConformalProjection {
     /**
@@ -345,8 +346,8 @@ public class PolarStereographic extends ConformalProjection {
      * @author  André Gosselin (MPO)
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @author  Rueben Schulz (UBC)
-     * @since   0.6
      * @version 0.6
+     * @since   0.6
      * @module
      */
     static final class Spherical extends PolarStereographic {

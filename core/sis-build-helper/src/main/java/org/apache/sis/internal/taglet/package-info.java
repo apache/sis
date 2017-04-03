@@ -20,8 +20,8 @@
  * Javadoc taglets for processing custom tags in SIS source code comments.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 package org.apache.sis.internal.taglet;

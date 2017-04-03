@@ -56,11 +56,12 @@ import org.apache.sis.util.resources.Errors;
  * <p>Concatenated transforms are serializable if all their step transforms are serializable.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.7
- * @module
  *
  * @see org.opengis.referencing.operation.MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
+ *
+ * @since 0.5
+ * @module
  */
 class ConcatenatedTransform extends AbstractMathTransform implements Serializable {
     /**

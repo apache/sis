@@ -40,8 +40,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * to a unmarshaller.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public class ReferenceResolver {

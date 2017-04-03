@@ -49,15 +49,16 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
  * from multiple threads.
  *
- * @param  <S>  the type of the source of warnings.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
- * @module
+ *
+ * @param <S>  the type of the source of warnings.
  *
  * @see WarningListener
  * @see org.apache.sis.storage.DataStore#listeners
+ *
+ * @since 0.3
+ * @module
  */
 public class WarningListeners<S> implements Localized {
     /**

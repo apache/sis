@@ -53,8 +53,8 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 final class PooledMarshaller extends Pooled implements Marshaller {

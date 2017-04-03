@@ -52,11 +52,12 @@ import javax.xml.namespace.NamespaceContext;
  * as "micro-transformers".
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-152">SIS-152</a>
+ *
+ * @since 0.4
+ * @module
  */
 final class FilteredNamespaces implements NamespaceContext {
     /**

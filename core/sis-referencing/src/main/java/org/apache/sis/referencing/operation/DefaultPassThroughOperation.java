@@ -44,8 +44,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * Specifies that a subset of a coordinate tuple is subject to a specific coordinate operation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 @XmlType(name = "PassThroughOperationType", propOrder = {

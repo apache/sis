@@ -36,13 +36,14 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * A one-dimensional position within some coordinate reference system.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see DirectPosition2D
  * @see GeneralDirectPosition
  * @see CoordinateFormat
+ *
+ * @since 0.3
+ * @module
  */
 public class DirectPosition1D extends AbstractDirectPosition implements Serializable, Cloneable {
     /**

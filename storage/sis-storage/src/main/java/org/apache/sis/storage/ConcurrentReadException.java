@@ -26,11 +26,12 @@ import org.apache.sis.internal.storage.Resources;
  * that does not support concurrent read and write operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
- * @module
  *
  * @see ConcurrentWriteException
+ *
+ * @since 0.8
+ * @module
  */
 public class ConcurrentReadException extends DataStoreException {
     /**

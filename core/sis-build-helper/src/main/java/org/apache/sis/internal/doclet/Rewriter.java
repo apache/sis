@@ -42,8 +42,8 @@ import java.io.Writer;
  * We may revisit when JDK 9 become available, if their new standard doclet API is public.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 final class Rewriter {
@@ -123,7 +123,7 @@ final class Rewriter {
         modified = false;
         this.file = file;
         content.setLength(0);
-        try (final Reader in = new InputStreamReader(new FileInputStream(file), ENCODING)) {
+        try (Reader in = new InputStreamReader(new FileInputStream(file), ENCODING)) {
             int n;
             while ((n = in.read(buffer)) >= 0) {
                 content.append(buffer, 0, n);
@@ -137,7 +137,7 @@ final class Rewriter {
      */
     private void save() throws IOException {
         if (modified) {
-            try (final Writer out = new OutputStreamWriter(new FileOutputStream(file), ENCODING)) {
+            try (Writer out = new OutputStreamWriter(new FileOutputStream(file), ENCODING)) {
                 out.append(content);
             }
         }

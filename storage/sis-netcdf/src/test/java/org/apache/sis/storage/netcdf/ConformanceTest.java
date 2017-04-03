@@ -44,8 +44,8 @@ import static org.junit.Assert.*;
  * For a test using the SIS embedded implementation, see {@link MetadataReaderTest}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(MetadataReaderTest.class)

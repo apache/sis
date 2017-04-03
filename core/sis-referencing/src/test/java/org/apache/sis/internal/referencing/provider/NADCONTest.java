@@ -43,8 +43,8 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 public final strictfp class NADCONTest extends TestCase {
@@ -232,7 +232,7 @@ public final strictfp class NADCONTest extends TestCase {
     {
         Envelope envelope = new Envelope2D(null, gridX, gridY, nx - 1, ny - 1);
         envelope = Envelopes.transform(grid.getCoordinateToGrid().inverse(), envelope);
-        try (final BufferedWriter out = Files.newBufferedWriter(file)) {
+        try (BufferedWriter out = Files.newBufferedWriter(file)) {
             out.write("NADCON EXTRACTED REGION\n");
             out.write(String.format(Locale.US, "%4d %3d %3d %11.5f %11.5f %11.5f %11.5f %11.5f\n", nx, ny, 1,
                     envelope.getMinimum(0), envelope.getSpan(0) / (nx - 1),

@@ -28,8 +28,8 @@ import org.apache.sis.internal.util.LazySet;
  * <p>This class is <strong>not</strong> thread-safe. Synchronization are user's responsibility.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final class Providers extends LazySet<OperationMethod> {

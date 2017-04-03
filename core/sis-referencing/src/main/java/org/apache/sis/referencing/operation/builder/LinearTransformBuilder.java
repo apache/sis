@@ -53,14 +53,15 @@ import org.apache.sis.util.Debug;
  * with the assumption that source positions are exact and all the uncertainty is in the target positions.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
- * @module
  *
  * @see LocalizationGridBuilder
  * @see LinearTransform
  * @see Line
  * @see Plane
+ *
+ * @since 0.5
+ * @module
  */
 public class LinearTransformBuilder extends TransformBuilder {
     /**

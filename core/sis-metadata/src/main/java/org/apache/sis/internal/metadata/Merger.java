@@ -62,8 +62,8 @@ import org.apache.sis.util.Classes;
  * @author  Johann Sorel (Geomatys)
  * @author  Benjamin Garcia (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class Merger {

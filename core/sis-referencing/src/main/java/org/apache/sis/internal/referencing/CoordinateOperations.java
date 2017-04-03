@@ -28,8 +28,8 @@ import org.apache.sis.internal.system.SystemListener;
  * until first needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final class CoordinateOperations extends SystemListener {

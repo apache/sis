@@ -26,8 +26,8 @@
  * the {@code sis-xmlstore} module extends this package with classes designed for use with StAX cursor API.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 package org.apache.sis.internal.storage.xml;

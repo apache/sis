@@ -28,8 +28,8 @@ import static org.junit.Assert.*;
  * that requires a large amount of code list elements.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @SuppressWarnings("serial")

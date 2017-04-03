@@ -45,15 +45,16 @@ import org.opengis.feature.MultiValuedPropertyException;
  *       the attribute is cloned, but not the {@linkplain #getValues() value} elements.</li>
  * </ul>
  *
- * @param  <V>  the type of the attribute values.
- *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
- * @module
+ *
+ * @param <V>  the type of the attribute values.
  *
  * @see DefaultAttributeType
+ *
+ * @since 0.5
+ * @module
  */
 final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Cloneable {
     /**

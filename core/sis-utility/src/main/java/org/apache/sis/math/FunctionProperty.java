@@ -54,11 +54,12 @@ import java.util.EnumSet;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see org.apache.sis.util.ObjectConverter#properties()
+ *
+ * @since 0.3
+ * @module
  */
 public enum FunctionProperty {
     /**

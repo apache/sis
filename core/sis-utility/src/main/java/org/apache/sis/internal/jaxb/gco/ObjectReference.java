@@ -39,14 +39,15 @@ import org.apache.sis.internal.jaxb.SpecializedIdentifier;
  * implementations in the public {@link org.apache.sis.metadata.iso} package and sub-packages.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see PropertyType
  * @see <a href="ObjectIdentification.html">ObjectIdentification</a>
  * @see <a href="http://schemas.opengis.net/iso/19139/20070417/gco/gcoBase.xsd">OGC schema</a>
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-165">GEOTK-165</a>
+ *
+ * @since 0.3
+ * @module
  */
 final class ObjectReference {
     /**

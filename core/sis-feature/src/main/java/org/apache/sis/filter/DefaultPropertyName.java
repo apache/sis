@@ -33,8 +33,8 @@ import org.opengis.filter.expression.PropertyName;
  * property value of the evaluated feature.
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class DefaultPropertyName extends AbstractExpression implements PropertyName {

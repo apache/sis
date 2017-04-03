@@ -36,8 +36,8 @@ import org.apache.sis.xml.IdentifiedObject;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @XmlTransient

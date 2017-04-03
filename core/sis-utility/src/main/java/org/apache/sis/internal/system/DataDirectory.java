@@ -35,8 +35,8 @@ import java.nio.file.InvalidPathException;
  * Sub-directories of {@code SIS_DATA} where SIS looks for EPSG database, datum shift grids and other resources.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public enum DataDirectory {

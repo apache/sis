@@ -30,8 +30,8 @@ import static org.junit.Assert.*;
  * Tests the {@link Angle}, {@link Longitude} and {@link Latitude} classes.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @DependsOn(AngleFormatTest.class)

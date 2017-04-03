@@ -37,8 +37,8 @@ import org.opengis.feature.AttributeType;
  * implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 class AttributeView<V> extends PropertyView<V> implements Attribute<V> {

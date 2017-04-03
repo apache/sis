@@ -37,8 +37,8 @@ import java.lang.annotation.RetentionPolicy;
  * developers and may change in any future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @Documented

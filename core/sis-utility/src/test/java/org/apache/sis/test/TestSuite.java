@@ -40,8 +40,8 @@ import static org.junit.Assert.*;
  * Base class of Apache SIS test suites (except the ones that extend GeoAPI suites).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 @RunWith(Suite.class)

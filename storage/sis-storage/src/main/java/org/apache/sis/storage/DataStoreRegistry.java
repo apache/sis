@@ -41,8 +41,8 @@ import org.apache.sis.util.ArgumentChecks;
  * on the part of the caller.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 final class DataStoreRegistry {

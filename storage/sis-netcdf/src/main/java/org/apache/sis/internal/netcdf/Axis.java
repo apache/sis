@@ -27,11 +27,12 @@ import org.apache.sis.storage.netcdf.AttributeNames;
  * {@link ucar.nc2.dataset.CoordinateAxis1D} or {@link ucar.nc2.dataset.CoordinateAxis2D} respectively.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see GridGeometry#getAxes()
+ *
+ * @since 0.3
+ * @module
  */
 public final class Axis {
     /**

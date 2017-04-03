@@ -49,8 +49,8 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @deprecated As of ISO 19115:2014, replaced by {@link DefaultAssociatedResource}.

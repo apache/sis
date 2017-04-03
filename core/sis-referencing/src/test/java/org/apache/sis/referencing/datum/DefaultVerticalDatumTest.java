@@ -39,8 +39,8 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * Tests the {@link DefaultVerticalDatum} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {

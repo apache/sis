@@ -129,12 +129,13 @@ import java.util.function.Supplier;
  * then creating <var>B</var> is not allowed to implies (directly or indirectly) the creation of
  * <var>A</var>. If this rule is not meet, deadlock may occur randomly.
  *
- * @param  <K>  the type of key objects.
- * @param  <V>  the type of value objects.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ *
+ * @param <K>  the type of key objects.
+ * @param <V>  the type of value objects.
+ *
+ * @since 0.3
  * @module
  */
 public class Cache<K,V> extends AbstractMap<K,V> {
@@ -184,7 +185,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * A view over the entries in the cache.
      */
-    private volatile transient Set<Entry<K,V>> entries;
+    private transient volatile Set<Entry<K,V>> entries;
 
     /**
      * Creates a new cache with a default initial capacity and cost limit of 100.
@@ -561,8 +562,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * @param  <V>  the type of value objects.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     public interface Handler<V> {

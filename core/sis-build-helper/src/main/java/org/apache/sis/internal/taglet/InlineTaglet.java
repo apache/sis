@@ -32,8 +32,8 @@ import com.sun.source.doctree.UnknownInlineTagTree;
  * Base class of inline taglets.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public abstract class InlineTaglet implements Taglet {

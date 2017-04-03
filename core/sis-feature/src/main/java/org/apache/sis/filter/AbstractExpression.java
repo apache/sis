@@ -27,8 +27,8 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * Override evaluate(Object,Class) by using the converters system.
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public abstract class AbstractExpression implements Expression,Serializable {

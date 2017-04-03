@@ -24,8 +24,8 @@ import ucar.nc2.ft.FeatureCollection;
  * A wrapper around the UCAR {@code ucar.nc2.ft} package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class FeaturesWrapper extends DiscreteSampling {

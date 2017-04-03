@@ -46,12 +46,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
- * @module
  *
  * @see org.apache.sis.referencing.crs.DefaultImageCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageDatum(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "ImageDatumType")
 @XmlRootElement(name = "ImageDatum")

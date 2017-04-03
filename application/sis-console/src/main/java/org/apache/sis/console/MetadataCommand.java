@@ -27,8 +27,8 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
  * The "metadata" sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 final class MetadataCommand extends FormattedOutputCommand {

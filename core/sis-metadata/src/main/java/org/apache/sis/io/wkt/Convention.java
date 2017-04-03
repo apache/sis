@@ -49,12 +49,13 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * but should be avoided when not imposed by compatibility reasons.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
- * @module
  *
  * @see WKTFormat#getConvention()
  * @see WKTFormat#setConvention(Convention)
+ *
+ * @since 0.4
+ * @module
  */
 public enum Convention {
     /**

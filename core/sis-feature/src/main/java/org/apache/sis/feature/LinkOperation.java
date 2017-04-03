@@ -37,8 +37,8 @@ import org.opengis.feature.PropertyType;
  * The operation acts like a reference to another property.
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 final class LinkOperation extends AbstractOperation {

@@ -30,8 +30,8 @@ import org.apache.sis.internal.metadata.WKTKeywords;
  * it will be translated into ANSI SQL later by {@link SQLTranslator#apply(String)} if needed.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 final class TableInfo {

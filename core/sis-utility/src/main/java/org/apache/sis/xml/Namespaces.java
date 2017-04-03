@@ -62,8 +62,8 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Cédric Briançon (Geomatys)
  * @author  Quentin Boileau (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final class Namespaces extends Static {

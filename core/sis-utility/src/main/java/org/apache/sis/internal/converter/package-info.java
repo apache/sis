@@ -42,8 +42,8 @@
  * classpath changes.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 package org.apache.sis.internal.converter;

@@ -34,8 +34,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * {@link #createDecoder(String)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(VariableTest.class)

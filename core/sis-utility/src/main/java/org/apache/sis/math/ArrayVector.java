@@ -30,8 +30,8 @@ import org.apache.sis.measure.NumberRange;
  * so changes in the underlying array is reflected in this vector and vis-versa.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 abstract class ArrayVector<E extends Number> extends Vector implements CheckedContainer<E>, Serializable {

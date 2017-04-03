@@ -38,12 +38,13 @@ import org.opengis.feature.PropertyNotFoundException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Marc le Bihan
- * @since   0.5
  * @version 0.6
- * @module
  *
  * @see SparseFeature
  * @see DefaultFeatureType
+ *
+ * @since 0.5
+ * @module
  */
 final class DenseFeature extends AbstractFeature implements Cloneable {
     /**

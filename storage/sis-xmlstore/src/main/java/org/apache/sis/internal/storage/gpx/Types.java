@@ -51,8 +51,8 @@ import org.opengis.feature.FeatureType;
  * nevertheless allows definition of alternative {@code Types} with names created by different factories.
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class Types extends Static {

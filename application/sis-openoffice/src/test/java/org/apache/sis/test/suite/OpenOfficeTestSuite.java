@@ -25,8 +25,8 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-openoffice} add-ins, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @Suite.SuiteClasses({

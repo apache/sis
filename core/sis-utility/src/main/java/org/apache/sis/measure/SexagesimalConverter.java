@@ -41,8 +41,8 @@ import static org.apache.sis.math.MathFunctions.truncate;
  * This class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 class SexagesimalConverter extends AbstractConverter {

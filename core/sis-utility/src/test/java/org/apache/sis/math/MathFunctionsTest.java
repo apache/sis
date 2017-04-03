@@ -33,8 +33,8 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 @DependsOn({

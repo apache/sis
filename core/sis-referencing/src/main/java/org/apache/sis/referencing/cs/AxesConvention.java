@@ -105,12 +105,13 @@ import org.apache.sis.measure.Units;
  * (e.g. {@link org.apache.sis.geometry.GeneralEnvelope#normalize()}).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
- * @module
  *
  * @see AbstractCS#forConvention(AxesConvention)
  * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
+ *
+ * @since 0.4
+ * @module
  */
 public enum AxesConvention implements AxisFilter {
     /**

@@ -49,8 +49,8 @@ import static org.junit.Assert.*;
  * by the trunk is behind the snapshot developments.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final strictfp class APIVerifier extends TestCase {
@@ -162,7 +162,7 @@ public final strictfp class APIVerifier extends TestCase {
         final List<String> incompatibleChanges = new ArrayList<>();
         final ClassLoader parent = APIVerifier.class.getClassLoader().getParent();
         final URL dependency = unitsJAR.toURI().toURL();
-        try (final JarFile newJARContent = new JarFile(snapshotJAR);
+        try (JarFile newJARContent = new JarFile(snapshotJAR);
              final URLClassLoader oldAPI = new URLClassLoader(new URL[] {releasedJAR.toURI().toURL(), dependency}, parent);
              final URLClassLoader newAPI = new URLClassLoader(new URL[] {snapshotJAR.toURI().toURL(), dependency}, parent))
         {

@@ -59,13 +59,14 @@ import org.opengis.metadata.citation.Citation;
  * for the purpose of handling XML {@code id}, {@code uuid} or {@code href} attributes.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see IdentifierSpace
  * @see org.apache.sis.metadata.iso.ISOMetadata
  * @see ReferenceResolver#newIdentifiedObject(MarshalContext, Class, Identifier[])
+ *
+ * @since 0.3
+ * @module
  */
 public interface IdentifiedObject {
     /**

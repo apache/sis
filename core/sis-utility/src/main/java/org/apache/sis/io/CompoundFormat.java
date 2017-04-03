@@ -93,11 +93,12 @@ import java.io.UncheckedIOException;
  * throws a {@code ParseException} on error. This allows both substring parsing and more accurate exception message
  * in case of error.</div>
  *
- * @param  <T>  the base type of objects parsed and formatted by this class.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ *
+ * @param <T>  the base type of objects parsed and formatted by this class.
+ *
+ * @since 0.3
  * @module
  */
 public abstract class CompoundFormat<T> extends Format implements Localized {

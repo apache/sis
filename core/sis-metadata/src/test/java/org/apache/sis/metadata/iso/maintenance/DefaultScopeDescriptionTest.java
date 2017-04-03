@@ -31,8 +31,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link DefaultScopeDescription}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 public final strictfp class DefaultScopeDescriptionTest extends TestCase {

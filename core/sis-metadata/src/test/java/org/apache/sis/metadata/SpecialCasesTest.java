@@ -36,8 +36,8 @@ import static org.apache.sis.test.Assert.*;
  * Test the {@link SpecialCases} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.5
+ * @since   0.4
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)

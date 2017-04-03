@@ -64,12 +64,13 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * implementation provided in the {@link Node} inner class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see Node
  * @see TableColumn
+ *
+ * @since 0.3
+ * @module
  */
 public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
@@ -317,8 +318,8 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * {@link #equals(Object)} and {@link #hashCode()} methods.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      *
      * @see DefaultTreeTable

@@ -21,8 +21,8 @@ package org.apache.sis.console;
  * Thrown when a unknown command has been given by the user on the command-line.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class InvalidCommandException extends Exception {

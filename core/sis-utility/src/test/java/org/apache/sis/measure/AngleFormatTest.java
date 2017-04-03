@@ -34,8 +34,8 @@ import static org.apache.sis.test.TestUtilities.*;
  * Tests parsing and formatting done by the {@link AngleFormat} class.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 @DependsOn({

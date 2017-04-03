@@ -48,8 +48,8 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * file for more information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @Mojo(name = "dist", defaultPhase = LifecyclePhase.INSTALL)
@@ -66,6 +66,12 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
      */
     @Parameter(property="session.executionRootDirectory", required=true)
     private String rootDirectory;
+
+    /**
+     * Invoked by reflection for creating the MOJO.
+     */
+    public Assembler() {
+    }
 
     /**
      * Creates the distribution file.

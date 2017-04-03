@@ -35,8 +35,8 @@ import static org.junit.Assert.*;
  * and a standard {@link ImageInputStream} is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn(ChannelDataInputTest.class)

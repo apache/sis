@@ -45,8 +45,8 @@ import static org.apache.sis.test.Assert.*;
  * <p>This class uses <a href="http://math.nist.gov/javanumerics/jama">JAMA</a> as the reference implementation.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public abstract strictfp class MatrixTestCase extends TestCase {

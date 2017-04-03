@@ -36,8 +36,8 @@ import org.apache.sis.measure.Units;
  * but subclasses will provide different operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 @XmlTransient

@@ -36,8 +36,8 @@ import static org.junit.Assert.*;
  * See {@link DefaultTelephone} class javadoc for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final strictfp class DefaultContactTest extends XMLTestCase implements WarningListener<Object> {

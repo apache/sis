@@ -89,12 +89,13 @@ import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
  * components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
- * @module
  *
  * @see AbstractCS
  * @see Unit
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "CoordinateSystemAxisType", propOrder = {
     "abbreviation",

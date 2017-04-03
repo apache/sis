@@ -52,11 +52,12 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * {@linkplain org.apache.sis.referencing.operation.DefaultConversion conversion} from another CRS
  * (not by a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}).
  *
- * @param  <C>  the conversion type, either {@code Conversion} or {@code Projection}.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
+ *
+ * @param <C>  the conversion type, either {@code Conversion} or {@code Projection}.
+ *
+ * @since 0.6
  * @module
  */
 @XmlType(name = "AbstractGeneralDerivedCRSType")

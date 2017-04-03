@@ -96,8 +96,8 @@ import org.opengis.util.GenericName;
  * Default implementation of GeoAPI filter factory.
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class DefaultFilterFactory implements FilterFactory2 {
@@ -712,7 +712,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public Function function(final String name, final Expression ... parameters) {
+    public Function function(final String name, final Expression... parameters) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

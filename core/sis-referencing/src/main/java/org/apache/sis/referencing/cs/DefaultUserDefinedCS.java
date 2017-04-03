@@ -43,8 +43,8 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @XmlType(name = "UserDefinedCSType")

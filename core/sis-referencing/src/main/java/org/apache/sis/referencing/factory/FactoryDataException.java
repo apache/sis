@@ -26,8 +26,8 @@ import org.opengis.util.FactoryException;
  * an EPSG database record containing a null value in a column where nulls should not have been allowed.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public class FactoryDataException extends FactoryException {

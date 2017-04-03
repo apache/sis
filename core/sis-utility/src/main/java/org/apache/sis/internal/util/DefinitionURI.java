@@ -103,13 +103,14 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  * {@code "urn:ogc:def:crs,crs:EPSG:6.3:27700,crs:EPSG:6.3:5701"}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
- * @module
  *
  * @see org.apache.sis.internal.metadata.NameMeaning
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
  * @see <a href="http://www.opengeospatial.org/ogcna">OGC Naming Authority</a>
+ *
+ * @since 0.4
+ * @module
  */
 public final class DefinitionURI {
     /**

@@ -34,13 +34,14 @@ package org.apache.sis.referencing.operation;
  * construction time.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see org.opengis.geometry.MismatchedReferenceSystemException
  * @see org.opengis.geometry.MismatchedDimensionException
  * @see org.apache.sis.referencing.operation.matrix.MismatchedMatrixSizeException
+ *
+ * @since 0.6
+ * @module
  */
 public class MismatchedDatumException extends IllegalArgumentException {
     /**

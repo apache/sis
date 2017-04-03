@@ -34,8 +34,8 @@ import org.apache.sis.util.logging.WarningListeners;
  * Synchronizations are caller's responsibility.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public abstract class Decoder implements Closeable {

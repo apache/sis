@@ -52,8 +52,8 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
  * A row in the table to be formatted by {@link ParameterFormat}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 final class ParameterTableRow {

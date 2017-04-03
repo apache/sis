@@ -24,11 +24,12 @@ import org.apache.sis.internal.referencing.Resources;
  * A matrix which is not square.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see Matrices#createDiagonal(int, int)
+ *
+ * @since 0.4
+ * @module
  */
 final class NonSquareMatrix extends GeneralMatrix {
     /**

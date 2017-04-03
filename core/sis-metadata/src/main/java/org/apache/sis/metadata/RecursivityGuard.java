@@ -34,16 +34,17 @@ import java.util.IdentityHashMap;
  * would not suit since it invokes {@code equals(Object)} and {@code hashCode()}, which are precisely
  * the methods that we want to avoid invoking twice.
  *
- * @param  <V>  the kind of values to store in the maps.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
+ *
+ * @param <V>  the kind of values to store in the maps.
  *
  * @see #HASH_CODES
  * @see ObjectPair#CURRENT
  * @see Pruner#MAPS
+ *
+ * @since 0.3
+ * @module
  */
 final class RecursivityGuard<V> extends ThreadLocal<Map<Object,V>> {
     /**

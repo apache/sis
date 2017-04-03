@@ -43,13 +43,14 @@ import javax.imageio.stream.ImageInputStream;
  * <p>This class is used when compatibility with {@link javax.imageio.ImageReader} is needed.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
- * @module
  *
  * @see javax.imageio.stream.FileImageInputStream
  * @see javax.imageio.ImageIO#createImageInputStream(Object)
  * @see java.nio.channels.Channels#newInputStream(ReadableByteChannel)
+ *
+ * @since 0.3
+ * @module
  */
 public class ChannelImageInputStream extends ChannelDataInput implements ImageInputStream {
     /**

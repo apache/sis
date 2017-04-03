@@ -38,8 +38,8 @@ import static java.lang.Math.*;
  * given geometry is actually a line segment ({@code dy1} = {@code dy2} = slope from P1 to P2).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class CurveExtremum {

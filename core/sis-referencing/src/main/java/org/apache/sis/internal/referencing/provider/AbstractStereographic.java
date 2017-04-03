@@ -30,8 +30,8 @@ import org.apache.sis.referencing.operation.projection.PolarStereographic;
  * Base class of providers for all Stereographic projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 @XmlTransient

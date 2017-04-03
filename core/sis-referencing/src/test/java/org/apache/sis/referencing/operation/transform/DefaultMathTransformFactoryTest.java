@@ -57,8 +57,8 @@ import static org.opengis.test.Assert.*;
  * files found on the classpath.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 @DependsOn({

@@ -70,8 +70,8 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * at the Java Virtual Machine startup time. See {@linkplain org.apache.sis.console package javadoc} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final class Command {

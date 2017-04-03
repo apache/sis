@@ -32,12 +32,13 @@ import org.apache.sis.util.resources.Errors;
  * This base class is immutable, and thus inherently thread-safe. Subclasses should be immutable
  * and thread-safe too if they are intended to be cached in {@link ConverterRegistry}.
  *
- * @param  <S>  the base type of source objects.
- * @param  <T>  the base type of converted objects.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <S>  the base type of source objects.
+ * @param <T>  the base type of converted objects.
+ *
+ * @since 0.3
  * @module
  */
 abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConverter<S,T> {
