@@ -25,8 +25,8 @@
  * <div class="section">Adding system-wide converters</div>
  * Applications can add system-wide custom converters either by explicit calls to the
  * {@code SystemRegistry.INSTANCE.register(ObjectConverter)} method, or by listing the
- * fully qualified classnames of their {@link ObjectConverter} instances in a file having
- * exactly the following name:
+ * fully qualified classnames of their {@link org.apache.sis.util.ObjectConverter} instances
+ * in a file having exactly the following name:
  *
  * {@preformat text
  *     META-INF/services/org.apache.sis.util.ObjectConverter

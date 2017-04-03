@@ -122,7 +122,8 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     protected final CRSFactory crsFactory;
 
     /**
-     * The factory to use for creating {@link CoordinateOperation} instances from the properties read in the database.
+     * The factory to use for creating {@link org.opengis.referencing.operation.CoordinateOperation} instances
+     * from the properties read in the database.
      */
     protected final CoordinateOperationFactory copFactory;
 

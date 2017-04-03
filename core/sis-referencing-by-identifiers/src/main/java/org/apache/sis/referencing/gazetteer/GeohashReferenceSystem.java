@@ -61,7 +61,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
     private static final long serialVersionUID = 9162259764027168776L;
 
     /**
-     * The encoding format used by {@link GeoHashCoder}.
+     * The encoding format used by {@link GeohashReferenceSystem.Coder}.
      */
     public enum Format {
         /**

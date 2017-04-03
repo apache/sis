@@ -258,7 +258,7 @@ public final strictfp class TreeNodeTest extends TestCase {
     }
 
     /**
-     * Tests {@link TreeNode#getElementType()} on a metadata with a hierarchy.
+     * Tests getting the value of {@link TableColumn#TYPE} on a metadata with a hierarchy.
      */
     @Test
     @DependsOnMethod("testGetIdentifier")       // Because if identifiers are wrong, we are looking at wrong properties.

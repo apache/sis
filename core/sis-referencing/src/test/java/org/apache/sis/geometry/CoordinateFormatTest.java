@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  *
- * @see org.apache.sis.measure.CoordinateFormatTest
+ * @see org.apache.sis.measure.AngleFormatTest
  *
  * @since 0.8
  * @module

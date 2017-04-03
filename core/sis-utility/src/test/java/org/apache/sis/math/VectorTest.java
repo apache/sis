@@ -127,7 +127,7 @@ public final strictfp class VectorTest extends TestCase {
     }
 
     /**
-     * Tests {@link ArrayVector.Float} backed by an array of float type.
+     * Tests {@link ArrayVector} backed by an array of float type.
      */
     @Test
     public void testFloatArray() {
@@ -150,7 +150,7 @@ public final strictfp class VectorTest extends TestCase {
     }
 
     /**
-     * Tests {@link ArrayVector.Double} backed by an array of double type.
+     * Tests {@link ArrayVector} backed by an array of double type.
      */
     @Test
     public void testDoubleArray() {
@@ -226,7 +226,7 @@ public final strictfp class VectorTest extends TestCase {
     /**
      * Tests a vector backed by an array of strings.
      * This is not recommended, but happen in GDAL extensions of GeoTIFF.
-     * See {@link org.apache.sis.storage.geotiff.Type#ASCII}.
+     * See {@code org.apache.sis.storage.geotiff.Type.ASCII}.
      */
     @Test
     public void testStringArray() {

@@ -85,7 +85,7 @@ public class ChannelImageOutputStream extends ChannelDataOutput implements DataO
     }
 
     /**
-     * Writes boolean value (8 bits) into the steam. This method delegates to {@linkplain #writeByte(byte)}.
+     * Writes boolean value (8 bits) into the steam. This method delegates to {@linkplain #writeByte(int)}.
      * If boolean {@code v} is {@code true} the byte value 1 is written whereas if boolean is {@code false}
      * zero is written.
      *

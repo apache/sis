@@ -155,7 +155,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Tests the {@link NormalizedProjection#expOfNorthing(double, double)} function.
+     * Tests the {@link ConformalProjection#expOfNorthing(double, double)} function.
      *
      * {@preformat text
      *   Forward:  y = -log(t(φ))
@@ -173,7 +173,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Tests the {@link NormalizedProjection#dy_dφ(double, double)} method.
+     * Tests the {@link ConformalProjection#dy_dφ(double, double)} method.
      *
      * @throws TransformException if an error occurred while projecting a point.
      */
@@ -228,7 +228,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
 
     /**
      * Tests the {@link ConformalProjection#φ(double)} function. We expect it to be
-     * the converse of the {@link NormalizedProjection#expOfNorthing(double, double)} function.
+     * the converse of the {@link ConformalProjection#expOfNorthing(double, double)} function.
      * In theory only the [-90° … +90°] range needs to be tested. However the function is still
      * consistent in the [-90° … +270°] range so we test that range for tracking this fact.
      *

@@ -37,7 +37,7 @@ import org.apache.sis.measure.Units;
  * A measurement value together with its unit of measure.
  * This is used for marshalling an element defined by ISO-19103.
  *
- * <p>This class duplicates {@link org.apache.sis.measure.Measure}, but we have to do that way
+ * <p>This class duplicates {@code org.apache.sis.measure.Measure}, but we have to do that way
  * because that {@code Measure} extends {@link Number} and we are not allowed to use the
  * {@code @XmlValue} annotation on a class that extends an other class.</p>
  *
@@ -65,7 +65,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  *
- * @see org.apache.sis.measure.Measure
  * @see org.apache.sis.internal.jaxb.gml.MeasureList
  * @see org.apache.sis.internal.jaxb.gco.UnitAdapter
  *

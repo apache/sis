@@ -310,7 +310,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
-     *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
+     *     <td>{@link org.opengis.util.GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link DefaultOperationMethod#getAlias()}</td>
      *   </tr>
      *   <tr>
@@ -320,7 +320,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.operation.OperationMethod#FORMULA_KEY}</td>
-     *     <td>{@link Formula}, {@link Citation} or {@link CharSequence}</td>
+     *     <td>{@link Formula}, {@link org.opengis.metadata.citation.Citation} or {@link CharSequence}</td>
      *     <td>{@link DefaultOperationMethod#getFormula()}</td>
      *   </tr>
      * </table>

@@ -78,7 +78,7 @@ public final strictfp class PlaneTest extends TestCase {
     }
 
     /**
-     * Tests {@link Plane#fit(DirectPosition[])} with 3 points.
+     * Tests {@link Plane#fit(Iterable)} with 3 points.
      * The solution is expected to be exact.
      */
     @Test

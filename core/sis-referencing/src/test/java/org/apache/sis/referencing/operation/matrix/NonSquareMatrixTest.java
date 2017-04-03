@@ -203,7 +203,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
 
     /**
      * Prints the statistics about the differences between JAMA and SIS matrix elements.
-     * Those statistics will be visible only if {@link #verbose} is {@code true}.
+     * Those statistics will be visible only if {@link #VERBOSE} is {@code true}.
      */
     @AfterClass
     public static void printStatistics() {

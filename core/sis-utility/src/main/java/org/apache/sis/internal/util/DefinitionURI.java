@@ -175,8 +175,6 @@ public final class DefinitionURI {
      *
      * <div class="note"><b>Example:</b>
      * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "EPSG"}.</div>
-     *
-     * @see org.apache.sis.internal.metadata.NameMeaning#authority(String)
      */
     public String authority;
 

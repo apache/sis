@@ -220,7 +220,7 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
 
     /**
      * Tests {@link DefaultMetadata#getHierarchyLevels()}, {@link DefaultMetadata#getHierarchyLevelNames()},
-     * {@link DefaultMetadata#setHierarchyLevel(Collection)} and {@link DefaultMetadata#setHierarchyLevelNames(Collection)}
+     * {@link DefaultMetadata#setHierarchyLevels(Collection)} and {@link DefaultMetadata#setHierarchyLevelNames(Collection)}
      * methods.
      */
     @Test

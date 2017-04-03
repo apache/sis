@@ -122,9 +122,9 @@ public enum AxesConvention implements AxisFilter {
      *   <li>Axes are oriented and ordered as defined for {@link #CONVENTIONALLY_ORIENTED} coordinate systems.</li>
      *   <li>Known units are normalized (this list may be expanded in future SIS versions):
      *     <ul>
-     *       <li>Angular units are set to {@link javax.measure.Units#DEGREE}.</li>
-     *       <li>Linear units are set to {@link javax.measure.unit.Units#METRE}.</li>
-     *       <li>Temporal units are set to {@link javax.measure.unit.Units#DAY}.</li>
+     *       <li>Angular units are set to {@link Units#DEGREE}.</li>
+     *       <li>Linear units are set to {@link Units#METRE}.</li>
+     *       <li>Temporal units are set to {@link Units#DAY}.</li>
      *     </ul>
      *   </li>
      * </ul>

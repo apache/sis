@@ -293,7 +293,7 @@ public final class StandardDateFormat extends DateFormat {
     /**
      * Overridden for compliance with {@code DateFormat} contract, but has no incidence on this format.
      *
-     * @return value fetched {@link Calendar#getLenient()}.
+     * @return value fetched {@link Calendar#isLenient()}.
      */
     @Override
     public final boolean isLenient() {

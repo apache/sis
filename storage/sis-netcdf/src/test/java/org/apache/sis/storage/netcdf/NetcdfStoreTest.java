@@ -66,7 +66,7 @@ public final strictfp class NetcdfStoreTest extends IOTestCase {
     }
 
     /**
-     * Tests {@link Decoder#getConventionVersion()}.
+     * Tests {@link NetcdfStore#getConventionVersion()}.
      *
      * @throws DataStoreException if an error occurred while reading the NetCDF file.
      */
