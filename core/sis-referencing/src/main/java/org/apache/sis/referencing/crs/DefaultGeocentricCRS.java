@@ -69,11 +69,12 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlTransient
 public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements GeocentricCRS {

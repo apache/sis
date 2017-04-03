@@ -42,8 +42,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.measure.RangeTest.class)

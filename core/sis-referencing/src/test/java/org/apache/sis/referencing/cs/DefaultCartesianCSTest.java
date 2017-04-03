@@ -39,8 +39,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link DefaultCartesianCS} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @DependsOn({

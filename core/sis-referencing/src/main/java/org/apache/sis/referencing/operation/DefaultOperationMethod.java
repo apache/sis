@@ -118,12 +118,13 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
- * @since   0.5
- * @module
  *
  * @see DefaultConversion
  * @see DefaultTransformation
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
+ *
+ * @since 0.5
+ * @module
  */
 @XmlType(name = "OperationMethodType", propOrder = {
     "formulaCitation",

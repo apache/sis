@@ -43,8 +43,8 @@ import org.apache.sis.util.Workaround;
  * Base class for all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 @XmlTransient

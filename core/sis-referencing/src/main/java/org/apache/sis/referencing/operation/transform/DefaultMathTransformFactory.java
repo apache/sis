@@ -160,12 +160,13 @@ import org.apache.sis.util.resources.Errors;
  * There is typically only one {@code MathTransformFactory} instance for the whole application.
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
- * @since   0.6
  * @version 0.8
- * @module
  *
  * @see MathTransformProvider
  * @see AbstractMathTransform
+ *
+ * @since 0.6
+ * @module
  */
 public class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory, Parser {
     /*

@@ -109,12 +109,13 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
- * @module
  *
  * @see SimpleFormatter
  * @see Handler#setFormatter(Formatter)
+ *
+ * @since 0.3
+ * @module
  */
 public class MonolineFormatter extends Formatter {
     /** Do not format source class name.       */ private static final int NO_SOURCE    = 0;
@@ -771,7 +772,7 @@ loop:   for (int i=0; ; i++) {
         if (resources != null) {
             message = resources.getString(message);
         }
-        final Object parameters[] = record.getParameters();
+        final Object[] parameters = record.getParameters();
         if (parameters != null && parameters.length != 0) {
             int i = message.indexOf('{');
             if (i >= 0 && ++i < message.length()) {

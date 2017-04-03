@@ -28,8 +28,8 @@ import static org.junit.Assert.*;
  * Tests the {@link SubTypes} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn(AbstractCRSTest.class)

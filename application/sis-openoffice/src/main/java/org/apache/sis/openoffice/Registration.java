@@ -46,8 +46,8 @@ import com.sun.star.registry.XRegistryKey;
  * which is the work of this {@code Registration} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final class Registration implements FilenameFilter {

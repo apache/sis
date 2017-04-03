@@ -29,8 +29,8 @@ import org.opengis.geometry.UnmodifiableGeometryException;
  * This class shall be used for temporary objects only (it is not serializable for this reason).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class DirectPositionView implements DirectPosition {

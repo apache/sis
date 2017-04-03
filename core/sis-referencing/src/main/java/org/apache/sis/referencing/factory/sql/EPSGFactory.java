@@ -74,13 +74,14 @@ import org.apache.sis.util.Localized;
  * subclass.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
- * @module
  *
  * @see EPSGDataAccess
  * @see SQLTranslator
  * @see <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
+ *
+ * @since 0.7
+ * @module
  */
 public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized

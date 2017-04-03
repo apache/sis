@@ -35,8 +35,8 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Ross Laidlaw
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @DependsOn(AbstractEnvelopeTest.class)

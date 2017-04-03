@@ -28,8 +28,8 @@ import java.io.IOException;
  * and Pack200 bundle</cite> section in the <code>src/site/apt/index.apt</code> file.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 final class Filenames {

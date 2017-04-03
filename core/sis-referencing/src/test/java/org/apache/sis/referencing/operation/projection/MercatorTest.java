@@ -43,8 +43,8 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 @DependsOn(ConformalProjectionTest.class)

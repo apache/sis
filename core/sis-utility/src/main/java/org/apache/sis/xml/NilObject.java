@@ -71,12 +71,13 @@ package org.apache.sis.xml;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see NilReason#createNilObject(Class)
  * @see org.apache.sis.util.Numbers#valueOfNil(Class)
+ *
+ * @since 0.3
+ * @module
  */
 public interface NilObject {
     /**

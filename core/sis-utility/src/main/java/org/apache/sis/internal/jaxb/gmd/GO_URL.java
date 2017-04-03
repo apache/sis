@@ -29,8 +29,8 @@ import org.apache.sis.internal.jaxb.Context;
  * Java object.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class GO_URL extends XmlAdapter<GO_URL, URI> {

@@ -49,8 +49,8 @@ import org.opengis.feature.AttributeType;
  * </div>
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 class GroupAsPolylineOperation extends AbstractOperation {

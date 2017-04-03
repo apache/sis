@@ -43,8 +43,8 @@ import org.apache.sis.util.Characters;
  * without direct dependency. A {@code UnitServices} instance can be obtained by call to {@link #current()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class UnitServices extends ServiceProvider implements SystemOfUnitsService, UnitFormatService {

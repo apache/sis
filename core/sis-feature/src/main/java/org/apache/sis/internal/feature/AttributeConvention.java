@@ -66,8 +66,8 @@ import org.opengis.feature.Property;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final class AttributeConvention extends Static {

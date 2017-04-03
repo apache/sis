@@ -35,11 +35,12 @@ import org.apache.sis.math.MathFunctions;
  * This is an element in a linked list. When the reference is disposed, it is removed
  * from the enclosing collection.
  *
- * @param  <E>  the type of elements in the collection.
- *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <E>  the type of elements in the collection.
+ *
+ * @since 0.3
  * @module
  */
 abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {

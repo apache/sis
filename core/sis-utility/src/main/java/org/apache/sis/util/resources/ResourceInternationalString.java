@@ -37,8 +37,8 @@ import org.apache.sis.util.iso.AbstractInternationalString;
  * This base class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public abstract class ResourceInternationalString extends AbstractInternationalString implements Serializable {

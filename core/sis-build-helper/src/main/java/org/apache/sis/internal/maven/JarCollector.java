@@ -47,8 +47,8 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * creates a "{@code target/binaries/content.txt}" file listing the dependencies.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 @Mojo(name = "collect-jars",
@@ -67,6 +67,12 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
      */
     @Parameter(property="session.executionRootDirectory", required=true)
     private String rootDirectory;
+
+    /**
+     * Invoked by reflection for creating the MOJO.
+     */
+    public JarCollector() {
+    }
 
     /**
      * Copies the {@code *.jar} files to the collect directory.

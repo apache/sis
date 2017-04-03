@@ -36,8 +36,8 @@ import static org.junit.Assert.*;
  * converted map).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(DerivedSetTest.class)

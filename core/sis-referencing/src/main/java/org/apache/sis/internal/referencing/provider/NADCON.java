@@ -56,11 +56,12 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rueben Schulz (UBC)
- * @since   0.7
  * @version 0.8
- * @module
  *
  * @see <a href="http://www.ngs.noaa.gov/cgi-bin/nadcon.prl">NADCON on-line computation</a>
+ *
+ * @since 0.7
+ * @module
  */
 @XmlTransient
 public final class NADCON extends AbstractProvider {
@@ -162,7 +163,7 @@ public final class NADCON extends AbstractProvider {
                         // Note: buffer size must be divisible by the size of 'float' data type.
                         final ByteBuffer buffer = ByteBuffer.allocate(4096).order(ByteOrder.LITTLE_ENDIAN);
                         final FloatBuffer fb = buffer.asFloatBuffer();
-                        try (final ReadableByteChannel in = Files.newByteChannel(rlat)) {
+                        try (ReadableByteChannel in = Files.newByteChannel(rlat)) {
                             DatumShiftGridLoader.log(NADCON.class, CharSequences.commonPrefix(
                                     latitudeShifts.toString(), longitudeShifts.toString()).toString() + '…');
                             loader = new Loader(in, buffer, file);
@@ -170,7 +171,7 @@ public final class NADCON extends AbstractProvider {
                         }
                         buffer.clear();
                         file = longitudeShifts;
-                        try (final ReadableByteChannel in = Files.newByteChannel(rlon)) {
+                        try (ReadableByteChannel in = Files.newByteChannel(rlon)) {
                             new Loader(in, buffer, file).readGrid(fb, loader, null);
                         }
                     } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
@@ -209,8 +210,8 @@ public final class NADCON extends AbstractProvider {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @author  Rueben Schulz (UBC)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     private static final class Loader extends DatumShiftGridLoader {

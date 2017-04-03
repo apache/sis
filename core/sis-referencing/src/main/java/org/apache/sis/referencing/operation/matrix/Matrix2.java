@@ -31,13 +31,14 @@ import org.apache.sis.internal.util.Numerics;
  * └         ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see Matrix1
  * @see Matrix3
  * @see Matrix4
+ *
+ * @since 0.4
+ * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")             // No field in this class needs clone.
 public final class Matrix2 extends MatrixSIS {

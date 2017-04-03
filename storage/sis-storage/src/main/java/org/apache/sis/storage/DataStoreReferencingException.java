@@ -26,8 +26,8 @@ import java.util.Locale;
  * {@link org.opengis.referencing.operation.TransformException}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class DataStoreReferencingException extends DataStoreException {

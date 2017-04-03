@@ -33,12 +33,13 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
  *
  * @see LanguageCode
  * @see org.apache.sis.internal.jaxb.code.PT_Locale
+ *
+ * @since 0.3
+ * @module
  */
 public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
     /**

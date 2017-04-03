@@ -32,8 +32,8 @@ import org.apache.sis.internal.system.Modules;
  * The primary key in the {@code MD_Format} table must be the name given at construction time.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public abstract class DocumentedStoreProvider extends DataStoreProvider {

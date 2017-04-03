@@ -52,8 +52,8 @@ import java.util.function.BiFunction;
  * functionalities other than what we need for those scripts.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 public class ScriptRunner implements AutoCloseable {
@@ -462,7 +462,7 @@ public class ScriptRunner implements AutoCloseable {
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     public final int run(final Class<?> loader, final String filename) throws IOException, SQLException {
-        try (final BufferedReader in = new LineNumberReader(new InputStreamReader(loader.getResourceAsStream(filename), "UTF-8"))) {
+        try (BufferedReader in = new LineNumberReader(new InputStreamReader(loader.getResourceAsStream(filename), "UTF-8"))) {
             return run(filename, in);
         }
     }

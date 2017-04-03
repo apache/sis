@@ -99,15 +99,16 @@ import static org.apache.sis.util.Numbers.*;
  * use {@code RangeSet<Long>} with millisecond values because {@code RangeSet} will internally
  * use {@code long[]} arrays in the later case.</p>
  *
- * @param <E> The type of range elements.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.3
  * @version 0.5
- * @module
+ *
+ * @param <E>  the type of range elements.
  *
  * @see Range
+ *
+ * @since 0.3
+ * @module
  */
 public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range<E>>
         implements CheckedContainer<Range<E>>, SortedSet<Range<E>>, Cloneable, Serializable
@@ -128,12 +129,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * comparator throws an exception. Such ambiguities should not happen in sequences
      * of ranges created by {@code RangeSet}.</p>
      *
-     * @param  <E>  the type of range elements.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
-     * @version 0.3
-     * @module
+     * @param <E>  the type of range elements.
      */
     private static final class Compare<E extends Comparable<? super E>>
             implements Comparator<Range<E>>, Serializable
@@ -440,12 +436,12 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     final int binarySearch(final E value, final int lower, final int upper) {
         switch (elementCode) {
             case DOUBLE:    return Arrays.binarySearch((double[]) array, lower, upper, (Double)    value);
-            case FLOAT:     return Arrays.binarySearch((float []) array, lower, upper, (Float)     value);
-            case LONG:      return Arrays.binarySearch((long  []) array, lower, upper, (Long)      value);
-            case INTEGER:   return Arrays.binarySearch((int   []) array, lower, upper, (Integer)   value);
-            case SHORT:     return Arrays.binarySearch((short []) array, lower, upper, (Short)     value);
-            case BYTE:      return Arrays.binarySearch((byte  []) array, lower, upper, (Byte)      value);
-            case CHARACTER: return Arrays.binarySearch((char  []) array, lower, upper, (Character) value);
+            case FLOAT:     return Arrays.binarySearch((float[])  array, lower, upper, (Float)     value);
+            case LONG:      return Arrays.binarySearch((long[])   array, lower, upper, (Long)      value);
+            case INTEGER:   return Arrays.binarySearch((int[])    array, lower, upper, (Integer)   value);
+            case SHORT:     return Arrays.binarySearch((short[])  array, lower, upper, (Short)     value);
+            case BYTE:      return Arrays.binarySearch((byte[])   array, lower, upper, (Byte)      value);
+            case CHARACTER: return Arrays.binarySearch((char[])   array, lower, upper, (Character) value);
             default:        return Arrays.binarySearch((Object[]) array, lower, upper,             value);
         }
     }
@@ -993,11 +989,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * A view over a subset of {@link RangeSet}.
      * Instances of this class are created by the {@link RangeSet#intersect(Range)} method.
      *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
-     * @version 0.3
-     * @module
-     *
      * @see RangeSet#intersect(Range)
      */
     private final class SubSet extends AbstractSet<Range<E>> implements SortedSet<Range<E>>, Serializable {
@@ -1232,8 +1223,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * </ul>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private final class SubIter extends Iter {
@@ -1312,8 +1303,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * All elements are {@link Range} objects.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private class Iter implements Iterator<Range<E>> {
@@ -1580,12 +1571,12 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             final Object a2 = that.array;
             switch (elementCode) {
                 case DOUBLE:    return Arrays.equals((double[]) a1, (double[]) a2);
-                case FLOAT:     return Arrays.equals((float []) a1, ( float[]) a2);
-                case LONG:      return Arrays.equals((long  []) a1, (  long[]) a2);
-                case INTEGER:   return Arrays.equals((int   []) a1, (   int[]) a2);
-                case SHORT:     return Arrays.equals((short []) a1, ( short[]) a2);
-                case BYTE:      return Arrays.equals((byte  []) a1, (  byte[]) a2);
-                case CHARACTER: return Arrays.equals((char  []) a1, (  char[]) a2);
+                case FLOAT:     return Arrays.equals((float[])  a1, (float[])  a2);
+                case LONG:      return Arrays.equals((long[])   a1, (long[])   a2);
+                case INTEGER:   return Arrays.equals((int[])    a1, (int[])    a2);
+                case SHORT:     return Arrays.equals((short[])  a1, (short[])  a2);
+                case BYTE:      return Arrays.equals((byte[])   a1, (byte[])   a2);
+                case CHARACTER: return Arrays.equals((char[])   a1, (char[])   a2);
                 default:        return Arrays.equals((Object[]) a1, (Object[]) a2);
             }
         }

@@ -58,8 +58,8 @@ import org.apache.sis.util.resources.Errors;
  * creating new copy on deserialization. So the parents should not be mixed.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 abstract class TreeNodeList extends AbstractList<TreeTable.Node>

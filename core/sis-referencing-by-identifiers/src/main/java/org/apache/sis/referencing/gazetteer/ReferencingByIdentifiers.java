@@ -52,12 +52,13 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * without synchronization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
- * @module
  *
  * @see ModifiableLocationType
  * @see AbstractLocation
+ *
+ * @since 0.8
+ * @module
  */
 @XmlTransient
 public class ReferencingByIdentifiers extends AbstractReferenceSystem implements ReferenceSystemUsingIdentifiers {

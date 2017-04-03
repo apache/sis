@@ -38,8 +38,8 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  * Tests the {@link Matrices} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @DependsOn({

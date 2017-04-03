@@ -35,8 +35,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the XML marshalling of {@code Anchor} and {@code CodeList} as substitution of {@code <gco:CharacterSequence>}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public final strictfp class CharSequenceSubstitutionTest extends XMLTestCase {

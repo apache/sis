@@ -34,8 +34,8 @@ import org.apache.sis.util.Deprecable;
  * This include {@code Attribute} and {@code Association}, but not {@code Operation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 abstract class Field<V> implements Property {

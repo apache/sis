@@ -96,8 +96,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 @XmlType(name = "AbstractCoordinateOperationType", propOrder = {

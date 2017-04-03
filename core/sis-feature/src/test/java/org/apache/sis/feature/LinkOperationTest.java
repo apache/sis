@@ -28,8 +28,8 @@ import static java.util.Collections.singletonMap;
  * Tests {@link LinkOperation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn({

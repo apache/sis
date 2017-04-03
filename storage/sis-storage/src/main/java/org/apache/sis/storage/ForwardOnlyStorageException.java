@@ -32,8 +32,8 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  * {@link StorageConnector} value given to the data store.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class ForwardOnlyStorageException extends DataStoreException {

@@ -34,8 +34,8 @@ import static org.apache.sis.test.TestUtilities.date;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.6
+ * @since   0.3
  * @module
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)

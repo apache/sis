@@ -37,8 +37,8 @@ import static org.junit.Assert.*;
  * Tests {@link DefaultCoupledResource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn(ServiceParameterTest.class)

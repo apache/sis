@@ -55,11 +55,12 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
- * @module
  *
  * @see Matrices
+ *
+ * @since 0.4
+ * @module
  */
 public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable, Serializable {
     /**
@@ -182,9 +183,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
      * @param  value   the new matrix element value.
      *
-     * @since 0.8
-     *
      * @see #setElement(int, int, double)
+     *
+     * @since 0.8
      */
     public void setNumber(int row, int column, final Number value) {
         if (value instanceof DoubleDouble) {

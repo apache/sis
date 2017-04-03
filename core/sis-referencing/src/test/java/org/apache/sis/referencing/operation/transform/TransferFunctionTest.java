@@ -31,8 +31,8 @@ import static org.opengis.test.Assert.*;
  * Tests {@link TransferFunction}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn(ExponentialTransform1DTest.class)

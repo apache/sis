@@ -26,8 +26,8 @@ import org.apache.sis.util.resources.Errors;
  * is not modified anymore after {@code UnmodifiableMatrix} construction.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 final class UnmodifiableMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {

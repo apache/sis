@@ -40,8 +40,8 @@ import org.apache.sis.internal.util.X364;
  * then the {@link #run()} method is invoked by {@link Command#run()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 abstract class CommandRunner {

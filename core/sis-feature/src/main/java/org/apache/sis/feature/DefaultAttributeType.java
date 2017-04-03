@@ -94,16 +94,17 @@ import org.opengis.feature.AttributeType;
  * This means that the same {@code defaultValue} instance may be shared by many {@link AbstractAttribute} instances.
  * Consequently the default value should be immutable for avoiding unexpected behavior.</p>
  *
- * @param <V> The type of attribute values.
- *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
- * @module
+ *
+ * @param <V>  the type of attribute values.
  *
  * @see DefaultFeatureType
  * @see AbstractAttribute
+ *
+ * @since 0.5
+ * @module
  */
 public class DefaultAttributeType<V> extends FieldType implements AttributeType<V> {
     /**

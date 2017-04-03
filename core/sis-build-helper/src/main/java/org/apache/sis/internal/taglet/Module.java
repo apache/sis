@@ -29,8 +29,8 @@ import com.sun.source.doctree.DocTree;
  * The <code>@module</code> tag. This tag expects no argument.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final class Module implements Taglet {

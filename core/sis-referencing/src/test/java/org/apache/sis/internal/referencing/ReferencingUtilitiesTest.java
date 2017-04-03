@@ -37,8 +37,8 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
  * Tests {@link ReferencingUtilities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from 0.4)
  * @version 0.8
+ * @since   0.5 (derived from 0.4)
  * @module
  */
 public final strictfp class ReferencingUtilitiesTest extends TestCase {

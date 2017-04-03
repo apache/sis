@@ -33,11 +33,12 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests the XML marshalling of object having {@code nilReason} attribute.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-149">GEOTK-149</a>
+ *
+ * @since 0.3
+ * @module
  */
 public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     /**

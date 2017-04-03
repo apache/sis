@@ -68,11 +68,12 @@ import org.apache.sis.util.Debug;
  * SIS handles those datum shifts with the {@link InterpolatedTransform} subclass.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
- * @module
  *
  * @see DatumShiftGrid
+ *
+ * @since 0.7
+ * @module
  */
 public abstract class DatumShiftTransform extends AbstractMathTransform implements Serializable {
     /**

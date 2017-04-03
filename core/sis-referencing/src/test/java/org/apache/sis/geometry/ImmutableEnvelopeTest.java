@@ -31,8 +31,8 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  * This class adds only some tests that are specific to {@code ImmutableEnvelope} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(AbstractEnvelopeTest.class)

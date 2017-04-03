@@ -28,7 +28,9 @@ import org.apache.sis.geometry.DirectPosition2D;
  * performs computations on a sphere of hard-coded radius. A future implementation should perform computations
  * on a given ellipsoid.</div>
  */
-public class DistanceUtils {
+public final class DistanceUtils {
+  private DistanceUtils() {
+  }
 
   public static final int EARTH_RADIUS = 6371; // in km
   public static final double HALF_EARTH_CIRCUMFERENCE = 20037.58; // in km

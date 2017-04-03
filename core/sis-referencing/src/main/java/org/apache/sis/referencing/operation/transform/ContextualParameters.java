@@ -126,12 +126,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
- * @module
  *
  * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
  * @see AbstractMathTransform#getContextualParameters()
+ *
+ * @since 0.6
+ * @module
  */
 public class ContextualParameters extends Parameters implements Serializable {
     /**
@@ -139,13 +140,14 @@ public class ContextualParameters extends Parameters implements Serializable {
      * before or after a non-linear operation.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.7
      * @version 0.7
-     * @module
      *
      * @see ContextualParameters#getMatrix(MatrixRole)
+     *
+     * @since 0.7
+     * @module
      */
-    public static enum MatrixRole {
+    public enum MatrixRole {
         /**
          * Matrix for converting angular degrees to radians, or any other linear operations needed
          * before to apply a non-linear operation. For example in a map projection, this matrix is

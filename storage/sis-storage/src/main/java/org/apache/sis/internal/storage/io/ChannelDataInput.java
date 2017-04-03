@@ -59,8 +59,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * {@link javax.imageio} is needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public class ChannelDataInput extends ChannelData {

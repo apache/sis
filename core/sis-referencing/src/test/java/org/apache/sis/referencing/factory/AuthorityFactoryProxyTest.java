@@ -44,8 +44,8 @@ import static org.junit.Assert.*;
  * This test uses {@link CommonAuthorityFactory} as a simple factory implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @DependsOn(CommonAuthorityFactoryTest.class)

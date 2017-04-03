@@ -29,8 +29,8 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * Collection of coordinate systems for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public final strictfp class HardCodedCS {

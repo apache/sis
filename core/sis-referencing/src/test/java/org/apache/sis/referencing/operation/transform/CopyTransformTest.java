@@ -33,8 +33,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Also opportunistically tests consistency with {@link ProjectiveTransform}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.7
+ * @since   0.5
  * @module
  */
 @DependsOn({

@@ -31,8 +31,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link DefaultPropertyName}.
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final strictfp class DefaultPropertyNameTest extends TestCase {

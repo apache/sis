@@ -31,8 +31,8 @@ import static org.junit.Assert.*;
  * Tests {@link StringAdapter}
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public final strictfp class StringAdapterTest extends TestCase {

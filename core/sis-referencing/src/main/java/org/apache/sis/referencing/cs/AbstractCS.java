@@ -64,12 +64,13 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
- * @module
  *
  * @see DefaultCoordinateSystemAxis
  * @see org.apache.sis.referencing.crs.AbstractCRS
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "AbstractCoordinateSystemType")
 @XmlRootElement(name = "AbstractCoordinateSystem")

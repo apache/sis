@@ -44,8 +44,8 @@ import org.apache.sis.internal.system.Loggers;
  * the {@code CachedStatement} instance. This object is closed by a background thread of {@link Tables}.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class CachedStatement implements AutoCloseable {

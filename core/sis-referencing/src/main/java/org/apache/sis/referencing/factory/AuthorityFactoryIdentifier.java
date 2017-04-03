@@ -40,8 +40,8 @@ import org.apache.sis.internal.referencing.Resources;
  * Identification of an authority factory by its type, namespace and version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 final class AuthorityFactoryIdentifier {
@@ -85,7 +85,7 @@ final class AuthorityFactoryIdentifier {
      * The interfaces or abstract base classes for the above constants.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static final Class<? extends AuthorityFactory> TYPES[] = new Class[6];
+    private static final Class<? extends AuthorityFactory>[] TYPES = new Class[6];
     static {
         TYPES[CRS]       = CRSAuthorityFactory.class;
         TYPES[CS]        = CSAuthorityFactory.class;

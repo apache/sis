@@ -24,8 +24,8 @@ import java.text.Format;
  * Base class of format fields.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 class FormatField extends Format.Field {

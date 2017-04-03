@@ -36,8 +36,8 @@ import org.apache.sis.xml.XLink;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @XmlType(name = "Anchor_Type")

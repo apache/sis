@@ -28,8 +28,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListUID;
  * of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {

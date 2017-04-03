@@ -38,8 +38,8 @@ import static org.junit.Assume.*;
  * Compares the {@link Codes} elements with the EPSG geodetic database.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final strictfp class CodesTest extends TestCase {

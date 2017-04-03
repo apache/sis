@@ -26,8 +26,8 @@ import org.apache.sis.util.CharSequences;
  * that can not (to our knowledge) be inferred from the {@link DatabaseMetaData}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 enum Dialect {

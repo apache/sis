@@ -99,11 +99,12 @@ import org.apache.sis.util.ArgumentChecks;
  * }
  *
  * @author  Martin Desruisseaux
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see TreeTable
+ *
+ * @since 0.3
+ * @module
  */
 public final class TreeTables extends Static {
     /**

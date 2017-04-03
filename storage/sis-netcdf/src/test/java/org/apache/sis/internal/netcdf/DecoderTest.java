@@ -33,8 +33,8 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * {@link #createDecoder(String)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public strictfp class DecoderTest extends TestCase {

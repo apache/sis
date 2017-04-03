@@ -26,8 +26,8 @@ import static org.apache.sis.internal.util.DefinitionURI.regionMatches;
  * Utility methods related to x-paths.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public final class XPaths extends Static {

@@ -422,7 +422,7 @@ public class QuadTree {
    *         point
    */
   public List<QuadTreeData> queryByBoundingBox(final Envelope2D searchRegion) {
-    Rectangle2D.Double rectArray[] = searchRegion.toRectangles();
+    Rectangle2D.Double[] rectArray = searchRegion.toRectangles();
     for (final Rectangle2D.Double r : rectArray) {
         r.x += 180;
         r.y += 90;

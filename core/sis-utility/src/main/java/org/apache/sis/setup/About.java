@@ -80,8 +80,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public enum About {
@@ -597,7 +597,7 @@ pathTree:   for (int j=0; ; j++) {
             }
             final File file = entry.getKey();
             if (file.isFile() && file.canRead()) {
-                try (final JarFile jar = new JarFile(file)) {
+                try (JarFile jar = new JarFile(file)) {
                     final Manifest manifest = jar.getManifest();
                     if (manifest != null) {
                         final Attributes attributes = manifest.getMainAttributes();

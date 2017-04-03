@@ -85,16 +85,17 @@ import org.apache.sis.internal.storage.Resources;
  * If this condition does not hold, then synchronization (if desired) is caller's responsibility.
  * The caller is typically the {@code DataStore} implementation which contains this {@code FeatureNaming} instance.
  *
- * @param <E> the type of elements associated with the names.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
- * @module
+ *
+ * @param <E>  the type of elements associated with the names.
  *
  * @see org.apache.sis.util.iso.AbstractName
  * @see org.apache.sis.feature.DefaultFeatureType
  * @see org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo
+ *
+ * @since 0.8
+ * @module
  */
 public class FeatureNaming<E> {
     /**

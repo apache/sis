@@ -53,8 +53,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * Miscellaneous utility methods for test cases.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final strictfp class TestUtilities extends Static {
@@ -459,7 +459,7 @@ public final strictfp class TestUtilities extends Static {
      */
     public static SeekableByteChannel createTemporaryFile(final Class<?> caller, final String resource) throws IOException {
         final SeekableByteChannel channel;
-        try (final ReadableByteChannel in = Channels.newChannel(caller.getResourceAsStream(resource))) {
+        try (ReadableByteChannel in = Channels.newChannel(caller.getResourceAsStream(resource))) {
             final int s = resource.lastIndexOf('.');
             final Path file = Files.createTempFile("SIS", (s >= 0) ? resource.substring(s) : null);
             channel = Files.newByteChannel(file, StandardOpenOption.DELETE_ON_CLOSE,

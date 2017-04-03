@@ -159,11 +159,12 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Adrian Custer (Geomatys)
- * @since   0.6
  * @version 0.8
- * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list">Projections list on RemoteSensing.org</a>
  * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
+ *
+ * @since 0.6
+ * @module
  */
 package org.apache.sis.referencing.operation.projection;

@@ -42,8 +42,8 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * file for more information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 @Mojo(name = "pack", defaultPhase = LifecyclePhase.INSTALL)
@@ -60,6 +60,12 @@ public class BundleCreator extends AbstractMojo {
      */
     @Parameter(property="session.executionRootDirectory", required=true)
     private String rootDirectory;
+
+    /**
+     * Invoked by reflection for creating the MOJO.
+     */
+    public BundleCreator() {
+    }
 
     /**
      * Creates the Pack200 file from the JAR files collected in the "<code>target/binaries</code>" directory.

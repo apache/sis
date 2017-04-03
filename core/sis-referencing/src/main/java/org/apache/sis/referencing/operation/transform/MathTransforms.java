@@ -51,11 +51,12 @@ import org.apache.sis.util.Static;
  * GeoAPI factory interfaces instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.7
- * @module
  *
  * @see MathTransformFactory
+ *
+ * @since 0.5
+ * @module
  */
 public final class MathTransforms extends Static {
     /**

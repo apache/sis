@@ -101,8 +101,8 @@ import java.util.function.Function;
  * @author  Martin Desruisseaux (IRD)
  * @author  Didier Richard (IGN)
  * @author  John Grange
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public class SQLTranslator implements Function<String,String> {

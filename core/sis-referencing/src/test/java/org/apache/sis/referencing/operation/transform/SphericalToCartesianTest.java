@@ -34,8 +34,8 @@ import org.junit.Test;
  * Tests {@link SphericalToCartesian}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final strictfp class SphericalToCartesianTest extends TransformTestCase {

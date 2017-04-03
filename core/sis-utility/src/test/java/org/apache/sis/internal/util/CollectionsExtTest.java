@@ -41,8 +41,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link CollectionsExt} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final strictfp class CollectionsExtTest extends TestCase {

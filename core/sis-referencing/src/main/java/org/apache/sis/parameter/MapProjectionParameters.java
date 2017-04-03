@@ -41,8 +41,8 @@ import static org.apache.sis.metadata.iso.citation.Citations.NETCDF;
  * parameters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 final class MapProjectionParameters extends DefaultParameterValueGroup {

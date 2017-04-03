@@ -70,12 +70,13 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
  *
  * @see XMLTestCase
  * @see Assert#assertXmlEquals(Object, Object, String[])
+ *
+ * @since 0.3
+ * @module
  */
 public strictfp class XMLComparator {
     /**

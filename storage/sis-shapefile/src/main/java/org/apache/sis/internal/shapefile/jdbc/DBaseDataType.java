@@ -21,11 +21,12 @@ package org.apache.sis.internal.shapefile.jdbc;
  * Provides a simple DataType class.
  *
  * @author  Travis L. Pinney
- * @since   0.5
  * @version 0.5
- * @module
  *
  * @see <a href="http://www.clicketyclick.dk/databases/xbase/format/data_types.html">Xbase Data Types</a>
+ *
+ * @since 0.5
+ * @module
  */
 public enum DBaseDataType {
     /** Character (less than 254 characters). */

@@ -46,11 +46,12 @@ import org.apache.sis.util.Workaround;
  * The main purpose of this class is to support transparently the NetCDF ways to express some parameter values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/reference/StandardCoordinateTransforms.html">NetCDF projection parameters</a>
+ *
+ * @since 0.6
+ * @module
  */
 @XmlTransient
 final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {

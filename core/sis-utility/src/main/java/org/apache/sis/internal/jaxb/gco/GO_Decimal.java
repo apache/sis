@@ -35,12 +35,13 @@ import javax.xml.bind.annotation.XmlType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see GO_Real
  * @see GO_Decimal32
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "Decimal_PropertyType")
 public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {

@@ -37,8 +37,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * constructor required by JAXB.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 public final class NilReferencingObject implements NilObject, ReferenceSystem {

@@ -65,11 +65,12 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
- * @module
  *
  * @see DefaultResolution#getEquivalentScale()
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "MD_RepresentativeFraction_Type")
 @XmlRootElement(name = "MD_RepresentativeFraction")
@@ -276,9 +277,9 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Makes this representative fraction unmodifiable. After invocation to this method,
      * any call to a setter method will throw an {@link UnmodifiableMetadataException}.
      *
-     * @since 0.7
-     *
      * @see org.apache.sis.metadata.ModifiableMetadata#freeze()
+     *
+     * @since 0.7
      */
     public void freeze() {
         isUnmodifiable = true;

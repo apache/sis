@@ -29,8 +29,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class LE_Algorithm extends PropertyType<LE_Algorithm, Algorithm> {
