@@ -97,7 +97,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
 
     /**
      * Tests the {@link AbstractIdentifiedObject#AbstractIdentifiedObject(Map)} constructor without name.
-     * This is invalid and should thrown an exception.
+     * This is invalid and should throw an exception.
      */
     @Test
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
