@@ -76,17 +76,18 @@ import org.apache.sis.util.collection.WeakHashSet;
  * given to {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor parameter descriptor}.
  * Other methods do not check for shared instances, since the created object is often temporary.</p>
  *
- * @param <E> The type of range elements as a subclass of {@link Number}.
- *
  * @author  Martin Desruisseaux (IRD)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @since   0.3
  * @version 0.5
- * @module
+ *
+ * @param <E>  the type of range elements as a subclass of {@link Number}.
  *
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
  * @see <a href="http://en.wikipedia.org/wiki/Interval_%28mathematics%29">Wikipedia: Interval</a>
+ *
+ * @since 0.3
+ * @module
  */
 public class NumberRange<E extends Number & Comparable<? super E>> extends Range<E> {
     /**

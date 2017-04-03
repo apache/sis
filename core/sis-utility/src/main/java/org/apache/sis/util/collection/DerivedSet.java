@@ -53,12 +53,13 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
  * If the storage set is known to be immutable, then sub-classes may consider to cache some values,
  * especially the result of the {@link #size()} method.
  *
- * @param  <S>  the type of elements in the storage set.
- * @param  <E>  the type of elements in this set.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ *
+ * @param <S>  the type of elements in the storage set.
+ * @param <E>  the type of elements in this set.
+ *
+ * @since 0.3
  * @module
  */
 class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>, Serializable {
@@ -171,8 +172,8 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
      * allows us to delegate the {@link #contains(Object)} and {@linkplain #remove(Object)}
      * operations to the {@linkplain #storage} set instead than iterating over all elements.
      *
-     * @param  <S>  the type of elements in the storage set.
-     * @param  <E>  the type of elements in this set.
+     * @param <S>  the type of elements in the storage set.
+     * @param <E>  the type of elements in this set.
      */
     private static class Invertible<S,E> extends DerivedSet<S,E> {
         /**
@@ -248,8 +249,8 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
      * The bijection allows us to query the {@linkplain #storage} set size directly
      * instead than iterating over all elements.
      *
-     * @param  <S>  the type of elements in the storage set.
-     * @param  <E>  the type of elements in this set.
+     * @param <S>  the type of elements in the storage set.
+     * @param <E>  the type of elements in this set.
      */
     private static final class Bijective<S,E> extends Invertible<S,E> {
         /**

@@ -79,11 +79,12 @@ import org.apache.sis.util.collection.CodeListSet;
  * static methods in each {@code AbstractMetadata} subclass are sometime sufficient.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
- * @module
  *
  * @see ModifiableMetadata#unmodifiable()
+ *
+ * @since 0.8
+ * @module
 */
 public class MetadataCopier {
     /**

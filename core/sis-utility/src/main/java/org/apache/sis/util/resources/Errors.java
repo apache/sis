@@ -36,8 +36,8 @@ import org.opengis.util.InternationalString;
  * as they want.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final class Errors extends IndexedResourceBundle {

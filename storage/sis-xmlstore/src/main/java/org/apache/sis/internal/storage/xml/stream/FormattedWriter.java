@@ -35,8 +35,8 @@ import org.apache.sis.internal.util.StreamWriterDelegate;
  * (for taking in account the indentation of the elements containing the fragment to marshal with JAXB).</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class FormattedWriter extends StreamWriterDelegate {

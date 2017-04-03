@@ -41,8 +41,8 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link Types} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.6
+ * @since   0.3
  * @module
  */
 public final strictfp class TypesTest extends TestCase {

@@ -32,8 +32,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the XML marshaling of {@link PT_Locale}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final strictfp class PT_LocaleTest extends XMLTestCase {

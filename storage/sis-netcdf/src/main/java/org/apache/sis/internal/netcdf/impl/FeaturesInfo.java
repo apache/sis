@@ -32,8 +32,8 @@ import ucar.nc2.constants.CF;
  * NetCDF files encoded as specified in the OGC 16-114 (OGC Moving Features Encoding Extension: NetCDF) specification.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class FeaturesInfo extends DiscreteSampling {

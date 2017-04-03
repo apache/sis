@@ -44,8 +44,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")                 // ModifiableMetadata needs shallow clones.

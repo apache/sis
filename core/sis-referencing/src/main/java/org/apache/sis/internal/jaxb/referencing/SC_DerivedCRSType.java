@@ -27,8 +27,8 @@ import javax.xml.bind.annotation.XmlValue;
  * so we reconstruct in this adapter what would be marshalled if we had that code list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final class SC_DerivedCRSType {

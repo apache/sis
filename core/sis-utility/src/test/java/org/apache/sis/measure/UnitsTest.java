@@ -42,8 +42,8 @@ import static org.apache.sis.test.Assert.*;
  * Test conversions using the units declared in {@link Units}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 @DependsOn({

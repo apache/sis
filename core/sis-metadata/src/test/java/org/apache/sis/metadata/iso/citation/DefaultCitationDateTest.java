@@ -30,8 +30,8 @@ import static org.junit.Assert.*;
  * Tests {@link DefaultCitationDate}, especially the copy constructor.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class DefaultCitationDateTest extends TestCase {

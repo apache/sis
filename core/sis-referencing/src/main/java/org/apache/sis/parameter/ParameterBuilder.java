@@ -104,8 +104,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 public class ParameterBuilder extends Builder<ParameterBuilder> {

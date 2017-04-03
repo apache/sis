@@ -40,8 +40,8 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
  * path in a JUnit test.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public strictfp class MathTransformWrapper extends FormattableObject implements MathTransform, Serializable {

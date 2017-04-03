@@ -53,8 +53,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests {@link CommonAuthorityFactory}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @DependsOn(org.apache.sis.referencing.CommonCRSTest.class)

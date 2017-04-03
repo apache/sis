@@ -21,8 +21,8 @@ package org.apache.sis.metadata.sql;
  * Interface for metadata that are implemented by a proxy class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 interface MetadataProxy {

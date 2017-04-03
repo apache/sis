@@ -23,11 +23,12 @@ import org.apache.sis.util.Version;
  * Legacy XML namespaces, and {@link Version} constants for identifying when those namespaces were used.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see org.apache.sis.xml.Namespaces
+ *
+ * @since 0.4
+ * @module
  */
 public final class LegacyNamespaces {
     /**

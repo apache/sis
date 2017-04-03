@@ -61,11 +61,12 @@ import org.apache.sis.util.Classes;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
- * @module
  *
  * @see org.apache.sis.internal.jaxb.AdapterReplacement
+ *
+ * @since 0.3
+ * @module
  */
 public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
     /**

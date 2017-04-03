@@ -64,8 +64,8 @@ import org.opengis.metadata.Identifier;
  * first, no HTML characters to escape in non-EPSG identifiers, etc.).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 public strictfp class CoordinateOperationMethods extends HTMLGenerator {
@@ -94,7 +94,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
                 return c;
             }
         });
-        try (final CoordinateOperationMethods writer = new CoordinateOperationMethods()) {
+        try (CoordinateOperationMethods writer = new CoordinateOperationMethods()) {
             writer.writeIndex(methods);
             for (final OperationMethod method : methods) {
                 writer.write(method);

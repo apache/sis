@@ -57,8 +57,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * We need to be specific in order to select the right "aspect" of the given object.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public final class WKTUtilities extends Static {

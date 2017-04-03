@@ -33,8 +33,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * Miscellaneous utilities methods working on floating point numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final class Numerics extends Static {

@@ -29,17 +29,18 @@ import java.util.Iterator;
  * The map values depend on the actual {@code PropertyMap} subclasses; they may be
  * property values, property classes or property information.
  *
- * @param <V> The type of values in the map.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
+ *
+ * @param <V>  the type of values in the map.
  *
  * @see ValueMap
  * @see NameMap
  * @see TypeMap
  * @see InformationMap
+ *
+ * @since 0.3
+ * @module
  */
 abstract class PropertyMap<V> extends AbstractMap<String,V> {
     /**
@@ -112,8 +113,8 @@ abstract class PropertyMap<V> extends AbstractMap<String,V> {
      * The iterator over the elements contained in a {@link Entries} set.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     abstract class Iter implements Iterator<Map.Entry<String,V>> {
@@ -152,8 +153,8 @@ abstract class PropertyMap<V> extends AbstractMap<String,V> {
      * Base class of views of the entries contained in the map.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     class Entries extends AbstractSet<Map.Entry<String,V>> {

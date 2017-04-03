@@ -59,12 +59,13 @@ import org.apache.sis.util.CharSequences;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
- * @module
  *
  * @see XML
  * @see <a href="http://jaxb.java.net/guide/Performance_and_thread_safety.html">JAXB Performance and thread-safety</a>
+ *
+ * @since 0.3
+ * @module
  */
 public class MarshallerPool {
     /**

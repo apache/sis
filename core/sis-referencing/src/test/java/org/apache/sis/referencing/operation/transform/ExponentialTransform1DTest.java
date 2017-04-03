@@ -38,8 +38,8 @@ import org.opengis.test.ToleranceModifiers;
  * {@link LogarithmicTransform1DTest}, since one transform is the inverse of the other.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn({

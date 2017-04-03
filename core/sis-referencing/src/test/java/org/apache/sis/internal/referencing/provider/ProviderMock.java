@@ -33,8 +33,8 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
  * <p>Subclasses may be promoted to a real operation if we implement their formulas in a future Apache SIS version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 @SuppressWarnings("serial")

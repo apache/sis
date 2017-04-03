@@ -26,8 +26,8 @@ import org.apache.sis.util.Numbers;
  * A vector which is the concatenation of two other vectors.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class ConcatenatedVector extends Vector implements Serializable {

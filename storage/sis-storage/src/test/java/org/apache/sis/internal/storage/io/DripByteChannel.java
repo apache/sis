@@ -31,8 +31,8 @@ import static java.lang.StrictMath.min;
  * from the socket's input buffer.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final strictfp class DripByteChannel implements ReadableByteChannel {

@@ -58,8 +58,8 @@ import org.apache.sis.util.Debug;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 @XmlTransient

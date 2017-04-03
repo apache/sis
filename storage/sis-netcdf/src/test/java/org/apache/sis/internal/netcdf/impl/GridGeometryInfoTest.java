@@ -31,8 +31,8 @@ import org.apache.sis.test.DependsOn;
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn({VariableInfoTest.class, GridGeometryTest.class})

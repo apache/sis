@@ -30,8 +30,8 @@ import java.io.IOException;
  * the Java default {@code .class} or {@code .properties} files.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class Loader extends ResourceBundle.Control {

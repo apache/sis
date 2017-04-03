@@ -43,8 +43,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link DefaultConcatenatedOperation} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @DependsOn({

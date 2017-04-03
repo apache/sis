@@ -34,8 +34,8 @@ import org.apache.sis.internal.book.CodeColorizer;
  * we can't use that character directly inside this taglet.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class Preformat extends InlineTaglet {
@@ -44,7 +44,7 @@ public final class Preformat extends InlineTaglet {
      * conform to the Java convention for enumeration constants, because we will use {@link Enum#name()}
      * for getting the string to look for after {@code preformat}.
      */
-    private static enum Style {
+    private enum Style {
         java, math, wkt, xml, sql, shell, text
     }
 
@@ -173,7 +173,7 @@ all:    while (tk.hasMoreTokens()) {
      * Adds syntactic coloration for the given line.
      */
     private static void colorJava(final String line, final StringBuilder buffer) {
-        char quote = 0; // The kind of quoting in progress (" or ').
+        char quote = 0;                             // The kind of quoting in progress (" or ').
         final int length = line.length();
         for (int i=0; i<length; i++) {
             final char c = line.charAt(i);

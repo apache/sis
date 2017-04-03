@@ -55,8 +55,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * A row in the table to be formatted by {@link ParameterFormat}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.6
+ * @since   0.4
  * @module
  */
 final class ParameterTableRow {

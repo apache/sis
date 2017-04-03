@@ -89,12 +89,13 @@ import org.apache.sis.internal.util.LocalizedParseException;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
- * @module
  *
  * @see Range#toString()
  * @see <a href="http://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
+ *
+ * @since 0.3
+ * @module
  */
 public class RangeFormat extends Format {
     /**
@@ -128,8 +129,8 @@ public class RangeFormat extends Format {
      * {@link RangeFormat#formatToCharacterIterator(Object)}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     public static final class Field extends FormatField {

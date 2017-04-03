@@ -26,8 +26,8 @@ import java.util.StringTokenizer;
  * This class is for internal purpose only and may change or be removed in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class SQLBuilder {

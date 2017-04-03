@@ -54,8 +54,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests XML (un)marshalling of single operations (conversions and transformations).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 @DependsOn({

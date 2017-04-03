@@ -55,8 +55,8 @@ import org.apache.sis.internal.jaxb.Context;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 final class PooledUnmarshaller extends Pooled implements Unmarshaller {
@@ -178,7 +178,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public Object unmarshal(final URL input) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            try (final InputStream s = input.openStream()) {
+            try (InputStream s = input.openStream()) {
                 return unmarshal(InputFactory.createXMLStreamReader(s), version);
             }
         } catch (IOException | XMLStreamException e) {
@@ -200,7 +200,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     public Object unmarshal(final File input) throws JAXBException {
         final FilterVersion version = getFilterVersion();
         if (version != null) try {
-            try (final InputStream s = new BufferedInputStream(new FileInputStream(input))) {
+            try (InputStream s = new BufferedInputStream(new FileInputStream(input))) {
                 return unmarshal(InputFactory.createXMLStreamReader(s), version);
             }
         } catch (IOException | XMLStreamException e) {

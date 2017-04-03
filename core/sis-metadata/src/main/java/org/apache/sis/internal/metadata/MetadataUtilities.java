@@ -31,8 +31,8 @@ import org.apache.sis.internal.util.Utilities;
  * Miscellaneous utility methods for metadata.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final class MetadataUtilities extends Static {

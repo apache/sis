@@ -41,8 +41,8 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * Tests the {@link DefaultPrimeMeridian} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)

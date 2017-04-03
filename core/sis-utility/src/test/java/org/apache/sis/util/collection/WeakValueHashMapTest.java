@@ -35,8 +35,8 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  * A standard {@link HashMap} object is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.util.ArraysExtTest.class)

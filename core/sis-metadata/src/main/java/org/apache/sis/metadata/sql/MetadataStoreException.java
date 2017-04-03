@@ -20,13 +20,13 @@ import org.opengis.util.FactoryException;
 
 
 /**
- * Throws when a metadata access failed.
+ * Thrown when a metadata access failed.
  * The cause for this exception is typically a {@link java.sql.SQLException}.
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class MetadataStoreException extends FactoryException {

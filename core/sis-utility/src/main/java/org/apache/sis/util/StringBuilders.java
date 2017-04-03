@@ -34,11 +34,12 @@ import static java.lang.Character.*;
  * the <cite>Basic Multilingual Plane</cite> (BMP).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
- * @module
  *
  * @see CharSequences
+ *
+ * @since 0.3
+ * @module
  */
 public final class StringBuilders extends Static {
     /**

@@ -33,8 +33,8 @@ import org.apache.sis.internal.jdk8.Instant;
  * except in the special case of {@link #ABSOLUTE} encoding.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 class TimeEncoding extends SurjectiveConverter<String,Instant> {

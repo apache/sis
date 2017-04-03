@@ -32,8 +32,8 @@ import org.opengis.feature.InvalidPropertyValueException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.5
  * @version 0.7
+ * @since   0.5
  * @module
  */
 @DependsOn(SingletonAttributeTest.class)

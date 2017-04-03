@@ -96,8 +96,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public final class Types extends Static {
@@ -346,8 +346,8 @@ public final class Types extends Static {
      * The {@link InternationalString} returned by the {@code Types.getDescription(…)} methods.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private static class Description extends ResourceInternationalString {
@@ -422,8 +422,8 @@ public final class Types extends Static {
      * If this method is updated, please update {@code CodeListUID(CodeList)} accordingly.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private static final class CodeTitle extends Description {
@@ -655,9 +655,9 @@ public final class Types extends Static {
      * @param  title  the title for which to get a code or enumeration value, or {@code null}.
      * @return the code or enumeration value associated with the given title, or {@code null}.
      *
-     * @since 0.7
-     *
      * @see #getCodeTitle(ControlledVocabulary)
+     *
+     * @since 0.7
      */
     public static ControlledVocabulary forCodeTitle(final CharSequence title) {
         return (title instanceof CodeTitle) ? ((CodeTitle) title).code : null;

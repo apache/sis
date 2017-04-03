@@ -30,12 +30,13 @@ import static org.apache.sis.test.Assert.*;
  * Tests the XML marshalling of {@code FreeText}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-107">GEOTK-107</a>
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
+ *
+ * @since 0.3
+ * @module
  */
 public final strictfp class FreeTextMarshallingTest extends XMLTestCase {
     /**

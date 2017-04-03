@@ -39,8 +39,8 @@ import static org.junit.Assert.*;
  * <p>This class is <strong>not</strong> thread safe - do not run subclasses in parallel.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public abstract strictfp class TestCase extends IOTestCase {

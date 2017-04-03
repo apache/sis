@@ -34,8 +34,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link AbstractCS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.5
+ * @since   0.4
  * @module
  */
 @DependsOn({

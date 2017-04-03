@@ -45,15 +45,16 @@ import org.apache.sis.util.resources.Errors;
  * Subclasses may or may not be immutable, at implementation choice. But implementors are
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
  *
- * @param  <E>  the type of range elements as a subclass of {@link Number}.
- *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3
  * @version 0.6
- * @module
+ *
+ * @param <E>  the type of range elements as a subclass of {@link Number}.
  *
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
+ *
+ * @since 0.3
+ * @module
  */
 public class MeasurementRange<E extends Number & Comparable<? super E>> extends NumberRange<E> {
     /**

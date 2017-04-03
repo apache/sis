@@ -28,8 +28,8 @@ import static java.util.Collections.singletonMap;
  * See {@link FilteredNamespaces} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 enum FilterVersion {

@@ -79,8 +79,8 @@ import org.opengis.util.InternationalString;
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class SimpleMetadata implements Metadata, MetadataScope, DataIdentification, Citation {

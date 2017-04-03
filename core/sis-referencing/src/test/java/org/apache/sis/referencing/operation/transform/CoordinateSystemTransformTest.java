@@ -41,8 +41,8 @@ import org.junit.Test;
  * Tests the {@link CoordinateSystemTransform} static factory method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 @DependsOn({

@@ -29,8 +29,8 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * {@code if (x instanceof DefaultParameterValueGroup)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @SuppressWarnings("CloneInNonCloneableClass")

@@ -30,8 +30,8 @@ import org.apache.sis.internal.util.StreamWriterDelegate;
  * See {@link FilteredNamespaces} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 final class FilteredStreamWriter extends StreamWriterDelegate {

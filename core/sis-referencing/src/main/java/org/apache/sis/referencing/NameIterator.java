@@ -38,8 +38,8 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  * <p>This class also opportunistically provide helper methods for {@link AbstractIdentifiedObject} marshalling.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 final class NameIterator implements Iterator<Identifier> {

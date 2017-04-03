@@ -36,8 +36,8 @@ package org.apache.sis.util;
  * {@code isEmpty()} methods when the caller need to check for both {@code Collection} and {@code Emptiable} interfaces.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public interface Emptiable {

@@ -49,8 +49,8 @@ import org.junit.runner.RunWith;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 @RunWith(TestRunner.class)

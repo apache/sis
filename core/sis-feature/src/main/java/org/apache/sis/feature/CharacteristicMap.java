@@ -36,8 +36,8 @@ import org.opengis.feature.PropertyNotFoundException;
  * This map holds only the attribute characteristics which have been explicitely set or requested.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
 final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implements Cloneable {

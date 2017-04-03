@@ -79,12 +79,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.8
- * @module
  *
  * @see DefaultMathTransformFactory
  * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
+ *
+ * @since 0.5
+ * @module
  */
 public abstract class AbstractMathTransform extends FormattableObject
         implements MathTransform, Parameterized, LenientComparable
@@ -991,8 +992,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * running the same SIS version.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.5
      * @version 0.6
+     * @since   0.5
      * @module
      */
     protected abstract class Inverse extends AbstractMathTransform implements Serializable {

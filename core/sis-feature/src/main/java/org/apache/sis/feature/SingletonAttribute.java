@@ -36,15 +36,16 @@ import org.opengis.feature.AttributeType;
  *       the attribute is cloned, but not its {@linkplain #getValue() value}.</li>
  * </ul>
  *
- * @param  <V>  the type of the attribute value.
- *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
- * @module
+ *
+ * @param <V>  the type of the attribute value.
  *
  * @see DefaultAttributeType
+ *
+ * @since 0.5
+ * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")     // Nothing to add compared to subclass.
 final class SingletonAttribute<V> extends AbstractAttribute<V> implements Cloneable {

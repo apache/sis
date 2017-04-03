@@ -30,8 +30,8 @@ import static org.opengis.test.Assert.*;
  * Tests {@link DefaultSphericalCS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 @DependsOn(AbstractCSTest.class)

@@ -137,14 +137,15 @@ import org.apache.sis.util.resources.Errors;
  *   Matrix m = TensorParameters.WKT1.toMatrix(p);
  * }
  *
- * @param <E> The type of tensor element values.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.6
- * @module
+ *
+ * @param <E>  the type of tensor element values.
  *
  * @see org.apache.sis.referencing.operation.matrix.Matrices
+ *
+ * @since 0.4
+ * @module
  */
 public class TensorParameters<E> implements Serializable {
     /**

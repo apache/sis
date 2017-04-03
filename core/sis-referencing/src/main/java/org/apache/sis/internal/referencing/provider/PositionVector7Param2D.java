@@ -24,8 +24,8 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * The provider for <cite>"Position Vector transformation (geog2D domain)"</cite> (EPSG:9606).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @XmlTransient

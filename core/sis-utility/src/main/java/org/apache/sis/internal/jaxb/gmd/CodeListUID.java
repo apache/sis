@@ -41,11 +41,12 @@ import org.apache.sis.internal.jaxb.Schemas;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
- * @module
  *
  * @see CodeListAdapter
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "CodeList", propOrder = {"codeList", "codeListValue", "codeSpace"})
 public final class CodeListUID {

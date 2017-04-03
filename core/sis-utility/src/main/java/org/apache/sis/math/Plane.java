@@ -48,12 +48,13 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * @author  Martin Desruisseaux (MPO, IRD)
  * @author  Howard Freeland (MPO, for algorithmic inspiration)
- * @since   0.5
  * @version 0.8
- * @module
  *
  * @see Line
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
+ *
+ * @since 0.5
+ * @module
  */
 public class Plane implements Cloneable, Serializable {
     /**

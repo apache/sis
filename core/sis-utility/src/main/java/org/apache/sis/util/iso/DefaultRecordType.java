@@ -86,13 +86,14 @@ import org.apache.sis.internal.converter.SurjectiveConverter;
  * so users wanting serialization may need to provide their own schema.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.5
- * @module
  *
  * @see DefaultRecord
  * @see DefaultRecordSchema
  * @see DefaultMemberName
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "RecordType")
 public class DefaultRecordType extends RecordDefinition implements RecordType, Serializable {
@@ -233,11 +234,11 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     /**
      * Invoked on serialization for writing the member names and their type.
      *
-     * @serialData the number of members as an {@code int}, followed by a
-     *             ({@code MemberName}, {@code Type}) pair for each member.
-     *
      * @param  out  the output stream where to serialize this object.
      * @throws IOException if an I/O error occurred while writing.
+     *
+     * @serialData the number of members as an {@code int}, followed by a
+     *             ({@code MemberName}, {@code Type}) pair for each member.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         final int size = size();

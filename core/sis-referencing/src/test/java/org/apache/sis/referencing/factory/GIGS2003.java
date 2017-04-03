@@ -37,8 +37,8 @@ import org.apache.sis.test.DependsOn;
  * package-private methods in {@link ConcurrentAuthorityFactory}, and for keeping all GIGS tests together.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 @DependsOn({

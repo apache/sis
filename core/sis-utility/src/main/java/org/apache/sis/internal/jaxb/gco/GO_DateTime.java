@@ -35,12 +35,13 @@ import org.apache.sis.internal.jaxb.XmlUtilities;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
  *
  * @see org.apache.sis.internal.jaxb.gml.DateAdapter
  * @see org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "Date_PropertyType")
 public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {

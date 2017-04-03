@@ -31,8 +31,8 @@ import org.apache.sis.measure.Units;
  * <p>This class may be promoted to a real operation if we implement the formulas in a future Apache SIS version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 @SuppressWarnings("serial")

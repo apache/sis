@@ -28,8 +28,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListUID;
  * the handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class CI_PresentationFormCode extends CodeListAdapter<CI_PresentationFormCode, PresentationForm> {

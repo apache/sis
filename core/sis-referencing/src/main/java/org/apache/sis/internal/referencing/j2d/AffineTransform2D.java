@@ -48,11 +48,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * the {@link #equals(Object) equals} method, hopefully to occur only in exceptional corner cases.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.7
- * @module
  *
  * @see ProjectiveTransform
+ *
+ * @since 0.5
+ * @module
  */
 public class AffineTransform2D extends ImmutableAffineTransform
         implements LinearTransform2D, LenientComparable, Parameterized

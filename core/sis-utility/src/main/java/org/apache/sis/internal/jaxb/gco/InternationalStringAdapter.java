@@ -30,8 +30,8 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class InternationalStringAdapter extends XmlAdapter<GO_CharacterString, InternationalString> {

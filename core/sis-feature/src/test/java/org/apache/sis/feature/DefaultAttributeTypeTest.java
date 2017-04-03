@@ -36,8 +36,8 @@ import static org.apache.sis.test.Assert.*;
  * Characteristics are tested by {@link CharacteristicTypeMapTest} instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final strictfp class DefaultAttributeTypeTest extends TestCase {

@@ -53,12 +53,13 @@ import org.opengis.feature.FeatureAssociationRole;
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
- * @module
  *
  * @see DefaultFeatureType
  * @see AbstractAssociation
+ *
+ * @since 0.5
+ * @module
  */
 public class DefaultAssociationRole extends FieldType implements FeatureAssociationRole {
     /**
@@ -80,7 +81,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      *
      * @see #getTitleProperty()
      */
-    private volatile transient String titleProperty;
+    private transient volatile String titleProperty;
 
     /**
      * Constructs an association to the given feature type. The properties map is given unchanged to

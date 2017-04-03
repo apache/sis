@@ -112,8 +112,8 @@ import org.apache.sis.internal.metadata.sql.TestDatabase;
  * </ol>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 public final class EPSGDataFormatter extends ScriptRunner {
@@ -243,9 +243,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
             throw new IllegalArgumentException("Input and output files are the same.");
         }
         out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), StandardCharsets.ISO_8859_1));
-        try (final LineNumberReader in = new LineNumberReader(
-                new InputStreamReader(new FileInputStream(inputFile), StandardCharsets.ISO_8859_1)))
-        {
+        try (LineNumberReader in = new LineNumberReader(new InputStreamReader(new FileInputStream(inputFile), StandardCharsets.ISO_8859_1))) {
             out.write("---\n" +
                       "---    Copyright International Association of Oil and Gas Producers (IOGP)\n" +
                       "---    See  http://www.epsg.org/TermsOfUse  (a copy is in ./LICENSE.txt).\n" +

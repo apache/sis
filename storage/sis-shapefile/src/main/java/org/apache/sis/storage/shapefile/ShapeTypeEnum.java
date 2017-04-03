@@ -25,11 +25,12 @@ import java.util.Map;
  * Provides a ShapefileType Enumeration
  *
  * @author  Travis L. Pinney
- * @since   0.5
  * @version 0.5
- * @module
  *
  * @see <a href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">ESRI Shapefile Specification</a>
+ *
+ * @since 0.5
+ * @module
  */
 public enum ShapeTypeEnum  {
 

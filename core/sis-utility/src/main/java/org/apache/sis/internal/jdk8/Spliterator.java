@@ -22,26 +22,26 @@ package org.apache.sis.internal.jdk8;
  *
  * @param <T> type of values on which to iterate.
  */
-public abstract interface Spliterator<T> {
+public interface Spliterator<T> {
     /**
      * Flag for iterators that return only distinct values.
      */
-    public static final int DISTINCT = 0x1;
+    int DISTINCT = 0x1;
 
     /**
      * Flag for iterators that return the values in some specified order.
      */
-    public static final int ORDERED = 0x10;
+    int ORDERED = 0x10;
 
     /**
      * Flag for iterators that do not return null values.
      */
-    public static final int NONNULL = 0x100;
+    int NONNULL = 0x100;
 
     /**
      * Flag telling that no element addition, replacement or removal will happen during iteration.
      */
-    public static final int IMMUTABLE  = 0x400;
+    int IMMUTABLE  = 0x400;
 
     /**
      * Performs the given action on it on the next element, if it exists.
@@ -49,33 +49,33 @@ public abstract interface Spliterator<T> {
      * @param  action  the action to execute.
      * @return whether an element existed.
      */
-    public abstract boolean tryAdvance(Consumer<? super T> action);
+    boolean tryAdvance(Consumer<? super T> action);
 
     /**
      * Performs the given action on all remaining elements.
      *
      * @param  action  the action to execute.
      */
-    public abstract void forEachRemaining(Consumer<? super T> action);
+    void forEachRemaining(Consumer<? super T> action);
 
     /**
      * Partitions this iterator if possible.
      *
      * @return an iterator over part of the elements, or {@code null}.
      */
-    public abstract Spliterator<T> trySplit();
+    Spliterator<T> trySplit();
 
     /**
      * Returns an estimation of the amount of remaining elements.
      *
      * @return remaining elements count estimation.
      */
-    public abstract long estimateSize();
+    long estimateSize();
 
     /**
      * Returns a mask about whether the iterator is concurrent, etc.
      *
      * @return mask of the flags defined above.
      */
-    public abstract int characteristics();
+    int characteristics();
 }

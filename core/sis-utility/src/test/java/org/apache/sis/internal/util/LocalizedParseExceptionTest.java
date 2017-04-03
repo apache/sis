@@ -33,8 +33,8 @@ import static org.junit.Assert.*;
  * Tests the {@link LocalizedParseException} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(org.apache.sis.util.resources.IndexedResourceBundleTest.class)

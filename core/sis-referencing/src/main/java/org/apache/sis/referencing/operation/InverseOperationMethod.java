@@ -44,8 +44,8 @@ import org.apache.sis.util.Deprecable;
  * for the inverse, or when the inverse operation can not be represented by inverting the sign of parameters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 @XmlTransient

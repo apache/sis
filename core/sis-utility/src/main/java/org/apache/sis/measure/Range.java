@@ -77,17 +77,18 @@ import org.apache.sis.util.Numbers;
  * and thus inherently thread-safe. Other subclasses may or may not be immutable, at implementation choice.
  * But implementors are encouraged to make sure that all subclasses remain immutable for more predictable behavior.
  *
- * @param  <E>  the type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
- *
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @since   0.3
  * @version 0.8
- * @module
+ *
+ * @param <E>  the type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
+ *
+ * @since 0.3
+ * @module
  */
 public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Emptiable, Serializable {
     /**

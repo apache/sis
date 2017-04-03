@@ -33,8 +33,8 @@ import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
  * Utilities methods related to XML.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class XmlUtilities extends SystemListener {

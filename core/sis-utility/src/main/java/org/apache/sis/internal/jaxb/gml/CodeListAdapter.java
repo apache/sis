@@ -25,12 +25,13 @@ import org.apache.sis.util.iso.Types;
  * JAXB adapter for GML code lists, in order to integrate the value in an element
  * complying with GML standard. A subclass shall exist for each code list.
  *
- * @param <BoundType> The code list being wrapped.
- *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <BoundType>  the code list being wrapped.
+ *
+ * @since 0.3
  * @module
  */
 public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> extends XmlAdapter<CodeListUID,BoundType> {

@@ -33,8 +33,8 @@ import org.junit.runners.MethodSorters;
  * {@code GIGS3004} tests also geographic and geocentric CRS creations with the tested geodetic datum.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn({

@@ -41,12 +41,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.5
- * @module
  *
  * @see DefaultOperationMethod
  * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
+ *
+ * @since 0.5
+ * @module
  */
 public class DefaultFormula extends FormattableObject implements Formula, Serializable {
     /**

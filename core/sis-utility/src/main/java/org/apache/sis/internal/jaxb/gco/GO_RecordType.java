@@ -26,8 +26,8 @@ import org.apache.sis.util.iso.DefaultRecordType;
  * See package documentation for more information about JAXB and interface.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class GO_RecordType extends PropertyType<GO_RecordType, RecordType> {

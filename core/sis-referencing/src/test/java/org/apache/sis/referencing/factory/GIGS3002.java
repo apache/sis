@@ -30,8 +30,8 @@ import org.junit.runners.MethodSorters;
  * {@link org.apache.sis.referencing.datum.DefaultEllipsoid} objects creation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 @DependsOn({

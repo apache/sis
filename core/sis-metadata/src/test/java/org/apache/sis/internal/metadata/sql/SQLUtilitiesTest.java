@@ -26,8 +26,8 @@ import static org.junit.Assert.*;
  * Tests the {@link SQLUtilities} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final strictfp class SQLUtilitiesTest extends TestCase {

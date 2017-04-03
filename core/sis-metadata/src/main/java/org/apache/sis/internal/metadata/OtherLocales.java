@@ -36,8 +36,8 @@ import org.apache.sis.util.collection.Containers;
  * are for those remaining elements and are created by the {@link #filter(Collection)} method.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class OtherLocales extends AbstractCollection<Locale> {

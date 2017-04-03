@@ -39,8 +39,8 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * Callers should ignore this implementation detail.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public final class Legacy {

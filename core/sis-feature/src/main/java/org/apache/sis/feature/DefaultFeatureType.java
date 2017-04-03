@@ -98,15 +98,16 @@ import org.opengis.feature.PropertyNotFoundException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
- * @module
  *
  * @see DefaultAttributeType
  * @see DefaultAssociationRole
  * @see AbstractFeature
  * @see org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo
  * @see org.apache.sis.storage.FeatureNaming
+ *
+ * @since 0.5
+ * @module
  */
 public class DefaultFeatureType extends AbstractIdentifiedType implements FeatureType {
     /**

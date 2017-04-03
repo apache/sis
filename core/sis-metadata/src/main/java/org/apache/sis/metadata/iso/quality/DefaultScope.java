@@ -38,8 +38,8 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  *
  * @deprecated As of ISO 19115:2014, {@code DQ_Scope} has been replaced by {@code MD_Scope}.

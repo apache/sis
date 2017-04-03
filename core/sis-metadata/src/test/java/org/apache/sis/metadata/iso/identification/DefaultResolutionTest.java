@@ -36,8 +36,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link DefaultResolution}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 @DependsOn(DefaultRepresentativeFractionTest.class)

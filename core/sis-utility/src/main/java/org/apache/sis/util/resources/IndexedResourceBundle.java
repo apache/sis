@@ -69,8 +69,8 @@ import org.apache.sis.internal.system.Loggers;
  * multiple threads.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public class IndexedResourceBundle extends ResourceBundle implements Localized {

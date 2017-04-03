@@ -30,8 +30,8 @@ import static org.junit.Assert.*;
  * The main intend of this class is to allow visual inspection (by looking in source code) of sampled data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
 public strictfp class CoordinateDomainTest extends TestCase {

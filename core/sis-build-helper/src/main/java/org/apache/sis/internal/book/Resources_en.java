@@ -21,8 +21,13 @@ package org.apache.sis.internal.book;
  * Localized resources, for internal usage only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  */
 public final class Resources_en extends Resources {
+    /**
+     * Invoked by resource bundle reflection mechanism.
+     */
+    public Resources_en() {
+    }
 }

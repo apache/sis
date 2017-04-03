@@ -82,8 +82,8 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * (typically after its construction is completed) by the call to the {@link #freeze()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 @XmlTransient

@@ -67,14 +67,15 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * the caller. But if a sequence of two or more method calls need to appear atomic from other threads perspective,
  * then the caller can synchronize on {@code this}.
  *
- * @param  <E>  the type of elements in the set.
- *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
+ *
+ * @param <E>  the type of elements in the set.
  *
  * @see java.util.WeakHashMap
+ *
+ * @since 0.3
+ * @module
  */
 public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E> {
     /**

@@ -34,8 +34,8 @@ import static org.apache.sis.test.Assert.*;
  * {@code ConverterRegistry}, so those tests shall be avoided.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn({StringConverterTest.class,

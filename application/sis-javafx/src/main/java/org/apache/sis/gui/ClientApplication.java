@@ -24,8 +24,8 @@ import javafx.stage.Stage;
  * The starting point of SIS application for JavaFX.
  *
  * @author  Roshan Lakmal
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public class ClientApplication extends Application {

@@ -35,8 +35,8 @@ import org.apache.sis.util.ArraysExt;
  * of the grid geometry information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 final class GridGeometryWrapper extends GridGeometry {

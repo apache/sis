@@ -61,8 +61,8 @@ import org.apache.sis.internal.storage.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public abstract class ChannelFactory {

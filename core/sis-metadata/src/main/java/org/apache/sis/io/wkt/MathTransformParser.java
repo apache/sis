@@ -55,11 +55,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @since   0.6
  * @version 0.8
- * @module
  *
  * @see <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Know Text specification</a>
+ *
+ * @since 0.6
+ * @module
  */
 class MathTransformParser extends AbstractParser {
     /**
@@ -265,7 +266,7 @@ class MathTransformParser extends AbstractParser {
     final void parseParameters(final Element element, final ParameterValueGroup parameters,
             final Unit<?> defaultUnit, final Unit<Angle> defaultAngularUnit) throws ParseException
     {
-        final Unit<?> defaultSI = (defaultUnit != null) ? defaultUnit.getSystemUnit(): null;
+        final Unit<?> defaultSI = (defaultUnit != null) ? defaultUnit.getSystemUnit() : null;
         Element param = element;
         try {
             while ((param = element.pullElement(OPTIONAL, WKTKeywords.Parameter)) != null) {

@@ -40,12 +40,13 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.6
- * @module
  *
  * @see StringAdapter
  * @see InternationalStringAdapter
+ *
+ * @since 0.3
+ * @module
  */
 public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequence> {
     /**

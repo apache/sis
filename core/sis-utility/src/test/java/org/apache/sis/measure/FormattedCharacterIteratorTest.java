@@ -40,8 +40,8 @@ import static org.junit.Assert.*;
  * Tests the {@link FormattedCharacterIterator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class FormattedCharacterIteratorTest extends TestCase {

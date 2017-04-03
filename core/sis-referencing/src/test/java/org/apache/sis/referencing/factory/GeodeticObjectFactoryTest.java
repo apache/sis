@@ -62,8 +62,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Note that this does not include authority factories tests or GIGS tests.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 @RunWith(TestRunner.class)

@@ -30,11 +30,12 @@ import org.opengis.referencing.AuthorityFactory;
  * can not be created, but other objects may be okay.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.7
- * @module
  *
  * @see ConcurrentAuthorityFactory#newDataAccess()
+ *
+ * @since 0.7
+ * @module
  */
 public class UnavailableFactoryException extends MissingFactoryResourceException {
     /**

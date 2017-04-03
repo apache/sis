@@ -97,11 +97,12 @@ import org.opengis.referencing.datum.ParametricDatum;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.6
  * @version 0.7
- * @module
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createDerivedCRS(String)
+ *
+ * @since 0.6
+ * @module
  */
 @XmlType(name="DerivedCRSType", propOrder = {
     "baseCRS",

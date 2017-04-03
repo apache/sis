@@ -103,8 +103,8 @@ import org.apache.sis.internal.jdk8.Predicate;
  * then {@link CoordinateOperationFinder} will use its own fallback.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 class CoordinateOperationRegistry {
@@ -826,7 +826,7 @@ class CoordinateOperationRegistry {
              * would not know which value to give to the new dimension.
              */
             CoordinateReferenceSystem sourceCRS, targetCRS;
-            if (! ((sourceCRS = op.getSourceCRS()) instanceof GeodeticCRS
+            if ( !((sourceCRS = op.getSourceCRS()) instanceof GeodeticCRS
                 && (targetCRS = op.getTargetCRS()) instanceof GeodeticCRS
                 && sourceCRS.getCoordinateSystem() instanceof EllipsoidalCS
                 && targetCRS.getCoordinateSystem() instanceof EllipsoidalCS))

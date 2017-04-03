@@ -32,8 +32,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final class Region {

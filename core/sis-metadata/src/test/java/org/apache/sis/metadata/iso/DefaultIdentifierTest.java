@@ -32,8 +32,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests {@link DefaultIdentifier}.
  *
  * @author  Martin Desruisseaux
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn(org.apache.sis.metadata.iso.citation.DefaultCitationTest.class)

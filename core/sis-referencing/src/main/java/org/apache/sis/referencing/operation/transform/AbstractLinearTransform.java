@@ -41,8 +41,8 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 @SuppressWarnings("CloneInNonCloneableClass")   // Intentionally not Cloneable despite the clone() method.

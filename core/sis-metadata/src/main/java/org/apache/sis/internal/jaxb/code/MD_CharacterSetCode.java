@@ -33,8 +33,8 @@ import org.apache.sis.internal.jaxb.gmd.CodeListUID;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, Charset> {

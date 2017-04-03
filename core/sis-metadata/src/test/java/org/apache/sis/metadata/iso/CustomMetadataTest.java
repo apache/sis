@@ -55,8 +55,8 @@ import static org.junit.Assert.*;
  *
  * @author  Damiano Albani (for code snippet on the mailing list)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 public final strictfp class CustomMetadataTest extends XMLTestCase {

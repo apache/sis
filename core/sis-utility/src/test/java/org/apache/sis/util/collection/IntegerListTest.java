@@ -34,8 +34,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link IntegerList} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final strictfp class IntegerListTest extends TestCase {

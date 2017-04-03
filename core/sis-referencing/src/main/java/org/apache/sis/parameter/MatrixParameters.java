@@ -51,8 +51,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * but they are for polynomial transformations, not affine transformations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 class MatrixParameters extends TensorParameters<Double> {

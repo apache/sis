@@ -25,8 +25,8 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
  * since it means that in a code like {@code "FOO:456"}, the unrecognized part was {@code "FOO"}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public class NoSuchAuthorityFactoryException extends NoSuchAuthorityCodeException {

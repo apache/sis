@@ -30,8 +30,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link DefaultRepresentativeFraction}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 public final strictfp class DefaultRepresentativeFractionTest extends TestCase {

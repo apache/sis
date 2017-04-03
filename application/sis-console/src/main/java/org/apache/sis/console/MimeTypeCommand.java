@@ -38,12 +38,13 @@ import org.apache.sis.util.CharSequences;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
- * @module
  *
  * @see Files#probeContentType(Path)
  * @see DataStores#probeContentType(Object)
+ *
+ * @since 0.4
+ * @module
  */
 final class MimeTypeCommand extends CommandRunner {
     /**

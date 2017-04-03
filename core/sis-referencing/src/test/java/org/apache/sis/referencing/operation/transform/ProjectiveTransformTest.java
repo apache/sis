@@ -47,8 +47,8 @@ import org.opengis.test.referencing.AffineTransformTest;
  * this time with NaN values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.7
+ * @since   0.5
  * @module
  */
 @RunWith(TestRunner.class)

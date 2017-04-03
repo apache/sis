@@ -50,8 +50,8 @@ import static org.junit.Assert.*;
  * Tests the {@link StandardDefinitions} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @DependsOn({

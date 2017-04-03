@@ -34,8 +34,8 @@ import static org.apache.sis.util.collection.TableColumn.*;
  * Tests the {@link TreeTableFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn({
