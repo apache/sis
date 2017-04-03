@@ -103,14 +103,8 @@ public final strictfp class DefaultResolutionTest extends TestCase {
     }
 
     /**
-     * Tests XML (un)marshalling of a resolution element. The main purpose of this method is to test our
-     * workaround for a strange JAXB behavior (bug?).  For an unknown reason, we are unable to annotate the
-     * {@link DefaultResolution#getDistance()} method directly. Doing so cause JAXB to randomly ignores the
-     * {@code <gmd:distance>} property. Annotating a separated method which in turn invokes the real method
-     * seems to work.
-     *
-     * <p>This test creates a {@link DefaultResolution} instance which is expected to be marshalled as below
-     * (ignoring namespace declarations):</p>
+     * Tests XML (un)marshalling of a resolution element. This test creates a {@link DefaultResolution}
+     * instance which is expected to be marshalled as below (ignoring namespace declarations):
      *
      * {@preformat xml
      *   <gmd:MD_Resolution>
@@ -120,23 +114,7 @@ public final strictfp class DefaultResolutionTest extends TestCase {
      *   </gmd:MD_Resolution>
      * }
      *
-     * If we annotate the public {@code getDistance()} directly, JAXB will sometime marshals the resolution as
-     * expected, or sometime marshals an empty element as below:
-     *
-     * {@preformat xml
-     *   <gmd:MD_Resolution/>
-     * }
-     *
-     * In the later case, debugging shows that the {@code getDistance()} method is simply never invoked.
-     * Whether the distance is marshaled or not seems totally random: just executing this test many time
-     * make both cases to occur (however failures occur more often the successes).
-     *
-     * <p>Annotating an other method as a workaround seems to always work. See the {@link DefaultResolution#getValue()}
-     * javadoc for instructions about how to check if this workaround is still needed with more recent JAXB versions.</p>
-     *
      * @throws JAXBException if an error occurred while marshalling the element.
-     *
-     * @see DefaultResolution#getValue()
      */
     @Test
     public void testXML() throws JAXBException {

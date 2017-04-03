@@ -343,7 +343,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Constructs a new map projection from the supplied parameters.
-     * This constructor applies the following operations on the {@link ContextualParameter}:
+     * This constructor applies the following operations on the
+     * {@linkplain #getContextualParameters() contextual parameters}:
      *
      * <ul>
      *   <li>On the <b>normalization</b> matrix (to be applied before {@code this} transform):

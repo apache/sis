@@ -107,8 +107,8 @@ public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
     }
 
     /**
-     * Verifies that {@link Zoner#isNorway(double)} and {@link Zoner#isSvalbard(double)}
-     * are consistent with the latitude bands.
+     * Verifies that {@link TransverseMercator.Zoner#isNorway(double)} and
+     * {@link TransverseMercator.Zoner#isSvalbard(double)} are consistent with the latitude bands.
      */
     @Test
     @DependsOnMethod("testLatitudeBand")

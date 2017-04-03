@@ -40,7 +40,7 @@ import org.apache.sis.feature.FeatureOperations;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  *
- * @see Attribute#addRole(AttributeRole)
+ * @see AttributeTypeBuilder#addRole(AttributeRole)
  *
  * @since 0.8
  * @module

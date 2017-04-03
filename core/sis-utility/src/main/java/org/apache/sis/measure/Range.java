@@ -63,7 +63,7 @@ import org.apache.sis.util.Numbers;
  *
  * <p>The characteristics of the spatial domain are defined by the ISO 19123 standard whereas the
  * characteristics of the attribute range are not part of that standard. In Apache SIS, those
- * characteristics are described by the {@link org.apache.sis.coverage.SampleDimension} class,
+ * characteristics are described by the {@code SampleDimension} class,
  * which may contain one or many {@code Range} instances. Consequently this {@code Range} class
  * is closely related, but not identical, to the ISO 19123 definition or range.</p>
  *

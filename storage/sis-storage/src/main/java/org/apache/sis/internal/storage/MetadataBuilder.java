@@ -1379,9 +1379,8 @@ parse:      for (int i = 0; i < length;) {
      * Sets the area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.
      * This method does nothing if the given value is {@link Double#NaN}.
      *
-     * <p>This method is available only if {@link #commitCoverageDescription(boolean)}
-     * has been invoked with the {@code electromagnetic} parameter set to {@code true}.
-     * Storage location is:</p>
+     * <p>This method is available only if {@link #newCoverage(boolean)} has been invoked
+     * with the {@code electromagnetic} parameter set to {@code true}. Storage location is:</p>
      *
      * <pre>metadata/contentInfo/cloudCoverPercentage</pre>
      *
@@ -1399,9 +1398,8 @@ parse:      for (int i = 0; i < length;) {
      * For images from a scanning device, refer to the centre pixel of the image.
      * This method does nothing if the given value is {@link Double#NaN}.
      *
-     * <p>This method is available only if {@link #commitCoverageDescription(boolean)}
-     * has been invoked with the {@code electromagnetic} parameter set to {@code true}.
-     * Storage location is:</p>
+     * <p>This method is available only if {@link #newCoverage(boolean)} has been invoked
+     * with the {@code electromagnetic} parameter set to {@code true}. Storage location is:</p>
      *
      * <pre>metadata/contentInfo/illuminationAzimuthAngle</pre>
      *
@@ -1420,9 +1418,8 @@ parse:      for (int i = 0; i < length;) {
      * For images from a canning device, refer to the centre pixel of the image.
      * This method does nothing if the given value is {@link Double#NaN}.
      *
-     * <p>This method is available only if {@link #commitCoverageDescription(boolean)}
-     * has been invoked with the {@code electromagnetic} parameter set to {@code true}.
-     * Storage location is:</p>
+     * <p>This method is available only if {@link #newCoverage(boolean)} has been invoked
+     * with the {@code electromagnetic} parameter set to {@code true}. Storage location is:</p>
      *
      * <pre>metadata/contentInfo/illuminationElevationAngle</pre>
      *

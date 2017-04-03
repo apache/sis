@@ -79,7 +79,7 @@ public final class DoubleDouble extends Number {
      * omitted by the compiler from the class files in normal operations.</p>
      *
      * <p>Setting this flag to {@code true} causes some JUnit tests to fail. This is normal. The main
-     * purpose of this flag is to allow {@link org.apache.sis.referencing.operation.matrix.MatrixTestCase}
+     * purpose of this flag is to allow {@code org.apache.sis.referencing.operation.matrix.MatrixTestCase}
      * to perform strict comparisons of matrix operation results with JAMA, which is taken as the reference
      * implementation. Since JAMA uses {@code double} arithmetic, SIS needs to disable {@code double-double}
      * arithmetic if the results are to be compared for strict equality.</p>

@@ -144,8 +144,9 @@ public class ReferencingServices extends OptionalDependency {
     private static volatile ReferencingServices instance;
 
     /**
-     * For subclass only. This constructor registers this instance as a {@link SystemListener}
-     * in order to force a new {@code ReferencingServices} lookup if the classpath changes.
+     * For subclass only. This constructor registers this instance as a
+     * {@link org.apache.sis.internal.system.SystemListener} in order to
+     * force a new {@code ReferencingServices} lookup if the classpath changes.
      */
     protected ReferencingServices() {
         super(Modules.METADATA, "sis-referencing");
@@ -715,7 +716,7 @@ public class ReferencingServices extends OptionalDependency {
      * @param  locale  language to use if possible.
      * @return the information, or {@code null} if none.
      *
-     * @see org.apache.sis.internal.util.MetadataServices#getInformation(String)
+     * @see org.apache.sis.internal.util.MetadataServices#getInformation(String, Locale)
      *
      * @since 0.7
      */

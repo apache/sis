@@ -532,7 +532,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#multiply(Matrix)}.
+     * Tests {@link MatrixSIS#multiply(org.opengis.referencing.operation.Matrix)}.
      */
     @Test
     @DependsOnMethod("testGetElements")
@@ -567,7 +567,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#solve(Matrix)}.
+     * Tests {@link MatrixSIS#solve(org.opengis.referencing.operation.Matrix)}.
      *
      * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */

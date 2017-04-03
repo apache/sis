@@ -299,7 +299,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
      *   <li>(More areas may be added later).</li>
      * </ul>
      *
-     * If {@link TestCase#verbose} is {@code true}, then this method will print error statistics.
+     * If {@link TestCase#VERBOSE} is {@code true}, then this method will print error statistics.
      *
      * @throws FactoryException if an error occurred while creating a transform step.
      * @throws TransformException if a transformation failed.

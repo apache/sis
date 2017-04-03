@@ -263,7 +263,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the {@link PropertyAccessor#get(int, Object)} method on the {@link HardCodedCitations#ISO} constant.
+     * Tests the {@link PropertyAccessor#get(int, Object)} method on the {@link HardCodedCitations#ISO_19111} constant.
      * The metadata object read by this test is:
      *
      * {@preformat text
