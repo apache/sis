@@ -26,8 +26,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the static methods provided in {@link AbstractDirectPosition}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class AbstractDirectPositionTest extends TestCase {

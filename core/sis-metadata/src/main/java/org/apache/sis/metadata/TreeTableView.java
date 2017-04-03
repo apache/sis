@@ -45,8 +45,8 @@ import org.apache.sis.internal.system.Semaphores;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 final class TreeTableView implements TreeTable, Serializable {

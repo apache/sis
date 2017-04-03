@@ -26,8 +26,8 @@ import org.junit.BeforeClass;
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @Suite.SuiteClasses({

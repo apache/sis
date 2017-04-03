@@ -28,11 +28,12 @@ import org.apache.sis.util.LocalizedException;
  * can be invalid only if a property is invalid.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
- * @module
  *
  * @see Features#validate(Feature)
+ *
+ * @since 0.7
+ * @module
  */
 final class InvalidFeatureException extends IllegalArgumentException implements LocalizedException {
     /**

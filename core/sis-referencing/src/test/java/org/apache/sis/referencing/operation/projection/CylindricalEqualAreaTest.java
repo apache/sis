@@ -33,8 +33,8 @@ import static java.lang.Double.NaN;
  * Tests the {@link CylindricalEqualArea} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final strictfp class CylindricalEqualAreaTest extends MapProjectionTestCase {

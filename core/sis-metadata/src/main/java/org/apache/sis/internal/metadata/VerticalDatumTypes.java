@@ -38,8 +38,8 @@ import org.apache.sis.util.Characters;
  * This implementation convenience may change in any future SIS version.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.7
+ * @since   0.4
  * @module
  */
 public final class VerticalDatumTypes implements CodeList.Filter {

@@ -77,8 +77,8 @@ import org.opengis.util.NoSuchIdentifierException;
  * <cite>"referencing by coordinates"</cite> but needed by metadata.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public class ReferencingServices extends OptionalDependency {

@@ -120,14 +120,15 @@ import org.apache.sis.internal.jdk8.JDK8;
  * </div>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3
  * @version 0.8
- * @module
  *
  * @see Angle
  * @see Latitude
  * @see Longitude
  * @see org.apache.sis.geometry.CoordinateFormat
+ *
+ * @since 0.3
+ * @module
  */
 public class AngleFormat extends Format implements Localized {
     /**
@@ -205,8 +206,8 @@ public class AngleFormat extends Format implements Localized {
      * {@link AngleFormat#formatToCharacterIterator(Object)}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     public static final class Field extends FormatField {

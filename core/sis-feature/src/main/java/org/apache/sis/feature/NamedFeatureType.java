@@ -28,8 +28,8 @@ import org.opengis.util.GenericName;
  * by instances of the actual feature type when the later become known.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 final class NamedFeatureType implements FeatureType, Serializable {

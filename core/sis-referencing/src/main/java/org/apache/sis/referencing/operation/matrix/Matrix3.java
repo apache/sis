@@ -30,13 +30,14 @@ import org.opengis.referencing.operation.Matrix;
  * └             ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.6
- * @module
  *
  * @see Matrix1
  * @see Matrix2
  * @see Matrix4
+ *
+ * @since 0.4
+ * @module
  */
 @SuppressWarnings("CloneableClassWithoutClone")             // No field in this class needs clone.
 public final class Matrix3 extends MatrixSIS {

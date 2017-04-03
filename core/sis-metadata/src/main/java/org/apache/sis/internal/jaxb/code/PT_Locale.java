@@ -57,13 +57,14 @@ import org.apache.sis.internal.jaxb.gmd.LanguageCode;
  * For an alternative (simpler) format, see {@link org.apache.sis.internal.jaxb.gmd.LocaleAdapter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
  *
  * @see LanguageCode
  * @see Country
  * @see org.apache.sis.internal.jaxb.gmd.LocaleAdapter
+ *
+ * @since 0.3
+ * @module
  */
 public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     /**

@@ -43,7 +43,7 @@ final class QuadTreeNode {
    *          node's capcacity
    */
   public QuadTreeNode(int id, int capacity) {
-    this.capacity = capacity > 0 ? capacity:MIN_CAPACITY;
+    this.capacity = capacity > 0 ? capacity : MIN_CAPACITY;
     this.dataCount = 0;
     this.data = new QuadTreeData[this.capacity];
     this.type = NodeType.BLACK;

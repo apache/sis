@@ -28,8 +28,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Symbols} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final strictfp class SymbolsTest extends TestCase {

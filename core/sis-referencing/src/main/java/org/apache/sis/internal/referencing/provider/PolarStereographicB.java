@@ -30,8 +30,8 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 @XmlTransient

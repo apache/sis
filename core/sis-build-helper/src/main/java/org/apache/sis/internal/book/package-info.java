@@ -24,7 +24,7 @@
  * Other classes are helper classes that should be ignored.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  */
 package org.apache.sis.internal.book;

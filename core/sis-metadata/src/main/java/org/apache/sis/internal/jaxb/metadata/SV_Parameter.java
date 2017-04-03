@@ -27,8 +27,8 @@ import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameter;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class SV_Parameter extends PropertyType<SV_Parameter, ParameterDescriptor<?>> {

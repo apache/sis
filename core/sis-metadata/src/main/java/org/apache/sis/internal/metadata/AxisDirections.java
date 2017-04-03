@@ -39,8 +39,8 @@ import static org.apache.sis.util.CharSequences.*;
  * Utilities methods related to {@link AxisDirection}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public final class AxisDirections extends Static {
@@ -418,9 +418,9 @@ public final class AxisDirections extends Static {
      * @param  unit  the default unit to return if no angular unit is found.
      * @return the angular unit, of {@code unit} if no angular unit was found.
      *
-     * @since 0.6
-     *
      * @see org.apache.sis.internal.referencing.ReferencingUtilities#getUnit(CoordinateSystem)
+     *
+     * @since 0.6
      */
     public static Unit<Angle> getAngularUnit(final CoordinateSystem cs, Unit<Angle> unit) {
         if (cs != null) {

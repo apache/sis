@@ -71,11 +71,12 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
  * @version 0.6
- * @module
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createProjectedCRS(String)
+ *
+ * @since 0.6
+ * @module
  */
 @XmlType(name = "ProjectedCRSType", propOrder = {
     "baseCRS",

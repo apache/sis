@@ -35,8 +35,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link SingletonAttribute}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 @DependsOn({

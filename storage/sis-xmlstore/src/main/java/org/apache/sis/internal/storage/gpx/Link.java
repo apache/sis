@@ -44,8 +44,8 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final class Link implements OnlineResource {

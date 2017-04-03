@@ -23,11 +23,12 @@ package org.apache.sis.metadata;
  * as property types except for collections) or the declaring classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see MetadataStandard#asTypeMap(Class, KeyNamePolicy, TypeValuePolicy)
+ *
+ * @since 0.3
+ * @module
  */
 public enum TypeValuePolicy {
     /**

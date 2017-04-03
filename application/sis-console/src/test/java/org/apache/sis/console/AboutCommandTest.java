@@ -30,8 +30,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link AboutCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @DependsOn(CommandRunnerTest.class)

@@ -37,8 +37,8 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 abstract class PathConverter<S,T> extends SystemConverter<S,T> {

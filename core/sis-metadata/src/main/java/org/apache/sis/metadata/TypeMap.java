@@ -25,11 +25,12 @@ import java.util.NoSuchElementException;
  * Map of property valuePolicy for a given implementation class. This map is read-only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see MetadataStandard#asTypeMap(Class, KeyNamePolicy, TypeValuePolicy)
+ *
+ * @since 0.3
+ * @module
  */
 final class TypeMap extends PropertyMap<Class<?>> {
     /**

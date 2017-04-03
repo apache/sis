@@ -32,8 +32,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link MathTransforms}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
+ * @since   0.5
  * @module
  */
 public final strictfp class MathTransformsTest extends TestCase {

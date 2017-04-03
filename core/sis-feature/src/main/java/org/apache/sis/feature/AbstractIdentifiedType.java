@@ -40,8 +40,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * will be replaced by references to the {@code IdentifiedType} interface.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 public class AbstractIdentifiedType implements Deprecable, Serializable {

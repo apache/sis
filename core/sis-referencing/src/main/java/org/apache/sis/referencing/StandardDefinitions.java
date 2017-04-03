@@ -77,8 +77,8 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * This class should not be loaded when a connection to an EPSG geodetic dataset is available.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 final class StandardDefinitions {

@@ -91,11 +91,12 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * The constants defined in this class use a similar approach for providing serialization support.
  *
- * @param  <V>  base type of all values in the column identified by this instance.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <V>  base type of all values in the column identified by this instance.
+ *
+ * @since 0.3
  * @module
  */
 public class TableColumn<V> implements CheckedContainer<V> {
@@ -182,11 +183,6 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * and resolves deserialized instances to the singleton instances.
      *
      * @param  <V>  base type of all values in the column identified by this instance.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
-     * @version 0.3
-     * @module
      */
     private static final class Constant<V> extends TableColumn<V> implements Serializable {
         /**

@@ -26,8 +26,8 @@ import org.apache.sis.util.ArgumentChecks;
  * around a given {@link CharSequence}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public class SimpleCharacterIterator implements CharacterIterator, CharSequence, Serializable {

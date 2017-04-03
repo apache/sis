@@ -46,11 +46,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
- * @module
  *
  * @see MetadataStandardTest#testValueMap()
+ *
+ * @since 0.3
+ * @module
  */
 @DependsOn(PropertyAccessorTest.class)
 public final strictfp class ValueMapTest extends TestCase {

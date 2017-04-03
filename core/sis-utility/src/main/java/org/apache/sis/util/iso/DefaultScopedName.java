@@ -49,12 +49,13 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
  *
  * @see DefaultNameSpace
  * @see DefaultLocalName
+ *
+ * @since 0.3
+ * @module
  */
 
 /*

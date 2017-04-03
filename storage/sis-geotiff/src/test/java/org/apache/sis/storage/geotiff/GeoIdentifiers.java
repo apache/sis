@@ -27,8 +27,8 @@ import java.lang.reflect.Field;
  * However those identifiers are useful for verification purposes during tests.
  *
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class GeoIdentifiers {

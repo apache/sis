@@ -36,8 +36,8 @@ import static org.junit.Assume.*;
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @DependsOn(DecoderTest.class)

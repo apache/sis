@@ -68,8 +68,8 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public abstract class GeodeticAuthorityFactory extends AbstractFactory implements AuthorityFactory {

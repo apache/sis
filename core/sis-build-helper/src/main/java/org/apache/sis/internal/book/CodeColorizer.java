@@ -39,8 +39,8 @@ import org.w3c.dom.NodeList;
  * standard, in GeoAPI or in Apache SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public final class CodeColorizer {
@@ -75,7 +75,7 @@ public final class CodeColorizer {
     /**
      * The specifier of an identifier.
      */
-    private static enum Specifier {
+    private enum Specifier {
         OGC("OGC"), GEOAPI("GeoAPI"), SIS("SIS"), XML_PREFIX(null);
 
         /** The value to put in the {@code class} attribute of {@code <code>} or elements, or {@code null} if none. */
@@ -113,7 +113,7 @@ public final class CodeColorizer {
             if (in == null) {
                 throw new FileNotFoundException(filename);
             }
-            try (final BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
+            try (BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
                 String line;
                 while ((line = r.readLine()) != null) {
                     if (identifierSpecifiers.put(line, specifier) != null) {

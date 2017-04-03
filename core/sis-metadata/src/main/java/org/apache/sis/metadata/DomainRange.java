@@ -28,14 +28,15 @@ import org.apache.sis.measure.ValueRange;
  * in order to make possible to return this range from the {@link PropertyInformation#getDomainValue()}
  * method.
  *
- * @param  <E>  the type of range elements as a subclass of {@link Number}.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
- * @module
+ *
+ * @param <E>  the type of range elements as a subclass of {@link Number}.
  *
  * @see PropertyInformation#getDomainValue()
+ *
+ * @since 0.3
+ * @module
  */
 final class DomainRange<E extends Number & Comparable<? super E>> extends NumberRange<E>
         implements InternationalString

@@ -37,8 +37,8 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * Tests the {@link DefaultCoordinateSystemAxis} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @DependsOn({

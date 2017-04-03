@@ -42,8 +42,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link PropertyInformation} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class PropertyInformationTest extends TestCase {

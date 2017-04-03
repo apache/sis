@@ -50,8 +50,8 @@ import org.apache.sis.util.collection.TreeTable;
  * eventually perform some operations like clearing a cache.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 public final class Supervisor extends StandardMBean implements SupervisorMBean {

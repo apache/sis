@@ -34,8 +34,8 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  * from other modules and libraries.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 public strictfp class MetadataAssert extends Assert {

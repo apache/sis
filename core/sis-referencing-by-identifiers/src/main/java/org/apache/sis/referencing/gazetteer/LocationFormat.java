@@ -94,8 +94,8 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class LocationFormat extends TabularFormat<AbstractLocation> {

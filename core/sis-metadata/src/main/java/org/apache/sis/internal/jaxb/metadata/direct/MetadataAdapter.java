@@ -22,12 +22,13 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 /**
  * Base class for adapters from GeoAPI interfaces to their SIS implementation.
  *
- * @param  <BoundType>  the GeoAPI interface being adapted.
- * @param  <ValueType>  the SIS class implementing the interface.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <BoundType>  the GeoAPI interface being adapted.
+ * @param <ValueType>  the SIS class implementing the interface.
+ *
+ * @since 0.3
  * @module
  */
 public abstract class MetadataAdapter<BoundType, ValueType extends BoundType>

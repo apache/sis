@@ -54,11 +54,12 @@ import org.apache.sis.util.collection.CheckedContainer;
  * <p>Note that the public API, {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])},
  * returns {@code List<? extends E>}, which is okay.</p>
  *
- * @param  <E>  the type of elements in the list.
- *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <E>  the type of elements in the list.
+ *
+ * @since 0.3
  * @module
  */
 public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomAccess, CheckedContainer<E>, Serializable {
@@ -305,12 +306,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
     /**
      * A view over a portion of {@link UnmodifiableArrayList}.
      *
-     * @param  <E>  the type of elements in the list.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
-     * @version 0.3
-     * @module
+     * @param <E>  the type of elements in the list.
      */
     private static final class SubList<E> extends UnmodifiableArrayList<E> {
         /**

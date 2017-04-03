@@ -59,8 +59,8 @@ import static org.junit.Assume.*;
  * This class does not write anything to disk (except maybe some temporary files).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 @DependsOn(EPSGFactoryTest.class)

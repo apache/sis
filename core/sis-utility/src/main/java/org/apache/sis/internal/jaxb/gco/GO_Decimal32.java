@@ -27,8 +27,8 @@ import javax.xml.bind.annotation.XmlSchemaType;
  * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class GO_Decimal32 extends PropertyType<GO_Decimal32, Float> {

@@ -36,8 +36,8 @@ import org.apache.sis.internal.geoapi.temporal.Instant;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> {

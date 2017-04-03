@@ -30,8 +30,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link AbstractLocationType}, {@link FinalLocationType} and {@link ModifiableLocationType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public final strictfp class LocationTypeTest extends TestCase {

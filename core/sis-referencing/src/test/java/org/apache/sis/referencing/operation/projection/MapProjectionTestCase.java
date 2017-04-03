@@ -39,8 +39,8 @@ import static org.junit.Assert.*;
  * Base class of map projection tests.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 abstract strictfp class MapProjectionTestCase extends MathTransformTestCase {

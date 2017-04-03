@@ -21,8 +21,8 @@ package org.apache.sis.metadata;
  * Thrown when a metadata is in a invalid state or has illegal property values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 public class InvalidMetadataException extends IllegalStateException {

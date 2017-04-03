@@ -24,11 +24,12 @@ import java.io.IOException;
  * Wraps a {@link ChannelDataOutput} as a standard {@link OutputStream}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
- * @module
  *
  * @see InputStreamAdapter
+ *
+ * @since 0.8
+ * @module
  */
 final class OutputStreamAdapter extends OutputStream implements Markable {
     /**

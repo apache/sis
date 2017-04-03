@@ -39,13 +39,14 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * The meaning are defined by <cite>OGC Naming Authority</cite> (OGCNA) or other OGC sources.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.7
- * @module
  *
  * @see org.apache.sis.internal.util.DefinitionURI
  * @see <a href="http://www.opengeospatial.org/ogcna">http://www.opengeospatial.org/ogcna</a>
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
+ *
+ * @since 0.5
+ * @module
  */
 public final class NameMeaning extends Static {
     /**
@@ -150,9 +151,9 @@ public final class NameMeaning extends Static {
      * @param  code       the code.
      * @return an identifier using the URN syntax, or {@code null} if a mandatory information is missing.
      *
-     * @since 0.7
-     *
      * @see DefinitionURI#format(String, String, String, String)
+     *
+     * @since 0.7
      */
     public static String toURN(final Class<?> type, final String authority, String version, String code) {
         if (type != null && authority != null && code != null) {

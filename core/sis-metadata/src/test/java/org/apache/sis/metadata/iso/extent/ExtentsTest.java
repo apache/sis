@@ -43,8 +43,8 @@ import static org.junit.Assert.*;
  * {@link DefaultExtentTest#testWorldConstant()}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)

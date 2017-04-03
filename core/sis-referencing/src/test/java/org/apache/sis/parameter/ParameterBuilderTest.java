@@ -32,8 +32,8 @@ import static org.junit.Assert.*;
  * Tests {@link ParameterBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.8
+ * @since   0.4
  * @module
  */
 @DependsOn({

@@ -40,8 +40,8 @@ import static org.opengis.referencing.ReferenceIdentifier.*;
  * Tests {@link ImmutableIdentifier}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.6
+ * @since   0.3
  * @module
  */
 @DependsOn({

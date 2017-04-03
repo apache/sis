@@ -34,8 +34,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link FeatureFormat}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 @DependsOn({

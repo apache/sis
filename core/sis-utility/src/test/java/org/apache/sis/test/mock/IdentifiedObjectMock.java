@@ -38,8 +38,8 @@ import org.apache.sis.internal.jaxb.gco.GO_GenericName;
  * {@code "test"} {@linkplain #getCodeSpace() codespace}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 @SuppressWarnings("serial")

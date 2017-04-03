@@ -45,8 +45,8 @@ import static org.apache.sis.test.Assert.*;
  * then this {@code IndexedResourceBundleTest} class will need to be updated.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  */
 @DependsOn(LoaderTest.class)
 public final strictfp class IndexedResourceBundleTest extends TestCase {

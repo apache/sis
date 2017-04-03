@@ -26,14 +26,21 @@ import javax.servlet.annotation.WebListener;
  * This class should not be used directly.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.7
- * @module
  *
  * @see OSGiActivator
+ *
+ * @since 0.3
+ * @module
  */
 @WebListener("Apache SIS shutdown hook")
 public final class ServletListener implements ServletContextListener {
+    /**
+     * Invoked by reflection by the container.
+     */
+    public ServletListener() {
+    }
+
     /**
      * Receives notification that the web application initialization process is starting.
      *

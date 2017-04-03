@@ -95,11 +95,12 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
- * @module
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
+ *
+ * @since 0.5
+ * @module
  */
 @DependsOn({
     org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class

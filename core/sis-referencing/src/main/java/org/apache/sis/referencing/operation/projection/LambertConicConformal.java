@@ -58,8 +58,8 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public class LambertConicConformal extends ConformalProjection {
@@ -490,8 +490,8 @@ public class LambertConicConformal extends ConformalProjection {
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @author  André Gosselin (MPO)
      * @author  Rueben Schulz (UBC)
-     * @since   0.6
      * @version 0.6
+     * @since   0.6
      * @module
      */
     static final class Spherical extends LambertConicConformal {

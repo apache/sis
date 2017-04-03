@@ -59,8 +59,8 @@ import org.opengis.parameter.ParameterValueGroup;
  * EPSG:32600 (northern hemisphere) and EPSG:32700 (southern hemisphere).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class ZonedGridSystem extends AbstractMathTransform2D implements Serializable {
@@ -185,8 +185,8 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      * Inverse of a zoned grid system.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.8
      * @version 0.8
+     * @since   0.8
      * @module
      */
     private final class Inverse extends AbstractMathTransform2D.Inverse {

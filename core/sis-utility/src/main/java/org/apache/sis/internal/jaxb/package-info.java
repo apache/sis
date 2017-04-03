@@ -33,8 +33,8 @@
  * This is used for storing the value in a list of identifiers while preserving the original object.</p>
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.7
+ * @since   0.3
  * @module
  */
 package org.apache.sis.internal.jaxb;

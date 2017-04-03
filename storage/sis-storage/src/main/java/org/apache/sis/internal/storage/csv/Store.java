@@ -78,8 +78,8 @@ import org.apache.sis.internal.jdk8.StreamSupport;
  * See package javadoc for more information on the syntax.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 public final class Store extends FeatureStore {

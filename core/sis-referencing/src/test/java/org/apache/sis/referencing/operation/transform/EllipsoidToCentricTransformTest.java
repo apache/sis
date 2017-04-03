@@ -45,8 +45,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link EllipsoidToCentricTransform}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 @DependsOn({

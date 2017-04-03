@@ -40,8 +40,8 @@ import java.io.ByteArrayInputStream;
  * in {@literal "SHA1 digest error for <JAR file>"} error messages.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class FilteredJarFile extends JarFile {

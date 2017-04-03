@@ -51,8 +51,8 @@ import org.apache.sis.storage.DataStoreException;
  *
  * @author  Richard Deplanque (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class ReferencingFunctions extends CalcAddins implements XReferencing {

@@ -29,8 +29,8 @@ import org.apache.sis.test.TestRunner;
  * a {@link DefaultNameFactory} instance shared for all tests in this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 @RunWith(TestRunner.class)

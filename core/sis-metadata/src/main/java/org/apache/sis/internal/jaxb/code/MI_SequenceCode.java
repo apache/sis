@@ -29,8 +29,8 @@ import org.apache.sis.xml.Namespaces;
  * of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class MI_SequenceCode extends CodeListAdapter<MI_SequenceCode, Sequence> {

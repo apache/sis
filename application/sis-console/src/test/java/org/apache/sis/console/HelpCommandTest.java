@@ -28,8 +28,8 @@ import static org.junit.Assert.*;
  * Tests the {@link HelpCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 @DependsOn(CommandRunnerTest.class)

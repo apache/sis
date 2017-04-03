@@ -39,8 +39,8 @@ import org.apache.sis.util.Deprecable;
  * to move the files to the appropriate Apache SIS {@code "content/"} site directory.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.7
+ * @since   0.6
  * @module
  */
 abstract strictfp class HTMLGenerator implements Closeable {

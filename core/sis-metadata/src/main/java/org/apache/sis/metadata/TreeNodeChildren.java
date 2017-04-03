@@ -46,8 +46,8 @@ import org.apache.sis.util.Debug;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {

@@ -33,8 +33,8 @@ import static org.opengis.test.Assert.*;
  * Values in this test were determined empirically by running {@link ShapeUtilitiesViewer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final strictfp class ShapeUtilitiesTest extends TestCase {

@@ -40,12 +40,13 @@ import org.apache.sis.internal.feature.Resources;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
- * @module
  *
  * @see AbstractFeature
  * @see DefaultAssociationRole
+ *
+ * @since 0.5
+ * @module
  */
 public abstract class AbstractAssociation extends Field<AbstractFeature> implements Cloneable, Serializable {
     /**

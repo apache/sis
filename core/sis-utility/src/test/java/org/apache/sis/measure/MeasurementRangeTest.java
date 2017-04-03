@@ -28,8 +28,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link MeasurementRange} class.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 @DependsOn(NumberRangeTest.class)

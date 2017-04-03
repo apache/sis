@@ -35,8 +35,8 @@ import java.util.Locale;
  * of the features returned by the GPX reader.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public enum Fix {

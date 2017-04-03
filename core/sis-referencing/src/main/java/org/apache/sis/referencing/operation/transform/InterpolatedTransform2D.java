@@ -30,8 +30,8 @@ import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
  * An interpolated transform for two-dimensional input and output coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
+ * @since   0.7
  * @module
  */
 final class InterpolatedTransform2D extends InterpolatedTransform implements MathTransform2D {
@@ -91,8 +91,8 @@ final class InterpolatedTransform2D extends InterpolatedTransform implements Mat
      * The inverse of the enclosing {@link InterpolatedTransform2D}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     final class Inverse extends InterpolatedTransform.Inverse implements MathTransform2D {

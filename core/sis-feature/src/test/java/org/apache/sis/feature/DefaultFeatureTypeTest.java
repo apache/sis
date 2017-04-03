@@ -37,8 +37,8 @@ import static java.util.Collections.singletonMap;
  * Tests {@link DefaultFeatureType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 @DependsOn(DefaultAttributeTypeTest.class)

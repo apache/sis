@@ -32,8 +32,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link DefaultGeorectified}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final strictfp class DefaultGeorectifiedTest extends TestCase {

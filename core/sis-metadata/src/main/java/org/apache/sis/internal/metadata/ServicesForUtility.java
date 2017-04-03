@@ -49,8 +49,8 @@ import static java.util.Collections.singleton;
  * Implements the metadata services needed by the {@code "sis-utility"} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.8
+ * @since   0.6
  * @module
  */
 public final class ServicesForUtility extends MetadataServices {

@@ -107,12 +107,13 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * a {@linkplain #snapshot snapshots} of this location type should be taken.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
- * @module
  *
  * @see AbstractLocation
  * @see ReferencingByIdentifiers
+ *
+ * @since 0.8
+ * @module
  */
 public class ModifiableLocationType extends AbstractLocationType {      // Not Serializable on intend.
     /**

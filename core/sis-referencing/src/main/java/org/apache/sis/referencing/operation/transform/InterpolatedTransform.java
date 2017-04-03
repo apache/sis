@@ -69,12 +69,13 @@ import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @author  Rueben Schulz (UBC)
- * @since   0.7
  * @version 0.8
- * @module
  *
  * @see DatumShiftGrid
  * @see org.apache.sis.referencing.operation.builder.LocalizationGridBuilder
+ *
+ * @since 0.7
+ * @module
  */
 public class InterpolatedTransform extends DatumShiftTransform {
     /**

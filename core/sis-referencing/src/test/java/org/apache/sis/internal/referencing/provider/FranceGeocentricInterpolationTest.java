@@ -42,12 +42,13 @@ import org.apache.sis.internal.jdk8.JDK8;
  * Tests {@link FranceGeocentricInterpolation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
- * @module
  *
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
+ *
+ * @since 0.7
+ * @module
  */
 public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
     /**
@@ -145,7 +146,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
         assertNotNull("Test file \"" + TEST_FILE + "\" not found.", url);
         final Path file = Paths.get(url.toURI());
         final DatumShiftGridFile.Float<Angle,Length> grid;
-        try (final BufferedReader in = JDK8.newBufferedReader(file)) {
+        try (BufferedReader in = JDK8.newBufferedReader(file)) {
             grid = FranceGeocentricInterpolation.load(in, file);
         }
         assertEquals("cellPrecision",   0.005, grid.getCellPrecision(), STRICT);

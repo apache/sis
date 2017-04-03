@@ -29,11 +29,12 @@ import javax.xml.bind.annotation.XmlType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.4
- * @module
  *
  * @see GO_Integer64
+ *
+ * @since 0.3
+ * @module
  */
 @XmlType(name = "Integer_PropertyType")
 public final class GO_Integer extends PropertyType<GO_Integer, Integer> {

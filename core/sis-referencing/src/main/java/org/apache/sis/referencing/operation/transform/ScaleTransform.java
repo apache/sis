@@ -34,11 +34,12 @@ import org.apache.sis.util.ArraysExt;
  * {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used in such case.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
- * @module
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-176">SIS-176</a>
+ *
+ * @since 0.7
+ * @module
  */
 final class ScaleTransform extends AbstractLinearTransform implements ExtendedPrecisionMatrix {
     /**

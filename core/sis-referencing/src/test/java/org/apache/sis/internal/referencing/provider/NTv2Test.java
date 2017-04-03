@@ -45,12 +45,13 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link NTv2} grid loader.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
- * @module
  *
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
+ *
+ * @since 0.7
+ * @module
  */
 public final strictfp class NTv2Test extends TestCase {
     /**
@@ -234,7 +235,7 @@ public final strictfp class NTv2Test extends TestCase {
         }
         writeString(buffer, "END");
         nextRecord(buffer);
-        try (final WritableByteChannel c = Files.newByteChannel(out, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+        try (WritableByteChannel c = Files.newByteChannel(out, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
             buffer.flip();
             c.write(buffer);
         }

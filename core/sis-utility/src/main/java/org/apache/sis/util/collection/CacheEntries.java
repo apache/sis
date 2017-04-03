@@ -35,12 +35,13 @@ import java.lang.ref.Reference;
  * <div class="section">Thread safety</div>
  * This class is thread-safe if and only if the {@code Set} given to the constructor is thread-safe.
  *
- * @param  <K>  the type of key objects.
- * @param  <V>  the type of value objects.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <K>  the type of key objects.
+ * @param <V>  the type of value objects.
+ *
+ * @since 0.3
  * @module
  */
 final class CacheEntries<K,V> extends AbstractSet<Map.Entry<K,V>> {

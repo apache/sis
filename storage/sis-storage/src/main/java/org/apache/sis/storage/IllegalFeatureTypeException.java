@@ -25,8 +25,8 @@ import org.opengis.util.GenericName;
  * Thrown when a store can not write the given feature because its type is not one of the supported types.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public class IllegalFeatureTypeException extends DataStoreException {

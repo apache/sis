@@ -112,8 +112,8 @@ import org.opengis.referencing.datum.DatumFactory;
  * Implements the referencing services needed by the {@code "sis-metadata"} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.8
+ * @since   0.5
  * @module
  */
 public final class ServicesForMetadata extends ReferencingServices {

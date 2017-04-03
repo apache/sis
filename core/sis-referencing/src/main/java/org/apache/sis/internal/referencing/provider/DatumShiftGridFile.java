@@ -54,16 +54,17 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * The main concrete subclass is {@link DatumShiftGridFile.Float}.
  *
- * @param  <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
- * @param  <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
- *              or {@link javax.measure.quantity.Length}).
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.8
- * @module
+ *
+ * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
+ * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
+ *             or {@link javax.measure.quantity.Length}).
  *
  * @see org.apache.sis.referencing.operation.transform.InterpolatedTransform
+ *
+ * @since 0.7
+ * @module
  */
 public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGrid<C,T> {
     /**
@@ -334,8 +335,8 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
      * </ul>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.7
      * @version 0.7
+     * @since   0.7
      * @module
      */
     static final class Float<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {

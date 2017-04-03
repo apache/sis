@@ -33,8 +33,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * instead.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3
  * @version 0.3
+ * @since   0.3
  * @module
  */
 public final class RS_Identifier extends PropertyType<RS_Identifier, ReferenceIdentifier> {

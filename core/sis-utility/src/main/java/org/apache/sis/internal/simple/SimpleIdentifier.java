@@ -38,8 +38,8 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
  * not depend on the {@code sis-metadata} module but still need a lightweight implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.6
+ * @since   0.3
  * @module
  */
 public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serializable {

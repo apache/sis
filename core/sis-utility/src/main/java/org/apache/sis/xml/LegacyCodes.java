@@ -28,8 +28,8 @@ import org.apache.sis.util.collection.Containers;
  * Provided in a separated class for loading only when first needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class LegacyCodes {

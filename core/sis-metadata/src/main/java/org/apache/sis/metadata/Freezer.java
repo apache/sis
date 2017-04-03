@@ -35,8 +35,8 @@ import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
  * tries to avoid creating new clones as much as possible.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 final class Freezer extends Cloner {

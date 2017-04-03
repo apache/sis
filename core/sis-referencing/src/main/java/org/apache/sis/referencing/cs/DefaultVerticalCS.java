@@ -58,13 +58,14 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.8
- * @module
  *
  * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalCS(String)
+ *
+ * @since 0.4
+ * @module
  */
 @XmlType(name = "VerticalCSType")
 @XmlRootElement(name = "VerticalCS")

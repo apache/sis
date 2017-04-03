@@ -36,8 +36,8 @@ import org.apache.sis.storage.DataStoreContentException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 final class VariableWrapper extends Variable {

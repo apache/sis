@@ -33,8 +33,8 @@ import static org.junit.Assume.assumeTrue;
  * Tests {@link ReferencingFunctions}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 @DependsOn(TransformerTest.class)

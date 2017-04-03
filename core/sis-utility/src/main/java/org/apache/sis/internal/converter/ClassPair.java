@@ -34,12 +34,13 @@ import org.apache.sis.util.Debug;
  * for {@link ConverterRegistry}. Subclasses should also be immutable, but this requirement is not as strong
  * as for {@code ClassPair} (because subclasses are not used as keys in hash map).
  *
- * @param  <S>  the base type of source objects.
- * @param  <T>  the base type of converted objects.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <S>  the base type of source objects.
+ * @param <T>  the base type of converted objects.
+ *
+ * @since 0.3
  * @module
  */
 class ClassPair<S,T> implements Serializable {

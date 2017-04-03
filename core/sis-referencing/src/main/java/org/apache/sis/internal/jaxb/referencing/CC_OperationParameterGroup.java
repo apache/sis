@@ -35,8 +35,8 @@ import org.apache.sis.util.collection.Containers;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
  * @version 0.6
+ * @since   0.6
  * @module
  */
 public final class CC_OperationParameterGroup extends PropertyType<CC_OperationParameterGroup,ParameterDescriptorGroup> {

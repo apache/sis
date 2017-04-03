@@ -25,8 +25,8 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  * Concatenated transform where both transforms are one-dimensional.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 final class ConcatenatedTransformDirect1D extends ConcatenatedTransformDirect implements MathTransform1D {

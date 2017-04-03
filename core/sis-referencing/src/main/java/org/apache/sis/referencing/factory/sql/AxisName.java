@@ -24,8 +24,8 @@ import org.apache.sis.util.Debug;
  * A (name, description) pair for a coordinate system axis.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 final class AxisName {

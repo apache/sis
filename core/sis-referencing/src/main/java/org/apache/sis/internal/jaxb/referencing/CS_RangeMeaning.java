@@ -26,8 +26,8 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * JAXB adapter for (un)marshalling of GeoAPI code list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 public final class CS_RangeMeaning extends CodeListAdapter<RangeMeaning> {

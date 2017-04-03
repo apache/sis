@@ -36,8 +36,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Various implementations are used for each test.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.4
+ * @since   0.3
  * @module
  */
 @DependsOn(GeneralDirectPositionTest.class)

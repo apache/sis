@@ -106,8 +106,8 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3
  * @version 0.8
+ * @since   0.3
  * @module
  */
 @XmlTransient
@@ -1159,8 +1159,8 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * <p>Instance of this class are serializable if the enclosing envelope is serializable.</p>
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3
      * @version 0.3
+     * @since   0.3
      * @module
      */
     private abstract class Point extends AbstractDirectPosition implements Serializable {

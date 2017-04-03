@@ -29,8 +29,8 @@ import org.apache.sis.util.Characters;
  * Inspects the type of a text file based on the first keyword.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 public abstract class FirstKeywordPeek {

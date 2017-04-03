@@ -35,8 +35,8 @@ import static org.junit.Assert.*;
  *
  * @author  Ross Laidlaw
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.1
  * @version 0.8
+ * @since   0.1
  * @module
  */
 @DependsOn(ReferencingByIdentifiersTest.class)

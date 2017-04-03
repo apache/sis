@@ -105,8 +105,8 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.5
+ * @since   0.3
  * @module
  */
 final class MetadataReader {

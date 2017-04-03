@@ -49,8 +49,8 @@ import org.apache.sis.internal.referencing.Resources;
  * are not suitable here.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 final class ParameterValueList extends AbstractList<GeneralParameterValue> implements RandomAccess, Serializable {

@@ -33,12 +33,13 @@ import org.apache.sis.util.ArgumentChecks;
  * This adapter is used for implementation of deprecated methods in the {@link org.apache.sis.metadata.iso}
  * sub-packages, usually when the deprecation is the result of upgrading from an older to a newer ISO standard.
  *
- * @param  <L>  the legacy type.
- * @param  <N>  the new type.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ *
+ * @param <L>  the legacy type.
+ * @param <N>  the new type.
+ *
+ * @since 0.5
  * @module
  */
 public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {

@@ -51,12 +51,13 @@ import org.apache.sis.util.Debug;
  * This class is immutable, and thus inherently thread-safe,
  * if the converters given to the static factory method are also immutable.
  *
- * @param  <S>  the base type of source objects.
- * @param  <T>  the base type of converted objects.
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
  * @version 0.3
+ *
+ * @param <S>  the base type of source objects.
+ * @param <T>  the base type of converted objects.
+ *
+ * @since 0.3
  * @module
  */
 final class FallbackConverter<S,T> extends SystemConverter<S,T> {

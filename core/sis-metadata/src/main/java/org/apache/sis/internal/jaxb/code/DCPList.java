@@ -28,8 +28,8 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeListAdapter;
  * of {@code CodeList} in ISO-19139.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 public final class DCPList extends UnsupportedCodeListAdapter<DCPList> {

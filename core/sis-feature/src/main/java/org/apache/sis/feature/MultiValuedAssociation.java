@@ -38,11 +38,12 @@ import org.apache.sis.internal.feature.Resources;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.6
- * @module
  *
  * @see DefaultAssociationRole
+ *
+ * @since 0.5
+ * @module
  */
 final class MultiValuedAssociation extends AbstractAssociation {
     /**

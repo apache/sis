@@ -102,8 +102,8 @@ import org.apache.sis.internal.jdk8.DateTimeException;
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
  * @version 0.8
+ * @since   0.8
  * @module
  */
 final class LandsatReader {
@@ -1009,7 +1009,7 @@ final class LandsatReader {
      * Invoked when a non-fatal exception occurred while reading metadata. This method
      * sends a record to the registered listeners if any, or logs the record otherwise.
      */
-    private void warning(String key, final BufferedReader reader ,final Exception e) {
+    private void warning(String key, final BufferedReader reader, final Exception e) {
         if (key != null) {
             String file = getFilename();
             if (reader instanceof LineNumberReader) {

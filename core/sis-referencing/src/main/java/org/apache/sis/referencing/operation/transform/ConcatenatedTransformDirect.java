@@ -27,8 +27,8 @@ import org.opengis.referencing.operation.TransformException;
  * of an intermediate buffer in some case.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
 class ConcatenatedTransformDirect extends ConcatenatedTransform {

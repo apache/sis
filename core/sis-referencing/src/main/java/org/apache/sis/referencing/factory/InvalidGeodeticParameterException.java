@@ -30,8 +30,8 @@ import org.opengis.util.FactoryException;
  * {@link org.opengis.referencing.NoSuchAuthorityCodeException} instead.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
  * @version 0.7
+ * @since   0.7
  * @module
  */
 public class InvalidGeodeticParameterException extends FactoryException {

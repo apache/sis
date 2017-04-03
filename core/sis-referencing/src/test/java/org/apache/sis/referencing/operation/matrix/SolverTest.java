@@ -47,8 +47,8 @@ import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertE
  * the above-cited simple operations anyway.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
+ * @since   0.4
  * @module
  */
 @DependsOn(GeneralMatrixTest.class) // See class javadoc

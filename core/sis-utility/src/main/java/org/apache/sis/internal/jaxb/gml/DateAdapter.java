@@ -41,12 +41,13 @@ import org.apache.sis.internal.jaxb.XmlUtilities;
  * {@link org.apache.sis.xml.XML#TIMEZONE} property.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
  * @version 0.4
- * @module
  *
  * @see UniversalTimeAdapter
  * @see org.apache.sis.internal.jaxb.gco.GO_DateTime
+ *
+ * @since 0.4
+ * @module
  */
 public final class DateAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
     /**
